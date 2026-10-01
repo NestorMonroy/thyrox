@@ -140,7 +140,7 @@ describe('runJobWithOutput', () => {
       logs: { exitCode: 0, stdout: 'generated text', stderr: 'speed: 12.5 t/s' },
     })
     const outcome = await runJobWithOutput(podman, spec())
-    expect(outcome).toEqual({ exitCode: 3, stdout: 'generated text', stderr: 'speed: 12.5 t/s' })
+    expect(outcome).toEqual({ exitCode: 3, stdout: 'generated text', stderr: 'speed: 12.5 t/s', containerName: NAME })
     expect(podman.calls.map(call => call[0])).toEqual(['create', 'start', 'wait', 'logs', 'rm'])
   })
 

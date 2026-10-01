@@ -6,7 +6,7 @@
  * calcula su sha256. El artefacto se prueba aquí; nunca registrándolo en un
  * runtime de inferencia y llamándolo por nombre.
  */
-import { stat } from 'node:fs/promises'
+import { mkdir, readFile, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 
 import { readGgufMetadata, type GgufHeader } from '@thyrox/model-artifacts/ggufMetadata.ts'
@@ -26,6 +26,9 @@ const PERPLEXITY_CONTEXT = '128'
 const PERPLEXITY_THREADS = '4'
 const INFERENCE_PROMPT = 'def fibonacci(n):'
 const INFERENCE_TOKENS = '16'
+
+/** Dónde dejan las herramientas su salida dentro del scratch: el dato viaja por el montaje, no por los logs. */
+export const VALIDATION_OUTPUT_DIR = 'validation'
 
 const PERPLEXITY_PATTERN = /Final estimate: PPL = ([0-9.]+)/
 const TOKENS_PER_SECOND_PATTERN = /speed:\s*([0-9.]+)\s*t\/s/
@@ -77,9 +80,9 @@ export async function readGgufFacts(path: string, expectedFileType: number): Pro
 export async function validateGgufArtifact(input: GgufValidationInput): Promise<GgufValidation> {
   const architecture = await readGgufFacts(input.path, input.expectedFileType)
   const model = labPathOf(input.path, input.scratchDir)
-  const inference = await runOrFail(input, ['llama-simple', '-m', model, '-n', INFERENCE_TOKENS, INFERENCE_PROMPT])
+  const inference = await runCaptured(input, 'llama-simple', ['-m', model, '-n', INFERENCE_TOKENS, INFERENCE_PROMPT])
   if (inference.stdout.trim().length === 0) throw new GgufValidationError('llama-simple no generó texto')
-  const perplexity = await runOrFail(input, ['llama-perplexity', '-m', model,
+  const perplexity = await runCaptured(input, 'llama-perplexity', ['-m', model,
     '-f', labPathOf(input.corpusPath, input.scratchDir), '-c', PERPLEXITY_CONTEXT, '-t', PERPLEXITY_THREADS])
   return {
     architecture,
@@ -105,17 +108,35 @@ function requireArchitecture(header: GgufHeader): string {
   return architecture
 }
 
-async function runOrFail(input: GgufValidationInput, command: readonly string[]): Promise<LabStepResult> {
-  const result = await input.runInLab({ workerId: input.workerId, command })
-  if (result.exitCode !== 0) throw new GgufValidationError(`${command[0]} exit ${result.exitCode}: ${lastLines(result.stderr)}`)
-  return result
+interface CapturedOutput {
+  readonly stdout: string
+  readonly stderr: string
+}
+
+/**
+ * Corre una herramienta con su salida redirigida a archivos del scratch y la
+ * lee de ahí. Los logs del contenedor quedan como diagnóstico.
+ */
+async function runCaptured(input: GgufValidationInput, tool: string, args: readonly string[]): Promise<CapturedOutput> {
+  const hostDir = join(input.scratchDir, VALIDATION_OUTPUT_DIR)
+  await mkdir(hostDir, { recursive: true })
+  const [stdoutPath, stderrPath] = [join(hostDir, `${tool}.stdout`), join(hostDir, `${tool}.stderr`)]
+  const redirect = `exec "$0" "$@" > ${labPathOf(stdoutPath, input.scratchDir)} 2> ${labPathOf(stderrPath, input.scratchDir)}`
+  const result = await input.runInLab({ workerId: input.workerId, command: ['sh', '-c', redirect, tool, ...args] })
+  const captured = { stdout: await readCaptured(stdoutPath), stderr: await readCaptured(stderrPath) }
+  if (result.exitCode !== 0) throw new GgufValidationError(`${tool} exit ${result.exitCode}: ${lastLines(captured.stderr || result.stderr)}`)
+  return captured
+}
+
+function readCaptured(path: string): Promise<string> {
+  return readFile(path, 'utf8').catch(() => '')
 }
 
 export function lastLines(text: string): string {
   return text.trim().split('\n').slice(-5).join(' | ')
 }
 
-function combined(result: LabStepResult): string {
+function combined(result: CapturedOutput): string {
   return `${result.stdout}\n${result.stderr}`
 }
 

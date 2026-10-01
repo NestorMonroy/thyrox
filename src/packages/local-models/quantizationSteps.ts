@@ -11,11 +11,14 @@ import { join } from 'node:path'
 import {
   estimatedBytesAt,
   Q4_K_M_BITS_PER_WEIGHT,
+  TOOL_PARAMETERS_VERSION,
   type QuantizationMethod,
   type QuantizationStep,
   type SourceSpec,
   type StepRecord,
 } from '@thyrox/model-artifacts/quantizationPlan.ts'
+
+import type { EvaluationIdentity } from '@thyrox/model-artifacts/evaluationIdentity.ts'
 
 import {
   EVAL_CORPUS_FILES,
@@ -55,6 +58,8 @@ export interface RunObservations {
   quantizedBytes?: number
   quantizedSha256?: string
   validation?: ArtifactValidationFacts
+  /** Con qué fuente, corpus, imagen y parámetros se midió `validation`: lo que la hace comparable. */
+  evaluationIdentity?: EvaluationIdentity
   sourceSha256: Record<string, string>
   downloadedBytes: number
 }
@@ -65,6 +70,7 @@ export interface StepContext {
   readonly scratchDir: string
   readonly runDir: string
   readonly workerId: string
+  readonly imageDigest: string
   readonly fetcher: Fetcher
   readonly runInLab: (step: LabStep) => Promise<LabStepResult>
   readonly observations: RunObservations
@@ -165,9 +171,20 @@ const validate: StepAction = async context => {
   requireSameArchitecture(context, checked.architecture)
   requireExpectedSize(context, checked.bytes)
   context.observations.validation = checked.validation
+  context.observations.evaluationIdentity = await evaluationIdentityOf(context)
   context.observations.quantizedBytes = checked.bytes
   context.observations.quantizedSha256 = checked.sha256
   return undefined
+}
+
+async function evaluationIdentityOf(context: StepContext): Promise<EvaluationIdentity> {
+  return {
+    sourceRepository: context.source.repository,
+    sourceRevision: context.source.revision,
+    corpusSha256: await sha256OfFile(evalCorpusPath(context.scratchDir)),
+    imageDigest: context.imageDigest,
+    toolParameters: TOOL_PARAMETERS_VERSION,
+  }
 }
 
 function requireSameArchitecture(context: StepContext, architecture: string): void {

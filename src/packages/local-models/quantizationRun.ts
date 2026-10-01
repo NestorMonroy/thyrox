@@ -19,10 +19,12 @@ import { join } from 'node:path'
 import {
   QUANTIZATION_STEPS,
   evaluateScratchCapacity,
-  isStepComplete,
+  firstStepToRun,
   requiredScratchBytes,
+  stepFingerprint,
   sourceBytes,
   validateSourceSpec,
+  type PlanInputs,
   type QuantizationMethod,
   type QuantizationStep,
   type SourceSpec,
@@ -67,7 +69,8 @@ export interface StepMetrics {
 export interface RunState {
   readonly request: Omit<QuantizationRequest, 'scratchDir' | 'runDir'>
   readonly source: SourceSpec
-  readonly image: LabImage
+  /** La imagen de la última ejecución; la que cuenta para la huella es la de ahora. */
+  image: LabImage
   records: StepRecord[]
   observations: RunObservations
   metrics: { minimumFreeBytes?: number; steps: Partial<Record<QuantizationStep, StepMetrics>> }
@@ -123,7 +126,7 @@ export async function runQuantization(request: QuantizationRequest, deps: Quanti
 
 async function loadOrPlan(request: QuantizationRequest, deps: QuantizationRunDeps): Promise<RunState> {
   const existing = await readState(request.runDir)
-  if (existing !== undefined) return requireSameRequest(existing, request)
+  if (existing !== undefined) return { ...requireSameRequest(existing, request), image: deps.labImage }
   const source = await fetchSourceSpec(deps.fetcher, request.repository, request.revision)
   validateSourceSpec(source)
   return {
@@ -175,16 +178,24 @@ async function refuse(request: QuantizationRequest, reason: string, deps: Quanti
 }
 
 async function runPendingSteps(state: RunState, request: QuantizationRequest, deps: QuantizationRunDeps, sampler: DiskSampler): Promise<QuantizationOutcome> {
-  for (const step of QUANTIZATION_STEPS) {
-    if (await isStepComplete(step, state.records, isArtifactIntact)) continue
-    const failure = await runStep(step, state, request, deps, sampler)
+  const inputs = inputsOf(state, deps)
+  const start = await firstStepToRun(state.records, isArtifactIntact, inputs)
+  if (start === undefined) return { kind: 'completed', state }
+  for (const step of QUANTIZATION_STEPS.slice(QUANTIZATION_STEPS.indexOf(start))) {
+    const failure = await runStep(step, state, request, deps, sampler, inputs)
     await saveState(request.runDir, state)
     if (failure !== undefined) return { kind: 'failed', step, reason: failure }
   }
   return { kind: 'completed', state }
 }
 
-async function runStep(step: QuantizationStep, state: RunState, request: QuantizationRequest, deps: QuantizationRunDeps, sampler: DiskSampler): Promise<string | undefined> {
+/** Lo que identifica esta ejecución: la fuente fijada y la imagen con que corre AHORA. */
+function inputsOf(state: RunState, deps: QuantizationRunDeps): PlanInputs {
+  return { source: state.source, imageDigest: deps.labImage.digest, method: state.request.method, level: state.request.level }
+}
+
+async function runStep(step: QuantizationStep, state: RunState, request: QuantizationRequest, deps: QuantizationRunDeps,
+  sampler: DiskSampler, inputs: PlanInputs): Promise<string | undefined> {
   const started = deps.now().getTime()
   const peaks: number[] = []
   try {
@@ -194,12 +205,13 @@ async function runStep(step: QuantizationStep, state: RunState, request: Quantiz
       scratchDir: request.scratchDir,
       runDir: request.runDir,
       workerId: runIdOf(request),
+      imageDigest: inputs.imageDigest,
       fetcher: deps.fetcher,
       observations: state.observations,
       runInLab: async labStep => keepPeak(await deps.runInLab(labStep), peaks),
       register: () => deps.register(state, request),
     })
-    state.records = [...state.records.filter(record => record.step !== step), recordOf(step, artifact, deps)]
+    state.records = [...state.records.filter(record => record.step !== step), recordOf(step, artifact, stepFingerprint(step, inputs), deps)]
     return undefined
   } catch (error) {
     if (error instanceof QuantizationStepError) return error.message
@@ -219,9 +231,9 @@ function peakOf(peaks: readonly number[]): { peakMemoryBytes?: number } {
   return peaks.length === 0 ? {} : { peakMemoryBytes: Math.max(...peaks) }
 }
 
-function recordOf(step: QuantizationStep, artifact: StepRecord['artifact'], deps: QuantizationRunDeps): StepRecord {
+function recordOf(step: QuantizationStep, artifact: StepRecord['artifact'], fingerprint: string, deps: QuantizationRunDeps): StepRecord {
   const completedAt = deps.now().toISOString()
-  return artifact === undefined ? { step, completedAt } : { step, completedAt, artifact }
+  return artifact === undefined ? { step, completedAt, fingerprint } : { step, completedAt, fingerprint, artifact }
 }
 
 async function isArtifactIntact(artifact: NonNullable<StepRecord['artifact']>): Promise<boolean> {

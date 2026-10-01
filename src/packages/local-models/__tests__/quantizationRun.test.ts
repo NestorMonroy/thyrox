@@ -12,6 +12,7 @@ import type { AdmissionOutcome, ResourceAdmission } from '../resourceAdmission.j
 import { parseContainerMeasure, type LabStep, type LabStepResult } from '../quantizationLab.js'
 import { RunStateConflictError, runQuantization, type QuantizationRequest, type QuantizationRunDeps } from '../quantizationRun.js'
 import { RunLeaseBusyError, acquireRunLease } from '../runLease.js'
+import { toolOf, writeCapturedOutput } from '../testing/fakeQuantizationLab.js'
 
 const REPOSITORY = 'Qwen/Tiny-Coder'
 const REVISION = 'a'.repeat(40)
@@ -63,16 +64,17 @@ function fakeLab(scratchDir: string, options: { failQuantizeOnce?: boolean } = {
   let quantizeFailures = options.failQuantizeOnce ? 1 : 0
   const hostPath = (labPath: string) => join(scratchDir, labPath.replace(/^\/scratch\/?/, ''))
   const runInLab = async (step: LabStep): Promise<LabStepResult> => {
-    const [tool, ...args] = step.command
-    commands.push(tool === 'python' ? 'convert' : tool!)
+    const tool = toolOf(step)
+    const args = step.command.slice(1)
+    commands.push(tool === 'python' ? 'convert' : tool)
     if (tool === 'python') writeFileSync(hostPath(args[args.indexOf('--outfile') + 1]!), gguf(1, 3200))
     if (tool === 'llama-quantize') {
-      if (quantizeFailures-- > 0) return { exitCode: 1, stdout: '', stderr: 'quantize failed' }
+      if (quantizeFailures-- > 0) return { exitCode: 1, stdout: '', stderr: 'quantize failed', containerName: 'thyrox-worker-lab' }
       writeFileSync(hostPath(args[1]!), gguf(15, 500))
     }
-    if (tool === 'llama-simple') return { exitCode: 0, stdout: 'return n', stderr: 'decoded 16 tokens in 1.0 s, speed: 12.5 t/s', peakMemoryBytes: 2048 }
-    if (tool === 'llama-perplexity') return { exitCode: 0, stdout: '', stderr: 'Final estimate: PPL = 9.87 +/- 0.10' }
-    return { exitCode: 0, stdout: '', stderr: '', peakMemoryBytes: 4096 }
+    if (tool === 'llama-simple') writeCapturedOutput(scratchDir, step, { stdout: 'return n', stderr: 'decoded 16 tokens in 1.0 s, speed: 12.5 t/s' })
+    if (tool === 'llama-perplexity') writeCapturedOutput(scratchDir, step, { stdout: '', stderr: 'Final estimate: PPL = 9.87 +/- 0.10' })
+    return { exitCode: 0, stdout: '', stderr: '', containerName: 'thyrox-worker-lab', peakMemoryBytes: 4096 }
   }
   return { runInLab, commands }
 }
@@ -137,6 +139,18 @@ describe('quantization run', () => {
     expect(second.kind).toBe('completed')
     expect(hub.downloads.length).toBe(downloadsAfterFirst)
     expect(lab.commands.filter(command => command === 'convert')).toHaveLength(1)
+  })
+
+  test('another lab image redoes conversion from a re-downloaded source', async () => {
+    const hub = fakeHub()
+    const lab = fakeLab(request.scratchDir)
+    await runQuantization({ ...request, scratchDir: request.scratchDir }, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab }))
+    const sourceKept = { ...request }
+    const newerImage = { reference: 'localhost/lab:dev', id: 'def', digest: `sha256:${'c'.repeat(64)}` }
+    const downloads = hub.downloads.length
+    await runQuantization(sourceKept, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab, labImage: newerImage }))
+    expect(lab.commands.filter(command => command === 'convert')).toHaveLength(2)
+    expect(hub.downloads.length).toBeGreaterThan(downloads)
   })
 
   test('an admission refusal stops before downloading and writes the figures', async () => {

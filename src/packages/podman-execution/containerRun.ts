@@ -76,23 +76,35 @@ export async function runToCompletion(podman: PodmanExecutor, spec: WorkerContai
   return parseWaitExitCode(name, await requireSuccess(podman, 'wait', name, ['wait', name]))
 }
 
+/**
+ * El resultado de un trabajo: su veredicto y su diagnóstico, no sus datos.
+ *
+ * - `exitCode` es el veredicto del proceso principal.
+ * - `stdout` y `stderr` son diagnóstico, cada uno de su flujo (medido con el
+ *   driver `k8s-file`: `podman logs` no los mezcla). No son un canal de
+ *   datos: lo que un trabajo produce lo escribe en un montaje declarado, y
+ *   quien lo invoca lo lee de ahí.
+ * - `containerName` nombra al contenedor que corrió, con las etiquetas de su
+ *   dueño, para correlacionar el diagnóstico con su medida y su barrido.
+ */
 export type JobOutput = {
   exitCode: number
   stdout: string
   stderr: string
+  containerName: string
 }
 
 /**
- * Corre el contenedor hasta que termine y devuelve su código y las dos
- * salidas de su proceso, leídas con `podman logs` antes de retirarlo. La
- * limpieza ocurre siempre, también si una etapa falla.
+ * Corre el contenedor hasta que termine y devuelve su veredicto y su
+ * diagnóstico, leído con `podman logs` antes de retirarlo. La limpieza ocurre
+ * siempre, también si una etapa falla.
  */
 export async function runJobWithOutput(podman: PodmanExecutor, spec: WorkerContainerSpec): Promise<JobOutput> {
   const name = workerContainerName(spec.workerId)
   try {
     const exitCode = await runToCompletion(podman, spec)
     const logs = await requireSuccess(podman, 'logs', name, ['logs', name])
-    return { exitCode, stdout: logs.stdout, stderr: logs.stderr }
+    return { exitCode, stdout: logs.stdout, stderr: logs.stderr, containerName: name }
   } finally {
     await podman.run(removeWorkerContainerArgv(name))
   }

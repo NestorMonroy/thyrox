@@ -9,6 +9,7 @@ import { syntheticGgufBytes } from '@thyrox/model-artifacts/testing/syntheticGgu
 
 import { importExternalArtifact, type ExternalArtifactDeps, type ExternalArtifactRequest } from '../externalArtifact.js'
 import type { LabStep, LabStepResult } from '../quantizationLab.js'
+import { toolOf, writeCapturedOutput } from '../testing/fakeQuantizationLab.js'
 import type { AdmissionOutcome } from '../resourceAdmission.js'
 
 const REPOSITORY = 'Qwen/Tiny-Coder-GGUF'
@@ -50,12 +51,15 @@ function fakeHub(publishedSha256 = GGUF_SHA256) {
   return { fetcher, downloads }
 }
 
-function fakeLab() {
+function fakeLab(scratchDir: () => string) {
   const commands: string[] = []
   const runInLab = async (step: LabStep): Promise<LabStepResult> => {
-    commands.push(step.command[0]!)
-    if (step.command[0] === 'llama-simple') return { exitCode: 0, stdout: 'return n', stderr: 'speed: 4.5 t/s' }
-    return { exitCode: 0, stdout: '', stderr: 'Final estimate: PPL = 2.75 +/- 0.05' }
+    commands.push(toolOf(step))
+    const output = toolOf(step) === 'llama-simple'
+      ? { stdout: 'return n', stderr: 'speed: 4.5 t/s' }
+      : { stdout: '', stderr: 'Final estimate: PPL = 2.75 +/- 0.05' }
+    writeCapturedOutput(scratchDir(), step, output)
+    return { exitCode: 0, stdout: '', stderr: '', containerName: 'thyrox-worker-lab' }
   }
   return { runInLab, commands }
 }
@@ -76,6 +80,7 @@ function deps(overrides: Partial<ExternalArtifactDeps> & Pick<ExternalArtifactDe
     admission: { admitDisk: async () => ({ admitted: true }), admitMemory: async () => ({ admitted: true }), releaseAll: async () => {} },
     freeBytes: async () => 10 ** 12,
     catalogPath: join(root, 'catalog.json'),
+    labImageDigest: `sha256:${'b'.repeat(64)}`,
     now: () => new Date('2026-10-01T03:00:00Z'),
     ...overrides,
   }
@@ -84,7 +89,7 @@ function deps(overrides: Partial<ExternalArtifactDeps> & Pick<ExternalArtifactDe
 describe('external artifact import', () => {
   test('validates and registers with external provenance', async () => {
     const hub = fakeHub()
-    const outcome = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: fakeLab().runInLab }))
+    const outcome = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: fakeLab(() => request.scratchDir).runInLab }))
     expect(outcome.kind).toBe('completed')
     const provenance = JSON.parse(readFileSync(join(request.runDir, 'provenance.json'), 'utf8'))
     expect(provenance).toMatchObject({
@@ -98,14 +103,14 @@ describe('external artifact import', () => {
 
   test('refuses before downloading when the published sha256 differs from the pinned one', async () => {
     const hub = fakeHub('e'.repeat(64))
-    const outcome = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: fakeLab().runInLab }))
+    const outcome = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: fakeLab(() => request.scratchDir).runInLab }))
     expect(outcome.kind).toBe('refused')
     expect(hub.downloads).toHaveLength(0)
   })
 
   test('a rerun neither downloads nor validates again', async () => {
     const hub = fakeHub()
-    const lab = fakeLab()
+    const lab = fakeLab(() => request.scratchDir)
     await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab }))
     const [downloads, commands] = [hub.downloads.length, lab.commands.length]
     const second = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab }))
@@ -116,18 +121,28 @@ describe('external artifact import', () => {
 
   test('a rerun asks only for the bytes still missing from the scratch', async () => {
     const hub = fakeHub()
-    const lab = fakeLab()
+    const lab = fakeLab(() => request.scratchDir)
     await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab }))
     const almostFull = async () => SCRATCH_METADATA_MARGIN_BYTES + 1
     const second = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab, freeBytes: almostFull }))
     expect(second.kind).toBe('completed')
   })
 
+  test('another lab image revalidates without downloading again', async () => {
+    const hub = fakeHub()
+    const lab = fakeLab(() => request.scratchDir)
+    await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab }))
+    const [downloads, commands] = [hub.downloads.length, lab.commands.length]
+    await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab, labImageDigest: `sha256:${'f'.repeat(64)}` }))
+    expect(hub.downloads.length).toBe(downloads)
+    expect(lab.commands.length).toBeGreaterThan(commands)
+  })
+
   test('an admission refusal stops before downloading', async () => {
     const hub = fakeHub()
     const refused: AdmissionOutcome = { admitted: false, unmeasured: false, detail: 'no cabe' }
     const admission = { admitDisk: async () => refused, admitMemory: async () => ({ admitted: true }) as AdmissionOutcome, releaseAll: async () => {} }
-    const outcome = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: fakeLab().runInLab, admission }))
+    const outcome = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: fakeLab(() => request.scratchDir).runInLab, admission }))
     expect(outcome.kind).toBe('refused')
     expect(hub.downloads).toHaveLength(0)
     expect(existsSync(join(request.scratchDir, FILE))).toBe(false)

@@ -14,7 +14,8 @@ import { mkdir, readFile, rename, stat, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
 import { catalogEntryFromGguf, loadModelCatalog, saveModelCatalog } from '@thyrox/model-artifacts/modelCatalog.ts'
-import { SCRATCH_METADATA_MARGIN_BYTES, type SourceSpec } from '@thyrox/model-artifacts/quantizationPlan.ts'
+import { comparisonRefusal, type EvaluationIdentity } from '@thyrox/model-artifacts/evaluationIdentity.ts'
+import { SCRATCH_METADATA_MARGIN_BYTES, TOOL_PARAMETERS_VERSION, type SourceSpec } from '@thyrox/model-artifacts/quantizationPlan.ts'
 import { workerContainerName } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
 
 import {
@@ -28,6 +29,7 @@ import {
 import { downloadSource, fetchSourceSpec, isVerifiedOnDisk, type Fetcher } from './huggingFaceSource.js'
 import type { LabStep, LabStepResult } from './quantizationLab.js'
 import type { ResourceAdmission } from './resourceAdmission.js'
+import { sha256OfFile } from './sha256File.js'
 
 const STATE_FILE = 'import.json'
 const PROVENANCE_FILE = 'provenance.json'
@@ -52,6 +54,8 @@ export interface ExternalArtifactDeps {
   readonly admission: ResourceAdmission
   readonly freeBytes: (path: string) => Promise<number>
   readonly catalogPath: string
+  /** Digest de la imagen del laboratorio que valida: una validación con otra imagen no se reutiliza. */
+  readonly labImageDigest: string
   readonly now: () => Date
 }
 
@@ -66,6 +70,7 @@ export interface ExternalProvenance {
   readonly license: string
   readonly acquiredAt: string
   readonly validation: GgufValidation['validation']
+  readonly evaluationIdentity: EvaluationIdentity
   readonly modelName: string
 }
 
@@ -77,6 +82,7 @@ export type ImportOutcome =
 interface ImportState {
   acquiredAt?: string
   checked?: GgufValidation
+  evaluationIdentity?: EvaluationIdentity
 }
 
 export function importIdOf(request: Pick<ExternalArtifactRequest, 'repository' | 'revision' | 'file'>): string {
@@ -145,19 +151,37 @@ async function acquire(request: ExternalArtifactRequest, subset: SourceSpec, dep
   const path = join(request.scratchDir, request.file)
   await downloadSource(deps.fetcher, subset, request.scratchDir)
   state.acquiredAt ??= deps.now().toISOString()
-  if (!(await isValidated(state, path, subset, request))) {
-    await writeCorpus(request.scratchDir)
+  await writeCorpus(request.scratchDir)
+  const identity = await evaluationIdentityOf(request, deps)
+  if (!(await isValidated(state, identity, path, subset, request))) {
     state.checked = await validateGgufArtifact({ path, scratchDir: request.scratchDir, corpusPath: evalCorpusPath(request.scratchDir),
       workerId: importIdOf(request), expectedFileType: GGUF_FILE_TYPE.Q4_K_M, runInLab: deps.runInLab })
+    state.evaluationIdentity = identity
     await writeJson(join(request.runDir, STATE_FILE), state)
   }
   return { kind: 'completed', provenance: await register(request, subset, path, state, deps) }
 }
 
-/** Una validación sirve sólo si se hizo sobre este mismo archivo, verificado en disco. */
-async function isValidated(state: ImportState, path: string, subset: SourceSpec, request: ExternalArtifactRequest): Promise<boolean> {
+/**
+ * Una validación sirve sólo si se hizo sobre este mismo archivo, verificado en
+ * disco, y con la misma identidad de evaluación: otro corpus, otra imagen u
+ * otros parámetros la invalidan aunque el artefacto no haya cambiado.
+ */
+async function isValidated(state: ImportState, identity: EvaluationIdentity, path: string, subset: SourceSpec,
+  request: ExternalArtifactRequest): Promise<boolean> {
   const artifact = subset.files.find(file => file.path === request.file)!
-  return state.checked?.sha256 === request.sha256 && await isVerifiedOnDisk(path, artifact)
+  const sameEvaluation = state.evaluationIdentity !== undefined && comparisonRefusal(state.evaluationIdentity, identity) === undefined
+  return state.checked?.sha256 === request.sha256 && sameEvaluation && await isVerifiedOnDisk(path, artifact)
+}
+
+async function evaluationIdentityOf(request: ExternalArtifactRequest, deps: ExternalArtifactDeps): Promise<EvaluationIdentity> {
+  return {
+    sourceRepository: request.repository,
+    sourceRevision: request.revision,
+    corpusSha256: await sha256OfFile(evalCorpusPath(request.scratchDir)),
+    imageDigest: deps.labImageDigest,
+    toolParameters: TOOL_PARAMETERS_VERSION,
+  }
 }
 
 async function writeCorpus(scratchDir: string): Promise<void> {
@@ -176,7 +200,8 @@ async function register(request: ExternalArtifactRequest, subset: SourceSpec, pa
   const provenance: ExternalProvenance = {
     provenance: 'external', repository: request.repository, revision: request.revision, file: request.file,
     sha256: checked.sha256, bytes: checked.bytes, quantization: request.quantization,
-    license: subset.license ?? UNDECLARED_LICENSE, acquiredAt, validation: checked.validation, modelName: entry.name,
+    license: subset.license ?? UNDECLARED_LICENSE, acquiredAt, validation: checked.validation,
+    evaluationIdentity: state.evaluationIdentity!, modelName: entry.name,
   }
   await writeJson(join(request.runDir, PROVENANCE_FILE), provenance)
   return provenance

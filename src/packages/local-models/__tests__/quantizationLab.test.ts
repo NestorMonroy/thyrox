@@ -27,7 +27,7 @@ describe('quantization lab', () => {
     const podman = fakePodman()
     const lab = new QuantizationLab(podman, 'image-id', '/scratch-host', LIMITS, async () => undefined, OWNER)
     const result = await lab.run({ workerId: 'quantize-run', command: ['llama-simple', '-m', '/scratch/m.gguf'] })
-    expect(result).toMatchObject({ exitCode: 0, stdout: 'text', stderr: 'speed: 3 t/s' })
+    expect(result).toMatchObject({ exitCode: 0, stdout: 'text', stderr: 'speed: 3 t/s', containerName: 'thyrox-worker-quantize-run' })
     expect(podman.calls.map(call => call[0])).toEqual(['create', 'start', 'wait', 'logs', 'rm'])
   })
 

@@ -73,6 +73,7 @@ async function acquire(parsed: ImportArguments, context: CommandContext): Promis
     admission: new ResourceAdmissionCli(join(context.thyroxRoot, 'bin', 'resource_admission'), process.pid),
     freeBytes: async path => { const info = await statfs(path); return info.bavail * info.bsize },
     catalogPath: localModelHome(context.env, context.thyroxRoot).catalog,
+    labImageDigest: image.digest,
     now: context.now,
   })
   if (outcome.kind === 'completed') {
