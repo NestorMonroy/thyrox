@@ -52,3 +52,27 @@ describe('etiquetas de una imagen', () => {
     expect(await readLabels(fakePodman({ 'image inspect': { ...OK, stdout: 'null\n' } }), 'r')).toEqual({})
   })
 })
+
+describe('construcción con egreso por el proxy del anfitrión', () => {
+  test('red, argumentos y montajes de sólo lectura van antes del contexto', async () => {
+    const podman = fakePodman({ 'image inspect': { ...OK, stdout: 'abc123\n' } })
+    await buildImage(podman, {
+      context: '/ctx',
+      tag: 'localhost/t:1',
+      labels: {},
+      network: 'host',
+      buildArgs: { HTTPS_PROXY: 'http://127.0.0.1:1' },
+      readOnlyMounts: [{ source: '/ca.crt', destination: '/etc/ssl/certs/proxy-ca.crt' }],
+    })
+    expect(podman.calls[0]).toEqual([
+      'build', '--network', 'host', '--build-arg', 'HTTPS_PROXY=http://127.0.0.1:1',
+      '-v', '/ca.crt:/etc/ssl/certs/proxy-ca.crt:ro', '-t', 'localhost/t:1', '/ctx',
+    ])
+  })
+
+  test('un argumento que nombra una credencial se rehúsa antes de invocar Podman', async () => {
+    const podman = fakePodman()
+    await expect(buildImage(podman, { context: '/ctx', tag: 't', labels: {}, buildArgs: { NPM_TOKEN: 'x' } })).rejects.toThrow('credencial')
+    expect(podman.calls).toEqual([])
+  })
+})

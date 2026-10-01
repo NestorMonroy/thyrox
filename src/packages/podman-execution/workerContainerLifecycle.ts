@@ -36,9 +36,9 @@ export const WORKER_ID_LABEL_KEY = 'thyrox.worker-id'
 /** Plazo por defecto de `podman stop` antes de que Podman escale a SIGKILL. */
 export const DEFAULT_STOP_TIMEOUT_SECONDS = 10
 
-export type ContainerOwnerKind = 'daemon' | 'pool' | 'lab' | 'model-coordinator' | 'infrastructure'
+export type ContainerOwnerKind = 'daemon' | 'pool' | 'lab' | 'model-coordinator' | 'infrastructure' | 'task'
 
-const OWNER_KINDS: readonly ContainerOwnerKind[] = ['daemon', 'pool', 'lab', 'model-coordinator', 'infrastructure']
+const OWNER_KINDS: readonly ContainerOwnerKind[] = ['daemon', 'pool', 'lab', 'model-coordinator', 'infrastructure', 'task']
 const SAFE_IDENTIFIER_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_.-]*$/
 /** Una clave de etiqueta propia: no vacía y sin espacios ni `=`. */
 const LABEL_KEY_PATTERN = /^[^\s=]+$/
