@@ -68,12 +68,20 @@ function parseWaitExitCode(name: string, result: PodmanCommandResult): number {
   return Number(printed)
 }
 
+type CompletedContainer = { containerId: string; exitCode: number }
+
+/** Crea, arranca y espera el contenedor; devuelve el id que imprimió `podman create` y el código de su proceso. */
+async function runAndIdentify(podman: PodmanExecutor, spec: WorkerContainerSpec): Promise<CompletedContainer> {
+  const name = workerContainerName(spec.workerId)
+  const created = await requireSuccess(podman, 'create', name, createWorkerContainerArgv(spec))
+  await requireSuccess(podman, 'start', name, ['start', name])
+  const exitCode = parseWaitExitCode(name, await requireSuccess(podman, 'wait', name, ['wait', name]))
+  return { containerId: created.stdout.trim(), exitCode }
+}
+
 /** Crea, arranca y espera el contenedor; devuelve el código de salida de su proceso. No lo retira. */
 export async function runToCompletion(podman: PodmanExecutor, spec: WorkerContainerSpec): Promise<number> {
-  const name = workerContainerName(spec.workerId)
-  await requireSuccess(podman, 'create', name, createWorkerContainerArgv(spec))
-  await requireSuccess(podman, 'start', name, ['start', name])
-  return parseWaitExitCode(name, await requireSuccess(podman, 'wait', name, ['wait', name]))
+  return (await runAndIdentify(podman, spec)).exitCode
 }
 
 /**
@@ -86,12 +94,15 @@ export async function runToCompletion(podman: PodmanExecutor, spec: WorkerContai
  *   quien lo invoca lo lee de ahí.
  * - `containerName` nombra al contenedor que corrió, con las etiquetas de su
  *   dueño, para correlacionar el diagnóstico con su medida y su barrido.
+ * - `containerId` es el id que imprimió `podman create`: el que nombra el
+ *   cgroup `libpod-<id>` de cada proceso de la unidad.
  */
 export type JobOutput = {
   exitCode: number
   stdout: string
   stderr: string
   containerName: string
+  containerId: string
 }
 
 /**
@@ -102,9 +113,9 @@ export type JobOutput = {
 export async function runJobWithOutput(podman: PodmanExecutor, spec: WorkerContainerSpec): Promise<JobOutput> {
   const name = workerContainerName(spec.workerId)
   try {
-    const exitCode = await runToCompletion(podman, spec)
+    const { containerId, exitCode } = await runAndIdentify(podman, spec)
     const logs = await requireSuccess(podman, 'logs', name, ['logs', name])
-    return { exitCode, stdout: logs.stdout, stderr: logs.stderr, containerName: name }
+    return { exitCode, stdout: logs.stdout, stderr: logs.stderr, containerName: name, containerId }
   } finally {
     await podman.run(removeWorkerContainerArgv(name))
   }

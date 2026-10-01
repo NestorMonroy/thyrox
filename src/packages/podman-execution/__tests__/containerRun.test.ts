@@ -136,11 +136,12 @@ describe('runJobAndCollect — exportar antes de limpiar', () => {
 describe('runJobWithOutput', () => {
   test('returns the exit code and both streams read with podman logs', async () => {
     const podman = fakePodman({
+      create: { exitCode: 0, stdout: 'c0ffee\n', stderr: '' },
       wait: { exitCode: 0, stdout: '3\n', stderr: '' },
       logs: { exitCode: 0, stdout: 'generated text', stderr: 'speed: 12.5 t/s' },
     })
     const outcome = await runJobWithOutput(podman, spec())
-    expect(outcome).toEqual({ exitCode: 3, stdout: 'generated text', stderr: 'speed: 12.5 t/s', containerName: NAME })
+    expect(outcome).toEqual({ exitCode: 3, stdout: 'generated text', stderr: 'speed: 12.5 t/s', containerName: NAME, containerId: 'c0ffee' })
     expect(podman.calls.map(call => call[0])).toEqual(['create', 'start', 'wait', 'logs', 'rm'])
   })
 

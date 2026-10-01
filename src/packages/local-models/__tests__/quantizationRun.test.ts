@@ -69,12 +69,12 @@ function fakeLab(scratchDir: string, options: { failQuantizeOnce?: boolean } = {
     commands.push(tool === 'python' ? 'convert' : tool)
     if (tool === 'python') writeFileSync(hostPath(args[args.indexOf('--outfile') + 1]!), gguf(1, 3200))
     if (tool === 'llama-quantize') {
-      if (quantizeFailures-- > 0) return { exitCode: 1, stdout: '', stderr: 'quantize failed', containerName: 'thyrox-worker-lab' }
+      if (quantizeFailures-- > 0) return { exitCode: 1, stdout: '', stderr: 'quantize failed', containerName: 'thyrox-worker-lab', containerId: 'lab-id' }
       writeFileSync(hostPath(args[1]!), gguf(15, 500))
     }
     if (tool === 'llama-simple') writeCapturedOutput(scratchDir, step, { stdout: 'return n', stderr: 'decoded 16 tokens in 1.0 s, speed: 12.5 t/s' })
     if (tool === 'llama-perplexity') writeCapturedOutput(scratchDir, step, { stdout: '', stderr: 'Final estimate: PPL = 9.87 +/- 0.10' })
-    return { exitCode: 0, stdout: '', stderr: '', containerName: 'thyrox-worker-lab', peakMemoryBytes: 4096 }
+    return { exitCode: 0, stdout: '', stderr: '', containerName: 'thyrox-worker-lab', containerId: 'lab-id', peakMemoryBytes: 4096 }
   }
   return { runInLab, commands }
 }

@@ -59,7 +59,7 @@ function fakeLab(scratchDir: () => string) {
       ? { stdout: 'return n', stderr: 'speed: 4.5 t/s' }
       : { stdout: '', stderr: 'Final estimate: PPL = 2.75 +/- 0.05' }
     writeCapturedOutput(scratchDir(), step, output)
-    return { exitCode: 0, stdout: '', stderr: '', containerName: 'thyrox-worker-lab' }
+    return { exitCode: 0, stdout: '', stderr: '', containerName: 'thyrox-worker-lab', containerId: 'lab-id' }
   }
   return { runInLab, commands }
 }
