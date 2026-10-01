@@ -57,7 +57,9 @@ export interface PodmanJobVerifierOptions {
  * La verificación compuesta en la autorización canónica: clase
  * `registry-operation` con la cita de su tarea, la red que decide el egress y
  * los montajes de siempre —intérprete y repositorio de sólo lectura, scratch
- * de escritura—.
+ * de escritura—. El raíz se declara de sólo lectura: lo que el trabajo escribe
+ * vive en el montaje, y HOME y TMPDIR apuntan a él para que no necesite
+ * escribir en la imagen.
  */
 export function verificationAuthorization(options: PodmanJobVerifierOptions, pinned: PinnedArtifact, location: ArtifactLocation): ExecutionAuthorization {
   const network = jobNetworkProfile(options.egress)
@@ -84,6 +86,7 @@ export function verificationAuthorization(options: PodmanJobVerifierOptions, pin
     ],
     resources: options.limits,
     network: network.network,
+    readOnlyRootfs: true,
     environment: { ...network.environment, HOME: `${CONTAINER_SCRATCH}/home`, TMPDIR: `${CONTAINER_SCRATCH}/tmp` },
   }
 }

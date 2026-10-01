@@ -182,6 +182,16 @@ with tempfile.TemporaryDirectory() as tmp:
           next_item([PlanItem(id="j", prompt="p", verify="v", candidates=("m",)), PlanItem(id="k", prompt="p", verify="v", candidates=("m",))],
                     [{"kind": "blocked", "item": "j"}]).id)
 
+# un registro de trabajo vivo no viaja en el commit: se mide por su PID
+import os  # noqa: E402
+from session.task_continuation import job_is_live  # noqa: E402
+with tempfile.TemporaryDirectory() as tmp:
+    live = Path(tmp) / "live"; (live / "outputs").mkdir(parents=True); (live / "outputs" / "pid").write_text(f"{os.getpid()}\n")
+    dead = Path(tmp) / "dead"; (dead / "outputs").mkdir(parents=True); (dead / "outputs" / "pid").write_text("999999999\n")
+    check("un trabajo con PID vivo está vivo", True, job_is_live(live))
+    check("un trabajo con PID muerto no lo está", False, job_is_live(dead))
+    check("sin registro de PID no está vivo", False, job_is_live(Path(tmp) / "none"))
+
 # las dos claves del entorno: el clasificador externo y la tarea por defecto
 import os  # noqa: E402
 from session.task_continuation import learned_classifier_from_environment, main  # noqa: E402

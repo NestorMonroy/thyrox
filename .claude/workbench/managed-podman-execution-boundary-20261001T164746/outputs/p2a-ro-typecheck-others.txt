@@ -1,0 +1,35 @@
+# p2a-ro — typecheck de los OTROS consumidores del paquete, con y sin el cambio del tramo
+Comando por paquete: bun ../../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.test.json
+(Los dos paquetes del tramo se miden en p2a-ro-typecheck.txt; éste es el barrido de atribución
+para los consumidores que también componen ExecutionAuthorization.)
+
+## Con el cambio aplicado (estado GREEN)
+  daemon             GREEN -> 2 error(es) TS
+  local-models       GREEN -> 4 error(es) TS
+  model-scheduling   GREEN -> 1 error(es) TS
+  infrastructure     GREEN -> 0 error(es) TS
+  artifact-registry  GREEN -> 0 error(es) TS
+
+## Con los cuatro archivos del tramo revertidos a HEAD
+$ git checkout HEAD -- src/packages/podman-execution/executionAuthorization.ts src/packages/podman-execution/__tests__/executionAuthorization.test.ts src/packages/artifact-registry/podmanJobVerifier.ts src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts
+
+  daemon             HEAD -> 2 error(es) TS
+  local-models       HEAD -> 4 error(es) TS
+  model-scheduling   HEAD -> 1 error(es) TS
+  infrastructure     HEAD -> 0 error(es) TS
+  artifact-registry  HEAD -> 0 error(es) TS
+
+$ sha256sum -c /tmp/green-sha.txt (restauración verificada)
+src/packages/podman-execution/executionAuthorization.ts: OK
+src/packages/podman-execution/__tests__/executionAuthorization.test.ts: OK
+src/packages/artifact-registry/podmanJobVerifier.ts: OK
+src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts: OK
+
+## Lectura: los tres paquetes que ya traen errores (daemon 2, local-models 4,
+model-scheduling 1) dan el MISMO recuento con y sin el tramo: son de partida y no se
+arreglan aquí. Ninguno menciona `readOnlyRootfs` ni el raíz de sólo lectura; los mensajes
+medidos son de otros tipos (BodyInit, NonSharedBuffer, YieldHandoffResult, ModelExecutionUnit).
+
+Métrica: líneas con `error TS` por paquete en los dos estados.
+Ciega a: errores de typecheck de paquetes que no se barrieron aquí y que resuelven los
+mismos tipos por dist/; y a los rojos de conducta, que este archivo no mide.

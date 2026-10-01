@@ -82,6 +82,9 @@ describe('la composición del trabajo', () => {
     expect(argv).toContain('--env NODE_EXTRA_CA_CERTS=/certs/ca-bundle.crt')
     expect(argv).toContain('-v /host/ca.crt:/certs/ca-bundle.crt:ro')
     expect(argv).toContain(`-v ${REPOSITORY_ROOT}:/w:ro`)
+    // El raíz de sólo lectura es lo que la migración a la autorización canónica perdió (p2a-findings).
+    expect(argv).toContain('--read-only')
+    expect(argv).toContain('--read-only-tmpfs=false')
   })
 
   test('sin proxy la red es bridge y no se monta ningún CA', async () => {

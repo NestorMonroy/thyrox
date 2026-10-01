@@ -1,0 +1,100 @@
+# p2a-ro RED — las dos pruebas nuevas fallan antes del cambio
+
+Estado de partida: HEAD c399721e2 con src/ limpio (medido: `git status --porcelain -- src/` sin salida)
+y las dos pruebas nuevas escritas (una por spec en la primitiva, una en la verificación).
+Suite base medida antes de tocar nada: podman-execution 175 pass / 16 skip / 0 fail;
+artifact-registry 60 pass / 1 skip / 0 fail.
+
+$ git status --porcelain -- src/ | head
+ M src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts
+ M src/packages/podman-execution/__tests__/executionAuthorization.test.ts
+
+## La primitiva: declarar readOnlyRootfs debe llegar al argv de create
+
+$ (cd src/packages/podman-execution && bun test __tests__/executionAuthorization.test.ts)
+bun test v1.3.11 (af24e281)
+
+__tests__/executionAuthorization.test.ts:
+(pass) ExecutionAuthorization > una autorización de tarea completa se acepta [0.69ms]
+(pass) ExecutionAuthorization > una autorización de modelo, sin comando ni directorio, se acepta [0.09ms]
+(pass) ExecutionAuthorization > la tarea se cita con su forma durable, no con el ordinal del board [0.13ms]
+(pass) ExecutionAuthorization > un runtime de modelo se autoriza por un grant, no por una tarea [0.02ms]
+(pass) ExecutionAuthorization > un trabajo de tarea no se autoriza por un grant [0.02ms]
+(pass) ExecutionAuthorization > el tipo de ejecución es uno de los declarados [0.01ms]
+(pass) ExecutionAuthorization > un comando declarado no puede estar vacío [0.02ms]
+(pass) ExecutionAuthorization > un directorio de trabajo declarado vive dentro de un montaje [0.03ms]
+(pass) ExecutionAuthorization > una salida declarada vive bajo un montaje de escritura [0.09ms]
+(pass) ExecutionAuthorization > una autorización vencida se rehúsa [0.03ms]
+(pass) ExecutionAuthorization > el dueño se valida [0.06ms]
+(pass) ExecutionAuthorization > una etiqueta propia no reescribe las de la ejecución [0.03ms]
+(pass) ExecutionAuthorization > una variable que nombra una credencial se rehúsa: su valor quedaría en podman inspect [0.52ms]
+(pass) el contenedor que materializa una autorización > lleva tipo, referencia e id en sus etiquetas, su directorio de trabajo, su montaje y su red [0.64ms]
+(pass) el contenedor que materializa una autorización > el de un modelo publica su puerto en loopback, concede sus dispositivos y lleva sus etiquetas [0.26ms]
+(pass) el contenedor que materializa una autorización > un secreto se monta como archivo, nunca como variable [0.18ms]
+158 |     expect(argv.join(' ')).toContain('--secret thyrox-x,type=mount,target=x')
+159 |   })
+160 | 
+161 |   test('un raíz de sólo lectura declarado se traduce a --read-only en el argv de create', () => {
+162 |     const argv = createWorkerContainerArgv(executionContainerSpec(authorization({ readOnlyRootfs: true }))).join(' ')
+163 |     expect(argv).toContain('--read-only')
+                       ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "--read-only"
+Received: "create --name thyrox-worker-test-abc-1 --label thyrox.owner-kind=task --label thyrox.owner-id=task-thyrox-0001 --label thyrox.owner-pid=4242 --label thyrox.worker-id=test-abc-1 --label thyrox.execution-id=test-abc-1 --label thyrox.execution-kind=test --label thyrox.execution-reference=task:TASK-THYROX-0001 --cpus 2 --memory 2048m --pids-limit 512 --network none -v /srv/repo:/srv/repo:rw --workdir /srv/repo localhost/thyrox-task-runner:dev bun test"
+
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/executionAuthorization.test.ts:163:18)
+(fail) el contenedor que materializa una autorización > un raíz de sólo lectura declarado se traduce a --read-only en el argv de create [0.22ms]
+(pass) el contenedor que materializa una autorización > sin declarar el raíz, la materialización conserva el comportamiento de hoy: escribible [0.13ms]
+(pass) el contenedor que materializa una autorización > runExecution corre el contenedor hasta que termina y lo retira [1.38ms]
+(pass) el contenedor que materializa una autorización > materializeExecution crea, arranca e inspecciona: devuelve la ExecutionUnit canónica y no espera ni retira [0.57ms]
+(pass) el contenedor que materializa una autorización > un contenedor sin proceso ni cgroup informado da una unidad sin PIDs ni cgroup [0.24ms]
+(pass) el contenedor que materializa una autorización > si la inspección falla, nombra la etapa inspect y deja el contenedor a su dueño [0.31ms]
+(pass) el contenedor que materializa una autorización > una inspección ilegible también es la etapa inspect, no un éxito sin identidad [0.78ms]
+(pass) el contenedor que materializa una autorización > si el arranque falla, materializeExecution nombra la etapa y deja el contenedor a su dueño [0.35ms]
+(pass) el contenedor que materializa una autorización > una autorización inválida no llega a Podman [0.17ms]
+
+1 tests failed:
+(fail) el contenedor que materializa una autorización > un raíz de sólo lectura declarado se traduce a --read-only en el argv de create [0.22ms]
+
+ 24 pass
+ 1 fail
+ 47 expect() calls
+Ran 25 tests across 1 file. [160.00ms]
+exit=1
+
+## El verificador: el trabajo debe correr otra vez con --read-only
+
+$ (cd src/packages/artifact-registry && bun test __tests__/podmanJobVerifier.test.ts)
+bun test v1.3.11 (af24e281)
+
+__tests__/podmanJobVerifier.test.ts:
+podmanJobVerifier: sin Podman o sin docker.io/library/ubuntu:24.04 local; el nivel real queda sin medir.
+81 |     expect(argv).toContain('--env HTTPS_PROXY=http://10.1.2.3:3128')
+82 |     expect(argv).toContain('--env NODE_EXTRA_CA_CERTS=/certs/ca-bundle.crt')
+83 |     expect(argv).toContain('-v /host/ca.crt:/certs/ca-bundle.crt:ro')
+84 |     expect(argv).toContain(`-v ${REPOSITORY_ROOT}:/w:ro`)
+85 |     // El raíz de sólo lectura es lo que la migración a la autorización canónica perdió (p2a-findings).
+86 |     expect(argv).toContain('--read-only')
+                      ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "--read-only"
+Received: "create --name thyrox-worker-artifact-verify-test --label thyrox.owner-kind=pool --label thyrox.owner-id=artifact-verify --label thyrox.owner-pid=968 --label thyrox.worker-id=artifact-verify-test --label thyrox.execution-id=artifact-verify-test --label thyrox.execution-kind=registry-operation --label thyrox.execution-reference=task:TASK-THYROX-0728 --cpus 1 --memory 512m --pids-limit 64 --network host -v /usr/local/bin/bun:/usr/local/bin/bun:ro -v /home/user/thyrox:/w:ro -v /tmp/thyrox-tests-SNRAoX/podman-job-verifier-PCv7bq/scratch:/scratch:rw -v /host/ca.crt:/certs/ca-bundle.crt:ro --env HOME=/scratch/home --env HTTPS_PROXY=http://10.1.2.3:3128 --env NODE_EXTRA_CA_CERTS=/certs/ca-bundle.crt --env TMPDIR=/scratch/tmp sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb /usr/local/bin/bun /w/src/packages/artifact-registry/bin/verifyArtifact.ts --registry https://registry.example --repository thyrox/lab --tag v1 --digest sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa --work-dir /scratch/blobs --report /scratch/verification.json"
+
+      at <anonymous> (/home/user/thyrox/src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts:86:18)
+(fail) la composición del trabajo > con proxy: red host, el proxy declarado y el CA montado de sólo lectura [6.56ms]
+(pass) la composición del trabajo > sin proxy la red es bridge y no se monta ningún CA [2.62ms]
+(pass) la composición del trabajo > el trabajo no recibe credencial ni el almacenamiento de Podman [2.08ms]
+(pass) la autorización del trabajo > corre como una ejecución autorizada: clase registry-operation y la cita de su tarea [1.92ms]
+(pass) la autorización del trabajo > la cita de la tarea que autoriza es declarable por el llamador [1.66ms]
+(pass) createPodmanJobVerifier con un Podman doble > devuelve el veredicto que el trabajo dejó en su montaje [2.01ms]
+(pass) createPodmanJobVerifier con un Podman doble > un trabajo que sale sin veredicto es unverified con su diagnóstico, nunca verified [1.74ms]
+(skip) createPodmanJobVerifier contra el Podman real > el trabajo materializa y verifica cada blob desde el registry, sin credencial
+
+ 6 pass
+ 1 skip
+ 1 fail
+ 18 expect() calls
+Ran 8 tests across 1 file. [171.00ms]
+exit=1

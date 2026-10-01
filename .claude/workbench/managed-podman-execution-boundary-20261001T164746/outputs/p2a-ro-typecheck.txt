@@ -1,0 +1,153 @@
+# p2a-ro typecheck — cinco estados, medidos con el mismo comando en secuencia
+
+Comando por paquete (desde src/packages/<paquete>):
+  bun ../../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.test.json
+Lo que decide es la DIFERENCIA de recuentos entre estados, no el absoluto:
+podman-execution arrastra un error preexistente en HEAD (executionCommand.test.ts,
+TS2741, `isProcessAlive` ausente en un deps de prueba) que no es de este tramo y no se
+arregla aquí — va reportado en p2a-ro-findings.jsonl.
+El recuento de cada bloque se cuenta sobre la salida impresa junto a él (`grep -c
+"error TS"`), no sobre una cifra transcrita.
+
+## Estado 0 — HEAD puro: los cuatro archivos y las declaraciones del productor como estaban
+$ git checkout HEAD -- src/packages/podman-execution/executionAuthorization.ts src/packages/podman-execution/__tests__/executionAuthorization.test.ts src/packages/artifact-registry/podmanJobVerifier.ts src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts
+exit=0
+
+$ bash bin/emit_declarations podman-execution
+podman-execution: OK
+
+emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+exit=0
+
+$ grep -c 'readOnlyRootfs' src/packages/podman-execution/dist/executionAuthorization.d.ts
+0
+exit=1
+
+$ cd src/packages/podman-execution && bun ../../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.test.json
+__tests__/executionCommand.test.ts(135,11): error TS2741: Property 'isProcessAlive' is missing in type '{ env: Record<string, string>; readStdin: () => Promise<string>; pid: number; now: () => number; podman: PodmanExecutor; repositoryRoot: string; output: { stdout: (text: string) => void; stderr: (text: string) => void; }; }' but required in type 'ExecutionCommandDeps'.
+   -> 1 error(es) TS en esta salida
+
+$ cd src/packages/artifact-registry && bun ../../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.test.json
+
+   -> 0 error(es) TS en esta salida
+
+## Estado 1 — RED: las dos pruebas nuevas sobre los fuentes de HEAD (el campo no existe)
+$ cp /tmp/green4/executionAuthorization.test.ts src/packages/podman-execution/__tests__/executionAuthorization.test.ts
+exit=0
+
+$ cp /tmp/green4/podmanJobVerifier.test.ts src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts
+exit=0
+
+$ grep -c -- '--read-only' src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts
+2
+exit=0
+
+$ cd src/packages/podman-execution && bun ../../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.test.json
+__tests__/executionAuthorization.test.ts(162,83): error TS2353: Object literal may only specify known properties, and 'readOnlyRootfs' does not exist in type 'Partial<ExecutionAuthorization>'.
+__tests__/executionCommand.test.ts(135,11): error TS2741: Property 'isProcessAlive' is missing in type '{ env: Record<string, string>; readStdin: () => Promise<string>; pid: number; now: () => number; podman: PodmanExecutor; repositoryRoot: string; output: { stdout: (text: string) => void; stderr: (text: string) => void; }; }' but required in type 'ExecutionCommandDeps'.
+   -> 2 error(es) TS en esta salida
+
+$ cd src/packages/artifact-registry && bun ../../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.test.json
+
+   -> 0 error(es) TS en esta salida
+
+## Estado 2 — GREEN sin rehacer las declaraciones del productor (dist/ sigue de HEAD)
+$ cp /tmp/green4/executionAuthorization.ts src/packages/podman-execution/executionAuthorization.ts
+exit=0
+
+$ cp /tmp/green4/podmanJobVerifier.ts src/packages/artifact-registry/podmanJobVerifier.ts
+exit=0
+
+$ grep -n 'readOnlyRootfs' src/packages/podman-execution/executionAuthorization.ts src/packages/artifact-registry/podmanJobVerifier.ts
+src/packages/podman-execution/executionAuthorization.ts:96:  readOnlyRootfs?: boolean
+src/packages/podman-execution/executionAuthorization.ts:216:      readOnlyRootfs: authorization.readOnlyRootfs ?? false,
+src/packages/artifact-registry/podmanJobVerifier.ts:89:    readOnlyRootfs: true,
+exit=0
+
+$ grep -c 'readOnlyRootfs' src/packages/podman-execution/dist/executionAuthorization.d.ts
+0
+exit=1
+
+$ cd src/packages/podman-execution && bun ../../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.test.json
+__tests__/executionCommand.test.ts(135,11): error TS2741: Property 'isProcessAlive' is missing in type '{ env: Record<string, string>; readStdin: () => Promise<string>; pid: number; now: () => number; podman: PodmanExecutor; repositoryRoot: string; output: { stdout: (text: string) => void; stderr: (text: string) => void; }; }' but required in type 'ExecutionCommandDeps'.
+   -> 1 error(es) TS en esta salida
+
+$ cd src/packages/artifact-registry && bun ../../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.test.json
+podmanJobVerifier.ts(89,5): error TS2353: Object literal may only specify known properties, and 'readOnlyRootfs' does not exist in type 'ExecutionAuthorization'.
+   -> 1 error(es) TS en esta salida
+
+El rojo de artifact-registry aquí no es del tramo: es del mecanismo. El `exports` de
+@thyrox/podman-execution (package.json:10) resuelve `types` a ./dist/*.d.ts antes que la
+fuente, y tsc de un consumidor no declara la condición @thyrox/source. Un campo nuevo del
+productor es invisible al typecheck del consumidor hasta rehacer declaraciones.
+
+## Estado 3 — GREEN con las declaraciones del productor rehechas (el mecanismo del árbol)
+$ bash bin/emit_declarations podman-execution
+podman-execution: OK
+
+emit_declarations: 1 paquete(s) medido(s), 0 error(es) que siguen vivos en su propio paquete
+exit=0
+
+$ grep -n 'readOnlyRootfs' src/packages/podman-execution/dist/executionAuthorization.d.ts
+72:    readOnlyRootfs?: boolean;
+exit=0
+
+$ cd src/packages/podman-execution && bun ../../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.test.json
+__tests__/executionCommand.test.ts(135,11): error TS2741: Property 'isProcessAlive' is missing in type '{ env: Record<string, string>; readStdin: () => Promise<string>; pid: number; now: () => number; podman: PodmanExecutor; repositoryRoot: string; output: { stdout: (text: string) => void; stderr: (text: string) => void; }; }' but required in type 'ExecutionCommandDeps'.
+   -> 1 error(es) TS en esta salida
+
+$ cd src/packages/artifact-registry && bun ../../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.test.json
+
+   -> 0 error(es) TS en esta salida
+
+## Cierre — el árbol vuelve al estado GREEN (trap de restauración) y las suites quedan en 0 fail
+$ cp /tmp/green4/executionAuthorization.ts src/packages/podman-execution/executionAuthorization.ts; cp /tmp/green4/executionAuthorization.test.ts src/packages/podman-execution/__tests__/executionAuthorization.test.ts; cp /tmp/green4/podmanJobVerifier.ts src/packages/artifact-registry/podmanJobVerifier.ts; cp /tmp/green4/podmanJobVerifier.test.ts src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts
+exit=0
+
+$ sha256sum -c /tmp/green-sha.txt
+src/packages/podman-execution/executionAuthorization.ts: OK
+src/packages/podman-execution/__tests__/executionAuthorization.test.ts: OK
+src/packages/artifact-registry/podmanJobVerifier.ts: OK
+src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts: OK
+exit=0
+
+$ cd src/packages/podman-execution && bun test 2>&1 | tail -5
+ 177 pass
+ 16 skip
+ 0 fail
+ 405 expect() calls
+Ran 193 tests across 15 files. [243.00ms]
+exit=0
+
+$ cd src/packages/artifact-registry && bun test 2>&1 | tail -5
+ 60 pass
+ 1 skip
+ 0 fail
+ 124 expect() calls
+Ran 61 tests across 10 files. [964.00ms]
+exit=0
+
+$ git status --porcelain -- src/
+ M src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts
+ M src/packages/artifact-registry/podmanJobVerifier.ts
+ M src/packages/podman-execution/__tests__/executionAuthorization.test.ts
+ M src/packages/podman-execution/executionAuthorization.ts
+exit=0
+
+
+## Lectura de los cuatro recuentos
+E0 (HEAD)          pe 1 (preexistente)      ar 0
+E1 (RED)           pe 2: +TS2353 en la prueba nueva (el campo no existe en el tipo)
+                   ar 0: la prueba del verificador sólo exige el argv, su rojo es de
+                   conducta, no de tipos
+E2 (GREEN, dist rancio)  pe 1 (vuelve al preexistente)   ar 1 (TS2353 contra dist/)
+E3 (GREEN, dist rehecho) pe 1 (el mismo preexistente)    ar 0
+E0 y E3 dan el mismo par de recuentos: el tramo no dejó ningún error de tipos nuevo.
+
+Métrica: líneas con `error TS` en la salida de tsc por paquete y por estado; recuento de
+coincidencias de `readOnlyRootfs` en la fuente, en la prueba y en dist/.
+Ciega a: los typechecks de los otros consumidores del paquete (daemon, local-models,
+model-scheduling, infrastructure) que resuelven los mismos tipos de dist/ y no se miden
+aquí — el Estado 2 muestra que ese rojo existe para cualquier consumidor que declare el
+campo; y a que 12 paquetes de este árbol llegan con sus declaraciones rancias según
+`bin/emit_declarations --list-stale`, condición preexistente que este tramo no toca.

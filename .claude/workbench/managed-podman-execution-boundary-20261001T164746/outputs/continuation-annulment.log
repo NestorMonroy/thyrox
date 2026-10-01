@@ -39,3 +39,8 @@ FALLA el ítem que necesita la expuesta queda bloqueado: esperado 'blocked', obt
 FALLA y no se despacha ninguna unidad: esperado [], obtenido [{'name': 'cont-j-preverify-1790892070619825', 'mounts': ()}, {'name': 'cont-j-1-1790892070619843', 'mounts': ('/dev/null:/home/user/thyrox/.env:ro',)}, {'name': 'cont-j-1-verify-1790892070619843', 'mounts': ()}]
 test_task_continuation: 50 OK, 2 FALLA
 restaurado: sha256 idéntico
+test_task_continuation: 55 OK, 0 FALLA
+== h) liveness siempre falsa
+FALLA un trabajo con PID vivo está vivo: esperado True, obtenido False
+test_task_continuation: 54 OK, 1 FALLA
+restaurado: sha256 idéntico

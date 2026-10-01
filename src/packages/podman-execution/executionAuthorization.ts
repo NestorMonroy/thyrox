@@ -88,6 +88,12 @@ export type ExecutionAuthorization = {
   mounts: readonly WorkerResourceMount[]
   resources: ExecutionResources
   network: WorkerNetworkMode
+  /**
+   * El sistema de archivos raíz. Sin declarar queda escribible —el
+   * comportamiento de siempre—; declarado verdadero, la materialización emite
+   * `--read-only` y el trabajo sólo escribe bajo sus montajes declarados.
+   */
+  readOnlyRootfs?: boolean
   /** Sólo valores públicos: quedan en `podman inspect`. */
   environment?: Readonly<Record<string, string>>
   secrets?: readonly ExecutionSecret[]
@@ -204,7 +210,10 @@ function resourceArgv(authorization: ExecutionAuthorization): string[] {
     return workerResourceLimitArgv({
       ...authorization.resources,
       network: authorization.network,
-      readOnlyRootfs: false,
+      // Sin declarar, el raíz queda escribible: es el comportamiento de los callers que ya
+      // existían. El default del *perfil* es más restrictivo, pero cerrar el raíz de una
+      // autorización lo pide quien la compone, nunca la forma del tipo.
+      readOnlyRootfs: authorization.readOnlyRootfs ?? false,
       mounts: [...authorization.mounts],
       environment: authorization.environment,
       publishedPorts: authorization.publishedPorts,

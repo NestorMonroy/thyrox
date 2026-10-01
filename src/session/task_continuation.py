@@ -397,13 +397,28 @@ def settled_job_dirs() -> list[str]:
     listing = subprocess.run(["git", "status", "--porcelain", "--", ".claude/jobs"],
                              capture_output=True, text=True, cwd=ROOT).stdout
     dirs = sorted({"/".join(line[3:].split("/")[:3]) for line in listing.splitlines() if line[3:].startswith(".claude/jobs/")})
-    settled = []
-    for directory in dirs:
-        name = re.sub(r"-\d{8}T\d{6}$", "", Path(directory).name)
-        status = subprocess.run([*BG, "status", name], capture_output=True, text=True, cwd=ROOT).stdout.strip()
-        if status != "running":
-            settled.append(directory)
-    return settled
+    return [directory for directory in dirs if not job_is_live(ROOT / directory)]
+
+
+def job_is_live(directory: Path) -> bool:
+    """Un trabajo está vivo si el PID de su registro vive en el anfitrión.
+
+    Se mide por el PID y no por `thyrox-bg status`: el controlador corre él mismo
+    como trabajo, y desde dentro del suyo el ledger no lo daba por vivo —su propio
+    registro entró en un commit y el gate de bancos lo rechazó—.
+    """
+    pid_file = directory / "outputs" / "pid"
+    try:
+        pid = int(pid_file.read_text().split()[0])
+    except (OSError, ValueError, IndexError):
+        return False
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
 
 
 def job_suffix() -> str:

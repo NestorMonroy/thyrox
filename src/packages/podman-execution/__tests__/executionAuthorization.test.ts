@@ -158,6 +158,17 @@ describe('el contenedor que materializa una autorización', () => {
     expect(argv.join(' ')).toContain('--secret thyrox-x,type=mount,target=x')
   })
 
+  test('un raíz de sólo lectura declarado se traduce a --read-only en el argv de create', () => {
+    const argv = createWorkerContainerArgv(executionContainerSpec(authorization({ readOnlyRootfs: true }))).join(' ')
+    expect(argv).toContain('--read-only')
+    expect(argv).toContain('--read-only-tmpfs=false')
+  })
+
+  test('sin declarar el raíz, la materialización conserva el comportamiento de hoy: escribible', () => {
+    const argv = createWorkerContainerArgv(executionContainerSpec(authorization())).join(' ')
+    expect(argv).not.toContain('--read-only')
+  })
+
   test('runExecution corre el contenedor hasta que termina y lo retira', async () => {
     const calls: string[][] = []
     const result = await runExecution(recordingPodman(calls), authorization())

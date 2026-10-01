@@ -1,0 +1,201 @@
+# p2a-ro GREEN — el raíz de sólo lectura es declarable y el verificador lo declara
+
+Tres piezas, en el orden en que se escribieron después del rojo (p2a-ro-red.log):
+  1. ExecutionAuthorization: campo opcional `readOnlyRootfs?: boolean`.
+  2. resourceArgv(): traduce el campo al perfil de recursos; sin declarar, false —el
+     comportamiento medido antes del cambio.
+  3. podmanJobVerifier.verificationAuthorization(): declara `readOnlyRootfs: true`.
+No se tocó workerResourceProfile.ts: ahí el raíz ya existía (profile por defecto true,
+rootfsArgv emite el par). Lo ausente era la autorización canónica, y ése es el hallazgo
+de este tramo (p2a-findings.jsonl.*.recorded).
+
+## El campo y su traducción, como quedaron
+$ grep -n -B4 -A2 'readOnlyRootfs' src/packages/podman-execution/executionAuthorization.ts
+92-   * El sistema de archivos raíz. Sin declarar queda escribible —el
+93-   * comportamiento de siempre—; declarado verdadero, la materialización emite
+94-   * `--read-only` y el trabajo sólo escribe bajo sus montajes declarados.
+95-   */
+96:  readOnlyRootfs?: boolean
+97-  /** Sólo valores públicos: quedan en `podman inspect`. */
+98-  environment?: Readonly<Record<string, string>>
+--
+212-      network: authorization.network,
+213-      // Sin declarar, el raíz queda escribible: es el comportamiento de los callers que ya
+214-      // existían. El default del *perfil* es más restrictivo, pero cerrar el raíz de una
+215-      // autorización lo pide quien la compone, nunca la forma del tipo.
+216:      readOnlyRootfs: authorization.readOnlyRootfs ?? false,
+217-      mounts: [...authorization.mounts],
+218-      environment: authorization.environment,
+exit=0
+
+## La declaración del verificador
+$ grep -n -B2 -A2 'readOnlyRootfs' src/packages/artifact-registry/podmanJobVerifier.ts
+87-    resources: options.limits,
+88-    network: network.network,
+89:    readOnlyRootfs: true,
+90-    environment: { ...network.environment, HOME: `${CONTAINER_SCRATCH}/home`, TMPDIR: `${CONTAINER_SCRATCH}/tmp` },
+91-  }
+exit=0
+
+## Prueba de la primitiva (archivo completo: 25 pruebas)
+$ cd src/packages/podman-execution && bun test __tests__/executionAuthorization.test.ts
+bun test v1.3.11 (af24e281)
+
+__tests__/executionAuthorization.test.ts:
+(pass) ExecutionAuthorization > una autorización de tarea completa se acepta [0.53ms]
+(pass) ExecutionAuthorization > una autorización de modelo, sin comando ni directorio, se acepta [0.12ms]
+(pass) ExecutionAuthorization > la tarea se cita con su forma durable, no con el ordinal del board [0.14ms]
+(pass) ExecutionAuthorization > un runtime de modelo se autoriza por un grant, no por una tarea [0.02ms]
+(pass) ExecutionAuthorization > un trabajo de tarea no se autoriza por un grant [0.02ms]
+(pass) ExecutionAuthorization > el tipo de ejecución es uno de los declarados [0.02ms]
+(pass) ExecutionAuthorization > un comando declarado no puede estar vacío [0.02ms]
+(pass) ExecutionAuthorization > un directorio de trabajo declarado vive dentro de un montaje [0.03ms]
+(pass) ExecutionAuthorization > una salida declarada vive bajo un montaje de escritura [0.10ms]
+(pass) ExecutionAuthorization > una autorización vencida se rehúsa [0.04ms]
+(pass) ExecutionAuthorization > el dueño se valida [0.11ms]
+(pass) ExecutionAuthorization > una etiqueta propia no reescribe las de la ejecución [0.04ms]
+(pass) ExecutionAuthorization > una variable que nombra una credencial se rehúsa: su valor quedaría en podman inspect [0.39ms]
+(pass) el contenedor que materializa una autorización > lleva tipo, referencia e id en sus etiquetas, su directorio de trabajo, su montaje y su red [0.46ms]
+(pass) el contenedor que materializa una autorización > el de un modelo publica su puerto en loopback, concede sus dispositivos y lleva sus etiquetas [0.21ms]
+(pass) el contenedor que materializa una autorización > un secreto se monta como archivo, nunca como variable [0.19ms]
+(pass) el contenedor que materializa una autorización > un raíz de sólo lectura declarado se traduce a --read-only en el argv de create [0.15ms]
+(pass) el contenedor que materializa una autorización > sin declarar el raíz, la materialización conserva el comportamiento de hoy: escribible [0.06ms]
+(pass) el contenedor que materializa una autorización > runExecution corre el contenedor hasta que termina y lo retira [0.94ms]
+(pass) el contenedor que materializa una autorización > materializeExecution crea, arranca e inspecciona: devuelve la ExecutionUnit canónica y no espera ni retira [0.46ms]
+(pass) el contenedor que materializa una autorización > un contenedor sin proceso ni cgroup informado da una unidad sin PIDs ni cgroup [0.17ms]
+(pass) el contenedor que materializa una autorización > si la inspección falla, nombra la etapa inspect y deja el contenedor a su dueño [0.29ms]
+(pass) el contenedor que materializa una autorización > una inspección ilegible también es la etapa inspect, no un éxito sin identidad [0.68ms]
+(pass) el contenedor que materializa una autorización > si el arranque falla, materializeExecution nombra la etapa y deja el contenedor a su dueño [0.31ms]
+(pass) el contenedor que materializa una autorización > una autorización inválida no llega a Podman [0.17ms]
+
+ 25 pass
+ 0 fail
+ 48 expect() calls
+Ran 25 tests across 1 file. [151.00ms]
+exit=0
+
+## Prueba del verificador (archivo completo: 8 pruebas, 1 skip = nivel real sin Podman)
+$ cd src/packages/artifact-registry && bun test __tests__/podmanJobVerifier.test.ts
+bun test v1.3.11 (af24e281)
+
+__tests__/podmanJobVerifier.test.ts:
+podmanJobVerifier: sin Podman o sin docker.io/library/ubuntu:24.04 local; el nivel real queda sin medir.
+(pass) la composición del trabajo > con proxy: red host, el proxy declarado y el CA montado de sólo lectura [4.68ms]
+(pass) la composición del trabajo > sin proxy la red es bridge y no se monta ningún CA [3.84ms]
+(pass) la composición del trabajo > el trabajo no recibe credencial ni el almacenamiento de Podman [2.43ms]
+(pass) la autorización del trabajo > corre como una ejecución autorizada: clase registry-operation y la cita de su tarea [1.84ms]
+(pass) la autorización del trabajo > la cita de la tarea que autoriza es declarable por el llamador [2.22ms]
+(pass) createPodmanJobVerifier con un Podman doble > devuelve el veredicto que el trabajo dejó en su montaje [2.25ms]
+(pass) createPodmanJobVerifier con un Podman doble > un trabajo que sale sin veredicto es unverified con su diagnóstico, nunca verified [1.84ms]
+(skip) createPodmanJobVerifier contra el Podman real > el trabajo materializa y verifica cada blob desde el registry, sin credencial
+
+ 7 pass
+ 1 skip
+ 0 fail
+ 19 expect() calls
+Ran 8 tests across 1 file. [143.00ms]
+exit=0
+
+## Suites completas de los dos paquetes
+$ cd src/packages/podman-execution && bun test 2>&1 | tail -6
+
+ 177 pass
+ 16 skip
+ 0 fail
+ 405 expect() calls
+Ran 193 tests across 15 files. [254.00ms]
+exit=0
+
+$ cd src/packages/artifact-registry && bun test 2>&1 | tail -6
+
+ 60 pass
+ 1 skip
+ 0 fail
+ 124 expect() calls
+Ran 61 tests across 10 files. [874.00ms]
+exit=0
+
+## Comparación con el estado de partida (medido antes de tocar nada, misma máquina)
+podman-execution: 175 pass / 16 skip / 0 fail  ->  177 pass / 16 skip / 0 fail  (+2 pruebas nuevas)
+artifact-registry:  60 pass /  1 skip / 0 fail  ->   60 pass /  1 skip / 0 fail  (aserción añadida a una prueba que ya corría)
+
+## argv real del trabajo de verificación, con la traducción aplicada (level doble de Podman)
+$ cd src/packages/artifact-registry && bun test __tests__/podmanJobVerifier.test.ts 2>&1 | grep -o '\-\-read-only[^ ]*' | sort | uniq -c
+exit=1
+
+## typecheck de los dos paquetes en este estado: ver p2a-ro-typecheck.txt (Estado 3).
+
+Métrica: conteo de pass/fail/skip por archivo y por suite, y las banderas --read-only*
+que aparecen en el argv que el verificador entrega a su Podman doble.
+Ciega a: el nivel real de Podman —en este árbol `command -v podman` no devuelve nada, así
+que la prueba de extremo a extremo queda en skip y el argv se mide hasta `podman create`,
+no contra un daemon que pudiera rehúsalos la combinación con algún montaje concreto.
+
+## El subconjunto derivado de los símbolos tocados (regla: no se corre la suite entera, se deriva)
+$ grep -rlE 'ExecutionAuthorization|executionContainerSpec|workerResourceLimitArgv|readOnlyRootfs|--read-only' --include=*.test.ts src/packages/ | sed -E 's|^src/packages/([^/]+)/.*|\1|' | sort | uniq -c | sort -rn
+      5 podman-execution
+      2 local-models
+      2 daemon
+      1 model-scheduling
+      1 artifact-registry
+exit=0
+
+## Los cinco paquetes derivados, en el estado GREEN
+$ (cd src/packages/podman-execution && bun test)
+ 177 pass  16 skip  0 fail 
+$ (cd src/packages/artifact-registry && bun test)
+ 60 pass  1 skip  0 fail 
+$ (cd src/packages/daemon && bun test)
+ 693 pass  3 skip  0 fail 
+$ (cd src/packages/local-models && bun test)
+ 178 pass  3 skip  5 fail 
+$ (cd src/packages/model-scheduling && bun test)
+ 108 pass  1 fail 
+
+## Atribución de los rojos que no son de este paquete: los mismos cinco paquetes con los cuatro archivos del tramo revertidos a HEAD
+$ git checkout HEAD -- src/packages/podman-execution/executionAuthorization.ts src/packages/podman-execution/__tests__/executionAuthorization.test.ts src/packages/artifact-registry/podmanJobVerifier.ts src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts
+exit=0
+
+$ (cd src/packages/podman-execution && bun test)   [HEAD]
+ 175 pass  16 skip  0 fail 
+$ (cd src/packages/artifact-registry && bun test)   [HEAD]
+ 60 pass  1 skip  0 fail 
+$ (cd src/packages/daemon && bun test)   [HEAD]
+ 693 pass  3 skip  0 fail 
+$ (cd src/packages/local-models && bun test)   [HEAD]
+ 178 pass  3 skip  5 fail 
+$ (cd src/packages/model-scheduling && bun test)   [HEAD]
+ 108 pass  1 fail 
+$ cp /tmp/green4/executionAuthorization.ts src/packages/podman-execution/ && cp /tmp/green4/executionAuthorization.test.ts src/packages/podman-execution/__tests__/ && cp /tmp/green4/podmanJobVerifier.ts src/packages/artifact-registry/ && cp /tmp/green4/podmanJobVerifier.test.ts src/packages/artifact-registry/__tests__/
+exit=0
+
+$ sha256sum -c /tmp/green-sha.txt
+src/packages/podman-execution/executionAuthorization.ts: OK
+src/packages/podman-execution/__tests__/executionAuthorization.test.ts: OK
+src/packages/artifact-registry/podmanJobVerifier.ts: OK
+src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts: OK
+exit=0
+
+
+## Lectura de la atribución
+Los dos rojos ajenos (5 en local-models, 1 en model-scheduling) dan el MISMO conteo con
+el tramo revertido que con el tramo aplicado: son de partida, no de este cambio. Sus
+causas medidas: local-models/__tests__/commands.test.ts exige exit 0 al cualificador de
+modelos y recibe 2; model-scheduling falla al resolver redis-server con
+`thyrox_toolchain_require_redis` (instalación opt-in, no pedida en esta unidad).
+Ninguno de los dos se arregla aquí: van a p2a-ro-findings.jsonl.
+
+Métrica: pass/fail/skip por paquete en los cinco paquetes que referencian los símbolos
+tocados, con y sin el cambio.
+Ciega a: los paquetes que consumen la primitiva sin nombrar sus símbolos en un `.test.ts`
+(la derivación busca en pruebas, no en fuentes); y a los rojos que sólo aparecen en el
+nivel real de Podman, que en esta unidad está en skip.
+
+## Cómo se corrió esta medición (y por qué no en segundo plano)
+Se intentó despachar con la barrera del árbol y la unidad gestionada rehúsa en esta caja:
+$ bash bin/thyrox-bg start p2a-ro-attrib --task TASK-THYROX-0743 --kind maintenance -- bash /tmp/attrib.sh
+  PID=6804 … podman-execution-execute: Executable not found in $PATH: "podman"   (status: done:1)
+O sea: el arranque gestionado necesita `podman` en PATH y esta unidad no lo tiene (medido
+arriba con `command -v podman`, sin salida). El barrido corrió entonces en primer plano,
+sin registrar trabajo en el ledger — no hay trabajo que recoger.
+
