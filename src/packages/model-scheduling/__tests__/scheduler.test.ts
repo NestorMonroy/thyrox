@@ -63,12 +63,12 @@ describe('ModelScheduler: la cadena', () => {
     expect(outcome.grant.residency.generation).toBe(1)
     expect(outcome.unit.generation).toBe(1)
     expect(journal.indexOf('primitive.units')).toBeLessThan(journal.indexOf(`coordination.acquire ${RESIDENCY}`))
-    expect(journal.filter(entry => !entry.startsWith('runtime.loadedModel') && entry !== 'primitive.units' && entry !== 'ledger.reservations')).toEqual([
+    expect(journal.filter(entry => !entry.startsWith('runtime.observeResidency') && entry !== 'primitive.units' && entry !== 'ledger.reservations')).toEqual([
       `coordination.acquire ${RESIDENCY}`,
       'ledger.reserve g1',
       'issuer.issue g1',
       'primitive.materialize g1',
-      `runtime.load unit-grant-request-1`,
+      `runtime.loadResidency unit-grant-request-1`,
     ])
   })
 
@@ -111,7 +111,7 @@ describe('ModelScheduler: rehúsa sin crear nada', () => {
     coordination.unavailable = true
     await scheduler.execute({ ...PLAN, requestId: 'request-2', residencyKey: 'residency/qwen/gpu1' })
     expect(primitive.live.length).toBe(1)
-    expect(journal.some(entry => entry.startsWith('primitive.retire'))).toBe(false)
+    expect(journal.some(entry => entry.startsWith('primitive.destroy'))).toBe(false)
   })
 })
 
@@ -137,7 +137,7 @@ describe('ModelScheduler: compensaciones (M18)', () => {
     primitive.outcome = 'failed-partial'
     expect(await scheduler.execute(PLAN)).toMatchObject({ status: 'failed', stage: 'materialize', marks: [] })
     expect(journal.slice(-4)).toEqual([
-      'primitive.retire unit-grant-request-1',
+      'primitive.destroy unit-grant-request-1',
       'issuer.revoke grant-request-1',
       'ledger.release reservation-1',
       `coordination.release ${RESIDENCY}`,
@@ -149,7 +149,7 @@ describe('ModelScheduler: compensaciones (M18)', () => {
     runtime.fail = true
     expect(await scheduler.execute(PLAN)).toMatchObject({ status: 'failed', stage: 'load', marks: [] })
     expect(journal.slice(-4)).toEqual([
-      'primitive.retire unit-grant-request-1',
+      'primitive.destroy unit-grant-request-1',
       'issuer.revoke grant-request-1',
       'ledger.release reservation-1',
       `coordination.release ${RESIDENCY}`,
@@ -159,7 +159,7 @@ describe('ModelScheduler: compensaciones (M18)', () => {
 
   test('una compensación que no se completa queda marcada, nunca callada', async () => {
     runtime.fail = true
-    primitive.failRetire = true
+    primitive.failDestroy = true
     const outcome = await scheduler.execute(PLAN)
     expect(outcome).toMatchObject({ status: 'failed', stage: 'load' })
     if (outcome.status !== 'failed') return
@@ -200,14 +200,14 @@ describe('ModelScheduler: fencing (M19)', () => {
 
 describe('ModelScheduler.reconcile (M20)', () => {
   test('marca una unidad cuyo runtime no sirve el modelo de su grant', async () => {
-    primitive.live.push({ unitId: 'unit-old', grantId: 'grant-old', model: PLAN.model, residencyKey: RESIDENCY, generation: 1, runtime: 'ollama', endpoint: 'http://127.0.0.1:61001', containerId: 'container-old', devices: ['GPU-0'], hostPids: [4243], createdAt: '2026-10-01T00:00:00.000Z' })
+    primitive.live.push({ unitId: 'unit-old', grantId: 'grant-old', model: PLAN.model, artifactSha256: PLAN.artifact.sha256, residencyKey: RESIDENCY, generation: 1, runtime: 'ollama', endpoint: 'http://127.0.0.1:61001', containerId: 'container-old', devices: ['GPU-0'], hostPids: [4243], createdAt: '2026-10-01T00:00:00.000Z' })
     const report = await scheduler.reconcile()
     expect(report.units.map(unit => unit.unitId)).toEqual(['unit-old'])
     expect(report.marks).toEqual([{ resource: 'unit', id: 'unit-old', reason: expect.any(String) }])
   })
 
   test('una unidad que sobrevivió y sirve su modelo no se marca ni se retira', async () => {
-    const survivor = { unitId: 'unit-old', grantId: 'grant-old', model: PLAN.model, residencyKey: RESIDENCY, generation: 1, runtime: 'ollama' as const, endpoint: 'http://127.0.0.1:61001', containerId: 'container-old', devices: ['GPU-0'], hostPids: [4243], createdAt: '2026-10-01T00:00:00.000Z' }
+    const survivor = { unitId: 'unit-old', grantId: 'grant-old', model: PLAN.model, artifactSha256: PLAN.artifact.sha256, residencyKey: RESIDENCY, generation: 1, runtime: 'ollama' as const, endpoint: 'http://127.0.0.1:61001', containerId: 'container-old', devices: ['GPU-0'], hostPids: [4243], createdAt: '2026-10-01T00:00:00.000Z' }
     primitive.live.push(survivor)
     runtime.loaded.set('unit-old', PLAN.model)
     const report = await scheduler.reconcile()

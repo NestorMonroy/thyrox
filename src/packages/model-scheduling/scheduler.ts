@@ -16,7 +16,7 @@ import type { ExecutionGrant, ExecutionPlacement, ModelRuntime } from '@thyrox/m
 import type { KvCacheType } from '@thyrox/model-artifacts/memoryEstimate.ts'
 
 import type { GenerationLease, LeaseAcquisition, ModelSchedulingCoordination } from './coordination.ts'
-import type { ExecutionUnit, ModelExecutionPrimitive, RuntimeAdapter } from './executionPrimitive.ts'
+import type { ExecutionUnit, ExpectedResidency, ModelExecutionPrimitive, RuntimeAdapter } from './executionPrimitive.ts'
 import type { FencedVramLedger, VramReservation } from './vramLedger.ts'
 
 /** Lo que el resolver y el planner ya decidieron; el scheduler añade generación, reserva y grant. */
@@ -124,8 +124,8 @@ function reservedVramMib(plan: ExecutionPlan): number {
   return plan.residencyVramMib + plan.requestVramMib
 }
 
-function servesItsModel(unit: ExecutionUnit, loadedModel: string | undefined): boolean {
-  return loadedModel === unit.model
+function expectedResidencyOf(unit: ExecutionUnit): ExpectedResidency {
+  return { residencyKey: unit.residencyKey, generation: unit.generation, model: unit.model, sha256: unit.artifactSha256 }
 }
 
 export class ModelScheduler {
@@ -161,9 +161,9 @@ export class ModelScheduler {
 
   private async markUnitNotServing(unit: ExecutionUnit): Promise<ReconciliationMark | undefined> {
     return markOnThrow('unit', unit.unitId, async () => {
-      const loadedModel = await this.dependencies.runtime.loadedModel(unit)
-      if (servesItsModel(unit, loadedModel)) return undefined
-      return { resource: 'unit', id: unit.unitId, reason: `el runtime sirve ${loadedModel ?? 'ningún modelo'}, el grant ${unit.grantId} es de ${unit.model}` }
+      const observed = await this.dependencies.runtime.observeResidency(unit, expectedResidencyOf(unit))
+      if (observed.status === 'resident') return undefined
+      return { resource: 'unit', id: unit.unitId, reason: `el runtime de la unidad está ${observed.status}; el grant ${unit.grantId} es de ${unit.model}` }
     })
   }
 
@@ -204,8 +204,9 @@ export class ModelScheduler {
     }
     const unit = materialization.unit
     compensations.push(() => this.retireUnit(unit.unitId))
-    const loaded = await this.dependencies.runtime.load(unit, held.grant)
-    if (loaded.status !== 'loaded') return this.fail('load', loaded.reason, compensations)
+    const binding = { unit, residencyKey: unit.residencyKey, generation: unit.generation }
+    const loaded = await this.dependencies.runtime.loadResidency(binding, held.grant)
+    if (loaded.status !== 'done') return this.fail('load', loaded.status === 'failed' ? loaded.reason : `generación vieja, vigente ${loaded.currentGeneration}`, compensations)
     return { status: 'executing', ...held, unit }
   }
 
@@ -222,8 +223,8 @@ export class ModelScheduler {
 
   private retireUnit(unitId: string): Promise<ReconciliationMark | undefined> {
     return markOnThrow('unit', unitId, async () => {
-      const retired = await this.dependencies.primitive.retire(unitId)
-      return retired === 'failed' ? { resource: 'unit', id: unitId, reason: 'la primitiva no pudo retirar la unidad' } : undefined
+      const destroyed = await this.dependencies.primitive.destroy(unitId)
+      return destroyed === 'failed' ? { resource: 'unit', id: unitId, reason: 'la primitiva no pudo destruir la unidad' } : undefined
     })
   }
 

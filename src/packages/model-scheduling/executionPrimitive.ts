@@ -19,6 +19,8 @@ export interface ExecutionUnit {
   readonly unitId: string
   readonly grantId: string
   readonly model: string
+  /** Digest del blob que el grant concede; la reconciliación lo compara con lo residente. */
+  readonly artifactSha256: string
   readonly residencyKey: string
   readonly generation: number
   readonly runtime: ExecutionGrant['runtime']
@@ -59,41 +61,85 @@ export type MaterializationOutcome =
   | { readonly status: 'rejected'; readonly reason: 'stale_generation' | 'expired_grant'; readonly detail: string }
   /** `partial`: quedó algo creado que hay que retirar. */
   | { readonly status: 'failed'; readonly reason: string; readonly partial: boolean; readonly unitId?: string }
-
 export interface ModelExecutionPrimitive {
   materialize(grant: ExecutionGrant): Promise<MaterializationOutcome>
-  retire(unitId: string): Promise<'retired' | 'absent' | 'failed'>
+  /**
+   * Destruye la unidad: en la topología A es la frontera material definitiva de
+   * un desalojo, y ningún runtime puede impedirla. `absent` si ya no existía.
+   */
+  destroy(unitId: string): Promise<'destroyed' | 'absent' | 'failed'>
   /** Las unidades de modelo que existen, para reconciliar. */
   units(): Promise<readonly ExecutionUnit[]>
 }
 
-export type RuntimeLoadOutcome = { readonly status: 'loaded' } | { readonly status: 'failed'; readonly reason: string }
+/**
+ * A qué residencia y generación se ata una operación que muta el runtime. El
+ * adapter rechaza una generación que no es la vigente antes de tocar nada.
+ */
+export interface ResidencyBinding {
+  readonly unit: ExecutionUnit
+  readonly residencyKey: string
+  readonly generation: number
+}
 
-/** `stale_generation`: la unidad pertenece a una generación que ya no es la vigente. */
-export type RuntimeOperationOutcome =
-  | { readonly status: 'ok' }
+/** Observación de salud: una sola consulta; reintentos y plazos los decide quien llama. */
+export type HealthObservation = { readonly status: 'healthy' } | { readonly status: 'unhealthy'; readonly reason: string }
+
+/** Resultado de una operación que muta el runtime. */
+export type RuntimeMutationOutcome =
+  | { readonly status: 'done' }
   | { readonly status: 'stale_generation'; readonly currentGeneration: number | 'unavailable' }
   | { readonly status: 'failed'; readonly reason: string }
 
-/** Lo que el runtime sirve bajo el nombre del grant, comparado con lo que el grant autoriza. */
-export type RuntimeVerification =
-  | { readonly status: 'matches' }
-  | { readonly status: 'mismatch'; readonly expectedSha256: string; readonly observedSha256: string | undefined }
+/** Identidad del artefacto que el runtime sirve bajo el nombre del grant. */
+export interface ObservedArtifactIdentity {
+  readonly model: string
+  readonly sha256: string | undefined
+  readonly quantization: string | undefined
+}
+
+export type ArtifactIdentityVerification =
+  | { readonly status: 'matches'; readonly observed: ObservedArtifactIdentity }
+  | { readonly status: 'mismatch'; readonly expected: ObservedArtifactIdentity; readonly observed: ObservedArtifactIdentity | undefined }
   | { readonly status: 'failed'; readonly reason: string }
 
+/** Lo que la reconciliación espera encontrar en una unidad. */
+export interface ExpectedResidency {
+  readonly residencyKey: string
+  readonly generation: number
+  readonly model: string
+  readonly sha256: string
+}
+
+/** Estado de dominio observado en el runtime de una unidad, sin inferirlo de una carga anterior. */
+export type ObservedResidency =
+  | { readonly status: 'absent' }
+  | { readonly status: 'loading' }
+  | { readonly status: 'resident'; readonly observed: ObservedArtifactIdentity }
+  | { readonly status: 'mismatch'; readonly observed: ObservedArtifactIdentity }
+  | { readonly status: 'error'; readonly reason: string }
+
 /**
- * Traduce la ejecución concedida al protocolo del runtime y sólo habla con el
- * endpoint de una `ExecutionUnit`. Toda operación que muta rechaza una unidad
- * de una generación vieja (ADR-007 1.13.0).
+ * El runtime de una `ExecutionUnit` visto por thyrox (ADR-007 1.13.0). Traduce
+ * la ejecución concedida al protocolo del runtime y sólo habla con el endpoint
+ * de la unidad; los verbos y estados HTTP del runtime quedan dentro de cada
+ * implementación. No decide modelo, revisión ni cuantización: vienen en el
+ * grant. Las operaciones de lectura no tienen efectos; las que mutan van atadas
+ * a unidad, residencia y generación, y rechazan una generación vieja antes de
+ * tocar el runtime.
  */
 export interface RuntimeAdapter {
   readonly capabilities: RuntimeCapabilities
-  /** Espera a que el runtime de la unidad responda. */
-  awaitHealthy(unit: ExecutionUnit): Promise<RuntimeOperationOutcome>
-  load(unit: ExecutionUnit, grant: ExecutionGrant): Promise<RuntimeLoadOutcome>
-  /** Modelo, revisión y cuantización exactos: el contenido servido bajo el nombre es el sha256 del grant. */
-  verify(unit: ExecutionUnit, grant: ExecutionGrant): Promise<RuntimeVerification>
-  unload(unit: ExecutionUnit): Promise<RuntimeOperationOutcome>
-  /** Qué modelo sirve la unidad, observado en el runtime; `undefined` si ninguno. */
-  loadedModel(unit: ExecutionUnit): Promise<string | undefined>
+  /** Lectura: el runtime de la unidad responde. */
+  probeHealth(unit: ExecutionUnit): Promise<HealthObservation>
+  /** Muta: hace utilizable en ESTA unidad el artefacto exacto del grant, que `ensureModel` ya materializó. */
+  prepareRuntimeArtifact(binding: ResidencyBinding, grant: ExecutionGrant): Promise<RuntimeMutationOutcome>
+  /** Lectura: modelo, digest y cuantización que el runtime sirve, contra los del grant. */
+  verifyArtifactIdentity(unit: ExecutionUnit, grant: ExecutionGrant): Promise<ArtifactIdentityVerification>
+  /** Muta: deja residente el modelo exacto del grant. */
+  loadResidency(binding: ResidencyBinding, grant: ExecutionGrant): Promise<RuntimeMutationOutcome>
+  /** Lectura: qué residencia hay de verdad en la unidad, para reconciliar. */
+  observeResidency(unit: ExecutionUnit, expected: ExpectedResidency): Promise<ObservedResidency>
+  /** Muta: descarga con gracia; si falla, destruir la unidad sigue siendo posible y definitivo. */
+  unloadResidency(binding: ResidencyBinding): Promise<RuntimeMutationOutcome>
 }

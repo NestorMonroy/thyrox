@@ -6,7 +6,10 @@
 import type { ExecutionGrant } from '@thyrox/model-artifacts/executionGrant.ts'
 
 import type { GenerationLease, LeaseAcquisition, LeaseValidity, ModelSchedulingCoordination, MutationOperation } from '../coordination.ts'
-import type { ExecutionUnit, MaterializationOutcome, ModelExecutionPrimitive, RuntimeAdapter, RuntimeCapabilities, RuntimeLoadOutcome, RuntimeOperationOutcome, RuntimeVerification } from '../executionPrimitive.ts'
+import type {
+  ArtifactIdentityVerification, ExecutionUnit, ExpectedResidency, HealthObservation, MaterializationOutcome, ModelExecutionPrimitive,
+  ObservedResidency, ResidencyBinding, RuntimeAdapter, RuntimeCapabilities, RuntimeMutationOutcome,
+} from '../executionPrimitive.ts'
 import type { ExecutionPlan, GrantIssuer, IssueOutcome } from '../scheduler.ts'
 import type { RequestAllocation, RequestAllocationOutcome, ReservationOutcome, ResidencyVramLedger, VramReservation, VramReservationRequest } from '../vramLedger.ts'
 
@@ -158,7 +161,11 @@ export class FakeIssuer implements GrantIssuer {
 
 export class FakePrimitive implements ModelExecutionPrimitive {
   outcome: 'materialized' | 'failed-partial' | 'failed-clean' = 'materialized'
-  failRetire = false
+  failDestroy = false
+  /** `destroy` responde `destroyed` pero la unidad sigue listada. */
+  destroyLies = false
+  /** Se ejecuta tras materializar: permite que otro coordinador tome la residencia en medio. */
+  afterMaterialize: (() => void) | undefined
   readonly live: ExecutionUnit[] = []
 
   constructor(private readonly journal: Journal, private readonly coordination: ModelSchedulingCoordination) {}
@@ -173,23 +180,25 @@ export class FakePrimitive implements ModelExecutionPrimitive {
     const unitId = `unit-${grant.grantId}`
     if (this.outcome === 'failed-clean') return { status: 'failed', reason: 'podman create falló', partial: false }
     const unit: ExecutionUnit = {
-      unitId, grantId: grant.grantId, model: grant.model, residencyKey: grant.residency.instance,
+      unitId, grantId: grant.grantId, model: grant.model, artifactSha256: grant.artifact.sha256, residencyKey: grant.residency.instance,
       generation: grant.residency.generation, runtime: grant.runtime, endpoint: 'http://127.0.0.1:61000',
       containerId: `container-${unitId}`, devices: grant.placement.kind === 'gpu' ? grant.placement.devices : [],
       hostPids: [4242], createdAt: '2026-10-01T00:00:00.000Z',
     }
     this.live.push(unit)
+    this.afterMaterialize?.()
     if (this.outcome === 'failed-partial') return { status: 'failed', reason: 'podman start falló', partial: true, unitId }
     return { status: 'materialized', unit }
   }
 
-  async retire(unitId: string): Promise<'retired' | 'absent' | 'failed'> {
-    this.journal.push(`primitive.retire ${unitId}`)
-    if (this.failRetire) return 'failed'
+  async destroy(unitId: string): Promise<'destroyed' | 'absent' | 'failed'> {
+    this.journal.push(`primitive.destroy ${unitId}`)
+    if (this.failDestroy) return 'failed'
+    if (this.destroyLies) return 'destroyed'
     const index = this.live.findIndex(unit => unit.unitId === unitId)
     if (index < 0) return 'absent'
     this.live.splice(index, 1)
-    return 'retired'
+    return 'destroyed'
   }
 
   async units(): Promise<readonly ExecutionUnit[]> {
@@ -206,43 +215,85 @@ export const SINGLE_RESIDENCY_CAPABILITIES: RuntimeCapabilities = {
 
 export class FakeRuntime implements RuntimeAdapter {
   readonly capabilities = SINGLE_RESIDENCY_CAPABILITIES
+  /** Falla `loadResidency`. */
   fail = false
+  failPrepare = false
+  /** `loadResidency` responde con una generación vieja. */
+  staleOnLoad = false
+  failUnload = false
   unhealthy = false
+  /** Cuántas sondas responden `unhealthy` antes de la primera sana. */
+  unhealthyProbes = 0
   /** El sha256 que el runtime dice servir; por defecto el del grant. */
   servesSha256: string | undefined
+  /** Lo que `observeResidency` informa en lugar de deducirlo de la carga. */
+  observeAs: ObservedResidency['status'] | undefined
   /** Se ejecuta tras cargar: permite que otro coordinador tome la residencia en medio. */
   afterLoad: (() => void) | undefined
+  /** unitId → modelo residente. */
   readonly loaded = new Map<string, string>()
 
-  constructor(private readonly journal: Journal) {}
+  /** Sin coordinación, el doble no comprueba la generación de las mutaciones. */
+  constructor(private readonly journal: Journal, private readonly coordination?: ModelSchedulingCoordination) {}
 
-  async awaitHealthy(unit: ExecutionUnit): Promise<RuntimeOperationOutcome> {
-    this.journal.push(`runtime.awaitHealthy ${unit.unitId}`)
-    return this.unhealthy ? { status: 'failed', reason: 'el runtime no respondió' } : { status: 'ok' }
+  async probeHealth(unit: ExecutionUnit): Promise<HealthObservation> {
+    this.journal.push(`runtime.probeHealth ${unit.unitId}`)
+    if (this.unhealthyProbes > 0) {
+      this.unhealthyProbes -= 1
+      return { status: 'unhealthy', reason: 'el runtime aún arranca' }
+    }
+    return this.unhealthy ? { status: 'unhealthy', reason: 'el runtime no respondió' } : { status: 'healthy' }
   }
 
-  async verify(unit: ExecutionUnit, grant: ExecutionGrant): Promise<RuntimeVerification> {
-    this.journal.push(`runtime.verify ${unit.unitId}`)
-    const observed = this.servesSha256 ?? grant.artifact.sha256
-    return observed === grant.artifact.sha256 ? { status: 'matches' } : { status: 'mismatch', expectedSha256: grant.artifact.sha256, observedSha256: observed }
+  async prepareRuntimeArtifact(binding: ResidencyBinding, _grant: ExecutionGrant): Promise<RuntimeMutationOutcome> {
+    this.journal.push(`runtime.prepareRuntimeArtifact ${binding.unit.unitId}`)
+    const stale = await this.staleGeneration(binding)
+    if (stale) return stale
+    return this.failPrepare ? { status: 'failed', reason: 'el runtime rechazó el artefacto' } : { status: 'done' }
   }
 
-  async unload(unit: ExecutionUnit): Promise<RuntimeOperationOutcome> {
-    this.journal.push(`runtime.unload ${unit.unitId}`)
-    this.loaded.delete(unit.unitId)
-    return { status: 'ok' }
+  async verifyArtifactIdentity(unit: ExecutionUnit, grant: ExecutionGrant): Promise<ArtifactIdentityVerification> {
+    this.journal.push(`runtime.verifyArtifactIdentity ${unit.unitId}`)
+    const expected = { model: grant.model, sha256: grant.artifact.sha256, quantization: undefined }
+    const observed = { ...expected, sha256: this.servesSha256 ?? grant.artifact.sha256 }
+    return observed.sha256 === expected.sha256 ? { status: 'matches', observed } : { status: 'mismatch', expected, observed }
   }
 
-  async load(unit: ExecutionUnit, grant: ExecutionGrant): Promise<RuntimeLoadOutcome> {
-    this.journal.push(`runtime.load ${unit.unitId}`)
+  async loadResidency(binding: ResidencyBinding, grant: ExecutionGrant): Promise<RuntimeMutationOutcome> {
+    this.journal.push(`runtime.loadResidency ${binding.unit.unitId}`)
+    const stale = await this.staleGeneration(binding)
+    if (stale) return stale
+    if (this.staleOnLoad) return { status: 'stale_generation', currentGeneration: binding.generation + 1 }
     if (this.fail) return { status: 'failed', reason: 'el runtime no cargó el modelo' }
-    this.loaded.set(unit.unitId, grant.model)
+    this.loaded.set(binding.unit.unitId, grant.model)
     this.afterLoad?.()
-    return { status: 'loaded' }
+    return { status: 'done' }
   }
 
-  async loadedModel(unit: ExecutionUnit): Promise<string | undefined> {
-    this.journal.push(`runtime.loadedModel ${unit.unitId}`)
-    return this.loaded.get(unit.unitId)
+  async observeResidency(unit: ExecutionUnit, expected: ExpectedResidency): Promise<ObservedResidency> {
+    this.journal.push(`runtime.observeResidency ${unit.unitId}`)
+    const model = this.loaded.get(unit.unitId)
+    const status = this.observeAs ?? (model === undefined ? 'absent' : 'resident')
+    const observed = { model: model ?? expected.model, sha256: this.servesSha256 ?? expected.sha256, quantization: undefined }
+    if (status === 'resident' && (observed.model !== expected.model || observed.sha256 !== expected.sha256)) return { status: 'mismatch', observed }
+    if (status === 'resident' || status === 'mismatch') return { status, observed }
+    if (status === 'error') return { status, reason: 'el runtime no respondió a la observación' }
+    return { status }
+  }
+
+  async unloadResidency(binding: ResidencyBinding): Promise<RuntimeMutationOutcome> {
+    this.journal.push(`runtime.unloadResidency ${binding.unit.unitId}`)
+    const stale = await this.staleGeneration(binding)
+    if (stale) return stale
+    if (this.failUnload) return { status: 'failed', reason: 'el runtime no descargó' }
+    this.loaded.delete(binding.unit.unitId)
+    return { status: 'done' }
+  }
+
+  /** La comprobación que el adapter real hace antes de tocar el runtime. */
+  private async staleGeneration(binding: ResidencyBinding): Promise<RuntimeMutationOutcome | undefined> {
+    if (!this.coordination) return undefined
+    const current = await this.coordination.currentGeneration(binding.residencyKey)
+    return current === binding.generation ? undefined : { status: 'stale_generation', currentGeneration: current }
   }
 }

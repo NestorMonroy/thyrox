@@ -1,5 +1,5 @@
 # Frontera de ejecución local gestionada (ADR-007 1.10.0, M8; TASK-THYROX-0712).
 # Una ruta relativa a la raíz de thyrox por línea. Un archivo listado sólo
 # cuenta como frontera si recibe un ExecutionGrant y una ExecutionUnit:
-# la lista no exime a nadie por su nombre. Vacía: hoy ningún RuntimeAdapter
-# consume un grant.
+# la lista no exime a nadie por su nombre.
+src/packages/local-models/ollamaRuntimeAdapter.ts
