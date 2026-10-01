@@ -69,6 +69,16 @@ OUTCOMES = (
 NOT_COUNTED = {"provider_transient", "infrastructure_failure", "hard_block", "non_blocking_finding",
                "secret_exposure_detected"}
 TRANSIENT_RETRIES = 2
+#: Fallos de proveedor que un ítem tolera en total, aparte de su presupuesto de
+#: intentos: un 502 no es un juicio sobre la tarea ni sobre el candidato.
+TRANSIENT_BUDGET = int(os.environ.get("THYROX_CONTINUATION_TRANSIENT_BUDGET", "12"))
+#: Espera entre reintentos por fallo de proveedor, creciente y con techo.
+TRANSIENT_BACKOFF_SECONDS = 60
+TRANSIENT_BACKOFF_CAP_SECONDS = 600
+#: Resultados que agotan el presupuesto de fallos de proveedor y no el de la tarea.
+TRANSIENT_OUTCOMES = {"provider_transient", "stalled"}
+#: Inyectable en las pruebas.
+pause = time.sleep
 INFRASTRUCTURE_RETRIES = 1
 #: Código de salida con que ``delegate.sh`` declara un trabajador sin actividad medida.
 STALLED_EXIT = 125
@@ -467,12 +477,27 @@ def run_item(workbench: Path, item: PlanItem, task: str, rng: random.Random, lea
                                "commitExit": commit_code, "commitTail": tail(commit_log, 8)})
         return "accepted" if commit_code == 0 else "hard_block"
     excluded: set[str] = set()
+    # Apartados por fallos de proveedor: vuelven a la rotación cuando todos lo están.
+    transient_excluded: set[str] = set()
     failures: list[dict] = []
     model = choose_candidate(item, log, excluded, rng)
-    same_retries = infra_retries = 0
-    for attempt in range(1, item.attempts + 1):
+    same_retries = infra_retries = judged = transients = attempt = 0
+    reason = "presupuesto de intentos agotado"
+    while True:
+        if model is None and transient_excluded and transients < TRANSIENT_BUDGET:
+            pause(min(TRANSIENT_BACKOFF_SECONDS * transients, TRANSIENT_BACKOFF_CAP_SECONDS))
+            excluded -= transient_excluded
+            transient_excluded.clear()
+            model = choose_candidate(item, log, excluded, rng)
         if model is None:
+            reason = "sin candidato permitido"
             break
+        if judged >= item.attempts:
+            break
+        if transients >= TRANSIENT_BUDGET:
+            reason = "presupuesto de fallos de proveedor agotado"
+            break
+        attempt += 1
         stamp = job_suffix()
         prompt = attempt_prompt(workbench, item, failures, attempt)
         started, launched_at = time.monotonic(), time.time()
@@ -518,6 +543,10 @@ def run_item(workbench: Path, item: PlanItem, task: str, rng: random.Random, lea
             return "accepted" if commit_code == 0 else "hard_block"
         if step == "stop":
             break
+        if outcome in TRANSIENT_OUTCOMES:
+            transients += 1
+        else:
+            judged += 1
         failures.append({"model": model, "outcome": outcome, "exit": code, "verifyExit": verify_code,
                          "verifyTail": tail(verify_log, 15)})
         if step == "retry":
@@ -525,12 +554,15 @@ def run_item(workbench: Path, item: PlanItem, task: str, rng: random.Random, lea
                 infra_retries += 1
             else:
                 same_retries += 1
+                pause(min(TRANSIENT_BACKOFF_SECONDS * transients, TRANSIENT_BACKOFF_CAP_SECONDS))
             continue
         excluded.add(model)
+        if outcome in TRANSIENT_OUTCOMES:
+            transient_excluded.add(model)
         same_retries = 0
         model = choose_candidate(item, log, excluded, rng)
-    append_log(workbench, {"kind": "hard_block", "item": item.id,
-                           "reason": "sin candidato permitido" if model is None else "presupuesto de intentos agotado"})
+    append_log(workbench, {"kind": "hard_block", "item": item.id, "reason": reason,
+                           "judgedAttempts": judged, "providerFailures": transients})
     return "hard_block"
 
 

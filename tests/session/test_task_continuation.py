@@ -192,6 +192,37 @@ with tempfile.TemporaryDirectory() as tmp:
     check("un trabajo con PID muerto no lo está", False, job_is_live(dead))
     check("sin registro de PID no está vivo", False, job_is_live(Path(tmp) / "none"))
 
+# los fallos de proveedor tienen su presupuesto: cinco 502 seguidos no bloquean el ítem
+dispatches = []
+def flaky_unit(name, task, argv, network=None, secrets=(), mounts=()):
+    if "preverify" in name:
+        return (1, "")
+    if name.endswith(tuple("0123456789")) and "-verify-" not in name:
+        dispatches.append(argv[-3])
+        return (1, "thyrox -p: 502 upstream request failed (tras 4 intentos)") if len(dispatches) <= 5 else (0, "")
+    return (0, "") if len(dispatches) > 5 else (1, "")
+with tempfile.TemporaryDirectory() as tmp:
+    wb = Path(tmp); (wb / "outputs").mkdir(); (wb / "p.md").write_text("x\n")
+    saved = (controller.run_in_unit, controller.reconcile_orphans, controller.commit_item, controller.pause)
+    controller.run_in_unit, controller.reconcile_orphans = flaky_unit, lambda: ""
+    controller.commit_item, controller.pause = (lambda *a, **k: (0, "")), (lambda seconds: None)
+    try:
+        result = controller.run_item(wb, PlanItem(id="f", prompt="p.md", verify="true", candidates=("a", "b"), attempts=4),
+                                     "TASK-THYROX-0001", random.Random(0), None)
+    finally:
+        controller.run_in_unit, controller.reconcile_orphans, controller.commit_item, controller.pause = saved
+check("cinco fallos de proveedor y luego éxito: se acepta", "accepted", result)
+check("los dos candidatos vuelven a la rotación", {"a", "b"}, set(dispatches))
+check("seis despachos en total", 6, len(dispatches))
+
+# el presupuesto de fallos de proveedor se declara en el entorno
+import subprocess  # noqa: E402
+budget = subprocess.run([sys.executable, "-c", "import session.task_continuation as t; print(t.TRANSIENT_BUDGET)"],
+                        env={**os.environ, "THYROX_CONTINUATION_TRANSIENT_BUDGET": "7",
+                             "PYTHONPATH": str(Path(__file__).resolve().parents[2] / "src")},
+                        capture_output=True, text=True).stdout.strip()
+check("THYROX_CONTINUATION_TRANSIENT_BUDGET fija el presupuesto", "7", budget)
+
 # las dos claves del entorno: el clasificador externo y la tarea por defecto
 import os  # noqa: E402
 from session.task_continuation import learned_classifier_from_environment, main  # noqa: E402
