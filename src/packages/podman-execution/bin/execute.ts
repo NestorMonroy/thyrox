@@ -1,5 +1,5 @@
 #!/usr/bin/env bun
-/** Entrada de `bin/thyrox-exec`; la orden vive en `executionCommand.ts`. */
+/** Entrada de `bin/podman-execution-execute`; la orden vive en `executionCommand.ts`. */
 import { resolve } from 'node:path'
 
 import { runExecutionCommand } from '../executionCommand.ts'

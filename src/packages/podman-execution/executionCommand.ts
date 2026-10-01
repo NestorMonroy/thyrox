@@ -1,5 +1,5 @@
 /**
- * La orden `thyrox-exec`: compone una ExecutionAuthorization desde la línea
+ * La orden `bin/podman-execution-execute`: compone una ExecutionAuthorization desde la línea
  * de comandos y la entrega a la primitiva (ADR-THYROX-007, enmienda 1.16.0).
  *
  * El payload —el comando tras `--`, o el guion leído de stdin con
@@ -47,10 +47,10 @@ export type ExecutionCommandDeps = {
 }
 
 const USAGE = [
-  'uso: thyrox-exec run --task TASK-<CAPA>-NNNN --kind <tipo> [--image REF] [--network none|host]',
+  'uso: podman-execution-execute run --task TASK-<CAPA>-NNNN --kind <tipo> [--image REF] [--network none|host]',
   '                    [--mount ORIGEN[:DESTINO][:ro|rw]]... [--workdir DIR] [--env NOMBRE]...',
   '                    [--cpus N] [--memory-mib N] [--pids N] [--output RUTA]... (--script-stdin | -- ARGV...)',
-  '     thyrox-exec build-image --task TASK-<CAPA>-NNNN --context DIR --tag TAG [--containerfile F] [--network host]',
+  '     podman-execution-execute build-image --task TASK-<CAPA>-NNNN --context DIR --tag TAG [--containerfile F] [--network host]',
 ].join('\n')
 
 class UsageError extends Error {}
@@ -201,14 +201,14 @@ export async function runExecutionCommand(argv: string[], deps: ExecutionCommand
     throw new UsageError(`orden desconocida: ${subcommand ?? '(ninguna)'}`)
   } catch (error) {
     if (error instanceof UsageError) {
-      deps.output.stderr(`thyrox-exec: ${error.message}\n${USAGE}\n`)
+      deps.output.stderr(`podman-execution-execute: ${error.message}\n${USAGE}\n`)
       return EXIT_USAGE
     }
     if (error instanceof InvalidExecutionAuthorizationError) {
-      deps.output.stderr(`thyrox-exec: autorización rehusada (${error.field}): ${error.message}\n`)
+      deps.output.stderr(`podman-execution-execute: autorización rehusada (${error.field}): ${error.message}\n`)
       return EXIT_USAGE
     }
-    deps.output.stderr(`thyrox-exec: ${error instanceof Error ? error.message : String(error)}\n`)
+    deps.output.stderr(`podman-execution-execute: ${error instanceof Error ? error.message : String(error)}\n`)
     return EXIT_FAILED
   }
 }
