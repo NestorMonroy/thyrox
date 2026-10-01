@@ -243,7 +243,6 @@ esac
 RECOMMEND_BIN="${HEADLESS_POOL_RECOMMEND:-$THYROX_ROOT/bin/agent-recommend}"
 INFRASTRUCTURE_ENSURE_BIN="${HEADLESS_POOL_INFRASTRUCTURE_ENSURE:-$THYROX_ROOT/bin/infrastructure_ensure}"
 readonly LOCAL_RUNTIME=ollama PROVIDER_RUNTIME=claude-cli MANAGED_OLLAMA_SERVICE=thyrox-ollama
-readonly DEFAULT_OLLAMA_PORT=51434
 # El selector devuelve `runtime`, `model` y, si cayó al proveedor,
 # `fallbackReason`. Un registro sin `runtime` es el del selector de catálogo:
 # `claude-cli`. Un selector que falla, o un modelo que no casa con su runtime
@@ -394,12 +393,9 @@ if [[ "$RUNTIME" == "$LOCAL_RUNTIME" ]]; then
     ensure_local_runtime
 fi
 announce_model
-# Con el modelo local, cada ítem recibe el upstream compatible con OpenAI del
-# Ollama gestionado; `thyrox -p` lo conecta en su proxy local.
-HP_OPENAI_COMPAT_BASE_URL=""
-[[ "$RUNTIME" != "$LOCAL_RUNTIME" ]] \
-    || HP_OPENAI_COMPAT_BASE_URL="http://127.0.0.1:${THYROX_INFRA_OLLAMA_PORT:-$DEFAULT_OLLAMA_PORT}/v1"
-export HP_OPENAI_COMPAT_BASE_URL
+# Con el modelo local el ítem no recibe ningún upstream: su `thyrox -p` pasa el
+# nombre contractual a su proxy, que pide la admisión al coordinador del
+# anfitrión y sólo alcanza la unidad del ticket (ADR-007 1.14.0, M8).
 MIN_ITEMS=$(( ${#ITEMS[@]} < WIDTH ? ${#ITEMS[@]} : WIDTH ))
 DERIVE_ARGS=(--reserve-kb "$RESERVE_KB" --configured-width "$WIDTH" --vram-reserve-mib "$VRAM_RESERVE_MIB"
              # Representativa de lo que se lanza: la misma plantilla por su
@@ -692,8 +688,6 @@ _headless_item_run() {
          # El buzón de la ejecución y la dirección del ítem en él: el
          # párrafo que antecede al prompt le dice cómo usarlos.
          export THYROX_MAILBOX_DIR="$HP_MAILBOX" THYROX_POOL_ITEM_ADDRESS="item-$n"
-         [[ -z "$HP_OPENAI_COMPAT_BASE_URL" ]] \
-             || export THYROX_OPENAI_COMPAT_BASE_URL="$HP_OPENAI_COMPAT_BASE_URL" THYROX_OPENAI_COMPAT_MODEL="$HP_MODEL"
          if [[ "$HP_ISOLATION" == worktree ]]; then
              # >>> item-root
              # El item actua sobre su worktree: THYROX_ROOT lo heredan sus

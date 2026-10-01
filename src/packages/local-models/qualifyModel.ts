@@ -1,7 +1,7 @@
 /**
  * Cualifica un modelo local para una clase de tarea: corre cada caso de la
- * suite contra `/api/chat` con `options.num_ctx`, puntúa con la recompensa de
- * la suite y mide tokens/s como lo declara el propio Ollama (suma de
+ * suite contra `/api/chat` de la unidad admitida, con `options.num_ctx`,
+ * puntúa con la recompensa de la suite y mide tokens/s como lo declara el propio Ollama (suma de
  * `eval_count` entre suma de `eval_duration`). Aprueba sólo si acierta todos.
  *
  * Métrica: aciertos exactos por caso, n = 1, temperatura 0 y semilla fija.
@@ -12,6 +12,7 @@ import type { MeasurementCondition, ModelQualification } from '@thyrox/model-art
 
 import type { AdmissionTicket } from '@thyrox/model-scheduling/hostCoordinator.ts'
 
+import { admittedChat } from './admittedChat.js'
 import type { ChatReply } from './ollamaApi.js'
 import { scoreReply, type Suite, type SuiteCase } from './toolCallingSuite.js'
 
@@ -59,13 +60,32 @@ export class ContextBeyondGrantError extends Error {
 
 /** Corre la suite entera; un error HTTP aborta sin cualificación, no cuenta como caso fallado. */
 export async function runQualification(request: QualificationRequest): Promise<QualificationRun> {
-  void request
-  throw new Error('runQualification por admisión: por implementar')
+  const granted = request.ticket.grant.contextLength
+  if (request.contextTokens > granted) throw new ContextBeyondGrantError(request.contextTokens, granted)
+  const model = request.ticket.grant.artifact.modelId
+  const replies: ChatReply[] = []
+  for (const suiteCase of request.suite.cases) replies.push(await admittedChat(request.ticket, chatBody(request, suiteCase)))
+  const outcomes = request.suite.cases.map((suiteCase, index) => outcomeOf(suiteCase, replies[index] as ChatReply))
+  const casesPassed = outcomes.filter(outcome => outcome.passed).length
+  return {
+    outcomes,
+    qualification: {
+      model,
+      kind: 'protocol',
+      suite: request.suite.id,
+      casesPassed,
+      casesTotal: outcomes.length,
+      passed: casesPassed === outcomes.length,
+      contextTokens: request.contextTokens,
+      tokensPerSecond: tokensPerSecond(model, replies),
+      measurementCondition: request.measurementCondition,
+      measuredAt: request.now().toISOString(),
+    },
+  }
 }
 
 function chatBody(request: QualificationRequest, suiteCase: SuiteCase): Record<string, unknown> {
   return {
-    model: request.model,
     messages: suiteCase.messages,
     tools: suiteCase.tools,
     stream: false,

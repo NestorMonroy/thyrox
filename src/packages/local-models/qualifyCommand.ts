@@ -1,31 +1,35 @@
 /**
  * `local-models-qualify <nombre-contractual> [--context N] [--isolated]`:
- * corre `tool-calling@1` contra el Ollama gestionado y añade la medición al
- * archivo de cualificaciones. Es una cualificación de **protocolo**: prueba
+ * pide el modelo al coordinador del anfitrión por su socket, corre
+ * `tool-calling@1` sólo contra la unidad del ticket, suelta la admisión y
+ * añade la medición al archivo de cualificaciones (ADR-007 1.14.0, M8). Es una cualificación de **protocolo**: prueba
  * llamadas a herramienta bien formadas, no la competencia en una clase de
  * tarea, que mide otra suite. La medición es `contended` salvo que se declare
  * `--isolated`: sin admisión de recursos no se sabe si corrió sola, y una
- * velocidad contendida no ordena candidatos. El modelo tiene que estar en el
- * catálogo: una cualificación de un modelo no declarado no cuenta.
+ * velocidad contendida no ordena candidatos. Quién resuelve el modelo contra
+ * el catálogo y el contexto concedido es el coordinador: un modelo no
+ * declarado vuelve como admisión rehusada.
  *
  * Salidas: 0 aprobada · 1 medida y suspendida (también se escribe: retira una
  * aprobación anterior) · 2 rehusado sin medición.
  */
 
+import { randomUUID } from 'node:crypto'
 import { localModelHome } from '@thyrox/model-artifacts/localModelHome.ts'
-import { loadModelCatalog } from '@thyrox/model-artifacts/modelCatalog.ts'
 import type { MeasurementCondition } from '@thyrox/model-artifacts/modelQualification.ts'
+import { ModelCoordinatorClient } from '@thyrox/model-scheduling/coordinatorClient.ts'
+import { modelCoordinatorSocketPath } from '@thyrox/model-scheduling/coordinatorProtocol.ts'
+import type { AdmissionTicket, CoordinatorAdmission } from '@thyrox/model-scheduling/hostCoordinator.ts'
 
-import { infrastructureEnsureOf, type CommandContext } from './catalogCommand.js'
-import { OLLAMA_CONTAINER, requireInfrastructure } from './infrastructureReadiness.js'
+import type { CommandContext } from './catalogCommand.js'
 import { EXIT_NOT_APPROVED, EXIT_OK, EXIT_REFUSED } from './commandOutput.js'
-import { managedOllama } from './managedOllama.js'
-import { OllamaApi } from './ollamaApi.js'
 import { appendQualification } from './qualificationStore.js'
 import { runQualification } from './qualifyModel.js'
 import { TOOL_CALLING_SUITE_PATH, loadSuite } from './toolCallingSuite.js'
 
-/** Contexto de servicio de la medición si no se declara, acotado al máximo del modelo. */
+/** Quién pide la admisión, para trazar en el coordinador. */
+const QUALIFY_CLIENT = 'local-models-qualify'
+/** Contexto de servicio de la medición si no se declara; el coordinador lo acota al máximo del modelo. */
 export const DEFAULT_QUALIFICATION_CONTEXT_TOKENS = 8192
 
 export const QUALIFY_USAGE = 'uso: local-models-qualify <nombre-contractual> [--context N] [--isolated]'
@@ -52,25 +56,40 @@ export async function runQualifyCommand(argv: readonly string[], context: Comman
 }
 
 async function qualify(args: QualifyArguments, context: CommandContext): Promise<number> {
-  await requireInfrastructure([OLLAMA_CONTAINER], infrastructureEnsureOf(context))
   const home = localModelHome(context.env, context.thyroxRoot)
-  const entry = (await loadModelCatalog(home.catalog)).byName(args.model)
-  if (entry === undefined) throw new Error(`«${args.model}» no está en el catálogo ${home.catalog}: decláralo antes con local-models-catalog declare`)
-  const contextTokens = args.contextTokens ?? Math.min(DEFAULT_QUALIFICATION_CONTEXT_TOKENS, entry.maxContextLength)
-  if (contextTokens > entry.maxContextLength) throw new Error(`--context ${contextTokens} supera el máximo del modelo (${entry.maxContextLength})`)
+  const contextTokens = args.contextTokens ?? DEFAULT_QUALIFICATION_CONTEXT_TOKENS
+  const client = await ModelCoordinatorClient.connect(modelCoordinatorSocketPath(context.env))
+  try {
+    const ticket = admittedTicketOf(await client.admit({ requestId: randomUUID(), client: QUALIFY_CLIENT, model: args.model, contextLength: contextTokens }))
+    try {
+      return await qualifyAdmitted(ticket, args, contextTokens, home.qualifications, context)
+    } finally {
+      await client.finish(ticket.admissionId)
+    }
+  } finally {
+    await client.close()
+  }
+}
+
+/** El ticket de una admisión concedida; una rehusada o fallida rehúsa con su etapa y causa. */
+function admittedTicketOf(admission: CoordinatorAdmission): AdmissionTicket {
+  if (admission.status === 'admitted') return admission.ticket
+  throw new Error(`el coordinador ${admission.status === 'refused' ? 'rehusó' : 'falló'} la admisión en ${admission.stage}: ${admission.reason}`)
+}
+
+async function qualifyAdmitted(ticket: AdmissionTicket, args: QualifyArguments, contextTokens: number, qualificationsPath: string, context: CommandContext): Promise<number> {
   const run = await runQualification({
-    api: new OllamaApi(managedOllama(context.env).baseUrl),
+    ticket,
     suite: await loadSuite(TOOL_CALLING_SUITE_PATH),
-    model: args.model,
     measurementCondition: args.measurementCondition,
     contextTokens,
     now: context.now,
   })
-  await appendQualification(home.qualifications, run.qualification)
+  await appendQualification(qualificationsPath, run.qualification)
   run.outcomes.forEach(outcome => context.output.stdout(`${outcome.passed ? 'ok  ' : 'FALLA'} ${outcome.caseId}\t${outcome.observed}`))
   const { qualification } = run
   const verdict = qualification.passed ? 'aprobada' : 'suspendida'
-  context.output.stdout(`${verdict}: ${qualification.model} protocolo ${qualification.suite} ${qualification.casesPassed}/${qualification.casesTotal}, ${qualification.tokensPerSecond.toFixed(1)} tokens/s (${qualification.measurementCondition}), ctx ${contextTokens} → ${home.qualifications}`)
+  context.output.stdout(`${verdict}: ${qualification.model} protocolo ${qualification.suite} ${qualification.casesPassed}/${qualification.casesTotal}, ${qualification.tokensPerSecond.toFixed(1)} tokens/s (${qualification.measurementCondition}), ctx ${contextTokens} → ${qualificationsPath}`)
   return qualification.passed ? EXIT_OK : EXIT_NOT_APPROVED
 }
 

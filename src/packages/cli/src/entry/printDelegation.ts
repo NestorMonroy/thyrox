@@ -18,6 +18,7 @@ import { existsSync, mkdtempSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { fileURLToPath } from 'node:url'
+import { parseThyroxModelName } from '@thyrox/model-artifacts/modelName.ts'
 import type { ConnectionStore } from '@thyrox/provider/accounts/connectionStoreHome'
 import { resolveCredential, SSH_PLACEHOLDER, type ReadFd } from '@thyrox/provider/credentials'
 
@@ -93,7 +94,11 @@ export const spawnLocalProxy: SpawnLocalProxy = (argv, options) =>
 export type CredentialEnvironmentOptions = {
   env: Env
   cwd: string
-  /** Los modelos que el proxy tiene que pasar tal cual (`--model` del lanzador). */
+  /**
+   * Los modelos que pide la sesión. Uno con nombre contractual del catálogo va
+   * como `--local-model`: el proxy lo pide al coordinador (ADR-007 1.14.0, M8);
+   * cualquier otro pasa tal cual a `claude-cli` con `--model`.
+   */
   models: readonly string[]
   spawn?: SpawnLocalProxy
   announceTimeoutMs?: number
@@ -129,11 +134,16 @@ function announcedSocket(outcome: LaunchOutcome): string | undefined {
   return outcome.kind === 'announced' ? outcome.socketPath : undefined
 }
 
+/** Un modelo del catálogo local entra por admisión; el resto, por `claude-cli`. */
+function proxyModelArguments(model: string): string[] {
+  return parseThyroxModelName(model) === undefined ? ['--model', model] : ['--local-model', model]
+}
+
 async function launchLocalProxy(options: CredentialEnvironmentOptions): Promise<{ socketPath: string; stop: () => Promise<void> }> {
   const dir = mkdtempSync(join(tmpdir(), 'thyrox-local-proxy-'))
   const requestedSocket = join(dir, 'proxy.sock')
   const spawn = options.spawn ?? spawnLocalProxy
-  const argv = ['--socket', requestedSocket, ...options.models.flatMap(model => ['--model', model])]
+  const argv = ['--socket', requestedSocket, ...options.models.flatMap(proxyModelArguments)]
   const child = spawn(argv, { env: options.env, cwd: options.cwd })
   const stop = async (): Promise<void> => {
     child.kill()

@@ -125,18 +125,6 @@ export class OllamaApi {
     await this.request('/api/copy', { source, destination })
   }
 
-  async chat(body: JsonObject): Promise<ChatReply> {
-    const document = await this.request('/api/chat', body)
-    const message = (document.message ?? {}) as JsonObject
-    const calls = (message.tool_calls ?? []) as { function: ChatToolCall }[]
-    return {
-      content: String(message.content ?? ''),
-      toolCalls: calls.map(call => ({ name: call.function.name, arguments: call.function.arguments ?? {} })),
-      evalCount: Number(document.eval_count ?? 0),
-      evalDurationNs: Number(document.eval_duration ?? 0),
-    }
-  }
-
   /** GET sin cuerpo, POST con él; el cuerpo de respuesta vacío (`/api/copy`) es un objeto vacío. */
   private async request(path: string, body: JsonObject | undefined): Promise<JsonObject> {
     const init: RequestInit = body === undefined ? { method: 'GET' } : { method: 'POST', headers: JSON_HEADERS, body: JSON.stringify(body) }

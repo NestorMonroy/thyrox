@@ -3,3 +3,4 @@
 # cuenta como frontera si recibe un ExecutionGrant y una ExecutionUnit:
 # la lista no exime a nadie por su nombre.
 src/packages/local-models/ollamaRuntimeAdapter.ts
+src/packages/local-models/admittedChat.ts
