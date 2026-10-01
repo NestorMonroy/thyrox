@@ -49,3 +49,22 @@ Métrica: `usage.prompt_tokens_details.cached_tokens` de la API compatible con O
 Ciega a: el precio de la caché de Qwen (la tabla no lo trae), a si la cuota de un Token Plan descuenta
 los tokens cacheados, a la fracción cacheable con prompts y herramientas reales del pool, y a la
 calidad del trabajo (la sonda prueba el protocolo, no la competencia).
+
+## Clasificación (directiva del ejecutor, 2026-10-01)
+
+Esto es evidencia para la fase de cualificación y recomendador neutrales al proveedor, no una
+decisión de enrutamiento. Ningún pool se enruta a DeepSeek ni a Qwen a partir de aquí.
+
+**Medido**
+- la distribución real de tokens de 505 agentes del store;
+- 98.3 % de la entrada como acierto de caché en esa muestra;
+- la salida, prácticamente irrelevante en el costo total;
+- los dos endpoints cachearon la segunda petición;
+- los dos emitieron una llamada a herramienta válida en esa sonda.
+
+**No demostrado**
+- la calidad de resolución de tareas;
+- la equivalencia funcional con los agentes actuales;
+- el precio real de los tokens cacheados de Qwen;
+- el costo efectivo de la clave de Token Plan;
+- que DeepSeek deba ser el worker productivo por defecto: queda como hipótesis candidata.
