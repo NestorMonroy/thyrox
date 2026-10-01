@@ -323,6 +323,38 @@ thyrox_infrastructure_disk_need_bytes() {
 }
 export -f thyrox_infrastructure_disk_need_bytes
 
+# --- colision de locks de Podman tras un reinicio (TASK-THYROX-0695) ---
+#
+# Podman guarda en su base el numero de lock de cada objeto y los locks en
+# memoria compartida; reiniciar el contenedor de la sesion borra la memoria y
+# conserva la base, y un objeto nuevo puede recibir el lock de uno anterior
+# (H-THYROX-296). Literal exacto de Podman 4.9.3, presente en su binario y
+# escrito por `podman start` el 2026-09-30.
+readonly _INFRASTRUCTURE_LOCK_COLLISION_LITERAL="deadlock due to lock mismatch"
+# El remedio que Podman nombra. Nunca lo corre este arbol: exige que no corra
+# ningun otro proceso de Podman y afectaria a los workers vivos.
+readonly _INFRASTRUCTURE_RENUMBER_COMMAND="podman system renumber"
+
+# @description ¿El stderr de un comando de Podman declara una colision de locks?
+# @arg $1 string el stderr capturado.
+# @exitcode 0 lleva el literal de la colision.
+# @exitcode 1 no lo lleva.
+thyrox_infrastructure_is_lock_collision() {
+  [[ "${1:-}" == *"$_INFRASTRUCTURE_LOCK_COLLISION_LITERAL"* ]]
+}
+export -f thyrox_infrastructure_is_lock_collision
+
+# @description Imprime el remedio de una colision de locks sobre un objeto:
+# retirar el objeto anterior que comparte su lock, o renumerar con Podman
+# parado. No ejecuta nada.
+# @arg $1 string el objeto afectado (contenedor o volumen).
+# @stdout una linea con el literal y el remedio.
+thyrox_infrastructure_lock_collision_remedy() {
+  printf 'colision de locks de Podman sobre %s (%s): retirar el objeto anterior que comparte su lock, o ejecutar `%s` sin ningun otro proceso de Podman en marcha\n' \
+    "${1:-}" "$_INFRASTRUCTURE_LOCK_COLLISION_LITERAL" "$_INFRASTRUCTURE_RENUMBER_COMMAND"
+}
+export -f thyrox_infrastructure_lock_collision_remedy
+
 # @description Inspecciona un contenedor y publica su estado reportado y su
 # PID, separados por tab. Usa THYROX_TOOLCHAIN_PODMAN_BIN si esta resuelto
 # (via `thyrox_toolchain_require_podman`), o el `podman` del PATH.

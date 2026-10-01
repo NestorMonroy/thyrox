@@ -73,6 +73,10 @@ case "\$1" in
     ;;
   create)
     [[ -f "\$STATE/create-fails" ]] && exit 125
+    if [[ -f "\$STATE/lock-collision-create" ]]; then
+      echo "Error: deadlock due to lock mismatch" >&2
+      exit 126
+    fi
     name=""
     prev=""
     for a in "\$@"; do
@@ -85,6 +89,10 @@ case "\$1" in
     ;;
   start)
     name="\$2"
+    if [[ -f "\$STATE/lock-collision-start" ]]; then
+      echo "Error: deadlock due to lock mismatch" >&2
+      exit 126
+    fi
     nohup bash -c "exec -a \${MARKER}-\${name} sleep 999" >/dev/null 2>&1 &
     newpid=\$!
     disown "\$newpid" 2>/dev/null || true
@@ -460,5 +468,72 @@ out="$(run_ensure thyrox-mongo 2>&1)"; rc=$?
 thyrox_check "caso 15: nombre desconocido -> exit 2" "2" "$rc"
 if [[ "$out" == *thyrox-mongo* ]]; then ok "caso 15: el rehuso nombra el contenedor"; else bad "caso 15: no lo nombro: [$out]"; fi
 thyrox_check "caso 15: no invoca podman" "0" "$(wc -l < "$STATE/calls.log" 2>/dev/null || echo 0)"
+
+# =====================================================================
+# Casos 16-18 — TASK-THYROX-0695: colision de locks de Podman tras un
+# reinicio. El ensure la reconoce por su literal, nombra contenedor, literal
+# y remedio, sale con su codigo propio y no reintenta ni renumera.
+# =====================================================================
+LOCK_LITERAL='deadlock due to lock mismatch'
+EXIT_LOCK_COLLISION=3
+
+# assert_collision_reported <caso> <stderr> — las cuatro piezas de la linea.
+assert_collision_reported() {
+  local label="$1" text="$2" piece
+  for piece in thyrox-postgres "$LOCK_LITERAL" retirar "podman system renumber"; do
+    if [[ "$text" == *"$piece"* ]]; then
+      ok "$label: el stderr nombra $piece"
+    else
+      bad "$label: el stderr no nombra $piece: [$text]"
+    fi
+  done
+}
+
+reset_state
+touch "$STATE/lock-collision-create"
+err="$(run_ensure thyrox-postgres 2>&1 >/dev/null)"; rc=$?
+thyrox_check "caso 16: colision en create -> exit propio $EXIT_LOCK_COLLISION" "$EXIT_LOCK_COLLISION" "$rc"
+assert_collision_reported "caso 16" "$err"
+thyrox_check "caso 16: un solo create, sin reintento" "1" "$(grep -c '^create ' "$STATE/calls.log")"
+if grep -qE '^(start|exec) ' "$STATE/calls.log"; then
+  bad "caso 16: tras la colision se arranco o se sondeo la salud"
+else
+  ok "caso 16: tras la colision no se arranca ni se sondea la salud"
+fi
+if grep -q '^admission disk-release --owner [0-9]' "$STATE/calls.log"; then
+  ok "caso 16: la reserva de disco se suelta antes de salir"
+else
+  bad "caso 16: no se solto la reserva de disco: $(cat "$STATE/calls.log")"
+fi
+if grep -q '^system ' "$STATE/calls.log"; then
+  bad "caso 16: el ensure invoco podman system por su cuenta"
+else
+  ok "caso 16: el ensure nunca invoca podman system"
+fi
+
+reset_state
+touch "$STATE/network-thyrox-infra" "$STATE/lock-collision-start"
+echo exited > "$STATE/thyrox-postgres.status"
+echo 0 > "$STATE/thyrox-postgres.pid"
+err="$(run_ensure thyrox-postgres 2>&1 >/dev/null)"; rc=$?
+thyrox_check "caso 17: colision en start -> exit propio $EXIT_LOCK_COLLISION" "$EXIT_LOCK_COLLISION" "$rc"
+assert_collision_reported "caso 17" "$err"
+thyrox_check "caso 17: un solo start, sin reintento" "1" "$(grep -c '^start ' "$STATE/calls.log")"
+
+reset_state
+touch "$STATE/create-fails"
+err="$(TEST_HEALTH_TIMEOUT=2 run_ensure thyrox-postgres 2>&1 >/dev/null)"; rc=$?
+thyrox_check "caso 18: un create fallido sin el literal sigue siendo el fallo generico" "1" "$rc"
+if [[ "$err" == *"$LOCK_LITERAL"* || "$err" == *"podman system renumber"* ]]; then
+  bad "caso 18: un fallo sin el literal se reporto como colision: [$err]"
+else
+  ok "caso 18: un fallo sin el literal no se reporta como colision"
+fi
+
+if grep -qE '^# Exit 3 ' "$SUBJECT"; then
+  ok "caso 18: la cabecera del sujeto declara el exit 3"
+else
+  bad "caso 18: la cabecera del sujeto no declara el exit 3"
+fi
 
 thyrox_summary

@@ -33,6 +33,10 @@
 #         credencial de PostgreSQL con PostgreSQL seleccionado — no se toca
 #         nada —, o la imagen de un contenedor falta y su pull no cabe en disco (se rehusa
 #         antes de `podman create`, TASK-THYROX-0671).
+# Exit 3  `podman create` o `start` de un contenedor fallo por una colision de
+#         locks de Podman (TASK-THYROX-0695): stderr nombra el contenedor, el
+#         literal y el remedio. No se reintenta ni se renumera: lo decide el
+#         operador.
 # =============================================================================
 set -uo pipefail
 
@@ -56,6 +60,7 @@ DISK_ADMISSION_BIN="${THYROX_INFRA_DISK_ADMISSION_BIN:-$_INFRA_ENSURE_HERE/../..
 # El banco que mide por que el techo es `Avail` y no el tamaño del dispositivo.
 readonly DISK_ADMISSION_BENCH="disk-reserve-reach-20260930T191002"
 readonly EXIT_REFUSED=2
+readonly EXIT_LOCK_COLLISION=3
 
 # --- la seleccion: los nombres pedidos, o todos los declarados sin argumentos.
 # Un nombre que la declaracion no conoce se rehusa antes de tocar nada.
@@ -180,23 +185,46 @@ _infra_release_disk() {
   "$DISK_ADMISSION_BIN" disk-release --owner "$$" >/dev/null 2>&1
 }
 
+# @description Corre un comando de Podman y publica sólo su stderr; el
+# resultado del comando se sigue midiendo por la salud, como antes.
+# @arg $@ string el argv de podman.
+# @stdout el stderr del comando.
+_infra_podman_stderr() {
+  { "$PODMAN" "$@" >/dev/null; } 2>&1
+}
+
+# @description Si el stderr declara una colision de locks, la reporta con su
+# remedio y sale con EXIT_LOCK_COLLISION. Reintentar no reasigna el lock y
+# renumerar afectaria a los workers vivos, asi que no se hace ninguna de las dos.
+# @arg $1 string nombre del contenedor.
+# @arg $2 string el stderr del comando de Podman.
+_infra_exit_on_lock_collision() {
+  local name="$1" stderr="$2"
+  thyrox_infrastructure_is_lock_collision "$stderr" || return 0
+  echo "infrastructure_ensure: $(thyrox_infrastructure_lock_collision_remedy "$name")" >&2
+  exit "$EXIT_LOCK_COLLISION"
+}
+
 # @description Compone y corre `podman create`, reservando disco antes solo
 # si la imagen falta localmente.
 # @arg $1 string nombre del contenedor.
 # @exitcode 0 argv compuesto (el resultado del create se mide por la salud).
+# Sale con EXIT_LOCK_COLLISION si el create choca con un lock ajeno.
 # @exitcode 1 no se pudo componer el argv.
 _infra_create_container() {
   local name="$1"
   local -a create_argv
   mapfile -t create_argv < <(thyrox_infrastructure_create_argv "$name")
   [[ "${#create_argv[@]}" -gt 0 ]] || return 1
+  local create_stderr
   if _infra_image_missing "$name"; then
     _infra_admit_disk_or_refuse "$name"
-    "$PODMAN" "${create_argv[@]}" >/dev/null 2>&1
+    create_stderr="$(_infra_podman_stderr "${create_argv[@]}")"
     _infra_release_disk
   else
-    "$PODMAN" "${create_argv[@]}" >/dev/null 2>&1
+    create_stderr="$(_infra_podman_stderr "${create_argv[@]}")"
   fi
+  _infra_exit_on_lock_collision "$name" "$create_stderr"
   return 0
 }
 
@@ -242,7 +270,7 @@ _infra_ensure_container() {
       FAILED_CONTAINERS+=("$name: no se pudo componer el argv de creacion")
       return
     fi
-    "$PODMAN" start "$name" >/dev/null 2>&1
+    _infra_exit_on_lock_collision "$name" "$(_infra_podman_stderr start "$name")"
   fi
 
   local health_result

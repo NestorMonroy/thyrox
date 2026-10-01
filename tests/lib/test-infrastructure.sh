@@ -310,6 +310,29 @@ for key in THYROX_INFRA_OLLAMA_IMAGE THYROX_INFRA_OLLAMA_PORT THYROX_INFRA_PROXY
   fi
 done
 
+# --- TASK-THYROX-0695: colision de locks de Podman tras un reinicio ---
+lock_literal='deadlock due to lock mismatch'
+if bash -c "source '$SUBJECT'; thyrox_infrastructure_is_lock_collision \"\$1\"" _ "Error: $lock_literal"; then
+  ok "is_lock_collision reconoce el literal de Podman 4.9.3"
+else
+  bad "is_lock_collision no reconocio el literal"
+fi
+for other in "Error: no such image" ""; do
+  if bash -c "source '$SUBJECT'; thyrox_infrastructure_is_lock_collision \"\$1\"" _ "$other"; then
+    bad "is_lock_collision clasifico como colision: [$other]"
+  else
+    ok "is_lock_collision no clasifica como colision: [$other]"
+  fi
+done
+remedy="$(bash -c "source '$SUBJECT'; thyrox_infrastructure_lock_collision_remedy thyrox-ollama")"
+for piece in thyrox-ollama retirar "podman system renumber"; do
+  if [[ "$remedy" == *"$piece"* ]]; then
+    ok "el remedio nombra $piece"
+  else
+    bad "el remedio no nombra $piece: [$remedy]"
+  fi
+done
+
 # --- inspeccion contra un podman falso ---
 WORK="$(mktemp -d)"; trap 'rm -rf "$WORK"' EXIT
 cat > "$WORK/podman-fake" <<'STUB'

@@ -12,6 +12,7 @@
 import { basename, join } from 'node:path'
 
 import type { PodmanCommandResult, PodmanExecutor } from './podmanExecutor.js'
+import { isLockCollision, lockCollisionRemedy } from './podmanLockCollision.js'
 import {
   createWorkerContainerArgv,
   removeWorkerContainerArgv,
@@ -21,14 +22,27 @@ import {
 
 export type ContainerRunStage = 'create' | 'start' | 'wait' | 'signal' | 'export'
 
-/** Un paso de la ejecución falló; nombra la etapa y lo que Podman dijo. */
+/** Mensaje base del fallo: la etapa, el sujeto y lo que Podman dijo. */
+function failureMessage(stage: ContainerRunStage, subject: string, result: PodmanCommandResult): string {
+  return `falló la etapa ${stage} sobre ${subject}: ${result.stderr.trim() || `exit ${result.exitCode}`}`
+}
+
+/**
+ * Un paso de la ejecución falló; nombra la etapa y lo que Podman dijo. Si fue
+ * una colisión de locks, lo marca y añade el remedio: no se reintenta en
+ * silencio, porque reintentar no reasigna el lock.
+ */
 export class ContainerRunError extends Error {
   readonly stage: ContainerRunStage
+  readonly lockCollision: boolean
 
   constructor(stage: ContainerRunStage, subject: string, result: PodmanCommandResult) {
-    super(`falló la etapa ${stage} sobre ${subject}: ${result.stderr.trim() || `exit ${result.exitCode}`}`)
+    const lockCollision = isLockCollision(result.stderr)
+    const message = failureMessage(stage, subject, result)
+    super(lockCollision ? `${message}. ${lockCollisionRemedy(subject)}` : message)
     this.name = 'ContainerRunError'
     this.stage = stage
+    this.lockCollision = lockCollision
   }
 }
 
