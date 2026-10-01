@@ -1,0 +1,20 @@
+{
+  "name": "@thyrox/artifact-registry",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Puerto de registro de artefactos OCI (TASK-THYROX-0728): publicar, resolver, inspeccionar y materializar datos permanentes —modelos, evidencia— por digest, sin envolverlos en una imagen ejecutable. Docker Hub es un provider sobre el protocolo de distribución OCI; los límites del registry son un resultado del provider, no una constante.",
+  "exports": {
+    "./*.ts": {
+      "@thyrox/source": "./*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./*.ts"
+    }
+  },
+  "devDependencies": {
+    "@thyrox/registry-credentials": "0.1.0"
+  },
+  "scripts": {
+    "test": "bun test"
+  }
+}
