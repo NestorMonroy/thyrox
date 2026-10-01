@@ -1,0 +1,2 @@
+infrastructure_ensure: `podman system renumber` no corrigió los locks (asignados 3, referenciados 4).
+__BG_EXIT__=3
