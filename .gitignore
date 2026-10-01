@@ -198,3 +198,8 @@ agent-results/mutantes-en-vuelo.jsonl
 # deja en el paquete, y un item del pool lo arrastraba a su parche como si
 # fuera trabajo propio (daemon-parity-closure, items 1 y 3).
 tsconfig.check.json
+
+# Registros de la admisión de recursos (src/session/resource_admission.py):
+# estado de ejecución que cada reserva reescribe; no es evidencia.
+/.claude/cache/*-admission.json
+/.claude/cache/*-admission.json.*
