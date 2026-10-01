@@ -1,0 +1,16 @@
+# tsc-red6
+
+## Qué se lanzó
+
+```
+bash -c bunx tsc --noEmit -p tsconfig.json > /tmp/claude-0/-home-user/333534ce-407f-55f0-b451-e1feb02581ab/scratchpad/tsc2.txt 2>&1; grep -cE 'model-scheduling|local-models/(ollamaRuntimeAdapter|testing/fakeOllamaRuntime|__tests__/ollamaRuntime)' /tmp/claude-0/-home-user/333534ce-407f-55f0-b451-e1feb02581ab/scratchpad/tsc2.txt; grep -E 'model-scheduling|ollamaRuntime' /tmp/claude-0/-home-user/333534ce-407f-55f0-b451-e1feb02581ab/scratchpad/tsc2.txt | head -20
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

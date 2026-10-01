@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c bunx tsc --noEmit -p tsconfig.json > /tmp/claude-0/-home-user/333534ce-407f-55f0-b451-e1feb02581ab/scratchpad/tsc.txt 2>&1; echo exit=$?", "started_at": "2026-10-01T09:17:50+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-01T09:19:01+00:00", "duration_seconds": 71.42535}
