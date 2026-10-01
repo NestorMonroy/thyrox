@@ -1,0 +1,5 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+2	:	1790846830.167	    79.358	0	0	1	0	_headless_item 2 'Fuente: .claude/workbench/model-residency-implementation-20261001T092412/p2-residency-controller.md. Archivos: src/packages/model-scheduling/residency.ts, residencyController.ts. Orden: registro, controlador.'
+1	:	1790846830.164	   231.091	0	0	0	0	_headless_item 1 'Fuente: .claude/workbench/model-residency-implementation-20261001T092412/p1-residency-ledger.md. Archivo: src/packages/model-scheduling/memoryVramLedger.ts.'
+3	:	1790846830.170	   324.759	0	0	0	0	_headless_item 3 'Fuente: .claude/workbench/model-residency-implementation-20261001T092412/p3-podman-primitive.md. Archivo: src/packages/model-scheduling/podmanModelExecutionPrimitive.ts.'
+4	:	1790846830.172	   373.897	0	0	0	0	_headless_item 4 'Fuente: .claude/workbench/model-residency-implementation-20261001T092412/p4-ollama-adapter.md. Archivos: src/packages/local-models/ollamaRuntimeAdapter.ts, ollamaApi.ts.'

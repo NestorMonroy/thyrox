@@ -1,6 +1,7 @@
 /**
  * Cliente mínimo de la API nativa de Ollama: lo que necesitan declarar un
- * modelo instalado (`/api/tags`, `/api/show`, `/api/copy`), cualificarlo
+ * modelo instalado (`/api/tags`, `/api/show`, `/api/copy`), observar su
+ * residencia (`/api/version`, `/api/ps`), cualificarlo
  * (`/api/chat`) e instalarlo desde un GGUF (`/api/blobs`, `/api/create`,
  * TASK-THYROX-0729). Un estado HTTP distinto de 2xx es un error con la ruta y
  * el cuerpo, nunca una respuesta vacía.
@@ -102,6 +103,20 @@ export class OllamaApi {
   async createModel(name: string, sha256: string): Promise<void> {
     await this.request('/api/create', { model: name, files: { [CREATE_MODEL_FILE]: `sha256:${sha256}` }, stream: false })
   }
+
+  /** `GET /api/version`: la versión del runtime; un error de red o de estado se propaga. */
+  async version(): Promise<string> {
+    const document = await this.request('/api/version', undefined)
+    return String(document.version ?? '')
+  }
+
+  /** `GET /api/ps`: los nombres residentes. Su `digest` es el del manifiesto, no el del blob. */
+  async residentModelNames(): Promise<readonly string[]> {
+    const document = await this.request('/api/ps', undefined)
+    const models = (document.models ?? []) as JsonObject[]
+    return models.map(model => String(model.name))
+  }
+
 
   async copyModel(source: string, destination: string): Promise<void> {
     await this.request('/api/copy', { source, destination })

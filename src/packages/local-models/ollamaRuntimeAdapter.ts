@@ -18,16 +18,29 @@
  * `/api/delete` en este adapter.
  */
 import type { ExecutionGrant } from '@thyrox/model-artifacts/executionGrant.ts'
+import { parseThyroxModelName } from '@thyrox/model-artifacts/modelName.ts'
+import { normalizeQuantizationLevel } from '@thyrox/model-artifacts/quantizationLevel.ts'
 import type {
-  ArtifactIdentityVerification, ExecutionUnit, ExpectedResidency, HealthObservation, ObservedResidency,
-  ResidencyBinding, RuntimeAdapter, RuntimeCapabilities, RuntimeMutationOutcome,
+  ArtifactIdentityVerification, ExecutionUnit, ExpectedResidency, HealthObservation, ObservedArtifactIdentity,
+  ObservedResidency, ResidencyBinding, RuntimeAdapter, RuntimeCapabilities, RuntimeMutationOutcome,
 } from '@thyrox/model-scheduling/executionPrimitive.ts'
+
+import { OllamaApi, OllamaRequestError } from './ollamaApi.ts'
 
 /** Ollama no deja gobernar varias residencias dentro de una unidad (topología A). */
 export const OLLAMA_RUNTIME_CAPABILITIES: RuntimeCapabilities = {
   multipleResidencies: false, explicitLoad: true, explicitUnload: true,
   perResidencyIdentity: false, residencyObservation: true, placementEnforceable: false,
 }
+
+/** `keep_alive` de `/api/generate`: negativo deja el modelo residente sin plazo; 0 lo descarga. */
+const KEEP_ALIVE_FOREVER = -1
+const KEEP_ALIVE_UNLOAD = 0
+const GENERATE_PATH = '/api/generate'
+/** El `FROM` del modelfile que `/api/show` devuelve nombra el blob como `.../blobs/sha256-<hex>`. */
+const FROM_BLOB_DIGEST = /^FROM\s+\S*sha256-([0-9a-f]{64})\s*$/m
+
+const DONE: RuntimeMutationOutcome = { status: 'done' }
 
 export interface OllamaRuntimeAdapterOptions {
   /** Ruta local del artefacto que `ensureModel` dejó verificado en la caché. */
@@ -42,32 +55,129 @@ export class OllamaRuntimeAdapter implements RuntimeAdapter {
   constructor(private readonly options: OllamaRuntimeAdapterOptions) {}
 
   async probeHealth(unit: ExecutionUnit): Promise<HealthObservation> {
-    void unit; void this.options
-    throw new Error('OllamaRuntimeAdapter.probeHealth: por implementar')
+    try {
+      await apiOf(unit).version()
+      return { status: 'healthy' }
+    } catch (error) {
+      return { status: 'unhealthy', reason: reasonOf(error) }
+    }
   }
 
   async prepareRuntimeArtifact(binding: ResidencyBinding, grant: ExecutionGrant): Promise<RuntimeMutationOutcome> {
-    void binding; void grant
-    throw new Error('OllamaRuntimeAdapter.prepareRuntimeArtifact: por implementar')
+    const sha256 = grant.artifact.sha256
+    return this.mutate(binding, async api => {
+      if (!await api.hasBlob(sha256)) await api.pushBlob(sha256, this.options.artifactPath(sha256))
+      await api.createModel(grant.model, sha256)
+    })
   }
 
   async verifyArtifactIdentity(unit: ExecutionUnit, grant: ExecutionGrant): Promise<ArtifactIdentityVerification> {
-    void unit; void grant
-    throw new Error('OllamaRuntimeAdapter.verifyArtifactIdentity: por implementar')
+    const expected = grantIdentity(grant)
+    try {
+      const observed = await observeIdentity(apiOf(unit), grant.model)
+      if (observed && identityMatches(expected, observed)) return { status: 'matches', observed }
+      return { status: 'mismatch', expected, observed }
+    } catch (error) {
+      return { status: 'failed', reason: reasonOf(error) }
+    }
   }
 
   async loadResidency(binding: ResidencyBinding, grant: ExecutionGrant): Promise<RuntimeMutationOutcome> {
-    void binding; void grant
-    throw new Error('OllamaRuntimeAdapter.loadResidency: por implementar')
+    return this.mutate(binding, () => setKeepAlive(binding.unit, grant.model, KEEP_ALIVE_FOREVER))
   }
 
   async observeResidency(unit: ExecutionUnit, expected: ExpectedResidency): Promise<ObservedResidency> {
-    void unit; void expected
-    throw new Error('OllamaRuntimeAdapter.observeResidency: por implementar')
+    try {
+      const api = apiOf(unit)
+      if (!(await api.residentModelNames()).includes(expected.model)) return { status: 'absent' }
+      const observed = await observeIdentity(api, expected.model)
+      if (!observed) return { status: 'absent' }
+      if (observed.sha256 !== expected.sha256) return { status: 'mismatch', observed }
+      return { status: 'resident', observed }
+    } catch (error) {
+      return { status: 'error', reason: reasonOf(error) }
+    }
   }
 
   async unloadResidency(binding: ResidencyBinding): Promise<RuntimeMutationOutcome> {
-    void binding
-    throw new Error('OllamaRuntimeAdapter.unloadResidency: por implementar')
+    return this.mutate(binding, () => setKeepAlive(binding.unit, binding.unit.model, KEEP_ALIVE_UNLOAD))
   }
+
+  /** Corre `change` sólo si la generación del binding es la vigente; un error del runtime es `failed`. */
+  private async mutate(binding: ResidencyBinding, change: (api: OllamaApi) => Promise<void>): Promise<RuntimeMutationOutcome> {
+    const current = await this.generationOf(binding.residencyKey)
+    if (current !== binding.generation) return { status: 'stale_generation', currentGeneration: current }
+    try {
+      await change(apiOf(binding.unit))
+      return DONE
+    } catch (error) {
+      return { status: 'failed', reason: reasonOf(error) }
+    }
+  }
+
+  /** Una coordinación que no responde equivale a no saber la generación: `unavailable`. */
+  private async generationOf(residencyKey: string): Promise<number | 'unavailable'> {
+    try {
+      return await this.options.currentGeneration(residencyKey)
+    } catch {
+      return 'unavailable'
+    }
+  }
+}
+
+function apiOf(unit: ExecutionUnit): OllamaApi {
+  return new OllamaApi(unit.endpoint)
+}
+
+/** Identidad que el runtime sirve bajo `model`, o `undefined` si no lo tiene instalado. */
+async function observeIdentity(api: OllamaApi, model: string): Promise<ObservedArtifactIdentity | undefined> {
+  const details = await api.findModelDetails(model)
+  if (!details) return undefined
+  return {
+    model,
+    sha256: FROM_BLOB_DIGEST.exec(details.modelfile)?.[1],
+    quantization: details.quantizationLevel === '' ? undefined : details.quantizationLevel,
+  }
+}
+
+/** Lo que el grant concede: el blob y, si el nombre es del contrato, su cuantización. */
+function grantIdentity(grant: ExecutionGrant): ObservedArtifactIdentity {
+  return { model: grant.model, sha256: grant.artifact.sha256, quantization: parseThyroxModelName(grant.model)?.quantization }
+}
+
+/** Mismo blob y, cuando el grant la declara, la misma cuantización canónica. */
+function identityMatches(expected: ObservedArtifactIdentity, observed: ObservedArtifactIdentity): boolean {
+  if (observed.sha256 !== expected.sha256) return false
+  if (expected.quantization === undefined) return true
+  return canonicalQuantization(observed.quantization) === canonicalQuantization(expected.quantization)
+}
+
+/** La forma canónica de una cuantización; una que el catálogo no conoce no coincide con ninguna. */
+function canonicalQuantization(level: string | undefined): string | undefined {
+  if (level === undefined) return undefined
+  try {
+    return normalizeQuantizationLevel(level)
+  } catch {
+    return undefined
+  }
+}
+
+function reasonOf(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+
+/**
+ * `POST /api/generate` sin `prompt`: sólo fija la residencia del modelo en la
+ * unidad (`keep_alive` -1 la deja sin plazo, 0 la descarga). Vive aquí y no en
+ * `OllamaApi` porque sólo la frontera que recibe grant y unidad puede tocar la
+ * inferencia del runtime (M8).
+ */
+async function setKeepAlive(unit: ExecutionUnit, model: string, keepAlive: number): Promise<void> {
+  const response = await fetch(`${unit.endpoint}${GENERATE_PATH}`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ model, keep_alive: keepAlive, stream: false }),
+  })
+  const text = await response.text()
+  if (!response.ok) throw new OllamaRequestError(GENERATE_PATH, response.status, text)
 }
