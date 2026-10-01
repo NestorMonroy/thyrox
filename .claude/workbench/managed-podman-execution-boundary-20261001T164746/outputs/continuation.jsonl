@@ -1,0 +1,7 @@
+{"utc": "2026-10-01T19:18:34Z", "kind": "start", "orphans": "0 huérfano(s) retirado(s)"}
+{"utc": "2026-10-01T19:18:34Z", "kind": "attempt", "item": "p2a", "attempt": 1, "model": "qwen3.8-flash", "taskClass": "analisis", "outcome": "provider_transient", "source": "rule", "exit": 1, "verifyExit": 1, "elapsedSeconds": 0.1, "transition": "retry", "orphans": "0 huérfano(s) retirado(s)"}
+{"utc": "2026-10-01T19:18:34Z", "kind": "attempt", "item": "p2a", "attempt": 2, "model": "qwen3.8-flash", "taskClass": "analisis", "outcome": "provider_transient", "source": "rule", "exit": 1, "verifyExit": 1, "elapsedSeconds": 0.1, "transition": "retry", "orphans": "0 huérfano(s) retirado(s)"}
+{"utc": "2026-10-01T19:18:35Z", "kind": "attempt", "item": "p2a", "attempt": 3, "model": "qwen3.8-flash", "taskClass": "analisis", "outcome": "provider_transient", "source": "rule", "exit": 1, "verifyExit": 1, "elapsedSeconds": 0.1, "transition": "next_candidate", "orphans": "0 huérfano(s) retirado(s)"}
+{"utc": "2026-10-01T19:18:35Z", "kind": "attempt", "item": "p2a", "attempt": 4, "model": "deepseek-v4.1-flash", "taskClass": "analisis", "outcome": "provider_transient", "source": "rule", "exit": 1, "verifyExit": 1, "elapsedSeconds": 0.1, "transition": "retry", "orphans": "0 huérfano(s) retirado(s)"}
+{"utc": "2026-10-01T19:18:35Z", "kind": "hard_block", "item": "p2a", "reason": "presupuesto de intentos agotado"}
+{"utc": "2026-10-01T19:24:38Z", "kind": "start", "orphans": "0 huérfano(s) retirado(s)"}

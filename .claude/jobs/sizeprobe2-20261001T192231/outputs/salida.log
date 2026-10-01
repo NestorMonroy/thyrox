@@ -1,0 +1,6 @@
+qwen3.8-flash 20k bytes=80099 http=200 input=68922
+qwen3.8-flash 40k bytes=160102 http=200 input=137805
+qwen3.8-flash 70k bytes=280103 http=200 input=241128
+qwen3.8-flash 100k bytes=400097 http=200 input=344447
+execution thyrox-worker-probe-mupx8cwk-30876 kind=probe task=TASK-THYROX-0743 exit=0
+__BG_EXIT__=0
