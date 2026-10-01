@@ -8,6 +8,10 @@ import { getDaemonLockPath, readDaemonLock } from '../daemonLock.js'
 import type { SupervisorLogSink, WorkerManagerLifecycle } from '../podmanWorkerSupervision.js'
 import type { PodmanExecutor } from '../podman/workerContainerLifecycle.js'
 import { getControlSocketPath } from '../socketPaths.js'
+import type { ModelCoordinatorStarter } from '../modelCoordinatorSupervision.js'
+
+/** Sin coordinador real: esta suite no toca Podman ni el hogar de runtime. */
+const noModelCoordinator: ModelCoordinatorStarter = async () => { throw new Error('sin coordinador en esta prueba') }
 
 const READY_TIMEOUT_MS = 5_000
 const READY_POLL_MS = 20
@@ -66,6 +70,7 @@ describe('bgDaemonMain — arranque', () => {
     const log = memoryLog()
     const running = bgDaemonMain(['--origin', 'service'], {
       podmanWorkers: { podman: noPodman, manager: idleManager },
+      modelCoordinator: noModelCoordinator,
       supervisorLog: log,
     })
     await waitUntil(() => log.lines.length > 0, READY_TIMEOUT_MS)
@@ -79,6 +84,7 @@ describe('bgDaemonMain — arranque', () => {
     let settled = false
     const running = bgDaemonMain([], {
       podmanWorkers: { podman: noPodman, manager: idleManager },
+      modelCoordinator: noModelCoordinator,
       supervisorLog: memoryLog(),
       startupThresholds: { startupIdleGraceMs: 10 },
     }).finally(() => {

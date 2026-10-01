@@ -74,6 +74,7 @@ import {
   createDaemonPodmanWorkers,
   startWorkerSupervision,
 } from './podmanWorkerSupervision.js'
+import { startHostModelCoordinator, startModelCoordinatorSupervision, type ModelCoordinatorStarter } from './modelCoordinatorSupervision.js'
 import { createSupervisorLog } from './supervisorLog.js'
 
 /**
@@ -241,6 +242,8 @@ export type BgDaemonDeps = {
   podmanWorkers?: DaemonPodmanWorkers
   /** El log de supervisor; por defecto el de `--log-file`, o stderr sin él. */
   supervisorLog?: SupervisorLogSink
+  /** El coordinador de model scheduling del anfitrión; por defecto el real (`startHostModelCoordinator`). */
+  modelCoordinator?: ModelCoordinatorStarter
   /** Umbrales de arranque (`Lr`/`Mt`/`Nr`/`Vr`); los no declarados toman su valor de referencia. */
   startupThresholds?: Partial<DaemonStartupThresholds>
 }
@@ -1078,6 +1081,10 @@ export async function bgDaemonMain(args: readonly string[], deps: BgDaemonDeps =
   const supervisorLog = await openSupervisorLog(deps.supervisorLog, parsed.logFile)
   const workerSupervision = await startWorkerSupervision(
     deps.podmanWorkers ?? createDaemonPodmanWorkers(process.pid), supervisorLog)
+  // El daemon es único por anfitrión: aloja la única autoridad de admisión de
+  // modelos locales (ADR-007 1.14.0). Si no arranca, el daemon sigue.
+  const coordinatorSupervision = await startModelCoordinatorSupervision(
+    deps.modelCoordinator ?? startHostModelCoordinator, supervisorLog)
 
   await new Promise<void>(resolve => {
     if (state.abort.signal.aborted) {
@@ -1127,6 +1134,7 @@ export async function bgDaemonMain(args: readonly string[], deps: BgDaemonDeps =
   }
   spoolWatcher.close()
   await state.server?.close()
+  await coordinatorSupervision.shutdown()
   await workerSupervision.shutdown()
   await supervisorLog.close()
   return 0

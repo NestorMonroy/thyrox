@@ -8,6 +8,10 @@ import { daemonRequest } from '../daemonClient.js'
 import { PODMAN_LOG_LABEL, type SupervisorLogSink, type WorkerManagerLifecycle } from '../podmanWorkerSupervision.js'
 import type { PodmanCommandResult, PodmanExecutor } from '../podman/workerContainerLifecycle.js'
 import { getControlSocketPath } from '../socketPaths.js'
+import type { ModelCoordinatorStarter } from '../modelCoordinatorSupervision.js'
+
+/** Sin coordinador real: esta suite no toca Podman ni el hogar de runtime. */
+const noModelCoordinator: ModelCoordinatorStarter = async () => { throw new Error('sin coordinador en esta prueba') }
 
 const READY_TIMEOUT_MS = 5_000
 const READY_POLL_MS = 20
@@ -82,7 +86,7 @@ async function runDaemonUntil(
 ): Promise<{ exitCode: number; manager: ReturnType<typeof recordingManager>; log: ReturnType<typeof memoryLog> }> {
   const manager = recordingManager()
   const log = memoryLog()
-  const running = bgDaemonMain([], { podmanWorkers: { podman, manager }, supervisorLog: log })
+  const running = bgDaemonMain([], { podmanWorkers: { podman, manager }, supervisorLog: log, modelCoordinator: noModelCoordinator })
   await waitUntilSupervised(log)
   await stop()
   return { exitCode: await running, manager, log }

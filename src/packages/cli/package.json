@@ -159,7 +159,7 @@
     "@thyrox/mcp-runtime": "0.1.0",
     "@thyrox/memory": "0.1.0",
     "@thyrox/mitm": "0.1.0",
-    "@thyrox/model-artifacts": "workspace:*",
+    "@thyrox/model-artifacts": "0.1.0",
     "@thyrox/observability": "0.1.0",
     "@thyrox/output": "0.1.0",
     "@thyrox/paths": "0.1.0",
