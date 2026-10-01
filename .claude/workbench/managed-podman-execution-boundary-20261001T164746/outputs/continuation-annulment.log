@@ -1,0 +1,25 @@
+== a) sin la regla de transitorio (502 no reconocido)
+FALLA 502 es transitorio: esperado 'provider_transient', obtenido 'task_failure'
+FALLA la regla gana a lo aprendido: esperado ('provider_transient', 'rule'), obtenido ('task_failure', 'rule')
+test_task_continuation: 30 OK, 2 FALLA
+== b) los transitorios cuentan contra el candidato
+FALLA conteo por clase sin transitorios: esperado {'qwen3.8-flash': (0, 1), 'deepseek-v4.1-flash': (1, 0)}, obtenido {'qwen3.8-flash': (0, 2), 'deepseek-v4.1-flash': (1, 0)}
+test_task_continuation: 31 OK, 1 FALLA
+== c) lo aprendido puede conceder éxito
+FALLA lo aprendido no concede éxito: esperado ('task_failure', 'ambiguous-default'), obtenido ('success', 'learned')
+test_task_continuation: 31 OK, 1 FALLA
+== d) reconcile-orphans sin la sonda de PID
+(fail) reconcile-orphans: un contenedor cuyo dueño de tarea murió se retira sin intervención > retira sólo el de dueño de tarea con PID muerto; deja vivos y ajenos [3.10ms]
+(fail) reconcile-orphans: un contenedor cuyo dueño de tarea murió se retira sin intervención > sin huérfanos, sale 0 y lo dice [0.79ms]
+ 14 pass
+ 2 fail
+restaurado: sha256 idéntico
+test_task_continuation: 32 OK, 0 FALLA
+execution thyrox-worker-test-mupwqlx4-21858 kind=test task=TASK-THYROX-0743 exit=0
+== e) actividad sin la mitad de CPU
+OK inactivo -> 125
+FALLA ocupado detenido
+OK el libro registra 125
+test_delegate_stall: 2 OK, 1 FALLA
+restaurado: sha256 idéntico
+execution thyrox-worker-test-mupws89p-22596 kind=test task=TASK-THYROX-0743 exit=0

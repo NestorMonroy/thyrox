@@ -91,3 +91,29 @@ El resultado anterior (`no_candidate`) queda anulado y conservado. Control: `tes
 Ruta del proveedor: `thyrox -p` con `ANTHROPIC_BASE_URL` en el endpoint Anthropic-compatible del Token
 Plan (`https://token-plan.maas.qwencloudapi.com/apps/anthropic`); la clave llega a la unidad como
 `ExecutionSecret` montado, nunca en argv, `--env` ni evidencia.
+
+## Directiva de continuación (2026-10-01, ejecutor)
+
+El plan declarado es la autoridad: `plan.jsonl` (p2a..p2e, p3, p4a..p4c, p5a, p5b, en orden). Lo
+consume `bin/task_continuation run <banco> --task TASK-THYROX-0743`
+(`src/session/task_continuation.py`, `07593694f`, `e28bd01df`), lanzado como entrada declarada del
+plano de control con `thyrox-bg`. Nada se detiene entre tramos para reportar: el reporte es una
+proyección de `outputs/continuation.jsonl` y `outputs/cutover-executions.jsonl`.
+
+| Autoridad | Dónde |
+|---|---|
+| qué se hace | `plan.jsonl` + `p*-worker-prompt.md` (derivados de los contratos pN) |
+| transición | `task_continuation.transition` — commit · retry · next_candidate · stop |
+| candidato | Thompson sampling sobre la posterior Beta de `verify/tsc_schedule.py`, por `taskClass`, sólo entre los permitidos (Qwen, luego DeepSeek); 502 e infraestructura no cuentan |
+| clasificación | reglas deterministas; lo ambiguo, a `THYROX_OUTCOME_CLASSIFIER_COMMAND` (transformers en su unidad) cuando exista — nunca concede éxito ni pisa una regla; sin él, fallo de tarea |
+| aceptación | `verify/*.sh` del ítem, en su propia unidad |
+| materialización | `thyrox-bg --task` → `managed_execution.sh` → primitiva |
+| hallazgo fuera de alcance | el trabajador lo escribe en `outputs/<ítem>-findings.jsonl`; queda como `non_blocking_finding` en el log y el tramo sigue; su registro con ID se reconcilia después |
+| inactividad | `delegate.sh`: transcript en vivo + CPU del árbol; 125 tras `DELEGATE_STALL_SECONDS` sin cambio; nunca por stream vacío |
+| huérfanos | `podman-execution-execute reconcile-orphans` tras cada intento y al arrancar |
+
+Sólo `hard_block` (presupuesto agotado o sin candidato permitido) detiene y vuelve al ejecutor.
+
+Diferido, sin bloquear P2–P5: el clasificador aprendido (no hay corpus todavía: lo produce este
+log), el contexto semántico (`semantic_search_worker` existe sólo como perfil en
+`daemon/src/podman/specializedWorkerProfile.ts`), y reward model / DPO / GRPO.
