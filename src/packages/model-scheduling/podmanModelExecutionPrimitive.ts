@@ -21,7 +21,14 @@ import type { ModelSource } from '@thyrox/model-artifacts/modelName.ts'
 import { QUANTIZATION_LEVELS, type QuantizationLevel } from '@thyrox/model-artifacts/quantizationLevel.ts'
 import type { ResolvedModelArtifact } from '@thyrox/model-artifacts/resolvedModelArtifact.ts'
 import type { PodmanCommandResult, PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
-import { type ContainerOwner, WORKER_CONTAINER_NAME_PREFIX } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+import {
+  type ContainerOwner,
+  createWorkerContainerArgv,
+  removeWorkerContainerArgv,
+  WORKER_CONTAINER_NAME_PREFIX,
+  workerContainerName,
+} from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+import { type WorkerPublishedPort, workerResourceLimitArgv } from '@thyrox/podman-execution/workerResourceProfile.ts'
 
 import type { ExecutionUnit, MaterializationOutcome, ModelExecutionPrimitive } from './executionPrimitive.ts'
 
@@ -92,7 +99,7 @@ export interface PodmanModelExecutionPrimitiveOptions {
 }
 
 const UNIT_ID_PREFIX = 'unit-'
-const LOOPBACK_HOST = '127.0.0.1'
+const LOOPBACK_HOST: WorkerPublishedPort['hostAddress'] = '127.0.0.1'
 const GPU_DEVICE_PREFIX = 'nvidia.com/gpu='
 const DEVICE_SEPARATOR = ','
 /** Lo que Podman escribe en stderr cuando el contenedor a retirar no existe. */
@@ -108,7 +115,7 @@ export function modelUnitId(grantId: string): string {
 }
 
 export function modelUnitContainerName(unitId: string): string {
-  return `${MODEL_UNIT_CONTAINER_PREFIX}${unitId}`
+  return workerContainerName(unitId)
 }
 
 function loopbackEndpoint(port: number): string {
@@ -138,6 +145,8 @@ interface ModelUnitContainerSpec {
   readonly port: number
   readonly createdAt: string
   readonly profile: RuntimeContainerProfile
+  readonly owner: ContainerOwner
+  readonly limits: ModelUnitLimits
 }
 
 function unitLabels(spec: ModelUnitContainerSpec): Record<ModelUnitLabelKey, string> {
@@ -162,12 +171,43 @@ function unitLabels(spec: ModelUnitContainerSpec): Record<ModelUnitLabelKey, str
   }
 }
 
-/** argv de `podman create`: loopback del anfitrión, entorno del perfil, etiquetas y dispositivos. */
+/** Las etiquetas de la unidad con su clave completa de Podman (`thyrox.model.*`). */
+function unitLabelArguments(spec: ModelUnitContainerSpec): Record<string, string> {
+  const labels = unitLabels(spec)
+  return Object.fromEntries((Object.keys(labels) as ModelUnitLabelKey[]).map(key => [MODEL_UNIT_LABELS[key], labels[key]]))
+}
+
+/** Los dispositivos del grant en forma CDI; vacío en CPU. */
+function cdiDevices(grant: ExecutionGrant): string[] {
+  return grantedDevices(grant).map(uuid => `${GPU_DEVICE_PREFIX}${uuid}`)
+}
+
+/**
+ * Argv de límites del contenedor: red `bridge` —nunca `host`— con el puerto
+ * del runtime publicado sólo en loopback, rootfs escribible porque el
+ * runtime escribe su caché, y el entorno del perfil.
+ */
+function unitResourceArgv(spec: ModelUnitContainerSpec): string[] {
+  return workerResourceLimitArgv({
+    ...spec.limits,
+    network: 'bridge',
+    readOnlyRootfs: false,
+    mounts: [],
+    environment: spec.profile.environment,
+    publishedPorts: [{ hostAddress: LOOPBACK_HOST, hostPort: spec.port, containerPort: spec.profile.containerPort }],
+    devices: cdiDevices(spec.grant),
+  })
+}
+
+/** argv de `podman create`, compuesto por la primitiva neutral con la unidad como worker. */
 export function modelUnitCreateArgv(spec: ModelUnitContainerSpec): string[] {
-  const environment = Object.entries(spec.profile.environment(spec.port)).flatMap(([key, value]) => ['--env', `${key}=${value}`])
-  const labels = Object.entries(unitLabels(spec)).flatMap(([key, value]) => ['--label', `${MODEL_UNIT_LABELS[key as ModelUnitLabelKey]}=${value}`])
-  const devices = grantedDevices(spec.grant).flatMap(uuid => ['--device', `${GPU_DEVICE_PREFIX}${uuid}`])
-  return ['create', '--name', modelUnitContainerName(spec.unitId), '--network', 'host', ...environment, ...labels, ...devices, spec.profile.image]
+  return createWorkerContainerArgv({
+    workerId: spec.unitId,
+    image: spec.profile.image,
+    owner: spec.owner,
+    labels: unitLabelArguments(spec),
+    resourceArgv: unitResourceArgv(spec),
+  })
 }
 
 /** Lo que `podman inspect` aporta a la unidad: su proceso y su cgroup en el anfitrión. */
@@ -257,7 +297,7 @@ export class PodmanModelExecutionPrimitive implements ModelExecutionPrimitive {
   }
 
   async destroy(unitId: string): Promise<'destroyed' | 'absent' | 'failed'> {
-    const result = await this.options.podman.run(['rm', '--force', modelUnitContainerName(unitId)])
+    const result = await this.options.podman.run(removeWorkerContainerArgv(modelUnitContainerName(unitId)))
     if (succeeded(result)) return 'destroyed'
     return NO_SUCH_CONTAINER.test(result.stderr) ? 'absent' : 'failed'
   }
@@ -292,7 +332,8 @@ export class PodmanModelExecutionPrimitive implements ModelExecutionPrimitive {
     const name = modelUnitContainerName(unitId)
     const port = await this.options.allocatePort()
     const createdAt = this.options.now().toISOString()
-    const created = await podman.run(modelUnitCreateArgv({ grant, unitId, port, createdAt, profile }))
+    const { owner, limits } = this.options
+    const created = await podman.run(modelUnitCreateArgv({ grant, unitId, port, createdAt, profile, owner, limits }))
     if (!succeeded(created)) return { status: 'failed', reason: `podman create ${name}: ${podmanDiagnostic(created)}`, partial: false }
     const started = await podman.run(['start', name])
     if (!succeeded(started)) return partialFailure(unitId, `podman start ${name}: ${podmanDiagnostic(started)}`)

@@ -63,6 +63,13 @@ const KNOWN_NETWORK_MODES: readonly WorkerNetworkMode[] = ['none', 'bridge', 'ho
 const ENVIRONMENT_NAME_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/
 const CREDENTIAL_NAME_PATTERN = /(TOKEN|SECRET|PASSWORD|PASSWD|KEY|CREDENTIAL)/i
 const KNOWN_MOUNT_MODES: readonly WorkerMountMode[] = ['ro', 'rw']
+const LOOPBACK_HOST_ADDRESS = '127.0.0.1'
+const MIN_PORT = 1
+const MAX_PORT = 65_535
+/** La red que publica puertos: `none` no tiene a dónde y `host` no lo necesita. */
+const PORT_PUBLISHING_NETWORK: WorkerNetworkMode = 'bridge'
+/** Nombre CDI de un dispositivo: `<vendor>/<clase>=<nombre>` (`nvidia.com/gpu=<uuid>`). */
+const CDI_DEVICE_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]*\/[A-Za-z0-9][A-Za-z0-9._-]*=[A-Za-z0-9][A-Za-z0-9._:-]*$/
 
 /**
  * El perfil más restrictivo medido: sin red, rootfs de sólo lectura, sin
@@ -131,6 +138,42 @@ export function validateWorkerResourceProfile(profile: WorkerResourceProfile): v
   requireKnownNetwork(profile.network)
   profile.mounts.forEach((mount, index) => requireValidMount(mount, index))
   Object.keys(profile.environment ?? {}).forEach(requirePublicEnvironmentName)
+  requireValidPublishedPorts(profile)
+  profile.devices?.forEach(requireCdiDevice)
+}
+
+function isValidPort(port: number): boolean {
+  return Number.isInteger(port) && port >= MIN_PORT && port <= MAX_PORT
+}
+
+function requireValidPublishedPorts(profile: WorkerResourceProfile): void {
+  const ports = profile.publishedPorts ?? []
+  if (ports.length > 0 && profile.network !== PORT_PUBLISHING_NETWORK) {
+    throw new InvalidWorkerResourceProfileError(
+      'publishedPorts',
+      `publicar puertos exige red ${PORT_PUBLISHING_NETWORK}, el perfil declara ${profile.network}`,
+    )
+  }
+  ports.forEach(requireValidPublishedPort)
+}
+
+function requireValidPublishedPort(port: WorkerPublishedPort, index: number): void {
+  const field = `publishedPorts.${index}`
+  if (port.hostAddress !== LOOPBACK_HOST_ADDRESS) {
+    throw new InvalidWorkerResourceProfileError(`${field}.hostAddress`, `sólo se publica en ${LOOPBACK_HOST_ADDRESS}, recibido: ${port.hostAddress}`)
+  }
+  if (!isValidPort(port.hostPort)) {
+    throw new InvalidWorkerResourceProfileError(`${field}.hostPort`, `puerto fuera de ${MIN_PORT}–${MAX_PORT}: ${port.hostPort}`)
+  }
+  if (!isValidPort(port.containerPort)) {
+    throw new InvalidWorkerResourceProfileError(`${field}.containerPort`, `puerto fuera de ${MIN_PORT}–${MAX_PORT}: ${port.containerPort}`)
+  }
+}
+
+function requireCdiDevice(device: string, index: number): void {
+  if (!CDI_DEVICE_PATTERN.test(device)) {
+    throw new InvalidWorkerResourceProfileError(`devices.${index}`, `el dispositivo debe ir en forma CDI <vendor>/<clase>=<nombre>, recibido: ${device}`)
+  }
 }
 
 function requirePublicEnvironmentName(name: string): void {
@@ -167,6 +210,14 @@ function environmentArgv(environment: Readonly<Record<string, string>>): string[
   return Object.keys(environment).sort().flatMap(name => ['--env', `${name}=${environment[name]}`])
 }
 
+function publishedPortArgv(port: WorkerPublishedPort): string[] {
+  return ['-p', `${port.hostAddress}:${port.hostPort}:${port.containerPort}`]
+}
+
+function deviceArgv(device: string): string[] {
+  return ['--device', device]
+}
+
 function mountArgv(mount: WorkerResourceMount): string[] {
   return ['-v', `${mount.source}:${mount.destination}:${mount.mode}`]
 }
@@ -187,5 +238,7 @@ export function workerResourceLimitArgv(profile: WorkerResourceProfile): string[
     ...rootfsArgv(profile.readOnlyRootfs),
     ...profile.mounts.flatMap(mountArgv),
     ...environmentArgv(profile.environment ?? {}),
+    ...(profile.publishedPorts ?? []).flatMap(publishedPortArgv),
+    ...(profile.devices ?? []).flatMap(deviceArgv),
   ]
 }

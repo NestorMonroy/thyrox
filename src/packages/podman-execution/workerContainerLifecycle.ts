@@ -6,7 +6,7 @@
  *
  * Implementación compartida ≠ dueño compartido (ADR-007, «Mecanismo
  * compartido, dueños distintos»). Cada contenedor lleva su dueño en tres
- * etiquetas —tipo (`daemon` | `pool`), identificador y PID— y qué es un
+ * etiquetas —tipo (`daemon` | `pool` | `lab` | `model-coordinator`), identificador y PID— y qué es un
  * huérfano NO lo decide este módulo: el dueño entrega su predicado. Así el
  * daemon conserva su política (daemon muerto ⇒ huérfano) sin que el barrido
  * de un dueño retire nunca lo de otro.
@@ -38,8 +38,12 @@ export const DEFAULT_STOP_TIMEOUT_SECONDS = 10
 
 export type ContainerOwnerKind = 'daemon' | 'pool' | 'lab' | 'model-coordinator'
 
-const OWNER_KINDS: readonly ContainerOwnerKind[] = ['daemon', 'pool', 'lab']
+const OWNER_KINDS: readonly ContainerOwnerKind[] = ['daemon', 'pool', 'lab', 'model-coordinator']
 const SAFE_IDENTIFIER_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_.-]*$/
+/** Una clave de etiqueta propia: no vacía y sin espacios ni `=`. */
+const LABEL_KEY_PATTERN = /^[^\s=]+$/
+/** Prefijo común de las etiquetas de dueño, reservadas a este módulo. */
+const OWNER_LABEL_KEY_PREFIX = 'thyrox.owner-'
 /** Valor que `podman inspect` imprime para una etiqueta que el contenedor no lleva. */
 const MISSING_LABEL_VALUE = '<no value>'
 
@@ -109,6 +113,21 @@ export function validateWorkerContainerSpec(spec: WorkerContainerSpec): void {
   requireSafeIdentifier('workerId', spec.workerId)
   requireNonEmptyImage(spec.image)
   requireValidOwner(spec.owner)
+  Object.keys(spec.labels ?? {}).forEach(requireOwnLabelKey)
+}
+
+function isReservedLabelKey(key: string): boolean {
+  return key.startsWith(OWNER_LABEL_KEY_PREFIX) || key === WORKER_ID_LABEL_KEY
+}
+
+function requireOwnLabelKey(key: string): void {
+  const field = `labels.${key}`
+  if (!LABEL_KEY_PATTERN.test(key)) {
+    throw new InvalidWorkerContainerSpecError(field, `clave de etiqueta inválida: «${key}»`)
+  }
+  if (isReservedLabelKey(key)) {
+    throw new InvalidWorkerContainerSpecError(field, `${key} es una etiqueta de dueño o worker y no se reescribe`)
+  }
 }
 
 function labelArgv(key: string, value: string): string[] {
@@ -123,7 +142,14 @@ function ownerLabelArgv(owner: ContainerOwner): string[] {
   ]
 }
 
-/** Traduce un spec validado al argv de `podman create` — nombre, etiquetas de dueño y worker, límites e imagen. */
+function ownLabelArgv(labels: Readonly<Record<string, string>>): string[] {
+  return Object.keys(labels).sort().flatMap(key => labelArgv(key, labels[key] as string))
+}
+
+/**
+ * Traduce un spec validado al argv de `podman create` — nombre, etiquetas de
+ * dueño y worker, etiquetas propias del dueño, límites e imagen.
+ */
 export function createWorkerContainerArgv(spec: WorkerContainerSpec): string[] {
   validateWorkerContainerSpec(spec)
   return [
@@ -131,6 +157,7 @@ export function createWorkerContainerArgv(spec: WorkerContainerSpec): string[] {
     '--name', workerContainerName(spec.workerId),
     ...ownerLabelArgv(spec.owner),
     ...labelArgv(WORKER_ID_LABEL_KEY, spec.workerId),
+    ...ownLabelArgv(spec.labels ?? {}),
     ...spec.resourceArgv,
     spec.image,
     ...(spec.command ?? []),
