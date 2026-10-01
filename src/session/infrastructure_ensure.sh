@@ -127,13 +127,13 @@ _infra_ensure_network() {
 # de lock de cada objeto, así que el siguiente objeto nuevo recibe un lock
 # ocupado (`deadlock due to lock mismatch`, `freeing lock ... no such file`).
 # Se mide ANTES de tocar nada. Con un contenedor vivo se rehúsa. Sin ninguno,
-# se intenta el mecanismo soportado, `podman system renumber`, y su stderr se
+# se intenta el mecanismo soportado, `podman system renumber`, y su salida se
 # conserva: si falla, o si no corrige la medida, se rehúsa publicándolo, y se
 # nombra el defecto conocido de sqlite cuando el mensaje coincide
 # (H-THYROX-308). El ensure no repara internals de Podman: esa recuperación es
 # el procedimiento explícito `bin/podman_lock_recovery`.
 _infra_reconcile_locks() {
-  local balance allocated objects live renumber_stderr renumber_rc
+  local balance allocated objects live renumber_output renumber_rc
   balance="$(thyrox_podman_lock_balance)" || return 0
   read -r allocated objects <<< "$balance"
   (( allocated >= objects )) && return 0
@@ -143,7 +143,8 @@ _infra_reconcile_locks() {
     echo "                       Detenerlos y ejecutar \`$_INFRASTRUCTURE_RENUMBER_COMMAND\`; no se renumera con procesos vivos." >&2
     exit "$EXIT_LOCK_COLLISION"
   fi
-  renumber_stderr="$("$PODMAN" system renumber 2>&1 >/dev/null)"
+  # Podman 4.9.3 escribe este error en stdout, no en stderr: se capturan los dos.
+  renumber_output="$("$PODMAN" system renumber 2>&1)"
   renumber_rc=$?
   local after_allocated after_objects
   read -r after_allocated after_objects <<< "$(thyrox_podman_lock_balance)"
@@ -151,20 +152,20 @@ _infra_reconcile_locks() {
     printf 'locks asignados %s de referenciados %s: desfasados, renumerados (ahora %s)\n' "$allocated" "$objects" "$after_allocated"
     return 0
   fi
-  _infra_refuse_unreconciled_locks "$renumber_rc" "$renumber_stderr" "$after_allocated" "$after_objects"
+  _infra_refuse_unreconciled_locks "$renumber_rc" "$renumber_output" "$after_allocated" "$after_objects"
 }
 
 # @description Rehúsa tras un renumber que falló o no corrigió la medida:
 # publica la medida, el exit y el stderr verbatim de Podman, y el remedio.
 # @arg $1 int exit de renumber.
-# @arg $2 string stderr de renumber.
+# @arg $2 string salida de renumber (stdout y stderr).
 # @arg $3 int locks asignados tras renumber.
 # @arg $4 int números de lock referenciados tras renumber.
 _infra_refuse_unreconciled_locks() {
-  local rc="$1" stderr_text="$2" after_allocated="$3" after_objects="$4"
+  local rc="$1" output_text="$2" after_allocated="$3" after_objects="$4"
   echo "infrastructure_ensure: \`$_INFRASTRUCTURE_RENUMBER_COMMAND\` no corrigió los locks (asignados $after_allocated, referenciados $after_objects; exit $rc)." >&2
-  [[ -n "$stderr_text" ]] && printf '                       stderr de Podman: %s\n' "$stderr_text" >&2
-  if thyrox_podman_is_sqlite_volume_renumber_defect "$stderr_text"; then
+  [[ -n "$output_text" ]] && printf '                       salida de Podman: %s\n' "$output_text" >&2
+  if thyrox_podman_is_sqlite_volume_renumber_defect "$output_text"; then
     echo "                       Es el defecto conocido de Podman 4.9.3 con backend sqlite (H-THYROX-308): renumber se detiene en el primer volumen." >&2
   fi
   echo "                       El ensure no repara internals de Podman. Recuperación explícita: bin/podman_lock_recovery (sin --confirm muestra el plan)." >&2

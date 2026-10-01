@@ -23,7 +23,7 @@ if type thyrox_podman_lock_balance &>/dev/null; then return 0 2>/dev/null || tru
 # shellcheck source=/dev/null
 source "$(dirname "${BASH_SOURCE[0]}")/infrastructure.sh"
 
-# Las dos partes del stderr con que `podman system renumber` falla en Podman
+# Las dos partes de la salida con que `podman system renumber` falla en Podman
 # 4.9.3 sobre backend sqlite: la reescritura de la configuración de un volumen
 # usa una columna `ID` que la tabla de volúmenes no tiene. Renumber asigna los
 # locks de los contenedores y se detiene en el primer volumen.
@@ -91,10 +91,10 @@ thyrox_podman_live_containers() {
 }
 export -f thyrox_podman_live_containers
 
-# @description ¿El stderr de `podman system renumber` es el defecto conocido
+# @description ¿La salida de `podman system renumber` es el defecto conocido
 # de Podman 4.9.3 sobre backend sqlite? Exige las dos partes del mensaje: un
 # fallo cualquiera de renumber no se atribuye a este defecto.
-# @arg $1 string stderr de renumber.
+# @arg $1 string salida de renumber (stdout y stderr: Podman 4.9.3 lo escribe en stdout).
 # @exitcode 0 es el defecto conocido.
 # @exitcode 1 no lo es.
 thyrox_podman_is_sqlite_volume_renumber_defect() {
