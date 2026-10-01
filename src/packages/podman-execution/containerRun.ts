@@ -20,7 +20,7 @@ import {
   type WorkerContainerSpec,
 } from './workerContainerLifecycle.js'
 
-export type ContainerRunStage = 'create' | 'start' | 'wait' | 'signal' | 'export'
+export type ContainerRunStage = 'create' | 'start' | 'wait' | 'logs' | 'signal' | 'export'
 
 /** Mensaje base del fallo: la etapa, el sujeto y lo que Podman dijo. */
 function failureMessage(stage: ContainerRunStage, subject: string, result: PodmanCommandResult): string {
@@ -74,6 +74,28 @@ export async function runToCompletion(podman: PodmanExecutor, spec: WorkerContai
   await requireSuccess(podman, 'create', name, createWorkerContainerArgv(spec))
   await requireSuccess(podman, 'start', name, ['start', name])
   return parseWaitExitCode(name, await requireSuccess(podman, 'wait', name, ['wait', name]))
+}
+
+export type JobOutput = {
+  exitCode: number
+  stdout: string
+  stderr: string
+}
+
+/**
+ * Corre el contenedor hasta que termine y devuelve su código y las dos
+ * salidas de su proceso, leídas con `podman logs` antes de retirarlo. La
+ * limpieza ocurre siempre, también si una etapa falla.
+ */
+export async function runJobWithOutput(podman: PodmanExecutor, spec: WorkerContainerSpec): Promise<JobOutput> {
+  const name = workerContainerName(spec.workerId)
+  try {
+    const exitCode = await runToCompletion(podman, spec)
+    const logs = await requireSuccess(podman, 'logs', name, ['logs', name])
+    return { exitCode, stdout: logs.stdout, stderr: logs.stderr }
+  } finally {
+    await podman.run(removeWorkerContainerArgv(name))
+  }
 }
 
 /** Envía `signal` al proceso principal del contenedor (p. ej. SIGTERM para un apagado ordenado). */

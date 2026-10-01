@@ -75,7 +75,7 @@ export interface StepContext {
   readonly method: QuantizationMethod
   readonly scratchDir: string
   readonly runDir: string
-  readonly containerName: string
+  readonly workerId: string
   readonly fetcher: Fetcher
   readonly runInLab: (step: LabStep) => Promise<LabStepResult>
   readonly observations: RunObservations
@@ -105,7 +105,7 @@ async function artifactOf(path: string): Promise<NonNullable<StepRecord['artifac
 }
 
 async function runToolOrFail(context: StepContext, step: QuantizationStep, command: readonly string[]): Promise<LabStepResult> {
-  const result = await context.runInLab({ containerName: context.containerName, command })
+  const result = await context.runInLab({ workerId: context.workerId, command })
   if (result.exitCode !== 0) throw new QuantizationStepError(step, `exit ${result.exitCode}: ${lastLines(result.stderr)}`)
   return result
 }

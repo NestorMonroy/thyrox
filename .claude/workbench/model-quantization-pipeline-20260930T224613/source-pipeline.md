@@ -132,3 +132,28 @@ en inglés, comentarios en español técnico):
 `2e1fd397ee46e1388853d2af2c993145b0f1098a`, apache-2.0, 10 archivos,
 3 098 973 788 bytes; `model.safetensors` sha256
 `c1b9b30e907950516ba3c646bdf570d8084c25a6410a0cdca80cf04b11bc13a8`.
+
+## Corrección: la ejecución pasa por `@thyrox/podman-execution` (2026-10-01)
+
+La primera versión del laboratorio componía su propio `podman run`. La vía
+obligatoria de ejecución es la primitiva (ADR-THYROX-007): el laboratorio
+ahora construye un `WorkerContainerSpec` con dueño `lab` y un
+`WorkerResourceProfile` (sin red, memoria y CPU declaradas, `pids` 512, rootfs
+escribible a propósito, scratch montado `rw`) y corre cada paso con
+`runJobWithOutput`, que la primitiva gana en TDD: crear, arrancar, esperar,
+leer stdout y stderr con `podman logs` y retirar siempre. Una prueba del
+paquete rehúsa cualquier módulo que vuelva a componer `['run', '--rm'`; su
+anulación (un módulo con esa forma) cae exactamente en ella.
+
+## Relación con RLVR (TASK-THYROX-0708, 0710)
+
+Lo que este pipeline mide por artefacto —perplejidad sobre un corpus fijo,
+inferencia mínima, tamaño y tipo verificados, digest— es una señal
+**verificable** y determinista: sirve como componente de recompensa para el
+ajuste por RLVR y como puerta de aceptación de un adaptador entrenado (un
+LoRA que empeore la perplejidad del corpus o deje de generar no se
+registra). Lo que no aporta es la recompensa principal: la competencia en una
+clase de tarea la mide la suite de 0710, y la de tool calling está saturada
+(`rlvr-local-models-*/README.md`, ventaja nula). Orden: 0718 mide la cadena,
+0710 da la recompensa de tarea, 0708 entrena con ambas y vuelve a pasar por
+este pipeline para registrarse.

@@ -79,7 +79,8 @@ async function quantize(parsed: QuantizeArguments, context: CommandContext): Pro
   const image = { reference, ...(await resolveLabImage(podman, reference)) }
   const lab = new QuantizationLab(podman, image.id, parsed.request.scratchDir,
     { memoryBytes: parsed.request.memoryLimitBytes, cpus: parsed.cpus },
-    containerMeasureProbe(join(context.thyroxRoot, 'bin', 'container_measure')))
+    containerMeasureProbe(join(context.thyroxRoot, 'bin', 'container_measure')),
+    { id: runIdOf(parsed.request), pid: process.pid })
   const outcome = await runQuantization(parsed.request, {
     fetcher: url => fetch(url),
     runInLab: step => lab.run(step),

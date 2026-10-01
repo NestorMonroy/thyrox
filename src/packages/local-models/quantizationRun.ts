@@ -29,6 +29,8 @@ import {
   type StepRecord,
 } from '@thyrox/model-artifacts/quantizationPlan.ts'
 
+import { workerContainerName } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+
 import { fetchSourceSpec, type Fetcher } from './huggingFaceSource.js'
 import type { LabStep, LabStepResult } from './quantizationLab.js'
 import { QuantizationStepError, STEP_ACTIONS, type RunObservations } from './quantizationSteps.js'
@@ -149,7 +151,7 @@ async function preflight(state: RunState, request: QuantizationRequest, deps: Qu
   if (!capacity.admitted) return capacity.reason
   const disk = await deps.admission.admitDisk(requiredBytes, request.scratchDir)
   if (!disk.admitted) return `admisión de disco: ${disk.detail}`
-  const memory = await deps.admission.admitMemory(request.memoryLimitBytes, runIdOf(request))
+  const memory = await deps.admission.admitMemory(request.memoryLimitBytes, workerContainerName(runIdOf(request)))
   if (!memory.admitted) return `admisión de memoria: ${memory.detail}`
   return undefined
 }
@@ -191,7 +193,7 @@ async function runStep(step: QuantizationStep, state: RunState, request: Quantiz
       method: state.request.method,
       scratchDir: request.scratchDir,
       runDir: request.runDir,
-      containerName: runIdOf(request),
+      workerId: runIdOf(request),
       fetcher: deps.fetcher,
       observations: state.observations,
       runInLab: async labStep => keepPeak(await deps.runInLab(labStep), peaks),

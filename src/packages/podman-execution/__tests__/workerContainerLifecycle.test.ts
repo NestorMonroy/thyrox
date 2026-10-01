@@ -340,3 +340,11 @@ describe('findOrphanedWorkerContainers / retireOrphanedWorkerContainers — el d
     expect(retirements).toEqual([{ name: 'thyrox-worker-w1', stopped: true, removed: true, killedStaleProcess: false }])
   })
 })
+
+describe('lab owner', () => {
+  test('a lab is a valid container owner', () => {
+    expect(() => validateWorkerContainerSpec({
+      workerId: 'quantize1', image: 'localhost/lab', owner: { kind: 'lab', id: 'q1', pid: 9 }, resourceArgv: [],
+    })).not.toThrow()
+  })
+})

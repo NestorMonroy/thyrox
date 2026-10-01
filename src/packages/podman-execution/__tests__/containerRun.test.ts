@@ -5,6 +5,7 @@ import {
   ContainerRunError,
   exportArtifacts,
   runJobAndCollect,
+  runJobWithOutput,
   runToCompletion,
   signalContainer,
 } from '../containerRun.js'
@@ -129,5 +130,23 @@ describe('runJobAndCollect — exportar antes de limpiar', () => {
     })
     await rejectionOf(runJobAndCollect(podman, spec(), { containerPaths: ['/out/a.txt'], hostDir: HOST_DIR }))
     expect(podman.calls.map(call => call[0])).toEqual(['create', 'start', 'wait', 'cp', 'rm'])
+  })
+})
+
+describe('runJobWithOutput', () => {
+  test('returns the exit code and both streams read with podman logs', async () => {
+    const podman = fakePodman({
+      wait: { exitCode: 0, stdout: '3\n', stderr: '' },
+      logs: { exitCode: 0, stdout: 'generated text', stderr: 'speed: 12.5 t/s' },
+    })
+    const outcome = await runJobWithOutput(podman, spec())
+    expect(outcome).toEqual({ exitCode: 3, stdout: 'generated text', stderr: 'speed: 12.5 t/s' })
+    expect(podman.calls.map(call => call[0])).toEqual(['create', 'start', 'wait', 'logs', 'rm'])
+  })
+
+  test('removes the container even when a stage fails', async () => {
+    const podman = fakePodman({ start: { exitCode: 125, stdout: '', stderr: 'no start' } })
+    await rejectionOf(runJobWithOutput(podman, spec()))
+    expect(podman.calls.at(-1)).toEqual(['rm', '--force', NAME])
   })
 })

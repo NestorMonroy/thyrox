@@ -36,9 +36,9 @@ export const WORKER_ID_LABEL_KEY = 'thyrox.worker-id'
 /** Plazo por defecto de `podman stop` antes de que Podman escale a SIGKILL. */
 export const DEFAULT_STOP_TIMEOUT_SECONDS = 10
 
-export type ContainerOwnerKind = 'daemon' | 'pool'
+export type ContainerOwnerKind = 'daemon' | 'pool' | 'lab'
 
-const OWNER_KINDS: readonly ContainerOwnerKind[] = ['daemon', 'pool']
+const OWNER_KINDS: readonly ContainerOwnerKind[] = ['daemon', 'pool', 'lab']
 const SAFE_IDENTIFIER_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_.-]*$/
 /** Valor que `podman inspect` imprime para una etiqueta que el contenedor no lleva. */
 const MISSING_LABEL_VALUE = '<no value>'
