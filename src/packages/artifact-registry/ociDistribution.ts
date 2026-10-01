@@ -128,10 +128,14 @@ export class OciDistributionClient {
       const key = `${repository}:${scope}`
       const token = this.#tokens.get(key)
       let response = await this.#fetch(url, { method, headers: token ? { ...headers, authorization: `Bearer ${token}` } : headers, body, redirect: 'follow' })
-      if (response.status === 401 && token === undefined) {
+      // Un 401 renueva el token tanto si no había como si el guardado venció:
+      // el Bearer de Docker Hub dura minutos y una subida de un blob grande
+      // dura más (medido: 12,8 min y la petición siguiente respondió 401).
+      if (response.status === 401) {
         const fetched = await this.#token(response.headers.get('www-authenticate'), repository, scope)
-        if (fetched === undefined || !replayable) return response
+        if (fetched === undefined || fetched === token || !replayable) return response
         this.#tokens.set(key, fetched)
+        await response.body?.cancel()
         response = await this.#fetch(url, { method, headers: { ...headers, authorization: `Bearer ${fetched}` }, body, redirect: 'follow' })
       }
       if (response.status !== 429 || attempt >= retry.maxAttempts || !replayable) return response

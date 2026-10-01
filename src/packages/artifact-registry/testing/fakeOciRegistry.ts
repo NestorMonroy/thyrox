@@ -31,6 +31,8 @@ export interface FakeOciRegistry {
   rateLimit: FakeRateLimit | undefined
   /** Digests que se sirven con un byte cambiado. */
   readonly corrupted: Set<string>
+  /** Invalida todo token emitido, como el vencimiento del token Bearer de un registry real. */
+  expireTokens(): void
   stop(): void
 }
 
@@ -49,7 +51,7 @@ export function startFakeOciRegistry(options: { publicRead?: boolean } = {}): Fa
   const corrupted = new Set<string>()
   const uploads = new Map<string, true>()
   let uploadCounter = 0
-  const state = { rateLimit: undefined as FakeRateLimit | undefined }
+  const state = { rateLimit: undefined as FakeRateLimit | undefined, tokenGeneration: 0 }
 
   const server = Bun.serve({
     port: 0,
@@ -89,12 +91,12 @@ export function startFakeOciRegistry(options: { publicRead?: boolean } = {}): Fa
     const expected = `Basic ${Buffer.from(`${FAKE_PUBLISHER.username}:${FAKE_PUBLISHER.token}`).toString('base64')}`
     if (basic !== null && basic !== expected) return new Response('bad credentials', { status: 401 })
     const granted = scope.includes('push') && basic === expected ? 'pull,push' : 'pull'
-    return Response.json({ token: `fake.${granted}` })
+    return Response.json({ token: `fake.${state.tokenGeneration}.${granted}` })
   }
 
   function tokenScope(authorization: string | null): string | undefined {
-    const match = authorization?.match(/^Bearer fake\.(.+)$/)
-    return match?.[1]
+    const match = authorization?.match(/^Bearer fake\.(\d+)\.(.+)$/)
+    return match && Number(match[1]) === state.tokenGeneration ? match[2] : undefined
   }
 
   async function handleUpload(request: Request, url: URL, uploadId: string | undefined): Promise<Response> {
@@ -149,6 +151,7 @@ export function startFakeOciRegistry(options: { publicRead?: boolean } = {}): Fa
     corrupted,
     get rateLimit() { return state.rateLimit },
     set rateLimit(value) { state.rateLimit = value },
+    expireTokens: () => { state.tokenGeneration += 1 },
     stop: () => server.stop(true),
   }
 }

@@ -79,6 +79,19 @@ describe('pushArtifact', () => {
     expect(registry.requests.filter(request => request.method === 'POST').length).toBe(before)
   })
 
+  test('un token vencido se renueva una vez: una subida larga no termina en unauthorized', async () => {
+    const client = publisher()
+    const files = await twoFiles()
+    const config = { mediaType: 'application/json', bytes: new TextEncoder().encode('{}') }
+    const first = await client.pushArtifact({ artifactType: ARTIFACT_TYPE, files, config, annotations: {} }, { repository: REPOSITORY, tag: 'first' })
+    expect(first.status).toBe('success')
+    registry.expireTokens()
+    writeFileSync(join(workdir, 'later.log'), 'subido tras vencer el token\n')
+    const later = await describeArtifactFile(join(workdir, 'later.log'), 'later.log', 'text/plain')
+    const second = await client.pushArtifact({ artifactType: ARTIFACT_TYPE, files: [...files, later], config, annotations: {} }, { repository: REPOSITORY, tag: 'second' })
+    expect(second.status).toBe('success')
+  })
+
   test('sin credencial de publicación, publicar es unauthorized', async () => {
     const files = await twoFiles()
     const result = await anonymous().pushArtifact(
