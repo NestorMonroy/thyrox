@@ -227,3 +227,14 @@ describe('ResidencyController: desalojar', () => {
     expect(await controller.evict(RESIDENCY)).toMatchObject({ status: 'refused' })
   })
 })
+
+describe('ResidencyController: la admisión lleva el grant de su residencia', () => {
+  test('el grant de la admisión es el de la residencia, con la identidad del plan, y se reutiliza', async () => {
+    const first = await admitted('request-1')
+    const second = await admitted('request-2')
+    expect(first.grant.grantId).toBe(first.residency.grantId as string)
+    expect(first.grant.artifact).toEqual(PLAN.artifact)
+    expect(first.grant.residency).toMatchObject({ instance: RESIDENCY, generation: first.unit.generation })
+    expect(second.grant).toEqual(first.grant)
+  })
+})

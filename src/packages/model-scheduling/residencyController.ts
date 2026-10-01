@@ -53,6 +53,8 @@ export type ResidencyStage = 'lease' | 'reserve' | 'grant' | 'materialize' | 'ge
 export interface Admission {
   readonly requestId: string
   readonly residency: ModelResidency
+  /** El grant de la residencia: el mismo para toda petición que la reutiliza. */
+  readonly grant: ExecutionGrant
   readonly unit: ExecutionUnit
   readonly allocation: RequestAllocation
   /** Verdadero si la residencia ya estaba `resident` y sólo se asignó la petición. */
