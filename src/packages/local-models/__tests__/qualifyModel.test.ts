@@ -1,13 +1,38 @@
 import { afterEach, describe, expect, test } from 'bun:test'
 
-import { OllamaApi, OllamaRequestError } from '../ollamaApi.js'
-import { runQualification } from '../qualifyModel.js'
+import type { ExecutionGrant } from '@thyrox/model-artifacts/executionGrant.ts'
+import { resolvedArtifact } from '@thyrox/model-artifacts/testing/resolvedArtifactFixture.ts'
+import type { AdmissionTicket } from '@thyrox/model-scheduling/hostCoordinator.ts'
+
+import { OllamaRequestError } from '../ollamaApi.js'
+import { ContextBeyondGrantError, runQualification } from '../qualifyModel.js'
 import { TOOL_CALLING_SUITE_PATH, loadSuite } from '../toolCallingSuite.js'
 import { CORRECT_TOOL_CALLING_REPLIES, startFakeOllama, type FakeChatReply, type FakeOllama } from '../testing/fakeOllama.js'
 
-const MODEL = 'thyrox-library--qwen2.5-0.5b:q4_k_m-ollama-cccccccccccc'
+const ARTIFACT = resolvedArtifact()
+const MODEL = ARTIFACT.modelId
 const NOW = new Date('2026-10-01T05:00:00.000Z')
 const CONTEXT_TOKENS = 8192
+const GRANTED_CONTEXT = 16384
+
+/**
+ * La cualificación sólo alcanza el runtime por una admisión (ADR-007 1.14.0,
+ * M8): el ticket lleva el modelo concedido y la unidad cuyo endpoint se usa.
+ */
+function ticketTo(endpoint: string): AdmissionTicket {
+  const grant: ExecutionGrant = {
+    grantId: 'grant-1', requestId: 'request-1', artifact: ARTIFACT, runtime: 'ollama', placement: { kind: 'cpu' },
+    residency: { mode: 'create', instance: 'residency-1', generation: 1 }, residencyVramMib: 0, requestVramMib: 0,
+    contextLength: GRANTED_CONTEXT, kvCacheType: 'f16', issuedAt: '2026-10-01T00:00:00Z', expiresAt: '2099-01-01T00:00:00Z',
+  }
+  return {
+    admissionId: 'admission-1', requestId: 'request-1', client: 'qualify', grant,
+    unit: {
+      unitId: 'unit-1', grantId: grant.grantId, artifact: ARTIFACT, residencyKey: 'residency-1', generation: 1,
+      runtime: 'ollama', endpoint, containerId: 'container-1', devices: [],
+    },
+  }
+}
 
 let server: FakeOllama | undefined
 afterEach(async () => {
@@ -15,10 +40,10 @@ afterEach(async () => {
   server = undefined
 })
 
-async function qualify(reply: (prompt: string) => FakeChatReply) {
+async function qualify(reply: (prompt: string) => FakeChatReply, contextTokens = CONTEXT_TOKENS) {
   server = startFakeOllama({ chat: prompt => reply(prompt) })
   const suite = await loadSuite(TOOL_CALLING_SUITE_PATH)
-  return runQualification({ api: new OllamaApi(server.baseUrl), suite, model: MODEL, measurementCondition: 'contended', contextTokens: CONTEXT_TOKENS, now: () => NOW })
+  return runQualification({ ticket: ticketTo(server.baseUrl), suite, measurementCondition: 'contended', contextTokens, now: () => NOW })
 }
 
 function correct(prompt: string): FakeChatReply {
@@ -75,6 +100,11 @@ describe('runQualification — tool-calling@1 contra /api/chat', () => {
 
   test('un error HTTP no es un caso fallado: se rehúsa sin cualificación', async () => {
     await expect(qualify(() => ({ status: 500 }))).rejects.toThrow(OllamaRequestError)
+  })
+
+  test('pedir más contexto que el concedido se rehúsa sin tocar el runtime', async () => {
+    await expect(qualify(correct, GRANTED_CONTEXT + 1)).rejects.toThrow(ContextBeyondGrantError)
+    expect(server?.requests.filter(r => r.path === '/api/chat') ?? []).toHaveLength(0)
   })
 
   test('una respuesta sin eval_duration no mide velocidad y se rehúsa', async () => {

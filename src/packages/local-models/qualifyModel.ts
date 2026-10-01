@@ -10,7 +10,9 @@
 
 import type { MeasurementCondition, ModelQualification } from '@thyrox/model-artifacts/modelQualification.ts'
 
-import type { ChatReply, OllamaApi } from './ollamaApi.js'
+import type { AdmissionTicket } from '@thyrox/model-scheduling/hostCoordinator.ts'
+
+import type { ChatReply } from './ollamaApi.js'
 import { scoreReply, type Suite, type SuiteCase } from './toolCallingSuite.js'
 
 /** La semilla del benchmark de origen: la misma medición se repite igual. */
@@ -20,9 +22,9 @@ const NANOSECONDS_PER_SECOND = 1e9
 const OBSERVED_PREVIEW_LENGTH = 120
 
 export interface QualificationRequest {
-  readonly api: OllamaApi
+  /** La admisión del coordinador: el modelo es el concedido y sólo se habla con su unidad (M8). */
+  readonly ticket: AdmissionTicket
   readonly suite: Suite
-  readonly model: string
   /** Si la medición corre sola: sólo así su velocidad puede ordenar candidatos. */
   readonly measurementCondition: MeasurementCondition
   readonly contextTokens: number
@@ -47,27 +49,18 @@ export class UnmeasuredSpeedError extends Error {
   }
 }
 
+/** Se pidió medir con más contexto del que el grant concede: la medición no correspondería a lo concedido. */
+export class ContextBeyondGrantError extends Error {
+  constructor(readonly requested: number, readonly granted: number) {
+    super(`la cualificación pide ${requested} tokens de contexto y el grant concede ${granted}`)
+    this.name = 'ContextBeyondGrantError'
+  }
+}
+
 /** Corre la suite entera; un error HTTP aborta sin cualificación, no cuenta como caso fallado. */
 export async function runQualification(request: QualificationRequest): Promise<QualificationRun> {
-  const replies: ChatReply[] = []
-  for (const suiteCase of request.suite.cases) replies.push(await request.api.chat(chatBody(request, suiteCase)))
-  const outcomes = request.suite.cases.map((suiteCase, index) => outcomeOf(suiteCase, replies[index] as ChatReply))
-  const casesPassed = outcomes.filter(outcome => outcome.passed).length
-  return {
-    outcomes,
-    qualification: {
-      model: request.model,
-      kind: 'protocol',
-      suite: request.suite.id,
-      casesPassed,
-      casesTotal: outcomes.length,
-      passed: casesPassed === outcomes.length,
-      contextTokens: request.contextTokens,
-      tokensPerSecond: tokensPerSecond(request.model, replies),
-      measurementCondition: request.measurementCondition,
-      measuredAt: request.now().toISOString(),
-    },
-  }
+  void request
+  throw new Error('runQualification por admisión: por implementar')
 }
 
 function chatBody(request: QualificationRequest, suiteCase: SuiteCase): Record<string, unknown> {

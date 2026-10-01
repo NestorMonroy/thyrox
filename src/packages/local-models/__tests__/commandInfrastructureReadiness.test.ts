@@ -1,7 +1,8 @@
 /**
- * Los cuatro consumidores de infraestructura reconcilian antes de usarla
+ * Los tres consumidores de infraestructura reconcilian antes de usarla
  * (TASK-THYROX-0727): `quantize` e `import` piden Redis antes de tomar su
- * lease global; `qualify` y `catalog declare` piden Ollama antes de hablarle.
+ * lease global; `catalog declare` pide Ollama antes de hablarle. `qualify` ya no
+ * depende de `thyrox-ollama`: pide una admisión al coordinador (M8).
  * Con la reconciliación fallida rehúsan con EXIT_REFUSED y la causa, sin
  * abrir el almacén ni contactar al servicio.
  */
@@ -11,7 +12,6 @@ import { runCatalogCommand, type CommandContext } from '../catalogCommand.js'
 import { EXIT_REFUSED } from '../commandOutput.js'
 import { runImportCommand } from '../importCommand.js'
 import type { InfrastructureEnsure } from '../infrastructureReadiness.js'
-import { runQualifyCommand } from '../qualifyCommand.js'
 import { runQuantizeCommand } from '../quantizeCommand.js'
 
 const REVISION = 'a'.repeat(40)
@@ -37,7 +37,6 @@ describe('un consumidor reconcilia su infraestructura antes de usarla', () => {
   const cases: ReadonlyArray<readonly [string, string, (context: CommandContext) => Promise<number>]> = [
     ['quantize', 'thyrox-redis', context => runQuantizeCommand(['run', '--repository', 'Qwen/x', '--revision', REVISION, '--scratch-dir', '/tmp/s', '--run-dir', '/tmp/r'], context)],
     ['import', 'thyrox-redis', context => runImportCommand(['run', '--repository', 'Qwen/x', '--revision', REVISION, '--file', 'm.gguf', '--sha256', 'b'.repeat(64), '--scratch-dir', '/tmp/s', '--run-dir', '/tmp/r'], context)],
-    ['qualify', 'thyrox-ollama', context => runQualifyCommand(['modelo'], context)],
     ['catalog declare', 'thyrox-ollama', context => runCatalogCommand(['declare', 'qwen:1'], context)],
   ]
   for (const [name, container, run] of cases) {
