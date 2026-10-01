@@ -13,8 +13,13 @@ export interface PodmanCommandResult {
   readonly stderr: string
 }
 
+/** Opciones de una invocación: `stdin` entrega un valor sin ponerlo en argv (p. ej. un secreto). */
+export interface PodmanRunOptions {
+  readonly stdin?: string
+}
+
 export interface PodmanExecutor {
-  run(args: readonly string[]): Promise<PodmanCommandResult>
+  run(args: readonly string[], options?: PodmanRunOptions): Promise<PodmanCommandResult>
 }
 
 /** Variable que el toolchain exporta con la ruta del binario de Podman medido. */
@@ -23,10 +28,16 @@ const DEFAULT_PODMAN_BIN = 'podman'
 /** Código con que se reporta un proceso que terminó por señal y no dio código propio. */
 const NO_EXIT_CODE = -1
 
-/** Corre un binario sin stdin y recoge su salida completa; rechaza sólo si no se pudo lanzar. */
-export function runCommand(bin: string, args: readonly string[]): Promise<PodmanCommandResult> {
+/**
+ * Corre un binario y recoge su salida completa; rechaza sólo si no se pudo
+ * lanzar. Sin `stdin` declarado no abre la entrada; con él, la escribe y la
+ * cierra, así un valor sensible nunca viaja en argv.
+ */
+export function runCommand(bin: string, args: readonly string[], options: PodmanRunOptions = {}): Promise<PodmanCommandResult> {
   return new Promise((resolve, reject) => {
-    const child = spawn(bin, [...args], { stdio: ['ignore', 'pipe', 'pipe'] })
+    const stdinMode = options.stdin === undefined ? 'ignore' : 'pipe'
+    const child = spawn(bin, [...args], { stdio: [stdinMode, 'pipe', 'pipe'] })
+    if (options.stdin !== undefined) child.stdin?.end(options.stdin)
     let stdout = ''
     let stderr = ''
     child.stdout.on('data', chunk => { stdout += chunk })
@@ -39,6 +50,6 @@ export function runCommand(bin: string, args: readonly string[]): Promise<Podman
 /** Ejecutor real: el binario del toolchain, o `podman` del PATH. */
 export function createPodmanExecutor(): PodmanExecutor {
   return {
-    run: args => runCommand(process.env[PODMAN_BIN_ENV] || DEFAULT_PODMAN_BIN, args),
+    run: (args, options) => runCommand(process.env[PODMAN_BIN_ENV] || DEFAULT_PODMAN_BIN, args, options),
   }
 }

@@ -6,7 +6,7 @@
  *
  * Implementación compartida ≠ dueño compartido (ADR-007, «Mecanismo
  * compartido, dueños distintos»). Cada contenedor lleva su dueño en tres
- * etiquetas —tipo (`daemon` | `pool` | `lab` | `model-coordinator`), identificador y PID— y qué es un
+ * etiquetas —tipo (`daemon` | `pool` | `lab` | `model-coordinator` | `infrastructure`), identificador y PID— y qué es un
  * huérfano NO lo decide este módulo: el dueño entrega su predicado. Así el
  * daemon conserva su política (daemon muerto ⇒ huérfano) sin que el barrido
  * de un dueño retire nunca lo de otro.
@@ -36,9 +36,9 @@ export const WORKER_ID_LABEL_KEY = 'thyrox.worker-id'
 /** Plazo por defecto de `podman stop` antes de que Podman escale a SIGKILL. */
 export const DEFAULT_STOP_TIMEOUT_SECONDS = 10
 
-export type ContainerOwnerKind = 'daemon' | 'pool' | 'lab' | 'model-coordinator'
+export type ContainerOwnerKind = 'daemon' | 'pool' | 'lab' | 'model-coordinator' | 'infrastructure'
 
-const OWNER_KINDS: readonly ContainerOwnerKind[] = ['daemon', 'pool', 'lab', 'model-coordinator']
+const OWNER_KINDS: readonly ContainerOwnerKind[] = ['daemon', 'pool', 'lab', 'model-coordinator', 'infrastructure']
 const SAFE_IDENTIFIER_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_.-]*$/
 /** Una clave de etiqueta propia: no vacía y sin espacios ni `=`. */
 const LABEL_KEY_PATTERN = /^[^\s=]+$/
