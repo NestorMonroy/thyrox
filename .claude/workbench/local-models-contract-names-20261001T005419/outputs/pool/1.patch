@@ -1,0 +1,370 @@
+diff --git a/src/packages/local-models/__tests__/commands.test.ts b/src/packages/local-models/__tests__/commands.test.ts
+index 1e2576621..a41b01709 100644
+--- a/src/packages/local-models/__tests__/commands.test.ts
++++ b/src/packages/local-models/__tests__/commands.test.ts
+@@ -46,7 +46,7 @@ interface Installation {
+   readonly env: Record<string, string>
+ }
+ 
+-function installation(chat: FakeOllamaScript['chat']): Installation {
++function installation(chat: FakeOllamaScript['chat'], installedName = 'qwen2.5:0.5b'): Installation {
+   counter += 1
+   const root = join(WORKDIR, `install-${counter}`)
+   const mountpoint = join(root, 'volume')
+@@ -56,7 +56,7 @@ function installation(chat: FakeOllamaScript['chat']): Installation {
+   writeFileSync(podman, `#!/bin/sh\necho "$@" >> '${podman}.calls'\necho '${mountpoint}'\n`)
+   chmodSync(podman, 0o755)
+   server = startFakeOllama({
+-    tags: [{ name: 'qwen2.5:0.5b', digest: `sha256:${MANIFEST_DIGEST}` }],
++    tags: [{ name: installedName, digest: `sha256:${MANIFEST_DIGEST}` }],
+     show: { modelfile: `FROM /root/.ollama/models/blobs/sha256-${GGUF_SHA256}\n`, details: { quantization_level: 'Q4_K_M' }, capabilities: ['completion', 'tools'] },
+     chat,
+   })
+@@ -123,6 +123,34 @@ describe('local-models-catalog', () => {
+     expect(result.stderr.join('\n')).toContain('catalog.json')
+   })
+ 
++  test('declare <nombre-hf> --revision <commit> conserva la identidad hf y no copia', async () => {
++    const commit = '7ae557604adf67be50417f59c2c2f167def9a775'
++    const name = 'thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf'
++    const install = installation(correct, name)
++    const result = await run(runCatalogCommand, ['declare', name, '--revision', commit], install)
++    expect(result).toMatchObject({ code: 0, stderr: [] })
++    expect(result.stdout[0]).toContain(name)
++    const listed = await run(runCatalogCommand, ['list', '--json'], install)
++    expect(JSON.parse(listed.stdout[0] as string).entries).toMatchObject([{ name, source: 'hf', revision: commit }])
++    expect(server?.requests.some(r => r.path === '/api/copy')).toBe(false)
++  })
++
++  test('declare <nombre-hf> sin --revision sale 2 nombrando la opción', async () => {
++    const name = 'thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf'
++    const result = await run(runCatalogCommand, ['declare', name], installation(correct, name))
++    expect(result.code).toBe(2)
++    expect(result.stderr.join('\n')).toContain('--revision')
++  })
++
++  test('--revision sin valor o con argumentos de más sale 2 con el uso', async () => {
++    const install = installation(correct)
++    for (const argv of [['declare', 'qwen2.5:0.5b', '--revision'], ['declare', 'a', 'b'], ['declare']]) {
++      const result = await run(runCatalogCommand, argv, install)
++      expect(result.code).toBe(2)
++      expect(result.stderr.join('\n')).toContain('declare <nombre-ollama> [--revision <commit>]')
++    }
++  })
++
+   test('sin subcomando conocido sale 2 con el uso', async () => {
+     const result = await run(runCatalogCommand, ['purge'], installation(correct))
+     expect(result.code).toBe(2)
+diff --git a/src/packages/local-models/__tests__/declareInstalledModel.test.ts b/src/packages/local-models/__tests__/declareInstalledModel.test.ts
+index dcea9fbfe..7ca63a284 100644
+--- a/src/packages/local-models/__tests__/declareInstalledModel.test.ts
++++ b/src/packages/local-models/__tests__/declareInstalledModel.test.ts
+@@ -148,3 +148,79 @@ describe('declareInstalledModel — del Ollama gestionado al catálogo', () => {
+     expect(existsSync(files.catalogPath)).toBe(false)
+   })
+ })
++
++const HF_COMMIT = '7ae557604adf67be50417f59c2c2f167def9a775'
++const HF_REPOSITORY = 'qwen/qwen2.5-0.5b-instruct'
++const HF_CONTRACT_NAME = thyroxModelName({ repository: HF_REPOSITORY, quantization: 'q4_k_m', source: 'hf', revision: HF_COMMIT })
++
++function installedUnder(name: string, digest = MANIFEST_DIGEST): FakeOllamaScript {
++  return installedScript({ tags: [{ name, digest }] })
++}
++
++describe('declareInstalledModel — un nombre que ya es contractual conserva su identidad', () => {
++  test('hf con --revision correcta: repositorio, fuente, cuantización y commit del nombre, sin copia', async () => {
++    const files = fixture()
++    server = startFakeOllama(installedUnder(HF_CONTRACT_NAME))
++    const entry = await declareInstalledModel(HF_CONTRACT_NAME, { api: new OllamaApi(server.baseUrl), mountpoint: files.mountpoint, catalogPath: files.catalogPath, now: () => NOW }, { revision: HF_COMMIT.toUpperCase() })
++    expect(entry).toMatchObject({ name: HF_CONTRACT_NAME, repository: HF_REPOSITORY, source: 'hf', revision: HF_COMMIT, quantization: 'q4_k_m' })
++    expect(paths()).not.toContain('/api/copy')
++    expect((await loadModelCatalog(files.catalogPath)).byName(HF_CONTRACT_NAME)).toEqual(entry)
++  })
++
++  test('hf sin --revision se rehúsa diciendo que hace falta, sin copiar ni escribir', async () => {
++    const files = fixture()
++    await expect(declare(installedUnder(HF_CONTRACT_NAME), files, HF_CONTRACT_NAME)).rejects.toThrow(/--revision/)
++    expect(paths()).not.toContain('/api/copy')
++    expect(existsSync(files.catalogPath)).toBe(false)
++  })
++
++  test('hf con un commit de otro prefijo se rehúsa nombrando los dos', async () => {
++    const files = fixture()
++    server = startFakeOllama(installedUnder(HF_CONTRACT_NAME))
++    const other = 'f'.repeat(40)
++    const declaring = declareInstalledModel(HF_CONTRACT_NAME, { api: new OllamaApi(server.baseUrl), mountpoint: files.mountpoint, catalogPath: files.catalogPath, now: () => NOW }, { revision: other })
++    await expect(declaring).rejects.toThrow(new RegExp(`${other}.*${HF_COMMIT.slice(0, 12)}`))
++    expect(paths()).not.toContain('/api/copy')
++    expect(existsSync(files.catalogPath)).toBe(false)
++  })
++
++  test('hf con una --revision que no son 40 hex se rehúsa', async () => {
++    const files = fixture()
++    server = startFakeOllama(installedUnder(HF_CONTRACT_NAME))
++    const declaring = declareInstalledModel(HF_CONTRACT_NAME, { api: new OllamaApi(server.baseUrl), mountpoint: files.mountpoint, catalogPath: files.catalogPath, now: () => NOW }, { revision: HF_COMMIT.slice(0, 12) })
++    await expect(declaring).rejects.toThrow(/--revision 7ae557604adf no es un commit de Hugging Face de 40 hex/)
++    expect(existsSync(files.catalogPath)).toBe(false)
++  })
++
++  test('ollama contractual: la revisión es el digest completo del manifiesto, sin copia', async () => {
++    const files = fixture()
++    const entry = await declare(installedUnder(CONTRACT_NAME, `sha256:${MANIFEST_DIGEST}`), files, CONTRACT_NAME)
++    expect(entry).toMatchObject({ name: CONTRACT_NAME, repository: 'library/qwen2.5-0.5b', source: 'ollama', revision: MANIFEST_DIGEST })
++    expect(paths()).not.toContain('/api/copy')
++    expect((await loadModelCatalog(files.catalogPath)).byName(CONTRACT_NAME)).toEqual(entry)
++  })
++
++  test('ollama contractual con un manifiesto de otro digest se rehúsa nombrando los dos', async () => {
++    const files = fixture()
++    const other = 'e'.repeat(64)
++    await expect(declare(installedUnder(CONTRACT_NAME, other), files, CONTRACT_NAME)).rejects.toThrow(new RegExp(`${other}.*${MANIFEST_DIGEST.slice(0, 12)}`))
++    expect(paths()).not.toContain('/api/copy')
++    expect(existsSync(files.catalogPath)).toBe(false)
++  })
++
++  test('--revision fuera de un nombre contractual hf se rehúsa en vez de ignorarse', async () => {
++    const files = fixture()
++    server = startFakeOllama(installedScript())
++    const declaring = declareInstalledModel('qwen2.5:0.5b', { api: new OllamaApi(server.baseUrl), mountpoint: files.mountpoint, catalogPath: files.catalogPath, now: () => NOW }, { revision: HF_COMMIT })
++    await expect(declaring).rejects.toThrow(/--revision/)
++    expect(existsSync(files.catalogPath)).toBe(false)
++  })
++
++  test('un nombre que parece del contrato pero no lo reconstruye sigue el camino de biblioteca, con copia', async () => {
++    const files = fixture()
++    const lookalike = 'thyrox-qwen:q4_k_m-hf-7ae557604adf'
++    const entry = await declare(installedUnder(lookalike), files, lookalike)
++    expect(entry).toMatchObject({ source: 'ollama', repository: 'library/thyrox-qwen-q4_k_m-hf-7ae557604adf', revision: MANIFEST_DIGEST })
++    expect(paths()).toContain('/api/copy')
++  })
++})
+diff --git a/src/packages/local-models/catalogCommand.ts b/src/packages/local-models/catalogCommand.ts
+index 0cd39ae4b..893c41046 100644
+--- a/src/packages/local-models/catalogCommand.ts
++++ b/src/packages/local-models/catalogCommand.ts
+@@ -1,20 +1,22 @@
+ /**
+- * `local-models-catalog declare <nombre-ollama>` y `local-models-catalog list
+- * [--json]`: el catálogo de modelos locales de la instalación
+- * (`localModelHome`). Salidas: 0 hecho · 2 rehusado, con la causa y la ruta.
++ * `local-models-catalog declare <nombre-ollama> [--revision <commit>]` y
++ * `local-models-catalog list [--json]`: el catálogo de modelos locales de la
++ * instalación (`localModelHome`). `--revision` da el commit completo de
++ * Hugging Face que un nombre contractual de fuente `hf` sólo lleva en 12
++ * caracteres. Salidas: 0 hecho · 2 rehusado, con la causa y la ruta.
+  */
+ 
+ import { localModelHome } from '@thyrox/model-artifacts/localModelHome.ts'
+ import { loadModelCatalog } from '@thyrox/model-artifacts/modelCatalog.ts'
+ 
+ import { EXIT_OK, EXIT_REFUSED, type CommandOutput } from './commandOutput.js'
+-import { declareInstalledModel } from './declareInstalledModel.js'
++import { declareInstalledModel, type DeclarationOptions } from './declareInstalledModel.js'
+ import { managedOllama, type Environment } from './managedOllama.js'
+ import { OllamaApi } from './ollamaApi.js'
+ import { volumeMountpoint } from './volumeBlobs.js'
+ 
+ export const CATALOG_USAGE = [
+-  'uso: local-models-catalog declare <nombre-ollama>',
++  'uso: local-models-catalog declare <nombre-ollama> [--revision <commit>]',
+   '     local-models-catalog list [--json]',
+ ].join('\n')
+ 
+@@ -25,10 +27,18 @@ export interface CommandContext {
+   readonly now: () => Date
+ }
+ 
++interface DeclareArguments {
++  readonly ollamaName: string
++  readonly options: DeclarationOptions
++}
++
++const REVISION_FLAG = '--revision'
++
+ export async function runCatalogCommand(argv: readonly string[], context: CommandContext): Promise<number> {
+   const [subcommand, ...rest] = argv
+   try {
+-    if (subcommand === 'declare' && rest.length === 1) return await declare(rest[0] as string, context)
++    const declaration = subcommand === 'declare' ? parseDeclareArguments(rest) : undefined
++    if (declaration !== undefined) return await declare(declaration, context)
+     if (subcommand === 'list') return await list(rest.includes('--json'), context)
+   } catch (error) {
+     context.output.stderr(`local-models-catalog: ${(error as Error).message}`)
+@@ -38,14 +48,23 @@ export async function runCatalogCommand(argv: readonly string[], context: Comman
+   return EXIT_REFUSED
+ }
+ 
+-async function declare(ollamaName: string, context: CommandContext): Promise<number> {
++/** `<nombre>` o `<nombre> --revision <commit>`; cualquier otra forma no es una declaración. */
++function parseDeclareArguments(argv: readonly string[]): DeclareArguments | undefined {
++  const [ollamaName, flag, revision, ...extra] = argv
++  if (ollamaName === undefined || ollamaName.startsWith('-') || extra.length > 0) return undefined
++  if (flag === undefined) return { ollamaName, options: {} }
++  if (flag !== REVISION_FLAG || revision === undefined) return undefined
++  return { ollamaName, options: { revision } }
++}
++
++async function declare(declaration: DeclareArguments, context: CommandContext): Promise<number> {
+   const ollama = managedOllama(context.env)
+-  const entry = await declareInstalledModel(ollamaName, {
++  const entry = await declareInstalledModel(declaration.ollamaName, {
+     api: new OllamaApi(ollama.baseUrl),
+     mountpoint: await volumeMountpoint(ollama.podmanBin, ollama.volume),
+     catalogPath: catalogPath(context),
+     now: context.now,
+-  })
++  }, declaration.options)
+   context.output.stdout(`declarado: ${entry.name} (${entry.artifact.bytes} bytes, sha256 ${entry.artifact.sha256})`)
+   return EXIT_OK
+ }
+diff --git a/src/packages/local-models/declareInstalledModel.ts b/src/packages/local-models/declareInstalledModel.ts
+index e8d34f253..b1687646e 100644
+--- a/src/packages/local-models/declareInstalledModel.ts
++++ b/src/packages/local-models/declareInstalledModel.ts
+@@ -4,6 +4,13 @@
+  * del blob en el volumen, construye la entrada con `catalogEntryFromGguf`,
+  * registra el nombre contractual en Ollama (`/api/copy`) y guarda el catálogo.
+  *
++ * Un nombre que ya es contractual (`parseThyroxModelName`) conserva la
++ * identidad que declara —repositorio, fuente y cuantización— y sólo se
++ * completa su revisión: el digest del manifiesto si la fuente es `ollama`, el
++ * commit que da `--revision` si es `hf`, porque el nombre lleva sólo 12
++ * caracteres. Tomarlo como un modelo de la biblioteca de Ollama mentiría sobre
++ * su procedencia. Cualquier otro nombre es un modelo de la biblioteca.
++ *
+  * El orden es el de los efectos: nada se copia ni se escribe hasta que la
+  * entrada está construida y el catálogo la acepta; si la copia falla, el
+  * catálogo no cambia.
+@@ -17,8 +24,9 @@ import { dirname } from 'node:path'
+ import type { ModelCapability, ModelCatalogEntry } from '@thyrox/model-artifacts/catalogEntry.ts'
+ import type { KvCacheType } from '@thyrox/model-artifacts/memoryEstimate.ts'
+ import { catalogEntryFromGguf, loadModelCatalog, saveModelCatalog } from '@thyrox/model-artifacts/modelCatalog.ts'
++import { parseThyroxModelName, type ModelSource, type ParsedThyroxModelName } from '@thyrox/model-artifacts/modelName.ts'
+ 
+-import type { OllamaApi } from './ollamaApi.js'
++import type { ModelDetails, OllamaApi } from './ollamaApi.js'
+ import { repositoryOfOllamaName, withExplicitTag } from './ollamaName.js'
+ import { hostBlobPath, modelBlobOfModelfile } from './volumeBlobs.js'
+ 
+@@ -33,6 +41,8 @@ const CATALOG_CAPABILITY_BY_OLLAMA: Readonly<Record<string, ModelCapability>> =
+ }
+ const DIGEST_PREFIX = 'sha256:'
+ const ISO_SECOND_PRECISION_LENGTH = 'YYYY-MM-DDTHH:MM:SS'.length
++const HF_COMMIT_PATTERN = /^[0-9a-f]{40}$/
++const REVISION_FLAG = '--revision'
+ 
+ export class ModelDeclarationError extends Error {
+   constructor(readonly ollamaName: string, reason: string) {
+@@ -49,19 +59,30 @@ export interface DeclarationContext {
+   readonly now: () => Date
+ }
+ 
+-export async function declareInstalledModel(ollamaName: string, context: DeclarationContext): Promise<ModelCatalogEntry> {
++export interface DeclarationOptions {
++  /** Commit completo de Hugging Face; sólo lo admite un nombre contractual de fuente `hf`. */
++  readonly revision?: string
++}
++
++/** Lo que la entrada afirma sobre la procedencia del modelo. */
++interface ModelIdentity {
++  readonly repository: string
++  readonly source: ModelSource
++  readonly revision: string
++  readonly quantization: string
++}
++
++export async function declareInstalledModel(ollamaName: string, context: DeclarationContext, options: DeclarationOptions = {}): Promise<ModelCatalogEntry> {
+   const taggedName = withExplicitTag(ollamaName)
+-  const revision = await manifestDigest(context.api, taggedName)
++  const manifestRevision = await manifestDigest(context.api, taggedName)
+   const details = await context.api.modelDetails(taggedName)
++  const identity = identityOf(taggedName, { manifestRevision, details, declaredRevision: options.revision })
+   const blob = modelBlobOfModelfile(details.modelfile)
+   const blobPath = hostBlobPath(blob.containerPath, context.mountpoint)
+   await requireBlobDigest(taggedName, blobPath, blob.sha256)
+   const built = await catalogEntryFromGguf({
+     path: blobPath,
+-    repository: repositoryOfOllamaName(taggedName),
+-    source: 'ollama',
+-    revision,
+-    quantization: details.quantizationLevel,
++    ...identity,
+     sha256: blob.sha256,
+     capabilities: catalogCapabilities(taggedName, details.capabilities),
+     declaredAt: secondPrecisionInstant(context.now()),
+@@ -70,7 +91,7 @@ export async function declareInstalledModel(ollamaName: string, context: Declara
+   const catalog = await loadModelCatalog(context.catalogPath)
+   const entry = keepingFirstDeclaration(built, catalog.byName(built.name))
+   const updated = catalog.with(entry)
+-  await context.api.copyModel(taggedName, entry.name)
++  if (entry.name !== taggedName) await context.api.copyModel(taggedName, entry.name)
+   await mkdir(dirname(context.catalogPath), { recursive: true })
+   await saveModelCatalog(context.catalogPath, updated)
+   return entry
+@@ -82,6 +103,65 @@ async function manifestDigest(api: OllamaApi, taggedName: string): Promise<strin
+   return installed.digest.toLowerCase().replace(DIGEST_PREFIX, '')
+ }
+ 
++interface InstalledFacts {
++  readonly manifestRevision: string
++  readonly details: ModelDetails
++  readonly declaredRevision: string | undefined
++}
++
++function identityOf(taggedName: string, facts: InstalledFacts): ModelIdentity {
++  const contract = parseThyroxModelName(taggedName)
++  if (contract === undefined) return libraryIdentity(taggedName, facts)
++  return {
++    repository: contract.repository,
++    source: contract.source,
++    quantization: contract.quantization,
++    revision: contract.source === 'hf'
++      ? hfRevision(taggedName, contract, facts.declaredRevision)
++      : ollamaRevision(taggedName, contract, facts),
++  }
++}
++
++function libraryIdentity(taggedName: string, facts: InstalledFacts): ModelIdentity {
++  refuseUnusedRevision(taggedName, facts.declaredRevision, 'no es un nombre contractual')
++  return {
++    repository: repositoryOfOllamaName(taggedName),
++    source: 'ollama',
++    revision: facts.manifestRevision,
++    quantization: facts.details.quantizationLevel,
++  }
++}
++
++function ollamaRevision(taggedName: string, contract: ParsedThyroxModelName, facts: InstalledFacts): string {
++  refuseUnusedRevision(taggedName, facts.declaredRevision, 'su fuente es ollama: la revisión es el digest del manifiesto')
++  requireSamePrefix(taggedName, contract, facts.manifestRevision, 'el digest del manifiesto (/api/tags)')
++  return facts.manifestRevision
++}
++
++function hfRevision(taggedName: string, contract: ParsedThyroxModelName, declaredRevision: string | undefined): string {
++  if (declaredRevision === undefined) {
++    throw new ModelDeclarationError(taggedName, `su fuente es hf y el nombre sólo lleva ${contract.revision.length} caracteres del commit: hace falta ${REVISION_FLAG} <commit de 40 hex>`)
++  }
++  const revision = declaredRevision.toLowerCase()
++  if (!HF_COMMIT_PATTERN.test(revision)) {
++    throw new ModelDeclarationError(taggedName, `${REVISION_FLAG} ${declaredRevision} no es un commit de Hugging Face de 40 hex`)
++  }
++  requireSamePrefix(taggedName, contract, revision, `${REVISION_FLAG}`)
++  return revision
++}
++
++function requireSamePrefix(taggedName: string, contract: ParsedThyroxModelName, revision: string, origin: string): void {
++  if (!revision.startsWith(contract.revision)) {
++    throw new ModelDeclarationError(taggedName, `${origin} es ${revision} y el nombre declara la revisión ${contract.revision}`)
++  }
++}
++
++function refuseUnusedRevision(taggedName: string, declaredRevision: string | undefined, reason: string): void {
++  if (declaredRevision !== undefined) {
++    throw new ModelDeclarationError(taggedName, `${REVISION_FLAG} sólo aplica a un nombre contractual de fuente hf; ${reason}`)
++  }
++}
++
+ async function requireBlobDigest(taggedName: string, blobPath: string, declared: string): Promise<void> {
+   const measured = await sha256OfFile(blobPath)
+   if (measured !== declared) throw new ModelDeclarationError(taggedName, `el sha256 de ${blobPath} es ${measured}, su nombre declara ${declared}`)

@@ -148,3 +148,79 @@ describe('declareInstalledModel — del Ollama gestionado al catálogo', () => {
     expect(existsSync(files.catalogPath)).toBe(false)
   })
 })
+
+const HF_COMMIT = '7ae557604adf67be50417f59c2c2f167def9a775'
+const HF_REPOSITORY = 'qwen/qwen2.5-0.5b-instruct'
+const HF_CONTRACT_NAME = thyroxModelName({ repository: HF_REPOSITORY, quantization: 'q4_k_m', source: 'hf', revision: HF_COMMIT })
+
+function installedUnder(name: string, digest = MANIFEST_DIGEST): FakeOllamaScript {
+  return installedScript({ tags: [{ name, digest }] })
+}
+
+describe('declareInstalledModel — un nombre que ya es contractual conserva su identidad', () => {
+  test('hf con --revision correcta: repositorio, fuente, cuantización y commit del nombre, sin copia', async () => {
+    const files = fixture()
+    server = startFakeOllama(installedUnder(HF_CONTRACT_NAME))
+    const entry = await declareInstalledModel(HF_CONTRACT_NAME, { api: new OllamaApi(server.baseUrl), mountpoint: files.mountpoint, catalogPath: files.catalogPath, now: () => NOW }, { revision: HF_COMMIT.toUpperCase() })
+    expect(entry).toMatchObject({ name: HF_CONTRACT_NAME, repository: HF_REPOSITORY, source: 'hf', revision: HF_COMMIT, quantization: 'q4_k_m' })
+    expect(paths()).not.toContain('/api/copy')
+    expect((await loadModelCatalog(files.catalogPath)).byName(HF_CONTRACT_NAME)).toEqual(entry)
+  })
+
+  test('hf sin --revision se rehúsa diciendo que hace falta, sin copiar ni escribir', async () => {
+    const files = fixture()
+    await expect(declare(installedUnder(HF_CONTRACT_NAME), files, HF_CONTRACT_NAME)).rejects.toThrow(/--revision/)
+    expect(paths()).not.toContain('/api/copy')
+    expect(existsSync(files.catalogPath)).toBe(false)
+  })
+
+  test('hf con un commit de otro prefijo se rehúsa nombrando los dos', async () => {
+    const files = fixture()
+    server = startFakeOllama(installedUnder(HF_CONTRACT_NAME))
+    const other = 'f'.repeat(40)
+    const declaring = declareInstalledModel(HF_CONTRACT_NAME, { api: new OllamaApi(server.baseUrl), mountpoint: files.mountpoint, catalogPath: files.catalogPath, now: () => NOW }, { revision: other })
+    await expect(declaring).rejects.toThrow(new RegExp(`${other}.*${HF_COMMIT.slice(0, 12)}`))
+    expect(paths()).not.toContain('/api/copy')
+    expect(existsSync(files.catalogPath)).toBe(false)
+  })
+
+  test('hf con una --revision que no son 40 hex se rehúsa', async () => {
+    const files = fixture()
+    server = startFakeOllama(installedUnder(HF_CONTRACT_NAME))
+    const declaring = declareInstalledModel(HF_CONTRACT_NAME, { api: new OllamaApi(server.baseUrl), mountpoint: files.mountpoint, catalogPath: files.catalogPath, now: () => NOW }, { revision: HF_COMMIT.slice(0, 12) })
+    await expect(declaring).rejects.toThrow(/--revision 7ae557604adf no es un commit de Hugging Face de 40 hex/)
+    expect(existsSync(files.catalogPath)).toBe(false)
+  })
+
+  test('ollama contractual: la revisión es el digest completo del manifiesto, sin copia', async () => {
+    const files = fixture()
+    const entry = await declare(installedUnder(CONTRACT_NAME, `sha256:${MANIFEST_DIGEST}`), files, CONTRACT_NAME)
+    expect(entry).toMatchObject({ name: CONTRACT_NAME, repository: 'library/qwen2.5-0.5b', source: 'ollama', revision: MANIFEST_DIGEST })
+    expect(paths()).not.toContain('/api/copy')
+    expect((await loadModelCatalog(files.catalogPath)).byName(CONTRACT_NAME)).toEqual(entry)
+  })
+
+  test('ollama contractual con un manifiesto de otro digest se rehúsa nombrando los dos', async () => {
+    const files = fixture()
+    const other = 'e'.repeat(64)
+    await expect(declare(installedUnder(CONTRACT_NAME, other), files, CONTRACT_NAME)).rejects.toThrow(new RegExp(`${other}.*${MANIFEST_DIGEST.slice(0, 12)}`))
+    expect(paths()).not.toContain('/api/copy')
+    expect(existsSync(files.catalogPath)).toBe(false)
+  })
+
+  test('--revision fuera de un nombre contractual hf se rehúsa en vez de ignorarse', async () => {
+    const files = fixture()
+    server = startFakeOllama(installedScript())
+    const declaring = declareInstalledModel('qwen2.5:0.5b', { api: new OllamaApi(server.baseUrl), mountpoint: files.mountpoint, catalogPath: files.catalogPath, now: () => NOW }, { revision: HF_COMMIT })
+    await expect(declaring).rejects.toThrow(/--revision/)
+    expect(existsSync(files.catalogPath)).toBe(false)
+  })
+
+  test('un nombre que parece del contrato pero no lo reconstruye sigue el camino de biblioteca, con copia', async () => {
+    const files = fixture()
+    const lookalike = 'thyrox-qwen:q4_k_m-hf-7ae557604adf'
+    const entry = await declare(installedUnder(lookalike), files, lookalike)
+    expect(entry).toMatchObject({ source: 'ollama', repository: 'library/thyrox-qwen-q4_k_m-hf-7ae557604adf', revision: MANIFEST_DIGEST })
+    expect(paths()).toContain('/api/copy')
+  })
+})

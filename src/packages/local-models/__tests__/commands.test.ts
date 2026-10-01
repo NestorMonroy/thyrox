@@ -46,7 +46,7 @@ interface Installation {
   readonly env: Record<string, string>
 }
 
-function installation(chat: FakeOllamaScript['chat']): Installation {
+function installation(chat: FakeOllamaScript['chat'], installedName = 'qwen2.5:0.5b'): Installation {
   counter += 1
   const root = join(WORKDIR, `install-${counter}`)
   const mountpoint = join(root, 'volume')
@@ -56,7 +56,7 @@ function installation(chat: FakeOllamaScript['chat']): Installation {
   writeFileSync(podman, `#!/bin/sh\necho "$@" >> '${podman}.calls'\necho '${mountpoint}'\n`)
   chmodSync(podman, 0o755)
   server = startFakeOllama({
-    tags: [{ name: 'qwen2.5:0.5b', digest: `sha256:${MANIFEST_DIGEST}` }],
+    tags: [{ name: installedName, digest: `sha256:${MANIFEST_DIGEST}` }],
     show: { modelfile: `FROM /root/.ollama/models/blobs/sha256-${GGUF_SHA256}\n`, details: { quantization_level: 'Q4_K_M' }, capabilities: ['completion', 'tools'] },
     chat,
   })
@@ -121,6 +121,34 @@ describe('local-models-catalog', () => {
     const result = await run(runCatalogCommand, ['list'], install)
     expect(result.code).toBe(2)
     expect(result.stderr.join('\n')).toContain('catalog.json')
+  })
+
+  test('declare <nombre-hf> --revision <commit> conserva la identidad hf y no copia', async () => {
+    const commit = '7ae557604adf67be50417f59c2c2f167def9a775'
+    const name = 'thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf'
+    const install = installation(correct, name)
+    const result = await run(runCatalogCommand, ['declare', name, '--revision', commit], install)
+    expect(result).toMatchObject({ code: 0, stderr: [] })
+    expect(result.stdout[0]).toContain(name)
+    const listed = await run(runCatalogCommand, ['list', '--json'], install)
+    expect(JSON.parse(listed.stdout[0] as string).entries).toMatchObject([{ name, source: 'hf', revision: commit }])
+    expect(server?.requests.some(r => r.path === '/api/copy')).toBe(false)
+  })
+
+  test('declare <nombre-hf> sin --revision sale 2 nombrando la opción', async () => {
+    const name = 'thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf'
+    const result = await run(runCatalogCommand, ['declare', name], installation(correct, name))
+    expect(result.code).toBe(2)
+    expect(result.stderr.join('\n')).toContain('--revision')
+  })
+
+  test('--revision sin valor o con argumentos de más sale 2 con el uso', async () => {
+    const install = installation(correct)
+    for (const argv of [['declare', 'qwen2.5:0.5b', '--revision'], ['declare', 'a', 'b'], ['declare']]) {
+      const result = await run(runCatalogCommand, argv, install)
+      expect(result.code).toBe(2)
+      expect(result.stderr.join('\n')).toContain('declare <nombre-ollama> [--revision <commit>]')
+    }
   })
 
   test('sin subcomando conocido sale 2 con el uso', async () => {
