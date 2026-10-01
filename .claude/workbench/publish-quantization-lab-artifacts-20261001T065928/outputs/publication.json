@@ -1,8 +1,12 @@
 {
-  "status": "refused",
-  "publishedAt": "2026-10-01T07:00:02.669Z",
+  "status": "unpublished",
+  "publishedAt": "2026-10-01T07:20:07.728Z",
   "outcome": {
-    "status": "refused",
-    "reason": "la admisión de disco respondió unmeasured para 994156640 bytes más su margen"
+    "status": "unpublished",
+    "result": {
+      "status": "unauthorized",
+      "httpStatus": 401,
+      "detail": "401 Unauthorized"
+    }
   }
 }

@@ -1,0 +1,32 @@
+publish-artifact: → HEAD https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:dc25abd1bd1c1b460098f747732b499a1e163e5c1bfcece9e69a6d02b7e1af22
+publish-artifact: ← 401 HEAD /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:dc25abd1bd1c1b460098f747732b499a1e163e5c1bfcece9e69a6d02b7e1af22 492ms
+publish-artifact: → GET https://auth.docker.io/token
+publish-artifact: ← 200 GET /token 340ms
+publish-artifact: → HEAD https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:dc25abd1bd1c1b460098f747732b499a1e163e5c1bfcece9e69a6d02b7e1af22
+publish-artifact: ← 404 HEAD /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:dc25abd1bd1c1b460098f747732b499a1e163e5c1bfcece9e69a6d02b7e1af22 129ms
+publish-artifact: → POST https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/
+publish-artifact: ← 202 POST /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/ 238ms
+publish-artifact: → PUT https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/97af8acd-5865-4dfa-80ed-2ec30b7bb2ec
+publish-artifact: ← 201 PUT /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/97af8acd-5865-4dfa-80ed-2ec30b7bb2ec 642ms
+publish-artifact: → HEAD https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:aecc2f41691eb3ce1ce68609a112d4070a3683614e5e5a6ce481e7b5b9f5457e
+publish-artifact: ← 404 HEAD /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:aecc2f41691eb3ce1ce68609a112d4070a3683614e5e5a6ce481e7b5b9f5457e 132ms
+publish-artifact: → POST https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/
+publish-artifact: ← 202 POST /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/ 179ms
+publish-artifact: → PUT https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/a9645d8c-e83d-4e8e-ba7e-4a15f5acc771
+publish-artifact: ← 201 PUT /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/a9645d8c-e83d-4e8e-ba7e-4a15f5acc771 676ms
+publish-artifact: → HEAD https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+publish-artifact: ← 404 HEAD /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855 123ms
+publish-artifact: → POST https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/
+publish-artifact: ← 202 POST /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/ 190ms
+publish-artifact: → PUT https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/d883948e-c634-4cbb-9bd0-cabfe24a4ba0
+publish-artifact: ← 201 PUT /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/d883948e-c634-4cbb-9bd0-cabfe24a4ba0 568ms
+publish-artifact: → HEAD https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:248ecfa25fa598420d9835ba967e8f41a19c68414280160dd21363a9adb336ea
+publish-artifact: ← 404 HEAD /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:248ecfa25fa598420d9835ba967e8f41a19c68414280160dd21363a9adb336ea 126ms
+publish-artifact: → POST https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/
+publish-artifact: ← 202 POST /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/ 210ms
+publish-artifact: → PUT https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/cfbc61b0-4fd3-4acd-9289-b9656951ae14
+publish-artifact: ← 201 PUT /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/cfbc61b0-4fd3-4acd-9289-b9656951ae14 767738ms
+publish-artifact: → HEAD https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:b8d6f5cbac92ca386bee2a3911140bc5cbfd1aa9879888fb6e395a134ce05e88
+publish-artifact: ← 401 HEAD /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:b8d6f5cbac92ca386bee2a3911140bc5cbfd1aa9879888fb6e395a134ce05e88 564ms
+publish-artifact: unpublished
+__BG_EXIT__=1
