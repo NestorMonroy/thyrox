@@ -16,11 +16,12 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
+import { EXECUTION_ID_LABEL_KEY, EXECUTION_KIND_LABEL_KEY, EXECUTION_REFERENCE_LABEL_KEY } from '@thyrox/podman-execution/executionAuthorization.ts'
 import { createPodmanExecutor, type PodmanCommandResult, type PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
 
 import { describeArtifactFile } from '../artifactFiles.js'
 import { createOciArtifactRegistry } from '../ociArtifactRegistry.js'
-import { createPodmanJobVerifier, verificationJobSpec, VERIFICATION_REPORT_NAME, type PodmanJobVerifierOptions } from '../podmanJobVerifier.js'
+import { createPodmanJobVerifier, VERIFICATION_REPORT_NAME, type PodmanJobVerifierOptions } from '../podmanJobVerifier.js'
 import { FAKE_PUBLISHER, startFakeOciRegistry, type FakeOciRegistry } from '../testing/fakeOciRegistry.js'
 
 const REPOSITORY_ROOT = resolve(import.meta.dir, '../../../..')
@@ -47,29 +48,70 @@ function options(overrides: Partial<PodmanJobVerifierOptions> = {}): PodmanJobVe
   }
 }
 
-describe('verificationJobSpec', () => {
-  test('con proxy: red host, el proxy declarado y el CA montado de sólo lectura', () => {
-    const argv = verificationJobSpec(options(), PINNED, LOCATION).resourceArgv.join(' ')
+/**
+ * El doble que registra el argv de `podman create`; `wait` sale 0 para que el
+ * trabajo se lea entero. El veredicto no importa aquí: lo que se mide es la
+ * composición con la que el contenedor se materializa.
+ */
+function recordingPodman(): { podman: PodmanExecutor; created: string[][] } {
+  const created: string[][] = []
+  return {
+    created,
+    podman: {
+      run: async (args): Promise<PodmanCommandResult> => {
+        if (args[0] === 'create') created.push([...args])
+        if (args[0] === 'wait') return { exitCode: 0, stdout: '0\n', stderr: '' }
+        return { exitCode: 0, stdout: '', stderr: '' }
+      },
+    },
+  }
+}
+
+/** El argv con que `podman create` materializa el trabajo, leído del doble. */
+async function createdArgv(overrides: Partial<PodmanJobVerifierOptions> = {}): Promise<string> {
+  const recorder = recordingPodman()
+  await createPodmanJobVerifier(options({ ...overrides, podman: recorder.podman })).verify(PINNED, LOCATION)
+  return (recorder.created[0] ?? []).join(' ')
+}
+
+describe('la composición del trabajo', () => {
+  test('con proxy: red host, el proxy declarado y el CA montado de sólo lectura', async () => {
+    const argv = await createdArgv()
     expect(argv).toContain('--network host')
     expect(argv).toContain('--env HTTPS_PROXY=http://10.1.2.3:3128')
     expect(argv).toContain('--env NODE_EXTRA_CA_CERTS=/certs/ca-bundle.crt')
     expect(argv).toContain('-v /host/ca.crt:/certs/ca-bundle.crt:ro')
     expect(argv).toContain(`-v ${REPOSITORY_ROOT}:/w:ro`)
+    // El raíz de sólo lectura es lo que la migración a la autorización canónica perdió (p2a-findings).
     expect(argv).toContain('--read-only')
+    expect(argv).toContain('--read-only-tmpfs=false')
   })
 
-  test('sin proxy la red es bridge y no se monta ningún CA', () => {
-    const argv = verificationJobSpec(options({ egress: { kind: 'direct' } }), PINNED, LOCATION).resourceArgv.join(' ')
+  test('sin proxy la red es bridge y no se monta ningún CA', async () => {
+    const argv = await createdArgv({ egress: { kind: 'direct' } })
     expect(argv).toContain('--network bridge')
     expect(argv).not.toContain('HTTPS_PROXY')
     expect(argv).not.toContain('/certs/')
   })
 
-  test('el trabajo no recibe credencial ni el almacenamiento de Podman', () => {
-    const spec = verificationJobSpec(options(), PINNED, LOCATION)
-    const argv = [...spec.resourceArgv, ...(spec.command ?? [])].join(' ')
+  test('el trabajo no recibe credencial ni el almacenamiento de Podman', async () => {
+    const argv = await createdArgv()
     expect(argv).not.toMatch(/TOKEN|PASSWORD|SECRET|containers\/storage/i)
-    expect(spec.command).toContain(PINNED.digest)
+    expect(argv).toContain(PINNED.digest)
+  })
+})
+
+describe('la autorización del trabajo', () => {
+  test('corre como una ejecución autorizada: clase registry-operation y la cita de su tarea', async () => {
+    const argv = await createdArgv()
+    expect(argv).toContain(`--label ${EXECUTION_KIND_LABEL_KEY}=registry-operation`)
+    expect(argv).toContain(`--label ${EXECUTION_REFERENCE_LABEL_KEY}=task:TASK-THYROX-0728`)
+    expect(argv).toContain(`--label ${EXECUTION_ID_LABEL_KEY}=artifact-verify-test`)
+  })
+
+  test('la cita de la tarea que autoriza es declarable por el llamador', async () => {
+    const argv = await createdArgv({ taskCitation: 'TASK-THYROX-0001' })
+    expect(argv).toContain(`--label ${EXECUTION_REFERENCE_LABEL_KEY}=task:TASK-THYROX-0001`)
   })
 })
 

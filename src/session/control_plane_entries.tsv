@@ -5,3 +5,4 @@ wait-jobs	src/session/wait-jobs.sh	barrera del ledger: observa y recoge, no ejec
 infrastructure_ensure	src/session/infrastructure_ensure.sh	orquesta el bootstrap; materializa la primitiva
 infrastructure-bootstrap	src/packages/infrastructure/bin/bootstrap.ts	entrega el estado deseado a ensureResource
 podman_lock_recovery	src/session/podman_lock_recovery.sh	recuperación explícita del motor, pedida por un operador
+task_continuation	src/session/task_continuation.py	orquesta los ítems de un plan declarado; despacha, verifica y commitea en unidades

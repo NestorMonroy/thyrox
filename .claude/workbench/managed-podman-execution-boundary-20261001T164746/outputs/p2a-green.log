@@ -1,0 +1,36 @@
+# p2a GREEN — la migración compone la autorización y llama a runExecution
+
+Estado: podmanJobVerifier.ts migrado + suite con las pruebas nuevas (estado final)
+
+$ (cd src/packages/artifact-registry && bun test __tests__/podmanJobVerifier.test.ts)
+bun test v1.3.11 (af24e281)
+
+__tests__/podmanJobVerifier.test.ts:
+podmanJobVerifier: sin Podman o sin docker.io/library/ubuntu:24.04 local; el nivel real queda sin medir.
+(pass) la composición del trabajo > con proxy: red host, el proxy declarado y el CA montado de sólo lectura [6.07ms]
+(pass) la composición del trabajo > sin proxy la red es bridge y no se monta ningún CA [2.21ms]
+(pass) la composición del trabajo > el trabajo no recibe credencial ni el almacenamiento de Podman [1.64ms]
+(pass) la autorización del trabajo > corre como una ejecución autorizada: clase registry-operation y la cita de su tarea [1.69ms]
+(pass) la autorización del trabajo > la cita de la tarea que autoriza es declarable por el llamador [1.94ms]
+(pass) createPodmanJobVerifier con un Podman doble > devuelve el veredicto que el trabajo dejó en su montaje [2.07ms]
+(pass) createPodmanJobVerifier con un Podman doble > un trabajo que sale sin veredicto es unverified con su diagnóstico, nunca verified [2.42ms]
+(skip) createPodmanJobVerifier contra el Podman real > el trabajo materializa y verifica cada blob desde el registry, sin credencial
+
+ 7 pass
+ 1 skip
+ 0 fail
+ 17 expect() calls
+Ran 8 tests across 1 file. [219.00ms]
+exit=0
+
+## Suite completa del paquete (la que mide el gate del tramo)
+
+$ (cd src/packages/artifact-registry && bun test)
+1 tests skipped:
+(skip) createPodmanJobVerifier contra el Podman real > el trabajo materializa y verifica cada blob desde el registry, sin credencial
+
+ 60 pass
+ 1 skip
+ 0 fail
+ 122 expect() calls
+Ran 61 tests across 10 files. [1145.00ms]

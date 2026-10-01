@@ -1,0 +1,46 @@
+== a) sin la regla de transitorio (502 no reconocido)
+FALLA 502 es transitorio: esperado 'provider_transient', obtenido 'task_failure'
+FALLA la regla gana a lo aprendido: esperado ('provider_transient', 'rule'), obtenido ('task_failure', 'rule')
+test_task_continuation: 30 OK, 2 FALLA
+== b) los transitorios cuentan contra el candidato
+FALLA conteo por clase sin transitorios: esperado {'qwen3.8-flash': (0, 1), 'deepseek-v4.1-flash': (1, 0)}, obtenido {'qwen3.8-flash': (0, 2), 'deepseek-v4.1-flash': (1, 0)}
+test_task_continuation: 31 OK, 1 FALLA
+== c) lo aprendido puede conceder éxito
+FALLA lo aprendido no concede éxito: esperado ('task_failure', 'ambiguous-default'), obtenido ('success', 'learned')
+test_task_continuation: 31 OK, 1 FALLA
+== d) reconcile-orphans sin la sonda de PID
+(fail) reconcile-orphans: un contenedor cuyo dueño de tarea murió se retira sin intervención > retira sólo el de dueño de tarea con PID muerto; deja vivos y ajenos [3.10ms]
+(fail) reconcile-orphans: un contenedor cuyo dueño de tarea murió se retira sin intervención > sin huérfanos, sale 0 y lo dice [0.79ms]
+ 14 pass
+ 2 fail
+restaurado: sha256 idéntico
+test_task_continuation: 32 OK, 0 FALLA
+execution thyrox-worker-test-mupwqlx4-21858 kind=test task=TASK-THYROX-0743 exit=0
+== e) actividad sin la mitad de CPU
+OK inactivo -> 125
+FALLA ocupado detenido
+OK el libro registra 125
+test_delegate_stall: 2 OK, 1 FALLA
+restaurado: sha256 idéntico
+execution thyrox-worker-test-mupws89p-22596 kind=test task=TASK-THYROX-0743 exit=0
+== f) sin el bloqueo por credencial expuesta
+== g) la redacción no redacta
+FALLA un secreto ya redactado no cuenta: esperado set(), obtenido {'THYROX_FAKE_TOKEN', 'THYROX_FAKE_DB_PASSWORD'}
+FALLA la redacción conserva el nombre: esperado True, obtenido False
+2
+restaurado: sha256 idéntico
+test_task_continuation: 52 OK, 0 FALLA
+== f) sin el bloqueo por credencial expuesta (reemplazo literal)
+replace_literal: 1 reemplazo(s) en src/session/task_continuation.py
+restaurado: sha256 idéntico
+test_task_continuation: 52 OK, 0 FALLA
+== f) sin el bloqueo por credencial expuesta
+FALLA el ítem que necesita la expuesta queda bloqueado: esperado 'blocked', obtenido 'accepted'
+FALLA y no se despacha ninguna unidad: esperado [], obtenido [{'name': 'cont-j-preverify-1790892070619825', 'mounts': ()}, {'name': 'cont-j-1-1790892070619843', 'mounts': ('/dev/null:/home/user/thyrox/.env:ro',)}, {'name': 'cont-j-1-verify-1790892070619843', 'mounts': ()}]
+test_task_continuation: 50 OK, 2 FALLA
+restaurado: sha256 idéntico
+test_task_continuation: 55 OK, 0 FALLA
+== h) liveness siempre falsa
+FALLA un trabajo con PID vivo está vivo: esperado True, obtenido False
+test_task_continuation: 54 OK, 1 FALLA
+restaurado: sha256 idéntico

@@ -73,4 +73,16 @@ out="$(bash "$BG" start impostor --grace 5 -- "$WORK/tree/bin/wait-jobs" 2>&1)";
 thyrox_check "caso 5: un envoltorio que no apunta a su módulo declarado se rehúsa" "2" "$rc"
 [[ ! -e "$WORK/impostor" ]] && ok "caso 5: no corrió nada" || bad "caso 5: el impostor corrió"
 
+# Una credencial viaja por su NOMBRE: el runner la monta como secreto; su valor
+# nunca entra en el argv que bg compone.
+: > "$WORK/runner.log"
+export THYROX_TEST_CREDENTIAL="valor-que-no-debe-aparecer"
+bash "$BG" start con-secreto --grace 10 --task TASK-THYROX-0001 --kind probe --secret-from-env THYROX_TEST_CREDENTIAL -- true >/dev/null 2>&1
+if grep -q -- "^run --task TASK-THYROX-0001 --kind probe --secret-from-env THYROX_TEST_CREDENTIAL -- true$" "$WORK/runner.log" 2>/dev/null; then
+  ok "caso 6: --secret-from-env llega al runner por nombre"
+else
+  bad "caso 6: el runner no recibió --secret-from-env: [$(cat "$WORK/runner.log" 2>/dev/null)]"
+fi
+! grep -q "valor-que-no-debe-aparecer" "$WORK/runner.log" && ok "caso 6: el valor no aparece en el argv" || bad "caso 6: el valor apareció en el argv"
+
 thyrox_summary

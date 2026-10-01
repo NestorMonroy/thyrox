@@ -19,5 +19,13 @@ process.exit(
     now: () => Date.now(),
     podman: createPodmanExecutor(),
     repositoryRoot,
+    isProcessAlive: pid => {
+      try {
+        process.kill(pid, 0)
+        return true
+      } catch (error) {
+        return (error as NodeJS.ErrnoException).code === 'EPERM'
+      }
+    },
   }),
 )

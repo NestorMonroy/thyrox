@@ -1,0 +1,10 @@
+{"model":"deepseek-v4.1-flash","check":"secret_visible","ok":true,"detail":{"credential":"THYROX_OPENAI_COMPAT_API_KEY","rotationStatus":"pending"}}
+{"model":"deepseek-v4.1-flash","check":"authentication","ok":true,"detail":{"result":"success"}}
+{"model":"deepseek-v4.1-flash","check":"simple_request","ok":true,"detail":{"content":"","usage":{"prompt":37,"completion":16}}}
+{"model":"deepseek-v4.1-flash","check":"context_request_1","ok":false,"detail":{"answer":"","usage":{"prompt":7989,"completion":32,"cached":0}}}
+{"model":"deepseek-v4.1-flash","check":"context_request_2","ok":false,"detail":{"answer":"","usage":{"prompt":7989,"completion":32,"cached":7168}}}
+{"model":"deepseek-v4.1-flash","check":"structured_tool_call","ok":true,"detail":{"toolCall":{"name":"read_file","arguments":"{\"path\": \"README.md\"}"},"usage":{"prompt":303,"completion":49}}}
+{"model":"deepseek-v4.1-flash","check":"file_read","ok":true,"detail":{"toolUses":" 2 Bash 1 Read "}}
+{"model":"deepseek-v4.1-flash","check":"controlled_modification","ok":true,"detail":{"diff":"+marcador: beta|","exit":0}}
+{"model":"deepseek-v4.1-flash","check":"parseable_result","ok":true,"detail":{"subtype":"success","is_error":false,"result":"hecho","usage":{"input_tokens":2947,"output_tokens":501,"cache_creation_input_tokens":0,"cache_read_input_tokens":1024}}}
+{"model":"deepseek-v4.1-flash","check":"claude_invocations","ok":true,"detail":{"claudeBinary":null,"anthropicBaseUrl":"https://token-plan.maas.qwencloudapi.com/apps/anthropic","count":0}}

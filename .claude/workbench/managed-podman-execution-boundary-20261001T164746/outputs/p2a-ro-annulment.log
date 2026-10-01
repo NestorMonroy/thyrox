@@ -1,0 +1,161 @@
+# p2a-ro ANULACIÓN — cada mitad del juicio se retira y cae exactamente lo que depende de ella
+
+Se retira una mitad, se corren LOS DOS archivos de prueba completos (no sólo la prueba
+nueva: un rojo ajeno tiene que verse para poder atribuir), se restaura y se vuelve a medir.
+El `exit` de cada bloque es el del comando con pipefail, o sea el del `bun test`, no el
+del filtro. Referencia de restauración: los sha256 del estado GREEN.
+
+## sha256 del estado GREEN
+  f64e2659ef7793079add1e851f8c81e6e84257bb9968e1cbf7e74ec24fb56ad6  src/packages/podman-execution/executionAuthorization.ts
+  9402596ae66efdea1e5b92b1fd97a0a26d9c1c1b35924d8277c6f135d84b5445  src/packages/podman-execution/__tests__/executionAuthorization.test.ts
+  ec3a2e5bdf353b359cb8771da958079f311b2a428d51e779d82e945f0a1cc088  src/packages/artifact-registry/podmanJobVerifier.ts
+  0cc24172243513c8c581d57721b3e16dfd60f637761c8d579d0e555680d3ea6d  src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts
+
+# Anulación A — se retira LA TRADUCCIÓN del campo (resourceArgv vuelve a fijar false)
+$ bash bin/replace_literal --old-file /tmp/anul-a-old.txt --new-file /tmp/anul-a-new.txt src/packages/podman-execution/executionAuthorization.ts
+replace_literal: 1 reemplazo(s) en src/packages/podman-execution/executionAuthorization.ts
+exit=0
+
+$ grep -n 'readOnlyRootfs' src/packages/podman-execution/executionAuthorization.ts
+96:  readOnlyRootfs?: boolean
+213:      readOnlyRootfs: false,
+exit=0
+
+$ cd src/packages/podman-execution && bun test __tests__/executionAuthorization.test.ts 2>&1 | grep -E '^\(fail\)| [0-9]+ (pass|fail|skip)$|^Ran '
+(fail) el contenedor que materializa una autorización > un raíz de sólo lectura declarado se traduce a --read-only en el argv de create [0.24ms]
+(fail) el contenedor que materializa una autorización > un raíz de sólo lectura declarado se traduce a --read-only en el argv de create [0.24ms]
+ 24 pass
+ 1 fail
+Ran 25 tests across 1 file. [134.00ms]
+exit=1
+
+$ cd src/packages/artifact-registry && bun test __tests__/podmanJobVerifier.test.ts 2>&1 | grep -E '^\(fail\)| [0-9]+ (pass|fail|skip)$|^Ran '
+(fail) la composición del trabajo > con proxy: red host, el proxy declarado y el CA montado de sólo lectura [5.44ms]
+ 6 pass
+ 1 skip
+ 1 fail
+Ran 8 tests across 1 file. [174.00ms]
+exit=1
+
+## detalle del rojo de la primitiva: la aserción que cae y el argv recibido, sin --read-only
+$ cd src/packages/podman-execution && bun test __tests__/executionAuthorization.test.ts 2>&1 | sed -n '/un raíz de sólo lectura declarado/,/^      at /p' | head -14
+161 |   test('un raíz de sólo lectura declarado se traduce a --read-only en el argv de create', () => {
+162 |     const argv = createWorkerContainerArgv(executionContainerSpec(authorization({ readOnlyRootfs: true }))).join(' ')
+163 |     expect(argv).toContain('--read-only')
+                       ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "--read-only"
+Received: "create --name thyrox-worker-test-abc-1 --label thyrox.owner-kind=task --label thyrox.owner-id=task-thyrox-0001 --label thyrox.owner-pid=4242 --label thyrox.worker-id=test-abc-1 --label thyrox.execution-id=test-abc-1 --label thyrox.execution-kind=test --label thyrox.execution-reference=task:TASK-THYROX-0001 --cpus 2 --memory 2048m --pids-limit 512 --network none -v /srv/repo:/srv/repo:rw --workdir /srv/repo localhost/thyrox-task-runner:dev bun test"
+
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/executionAuthorization.test.ts:163:18)
+(fail) el contenedor que materializa una autorización > un raíz de sólo lectura declarado se traduce a --read-only en el argv de create [0.26ms]
+(pass) el contenedor que materializa una autorización > sin declarar el raíz, la materialización conserva el comportamiento de hoy: escribible [0.10ms]
+(pass) el contenedor que materializa una autorización > runExecution corre el contenedor hasta que termina y lo retira [1.26ms]
+(pass) el contenedor que materializa una autorización > materializeExecution crea, arranca e inspecciona: devuelve la ExecutionUnit canónica y no espera ni retira [0.59ms]
+exit=1
+
+$ bash bin/replace_literal --old-file /tmp/anul-a-new.txt --new-file /tmp/anul-a-old.txt src/packages/podman-execution/executionAuthorization.ts
+replace_literal: 1 reemplazo(s) en src/packages/podman-execution/executionAuthorization.ts
+exit=0
+
+
+# Anulación B — se retira LA DECLARACIÓN del verificador (la primitiva queda intacta)
+$ bash bin/replace_literal --old-file /tmp/anul-b-old.txt --new-file /tmp/anul-b-new.txt src/packages/artifact-registry/podmanJobVerifier.ts
+replace_literal: 1 reemplazo(s) en src/packages/artifact-registry/podmanJobVerifier.ts
+exit=0
+
+$ grep -n 'readOnlyRootfs' src/packages/artifact-registry/podmanJobVerifier.ts
+exit=1
+
+$ cd src/packages/podman-execution && bun test __tests__/executionAuthorization.test.ts 2>&1 | grep -E '^\(fail\)| [0-9]+ (pass|fail|skip)$|^Ran '
+ 25 pass
+ 0 fail
+Ran 25 tests across 1 file. [127.00ms]
+exit=0
+
+$ cd src/packages/artifact-registry && bun test __tests__/podmanJobVerifier.test.ts 2>&1 | grep -E '^\(fail\)| [0-9]+ (pass|fail|skip)$|^Ran '
+(fail) la composición del trabajo > con proxy: red host, el proxy declarado y el CA montado de sólo lectura [8.01ms]
+ 6 pass
+ 1 skip
+ 1 fail
+Ran 8 tests across 1 file. [177.00ms]
+exit=1
+
+$ bash bin/replace_literal --old-file /tmp/anul-b-new.txt --new-file /tmp/anul-b-old.txt src/packages/artifact-registry/podmanJobVerifier.ts
+replace_literal: 1 reemplazo(s) en src/packages/artifact-registry/podmanJobVerifier.ts
+exit=0
+
+
+# Anulación C — se voltea EL DEFAULT (?? false -> ?? true): castiga sólo la guarda del default
+$ bash bin/replace_literal --old-file /tmp/anul-c-old.txt --new-file /tmp/anul-c-new.txt src/packages/podman-execution/executionAuthorization.ts
+replace_literal: 1 reemplazo(s) en src/packages/podman-execution/executionAuthorization.ts
+exit=0
+
+$ cd src/packages/podman-execution && bun test __tests__/executionAuthorization.test.ts 2>&1 | grep -E '^\(fail\)| [0-9]+ (pass|fail|skip)$|^Ran '
+(fail) el contenedor que materializa una autorización > sin declarar el raíz, la materialización conserva el comportamiento de hoy: escribible [0.22ms]
+(fail) el contenedor que materializa una autorización > sin declarar el raíz, la materialización conserva el comportamiento de hoy: escribible [0.22ms]
+ 24 pass
+ 1 fail
+Ran 25 tests across 1 file. [155.00ms]
+exit=1
+
+$ cd src/packages/artifact-registry && bun test __tests__/podmanJobVerifier.test.ts 2>&1 | grep -E '^\(fail\)| [0-9]+ (pass|fail|skip)$|^Ran '
+ 7 pass
+ 1 skip
+ 0 fail
+Ran 8 tests across 1 file. [149.00ms]
+exit=0
+
+$ bash bin/replace_literal --old-file /tmp/anul-c-new.txt --new-file /tmp/anul-c-old.txt src/packages/podman-execution/executionAuthorization.ts
+replace_literal: 1 reemplazo(s) en src/packages/podman-execution/executionAuthorization.ts
+exit=0
+
+
+# Restauración verificada: los cuatro archivos vuelven al hash GREEN y las suites vuelven a 0 fail
+$ sha256sum -c /tmp/green-sha.txt
+src/packages/podman-execution/executionAuthorization.ts: OK
+src/packages/podman-execution/__tests__/executionAuthorization.test.ts: OK
+src/packages/artifact-registry/podmanJobVerifier.ts: OK
+src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts: OK
+exit=0
+
+$ cd src/packages/podman-execution && bun test 2>&1 | tail -6
+
+ 177 pass
+ 16 skip
+ 0 fail
+ 405 expect() calls
+Ran 193 tests across 15 files. [263.00ms]
+exit=0
+
+$ cd src/packages/artifact-registry && bun test 2>&1 | tail -6
+
+ 60 pass
+ 1 skip
+ 0 fail
+ 124 expect() calls
+Ran 61 tests across 10 files. [895.00ms]
+exit=0
+
+$ grep -c -- '--read-only' src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts
+2
+exit=0
+
+
+## Lectura de las tres anulaciónes
+A (sin traducción): cae 1 de 25 en la primitiva —sólo la prueba que declara el campo— y
+  1 de 8 en la verificación —sólo la prueba que compone el argv del trabajo—. La guarda del
+  default ("sin declararlo, escribible") sigue en verde: no dependía de la traducción.
+B (sin declaración): la primitiva queda 25 pass / 0 fail y cae sólo la prueba del
+  verificador: la declaración del caller carga peso propio, no es un eco de la primitiva.
+C (default volteado): cae exactamente la guarda del default y la prueba declarada sigue
+  verde — su `readOnlyRootfs: true` gana al default. Es la aserción que fija que el campo
+  nuevo no cambia a los callers que no lo declaran.
+
+Métrica: conteo de (fail) por archivo de prueba completo al retirar cada mitad, y sha256
+de los cuatro archivos antes y después de la restauración.
+Ciega a: un rojo del mismo archivo que la anulación no provoca pero tapa otra aserción
+(por eso se corre el archivo completo); y a que el nivel real de Podman está en skip en
+este árbol (sin `podman` en PATH, medido: `command -v podman` no devuelve nada) — el argv
+se mide hasta `podman create`, no contra un daemon que rehúse una combinación inválida.

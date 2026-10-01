@@ -78,3 +78,68 @@ invocaciones de Claude. Ninguna clave se guarda.
 
 Límite declarado: la sesión que orquesta este banco es en sí una sesión de Claude; el corte cubre lo
 que ella delega. Desde el corte no lanza `Agent`, `claude -p` ni `--runner claude`.
+
+### Corrección de la política de credenciales (2026-10-01T18:06:54 UTC)
+
+`credential_pending_rotation` = credencial operativa + deuda de rotación. Se usa durante esta
+implementación y se registra como aviso. Sólo se falla cerrado por credencial ausente, revocada o
+deshabilitada, autenticación rechazada, proveedor inaccesible o modelo inexistente/no permitido —
+y `no_candidate` sólo después de probar las rutas permitidas reales. La deuda vive en
+`credential-rotation.tsv` (nombre y estado, nunca el valor); su orden: P2–P5 verificados → flujos de
+proveedor verificados → corte sin Claude verificado → rotar → repetir las pruebas de autenticación.
+El resultado anterior (`no_candidate`) queda anulado y conservado. Control: `tests/test_credential_state.sh`.
+Ruta del proveedor: `thyrox -p` con `ANTHROPIC_BASE_URL` en el endpoint Anthropic-compatible del Token
+Plan (`https://token-plan.maas.qwencloudapi.com/apps/anthropic`); la clave llega a la unidad como
+`ExecutionSecret` montado, nunca en argv, `--env` ni evidencia.
+
+## Directiva de continuación (2026-10-01, ejecutor)
+
+El plan declarado es la autoridad: `plan.jsonl` (p2a..p2e, p3, p4a..p4c, p5a, p5b, en orden). Lo
+consume `bin/task_continuation run <banco> --task TASK-THYROX-0743`
+(`src/session/task_continuation.py`, `07593694f`, `e28bd01df`), lanzado como entrada declarada del
+plano de control con `thyrox-bg`. Nada se detiene entre tramos para reportar: el reporte es una
+proyección de `outputs/continuation.jsonl` y `outputs/cutover-executions.jsonl`.
+
+| Autoridad | Dónde |
+|---|---|
+| qué se hace | `plan.jsonl` + `p*-worker-prompt.md` (derivados de los contratos pN) |
+| transición | `task_continuation.transition` — commit · retry · next_candidate · stop |
+| candidato | Thompson sampling sobre la posterior Beta de `verify/tsc_schedule.py`, por `taskClass`, sólo entre los permitidos (Qwen, luego DeepSeek); 502 e infraestructura no cuentan |
+| clasificación | reglas deterministas; lo ambiguo, a `THYROX_OUTCOME_CLASSIFIER_COMMAND` (transformers en su unidad) cuando exista — nunca concede éxito ni pisa una regla; sin él, fallo de tarea |
+| aceptación | `verify/*.sh` del ítem, en su propia unidad |
+| materialización | `thyrox-bg --task` → `managed_execution.sh` → primitiva |
+| hallazgo fuera de alcance | el trabajador lo escribe en `outputs/<ítem>-findings.jsonl`; queda como `non_blocking_finding` en el log y el tramo sigue; su registro con ID se reconcilia después |
+| inactividad | `delegate.sh`: transcript en vivo + CPU del árbol; 125 tras `DELEGATE_STALL_SECONDS` sin cambio; nunca por stream vacío |
+| huérfanos | `podman-execution-execute reconcile-orphans` tras cada intento y al arrancar |
+
+Sólo `hard_block` (presupuesto agotado o sin candidato permitido) detiene y vuelve al ejecutor.
+
+Diferido, sin bloquear P2–P5: el clasificador aprendido (no hay corpus todavía: lo produce este
+log), el contexto semántico (`semantic_search_worker` existe sólo como perfil en
+`daemon/src/podman/specializedWorkerProfile.ts`), y reward model / DPO / GRPO.
+
+## Incidente: secretos del `.env` en un trabajador delegado (2026-10-01)
+
+Un trabajador Qwen de p2a ejecutó `env` en su unidad e imprimió dos valores del `.env` del árbol en
+su transcript, que viaja al proveedor: `thyrox -p` corre bajo bun, que carga el `.env` del directorio
+de trabajo, y cada herramienta del trabajador lo hereda. Push protection de GitHub rechazó el push;
+los commits locales que los contenían se reescribieron (autorización del ejecutor) en `cf7906b43`.
+
+| Credencial | Estado | Efecto |
+|---|---|---|
+| `THYROX_REGISTRY_PUBLISHER_TOKEN` | `exposed` | no se entrega a ningún trabajador; rotación como acción de seguridad aparte |
+| `THYROX_INFRA_POSTGRES_PASSWORD` | `exposed` | ídem |
+| `THYROX_OPENAI_COMPAT_API_KEY` | `pending` | sigue en uso, sólo como ExecutionSecret declarado |
+
+Invariante: entorno del trabajador = entorno no secreto declarado + ExecutionSecrets autorizados;
+nunca herencia transitiva del anfitrión o del árbol. Lo hacen cumplir:
+- la máscara de `.env` en el despacho (`ENV_FILE_MASK`, `task_continuation.py`);
+- `tests/session/test-delegated-worker-isolation.sh`: secreto del árbol ausente, del anfitrión
+  ausente, autorizado presente, y reenvío de un nombre de credencial rehusado; cada anulación
+  (`mask`, `host`, `secret`) cae exactamente en su aserción (`outputs/worker-isolation-annulment.log`);
+- `src/session/worker_secret_inheritance.sh`, preflight del controlador: siete fuentes medidas por
+  nombre (entorno, arranque del shell, credenciales montadas, configuración de proveedores, ayudantes
+  de git, auth de registros, entorno de procesos); sin máscara mide 3, con máscara 0;
+- `secret_exposure_detected` en el controlador: cuarentena (`.thyrox/runtime/quarantine/`, 0600),
+  redacción en su sitio con verificación, credencial a `exposed`, y el ítem sigue con el siguiente
+  candidato; un ítem que necesite una credencial expuesta queda `blocked` solo.

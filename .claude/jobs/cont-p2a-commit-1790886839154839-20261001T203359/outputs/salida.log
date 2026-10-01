@@ -1,0 +1,136 @@
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 6 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 6 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 6 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 2 banco(s) tocado(s))
+check_staged_live_writers: 0 escritor(es) vivo(s) (alcance medido: 6 ruta(s) preparada(s))
+check_test_home_isolation: 0 suite(s) sin aislar (alcance medido: 0 archivo(s) de prueba)
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 323 versionado(s) bajo /home/user/thyrox/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 79203 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 1550 aparición(es) del producto en 337 archivo(s) (alcance medido: src)
+check_podman_materialization: 0 materialización(es) fuera de src/packages/podman-execution/, 0 pendiente(s) vencido(s), 2 pendiente(s) vigente(s) (alcance medido: 4153 archivo(s) productivos)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 417 enlace(s) relativo(s) en 289 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 1877 lectura(s) en 4189 archivo(s) de producción — propias 867, proveedor 99, cliente ajeno 18, sin prefijo 893)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 124 congelada(s), 0 obsoleta(s) (alcance medido: 364 variable(s) propia(s), 2311 archivo(s) de prueba)
+claves leidas del entorno: 0 | declaradas: 548 | sin declarar: 0
+check_env_example_coverage: 0 clave(s) sin declarar (alcance medido: 25 clave(s) en 1 archivo(s) ignorado(s), 559 declarada(s) en .env.example)
+  TASK-THYROX-0743 -> Run managed local work only inside a primitive-materialized ExecutionU
+pre-push: corpus del consumidor no alcanzable (/home/user/kaupamex-docs) —
+  la defensa secundaria NO MIDIO. No se afirma que el arbol esta sano;
+  tampoco se bloquea, porque es secundaria (README D4-A, §8).
+remote: error: GH013: Repository rule violations found for refs/heads/feature/complete-orm-root.        
+remote: 
+remote: - GITHUB PUSH PROTECTION        
+remote:   —————————————————————————————————————————        
+remote:     Resolve the following violations before pushing again        
+remote: 
+remote:     - Push cannot contain secrets        
+remote: 
+remote:             
+remote:      (?) Learn how to resolve a blocked push        
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push        
+remote:             
+remote:             
+remote:       —— Docker Personal Access Token ——————————————————————        
+remote:        locations:        
+remote:          - commit: 9775229cb13ab1e7bc7cc1c460f88c479527f6fa        
+remote:            path: .claude/workbench/managed-podman-execution-boundary-20261001T164746/outputs/p2a-qwen3.8-flash.transcript/-home-user-thyrox/2a1c7558-a45d-42a4-ac48-80943d74f7ab.jsonl:33        
+remote:             
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.        
+remote:        https://github.com/NestorMonroy/thyrox/security/secret-scanning/unblock-secret/3K6n9gpnoeG4eReWhWsvuHYFMd5        
+remote:             
+remote: 
+remote: 
+To https://github.com/NestorMonroy/thyrox
+ ! [remote rejected]     HEAD -> feature/complete-orm-root (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/NestorMonroy/thyrox'
+pre-push: corpus del consumidor no alcanzable (/home/user/kaupamex-docs) —
+  la defensa secundaria NO MIDIO. No se afirma que el arbol esta sano;
+  tampoco se bloquea, porque es secundaria (README D4-A, §8).
+remote: error: GH013: Repository rule violations found for refs/heads/feature/complete-orm-root.        
+remote: 
+remote: - GITHUB PUSH PROTECTION        
+remote:   —————————————————————————————————————————        
+remote:     Resolve the following violations before pushing again        
+remote: 
+remote:     - Push cannot contain secrets        
+remote: 
+remote:             
+remote:      (?) Learn how to resolve a blocked push        
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push        
+remote:             
+remote:             
+remote:       —— Docker Personal Access Token ——————————————————————        
+remote:        locations:        
+remote:          - commit: 9775229cb13ab1e7bc7cc1c460f88c479527f6fa        
+remote:            path: .claude/workbench/managed-podman-execution-boundary-20261001T164746/outputs/p2a-qwen3.8-flash.transcript/-home-user-thyrox/2a1c7558-a45d-42a4-ac48-80943d74f7ab.jsonl:33        
+remote:             
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.        
+remote:        https://github.com/NestorMonroy/thyrox/security/secret-scanning/unblock-secret/3K6n9gpnoeG4eReWhWsvuHYFMd5        
+remote:             
+remote: 
+remote: 
+To https://github.com/NestorMonroy/thyrox
+ ! [remote rejected]     HEAD -> feature/complete-orm-root (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/NestorMonroy/thyrox'
+pre-push: corpus del consumidor no alcanzable (/home/user/kaupamex-docs) —
+  la defensa secundaria NO MIDIO. No se afirma que el arbol esta sano;
+  tampoco se bloquea, porque es secundaria (README D4-A, §8).
+remote: error: GH013: Repository rule violations found for refs/heads/feature/complete-orm-root.        
+remote: 
+remote: - GITHUB PUSH PROTECTION        
+remote:   —————————————————————————————————————————        
+remote:     Resolve the following violations before pushing again        
+remote: 
+remote:     - Push cannot contain secrets        
+remote: 
+remote:             
+remote:      (?) Learn how to resolve a blocked push        
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push        
+remote:             
+remote:             
+remote:       —— Docker Personal Access Token ——————————————————————        
+remote:        locations:        
+remote:          - commit: 9775229cb13ab1e7bc7cc1c460f88c479527f6fa        
+remote:            path: .claude/workbench/managed-podman-execution-boundary-20261001T164746/outputs/p2a-qwen3.8-flash.transcript/-home-user-thyrox/2a1c7558-a45d-42a4-ac48-80943d74f7ab.jsonl:33        
+remote:             
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.        
+remote:        https://github.com/NestorMonroy/thyrox/security/secret-scanning/unblock-secret/3K6n9gpnoeG4eReWhWsvuHYFMd5        
+remote:             
+remote: 
+remote: 
+To https://github.com/NestorMonroy/thyrox
+ ! [remote rejected]     HEAD -> feature/complete-orm-root (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/NestorMonroy/thyrox'
+pre-push: corpus del consumidor no alcanzable (/home/user/kaupamex-docs) —
+  la defensa secundaria NO MIDIO. No se afirma que el arbol esta sano;
+  tampoco se bloquea, porque es secundaria (README D4-A, §8).
+remote: error: GH013: Repository rule violations found for refs/heads/feature/complete-orm-root.        
+remote: 
+remote: - GITHUB PUSH PROTECTION        
+remote:   —————————————————————————————————————————        
+remote:     Resolve the following violations before pushing again        
+remote: 
+remote:     - Push cannot contain secrets        
+remote: 
+remote:             
+remote:      (?) Learn how to resolve a blocked push        
+remote:      https://docs.github.com/code-security/secret-scanning/working-with-secret-scanning-and-push-protection/working-with-push-protection-from-the-command-line#resolving-a-blocked-push        
+remote:             
+remote:             
+remote:       —— Docker Personal Access Token ——————————————————————        
+remote:        locations:        
+remote:          - commit: 9775229cb13ab1e7bc7cc1c460f88c479527f6fa        
+remote:            path: .claude/workbench/managed-podman-execution-boundary-20261001T164746/outputs/p2a-qwen3.8-flash.transcript/-home-user-thyrox/2a1c7558-a45d-42a4-ac48-80943d74f7ab.jsonl:33        
+remote:             
+remote:        (?) To push, remove secret from commit(s) or follow this URL to allow the secret.        
+remote:        https://github.com/NestorMonroy/thyrox/security/secret-scanning/unblock-secret/3K6n9gpnoeG4eReWhWsvuHYFMd5        
+remote:             
+remote: 
+remote: 
+To https://github.com/NestorMonroy/thyrox
+ ! [remote rejected]     HEAD -> feature/complete-orm-root (push declined due to repository rule violations)
+error: failed to push some refs to 'https://github.com/NestorMonroy/thyrox'
+execution thyrox-worker-maintenance-mupzs961-18601 kind=maintenance task=TASK-THYROX-0743 exit=1
+__BG_EXIT__=1

@@ -326,7 +326,7 @@ cmd_start() {
         exit 2
     fi
     local grace="$_GRACE_DEFAULT" memfree_spec="" memfree_wait=1800 memfree=0
-    local task="" kind="" network="" workdir="" mounts=() environment=()
+    local task="" kind="" network="" workdir="" mounts=() environment=() secrets=()
     while [[ "${1:-}" == --* ]]; do
         case "$1" in
             --grace) grace="${2:-}"; shift 2 ;;
@@ -336,6 +336,7 @@ cmd_start() {
             --workdir) workdir="${2:-}"; shift 2 ;;
             --mount) mounts+=("${2:-}"); shift 2 ;;
             --env) environment+=("${2:-}"); shift 2 ;;
+            --secret-from-env) secrets+=("${2:-}"); shift 2 ;;
             --memfree) memfree_spec="${2:-}"; shift 2 ;;
             --memfree-wait) memfree_wait="${2:-}"; shift 2 ;;
             --dir)   BG_DIR="${2:-}"; shift 2 ;;
@@ -358,6 +359,8 @@ cmd_start() {
         [[ -n "$workdir" ]] && authorization+=(--workdir "$workdir")
         for item in "${mounts[@]}"; do authorization+=(--mount "$item"); done
         for item in "${environment[@]}"; do authorization+=(--env "$item"); done
+        # Una credencial se pasa por su nombre: el runner la monta como secreto.
+        for item in "${secrets[@]}"; do authorization+=(--secret-from-env "$item"); done
         set -- "${runner[@]}" "${authorization[@]}" -- "$@"
     elif ! thyrox_control_plane_entry "$1"; then
         echo "bg.sh start: '$1' no es una entrada declarada del plano de control (src/session/control_plane_entries.tsv)." >&2

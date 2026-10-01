@@ -1,0 +1,6 @@
+qwen3.8-flash 33k max=16 stream=0 bytes=132119 http=200 body={"id":"msg_a0f6848f-61a0-456d-ba3f-6fb08df128a9","type":"message","role":"assistant","model":"qwen3.8-flash","content":[{"type":"thinking","signature":"","think
+qwen3.8-flash 33k max=32000 stream=0 bytes=132122 http=000 body={"id":"msg_a0f6848f-61a0-456d-ba3f-6fb08df128a9","type":"message","role":"assistant","model":"qwen3.8-flash","content":[{"type":"thinking","signature":"","think
+qwen3.8-flash 33k max=32000 stream=1 bytes=132121 http=200 body=event:ping data:{"type":"ping"}  event:message_start data:{"type":"message_start","message":{"id":"msg_d9f373bd-1d27-4b2c-a591-5bfdfe88dd51","type":"message","r
+qwen3.8-flash 33k max=8000 stream=1 bytes=132120 http=200 body=event:ping data:{"type":"ping"}  event:message_start data:{"type":"message_start","message":{"id":"msg_4e7b0a2b-2ce7-4caf-8068-93f0d1372982","type":"message","r
+execution thyrox-worker-probe-mupxual9-2491 kind=probe task=TASK-THYROX-0743 exit=0
+__BG_EXIT__=0

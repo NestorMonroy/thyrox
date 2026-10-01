@@ -1,0 +1,12 @@
+# p2a — typecheck del paquete artifact-registry (errores antes y después)
+
+## Antes (HEAD original, antes de tocar podmanJobVerifier.ts ni sus pruebas)
+
+$ (cd src/packages/artifact-registry && bun ../../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.test.json)
+(sin salida)
+exit=0
+
+## Después (podmanJobVerifier.ts migrado + suite nueva, estado final)
+
+$ (cd src/packages/artifact-registry && bun ../../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.test.json)
+exit=0

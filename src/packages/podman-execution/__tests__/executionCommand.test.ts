@@ -27,6 +27,7 @@ function harness(env: Record<string, string> = {}, stdin = ''): Harness {
     now: () => 36 ** 3,
     podman,
     repositoryRoot: ROOT,
+    isProcessAlive: () => true,
   }
   return { deps, calls, stdout, stderr }
 }
@@ -109,5 +110,106 @@ describe('thyrox-exec run', () => {
       },
     }
     expect(await runExecutionCommand(['run', '--task', 'TASK-THYROX-0001', '--kind', 'test', '--', 'false'], h.deps)).toBe(4)
+  })
+})
+
+describe('--secret-from-env: la credencial llega a la unidad como secreto montado', () => {
+  const NAME = 'THYROX_OPENAI_COMPAT_API_KEY'
+  const SECRET = 'thyrox-exec-thyrox-openai-compat-api-key'
+  const VALUE = 'sk-sp-valor-de-prueba-nunca-en-argv'
+
+  function secretHarness(env: Record<string, string>, existingDigest?: string) {
+    const calls: string[][] = []
+    const stdins: (string | undefined)[] = []
+    const printed: string[] = []
+    const podman: PodmanExecutor = {
+      async run(args, options) {
+        calls.push([...args])
+        stdins.push(options?.stdin)
+        if (args[0] === 'secret' && args[1] === 'inspect') {
+          return existingDigest ? { exitCode: 0, stdout: `${existingDigest}\n`, stderr: '' } : { exitCode: 125, stdout: '', stderr: 'no such secret' }
+        }
+        return { exitCode: 0, stdout: args[0] === 'wait' ? '0\n' : '', stderr: '' }
+      },
+    }
+    const deps: ExecutionCommandDeps = {
+      env, readStdin: async () => '', pid: 77, now: () => 36 ** 3, podman, repositoryRoot: ROOT,
+      output: { stdout: text => { printed.push(text) }, stderr: text => { printed.push(text) } },
+    }
+    return { deps, calls, stdins, printed }
+  }
+
+  test('materializa el secreto por stdin y lo monta; el valor no aparece en ningún argv ni salida', async () => {
+    const h = secretHarness({ [NAME]: VALUE })
+    const code = await runExecutionCommand(['run', '--task', 'TASK-THYROX-0001', '--kind', 'probe', '--secret-from-env', NAME, '--', 'true'], h.deps)
+    expect(code).toBe(0)
+    const createIndex = h.calls.findIndex(call => call[0] === 'secret' && call[1] === 'create')
+    expect(createIndex).toBeGreaterThanOrEqual(0)
+    expect(h.calls[createIndex]?.slice(-2)).toEqual([SECRET, '-'])
+    expect(h.stdins[createIndex]).toBe(VALUE)
+    expect(createArgvOf(h.calls).join(' ')).toContain(`--secret ${SECRET},type=mount,target=${NAME}`)
+    expect(h.calls.some(call => call.join(' ').includes(VALUE))).toBe(false)
+    expect(h.printed.join('').includes(VALUE)).toBe(false)
+  })
+
+  test('un secreto con el mismo valor no se recrea', async () => {
+    const digest = new Bun.CryptoHasher('sha256').update(VALUE).digest('hex')
+    const h = secretHarness({ [NAME]: VALUE }, digest)
+    await runExecutionCommand(['run', '--task', 'TASK-THYROX-0001', '--kind', 'probe', '--secret-from-env', NAME, '--', 'true'], h.deps)
+    expect(h.calls.some(call => call[0] === 'secret' && call[1] === 'create')).toBe(false)
+    expect(createArgvOf(h.calls).join(' ')).toContain(`--secret ${SECRET},type=mount,target=${NAME}`)
+  })
+
+  test('credencial ausente: sale 2, lo nombra y no toca Podman', async () => {
+    const h = secretHarness({})
+    const code = await runExecutionCommand(['run', '--task', 'TASK-THYROX-0001', '--kind', 'probe', '--secret-from-env', NAME, '--', 'true'], h.deps)
+    expect(code).toBe(2)
+    expect(h.printed.join('')).toContain(`credencial ausente: ${NAME}`)
+    expect(h.calls).toEqual([])
+  })
+})
+
+function createArgvOf(calls: string[][]): string[] {
+  return calls.find(call => call[0] === 'create') ?? []
+}
+
+describe('reconcile-orphans: un contenedor cuyo dueño de tarea murió se retira sin intervención', () => {
+  function orphanHarness(owners: Record<string, string>, alive: number[]): Harness & { removed: string[] } {
+    const h = harness()
+    const removed: string[] = []
+    h.deps.isProcessAlive = pid => alive.includes(pid)
+    h.deps.podman = {
+      async run(args) {
+        h.calls.push([...args])
+        if (args[0] === 'ps') return { exitCode: 0, stdout: Object.keys(owners).join('\n') + '\n', stderr: '' }
+        if (args[0] === 'inspect') {
+          const name = args.at(-1) ?? ''
+          return { exitCode: 0, stdout: `running\t9000\t${owners[name]}\tthyrox-worker\n`, stderr: '' }
+        }
+        if (args[0] === 'rm') removed.push(args.at(-1) ?? '')
+        return { exitCode: 0, stdout: '', stderr: '' }
+      },
+    }
+    return { ...h, removed }
+  }
+
+  test('retira sólo el de dueño de tarea con PID muerto; deja vivos y ajenos', async () => {
+    const h = orphanHarness({
+      'thyrox-worker-a': 'task\ttask-thyrox-0001\t11',
+      'thyrox-worker-b': 'task\ttask-thyrox-0001\t22',
+      'thyrox-worker-c': 'pool\tpool-x\t33',
+    }, [22])
+    const code = await runExecutionCommand(['reconcile-orphans'], h.deps)
+    expect(code).toBe(0)
+    expect(h.removed).toEqual(['thyrox-worker-a'])
+    expect(h.stdout.join('')).toContain('retirado thyrox-worker-a')
+    expect(h.stdout.join('')).toContain('1 huérfano(s) retirado(s)')
+  })
+
+  test('sin huérfanos, sale 0 y lo dice', async () => {
+    const h = orphanHarness({ 'thyrox-worker-b': 'task\ttask-thyrox-0001\t22' }, [22])
+    expect(await runExecutionCommand(['reconcile-orphans'], h.deps)).toBe(0)
+    expect(h.removed).toEqual([])
+    expect(h.stdout.join('')).toContain('0 huérfano(s) retirado(s)')
   })
 })
