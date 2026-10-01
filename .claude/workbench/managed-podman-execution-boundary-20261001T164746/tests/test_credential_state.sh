@@ -10,5 +10,7 @@ check "sin deuda + presente + auth aceptada => activa" "$(bash "$probe" yes none
 check "ausente => no_candidate (unavailable)" "$(bash "$probe" no pending untested)" "unavailable reason=missing"
 check "revocada => unavailable" "$(bash "$probe" yes revoked success)" "unavailable reason=revoked"
 check "auth rechazada => unavailable" "$(bash "$probe" yes pending failed)" "unavailable reason=auth_failed"
+check "expuesta + auth aceptada => no se entrega a trabajadores" "$(bash "$probe" yes exposed success)" "exposed usable_for_workers=no"
+check "pendiente sigue usable aunque otra esté expuesta" "$(bash "$probe" yes pending success)" "pending_rotation usable=yes warning=rotation_pending"
 echo "$((total - failures))/$total aserciones"
 [[ "$failures" -eq 0 ]]

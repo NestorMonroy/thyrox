@@ -133,6 +133,55 @@ dispatch = [c for c in calls if "preverify" not in c["name"] and "verify" not in
 check("el ítem se acepta con los dobles", "accepted", result)
 check("el despacho del trabajador lleva la máscara del .env", [(ENV_FILE_MASK,)], [c["mounts"] for c in dispatch])
 
+# inventario por nombre, detección, redacción y estado expuesto
+from session.task_continuation import (  # noqa: E402
+    contain_secret_exposure, declared_secret_names, exposed_credentials, exposed_secret_names,
+    mark_exposed, redact_secret_assignments,
+)
+with tempfile.TemporaryDirectory() as tmp:
+    example = Path(tmp) / ".env.example"
+    example.write_text("THYROX_FAKE_TOKEN=\nTHYROX_FAKE_DB_PASSWORD=\nTHYROX_PLAIN_SETTING=\n")
+    check("el inventario sale de los nombres declarados", ("THYROX_FAKE_DB_PASSWORD", "THYROX_FAKE_TOKEN"),
+          declared_secret_names(example))
+NAMES = ("THYROX_FAKE_TOKEN", "THYROX_FAKE_DB_PASSWORD")
+LEAK = "salida: THYROX_FAKE_TOKEN=abc123xyz\\nTHYROX_FAKE_DB_PASSWORD=s3cr3tvalue otro"
+check("detecta cada secreto declarado con valor", {"THYROX_FAKE_TOKEN", "THYROX_FAKE_DB_PASSWORD"}, exposed_secret_names(LEAK, NAMES))
+check("un secreto ya redactado no cuenta", set(), exposed_secret_names(redact_secret_assignments(LEAK, NAMES), NAMES))
+check("la redacción conserva el nombre", True, "THYROX_FAKE_TOKEN=[REDACTADO]" in redact_secret_assignments(LEAK, NAMES))
+check("un nombre sin valor no es exposición", set(), exposed_secret_names("THYROX_FAKE_TOKEN= vacío", NAMES))
+with tempfile.TemporaryDirectory() as tmp:
+    wb = Path(tmp); (wb / "outputs" / "i-m.transcript" / "s").mkdir(parents=True)
+    leaked_file = wb / "outputs" / "i-m.transcript" / "s" / "t.jsonl"
+    leaked_file.write_text(LEAK)
+    saved_quarantine = controller.QUARANTINE_DIR
+    controller.QUARANTINE_DIR = wb / "quarantine"
+    try:
+        found = contain_secret_exposure(wb, "i", "m", NAMES)
+    finally:
+        controller.QUARANTINE_DIR = saved_quarantine
+    check("la contención nombra lo expuesto", {"THYROX_FAKE_TOKEN", "THYROX_FAKE_DB_PASSWORD"}, found)
+    check("la salida queda redactada en su sitio", set(), exposed_secret_names(leaked_file.read_text(), NAMES))
+    quarantined = list((wb / "quarantine").rglob("t.jsonl"))
+    check("el original va a la cuarentena con modo 0600", (1, 0o600), (len(quarantined), quarantined[0].stat().st_mode & 0o777 if quarantined else None))
+    mark_exposed(wb, found, "i")
+    check("la credencial pasa a expuesta", {"THYROX_FAKE_TOKEN", "THYROX_FAKE_DB_PASSWORD"}, exposed_credentials(wb))
+    # un ítem que necesita una credencial expuesta queda bloqueado SOLO, sin despachar nada
+    calls.clear()
+    (wb / "p.md").write_text("x\n")
+    saved = (controller.run_in_unit, controller.reconcile_orphans, controller.commit_item)
+    controller.run_in_unit, controller.reconcile_orphans = fake_unit, lambda: ""
+    controller.commit_item = lambda *a, **k: (0, "")
+    try:
+        blocked = controller.run_item(wb, PlanItem(id="j", prompt="p.md", verify="true", candidates=("m",),
+                                                   secrets=("THYROX_FAKE_TOKEN",)), "TASK-THYROX-0001", random.Random(0), None)
+    finally:
+        controller.run_in_unit, controller.reconcile_orphans, controller.commit_item = saved
+    check("el ítem que necesita la expuesta queda bloqueado", "blocked", blocked)
+    check("y no se despacha ninguna unidad", [], calls)
+    check("un ítem bloqueado no detiene al siguiente", "k",
+          next_item([PlanItem(id="j", prompt="p", verify="v", candidates=("m",)), PlanItem(id="k", prompt="p", verify="v", candidates=("m",))],
+                    [{"kind": "blocked", "item": "j"}]).id)
+
 # las dos claves del entorno: el clasificador externo y la tarea por defecto
 import os  # noqa: E402
 from session.task_continuation import learned_classifier_from_environment, main  # noqa: E402

@@ -63,14 +63,18 @@ EXECUTE = ["bash", str(ROOT / "bin" / "podman-execution-execute")]
 OUTCOMES = (
     "success", "provider_transient", "provider_permanent", "task_failure",
     "infrastructure_failure", "stalled", "non_blocking_finding", "hard_block",
+    "secret_exposure_detected",
 )
 #: Resultados que no son responsabilidad del candidato: no mueven su posterior.
-NOT_COUNTED = {"provider_transient", "infrastructure_failure", "hard_block", "non_blocking_finding"}
+NOT_COUNTED = {"provider_transient", "infrastructure_failure", "hard_block", "non_blocking_finding",
+               "secret_exposure_detected"}
 TRANSIENT_RETRIES = 2
 INFRASTRUCTURE_RETRIES = 1
 #: Código de salida con que ``delegate.sh`` declara un trabajador sin actividad medida.
 STALLED_EXIT = 125
 TIMEOUT_EXIT = 124
+#: Las credenciales de un trabajador delegado por defecto: sólo la del proveedor.
+DELEGATE_SECRETS = ("THYROX_OPENAI_COMPAT_API_KEY",)
 #: Código propio: thyrox-bg rehusó lanzar la unidad.
 LAUNCH_FAILED_EXIT = 97
 
@@ -91,6 +95,8 @@ class PlanItem:
     owned: tuple[str, ...] = ()
     max_turns: int = 150
     attempts: int = 4
+    #: Las únicas credenciales que el trabajador recibe, como ExecutionSecret.
+    secrets: tuple[str, ...] = DELEGATE_SECRETS
 
 
 @dataclass
@@ -125,6 +131,7 @@ def load_plan(workbench: Path) -> list[PlanItem]:
             id=row["id"], prompt=row["prompt"], verify=row["verify"], candidates=tuple(row["candidates"]),
             task_class=row.get("taskClass", "analisis"), owned=tuple(row.get("owned", ())),
             max_turns=int(row.get("maxTurns", 150)), attempts=int(row.get("attempts", 4)),
+            secrets=tuple(row.get("secrets", DELEGATE_SECRETS)),
         ))
     if not items:
         raise SystemExit(f"task_continuation: plan vacío: {plan}")
@@ -148,8 +155,8 @@ def append_log(workbench: Path, row: dict) -> None:
 
 def next_item(plan: list[PlanItem], log: list[dict]) -> PlanItem | None:
     """El primer ítem declarado sin aceptación registrada. El orden es el del plan."""
-    accepted = {row["item"] for row in log if row.get("kind") == "accepted"}
-    return next((item for item in plan if item.id not in accepted), None)
+    settled = {row["item"] for row in log if row.get("kind") in ("accepted", "blocked")}
+    return next((item for item in plan if item.id not in settled), None)
 
 
 def classify_deterministic(evidence: Evidence) -> str | None:
@@ -278,6 +285,83 @@ def unit_start_argv(name: str, task: str, argv: list[str], network: str | None =
     return [*start, "--", *argv]
 
 
+#: Un nombre de clave que declara un secreto. El inventario son las claves de
+#: `.env.example` que lo cumplen: se trabaja por NOMBRE, nunca con sus valores.
+SECRET_NAME_PATTERN = re.compile(r"(TOKEN|KEY|PASSWORD|SECRET|_PAT|CREDENTIAL)")
+REDACTED = "[REDACTADO]"
+QUARANTINE_DIR = ROOT / ".thyrox" / "runtime" / "quarantine"
+
+
+def declared_secret_names(example: Path | None = None) -> tuple[str, ...]:
+    """Las claves de `.env.example` cuyo nombre declara un secreto."""
+    text = (example or ROOT / ".env.example").read_text()
+    keys = (match.group(1) for match in re.finditer(r"(?m)^([A-Z][A-Z0-9_]*)=", text))
+    return tuple(sorted({key for key in keys if SECRET_NAME_PATTERN.search(key)}))
+
+
+def _assignment_pattern(names: tuple[str, ...]) -> re.Pattern[str]:
+    # `NOMBRE=valor` en texto o escapado en JSON; el valor es lo que sigue hasta un
+    # separador. Lo ya redactado no cuenta.
+    alternatives = "|".join(re.escape(name) for name in names)
+    return re.compile(rf"(?<![A-Z0-9_])({alternatives})=(?!\[REDACTADO\])([^\s\\\\\"']{{6,}})")
+
+
+def exposed_secret_names(text: str, names: tuple[str, ...]) -> set[str]:
+    """Qué secretos declarados aparecen con valor en ``text``."""
+    return {match.group(1) for match in _assignment_pattern(names).finditer(text)} if names else set()
+
+
+def redact_secret_assignments(text: str, names: tuple[str, ...]) -> str:
+    return _assignment_pattern(names).sub(lambda match: f"{match.group(1)}={REDACTED}", text) if names else text
+
+
+def exposed_credentials(workbench: Path) -> set[str]:
+    """Las credenciales que el banco registra como expuestas: no se entregan a trabajadores."""
+    path = workbench / "credential-rotation.tsv"
+    if not path.is_file():
+        return set()
+    rows = (line.split("\t") for line in path.read_text().splitlines()[1:] if line.strip())
+    return {row[0] for row in rows if len(row) > 1 and row[1] == "exposed"}
+
+
+def mark_exposed(workbench: Path, names: set[str], item: str) -> None:
+    path = workbench / "credential-rotation.tsv"
+    if not path.is_file():
+        path.write_text("credential\trotation\tsince\tnote\n")
+    already = exposed_credentials(workbench)
+    with path.open("a") as handle:
+        for name in sorted(names - already):
+            handle.write(f"{name}\texposed\t{time.strftime('%Y-%m-%d', time.gmtime())}\t"
+                         f"impresa por un trabajador de {item}; no se entrega a trabajadores\n")
+
+
+def contain_secret_exposure(workbench: Path, item: str, model: str, names: tuple[str, ...]) -> set[str]:
+    """``secret_exposure_detected``: aparta, redacta y verifica las salidas de un trabajador.
+
+    Cada archivo con un secreto declarado se copia íntegro a la cuarentena (ignorada
+    por git, 0600) y se redacta en su sitio; luego se vuelve a medir. Devuelve los
+    nombres expuestos; un archivo que siga conteniéndolos tras redactar es un error.
+    """
+    outputs = workbench / "outputs"
+    candidates = [*outputs.glob(f"{item}-{model}.transcript/**/*.jsonl"),
+                  *outputs.glob(f"{item}-{model}.stream.jsonl"), *outputs.glob(f"{item}-{model}.stderr.log")]
+    found: set[str] = set()
+    for path in candidates:
+        text = path.read_text(errors="replace")
+        hit = exposed_secret_names(text, names)
+        if not hit:
+            continue
+        found |= hit
+        target = QUARANTINE_DIR / f"{item}-{model}-{job_suffix()}" / path.name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        target.write_text(text)
+        target.chmod(0o600)
+        path.write_text(redact_secret_assignments(text, names))
+        if exposed_secret_names(path.read_text(errors="replace"), names):
+            raise RuntimeError(f"la redacción no dejó limpio {path}")
+    return found
+
+
 def run_in_unit(name: str, task: str, argv: list[str], network: str | None = None,
                 secrets: tuple[str, ...] = (), mounts: tuple[str, ...] = ()) -> tuple[int, str]:
     """Lanza ``argv`` con thyrox-bg en una ExecutionUnit, espera y devuelve (exit, log)."""
@@ -349,6 +433,13 @@ def tail(text: str, lines: int = 25) -> str:
 def run_item(workbench: Path, item: PlanItem, task: str, rng: random.Random, learned) -> str:
     """Corre un ítem hasta aceptarlo o agotar su presupuesto. Devuelve ``accepted`` o ``hard_block``."""
     log = read_log(workbench)
+    # Una credencial expuesta no se entrega a ningún trabajador: el ítem que la
+    # necesita queda bloqueado SOLO; los independientes siguen.
+    needed_exposed = exposed_credentials(workbench) & set(item.secrets)
+    if needed_exposed:
+        append_log(workbench, {"kind": "blocked", "item": item.id, "reason": "credencial expuesta",
+                               "credentials": sorted(needed_exposed)})
+        return "blocked"
     # Reanudar: si lo declarado ya se verifica (un intento previo, o un controlador
     # que murió antes de commitear), se acepta sin volver a despachar.
     stamp = job_suffix()
@@ -373,7 +464,7 @@ def run_item(workbench: Path, item: PlanItem, task: str, rng: random.Random, lea
         code, worker_log = run_in_unit(
             f"cont-{item.id}-{attempt}-{stamp}", task,
             ["bash", str(workbench / "probes" / "delegate.sh"), str(workbench), item.id, model, str(prompt), str(item.max_turns)],
-            network="host", secrets=("THYROX_OPENAI_COMPAT_API_KEY",), mounts=(ENV_FILE_MASK,))
+            network="host", secrets=item.secrets, mounts=(ENV_FILE_MASK,))
         elapsed = time.monotonic() - started
         # El stderr del trabajador sólo es evidencia si lo escribió ESTE intento; uno
         # viejo de otra ejecución clasificaría con un error que ya no ocurre.
@@ -385,6 +476,18 @@ def run_item(workbench: Path, item: PlanItem, task: str, rng: random.Random, lea
                             verify_tail=tail(verify_log), elapsed_seconds=round(elapsed, 1),
                             findings=read_findings(workbench, item))
         outcome, source = classify(evidence, learned)
+        leaked = contain_secret_exposure(workbench, item.id, model, declared_secret_names())
+        if leaked:
+            # secret_exposure_detected: el trabajador ya terminó; sus salidas quedan en
+            # cuarentena y redactadas, y la credencial pasa a expuesta.
+            mark_exposed(workbench, leaked, item.id)
+            append_log(workbench, {"kind": "secret_exposure", "item": item.id, "model": model,
+                                   "credentials": sorted(leaked)})
+            outcome, source = "secret_exposure_detected", "rule"
+            if leaked & set(item.secrets):
+                append_log(workbench, {"kind": "blocked", "item": item.id, "reason": "credencial expuesta",
+                                       "credentials": sorted(leaked & set(item.secrets))})
+                return "blocked"
         for finding in evidence.findings:
             append_log(workbench, {"kind": "non_blocking_finding", "item": item.id, "model": model, **finding})
         step = transition(outcome, same_retries, infra_retries)
@@ -458,10 +561,24 @@ def main(argv: list[str] | None = None) -> int:
     rng = random.Random(args.seed)
     learned = learned_classifier_from_environment()
     append_log(workbench, {"kind": "start", "orphans": reconcile_orphans()})
+    # Antes de despachar: una unidad con la misma forma que la de un trabajador no
+    # puede heredar ningún secreto que no esté declarado. Sin eso no hay despacho seguro.
+    gate_code, gate_log = run_in_unit(
+        f"cont-secret-gate-{job_suffix()}", args.task,
+        ["bash", str(ROOT / "src" / "session" / "worker_secret_inheritance.sh"), *DELEGATE_SECRETS],
+        network="host", secrets=DELEGATE_SECRETS, mounts=(ENV_FILE_MASK,))
+    append_log(workbench, {"kind": "secret_inheritance_gate", "exit": gate_code, "sources": tail(gate_log, 9)})
+    if gate_code != 0:
+        print("task_continuation: hard_block — un trabajador heredaría secretos no declarados", file=sys.stderr)
+        return 3
     done = 0
     # El plan se relee en cada vuelta: un ítem declarado mientras corre se consume en su orden.
     while (item := next_item(load_plan(workbench), read_log(workbench))) is not None:
-        if run_item(workbench, item, args.task, rng, learned) == "hard_block":
+        outcome = run_item(workbench, item, args.task, rng, learned)
+        if outcome == "blocked":
+            print(f"task_continuation: {item.id} bloqueado por una credencial expuesta; sigue el siguiente", file=sys.stderr)
+            continue
+        if outcome == "hard_block":
             print(f"task_continuation: hard_block en {item.id}; evidencia en outputs/continuation.jsonl", file=sys.stderr)
             return 3
         done += 1

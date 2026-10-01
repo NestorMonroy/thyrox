@@ -23,3 +23,19 @@ OK el libro registra 125
 test_delegate_stall: 2 OK, 1 FALLA
 restaurado: sha256 idéntico
 execution thyrox-worker-test-mupws89p-22596 kind=test task=TASK-THYROX-0743 exit=0
+== f) sin el bloqueo por credencial expuesta
+== g) la redacción no redacta
+FALLA un secreto ya redactado no cuenta: esperado set(), obtenido {'THYROX_FAKE_TOKEN', 'THYROX_FAKE_DB_PASSWORD'}
+FALLA la redacción conserva el nombre: esperado True, obtenido False
+2
+restaurado: sha256 idéntico
+test_task_continuation: 52 OK, 0 FALLA
+== f) sin el bloqueo por credencial expuesta (reemplazo literal)
+replace_literal: 1 reemplazo(s) en src/session/task_continuation.py
+restaurado: sha256 idéntico
+test_task_continuation: 52 OK, 0 FALLA
+== f) sin el bloqueo por credencial expuesta
+FALLA el ítem que necesita la expuesta queda bloqueado: esperado 'blocked', obtenido 'accepted'
+FALLA y no se despacha ninguna unidad: esperado [], obtenido [{'name': 'cont-j-preverify-1790892070619825', 'mounts': ()}, {'name': 'cont-j-1-1790892070619843', 'mounts': ('/dev/null:/home/user/thyrox/.env:ro',)}, {'name': 'cont-j-1-verify-1790892070619843', 'mounts': ()}]
+test_task_continuation: 50 OK, 2 FALLA
+restaurado: sha256 idéntico

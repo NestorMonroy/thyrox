@@ -117,3 +117,29 @@ Sólo `hard_block` (presupuesto agotado o sin candidato permitido) detiene y vue
 Diferido, sin bloquear P2–P5: el clasificador aprendido (no hay corpus todavía: lo produce este
 log), el contexto semántico (`semantic_search_worker` existe sólo como perfil en
 `daemon/src/podman/specializedWorkerProfile.ts`), y reward model / DPO / GRPO.
+
+## Incidente: secretos del `.env` en un trabajador delegado (2026-10-01)
+
+Un trabajador Qwen de p2a ejecutó `env` en su unidad e imprimió dos valores del `.env` del árbol en
+su transcript, que viaja al proveedor: `thyrox -p` corre bajo bun, que carga el `.env` del directorio
+de trabajo, y cada herramienta del trabajador lo hereda. Push protection de GitHub rechazó el push;
+los commits locales que los contenían se reescribieron (autorización del ejecutor) en `cf7906b43`.
+
+| Credencial | Estado | Efecto |
+|---|---|---|
+| `THYROX_REGISTRY_PUBLISHER_TOKEN` | `exposed` | no se entrega a ningún trabajador; rotación como acción de seguridad aparte |
+| `THYROX_INFRA_POSTGRES_PASSWORD` | `exposed` | ídem |
+| `THYROX_OPENAI_COMPAT_API_KEY` | `pending` | sigue en uso, sólo como ExecutionSecret declarado |
+
+Invariante: entorno del trabajador = entorno no secreto declarado + ExecutionSecrets autorizados;
+nunca herencia transitiva del anfitrión o del árbol. Lo hacen cumplir:
+- la máscara de `.env` en el despacho (`ENV_FILE_MASK`, `task_continuation.py`);
+- `tests/session/test-delegated-worker-isolation.sh`: secreto del árbol ausente, del anfitrión
+  ausente, autorizado presente, y reenvío de un nombre de credencial rehusado; cada anulación
+  (`mask`, `host`, `secret`) cae exactamente en su aserción (`outputs/worker-isolation-annulment.log`);
+- `src/session/worker_secret_inheritance.sh`, preflight del controlador: siete fuentes medidas por
+  nombre (entorno, arranque del shell, credenciales montadas, configuración de proveedores, ayudantes
+  de git, auth de registros, entorno de procesos); sin máscara mide 3, con máscara 0;
+- `secret_exposure_detected` en el controlador: cuarentena (`.thyrox/runtime/quarantine/`, 0600),
+  redacción en su sitio con verificación, credencial a `exposed`, y el ítem sigue con el siguiente
+  candidato; un ítem que necesite una credencial expuesta queda `blocked` solo.
