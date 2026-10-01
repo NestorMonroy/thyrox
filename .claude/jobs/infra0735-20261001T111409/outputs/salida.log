@@ -1,0 +1,13 @@
+  ok    0735: el puerto declarado en el .env se usa sin exportarlo
+  ok    0735: la variable del proceso gana sobre el .env
+  ok    0735: sin declaración en proceso ni archivo queda el volumen por defecto
+
+73 casos: 73 ok, 0 fallos
+LIBEXIT=0
+  ok    caso 26: el volumen anterior no se borra
+  ok    caso 27: vivo sobre el volumen declarado -> se conserva sin create/rm/start
+  ok    caso 28: el volumen declarado sólo en el .env gobierna el ensure
+
+98 casos: 98 ok, 0 fallos
+ENSEXIT=0
+__BG_EXIT__=0

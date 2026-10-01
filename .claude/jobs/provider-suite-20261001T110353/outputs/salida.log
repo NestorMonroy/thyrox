@@ -1,0 +1,49 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/proxyUpstreamForwarder.test.ts:
+153 |   })
+154 | 
+155 |   test('una baseUrl insegura (loopback sin permiso) rehúsa antes de conectar', async () => {
+156 |     const upstream = stub()
+157 |     const forward = createHttpForwarder({ upstreams: { u: { baseUrl: upstream.baseUrl } }, env: {}, version: '0.1.0' })
+158 |     await expect(forward(forwardRequest())).rejects.toThrow(/insegura|unsafe/)
+                                                          ^
+error: 
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/proxyUpstreamForwarder.test.ts:158:53)
+(fail) createHttpForwarder (Mv) > una baseUrl insegura (loopback sin permiso) rehúsa antes de conectar [4.19ms]
+120 |         const cut = calls === 1
+121 |         const body = new ReadableStream<Uint8Array>({
+122 |           start(controller) {
+123 |             if (cut) {
+124 |               controller.enqueue(enc.encode('event: message_start\ndata: {}\n\n'))
+125 |               controller.error(new Error('cortado'))
+                                         ^
+error: cortado
+      at start (/home/user/thyrox/src/packages/provider/__tests__/proxyStartServer.test.ts:125:36)
+      at fetch (/home/user/thyrox/src/packages/provider/__tests__/proxyStartServer.test.ts:121:22)
+
+src/proxy/__tests__/openaiCompatForwarder.test.ts:
+124 | 
+125 |   test('una baseUrl insegura se rehúsa sin conectar', async () => {
+126 |     const forward = createOpenAICompatForwarder({ next: () => Promise.resolve(new Response('')), upstreams: { open: { name: 'open', baseUrl: 'http://127.0.0.1:9/v1' } }, env: {} })
+127 |     const response = await forward(routed(HELLO))
+128 |     expect(response.status).toBe(502)
+129 |     expect((await errorOf(response)).message).toContain('insegura')
+                                                    ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "insegura"
+Received: "no se pudo conectar con el upstream \"open\" (http://127.0.0.1:9/v1/chat/completions): Unable to connect. Is the computer able to access the url?"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/proxy/__tests__/openaiCompatForwarder.test.ts:129:47)
+(fail) errores del upstream > una baseUrl insegura se rehúsa sin conectar [7.10ms]
+
+ 4942 pass
+ 2 fail
+ 9392 expect() calls
+Ran 4944 tests across 299 files. [25.09s]
+__BG_EXIT__=1

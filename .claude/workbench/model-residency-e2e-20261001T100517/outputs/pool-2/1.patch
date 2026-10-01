@@ -1,0 +1,272 @@
+diff --git a/src/packages/model-scheduling/podmanModelExecutionPrimitive.ts b/src/packages/model-scheduling/podmanModelExecutionPrimitive.ts
+index a9b8ee2c8..e6dab9d9e 100644
+--- a/src/packages/model-scheduling/podmanModelExecutionPrimitive.ts
++++ b/src/packages/model-scheduling/podmanModelExecutionPrimitive.ts
+@@ -21,7 +21,14 @@ import type { ModelSource } from '@thyrox/model-artifacts/modelName.ts'
+ import { QUANTIZATION_LEVELS, type QuantizationLevel } from '@thyrox/model-artifacts/quantizationLevel.ts'
+ import type { ResolvedModelArtifact } from '@thyrox/model-artifacts/resolvedModelArtifact.ts'
+ import type { PodmanCommandResult, PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
+-import { type ContainerOwner, WORKER_CONTAINER_NAME_PREFIX } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
++import {
++  type ContainerOwner,
++  createWorkerContainerArgv,
++  removeWorkerContainerArgv,
++  WORKER_CONTAINER_NAME_PREFIX,
++  workerContainerName,
++} from '@thyrox/podman-execution/workerContainerLifecycle.ts'
++import { type WorkerPublishedPort, workerResourceLimitArgv } from '@thyrox/podman-execution/workerResourceProfile.ts'
+ 
+ import type { ExecutionUnit, MaterializationOutcome, ModelExecutionPrimitive } from './executionPrimitive.ts'
+ 
+@@ -92,7 +99,7 @@ export interface PodmanModelExecutionPrimitiveOptions {
+ }
+ 
+ const UNIT_ID_PREFIX = 'unit-'
+-const LOOPBACK_HOST = '127.0.0.1'
++const LOOPBACK_HOST: WorkerPublishedPort['hostAddress'] = '127.0.0.1'
+ const GPU_DEVICE_PREFIX = 'nvidia.com/gpu='
+ const DEVICE_SEPARATOR = ','
+ /** Lo que Podman escribe en stderr cuando el contenedor a retirar no existe. */
+@@ -108,7 +115,7 @@ export function modelUnitId(grantId: string): string {
+ }
+ 
+ export function modelUnitContainerName(unitId: string): string {
+-  return `${MODEL_UNIT_CONTAINER_PREFIX}${unitId}`
++  return workerContainerName(unitId)
+ }
+ 
+ function loopbackEndpoint(port: number): string {
+@@ -138,6 +145,8 @@ interface ModelUnitContainerSpec {
+   readonly port: number
+   readonly createdAt: string
+   readonly profile: RuntimeContainerProfile
++  readonly owner: ContainerOwner
++  readonly limits: ModelUnitLimits
+ }
+ 
+ function unitLabels(spec: ModelUnitContainerSpec): Record<ModelUnitLabelKey, string> {
+@@ -162,12 +171,43 @@ function unitLabels(spec: ModelUnitContainerSpec): Record<ModelUnitLabelKey, str
+   }
+ }
+ 
+-/** argv de `podman create`: loopback del anfitrión, entorno del perfil, etiquetas y dispositivos. */
++/** Las etiquetas de la unidad con su clave completa de Podman (`thyrox.model.*`). */
++function unitLabelArguments(spec: ModelUnitContainerSpec): Record<string, string> {
++  const labels = unitLabels(spec)
++  return Object.fromEntries((Object.keys(labels) as ModelUnitLabelKey[]).map(key => [MODEL_UNIT_LABELS[key], labels[key]]))
++}
++
++/** Los dispositivos del grant en forma CDI; vacío en CPU. */
++function cdiDevices(grant: ExecutionGrant): string[] {
++  return grantedDevices(grant).map(uuid => `${GPU_DEVICE_PREFIX}${uuid}`)
++}
++
++/**
++ * Argv de límites del contenedor: red `bridge` —nunca `host`— con el puerto
++ * del runtime publicado sólo en loopback, rootfs escribible porque el
++ * runtime escribe su caché, y el entorno del perfil.
++ */
++function unitResourceArgv(spec: ModelUnitContainerSpec): string[] {
++  return workerResourceLimitArgv({
++    ...spec.limits,
++    network: 'bridge',
++    readOnlyRootfs: false,
++    mounts: [],
++    environment: spec.profile.environment,
++    publishedPorts: [{ hostAddress: LOOPBACK_HOST, hostPort: spec.port, containerPort: spec.profile.containerPort }],
++    devices: cdiDevices(spec.grant),
++  })
++}
++
++/** argv de `podman create`, compuesto por la primitiva neutral con la unidad como worker. */
+ export function modelUnitCreateArgv(spec: ModelUnitContainerSpec): string[] {
+-  const environment = Object.entries(spec.profile.environment(spec.port)).flatMap(([key, value]) => ['--env', `${key}=${value}`])
+-  const labels = Object.entries(unitLabels(spec)).flatMap(([key, value]) => ['--label', `${MODEL_UNIT_LABELS[key as ModelUnitLabelKey]}=${value}`])
+-  const devices = grantedDevices(spec.grant).flatMap(uuid => ['--device', `${GPU_DEVICE_PREFIX}${uuid}`])
+-  return ['create', '--name', modelUnitContainerName(spec.unitId), '--network', 'host', ...environment, ...labels, ...devices, spec.profile.image]
++  return createWorkerContainerArgv({
++    workerId: spec.unitId,
++    image: spec.profile.image,
++    owner: spec.owner,
++    labels: unitLabelArguments(spec),
++    resourceArgv: unitResourceArgv(spec),
++  })
+ }
+ 
+ /** Lo que `podman inspect` aporta a la unidad: su proceso y su cgroup en el anfitrión. */
+@@ -257,7 +297,7 @@ export class PodmanModelExecutionPrimitive implements ModelExecutionPrimitive {
+   }
+ 
+   async destroy(unitId: string): Promise<'destroyed' | 'absent' | 'failed'> {
+-    const result = await this.options.podman.run(['rm', '--force', modelUnitContainerName(unitId)])
++    const result = await this.options.podman.run(removeWorkerContainerArgv(modelUnitContainerName(unitId)))
+     if (succeeded(result)) return 'destroyed'
+     return NO_SUCH_CONTAINER.test(result.stderr) ? 'absent' : 'failed'
+   }
+@@ -292,7 +332,8 @@ export class PodmanModelExecutionPrimitive implements ModelExecutionPrimitive {
+     const name = modelUnitContainerName(unitId)
+     const port = await this.options.allocatePort()
+     const createdAt = this.options.now().toISOString()
+-    const created = await podman.run(modelUnitCreateArgv({ grant, unitId, port, createdAt, profile }))
++    const { owner, limits } = this.options
++    const created = await podman.run(modelUnitCreateArgv({ grant, unitId, port, createdAt, profile, owner, limits }))
+     if (!succeeded(created)) return { status: 'failed', reason: `podman create ${name}: ${podmanDiagnostic(created)}`, partial: false }
+     const started = await podman.run(['start', name])
+     if (!succeeded(started)) return partialFailure(unitId, `podman start ${name}: ${podmanDiagnostic(started)}`)
+diff --git a/src/packages/podman-execution/workerContainerLifecycle.ts b/src/packages/podman-execution/workerContainerLifecycle.ts
+index 00c85a73b..1b8176d3e 100644
+--- a/src/packages/podman-execution/workerContainerLifecycle.ts
++++ b/src/packages/podman-execution/workerContainerLifecycle.ts
+@@ -6,7 +6,7 @@
+  *
+  * Implementación compartida ≠ dueño compartido (ADR-007, «Mecanismo
+  * compartido, dueños distintos»). Cada contenedor lleva su dueño en tres
+- * etiquetas —tipo (`daemon` | `pool`), identificador y PID— y qué es un
++ * etiquetas —tipo (`daemon` | `pool` | `lab` | `model-coordinator`), identificador y PID— y qué es un
+  * huérfano NO lo decide este módulo: el dueño entrega su predicado. Así el
+  * daemon conserva su política (daemon muerto ⇒ huérfano) sin que el barrido
+  * de un dueño retire nunca lo de otro.
+@@ -38,8 +38,12 @@ export const DEFAULT_STOP_TIMEOUT_SECONDS = 10
+ 
+ export type ContainerOwnerKind = 'daemon' | 'pool' | 'lab' | 'model-coordinator'
+ 
+-const OWNER_KINDS: readonly ContainerOwnerKind[] = ['daemon', 'pool', 'lab']
++const OWNER_KINDS: readonly ContainerOwnerKind[] = ['daemon', 'pool', 'lab', 'model-coordinator']
+ const SAFE_IDENTIFIER_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_.-]*$/
++/** Una clave de etiqueta propia: no vacía y sin espacios ni `=`. */
++const LABEL_KEY_PATTERN = /^[^\s=]+$/
++/** Prefijo común de las etiquetas de dueño, reservadas a este módulo. */
++const OWNER_LABEL_KEY_PREFIX = 'thyrox.owner-'
+ /** Valor que `podman inspect` imprime para una etiqueta que el contenedor no lleva. */
+ const MISSING_LABEL_VALUE = '<no value>'
+ 
+@@ -109,6 +113,21 @@ export function validateWorkerContainerSpec(spec: WorkerContainerSpec): void {
+   requireSafeIdentifier('workerId', spec.workerId)
+   requireNonEmptyImage(spec.image)
+   requireValidOwner(spec.owner)
++  Object.keys(spec.labels ?? {}).forEach(requireOwnLabelKey)
++}
++
++function isReservedLabelKey(key: string): boolean {
++  return key.startsWith(OWNER_LABEL_KEY_PREFIX) || key === WORKER_ID_LABEL_KEY
++}
++
++function requireOwnLabelKey(key: string): void {
++  const field = `labels.${key}`
++  if (!LABEL_KEY_PATTERN.test(key)) {
++    throw new InvalidWorkerContainerSpecError(field, `clave de etiqueta inválida: «${key}»`)
++  }
++  if (isReservedLabelKey(key)) {
++    throw new InvalidWorkerContainerSpecError(field, `${key} es una etiqueta de dueño o worker y no se reescribe`)
++  }
+ }
+ 
+ function labelArgv(key: string, value: string): string[] {
+@@ -123,7 +142,14 @@ function ownerLabelArgv(owner: ContainerOwner): string[] {
+   ]
+ }
+ 
+-/** Traduce un spec validado al argv de `podman create` — nombre, etiquetas de dueño y worker, límites e imagen. */
++function ownLabelArgv(labels: Readonly<Record<string, string>>): string[] {
++  return Object.keys(labels).sort().flatMap(key => labelArgv(key, labels[key] as string))
++}
++
++/**
++ * Traduce un spec validado al argv de `podman create` — nombre, etiquetas de
++ * dueño y worker, etiquetas propias del dueño, límites e imagen.
++ */
+ export function createWorkerContainerArgv(spec: WorkerContainerSpec): string[] {
+   validateWorkerContainerSpec(spec)
+   return [
+@@ -131,6 +157,7 @@ export function createWorkerContainerArgv(spec: WorkerContainerSpec): string[] {
+     '--name', workerContainerName(spec.workerId),
+     ...ownerLabelArgv(spec.owner),
+     ...labelArgv(WORKER_ID_LABEL_KEY, spec.workerId),
++    ...ownLabelArgv(spec.labels ?? {}),
+     ...spec.resourceArgv,
+     spec.image,
+     ...(spec.command ?? []),
+diff --git a/src/packages/podman-execution/workerResourceProfile.ts b/src/packages/podman-execution/workerResourceProfile.ts
+index 45a3aba18..aae0b4a22 100644
+--- a/src/packages/podman-execution/workerResourceProfile.ts
++++ b/src/packages/podman-execution/workerResourceProfile.ts
+@@ -63,6 +63,13 @@ const KNOWN_NETWORK_MODES: readonly WorkerNetworkMode[] = ['none', 'bridge', 'ho
+ const ENVIRONMENT_NAME_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/
+ const CREDENTIAL_NAME_PATTERN = /(TOKEN|SECRET|PASSWORD|PASSWD|KEY|CREDENTIAL)/i
+ const KNOWN_MOUNT_MODES: readonly WorkerMountMode[] = ['ro', 'rw']
++const LOOPBACK_HOST_ADDRESS = '127.0.0.1'
++const MIN_PORT = 1
++const MAX_PORT = 65_535
++/** La red que publica puertos: `none` no tiene a dónde y `host` no lo necesita. */
++const PORT_PUBLISHING_NETWORK: WorkerNetworkMode = 'bridge'
++/** Nombre CDI de un dispositivo: `<vendor>/<clase>=<nombre>` (`nvidia.com/gpu=<uuid>`). */
++const CDI_DEVICE_PATTERN = /^[A-Za-z0-9][A-Za-z0-9._-]*\/[A-Za-z0-9][A-Za-z0-9._-]*=[A-Za-z0-9][A-Za-z0-9._:-]*$/
+ 
+ /**
+  * El perfil más restrictivo medido: sin red, rootfs de sólo lectura, sin
+@@ -131,6 +138,42 @@ export function validateWorkerResourceProfile(profile: WorkerResourceProfile): v
+   requireKnownNetwork(profile.network)
+   profile.mounts.forEach((mount, index) => requireValidMount(mount, index))
+   Object.keys(profile.environment ?? {}).forEach(requirePublicEnvironmentName)
++  requireValidPublishedPorts(profile)
++  profile.devices?.forEach(requireCdiDevice)
++}
++
++function isValidPort(port: number): boolean {
++  return Number.isInteger(port) && port >= MIN_PORT && port <= MAX_PORT
++}
++
++function requireValidPublishedPorts(profile: WorkerResourceProfile): void {
++  const ports = profile.publishedPorts ?? []
++  if (ports.length > 0 && profile.network !== PORT_PUBLISHING_NETWORK) {
++    throw new InvalidWorkerResourceProfileError(
++      'publishedPorts',
++      `publicar puertos exige red ${PORT_PUBLISHING_NETWORK}, el perfil declara ${profile.network}`,
++    )
++  }
++  ports.forEach(requireValidPublishedPort)
++}
++
++function requireValidPublishedPort(port: WorkerPublishedPort, index: number): void {
++  const field = `publishedPorts.${index}`
++  if (port.hostAddress !== LOOPBACK_HOST_ADDRESS) {
++    throw new InvalidWorkerResourceProfileError(`${field}.hostAddress`, `sólo se publica en ${LOOPBACK_HOST_ADDRESS}, recibido: ${port.hostAddress}`)
++  }
++  if (!isValidPort(port.hostPort)) {
++    throw new InvalidWorkerResourceProfileError(`${field}.hostPort`, `puerto fuera de ${MIN_PORT}–${MAX_PORT}: ${port.hostPort}`)
++  }
++  if (!isValidPort(port.containerPort)) {
++    throw new InvalidWorkerResourceProfileError(`${field}.containerPort`, `puerto fuera de ${MIN_PORT}–${MAX_PORT}: ${port.containerPort}`)
++  }
++}
++
++function requireCdiDevice(device: string, index: number): void {
++  if (!CDI_DEVICE_PATTERN.test(device)) {
++    throw new InvalidWorkerResourceProfileError(`devices.${index}`, `el dispositivo debe ir en forma CDI <vendor>/<clase>=<nombre>, recibido: ${device}`)
++  }
+ }
+ 
+ function requirePublicEnvironmentName(name: string): void {
+@@ -167,6 +210,14 @@ function environmentArgv(environment: Readonly<Record<string, string>>): string[
+   return Object.keys(environment).sort().flatMap(name => ['--env', `${name}=${environment[name]}`])
+ }
+ 
++function publishedPortArgv(port: WorkerPublishedPort): string[] {
++  return ['-p', `${port.hostAddress}:${port.hostPort}:${port.containerPort}`]
++}
++
++function deviceArgv(device: string): string[] {
++  return ['--device', device]
++}
++
+ function mountArgv(mount: WorkerResourceMount): string[] {
+   return ['-v', `${mount.source}:${mount.destination}:${mount.mode}`]
+ }
+@@ -187,5 +238,7 @@ export function workerResourceLimitArgv(profile: WorkerResourceProfile): string[
+     ...rootfsArgv(profile.readOnlyRootfs),
+     ...profile.mounts.flatMap(mountArgv),
+     ...environmentArgv(profile.environment ?? {}),
++    ...(profile.publishedPorts ?? []).flatMap(publishedPortArgv),
++    ...(profile.devices ?? []).flatMap(deviceArgv),
+   ]
+ }
