@@ -275,6 +275,124 @@ thyrox_infrastructure_create_argv() {
 }
 export -f thyrox_infrastructure_create_argv
 
+# --- estado deseado para la primitiva Podman (ADR-007 1.15.0, TASK-THYROX-0740) ---
+#
+# El nombre del secreto de PostgreSQL en Podman y su destino montado: el
+# contenedor recibe la ruta por POSTGRES_PASSWORD_FILE, nunca el valor.
+readonly _INFRASTRUCTURE_POSTGRES_SECRET="thyrox-postgres-password"
+readonly _INFRASTRUCTURE_POSTGRES_SECRET_TARGET="postgres-password"
+readonly _INFRASTRUCTURE_SECRET_MOUNT_DIR="/run/secrets"
+readonly _INFRASTRUCTURE_RESTART_POLICY="on-failure"
+
+# _thyrox_infrastructure_health_json NAME — la salud declarada: el comando que
+# corre dentro del contenedor, con el plazo y el intervalo del ensure.
+_thyrox_infrastructure_health_json() {
+  local -a command
+  mapfile -t command < <(thyrox_infrastructure_health_check_argv "$1")
+  # Las palabras viajan por stdin, una por línea: como argumentos de jq, una
+  # palabra como `-U` se leería como opción suya.
+  printf '%s\n' "${command[@]}" | jq -R . | jq -s \
+        --argjson timeout "$(thyrox_infrastructure_setting THYROX_INFRA_HEALTH_TIMEOUT 60)" \
+        --argjson interval "$(thyrox_infrastructure_setting THYROX_INFRA_HEALTH_INTERVAL 2)" \
+        '{command: ., timeoutSeconds: $timeout, intervalSeconds: $interval}'
+}
+
+# _thyrox_infrastructure_resource_json SERVICE — el esqueleto común: nombre,
+# reinicio, etiquetas de rol y servicio, etiqueta heredada y salud. Cada
+# contenedor completa el resto con `jq`.
+_thyrox_infrastructure_resource_json() {
+  local name="$1" service="$2" role_key role_value
+  role_key="${_INFRASTRUCTURE_ROLE_LABEL%%=*}"
+  role_value="${_INFRASTRUCTURE_ROLE_LABEL#*=}"
+  jq -n --arg name "$name" --arg restart "$_INFRASTRUCTURE_RESTART_POLICY" \
+        --arg roleKey "$role_key" --arg roleValue "$role_value" \
+        --arg serviceKey "$_INFRASTRUCTURE_SERVICE_LABEL_KEY" --arg service "$service" \
+        --argjson health "$(_thyrox_infrastructure_health_json "$name")" \
+    '{name: $name, restartPolicy: $restart, publishedPorts: [], namedVolumes: [], bindMounts: [],
+      environment: {}, secrets: [], command: [],
+      labels: {($roleKey): $roleValue, ($serviceKey): $service},
+      legacyRoleLabel: {key: $roleKey, value: $roleValue}, health: $health}'
+}
+
+_thyrox_infrastructure_desired_postgres() {
+  _thyrox_infrastructure_resource_json "$_INFRASTRUCTURE_POSTGRES_NAME" postgres | jq \
+    --arg image "$THYROX_INFRA_POSTGRES_IMAGE" --arg network "$_INFRASTRUCTURE_NETWORK" \
+    --argjson port "$THYROX_INFRA_POSTGRES_PORT" --arg volume "$_INFRASTRUCTURE_POSTGRES_VOLUME" \
+    --arg dataDir "$_INFRASTRUCTURE_POSTGRES_DATA_DIR" --arg user "$THYROX_INFRA_POSTGRES_USER" \
+    --arg db "$THYROX_INFRA_POSTGRES_DB" --arg secret "$_INFRASTRUCTURE_POSTGRES_SECRET" \
+    --arg target "$_INFRASTRUCTURE_POSTGRES_SECRET_TARGET" --arg secretDir "$_INFRASTRUCTURE_SECRET_MOUNT_DIR" \
+    '.image = $image | .network = {mode: "named", name: $network}
+     | .publishedPorts = [{hostAddress: "127.0.0.1", hostPort: $port, containerPort: 5432}]
+     | .namedVolumes = [{volume: $volume, destination: $dataDir}]
+     | .environment = {POSTGRES_USER: $user, POSTGRES_DB: $db, POSTGRES_PASSWORD_FILE: ($secretDir + "/" + $target)}
+     | .secrets = [{secret: $secret, target: $target, valueFrom: "THYROX_INFRA_POSTGRES_PASSWORD"}]'
+}
+
+_thyrox_infrastructure_desired_redis() {
+  _thyrox_infrastructure_resource_json "$_INFRASTRUCTURE_REDIS_NAME" redis | jq \
+    --arg image "$THYROX_INFRA_REDIS_IMAGE" --arg network "$_INFRASTRUCTURE_NETWORK" \
+    --argjson port "$THYROX_INFRA_REDIS_PORT" \
+    '.image = $image | .network = {mode: "named", name: $network}
+     | .publishedPorts = [{hostAddress: "127.0.0.1", hostPort: $port, containerPort: 6379}]
+     | .command = ["redis-server", "--save", "", "--appendonly", "no"]'
+}
+
+# _thyrox_infrastructure_proxy_environment_json — las variables del proxy de
+# salida y, si la CA es legible, SSL_CERT_FILE; `{}` sin proxy declarado.
+_thyrox_infrastructure_proxy_environment_json() {
+  _thyrox_infrastructure_outbound_proxy_declared || { echo '{}'; return; }
+  local ca_target=""
+  _thyrox_infrastructure_proxy_ca_readable && ca_target="$_INFRASTRUCTURE_PROXY_CA_TARGET"
+  jq -n --arg proxy "$HTTPS_PROXY" --arg noProxy "$_INFRASTRUCTURE_PROXY_NO_PROXY" --arg ca "$ca_target" \
+    '{HTTPS_PROXY: $proxy, https_proxy: $proxy, NO_PROXY: $noProxy} + (if $ca == "" then {} else {SSL_CERT_FILE: $ca} end)'
+}
+
+# _thyrox_infrastructure_proxy_mounts_json — el montaje de sólo lectura de la
+# CA del proxy, o `[]`.
+_thyrox_infrastructure_proxy_mounts_json() {
+  if _thyrox_infrastructure_outbound_proxy_declared && _thyrox_infrastructure_proxy_ca_readable; then
+    jq -n --arg source "$(_thyrox_infrastructure_proxy_ca_bundle)" --arg target "$_INFRASTRUCTURE_PROXY_CA_TARGET" \
+      '[{source: $source, destination: $target, readOnly: true}]'
+  else
+    echo '[]'
+  fi
+}
+
+_thyrox_infrastructure_desired_ollama() {
+  _thyrox_infrastructure_resource_json "$_INFRASTRUCTURE_OLLAMA_NAME" ollama | jq \
+    --arg image "$THYROX_INFRA_OLLAMA_IMAGE" --arg volume "$THYROX_INFRA_OLLAMA_VOLUME" \
+    --arg modelsDir "$_INFRASTRUCTURE_OLLAMA_MODELS_DIR" \
+    --arg ollamaHost "${_INFRASTRUCTURE_LOOPBACK}:${THYROX_INFRA_OLLAMA_PORT}" \
+    --argjson proxyEnvironment "$(_thyrox_infrastructure_proxy_environment_json)" \
+    --argjson proxyMounts "$(_thyrox_infrastructure_proxy_mounts_json)" \
+    '.image = $image | .network = {mode: "host"}
+     | .namedVolumes = [{volume: $volume, destination: $modelsDir}]
+     | .environment = ({OLLAMA_HOST: $ollamaHost} + $proxyEnvironment)
+     | .bindMounts = $proxyMounts'
+}
+
+# @description Imprime el estado deseado de un contenedor conocido como el JSON
+# que `InfrastructureBootstrap` entrega a la primitiva Podman. Declara los
+# secretos por nombre, con la variable que da su valor; nunca lleva el valor.
+# No ejecuta nada.
+# @arg $1 string `thyrox-postgres`, `thyrox-redis` o `thyrox-ollama`.
+# @stdout el JSON de un recurso.
+# @exitcode 0 declaración publicada.
+# @exitcode 2 nombre desconocido.
+thyrox_infrastructure_desired_resource() {
+  local name="${1:-}"
+  case "$name" in
+    "$_INFRASTRUCTURE_POSTGRES_NAME") _thyrox_infrastructure_desired_postgres ;;
+    "$_INFRASTRUCTURE_REDIS_NAME") _thyrox_infrastructure_desired_redis ;;
+    "$_INFRASTRUCTURE_OLLAMA_NAME") _thyrox_infrastructure_desired_ollama ;;
+    *)
+      printf 'thyrox_infrastructure: contenedor desconocido: %s\n' "$name" >&2
+      return 2
+      ;;
+  esac
+}
+export -f thyrox_infrastructure_desired_resource
+
 # @description Imprime el volumen con nombre que la declaracion monta en un
 # contenedor conocido, o nada si no monta ninguno (Redis). Es lo que el ensure
 # compara con lo que un contenedor vivo tiene montado.
