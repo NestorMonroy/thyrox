@@ -210,11 +210,16 @@ def test_a_detached_wait_inside_a_heredoc_body_stays_silent():
 
 
 
-def test_the_client_disables_background_with_any_non_empty_value():
-    """La misma prueba de verdad que `yl()`: `||a.CLAUDE_CODE_DISABLE_BACKGROUND_TASKS`."""
-    for value in ("1", "true", "0"):
+def test_the_client_reads_the_switch_as_an_env_boolean():
+    """El getter es `M.bool()` → `s=i((n)=>Le(n))`: el `isEnvTruthy` del cliente.
+
+    Medido con `bin/binary` sobre 2.1.286. No es la veracidad cruda de la
+    cadena: «0», «false», «no» y «off» dejan `run_in_background` en el esquema.
+    """
+    for value in ("1", "true", "TRUE", " yes ", "on"):
         assert gate.client_background_disabled({"CLAUDE_CODE_DISABLE_BACKGROUND_TASKS": value}), value
-    assert not gate.client_background_disabled({"CLAUDE_CODE_DISABLE_BACKGROUND_TASKS": ""})
+    for value in ("0", "false", "no", "off", ""):
+        assert not gate.client_background_disabled({"CLAUDE_CODE_DISABLE_BACKGROUND_TASKS": value}), value
     assert not gate.client_background_disabled({})
 
 

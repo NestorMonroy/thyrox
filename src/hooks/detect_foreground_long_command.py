@@ -165,20 +165,24 @@ def detaches_a_wait(command: str) -> bool:
 
 
 #: Variable con que el entorno deshabilita las tareas en segundo plano del
-#: cliente. Con ella, 2.1.286 omite `run_in_background` del esquema de Bash y
-#: de Agent (`yl()?sn().omit({run_in_background:!0}):sn()`); el entorno remoto
-#: la fija. Lo que queda para recibir aviso sin bloquear es la herramienta
-#: `Monitor`: un comando que termina produce un solo evento.
+#: cliente. Con ella, el cliente omite `run_in_background` del esquema de Bash
+#: y de Agent (`_l()?…omit({run_in_background:!0}):…`, 2.1.286); el lanzador
+#: remoto la fija en el entorno del proceso. Lo que queda para recibir aviso
+#: sin bloquear es la herramienta `Monitor`: un comando que termina produce un
+#: solo evento.
 CLIENT_BACKGROUND_SWITCH = "CLAUDE_CODE_DISABLE_BACKGROUND_TASKS"
+
+#: Valores que `Le` (el `isEnvTruthy` del cliente) lee como verdaderos.
+_ENV_TRUTHY_VALUES = frozenset({"1", "true", "yes", "on"})
 
 
 def client_background_disabled(environ: Mapping[str, str]) -> bool:
-    """¿El cliente omite `run_in_background`? Misma prueba de verdad que `yl()`.
+    """¿El cliente omite `run_in_background`? Misma lectura que el cliente.
 
-    `yl()` lee la variable sin interpretarla: cualquier valor no vacío,
-    incluido «0», la deshabilita.
+    El getter de la variable es `M.bool()` → `Le(n)`: normaliza a minúsculas,
+    recorta y acepta `1`, `true`, `yes` u `on`. «0» o «false» no la activan.
     """
-    return bool(environ.get(CLIENT_BACKGROUND_SWITCH))
+    return environ.get(CLIENT_BACKGROUND_SWITCH, "").strip().lower() in _ENV_TRUTHY_VALUES
 
 
 def blocks_the_turn(command: str, tool_input: dict) -> bool:

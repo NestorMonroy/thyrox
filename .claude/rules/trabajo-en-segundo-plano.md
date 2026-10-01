@@ -384,9 +384,16 @@ avisa ya sobre una espera sin `run_in_background`.
 
 **Cuando el cliente no ofrece `run_in_background`, la espera va a un
 `Monitor`.** El entorno remoto fija `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1`,
-y con cualquier valor no vacío el cliente omite el parámetro del esquema de
-Bash y de Agent (2.1.286: `yl()?sn().omit({run_in_background:!0}):sn()`). La
-llamada que lo pasa se rechaza antes de ejecutarse. Lo que sí notifica sin
+y el cliente la lee con su `isEnvTruthy` (`1`, `true`, `yes`, `on`; «0» no
+cuenta): con ella omite el parámetro del esquema de Bash y de Agent. La
+llamada que lo pasa se rechaza antes de ejecutarse. La inyecta el lanzador
+remoto en el entorno del proceso, no un `settings` ni el repo, así que desde
+la sesión no se revierte. Se mide, no se recuerda:
+
+```bash
+bash bin/binary literal CLAUDE_CODE_DISABLE_BACKGROUND_TASKS   # la compuerta
+bash bin/binary symbol <chunk> <nombre> --root _references/claude-code-bin/<build>/bunfs-root
+``` Lo que sí notifica sin
 bloquear es la herramienta `Monitor` (diferida: se carga con `ToolSearch`)
 con un comando que **termina** al asentarse el trabajo y emite una sola
 línea:
