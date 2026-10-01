@@ -40,7 +40,32 @@ bash bin/artifact-registry-publish-artifact --volume thyrox-quantization-lab-art
 
 ## Los resultados
 
-Pendiente de la corrida.
+| corrida | qué publicó | veredicto | causa |
+|---|---|---|---|
+| 1 | nada | `refused` (exit 2) | la admisión recibió un nombre y espera un PID (`a44339d94`) |
+| 2 | nada | colgada, detenida | un `PUT` con cuerpo en flujo no recibe respuesta por el proxy (H-THYROX-303, `b1fa6665c`) |
+| 3 | logs y `model-F16.gguf` (994 MB, 12,8 min) | `unpublished` (401) | venció el token Bearer de Docker Hub durante la subida (`8d195e025`) |
+| 4 | variante Q4_K_M | **`verified`** | — |
+
+Por directiva del ejecutor el artefacto es la **variante** que un consumidor
+ejecuta, no el volumen: `outputs/publication-q4_k_m.json`.
+
+```text
+docker.io/th3rox/thyrox-quantization-lab-artifacts@sha256:5fc241502bc2db459c265adca0c9e9244944aba7d92dfc454fc0a2052bc013af
+tag: qwen2.5-0.5b-instruct-7ae5576-q4_k_m
+convert.log            31 400 bytes  verificado y descartado
+model-Q4_K_M.gguf 397 807 712 bytes  verificado y descartado
+quantize-Q4_K_M.log    65 130 bytes  verificado y descartado
+pico de disco medido de la verificación: 397 897 728 bytes
+```
+
+El pico medido es el blob mayor más 90 016 bytes: la admisión por el blob
+mayor (más el piso de 2 GiB) es el modelo correcto del método.
+
+**Lo que esto autoriza y lo que no.** Sólo `model-Q4_K_M.gguf` y sus dos logs
+son ya caché local. `model-F16.gguf`, `model-Q8_0.gguf` y `quantize-Q8_0.log`
+siguen existiendo sólo en el volumen, así que el volumen **no** se puede
+borrar hasta publicar y verificar esas variantes.
 
 *Métrica:* estado del comando, digest publicado y la lista de blobs que el
 trabajo de verificación materializó y comprobó contra su sha256.

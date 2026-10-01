@@ -1,0 +1,52 @@
+{
+  "mediaType": "application/vnd.thyrox.publication-record.v1+json",
+  "status": "verified",
+  "publishedAt": "2026-10-01T07:24:08.073Z",
+  "reference": "docker.io/th3rox/thyrox-quantization-lab-artifacts@sha256:5fc241502bc2db459c265adca0c9e9244944aba7d92dfc454fc0a2052bc013af",
+  "tag": "qwen2.5-0.5b-instruct-7ae5576-q4_k_m",
+  "files": [
+    {
+      "path": "/var/lib/containers/storage/volumes/thyrox-quantization-lab-artifacts/_data/convert.log",
+      "title": "convert.log",
+      "mediaType": "text/plain",
+      "size": 31400,
+      "sha256": "aecc2f41691eb3ce1ce68609a112d4070a3683614e5e5a6ce481e7b5b9f5457e"
+    },
+    {
+      "path": "/var/lib/containers/storage/volumes/thyrox-quantization-lab-artifacts/_data/model-Q4_K_M.gguf",
+      "title": "model-Q4_K_M.gguf",
+      "mediaType": "application/vnd.thyrox.gguf.v1",
+      "size": 397807712,
+      "sha256": "b8d6f5cbac92ca386bee2a3911140bc5cbfd1aa9879888fb6e395a134ce05e88"
+    },
+    {
+      "path": "/var/lib/containers/storage/volumes/thyrox-quantization-lab-artifacts/_data/quantize-Q4_K_M.log",
+      "title": "quantize-Q4_K_M.log",
+      "mediaType": "text/plain",
+      "size": 65130,
+      "sha256": "47c47ccd9f198eff65b58934c150faf1f6157b23d111f55b65c065d30087ec4e"
+    }
+  ],
+  "verification": {
+    "resolvedDigest": "sha256:5fc241502bc2db459c265adca0c9e9244944aba7d92dfc454fc0a2052bc013af",
+    "blobsVerified": [
+      {
+        "title": "convert.log",
+        "digest": "sha256:aecc2f41691eb3ce1ce68609a112d4070a3683614e5e5a6ce481e7b5b9f5457e",
+        "size": 31400
+      },
+      {
+        "title": "model-Q4_K_M.gguf",
+        "digest": "sha256:b8d6f5cbac92ca386bee2a3911140bc5cbfd1aa9879888fb6e395a134ce05e88",
+        "size": 397807712
+      },
+      {
+        "title": "quantize-Q4_K_M.log",
+        "digest": "sha256:47c47ccd9f198eff65b58934c150faf1f6157b23d111f55b65c065d30087ec4e",
+        "size": 65130
+      }
+    ],
+    "measuredPeakBytes": 397897728
+  },
+  "localCopy": "cache"
+}
