@@ -12,8 +12,9 @@ La reserva va por pid del dueño y caduca sola cuando el dueño muere: un
 contador que se repone en un `trap` pierde el hueco con SIGKILL.
 
 El registro y el bucle no saben de qué recurso se trata. Cada recurso aporta
-su medida: la VRAM, `gpu_monitor` con `nvidia-smi`; la RAM, este módulo con
-`MemAvailable` y el RSS de cada árbol en `/proc` —o, si el dueño es un ítem en
+su medida: la VRAM, `gpu_monitor` con su backend de telemetría; la RAM, este
+módulo con la memoria libre efectiva —la del cgroup cuando el proceso corre
+bajo un límite, `MemAvailable` si no— y el RSS de cada árbol en `/proc` —o, si el dueño es un ítem en
 contenedor, el uso de memoria del cgroup del contenedor, porque su proceso
 cuelga de `conmon` y no del árbol del dueño (H-THYROX-294)—; el disco, este módulo con el
 techo que publica `disk-headroom --ceiling-bytes` menos un piso de seguridad.
@@ -25,7 +26,8 @@ dos veces— y el ensure suelta en cuanto el `podman create` termina.
 
 Métrica: lo libre que el sistema declara, menos lo reservado y aún no usado.
 Ciega a: lo que un proceso ajeno al registro va a pedir y todavía no pidió
-—ése no reserva—, y al pico de un ítem por encima de lo que reservó.
+—ése no reserva—; al pico de un ítem por encima de lo que reservó; y a un
+límite de cgroup que el proceso no ve montado (se lee la RAM del anfitrión).
 """
 from __future__ import annotations
 
@@ -37,7 +39,9 @@ import subprocess
 import sys
 import time
 from collections.abc import Callable
-from pathlib import Path
+from dataclasses import dataclass
+from pathlib import Path, PurePosixPath
+from typing import TypeVar
 
 from cache.paths import cache_dir
 from session import shared_lock
@@ -170,25 +174,45 @@ def admissible(free: int | None, pending_amount: int, need: int) -> bool:
 Headroom = Callable[[dict[str, int]], "int | None"]
 
 
-def admit_with(ledger_path: Path, need: int, owner_pid: int, headroom: Headroom, run_id: str,
-               timeout_s: float, interval_s: float = DEFAULT_INTERVAL_S) -> bool:
-    """Comprobar y reservar bajo el lock del registro, reintentando hasta el
-    plazo. ``headroom`` recibe las reservas vivas y devuelve lo libre menos lo
-    comprometido aún no usado; ``None`` es «sin medida», y no admite."""
-    book = ReservationLedger(ledger_path)
-    book.path.parent.mkdir(parents=True, exist_ok=True)
+Admitted = TypeVar("Admitted")
+
+
+def admit_locked(ledger_path: Path, run_id: str, timeout_s: float, interval_s: float,
+                 attempt: Callable[[], Admitted | None]) -> Admitted | None:
+    """El bucle de comprobar-y-reservar: ``attempt`` corre bajo el lock del
+    registro y devuelve lo que reservó, o ``None`` si no cabe; se reintenta
+    hasta el plazo. Qué se lee y qué se escribe es de ``attempt``: el registro
+    escalar de la RAM y el disco, o el de VRAM por dispositivo."""
+    ledger_path = Path(ledger_path)
+    ledger_path.parent.mkdir(parents=True, exist_ok=True)
     deadline = time.monotonic() + timeout_s
     while True:
-        with shared_lock.held(book.path, run_id=run_id, retries=LEDGER_LOCK_RETRIES,
+        with shared_lock.held(ledger_path, run_id=run_id, retries=LEDGER_LOCK_RETRIES,
                               min_wait_s=0.01, max_wait_s=0.2):
-            live = book.live()
-            if admissible(headroom(live), 0, need):
-                book.reserve(owner_pid, need)
-                return True
-            book.save(live)
+            admitted = attempt()
+        if admitted is not None:
+            return admitted
         if time.monotonic() >= deadline:
-            return False
+            return None
         time.sleep(interval_s)
+
+
+def admit_with(ledger_path: Path, need: int, owner_pid: int, headroom: Headroom, run_id: str,
+               timeout_s: float, interval_s: float = DEFAULT_INTERVAL_S) -> bool:
+    """Comprobar y reservar en el registro escalar. ``headroom`` recibe las
+    reservas vivas y devuelve lo libre menos lo comprometido aún no usado;
+    ``None`` es «sin medida», y no admite."""
+    book = ReservationLedger(ledger_path)
+
+    def attempt() -> bool | None:
+        live = book.live()
+        if admissible(headroom(live), 0, need):
+            book.reserve(owner_pid, need)
+            return True
+        book.save(live)
+        return None
+
+    return admit_locked(book.path, run_id, timeout_s, interval_s, attempt) is not None
 
 
 def release_from(ledger_path: Path, owner_pid: int, run_id: str) -> None:
@@ -222,6 +246,127 @@ def available_ram_kb(meminfo: Path = Path("/proc/meminfo")) -> int | None:
     return int(match.group(1)) if match else None
 
 
+#: La pertenencia de este proceso a sus cgroups.
+SELF_CGROUP = Path("/proc/self/cgroup")
+#: v1 publica «sin límite» como el mayor múltiplo de página bajo 2**63
+#: (medido aquí: 9223372036854771712). Todo límite por encima de 2**62 es ese
+#: sentinela con otro tamaño de página, no una memoria que exista.
+V1_UNLIMITED_FLOOR = 1 << 62
+V2_UNLIMITED = "max"
+V1_MEMORY_CONTROLLER = "memory"
+V2_HIERARCHY_ID = "0"
+
+
+class Unlimited:
+    """«Sin límite» de cgroup: un estado, no ``0`` ni un número enorme."""
+
+    def __repr__(self) -> str:
+        return "UNLIMITED"
+
+
+UNLIMITED = Unlimited()
+
+
+class CgroupUnreadable(Exception):
+    """El cgroup existe pero sus archivos no se pudieron leer: sin medida."""
+
+
+@dataclass(frozen=True)
+class CgroupView:
+    """De dónde se lee el cgroup: la pertenencia del proceso y la raíz montada."""
+    membership: Path = SELF_CGROUP
+    root: Path = DEFAULT_CGROUP_ROOT
+
+
+@dataclass(frozen=True)
+class MemoryHierarchy:
+    """La jerarquía que lleva el controlador de memoria, con sus archivos."""
+    root: Path
+    own: str
+    limit_file: str
+    usage_file: str
+
+    def levels(self) -> list[Path]:
+        """El cgroup propio y sus ancestros, sin la raíz de la jerarquía: la
+        raíz no tiene límite en v2 y en v1 lleva el sentinela."""
+        parts = PurePosixPath(self.own).parts[1:]
+        return [self.root.joinpath(*parts[:depth]) for depth in range(len(parts), 0, -1)]
+
+
+def memory_hierarchy(view: CgroupView) -> MemoryHierarchy | None:
+    """La jerarquía de memoria del proceso: v1 si un controlador ``memory``
+    aparece en su pertenencia, v2 si sólo está la unificada; ``None`` si no
+    hay ninguna."""
+    try:
+        lines = [line.split(":", 2) for line in view.membership.read_text().splitlines() if line.count(":") >= 2]
+    except OSError as error:
+        raise CgroupUnreadable(f"pertenencia ilegible en {view.membership}: {error}") from error
+    for _hierarchy, controllers, own in lines:
+        if V1_MEMORY_CONTROLLER in controllers.split(","):
+            return MemoryHierarchy(view.root / V1_MEMORY_CONTROLLER, own,
+                                   "memory.limit_in_bytes", "memory.usage_in_bytes")
+    for hierarchy, controllers, own in lines:
+        if hierarchy == V2_HIERARCHY_ID and not controllers:
+            return MemoryHierarchy(view.root, own, "memory.max", "memory.current")
+    return None
+
+
+def read_limit(path: Path) -> int | Unlimited:
+    """Un límite normalizado: el sentinela de v1 y el ``max`` de v2 son ``UNLIMITED``."""
+    text = path.read_text().strip()
+    if text == V2_UNLIMITED:
+        return UNLIMITED
+    value = int(text)
+    return UNLIMITED if value >= V1_UNLIMITED_FLOOR else value
+
+
+def level_headroom(level: Path, hierarchy: MemoryHierarchy) -> int | Unlimited:
+    """Lo que queda bajo el límite de UN nivel: ``max(0, límite − uso)``."""
+    try:
+        limit = read_limit(level / hierarchy.limit_file)
+        if isinstance(limit, Unlimited):
+            return UNLIMITED
+        return max(0, limit - int((level / hierarchy.usage_file).read_text().strip()))
+    except (OSError, ValueError) as error:
+        raise CgroupUnreadable(f"cgroup ilegible en {level}: {error}") from error
+
+
+def cgroup_headroom_bytes(view: CgroupView = CgroupView()) -> int | Unlimited:
+    """Lo que el cgroup del proceso y sus ancestros aún dejan usar, en bytes.
+
+    El límite aplicable es el MÁS RESTRICTIVO de la cadena, y se mide por lo
+    que cada nivel deja libre (límite − uso de ese nivel): un ancestro cuenta
+    también lo que usan los hermanos. Sin cgroup de memoria observable —sin
+    controlador en la pertenencia, o con el cgroup propio fuera del montaje
+    que este proceso ve— no hay límite que leer: ``UNLIMITED``."""
+    hierarchy = memory_hierarchy(view)
+    if hierarchy is None:
+        return UNLIMITED
+    levels = hierarchy.levels()
+    if not levels or not levels[0].is_dir():
+        return UNLIMITED
+    bounded = [room for room in (level_headroom(level, hierarchy) for level in levels)
+               if not isinstance(room, Unlimited)]
+    return min(bounded) if bounded else UNLIMITED
+
+
+def effective_available_ram_kb(meminfo: Path = Path("/proc/meminfo"),
+                               cgroup: CgroupView = CgroupView()) -> int | None:
+    """La RAM que este proceso puede pedir: bajo un límite de cgroup, lo que
+    el límite deja; sin límite, ``MemAvailable``. Con límite se toma además el
+    menor de los dos: un límite holgado (medido aquí: 14.3 GB de límite con
+    8.7 GB disponibles en el anfitrión) no crea memoria que el anfitrión no
+    tiene. ``None`` sin lectura de cualquiera de los dos."""
+    host = available_ram_kb(meminfo)
+    try:
+        room = cgroup_headroom_bytes(cgroup)
+    except CgroupUnreadable:
+        return None
+    if host is None or isinstance(room, Unlimited):
+        return host
+    return min(host, room // BYTES_PER_KB)
+
+
 OwnerUsage = Callable[[int], int]
 
 
@@ -245,10 +390,11 @@ def container_aware_usage(containers: dict[int, ContainerMembers],
 
 
 def ram_headroom(live: dict[str, int], meminfo: Path = Path("/proc/meminfo"),
-                 usage: OwnerUsage = host_tree_usage_kb) -> int | None:
-    """Lo libre de RAM menos lo reservado que los dueños aún no usan. ``None``
-    sin ``MemAvailable`` o sin poder medir el uso de un dueño."""
-    free = available_ram_kb(meminfo)
+                 usage: OwnerUsage = host_tree_usage_kb, cgroup: CgroupView = CgroupView()) -> int | None:
+    """Lo libre de RAM —la efectiva, con el límite del cgroup— menos lo
+    reservado que los dueños aún no usan. ``None`` sin lectura de lo libre o
+    sin poder medir el uso de un dueño."""
+    free = effective_available_ram_kb(meminfo, cgroup)
     if free is None:
         return None
     try:
@@ -373,7 +519,8 @@ def admit_ram(args: argparse.Namespace) -> int:
         record_container_owner(ledger, args.owner, args.container)
     admitted = admit_with(ledger, bounded_need(args.need, args.memory_limit_kb), args.owner,
                           lambda live: ram_headroom(live, meminfo,
-                                                    ledger_usage(ledger, args.podman, args.cgroup_root)),
+                                                    ledger_usage(ledger, args.podman, args.cgroup_root),
+                                                    CgroupView(args.self_cgroup, args.cgroup_root)),
                           "ram-admission", args.timeout, args.interval)
     return EXIT_ADMITTED if admitted else EXIT_TIMEOUT
 
@@ -399,6 +546,8 @@ def build_parser() -> argparse.ArgumentParser:
                          help="el --memory del contenedor en kB: acota lo que se reserva")
     p_admit.add_argument("--podman", default="podman")
     p_admit.add_argument("--cgroup-root", type=Path, default=DEFAULT_CGROUP_ROOT)
+    p_admit.add_argument("--self-cgroup", type=Path, default=SELF_CGROUP,
+                         help="la pertenencia a cgroups cuyo límite acota la RAM libre")
     p_admit.set_defaults(handler=admit_ram)
     p_release = sub.add_parser("release", help="suelta la reserva de RAM de OWNER")
     p_release.add_argument("--ledger", type=Path, default=None)

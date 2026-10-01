@@ -101,6 +101,20 @@ describe('admitVram', () => {
     expect(existsSync(ledger)).toBe(false)
   })
 
+  test('optional sin telemetría: la ruta CPU declarada, sin reserva', async () => {
+    const { dir, ledger } = fakeGpu()
+    expect(await admitVram({ needMib: 100, ledger, ownerPid: process.pid, nvidiaSmi: join(dir, 'no-existe'),
+      requirement: 'optional', timeoutS: 5 })).toBe('cpu-fallback')
+    expect(existsSync(ledger)).toBe(false)
+  })
+
+  test('none: admitido sin tocar el registro aunque no haya GPU', async () => {
+    const { dir, ledger } = fakeGpu()
+    expect(await admitVram({ needMib: 100, ledger, ownerPid: process.pid, nvidiaSmi: join(dir, 'no-existe'),
+      requirement: 'none' })).toBe('admitted')
+    expect(existsSync(ledger)).toBe(false)
+  })
+
   test('si la herramienta no corre, es un error y no un «no admitido»', async () => {
     const { smi, ledger } = fakeGpu()
     const empty = mkdtempSync(join(tmpdir(), 'no-thyrox-'))

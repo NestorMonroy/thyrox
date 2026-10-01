@@ -40,6 +40,13 @@ def meminfo(path: Path, available_kb: int) -> Path:
     return path
 
 
+#: Una pertenencia en la raíz de v2: sin cgroup que acote, así las admisiones
+#: de estos casos leen sólo el MemAvailable que el caso declara.
+NO_CGROUP_DIR = tempfile.TemporaryDirectory()
+NO_CGROUP = Path(NO_CGROUP_DIR.name) / "self-root"
+NO_CGROUP.write_text("0::/\n")
+
+
 def cli(*args: str) -> subprocess.CompletedProcess:
     return subprocess.run([sys.executable, "-m", "session.resource_admission", *args],
                           cwd=ROOT, env={**os.environ, "PYTHONPATH": str(ROOT / "src")},
@@ -50,7 +57,7 @@ with tempfile.TemporaryDirectory() as tmp:
     tmp_path = Path(tmp)
 
     print("caso 1 — el registro es el mismo que usaba la GPU")
-    check("gpu_monitor reutiliza el registro común", ra.ReservationLedger, gm.VramLedger)
+    check("gpu_monitor reutiliza el bucle común", ra.admit_locked, gm.admit_locked)
     check("y la decisión pura", ra.admissible, gm.admissible)
 
     print("caso 2 — la reserva de un dueño muerto no compromete nada")
@@ -73,7 +80,7 @@ with tempfile.TemporaryDirectory() as tmp:
     ledger = tmp_path / "race.json"
     owners = [subprocess.Popen(["sleep", "30"]) for _ in range(2)]
     try:
-        racers = [subprocess.Popen([sys.executable, "-m", "session.resource_admission", "admit-ram", "3000000",
+        racers = [subprocess.Popen([sys.executable, "-m", "session.resource_admission", "admit-ram", "3000000", "--self-cgroup", str(NO_CGROUP),
                                     "--ledger", str(ledger), "--owner", str(o.pid), "--meminfo", str(info),
                                     "--timeout", "0"],
                                    cwd=ROOT, env={**os.environ, "PYTHONPATH": str(ROOT / "src")})
@@ -86,7 +93,7 @@ with tempfile.TemporaryDirectory() as tmp:
         admitted = next(iter(ra.ReservationLedger(ledger).live()))
         check("release sale 0", 0, cli("release", "--ledger", str(ledger), "--owner", admitted).returncode)
         waiting = next(str(o.pid) for o in owners if str(o.pid) != admitted)
-        check("el otro entra ahora", 0, cli("admit-ram", "3000000", "--ledger", str(ledger), "--owner", waiting,
+        check("el otro entra ahora", 0, cli("admit-ram", "3000000", "--self-cgroup", str(NO_CGROUP), "--ledger", str(ledger), "--owner", waiting,
                                               "--meminfo", str(info), "--timeout", "0").returncode)
 
         print("caso 6 — muerto el dueño, su reserva deja de contar")
@@ -94,7 +101,7 @@ with tempfile.TemporaryDirectory() as tmp:
         holder.kill(); holder.wait()
         survivor = next(o for o in owners if o is not holder)
         check("el vivo entra sin que nadie haya soltado", 0,
-              cli("admit-ram", "3000000", "--ledger", str(ledger), "--owner", str(survivor.pid),
+              cli("admit-ram", "3000000", "--self-cgroup", str(NO_CGROUP), "--ledger", str(ledger), "--owner", str(survivor.pid),
                   "--meminfo", str(info), "--timeout", "0").returncode)
     finally:
         for o in owners:
@@ -147,7 +154,7 @@ with tempfile.TemporaryDirectory() as raw:
     ledger = root / "ram.json"
     owner = subprocess.Popen(["sleep", "30"])
     try:
-        code = cli("admit-ram", "5000", "--ledger", str(ledger), "--owner", str(owner.pid),
+        code = cli("admit-ram", "5000", "--self-cgroup", str(NO_CGROUP), "--ledger", str(ledger), "--owner", str(owner.pid),
                    "--meminfo", str(meminfo(root / "meminfo3", 3000)), "--timeout", "0",
                    "--container", "known", "--memory-limit-kb", "2000",
                    "--podman", str(podman), "--cgroup-root", str(root / "cgroup")).returncode
@@ -157,7 +164,7 @@ with tempfile.TemporaryDirectory() as raw:
         # El cgroup ya usa 2000 kB: la reserva del dueño está entera a la vista
         # y no se resta dos veces. Por su árbol (un `sleep`) se restaría casi entera.
         check("otro de 2500 cabe en 3000 libres: el cgroup ya muestra la reserva", 0,
-              cli("admit-ram", "2500", "--ledger", str(ledger), "--owner", str(os.getpid()),
+              cli("admit-ram", "2500", "--self-cgroup", str(NO_CGROUP), "--ledger", str(ledger), "--owner", str(os.getpid()),
                   "--meminfo", str(root / "meminfo3"), "--timeout", "0",
                   "--podman", str(podman), "--cgroup-root", str(root / "cgroup")).returncode)
     finally:
@@ -299,6 +306,86 @@ print("caso 17 — .env.example declara las tres variables del disco")
 example = (ROOT / ".env.example").read_text()
 for name in ("THYROX_DISK_ADMISSION_LEDGER", "THYROX_DISK_ADMISSION_FLOOR_MB", "THYROX_DISK_ADMISSION_HEADROOM"):
     check(f"{name} figura en .env.example", True, f"\n{name}=" in example)
+
+V1_SENTINEL = 9223372036854771712  # el «sin límite» de v1 medido en este anfitrión
+
+
+def membership(path: Path, text: str) -> Path:
+    path.write_text(text)
+    return path
+
+
+def cgroup_level(directory: Path, files: tuple[str, str], limit: str, usage: str) -> None:
+    directory.mkdir(parents=True, exist_ok=True)
+    (directory / files[0]).write_text(f"{limit}\n")
+    (directory / files[1]).write_text(f"{usage}\n")
+
+
+V1_FILES = ("memory.limit_in_bytes", "memory.usage_in_bytes")
+V2_FILES = ("memory.max", "memory.current")
+
+print("caso 18 — cgroups v1: el límite más restrictivo del cgroup y sus ancestros")
+with tempfile.TemporaryDirectory() as raw:
+    root = Path(raw)
+    info = meminfo(root / "meminfo", 10_000)
+    own_v1 = membership(root / "self-v1", "4:memory:/a/b\n3:cpuset:/\n0::/\n")
+    view = ra.CgroupView(own_v1, root)
+    cgroup_level(root / "memory" / "a" / "b", V1_FILES, str(8 * MIB), str(2 * MIB))
+    cgroup_level(root / "memory" / "a", V1_FILES, str(4 * MIB), str(3 * MIB))
+    check("el ancestro deja 1 MiB aunque el propio deje 6", 1024, ra.effective_available_ram_kb(info, view))
+    cgroup_level(root / "memory" / "a", V1_FILES, str(V1_SENTINEL), str(3 * MIB))
+    check("con el ancestro sin límite manda el propio: 6 MiB", 6144, ra.effective_available_ram_kb(info, view))
+    cgroup_level(root / "memory" / "a" / "b", V1_FILES, str(V1_SENTINEL), str(2 * MIB))
+    check("el sentinela de v1 es «sin límite», no una cifra", ra.UNLIMITED, ra.cgroup_headroom_bytes(view))
+    check("y sin límite la RAM es la del anfitrión", 10_000, ra.effective_available_ram_kb(info, view))
+    cgroup_level(root / "memory" / "a" / "b", V1_FILES, str(2 * MIB), str(3 * MIB))
+    check("uso por encima del límite: 0, no negativo", 0, ra.cgroup_headroom_bytes(view))
+    check("«sin límite» no es 0", False, ra.UNLIMITED == 0)
+
+    print("caso 19 — cgroups v2 con un doble: memory.max y memory.current")
+    own_v2 = membership(root / "self-v2", "0::/x/y\n")
+    view2 = ra.CgroupView(own_v2, root / "unified")
+    cgroup_level(root / "unified" / "x" / "y", V2_FILES, str(5 * MIB), str(1 * MIB))
+    cgroup_level(root / "unified" / "x", V2_FILES, "max", "0")
+    check("4 MiB libres bajo memory.max", 4096, ra.effective_available_ram_kb(info, view2))
+    cgroup_level(root / "unified" / "x" / "y", V2_FILES, "max", str(1 * MIB))
+    check("«max» en todos los niveles: sin límite", ra.UNLIMITED, ra.cgroup_headroom_bytes(view2))
+
+    print("caso 20 — un cgroup ilegible es «sin medida», no la RAM del anfitrión")
+    cgroup_level(root / "memory" / "a" / "b", V1_FILES, "basura", "0")
+    check("límite ilegible: None", None, ra.effective_available_ram_kb(info, view))
+    check("pertenencia ilegible: None", None,
+          ra.effective_available_ram_kb(info, ra.CgroupView(root / "no-existe", root)))
+
+    print("caso 21 — sin cgroup de memoria observable, la RAM es la del anfitrión")
+    check("en la raíz de v2: sin límite", ra.UNLIMITED,
+          ra.cgroup_headroom_bytes(ra.CgroupView(membership(root / "self-root", "0::/\n"), root / "unified")))
+    check("un cgroup propio que no está montado: sin límite", ra.UNLIMITED,
+          ra.cgroup_headroom_bytes(ra.CgroupView(membership(root / "self-hidden", "0::/oculto\n"), root / "unified")))
+
+    print("caso 22 — un límite holgado no promete más de lo que el anfitrión tiene")
+    cgroup_level(root / "memory" / "a" / "b", V1_FILES, str(64 * MIB), "0")
+    cgroup_level(root / "memory" / "a", V1_FILES, str(V1_SENTINEL), "0")
+    check("64 MiB de límite con 10000 kB libres en el anfitrión: 10000", 10_000,
+          ra.effective_available_ram_kb(info, view))
+
+    print("caso 23 — la admisión de RAM lee el cgroup (invariante 9)")
+    cgroup_level(root / "memory" / "a" / "b", V1_FILES, str(3 * MIB), str(1 * MIB))
+    check("10000 kB en /proc/meminfo, 2 MiB en el cgroup: 2048", 2048,
+          ra.ram_headroom({}, info, usage=lambda pid: 0, cgroup=view))
+    big = meminfo(root / "meminfo-big", 5_000_000)
+    check("admit-ram bajo el límite: 3 GB no caben en 2 MiB", 3,
+          cli("admit-ram", "3000000", "--ledger", str(root / "cg.json"), "--owner", str(os.getpid()),
+              "--meminfo", str(big), "--self-cgroup", str(own_v1), "--cgroup-root", str(root),
+              "--timeout", "0").returncode)
+    check("admit-ram sin límite: caben en los 5 GB del anfitrión", 0,
+          cli("admit-ram", "3000000", "--ledger", str(root / "cg2.json"), "--owner", str(os.getpid()),
+              "--meminfo", str(big), "--self-cgroup", str(membership(root / "self-free", "0::/\n")),
+              "--cgroup-root", str(root), "--timeout", "0").returncode)
+
+print("caso 24 — el cgroup real de este anfitrión se lee sin error")
+real = ra.cgroup_headroom_bytes(ra.CgroupView())
+check("un entero o «sin límite»", True, isinstance(real, (int, ra.Unlimited)))
 
 print(f"test_resource_admission: {OK} ok, {FAILED} fallos")
 sys.exit(1 if FAILED else 0)

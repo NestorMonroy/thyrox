@@ -1,0 +1,10 @@
+== árbol con 0691
+FALLA admision: la reserva ajena sigue en el registro — esperado '900', obtenido '{
+aserciones: 147 de 148 · fallos: 1
+== HEAD
+FALLA selector real: declara el modelo derivado — esperado '1', obtenido '0'
+FALLA selector real: el ítem recibe ese modelo — esperado '1', obtenido '0'
+FALLA sin ejecutor declarado: thyrox -p (bin/cli) — esperado '/tmp/claude-0/-home-user/333534ce-407f-55f0-b451-e1feb02581ab/scratchpad/head-baseline2/bin/cli', obtenido '/home/user/thyrox/bin/cli'
+FALLA admision: la reserva ajena sigue en el registro — esperado '900', obtenido '{
+aserciones: 144 de 148 · fallos: 4
+__BG_EXIT__=0

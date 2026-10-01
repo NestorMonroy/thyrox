@@ -99,5 +99,34 @@ with tempfile.TemporaryDirectory() as tmp:
     check("dir imprime el historial del comando", str(first), out.getvalue().strip())
     del os.environ[pmh.HISTORY_DIR_VAR]
 
+    print("caso 7 — un paralelismo anidado respeta el límite de su cgroup (invariante 10)")
+    # Una fila con el ítem publicado: 100 000 kB de pico, 200 000 por ítem.
+    nested = pmh.command_history_dir(base, "anidado {}")
+    nested_run = Path(tmp) / "nested-run"
+    write_time(nested_run, 1, 100_000, 0.5)
+    (nested_run / "1.closed").write_text('{"item": "1", "generation": 1, "artifacts": {}}')
+    ph.record(nested, nested_run)
+    cgroup_root = Path(tmp) / "cgroup"
+    limited = cgroup_root / "memory" / "worker"
+    limited.mkdir(parents=True)
+    (limited / "memory.limit_in_bytes").write_text(f"{512 * 1024 * 1024}\n")
+    (limited / "memory.usage_in_bytes").write_text(f"{112 * 1024 * 1024}\n")
+    membership = Path(tmp) / "self-cgroup"
+    membership.write_text("4:memory:/worker\n0::/\n")
+    meminfo = Path(tmp) / "meminfo"
+    meminfo.write_text("MemTotal:  16000000 kB\nMemAvailable:  6800000 kB\n")
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out):
+        pmh.main(["derive", str(nested), "--meminfo", str(meminfo), "--self-cgroup", str(membership),
+                  "--cgroup-root", str(cgroup_root)])
+    check("bajo 512 MiB de límite con 112 usados caben 2, no los 34 del anfitrión", "2",
+          out.getvalue().split("\t")[1])
+    membership.write_text("0::/\n")
+    out = io.StringIO()
+    with contextlib.redirect_stdout(out):
+        pmh.main(["derive", str(nested), "--meminfo", str(meminfo), "--self-cgroup", str(membership),
+                  "--cgroup-root", str(cgroup_root)])
+    check("sin límite, la RAM del anfitrión: 34", "34", out.getvalue().split("\t")[1])
+
 print(f"test_parallel_map_history: {OK} ok, {FAILED} fallos")
 sys.exit(1 if FAILED else 0)

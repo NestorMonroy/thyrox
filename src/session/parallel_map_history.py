@@ -9,6 +9,10 @@ caben a la vez (`pool_history.derive_memory`).
 Qué hace `parallel_map` con esa cifra NO lo decide este módulo: la reserva
 entre procesos concurrentes es del registro de admisión, no de una medición.
 
+La RAM disponible con que se deriva el tope es la efectiva
+(`resource_admission.effective_available_ram_kb`): la del cgroup cuando el
+proceso corre bajo un límite, `MemAvailable` si no.
+
 Métrica: memoria residente pico por ítem, de GNU Time, por comando.
 Ciega a: dos invocaciones del mismo comando sobre ítems de peso muy distinto
 —comparten historial— y a la memoria de los hijos que el ítem no espera.
@@ -38,6 +42,13 @@ def command_history_dir(base: Path, command: str) -> Path:
     return Path(base) / f"command-{hashlib.sha256(command.encode()).hexdigest()[:12]}"
 
 
+def effective_ram_kb(args: argparse.Namespace) -> int | None:
+    """La RAM que este proceso puede repartir: la del cgroup si corre bajo un
+    límite, ``MemAvailable`` si no. Un ``parallel_map`` anidado dentro de un
+    contenedor no promete la memoria del anfitrión."""
+    view = resource_admission.CgroupView(args.self_cgroup, args.cgroup_root)
+    return resource_admission.effective_available_ram_kb(args.meminfo or resource_admission.meminfo_path(), view)
+
 
 def main(argv: list[str]) -> int:
     parser = argparse.ArgumentParser(prog="parallel_map_history", description=(__doc__ or "").splitlines()[0])
@@ -50,6 +61,10 @@ def main(argv: list[str]) -> int:
     p_der.add_argument("history")
     p_der.add_argument("--margin", type=float, default=pool_history.DEFAULT_MARGIN)
     p_der.add_argument("--available-ram-kb", type=int, default=None)
+    p_der.add_argument("--meminfo", type=Path, default=None, help="de dónde se lee MemAvailable")
+    p_der.add_argument("--self-cgroup", type=Path, default=resource_admission.SELF_CGROUP,
+                       help="la pertenencia a cgroups cuyo límite acota la RAM libre")
+    p_der.add_argument("--cgroup-root", type=Path, default=resource_admission.DEFAULT_CGROUP_ROOT)
     args = parser.parse_args(argv)
 
     if args.action == "dir":
@@ -58,8 +73,7 @@ def main(argv: list[str]) -> int:
     if args.action == "record":
         pool_history.record(Path(args.history), Path(args.run_dir))
         return 0
-    ram = (args.available_ram_kb if args.available_ram_kb is not None
-           else resource_admission.available_ram_kb(resource_admission.meminfo_path()))
+    ram = args.available_ram_kb if args.available_ram_kb is not None else effective_ram_kb(args)
     decision = pool_history.derive_memory(Path(args.history), args.margin, available_ram_kb=ram)
     ram_cap = "" if decision.ram_cap is None else str(decision.ram_cap)
     need_kb = "" if decision.need_kb is None else str(decision.need_kb)

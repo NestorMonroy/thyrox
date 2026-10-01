@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """La admisión por VRAM contra una GPU simulada CON ESTADO — prueba de
-COMPONENTE (``gpu_monitor`` + ``VramLedger``), no de integración.
+COMPONENTE (``gpu_monitor`` + ``VramLedger`` sobre ``NvidiaSmiBackend``), no de integración.
 
 El nvidia-smi falso (``fakes/stateful-nvidia-smi.sh``) calcula lo libre como
 el total menos lo que usan los procesos VIVOS; el asignador
@@ -32,11 +32,14 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 from paths import reach  # noqa: E402
 
 ROOT = reach.thyrox_root()
+from session import gpu_backend as gb  # noqa: E402
 from session import gpu_monitor as gm  # noqa: E402
 
 FAKES = Path(__file__).resolve().parent / "fakes"
 STEP_TIMEOUT_S = 10.0
 RACE_ROUNDS = 5
+#: El falso con estado publica un solo dispositivo, sin uuid: se identifica por índice.
+DEVICE = "index:0"
 
 results = []
 
@@ -67,6 +70,7 @@ class Gpu:
         self.smi = str(self.dir / "nvidia-smi")
         Path(self.smi).write_text(f'#!/usr/bin/env bash\nGPU_STATE="{self.state}" exec bash "{FAKES}/stateful-nvidia-smi.sh" "$@"\n')
         os.chmod(self.smi, 0o755)
+        self.backend = gb.NvidiaSmiBackend(self.smi)
         self.ledger = self.dir / "vram.json"
         self.stack = stack
 
@@ -74,15 +78,24 @@ class Gpu:
         return self.stack.enter_context(Job(self, mib, steps))
 
     def row(self) -> tuple[int, int, int | None, int | None]:
-        """(usado por los dueños, pendiente, libre, margen) en este instante."""
+        """(usado por los dueños, pendiente, libre, margen) en este instante.
+        Lo pendiente es lo libre menos el margen: la parte reservada que la
+        GPU aún no muestra."""
         live = gm.VramLedger(self.ledger).live()
-        usage = gm.sample(self.smi).vram_by_pid
-        trees = {int(pid): gm.tree(int(pid)) for pid in live}
-        used = sum(usage.get(p, 0) for t in trees.values() for p in t)
-        return used, gm.pending(live, usage, trees), gm.free_vram_mib(self.smi), gm.headroom(live, self.smi)
+        owners = set().union(*(r.attributed_pids() for r in live.values()))
+        used = sum(self.backend.usage_by_pid(owners).values())
+        free = gb.largest_free_mib(self.backend)
+        margin = gm.device_headroom(self.backend, live)
+        margin_mib = margin[DEVICE] if margin else None
+        return used, free - (margin_mib or 0), free, margin_mib
 
     def admit(self, need: int, owner: "Job", timeout_s: float = 0.5) -> bool:
-        return gm.admit(need, self.ledger, owner.pid, self.smi, timeout_s=timeout_s, interval_s=0.05)
+        return admit_owner(self, need, owner.pid, timeout_s)
+
+
+def admit_owner(gpu: Gpu, need: int, owner_pid: int, timeout_s: float = 0.5) -> bool:
+    return gm.admit(gm.WorkerReservation(owner_pid, need), gpu.ledger, gpu.backend,
+                    timeout_s=timeout_s, interval_s=0.05) is not None
 
 
 class Job:
@@ -163,7 +176,7 @@ def scenario_sigkill():
         check("B de 3200 no cabe mientras A vive", False, gpu.admit(3200, b))
         a.kill()
         check("B de 3200 entra tras el SIGKILL de A", True, gpu.admit(3200, b))
-        check("el registro guarda sólo a B", [str(b.pid)], sorted(gm.VramLedger(gpu.ledger).live()))
+        check("el registro guarda sólo a B", [f"worker:{b.pid}"], sorted(gm.VramLedger(gpu.ledger).live()))
 
 
 def scenario_zombie():
@@ -172,7 +185,7 @@ def scenario_zombie():
         gpu = Gpu(stack, 6000)
         owner = subprocess.Popen(["bash", "-c", "read -r _"], stdin=subprocess.PIPE)
         stack.callback(owner.wait)
-        check("A admitido mientras vive", True, gm.admit(3200, gpu.ledger, owner.pid, gpu.smi, timeout_s=0.5, interval_s=0.05))
+        check("A admitido mientras vive", True, admit_owner(gpu, 3200, owner.pid))
         b = gpu.job()
         check("B de 3200 no cabe mientras A vive", False, gpu.admit(3200, b))
         assert owner.stdin is not None  # se pidio con stdin=PIPE
@@ -188,7 +201,7 @@ def scenario_foreign():
         gpu = Gpu(stack, 6000)
         foreign = gpu.job(5000, 1)
         foreign.step(1)
-        check("margen = 1000", 1000, gm.headroom({}, gpu.smi))
+        check("margen = 1000", {DEVICE: 1000}, gm.device_headroom(gpu.backend, {}))
         b = gpu.job()
         check("GPU casi llena: 3200 no entra", False, gpu.admit(3200, b))
         check("800 sí entra", True, gpu.admit(800, b))
@@ -200,18 +213,20 @@ def scenario_unmeasured():
         smi = Path(tmp) / "nvidia-smi"
         smi.write_text(f'#!/usr/bin/env bash\nGPU_STATE="{tmp}/no-existe" exec bash "{FAKES}/stateful-nvidia-smi.sh" "$@"\n')
         os.chmod(smi, 0o755)
-        check("headroom sin medida es None", None, gm.headroom({}, str(smi)))
+        check("headroom sin medida es None", None, gm.device_headroom(gb.NvidiaSmiBackend(str(smi)), {}))
 
 
 RACER = r"""
 import sys, time
 from pathlib import Path
-from session import gpu_monitor as gm
+import os
+from session import gpu_backend as gb, gpu_monitor as gm
 barrier, ledger, smi, need = Path(sys.argv[1]), Path(sys.argv[2]), sys.argv[3], int(sys.argv[4])
 while not barrier.exists():
     time.sleep(0.001)
-import os
-print("admitido" if gm.admit(need, ledger, os.getpid(), smi, timeout_s=1.0, interval_s=0.05) else "esperó", flush=True)
+placed = gm.admit(gm.WorkerReservation(os.getpid(), need), ledger, gb.NvidiaSmiBackend(smi),
+                  timeout_s=1.0, interval_s=0.05)
+print("admitido" if placed else "esperó", flush=True)
 sys.stdin.read()   # el dueño sigue vivo hasta que el test lo suelte
 """
 
