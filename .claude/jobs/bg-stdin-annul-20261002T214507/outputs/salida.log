@@ -1,0 +1,6 @@
+green2 rc=0 bg --stdin: 8 ok, 0 fallas
+shellcheck: 0 hallazgo(s) (alcance medido: 2 archivo(s))
+replace_literal: 1 reemplazo(s) en /tmp/tmp.9HyuJqFKYR/src/session/bg.sh
+annul rc=1 FAIL el trabajo leyó el archivo — [__BG_EXIT__=0] does not contain [alpha];
+execution thyrox-worker-test-murhrldy-10086 kind=test task=TASK-THYROX-0706 exit=0
+__BG_EXIT__=0

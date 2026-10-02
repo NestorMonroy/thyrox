@@ -322,11 +322,11 @@ cmd_start() {
     if [[ "$name" == -* ]]; then
         echo "bg.sh start: '$name' es una bandera, no un nombre de trabajo." >&2
         echo "  uso: start <nombre> [--grace N] [--dir D] -- <comando...>" >&2
-        echo "  banderas admitidas aqui: --grace, --dir, --memfree, --memfree-wait. '--label' no existe." >&2
+        echo "  banderas admitidas aqui: --grace, --dir, --memfree, --memfree-wait, --stdin. '--label' no existe." >&2
         exit 2
     fi
     local grace="$_GRACE_DEFAULT" memfree_spec="" memfree_wait=1800 memfree=0
-    local task="" work="" kind="" network="" workdir="" attest="" mounts=() environment=() secrets=() limits=()
+    local task="" work="" kind="" network="" workdir="" attest="" stdin_source="/dev/null" mounts=() environment=() secrets=() limits=()
     while [[ "${1:-}" == --* ]]; do
         case "$1" in
             --grace) grace="${2:-}"; shift 2 ;;
@@ -344,6 +344,12 @@ cmd_start() {
             --cpus|--memory-mib|--pids) limits+=("$1" "${2:-}"); shift 2 ;;
             --memfree) memfree_spec="${2:-}"; shift 2 ;;
             --memfree-wait) memfree_wait="${2:-}"; shift 2 ;;
+            # La fuente del stdin del trabajo se declara: en segundo plano sin
+            # control de trabajos sería /dev/null, y el stdin del llamador puede
+            # ser un socket que no se cierra.
+            --stdin)
+                [[ $# -ge 2 ]] || { echo "bg.sh start: --stdin pide un archivo" >&2; exit 2; }
+                stdin_source="$2"; shift 2 ;;
             --dir)   BG_DIR="${2:-}"; shift 2 ;;
             --)      shift; break ;;
             *)       echo "bg.sh start: bandera desconocida '$1'" >&2; exit 2 ;;
@@ -352,6 +358,8 @@ cmd_start() {
     [[ "$grace" =~ ^[0-9]+$ ]] || { echo "bg.sh start: --grace pide segundos" >&2; exit 2; }
     (( grace > _GRACE_MAX )) && grace="$_GRACE_MAX"
     [[ $# -gt 0 ]] || { echo "bg.sh start: falta el comando tras --" >&2; exit 2; }
+    [[ -n "$stdin_source" && -r "$stdin_source" ]] \
+        || { echo "bg.sh start: --stdin pide un archivo legible, no: ${stdin_source:-<vacío>}" >&2; exit 2; }
     # bg orquesta; dónde corre el trabajo lo decide la primitiva. Con --task el
     # comando se entrega como argv al runner y el anfitrión sólo lo supervisa.
     # Sin él, sólo una entrada declarada del plano de control.
@@ -470,7 +478,7 @@ cmd_start() {
         echo "memoria: sin GNU Time, no se mide la de este trabajo (thyrox_toolchain_require_gnu_time)"
     fi
     nohup setsid bash -c "${time_prefix}$(printf '%q ' "$@"); printf '%s%s\n' '$_MARK' \"\$?\"${publish}" \
-        > "$LOG" 2>&1 &
+        < "$stdin_source" > "$LOG" 2>&1 &
     local pid=$!
     disown "$pid" 2>/dev/null || true
     printf '%s\n' "$pid" > "$PIDF"

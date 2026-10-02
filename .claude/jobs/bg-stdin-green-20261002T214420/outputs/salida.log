@@ -1,0 +1,10 @@
+green rc=0
+bg --stdin: 7 ok, 0 fallas
+tests/session/test-bg-name-flag.sh rc=0 resumen: 9 ok, 0 fallo
+tests/session/test-bg-managed-execution.sh rc=0 20 casos: 20 ok, 0 fallos
+tests/session/test-bg-grace-window.sh rc=0 aserciones: 5 de 5 · fallos: 0
+tests/session/test-bg-live-log.sh rc=0 test-bg-live-log: 13 aserciones — 13 ok, 0 falla(s)
+shellcheck: 1 hallazgo(s) (alcance medido: 2 archivo(s))
+    tests/session/test-bg-stdin-source.sh:57: SC2034 output4 appears unused. Verify use (or export if used externally).
+execution thyrox-worker-test-murhqkmu-7717 kind=test task=TASK-THYROX-0706 exit=0
+__BG_EXIT__=0

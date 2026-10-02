@@ -1,0 +1,11 @@
+rc=1
+  FAIL  arranca con exit 0 — expected [0] got [2]
+  FAIL  el trabajo leyó el archivo — [] does not contain [alpha]
+  ok    arranca con exit 0
+  ok    lee cero líneas
+  ok    rehúsa con exit 2
+  FAIL  nombra el archivo — [bg.sh start: bandera desconocida '--stdin'] does not contain [absent.txt]
+  ok    rehúsa con exit 2
+bg --stdin: 4 ok, 3 fallas
+execution thyrox-worker-test-murhpwbs-7063 kind=test task=TASK-THYROX-0706 exit=0
+__BG_EXIT__=0
