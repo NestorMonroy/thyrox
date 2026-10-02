@@ -1,0 +1,8 @@
+>       assert result.returncode == 5, result.stdout + result.stderr
+E       AssertionError: uso: /home/user/ai-course-notes/tools/scripts/translate_wave.sh --from N --to M [--jobs J] [--compile]
+E         
+E       assert 2 == 5
+E        +  where 2 = CompletedProcess(args=['bash', '/home/user/ai-course-notes/tools/scripts/translate_wave.sh', '--from', '1', '--to', '3...='', stderr='uso: /home/user/ai-course-notes/tools/scripts/translate_wave.sh --from N --to M [--jobs J] [--compile]\n').returncode
+tests/test_translation_loop.py:1119: AssertionError
+execution thyrox-worker-test-muq9aj0l-28840 kind=test work=ai-course-notes:es-mx/executor-qwen exit=0
+__BG_EXIT__=0

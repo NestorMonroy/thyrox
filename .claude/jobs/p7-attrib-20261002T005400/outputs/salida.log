@@ -1,0 +1,14 @@
+....                                                                     [100%]
+4 passed, 57 deselected in 0.60s
+fallos: 30
+con hunspell/xelatex ausente: 0
+FAILED tests/test_translation_loop.py::test_full_cycle_with_the_fake_translator_is_clean
+FAILED tests/test_translation_loop.py::test_verify_reports_untranslated_chunks_and_uses_the_cache
+FAILED tests/test_translation_loop.py::test_coverage_reports_only_what_the_translation_broke
+FAILED tests/test_translation_loop.py::test_sweep_applies_a_mechanical_fix_everywhere_and_records_it
+FAILED tests/test_translation_loop.py::test_english_the_original_already_uses_is_not_a_translation_defect
+FAILED tests/test_translation_loop.py::test_compile_reports_an_error_even_when_a_pdf_comes_out
+FAILED tests/test_translation_loop.py::test_compile_reports_glyphs_the_font_does_not_have
+FAILED tests/test_translation_loop.py::test_cycle_chains_prepare_translate_assemble_and_verify
+execution thyrox-worker-test-muq92n3a-26649 kind=test work=ai-course-notes:es-mx/executor-qwen exit=0
+__BG_EXIT__=0
