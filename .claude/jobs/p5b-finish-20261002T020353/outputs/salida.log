@@ -1,0 +1,3 @@
+9316d28 Nestor Monroy / jcg-admin Run the es-MX verifiers inside execution units
+execution thyrox-worker-test-muqbki7g-17433 kind=test work=ai-course-notes:es-mx/execution-image exit=0
+__BG_EXIT__=0
