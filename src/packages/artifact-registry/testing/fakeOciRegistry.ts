@@ -46,8 +46,8 @@ export function sha256Digest(bytes: Uint8Array): string {
 
 /**
  * `maxRequestBodyBytes` imita el tope de cuerpo por petición de un registry o de su frente: una
- * petición que lo supera se rechaza con 413, como el corte que un `PUT` monolítico de más de 2 GiB
- * recibe en el registry real.
+ * petición que lo supera se rechaza con 413. Modela un tope de cuerpo cualquiera, no el umbral de la
+ * ruta real, que no está aislado.
  */
 export function startFakeOciRegistry(options: { publicRead?: boolean; maxRequestBodyBytes?: number } = {}): FakeOciRegistry {
   const publicRead = options.publicRead ?? true

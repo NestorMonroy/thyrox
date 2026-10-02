@@ -46,8 +46,10 @@ export interface ManifestHead {
 
 const DEFAULT_RETRY: RetryPolicy = { maxAttempts: 1, maxWaitSeconds: 0 }
 /**
- * Por debajo de los 2 GiB por cuerpo que el registry real cortó (2 497 280 480 bytes en un `PUT`,
- * ECONNRESET a los 45 s) y lo bastante grande para que un GGUF suba en pocas peticiones.
+ * Medido en la ruta real: un `PUT` único de 986 MB subió y uno de 2 497 280 480 bytes recibió
+ * ECONNRESET a los 45 s. El umbral exacto (tamaño, tiempo, proxy o buffering) no está aislado;
+ * subir por tramos quita la dependencia de una sola petición grande. El tramo es lo bastante grande
+ * para que un GGUF suba en pocas peticiones.
  */
 export const DEFAULT_UPLOAD_CHUNK_BYTES = 512 * 1024 * 1024
 const DIGEST_HEADER = 'docker-content-digest'

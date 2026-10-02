@@ -3,8 +3,8 @@
  * con el digest) cuando el blob supera el tramo declarado; por debajo conserva el `PUT` único.
  *
  * Caso que lo motivó (LOCAL-BOOTSTRAP, TASK-THYROX-0907): el GGUF de qwen3-4b, de 2 497 280 480
- * bytes —más de 2 GiB en un solo cuerpo—, cortado con ECONNRESET a los 45 s en el registry real,
- * mientras el de 986 MB del Coder 1.5B subía con el mismo `PUT` en 12,8 min.
+ * bytes, recibió ECONNRESET a los 45 s con un `PUT` único en la ruta real, mientras el de 986 MB
+ * del Coder 1.5B subía con el mismo `PUT` en 12,8 min. El umbral exacto no está aislado.
  *
  * Métrica: las peticiones que el registry en proceso registra y el blob que queda publicado.
  * Ciega a: el tope real del registry o de su frente, que aquí se fija con `maxRequestBodyBytes`.
