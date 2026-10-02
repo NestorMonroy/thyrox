@@ -1,0 +1,25 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/admittedChat.test.ts:
+(pass) admittedChat > la petición no hereda el plazo de 300 s del runtime [0.70ms]
+(pass) admittedChat > sin plazo declarado no hay señal que corte [0.15ms]
+67 |         return new Response(JSON.stringify(REPLY))
+68 |       },
+69 |     })
+70 |     try {
+71 |       const reply = admittedChat(ticketTo(`http://127.0.0.1:${server.port}`), { messages: [] }, { deadlineMs: 50 })
+72 |       await expect(reply).rejects.toMatchObject({ name: 'TimeoutError' })
+                                       ^
+error: 
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (/home/user/thyrox/.thyrox/runtime/worktrees/e0b/src/packages/local-models/__tests__/admittedChat.test.ts:72:35)
+(fail) admittedChat > un plazo declarado corta la petición lenta [505.86ms]
+(pass) admittedChat > dentro del plazo la respuesta llega [2.66ms]
+
+ 3 pass
+ 1 fail
+ 4 expect() calls
+Ran 4 tests across 1 file. [543.00ms]

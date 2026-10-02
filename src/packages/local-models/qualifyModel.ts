@@ -114,11 +114,19 @@ export async function runEmbeddingQualification(request: EmbeddingQualificationR
   return qualificationRun(request, { kind: 'embedding', suite: request.suite.id }, outcomes, speed)
 }
 
+/**
+ * Plazo de cada caso. Una generación en CPU midió más de 300 s para un caso de
+ * tarea de qwen3-4b; el plazo acota un runtime que no responde, no la velocidad.
+ */
+const CASE_DEADLINE_MS = 30 * 60_000
+
 async function measure(settings: MeasurementSettings, cases: readonly MeasuredCase[], identity: QualificationIdentity): Promise<QualificationRun> {
   requireContextWithinGrant(settings)
   const model = settings.ticket.grant.artifact.modelId
   const replies: ChatReply[] = []
-  for (const measuredCase of cases) replies.push(await admittedChat(settings.ticket, chatBody(settings, measuredCase)))
+  for (const measuredCase of cases) {
+    replies.push(await admittedChat(settings.ticket, chatBody(settings, measuredCase), { deadlineMs: CASE_DEADLINE_MS }))
+  }
   const outcomes = cases.map((measuredCase, index) => measuredCase.outcome(replies[index] as ChatReply))
   return qualificationRun(settings, identity, outcomes, tokensPerSecond(model, replies))
 }

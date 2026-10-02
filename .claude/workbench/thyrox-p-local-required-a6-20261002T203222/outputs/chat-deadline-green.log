@@ -1,0 +1,39 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/qualifyCommand.test.ts:
+(pass) runQualifyCommand por admisión > cualifica contra la unidad del ticket, suelta la admisión y no asegura thyrox-ollama [28.07ms]
+(pass) runQualifyCommand por admisión > --context viaja en la petición de admisión [10.64ms]
+(pass) runQualifyCommand por admisión > una admisión rehusada rehúsa con su etapa y causa, sin tocar el runtime [6.13ms]
+(pass) runQualifyCommand por admisión > sin coordinador rehúsa nombrando su socket [6.20ms]
+(pass) runQualifyCommand --suite: la cualificación de tarea de un consumidor (TASK-THYROX-0780) > corre los casos de la suite y escribe una cualificación de tarea de su clase [10.97ms]
+(pass) runQualifyCommand --suite: la cualificación de tarea de un consumidor (TASK-THYROX-0780) > una suite ilegible se rehúsa antes de pedir admisión [4.50ms]
+(pass) runQualifyCommand --embedding-suite: la cualificación de embeddings > embebe cada caso por la unidad del ticket y escribe una cualificación de embeddings [46.46ms]
+(pass) runQualifyCommand --embedding-suite: la cualificación de embeddings > --suite y --embedding-suite juntas se rehúsan antes de pedir admisión [13.16ms]
+
+__tests__/admittedChat.test.ts:
+(pass) admittedChat > la petición no hereda el plazo de 300 s del runtime [0.38ms]
+(pass) admittedChat > sin plazo declarado no hay señal que corte [0.16ms]
+(pass) admittedChat > un plazo declarado corta la petición lenta [52.65ms]
+(pass) admittedChat > dentro del plazo la respuesta llega [2.84ms]
+
+__tests__/qualifyModel.test.ts:
+(pass) runQualification — tool-calling@1 contra /api/chat > seis aciertos aprueban, con la suite, el contexto servido y el instante [4.48ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > cinco de seis no aprueban, y el caso fallado dice lo que se observó [4.28ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > tokens/s es la suma de eval_count entre la suma de eval_duration [5.15ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > cada petición lleva el modelo, sus herramientas, stream falso y num_ctx [5.22ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > un error HTTP no es un caso fallado: se rehúsa sin cualificación [1.94ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > pedir más contexto que el concedido se rehúsa sin tocar el runtime [1.82ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > una respuesta sin eval_duration no mide velocidad y se rehúsa [2.92ms]
+(pass) runTaskQualification — la suite de tarea de un consumidor (TASK-THYROX-0780) > todos los casos cumplen: una cualificación de tarea de la clase de la suite [4.12ms]
+(pass) runTaskQualification — la suite de tarea de un consumidor (TASK-THYROX-0780) > un caso que falla suspende, y su resultado nombra la comprobación [4.56ms]
+(pass) runTaskQualification — la suite de tarea de un consumidor (TASK-THYROX-0780) > cada petición lleva los mensajes del caso, sin herramientas, stream falso y num_ctx [4.11ms]
+(pass) runTaskQualification — la suite de tarea de un consumidor (TASK-THYROX-0780) > pedir más contexto que el concedido se rehúsa sin tocar el runtime [3.11ms]
+(pass) runEmbeddingQualification > passes when every query retrieves its relevant document, as an embedding qualification [3.58ms]
+(pass) runEmbeddingQualification > fails the case when a distractor is nearer than the relevant document [3.05ms]
+(pass) runEmbeddingQualification > speed is input tokens over total duration, as Ollama declares them [1.70ms]
+(pass) runEmbeddingQualification > without a declared duration there is no qualification [2.18ms]
+
+ 27 pass
+ 0 fail
+ 71 expect() calls
+Ran 27 tests across 3 files. [289.00ms]

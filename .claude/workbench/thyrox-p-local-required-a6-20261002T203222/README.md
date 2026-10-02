@@ -34,3 +34,28 @@ Consecuencia de orden: la cualificación de tarea precede a A6, no lo sigue.
 *Metrica:* salida del pool, veredicto por ítem, admisión registrada en el
 coordinador, fila de la cualificación de tarea en el store.
 *Ciega a:* la calidad de la respuesta más allá de las comprobaciones de la suite.
+
+## Elegibilidad frente a prueba (directiva del ejecutor 2026-10-02)
+
+La suite `batch-worker-mecanica@1` decide **elegibilidad** (`qualifiedModels`
+exige `task:<clase>` aprobada); no prueba autoimplementación. Medir el cierre
+del bootstrap con la misma suite que seleccionó al modelo mediría dos veces lo
+mismo. La prueba de autoimplementación es una tarea de código **independiente**
+—ni tomada de esa suite ni escrita a su imagen—, hecha por un worker gestionado
+en su worktree, con tests en verde y la misma mutación negada al controlador.
+
+| Etapa | Demuestra | No demuestra |
+|---|---|---|
+| `tool-calling@1` | protocolo de herramientas | trabajo real |
+| `batch-worker-mecanica@1` | transformaciones pequeñas de la clase | autoimplementación |
+| A6 (`17 + 25`) | la ruta local de extremo a extremo | modificar el repositorio |
+| tarea de código independiente | trabajo local real verificado | generalidad sobre tareas grandes |
+
+## El plazo de la petición (H-THYROX-417)
+
+La primera cualificación `task:mecanica` murió a los 324 s con «The operation
+timed out.»: el `fetch` de Bun corta a los 300 s sin plazo declarado (sonda
+`probes/bun_fetch_timeout.ts`). `admittedChat` ya no hereda ese plazo; el
+cualificador declara 30 min por caso. RED: los 2 casos que dependen del cambio;
+GREEN 4/4; anulaciones exactas; typecheck de `local-models` con los mismos 7
+errores previos en los mismos sitios que HEAD.
