@@ -26,22 +26,137 @@ were out of step (0/21) and no container was alive: the third occurrence today
 | 14 | `thyrox -p` routing | `printDelegation.ts` → local proxy `--local-model` → `admittedUpstream` | headless-pool | 44 (cli) | proxy fixed in `0bb48be81`; no end-to-end proof yet | REUSE | #68, #73 | 9–13 | end-to-end with local-required |
 | 15 | headless-pool | `src/session/headless-pool.sh` (local-first via `agent-recommend`) | — | tests/session | `--execution unit` not compatible with `--isolation worktree` | EXTEND | 0743 P3 | P2d, P2e | P2d → P2e → P3 |
 | 16 | Lifecycle / snapshot / recovery | `pool_lifecycle.py`, `snapshot_store.py`, `process_ownership.py`, `pool_integrate.sh` | headless-pool | in tests/session | not exercised today | REUSE | #8, #10, #11 | 15 | through P3 |
-| 17 | Search Existing | no mechanism registry; finding store indexed with `buscar-hallazgos`; no semantic query entry point | sessions | — | lexical only | EXTEND: query entry point over `searchNearest` + registry | #132 | 5, 6 | after 5 and 6 |
-| 18 | Internal corpus ingestion | `semantic-search-ingest` (`findingIngestion.ts`, finding and error domains) | — | 2 | corpus not measured (pg down) | EXTEND: domains for accepted trajectories and decisions | #46, #121 | 5 | after A1: measure the corpus |
+| 17 | Search Existing | no mechanism registry; finding store indexed with `buscar-hallazgos`; no semantic query entry point | sessions | — | lexical only | EXTEND: A8b query entry point over `searchNearest` + registry | #132 | 5, 6, A8a | after A2 + A8a |
+| 18 | Internal corpus ingestion | `semantic-search-ingest` (`findingIngestion.ts`: finding and error by `.rst` name; no ingestor registry) | — | 2 | corpus not measured | EXTEND dispatch + MISSING `ExperienceIngestor` (A8a; see design) | #46, #121 | 5 | A8a runnable now |
 
-## DAG (existing tasks only)
+
+## DAG (existing tasks only; revised 2026-10-02 after executor review)
 
 ```
-A1  lock recovery + ensure pg/redis/ollama        (#99, #102)       runnable
-A3  chunked OCI upload → publish qwen3-4b          (0907, #139, #90) runnable
-    → artifact-locations → local-models-ensure
-A4  qualify qwen3-4b progressively                 (#69, #72)        after A1 + A3
-A6  thyrox -p local-required end-to-end            (#68, #73)        after A4
-A5  task_continuation asks recommendExecution      (#116, #75, #115) after A4
-A2  nomic through the same chain → embeddings      (#136)            after A3
-A8  semantic query entry point (searchNearest)     (#132)            after A1 + A2
-A7  P2d → P2e → P3 (managed headless-pool)         (0743)            independent of A3–A6
-A9  self-implementation workers                    —                 after A6 + A7 + A8
+A1  lock recovery + ensure pg/redis/ollama          (#99, #102)        done
+A3  chunked OCI upload → publish qwen3-4b           (0907, #139, #90)  done: verified, located, ensure ready
+A4  qualify qwen3-4b progressively                  (#69, #72)         running
+A6  thyrox -p local-required end-to-end             (#68, #73)         after A4
+A5  task_continuation asks recommendExecution       (#116, #75, #115)  after A4
+A2  nomic through the same chain → embeddings       (#136)             done: verified, located, ensure ready (f7af6f66); embedding qualification next
+A8a knowledge ingestion (durable chunks, no embed)  (#46, #121, #132)  runnable: does not wait on A2
+A8b semantic retrieval (embed → searchNearest)      (#132)             after A2 + A8a
+A7  P2d → P2e → P3 (managed headless-pool)          (0743)             P2d accepted; P2e after A6
+A9  self-implementation workers                     —                  after A6 + A7 + A8b
+```
+
+```
+A3 ─────────────→ A4 → A6
+ │
+ └→ A2 embeddings ─────────┐
+                           ▼
+A8a knowledge ingestion → A8b semantic query
+                           │
+A7 P2d→P2e→P3 ─────────────┤
+                           ▼
+                           A9
 ```
 
 No new TASK: every node is owned by an existing task.
+
+## A8 design — revised (executor review, 2026-10-02)
+
+The design is the executor's direction. Every name and location below comes
+from Search Existing over the current tree, not from the first draft.
+
+### Raw execution split by kind
+
+| Kind | Destination |
+|---|---|
+| runtime noise (pids, monitor ids, duplicated logs, a contaminated measurement with no reusable conclusion) | discard or short retention |
+| exact state (status, DAG dependencies, commits, versions) | relational task authority; never embedded |
+| ephemeral coordination (leases, cooldowns, in-flight locks) | Redis through `SharedStateStore` |
+| reusable knowledge, successes **and** reusable failure lessons | `SemanticSearchStore` → PostgreSQL + pgvector |
+
+### A8a precedes embeddings
+
+`SemanticSearchStore` already separates documents from embeddings
+(`semantic-search/store.ts:91` `ingestDocument`, `:99` `chunksWithoutEmbedding`,
+`:100` `putEmbeddings`). A finished execution becomes durable chunks now;
+A2 later drains `chunksWithoutEmbedding` → embed → `putEmbeddings` → activate
+the space. A8b (query → embedding → `searchBinaryCandidates`/`searchNearest`
+→ metadata ranking → REUSE/EXTEND/MISSING) is the only part that needs A2.
+
+### Domain authority: a sibling ingestor, not a wider `findingIngestion.ts`
+
+Measured: there is no ingestor registry. `findingIngestion.ts` registers its
+domains as a regex table over `.rst` file names (`DOCUMENT_FILES`, :38-41),
+`ingestCommand.ts` dispatches on `recognizedDomains()` (:45, :71-73), and the
+shared write step is `ingestFindings(store, recognized)` (:71) — generic in
+body, finding-named.
+
+Verdict: **EXTEND** the dispatch, **MISSING** the experience domain.
+- `findingIngestion.ts` keeps finding and error (file-recognized `.rst`).
+- `experience` is a separate `ExperienceIngestor`: its source is an execution
+  record plus its bench, not a file name pattern.
+- The CLI dispatch becomes a small domain → ingestor table. The shared write
+  step moves out under a neutral name. Both ingestors call `ingestDocument`.
+- No JSON inserted directly into PostgreSQL: the first three units go through
+  this pipeline once its contract and verifier exist.
+
+### Identity
+
+Measured durable identities: only `TASK-<LAYER>-NNNN` (`task/task_ids.py`), and
+the execution-record `reference` built from it (`execution-records/
+executionRecordStore.ts:26`), survive bench path, retry, container and worktree
+changes. `runId`, `executionId`, `grantId`, `generation` and `attempt` all
+change per retry or recreation.
+
+- `domain` = `experience`
+- `domainId` = `TASK-<LAYER>-NNNN` + plan `itemId` (logical, stable)
+- `sourceRef` = `<clone label>:<bench path>`, the convention `findingIngestion.ts:77-90` already uses. It is provenance only.
+- `sourceRevision` = commit
+- attempt, runId, executionId, grantId, model, context → `metadata`
+
+### Metadata vs chunks (approved)
+
+- **Metadata** (JSONB, filterable, not embedded): task/run identity,
+  authority, REUSE/EXTEND/MISSING, task outcome, verification verdict,
+  consumers, tests, findings, commit, model, context, capabilities, timestamps.
+- **Chunks** (embedded): one knowledge unit keeps its context. Intent →
+  Mechanism → Decision → Evidence → Outcome as sections of one text, not one
+  chunk per field.
+
+Default ranking favours accepted, current, verified, authority-present and
+tests-present units, without dropping failure lessons.
+
+### Outcome taxonomy: Search Existing before any new class
+
+Measured classifications:
+
+| Authority | Values | Separates task from verification? |
+|---|---|---|
+| `task_continuation.py:90-106` `OUTCOMES` | success, provider_transient, provider_permanent, task_failure, infrastructure_failure, stalled, non_blocking_finding, hard_block, secret_exposure_detected (+ `NOT_COUNTED`) | partly; `verify_exit is None` falls to `task_failure` "ambiguous-default" (:275) |
+| `item_worktree.sh:15-18` | verificado, rechazado, sin-verificar, sin-cambios, fallido, con-stash | no; `fallido` mixes provider, infra and task |
+| `wait-jobs.sh` | OK, BAIL, ESPERANDO, BLOQUEADO, CANCELADO, SIN-RECOGER | settlement, not outcome |
+| `task/premises.ts:75` `Verdict` | actionable, blocked, overclaimed, verified, **unmeasurable**, stale; `held: boolean \| null` | yes; `unmeasurable` must not fold into `blocked` (:63-74) |
+| `artifactVerifier.ts:35`, `publishArtifact.ts:41` | verified / unverified / unmeasured | yes, for artifacts |
+| `executionRecordStore.ts:24-53` | `verdict?: string`, `terminationReason?: string` (free) | fields exist, no vocabulary |
+
+Requirement (firm): task_failure ≠ provider_transient ≠ infrastructure_failure
+≠ measurement-did-not-establish-correctness.
+
+Classification: **EXTEND**, not a new task state.
+- The value already exists as a concept: `premises.ts` `unmeasurable`, with
+  `held: null`.
+- The defect is local: `task_continuation.py:275` turns a measurement that did
+  not happen into `task_failure`.
+- Candidate shape (to fix with TDD in the controller's own flow):
+  - keep the task outcome and the verification observation as two fields of
+    the attempt record;
+  - the observation reuses the `premises.ts` vocabulary (`verified` /
+    `unmeasurable`);
+  - the outcome becomes `NOT_COUNTED` when the observation is `unmeasurable`.
+- The task state machine itself is not touched. The exact name is decided in
+  that TDD, not here.
+
+### First knowledge units (candidates, not ingested yet)
+
+1. qwen3-4b OCI publication: REUSE ArtifactPublisher, EXTEND OciDistributionClient (chunked upload, a39e8ec3e), H-THYROX-303/411; commit 13eeedc05.
+2. P2d isolated verification (6bd918b6c): a shared-tree measurement is contaminated; an isolated worktree attributes.
+3. L0/L1 remote 502 (H-THYROX-409/410): the non-streaming remote path gives a repeatable 502, and retries do not resolve it. A failure lesson.
