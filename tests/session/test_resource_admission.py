@@ -387,5 +387,15 @@ print("caso 24 — el cgroup real de este anfitrión se lee sin error")
 real = ra.cgroup_headroom_bytes(ra.CgroupView())
 check("un entero o «sin límite»", True, isinstance(real, (int, ra.Unlimited)))
 
+print("caso 25 — un admit-ram rehusado publica sus cifras, como el de disco")
+with tempfile.TemporaryDirectory() as refusal_dir:
+    refusal_root = Path(refusal_dir)
+    refused_ram = cli("admit-ram", "5000", "--self-cgroup", str(NO_CGROUP),
+                      "--ledger", str(refusal_root / "ram.json"), "--owner", str(os.getpid()),
+                      "--meminfo", str(meminfo(refusal_root / "meminfo", 3000)), "--timeout", "0")
+    check("no cabe → 3", 3, refused_ram.returncode)
+    check("nombra la necesidad y lo libre", True,
+          "necesidad 5000 kB" in refused_ram.stderr and "libre 3000 kB" in refused_ram.stderr)
+
 print(f"test_resource_admission: {OK} ok, {FAILED} fallos")
 sys.exit(1 if FAILED else 0)

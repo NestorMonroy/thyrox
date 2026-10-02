@@ -522,7 +522,20 @@ def admit_ram(args: argparse.Namespace) -> int:
                                                     ledger_usage(ledger, args.podman, args.cgroup_root),
                                                     CgroupView(args.self_cgroup, args.cgroup_root)),
                           "ram-admission", args.timeout, args.interval)
-    return EXIT_ADMITTED if admitted else EXIT_TIMEOUT
+    if admitted:
+        return EXIT_ADMITTED
+    report_ram_refusal(bounded_need(args.need, args.memory_limit_kb), meminfo, ledger,
+                       CgroupView(args.self_cgroup, args.cgroup_root))
+    return EXIT_TIMEOUT
+
+
+def report_ram_refusal(need_kb: int, meminfo: Path, ledger: Path, cgroup: CgroupView) -> None:
+    """Publica por stderr las cifras con que se decidió, como ``report_disk_refusal``:
+    sin ellas quien rehúsa sólo puede decir «admisión de memoria» y volver a medir."""
+    free = effective_available_ram_kb(meminfo, cgroup)
+    reserved = pending(ReservationLedger(ledger).live(), {}, {})
+    print(f"resource_admission admit-ram: no cabe la necesidad {need_kb} kB; libre {free} kB, "
+          f"reservado por otros {reserved} kB", file=sys.stderr)
 
 
 def release_ram(args: argparse.Namespace) -> int:
