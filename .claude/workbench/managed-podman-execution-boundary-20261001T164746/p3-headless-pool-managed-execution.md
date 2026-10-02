@@ -71,3 +71,28 @@ GREEN y anulación; la ejecución real muestra cada PID del ítem en `libpod-<co
 
 Qué modelo o proveedor elige el ítem (después de p5); `--items FILE` / `--memfree-reserve` para
 tsc_cycle (p4); el e2e (p5).
+
+## Invariantes que verifica el plano de control (ejecutor 2026-10-02)
+
+Una unidad no ve el socket de Podman: ni el trabajador ni la verificación del controlador, que
+corren en unidades, pueden materializar unidades. Por eso estas invariantes las prueba el plano de
+control lanzando `headless-pool` (entrada declarada) con el doble de `thyrox -p`, y observando con
+`podman-execution-execute observe`; el payload sigue en unidades. P3 se acepta sólo con esta prueba
+en verde (ver `bootstrap.md`).
+
+| Invariante | Cómo se mide |
+|---|---|
+| `owner.kind = pool`, `owner.id = <run>-<ítem>` | etiquetas `thyrox.owner-kind`/`thyrox.owner-id` de la unidad observadas mientras corre, y la atestación de la primitiva |
+| worktree del ítem ≠ checkout principal | `pwd` del payload desde dentro frente a la raíz del clon |
+| PID y cgroup del payload pertenecen a la unidad | `/proc/self/cgroup` del payload y de sus hijos contiene `libpod-<containerId>` |
+| `.env` del anfitrión ausente en la unidad | `test -s <raíz>/.env` desde dentro: vacío o ausente |
+| sólo los montajes declarados | `/proc/self/mountinfo` desde dentro frente al perfil declarado |
+| `network=none` cuando el perfil lo declara | interfaces del payload: sólo `lo` |
+| no se publica `CLOSED` con escritores vivos | suite `test_pool_lifecycle.py` y `test-headless-pool-item-drain.sh` |
+| `<n>.closed` se escribe el último | `test_pool_lifecycle.py` (I2, I5) |
+| `pool_integrate` sólo consume ítems cerrados y verificados | `test-headless-pool-lifecycle.sh`, `test-headless-pool-worktree.sh` |
+| crash/restart conserva `reconcile`/`recover`/`prune` | `test_snapshot_recovery.py`, `test-headless-pool-exit-live-items.sh` |
+
+La atestación de la primitiva hoy no lleva el dueño; P3 la amplía (es suya:
+`src/packages/podman-execution`), y `headless-pool.sh` no gana política de Podman, secretos, GPU,
+cgroups ni proveedores: sólo pasa el dueño y el perfil declarados a la entrada canónica.
