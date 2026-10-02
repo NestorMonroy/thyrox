@@ -1,0 +1,30 @@
+## Thompson / Beta posterior
+src/session/task_continuation.py:301:        draws.append((-rng.betavariate(a, b), rank, model))
+src/verify/tsc_schedule.py:61:def posterior(accepted: int, rejected: int, epsilon: float, alpha0: float) -> tuple[float, float]:
+src/verify/tsc_schedule.py:101:def schedule(candidates: list[Candidate], ledger, epsilon: float, alpha0: float,
+src/verify/tsc_schedule.py:108:        theta = rng.betavariate(max(a, MIN_SHAPE), max(b, MIN_SHAPE))
+## controller policy hooks
+src/session/task_continuation.py:30:  aprendido (``THYROX_OUTCOME_CLASSIFIER_COMMAND``, p. ej. transformers dentro
+src/session/task_continuation.py:87:NOT_COUNTED = {"provider_transient", "infrastructure_failure", "hard_block", "non_blocking_finding",
+src/session/task_continuation.py:252:def classify(evidence: Evidence, learned=None) -> tuple[str, str]:
+src/session/task_continuation.py:267:    command = os.environ.get("THYROX_OUTCOME_CLASSIFIER_COMMAND")
+src/session/task_continuation.py:278:def candidate_counts(log: list[dict], task_class: str) -> dict[str, tuple[int, int]]:
+src/session/task_continuation.py:290:def choose_candidate(item: PlanItem, log: list[dict], excluded: set[str], rng: random.Random,
+## Reflexion
+src/verify/tsc_reflect.py:2:"""Memoria entre intentos del lazo tsc cero — Reflexion aplicada al compilador.
+src/verify/tsc_reflect.py:4:Origen: Shinn et al., «Reflexion: Language Agents with Verbal Reinforcement
+## verifiable reward (tool-calling suite)
+src/packages/local-models/toolCallingSuite.ts:4: * por refuerzo usen la misma recompensa (`scoreReply`).
+src/packages/local-models/toolCallingSuite.ts:61:export function scoreReply(expectation: CaseExpectation, reply: ScoredReply): boolean {
+## GRPO feasibility (lab, not wired)
+grpo_feasibility.py
+rl-image
+run_grpo_feasibility.sh
+## recommender
+## callers of choose_candidate / tsc_schedule outside tests
+bin/tsc_schedule
+src/session/task_continuation.py
+src/verify/batch_verification.py
+src/verify/tscProposers.ts
+src/verify/tsc_schedule.py
+src/verify/tsc_zero_step.py

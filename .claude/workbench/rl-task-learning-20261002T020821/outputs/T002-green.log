@@ -1,0 +1,26 @@
+== 1. el result del stream es la primera fuente ==
+ok   fuente result
+ok   billable = in + creation + out
+ok   cached aparte
+ok   total = in + cached + creation + out
+== 2. sin result, el transcript; los bloques de un mismo mensaje no se duplican ==
+ok   fuente transcript
+ok   entrada sumada una vez por mensaje
+ok   llamadas a herramienta contadas por bloque único
+== 3. un transcript anterior al lanzamiento no es de este intento ==
+ok   sólo cuenta lo escrito desde el lanzamiento
+== 4. ninguna fuente: desconocido, nunca cero ==
+ok   usageAvailable false
+ok   usageSource unavailable
+ok   inputTokens None, no 0
+ok   billableTokens None, no 0
+== 5. el stream gana al transcript cuando los dos existen ==
+ok   result antes que transcript
+== 6. la fila del intento: identidad del delegado, uso y veredicto ==
+ok   el contenedor es el del intento, no uno anterior
+ok   uso del transcript con su procedencia
+ok   veredicto rechazado por el verificador
+ok   elapsedMs y reintentos de proveedor
+
+17 casos: 17 ok, 0 fallos
+execution thyrox-worker-test-muqbz05a-16640 kind=test task=TASK-THYROX-0755 exit=0

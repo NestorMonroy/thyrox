@@ -58,6 +58,7 @@ Uso::
 from __future__ import annotations
 
 import argparse
+import calendar
 import contextlib
 import fcntl
 import json
@@ -69,8 +70,10 @@ import sys
 import time
 import zlib
 from dataclasses import dataclass, field
+from typing import cast
 from pathlib import Path
 
+from learning.token_usage import attempt_usage
 from session.continuation_frontier import doomed_items, item_states, runnable_items
 from verify.tsc_schedule import posterior
 
@@ -216,13 +219,17 @@ def read_log(workbench: Path) -> list[dict]:
     return [json.loads(line) for line in text.splitlines() if line.strip()]
 
 
-def append_log(workbench: Path, row: dict) -> None:
-    path = workbench / "outputs" / "continuation.jsonl"
+def append_jsonl(path: Path, row: dict) -> None:
+    """Añade una fila fechada bajo candado exclusivo: N ítems escriben el mismo archivo."""
     path.parent.mkdir(parents=True, exist_ok=True)
     row = {"utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "epoch": round(time.time(), 3), **row}
     with path.open("a") as handle:
         fcntl.flock(handle, fcntl.LOCK_EX)
         handle.write(json.dumps(row, ensure_ascii=False) + "\n")
+
+
+def append_log(workbench: Path, row: dict) -> None:
+    append_jsonl(workbench / "outputs" / "continuation.jsonl", row)
 
 
 def classify_deterministic(evidence: Evidence) -> str | None:
@@ -520,6 +527,40 @@ def tail(text: str, lines: int = 25) -> str:
     return "\n".join(text.strip().splitlines()[-lines:])
 
 
+def delegate_record(workbench: Path, item_id: str, model: str, launched_at: float) -> dict:
+    """La línea que ``delegate.sh`` dejó para este intento: contenedor y proveedor; ``{}`` si no la hay."""
+    path = workbench / "outputs" / "cutover-executions.jsonl"
+    if not path.is_file():
+        return {}
+    newest: dict = {}
+    for line in path.read_text().splitlines():
+        try:
+            row = json.loads(line)
+            stamp = calendar.timegm(time.strptime(row.get("utc", ""), "%Y-%m-%dT%H:%M:%SZ"))
+        except (json.JSONDecodeError, ValueError, TypeError):
+            continue
+        # el utc del registro tiene resolución de segundo: se admite el segundo del lanzamiento
+        if row.get("item") == item_id and row.get("model") == model and stamp >= int(launched_at):
+            newest = row
+    return newest
+
+
+def attempt_telemetry(workbench: Path, item: PlanItem, task: str, attempt: int, model: str, launched_at: float,
+                      elapsed_seconds: float, outcome: str, verify_exit: int | None, provider_retries: int) -> dict:
+    """La telemetría de un intento: identidad, uso de tokens con su procedencia y resultado."""
+    usage = attempt_usage(workbench / "outputs" / f"{item.id}-{model}.stream.jsonl",
+                          workbench / "outputs" / f"{item.id}-{model}.transcript", launched_at)
+    delegated = delegate_record(workbench, item.id, model, launched_at)
+    return {
+        "taskId": item.task_id or task, "itemId": item.id, "attempt": attempt,
+        "executionId": delegated.get("executionId"), "containerId": delegated.get("containerId"),
+        "provider": delegated.get("provider"), "model": model, "taskClass": item.task_class,
+        "elapsedMs": round(elapsed_seconds * 1000), "providerRetries": provider_retries,
+        **usage.to_record(), "outcome": outcome,
+        "verdict": None if verify_exit is None else ("accepted" if verify_exit == 0 else "rejected"),
+    }
+
+
 #: El árbol de git donde se integra lo aceptado; ``--target`` lo sustituye (p. ej. un
 #: repositorio de prueba). Por defecto, el propio thyrox.
 TARGET = ROOT
@@ -647,10 +688,13 @@ def run_item(workbench: Path, item: PlanItem, task: str, rng: random.Random, lea
         for finding in evidence.findings:
             append_log(workbench, {"kind": "non_blocking_finding", "item": item.id, "model": model, **finding})
         step = transition(outcome, same_retries, infra_retries)
+        telemetry = attempt_telemetry(workbench, item, task, attempt, model, launched_at, elapsed, outcome,
+                                      verify_code, transients)
+        append_jsonl(workbench / "outputs" / "token-usage.jsonl", telemetry)
         append_log(workbench, {"kind": "attempt", "item": item.id, "attempt": attempt, "model": model,
                                "taskClass": item.task_class, "outcome": outcome, "source": source, "exit": code,
                                "verifyExit": verify_code, "elapsedSeconds": evidence.elapsed_seconds,
-                               "stderrTail": stderr_tail[-600:],
+                               "stderrTail": stderr_tail[-600:], "usage": telemetry,
                                "transition": step, "orphans": reconcile_orphans()})
         if step == "commit":
             commit_code, commit_log = accept(workbench, item, task, model, tree)
@@ -793,7 +837,7 @@ def frontier_command(workbench: Path, task: str, width: int, seed: int | None) -
 def settle_doomed(workbench: Path, plan: list[PlanItem], exposed: set[str]) -> None:
     for entry, reason in doomed_items(plan, item_states(read_log(workbench)), exposed):
         kind = "blocked" if reason.startswith("credencial") else "dependency_blocked"
-        append_log(workbench, {"kind": kind, "item": entry.id, "reason": reason})
+        append_log(workbench, {"kind": kind, "item": cast(PlanItem, entry).id, "reason": reason})
 
 
 def run_frontier(workbench: Path, task: str, width: int, seed: int | None) -> int:
@@ -809,6 +853,8 @@ def run_frontier(workbench: Path, task: str, width: int, seed: int | None) -> in
     append_log(workbench, {"kind": "dispatcher", "command": command, "width": width, "joblog": str(joblog)})
     env = {**os.environ, "PARALLEL": f"--joblog {joblog}"}
     parallel = subprocess.Popen(command, stdin=subprocess.PIPE, text=True, cwd=ROOT, env=env)
+    feed = parallel.stdin
+    assert feed is not None  # stdin=PIPE siempre lo abre
     while True:
         plan = load_plan(workbench, task)
         exposed = exposed_credentials(workbench)
@@ -822,8 +868,8 @@ def run_frontier(workbench: Path, task: str, width: int, seed: int | None) -> in
         frontier = runnable_items(plan, states, exposed)
         for entry in frontier:
             append_log(workbench, {"kind": "dispatched", "item": entry.id, "taskId": entry.task_id or task})
-            parallel.stdin.write(entry.id + "\n")
-            parallel.stdin.flush()
+            feed.write(entry.id + "\n")
+            feed.flush()
         in_flight = [entry.id for entry in plan if states.get(entry.id) == "running"]
         if not frontier and not in_flight:
             break
@@ -832,7 +878,7 @@ def run_frontier(workbench: Path, task: str, width: int, seed: int | None) -> in
                 append_log(workbench, {"kind": "hard_block", "item": item_id, "reason": "GNU Parallel salió con el ítem en curso"})
             break
         time.sleep(FRONTIER_POLL_SECONDS)
-    parallel.stdin.close()
+    feed.close()
     parallel.wait()
     states = item_states(read_log(workbench))
     settled = {state: sorted(i for i, s in states.items() if s == state) for state in ("accepted", "blocked", "failed")}
@@ -845,7 +891,7 @@ def run_frontier(workbench: Path, task: str, width: int, seed: int | None) -> in
 
 def main(argv: list[str] | None = None) -> int:
     global TARGET
-    parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    parser = argparse.ArgumentParser(description=(__doc__ or "").split("\n")[0])
     sub = parser.add_subparsers(dest="command", required=True)
     for name in ("run", "next", "run-one"):
         command = sub.add_parser(name)
