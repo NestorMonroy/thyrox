@@ -1,0 +1,30 @@
+{
+  "utc": "2026-10-02T07:26:17Z",
+  "job": "cont-T001-4-1790924453118119",
+  "unit": "thyrox-worker-maintenance-muqm6g9y-13641",
+  "leaf_pid": 13752,
+  "leaf": "thyrox -p --model qwen3.8-flash (bun)",
+  "process_states": "13634:S 13640:S 13641:S 13725:S 13707:S 13745:S 13752:S 27234:S 27239:S 27721:S ",
+  "leaf_wait_channel": "ep_poll",
+  "leaf_cpu_total": "00:00:13",
+  "stream_bytes": 0,
+  "stream_mtime": "2026-10-02 07:00:53.596716602 +0000",
+  "established_tcp_in_netns": 18,
+  "declared_timeout_seconds": 2700,
+  "attempt_started": "2026-10-02T07:00:53Z",
+  "earlier_sample": {
+    "utc": "2026-10-02T07:17Z",
+    "window_seconds": 60,
+    "cpu": "00:00:09->00:00:10",
+    "stream_bytes": "0->0"
+  },
+  "thyrox_bg_status": "running",
+  "wait_jobs_probe": "ledger vacío",
+  "verdict_by_hand": {
+    "alive": true,
+    "zombie": false,
+    "progress": "not observed",
+    "external_io_wait": "observed",
+    "cause": "unknown"
+  }
+}
