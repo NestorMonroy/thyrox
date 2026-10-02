@@ -1,0 +1,13 @@
+FALLA falta p2d-red
+FALLA falta p2d-green
+FALLA falta p2d-annulment
+scope: p2d cambió 7 ruta(s) fuera de su alcance:
+  bin/check_durable_path_ownership
+  bin/check_execution_authorization
+  bin/check_infrastructure_runtime_idle
+  bin/check_podman_access_ownership
+  bin/managed_execution_containment
+  bin/unit_attest
+  bin/worker_secret_inheritance
+execution thyrox-worker-maintenance-muqjun8j-8763 kind=maintenance task=TASK-THYROX-0743 exit=1
+__BG_EXIT__=1

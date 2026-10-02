@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bin/task_continuation run .claude/workbench/managed-podman-execution-boundary-20261001T164746 --task TASK-THYROX-0743 --width 1", "started_at": "2026-10-02T04:51:17+00:00"}
