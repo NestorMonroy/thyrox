@@ -30,6 +30,12 @@ export interface OciDistributionOptions {
   readonly fetch?: typeof fetch
   /** Diagnóstico por intercambio: método, URL sin consulta, estado y duración; nunca cabeceras. */
   readonly trace?: (line: string) => void
+  /**
+   * Tamaño máximo del cuerpo de una petición de subida. Un blob mayor sube en tramos de este
+   * tamaño (`PATCH` con `Content-Range`); uno que cabe conserva el `PUT` único. Sin declarar,
+   * `DEFAULT_UPLOAD_CHUNK_BYTES`.
+   */
+  readonly uploadChunkBytes?: number
 }
 
 export interface ManifestHead {
@@ -39,6 +45,11 @@ export interface ManifestHead {
 }
 
 const DEFAULT_RETRY: RetryPolicy = { maxAttempts: 1, maxWaitSeconds: 0 }
+/**
+ * Por debajo de los 2 GiB por cuerpo que el registry real cortó (2 497 280 480 bytes en un `PUT`,
+ * ECONNRESET a los 45 s) y lo bastante grande para que un GGUF suba en pocas peticiones.
+ */
+export const DEFAULT_UPLOAD_CHUNK_BYTES = 512 * 1024 * 1024
 const DIGEST_HEADER = 'docker-content-digest'
 
 export class OciDistributionClient {
@@ -92,18 +103,36 @@ export class OciDistributionClient {
     return failure(response)
   }
 
-  /** Sube un blob en dos pasos (POST + PUT monolítico), leyendo el archivo en flujo. */
+  /**
+   * Sube un blob: `POST` y un `PUT` único si cabe en un tramo; si no, `PATCH` por tramos y un `PUT`
+   * final sin cuerpo que lo cierra con su digest.
+   */
   async uploadBlobFromFile(repository: string, digest: string, size: number, path: string): Promise<RegistryResult> {
     const started = await this.#request(repository, 'pull,push', 'POST', 'blobs/uploads/')
     if (!started.ok) return failure(started)
-    const location = started.headers.get('location')
+    let location = uploadLocation(started)
     if (!location) return { status: 'provider_error', httpStatus: started.status, detail: 'el registry no devolvió Location para la subida' }
+    // Bun.file y no un ReadableStream: medido, un PUT con cuerpo en flujo no
+    // recibe respuesta a través del proxy de salida, y Bun.file (o su tramo)
+    // se envía con su longitud conocida sin cargarlo en memoria y se puede reenviar.
+    const file = Bun.file(path)
+    const chunkBytes = this.#options.uploadChunkBytes ?? DEFAULT_UPLOAD_CHUNK_BYTES
+    if (size <= chunkBytes) return this.#closeUpload(repository, location, digest, file, size)
+    for (let start = 0; start < size; start += chunkBytes) {
+      const end = Math.min(start + chunkBytes, size) - 1
+      const patched = await this.#send(repository, 'pull,push', 'PATCH', new URL(location, this.#options.baseUrl).toString(), {
+        'content-type': 'application/octet-stream', 'content-length': String(end - start + 1), 'content-range': `${start}-${end}`,
+      }, file.slice(start, end + 1))
+      if (!patched.ok) return failure(patched)
+      location = uploadLocation(patched) ?? location
+    }
+    return this.#closeUpload(repository, location, digest, new Blob([]), 0)
+  }
+
+  /** El `PUT` que cierra una subida con su digest, con el cuerpo que falte por enviar. */
+  async #closeUpload(repository: string, location: string, digest: string, body: Blob, size: number): Promise<RegistryResult> {
     const target = new URL(location, this.#options.baseUrl)
     target.searchParams.set('digest', digest)
-    // Bun.file y no un ReadableStream: medido, un PUT con cuerpo en flujo no
-    // recibe respuesta a través del proxy de salida, y Bun.file se envía con
-    // su longitud conocida sin cargarlo en memoria (y se puede reenviar).
-    const body = Bun.file(path)
     const finished = await this.#send(repository, 'pull,push', 'PUT', target.toString(),
       { 'content-type': 'application/octet-stream', 'content-length': String(size) }, body)
     return finished.ok ? { status: 'success', value: undefined } : failure(finished)
@@ -164,6 +193,11 @@ export class OciDistributionClient {
     const payload = (await response.json()) as { token?: string; access_token?: string }
     return payload.token ?? payload.access_token
   }
+}
+
+/** Dónde sigue una subida: el registry puede devolver otro `Location` en cada paso. */
+function uploadLocation(response: Response): string | undefined {
+  return response.headers.get('location') ?? undefined
 }
 
 function failure(response: Response): RegistryFailure {

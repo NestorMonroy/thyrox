@@ -1,0 +1,19 @@
+{
+  "schema": "thyrox.permanent-artifact-record.v1",
+  "model": "library/qwen3:4b",
+  "source": {
+    "provider": "ollama",
+    "repository": "library/qwen3-4b",
+    "revision": "359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7",
+    "evidence": "catalog entry thyrox-library--qwen3-4b:q4_k_m-ollama-359d7dd4bcda (declaredAt 2026-10-02T10:59:42Z); outputs/qwen3-4b-identity.tsv"
+  },
+  "quantization": {
+    "method": "publicada por Ollama (library/qwen3:4b), sin recuantizar",
+    "type": "Q4_K_M",
+    "file": "model-Q4_K_M.gguf"
+  },
+  "provenance": {
+    "task": "TASK-THYROX-0907",
+    "source": "capa sha256:3e4cb141… del manifest 359d7dd4… en el volumen thyrox-ollama-bench-models, verificada contra el registry de Ollama y el catálogo"
+  }
+}

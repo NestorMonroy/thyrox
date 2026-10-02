@@ -44,14 +44,21 @@ export function sha256Digest(bytes: Uint8Array): string {
   return `sha256:${createHash('sha256').update(bytes).digest('hex')}`
 }
 
-export function startFakeOciRegistry(options: { publicRead?: boolean } = {}): FakeOciRegistry {
+/**
+ * `maxRequestBodyBytes` imita el tope de cuerpo por petición de un registry o de su frente: una
+ * petición que lo supera se rechaza con 413, como el corte que un `PUT` monolítico de más de 2 GiB
+ * recibe en el registry real.
+ */
+export function startFakeOciRegistry(options: { publicRead?: boolean; maxRequestBodyBytes?: number } = {}): FakeOciRegistry {
   const publicRead = options.publicRead ?? true
+  const maxRequestBodyBytes = options.maxRequestBodyBytes ?? Number.POSITIVE_INFINITY
   const requests: FakeRequest[] = []
   const blobs = new Map<string, Uint8Array>()
   const manifests = new Map<string, { bytes: Uint8Array; mediaType: string }>()
   const tags = new Map<string, string>()
   const corrupted = new Set<string>()
-  const uploads = new Map<string, true>()
+  /** Lo recibido de cada subida abierta, en orden: los tramos de `PATCH` antes del `PUT` que la cierra. */
+  const uploads = new Map<string, Uint8Array[]>()
   let uploadCounter = 0
   const state = { rateLimit: undefined as FakeRateLimit | undefined, tokenGeneration: 0 }
 
@@ -104,12 +111,25 @@ export function startFakeOciRegistry(options: { publicRead?: boolean } = {}): Fa
   async function handleUpload(request: Request, url: URL, uploadId: string | undefined): Promise<Response> {
     if (request.method === 'POST') {
       const id = String(++uploadCounter)
-      uploads.set(id, true)
+      uploads.set(id, [])
       return new Response(null, { status: 202, headers: { location: `${url.pathname.replace(/\/$/, '')}/${id}` } })
     }
-    if (request.method === 'PUT' && uploadId && uploads.has(uploadId)) {
+    const received = uploadId === undefined ? undefined : uploads.get(uploadId)
+    if (uploadId === undefined || received === undefined) return new Response('bad upload', { status: 400 })
+    const chunk = new Uint8Array(await request.arrayBuffer())
+    if (chunk.length > maxRequestBodyBytes) return new Response('request body too large', { status: 413 })
+    const offset = received.reduce((total, part) => total + part.length, 0)
+    if (request.method === 'PATCH') {
+      // Un tramo tiene que empezar donde terminó el anterior; si no, 416 como el registry real.
+      const start = Number(request.headers.get('content-range')?.match(/^(\d+)-\d+$/)?.[1] ?? Number.NaN)
+      if (start !== offset) return new Response('range not satisfiable', { status: 416 })
+      received.push(chunk)
+      const end = offset + chunk.length - 1
+      return new Response(null, { status: 202, headers: { location: url.pathname, range: `0-${end}` } })
+    }
+    if (request.method === 'PUT') {
       const digest = url.searchParams.get('digest') ?? ''
-      const bytes = new Uint8Array(await request.arrayBuffer())
+      const bytes = concatenate([...received, chunk])
       if (sha256Digest(bytes) !== digest) return new Response('digest mismatch', { status: 400 })
       blobs.set(digest, bytes)
       uploads.delete(uploadId)
@@ -162,4 +182,14 @@ export function startFakeOciRegistry(options: { publicRead?: boolean } = {}): Fa
     expireTokens: () => { state.tokenGeneration += 1 },
     stop: () => server.stop(true),
   }
+}
+
+function concatenate(parts: readonly Uint8Array[]): Uint8Array {
+  const joined = new Uint8Array(parts.reduce((total, part) => total + part.length, 0))
+  let offset = 0
+  for (const part of parts) {
+    joined.set(part, offset)
+    offset += part.length
+  }
+  return joined
 }

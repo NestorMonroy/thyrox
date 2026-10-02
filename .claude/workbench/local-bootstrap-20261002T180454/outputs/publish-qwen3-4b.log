@@ -1,0 +1,23 @@
+publish-artifact: → HEAD https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:0f438d5bcf23c2784aa1b97ff7cf0560908d0de96a94eabd81869c640e2936b6
+publish-artifact: ← 401 HEAD /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:0f438d5bcf23c2784aa1b97ff7cf0560908d0de96a94eabd81869c640e2936b6 431ms
+publish-artifact: → GET https://auth.docker.io/token
+publish-artifact: ← 200 GET /token 281ms
+publish-artifact: → HEAD https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:0f438d5bcf23c2784aa1b97ff7cf0560908d0de96a94eabd81869c640e2936b6
+publish-artifact: ← 404 HEAD /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:0f438d5bcf23c2784aa1b97ff7cf0560908d0de96a94eabd81869c640e2936b6 126ms
+publish-artifact: → POST https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/
+publish-artifact: ← 202 POST /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/ 190ms
+publish-artifact: → PUT https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/04c27b84-f775-4417-889b-0c4d176247e5
+publish-artifact: ← 201 PUT /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/04c27b84-f775-4417-889b-0c4d176247e5 850ms
+publish-artifact: → HEAD https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:3e4cb14174460404e7a233e531675303b2fbf7749c02f91864fe311ab6344e4f
+publish-artifact: ← 404 HEAD /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:3e4cb14174460404e7a233e531675303b2fbf7749c02f91864fe311ab6344e4f 126ms
+publish-artifact: → POST https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/
+publish-artifact: ← 202 POST /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/ 183ms
+publish-artifact: → PUT https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/289debe8-16d9-402d-bac4-c861391f6a7e
+error: The socket connection was closed unexpectedly. For more information, pass `verbose: true` in the second argument to fetch()
+  path: "https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/289debe8-16d9-402d-bac4-c861391f6a7e?_state=hbJHUBFzy8EetnFAf9FATIhODPjk7u0CclvvgHKkTNV7Ik5hbWUiOiJ0aDNyb3gvdGh5cm94LXF1YW50aXphdGlvbi1sYWItYXJ0aWZhY3RzIiwiVVVJRCI6IjI4OWRlYmU4LTE2ZDktNDAyZC1iYWM0LWM4NjEzOTFmNmE3ZSIsIk9mZnNldCI6MCwiU3RhcnRlZEF0IjoiMjAyNi0xMC0wMlQxODozNjoyNi4yNDg5OTA0ODZaIiwiRXhwaXJlc0F0IjoiMjAyNi0xMC0wMlQxOTowNjoyNi4zMzI1NDkzNjdaIiwiVXNlcm5hbWUiOiJ0aDNyb3giLCJVc2VyVVVJRCI6IjEyYTMyNTI3LTAxZWUtNGNiZS1iNWM1LWRiZTNlN2IwNjhlNiIsIlNlc3Npb25JRCI6ImRja3JfanRpX0J4ZHlOc2RONzBGbG9QN2VDbGExWUZfLU9lQT0ifQ%3D%3D&digest=sha256%3A3e4cb14174460404e7a233e531675303b2fbf7749c02f91864fe311ab6344e4f",
+ errno: 0,
+  code: "ECONNRESET"
+
+
+Bun v1.3.11 (Linux x64)
+EXIT=1 seconds=45 free_after=9041747968

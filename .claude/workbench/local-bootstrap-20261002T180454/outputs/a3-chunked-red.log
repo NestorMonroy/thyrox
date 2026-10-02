@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/chunkedUpload.test.ts:
+53 | 
+54 | describe('subida de un blob por tramos', () => {
+55 |   test('un blob mayor que el tramo sube en PATCH sucesivos y un PUT final, y queda publicado con su digest', async () => {
+56 |     const blob = blobFile(2500)
+57 |     const uploaded = await publisher(BODY_CAP_BYTES).uploadBlobFromFile(REPOSITORY, blob.digest, blob.bytes.length, blob.path)
+58 |     expect(uploaded.status).toBe('success')
+                                 ^
+error: expect(received).toBe(expected)
+
+Expected: "success"
+Received: "provider_error"
+
+      at <anonymous> (/home/user/thyrox/src/packages/artifact-registry/__tests__/chunkedUpload.test.ts:58:29)
+(fail) subida de un blob por tramos > un blob mayor que el tramo sube en PATCH sucesivos y un PUT final, y queda publicado con su digest [12.35ms]
+
+ 2 pass
+ 1 fail
+ 5 expect() calls
+Ran 3 tests across 1 file. [177.00ms]
