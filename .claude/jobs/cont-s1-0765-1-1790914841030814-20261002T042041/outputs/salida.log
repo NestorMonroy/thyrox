@@ -1,0 +1,2 @@
+execution thyrox-worker-maintenance-muqggfib-30221 kind=maintenance task=TASK-THYROX-0765 exit=1
+__BG_EXIT__=1

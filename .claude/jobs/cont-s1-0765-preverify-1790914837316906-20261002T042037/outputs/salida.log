@@ -1,0 +1,3 @@
+verify: falta src/verify/env_sensitivity.py o tests/verify/test_env_sensitivity.py
+execution thyrox-worker-maintenance-muqggco1-29967 kind=maintenance task=TASK-THYROX-0765 exit=1
+__BG_EXIT__=1
