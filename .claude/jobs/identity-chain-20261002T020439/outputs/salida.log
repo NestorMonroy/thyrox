@@ -1,0 +1,7 @@
+ok
+  ok   caso 5: el .err de cada ítem conserva su referencia de trabajo
+
+14 ok · 0 falla(s) (alcance medido: headless-pool --execution unit)
+840:      > "$HP_LIVE/$n.stream.jsonl" 2> "$HP_LIVE/$n.err" &
+execution thyrox-worker-test-muqbliao-18029 kind=test task=TASK-THYROX-0757 exit=0
+__BG_EXIT__=0
