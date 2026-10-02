@@ -1,0 +1,12 @@
+root
+uv=/usr/local/bin/uv
+python3=/usr/bin/python3
+xelatex=AUSENTE
+git=/usr/bin/git
+gawk=/usr/bin/gawk
+parallel=/usr/bin/parallel
+/home/user/ai-course-notes/tools
+/home/user/thyrox/bin
+fin
+execution thyrox-worker-maintenance-muq7e8nn-10508 kind=maintenance task=TASK-THYROX-0755 exit=0
+__BG_EXIT__=0

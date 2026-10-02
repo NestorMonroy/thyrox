@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts run --task TASK-THYROX-0755 --kind maintenance -- bash -c id -un; pwd; for t in uv python3 xelatex git gawk; do printf \"%s=%s\\n\" $t \"$(command -v $t || echo AUSENTE)\"; done; ls -d /home/user/ai-course-notes /home/user/thyrox 2>&1; env | awk -F= \"/KEY|TOKEN|SECRET|PASSWORD/{print \\\"secreto-visible:\\\" \\$1}\"", "started_at": "2026-10-02T00:05:29+00:00"}
+{"kind": "settle", "exit_code": 1, "finished_at": "2026-10-02T00:05:35+00:00", "duration_seconds": 6.95736}
