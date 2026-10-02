@@ -27,39 +27,49 @@ were out of step (0/21) and no container was alive: the third occurrence today
 | 15 | headless-pool | `src/session/headless-pool.sh` (local-first via `agent-recommend`) | — | tests/session | `--execution unit` not compatible with `--isolation worktree` | EXTEND | 0743 P3 | P2d, P2e | P2d → P2e → P3 |
 | 16 | Lifecycle / snapshot / recovery | `pool_lifecycle.py`, `snapshot_store.py`, `process_ownership.py`, `pool_integrate.sh` | headless-pool | in tests/session | not exercised today | REUSE | #8, #10, #11 | 15 | through P3 |
 | 17 | Search Existing | no mechanism registry; finding store indexed with `buscar-hallazgos`; no semantic query entry point | sessions | — | lexical only | EXTEND: A8b query entry point over `searchNearest` + registry | #132 | 5, 6, A8a | after A2 + A8a |
-| 18 | Internal corpus ingestion | `semantic-search-ingest` (`findingIngestion.ts`: finding and error by `.rst` name; no ingestor registry) | — | 2 | corpus not measured | EXTEND dispatch + MISSING `ExperienceIngestor` (A8a; see design) | #46, #121 | 5 | A8a runnable now |
+| 18 | Internal corpus ingestion | `semantic-search-ingest` (`findingIngestion.ts`: finding and error by `.rst` name; no ingestor registry) | — | 2 | corpus not measured | EXTEND dispatch + MISSING `ExperienceIngestor` (A8a; see design) | #46, #121 | 5 | A8a-spec done; A8a-impl after A6 |
 
 
-## DAG (existing tasks only; revised 2026-10-02 after executor review)
+## DAG (existing tasks only; second revision 2026-10-02 after executor review)
 
-```
-A1  lock recovery + ensure pg/redis/ollama          (#99, #102)        done
-A3  chunked OCI upload → publish qwen3-4b           (0907, #139, #90)  done: verified, located, ensure ready
-A4  qualify qwen3-4b progressively                  (#69, #72)         running
-A6  thyrox -p local-required end-to-end             (#68, #73)         after A4
-A5  task_continuation asks recommendExecution       (#116, #75, #115)  after A4
-A2  nomic through the same chain → embeddings       (#136)             done: verified, located, ensure ready (f7af6f66); embedding qualification next
-A8a knowledge ingestion (durable chunks, no embed)  (#46, #121, #132)  runnable: does not wait on A2
-A8b semantic retrieval (embed → searchNearest)      (#132)             after A2 + A8a
-A7  P2d → P2e → P3 (managed headless-pool)          (0743)             P2d accepted; P2e after A6
-A9  self-implementation workers                     —                  after A6 + A7 + A8b
-```
+Measured in `search-existing-enforcement.md` (deterministic, no subagent).
 
 ```
-A3 ─────────────→ A4 → A6
- │
- └→ A2 embeddings ─────────┐
-                           ▼
-A8a knowledge ingestion → A8b semantic query
-                           │
-A7 P2d→P2e→P3 ─────────────┤
-                           ▼
-                           A9
+E0  durable local-required policy: one versioned       (H-THYROX-413)      MISSING declaration; REUSE preflight deny
+    ExecutionPolicy file read by preflight (deny Agent,                     + ExecutionPolicy; EXTEND
+    deny unmanaged payload), agent-recommend, pool                          detect_agent_dispatch/client_background
+C0  host coordinator lifecycle: declared Linux entry   (H-THYROX-414,      MISSING; blocks every managed
+    that keeps it alive while residencies live           H-THYROX-412)      qualification
+A3  qwen3-4b publish → locate → ensure                 (0907)              done 13eeedc05
+A2  nomic publish → locate → ensure                    (#136)              artifact done 4cd49e2f7; embedding proof after C0
+A4  qualify qwen3-4b, managed                           (TASK-THYROX-0707)  after C0; the 19:16:31Z row is diagnostic
+                                                                            (unmanaged run), not a closure
+A6  thyrox -p local-required end-to-end                (#68, #73)          after A4-managed + E0
+A5  task_continuation asks recommendExecution          (#116, #75, #115)   after A4-managed; serialized with P2e
+                                                                            (both own task_continuation.py)
+A7  P2d → P2e → P3                                     (0743)              P2d accepted 6bd918b6c; P2e needs a working
+                                                                            executor: M0 gave 4×502 + 1 stall on P2d
+                                                                            (continuation.jsonl), so local (A6) or a
+                                                                            non-502 M0 route
+A8a-spec  experience ingestor contract                 (#46)               done 9ba67b4d7 (specification only)
+A8a-impl  ExperienceIngestor                           (#46, #121)         after A6 (local worker policy)
+A8b semantic retrieval                                 (#132)              after A2 proof + A8a-impl
+A9  self-implementation workers                        —                   after A6 + A7 + A8b
 ```
 
-No new TASK: every node is owned by an existing task.
+```
+E0 ─────────────────────────────┐
+C0 ─→ A4-managed ─→ A6 ─────────┼─→ A8a-impl ─→ A8b ─→ A9
+ │                   │          │                       ▲
+ └─→ A2 proof ───────┼──────────┴───────────────────────┤
+                     └─→ A7 P2e → P3 ───────────────────┘
+```
+
+No new TASK: E0 and C0 are recorded findings awaiting their task citation.
 
 ## A8 design — revised (executor review, 2026-10-02)
+
+The Search Existing rows below about outcome taxonomy, ingestion dispatch and identity came from a Claude `Explore` subagent (H-THYROX-413). They are hypotheses to re-measure deterministically before A8a-impl, not accepted evidence.
 
 The design is the executor's direction. Every name and location below comes
 from Search Existing over the current tree, not from the first draft.
