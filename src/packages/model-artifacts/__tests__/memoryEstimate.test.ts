@@ -56,7 +56,8 @@ describe('estimateServingMemory', () => {
 })
 
 describe('estimateServingMemory — una clave ausente es un error con su nombre, no un cero', () => {
-  for (const key of Object.keys(QWEN2_METADATA)) {
+  // head_count_kv es opcional por la especificación GGUF; su ausencia se prueba abajo.
+  for (const key of Object.keys(QWEN2_METADATA).filter(name => name !== 'qwen2.attention.head_count_kv')) {
     test(key, () => {
       const metadata = Object.fromEntries(Object.entries(QWEN2_METADATA).filter(([name]) => name !== key))
       const run = (): unknown => estimateServingMemory({ ggufBytes: 1, metadata, contextLength: 1, kvCacheType: 'f16' })
@@ -93,6 +94,11 @@ describe('estimateServingMemory — rehúsa entradas sin sentido', () => {
 })
 
 describe('estimateServingMemoryFromShape — la ruta del catálogo, sin metadata', () => {
+  test('sin attention.head_count_kv las cabezas KV son las de atención (GGUF: sin GQA)', () => {
+    const withoutKvHeads = Object.fromEntries(Object.entries(QWEN2_METADATA).filter(([name]) => name !== 'qwen2.attention.head_count_kv'))
+    expect(attentionShapeOf(withoutKvHeads)).toEqual({ blockCount: 24, kvHeadCount: 14, headDimension: 64 })
+  })
+
   test('attentionShapeOf extrae capas, cabezas KV y dimensión de cabeza', () => {
     expect(attentionShapeOf(QWEN2_METADATA)).toEqual({ blockCount: 24, kvHeadCount: 2, headDimension: 64 })
   })

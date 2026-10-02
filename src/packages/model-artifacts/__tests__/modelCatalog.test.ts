@@ -259,12 +259,13 @@ describe('loadModelCatalog / saveModelCatalog', () => {
 })
 
 describe('catalogEntryFromGguf', () => {
+  const HEAD_COUNT = 14
   const QWEN2_KEYS: readonly (readonly [string, SyntheticValue])[] = [
     ['general.architecture', { type: 'string', value: 'qwen2' }],
     ['qwen2.block_count', { type: 'uint32', value: 24 }],
     ['qwen2.context_length', { type: 'uint32', value: 32_768 }],
     ['qwen2.embedding_length', { type: 'uint32', value: 896 }],
-    ['qwen2.attention.head_count', { type: 'uint32', value: 14 }],
+    ['qwen2.attention.head_count', { type: 'uint32', value: HEAD_COUNT }],
     ['qwen2.attention.head_count_kv', { type: 'uint32', value: 2 }],
   ]
 
@@ -296,7 +297,8 @@ describe('catalogEntryFromGguf', () => {
     expect(entry).toEqual({ ...VALID, artifact: { ...VALID.artifact, bytes: readFileSync(path).byteLength } })
   })
 
-  for (const [missing] of QWEN2_KEYS) {
+  // head_count_kv es opcional por la especificación GGUF: ausente, vale head_count.
+  for (const [missing] of QWEN2_KEYS.filter(([key]) => key !== 'qwen2.attention.head_count_kv')) {
     test(`clave ausente ${missing} se rehúsa con su nombre`, async () => {
       const path = writeGguf(QWEN2_KEYS.filter(([key]) => key !== missing))
       const error = await catalogEntryFromGguf(declaration(path)).catch((caught: unknown) => caught)
@@ -304,6 +306,12 @@ describe('catalogEntryFromGguf', () => {
       expect((error as MissingGgufKeyError).key).toBe(missing)
     })
   }
+
+  test('sin attention.head_count_kv la entrada toma las cabezas de atención', async () => {
+    const path = writeGguf(QWEN2_KEYS.filter(([key]) => key !== 'qwen2.attention.head_count_kv'))
+    const entry = await catalogEntryFromGguf(declaration(path))
+    expect(entry.attention.kvHeadCount).toBe(HEAD_COUNT)
+  })
 
   test('un context_length no entero se rehúsa con el campo', async () => {
     const path = writeGguf(QWEN2_KEYS.map(([key, value]) =>

@@ -118,9 +118,17 @@ export function attentionShapeOf(metadata: GgufMetadata): AttentionShape {
   }
   return {
     blockCount: positiveIntegerKey(metadata, `${architecture}.block_count`),
-    kvHeadCount: positiveIntegerKey(metadata, `${architecture}.attention.head_count_kv`),
+    kvHeadCount: kvHeadCountOf(metadata, `${architecture}.attention.head_count_kv`, headCount),
     headDimension: embeddingLength / headCount,
   }
+}
+
+/**
+ * La especificación GGUF declara `attention.head_count_kv` opcional: ausente,
+ * vale `head_count` (atención sin GQA, como nomic-bert). Presente, se valida.
+ */
+function kvHeadCountOf(metadata: GgufMetadata, key: string, headCount: number): number {
+  return Object.hasOwn(metadata, key) ? positiveIntegerKey(metadata, key) : headCount
 }
 
 function requireAttentionShape(shape: AttentionShape): void {
