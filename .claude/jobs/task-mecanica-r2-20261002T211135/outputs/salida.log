@@ -1,0 +1,10 @@
+ok   extend-capability-union	export type ModelCapability = 'completion' | 'tools' | 'embeddings'
+ok   rename-identifier	export function exists(path: string): boolean { return path.length > 0 }
+ok   guard-clause	export function requirePositive(n: number): number {
+  if (n <= 0) {
+    throw new RangeError('n must be positive');
+  }
+ok   json-field-extraction	embedding@1
+aprobada: thyrox-library--qwen3-4b:q4_k_m-ollama-359d7dd4bcda tarea mecanica batch-worker-mecanica@1 4/4, 2.7 tokens/s (contended), ctx 8192 → /home/user/thyrox/.thyrox/models/qualifications.json
+execution thyrox-worker-probe-murgkgor-26760 kind=probe task=TASK-THYROX-0710 exit=0
+__BG_EXIT__=0
