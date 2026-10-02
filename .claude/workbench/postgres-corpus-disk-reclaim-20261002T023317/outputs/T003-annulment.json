@@ -1,0 +1,1 @@
+{"passed": false, "reasons": ["falta una instantánea (la consulta no encontró el corpus)"], "sampleSize": 20, "counts": {"documents": 1621, "chunks": 9767, "embeddingSpaces": 0}}
