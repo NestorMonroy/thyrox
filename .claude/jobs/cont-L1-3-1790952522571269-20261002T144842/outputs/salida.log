@@ -1,0 +1,2 @@
+execution thyrox-worker-maintenance-mur2w2t6-8379 kind=maintenance task=TASK-THYROX-0907 exit=1
+__BG_EXIT__=1

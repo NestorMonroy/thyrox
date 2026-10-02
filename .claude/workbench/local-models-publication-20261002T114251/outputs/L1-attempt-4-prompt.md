@@ -39,3 +39,27 @@ Tarea: L1
   execution thyrox-worker-maintenance-mur2docf-5711 kind=maintenance task=TASK-THYROX-0907 exit=1
   __BG_EXIT__=1
   ```
+- deepseek-v4.1-flash: provider_transient (exit 1, verificación 1)
+  ```
+  FALLA falta outputs/L1-red.log
+  FALLA falta outputs/L1-green.log
+  FALLA falta outputs/L1-annulment.log
+  scope: L1-0907 dentro de su alcance (alcance medido: 0 ruta(s) cambiada(s))
+  FALLA L1 no añadió ninguna prueba
+  grep: src/packages/local-models/localArtifactSource.ts: No such file or directory
+  grep: src/packages/local-models/artifactRecoverability.ts: No such file or directory
+  execution thyrox-worker-maintenance-mur2umao-7921 kind=maintenance task=TASK-THYROX-0907 exit=1
+  __BG_EXIT__=1
+  ```
+- deepseek-v4.1-flash: provider_transient (exit 1, verificación 1)
+  ```
+  FALLA falta outputs/L1-red.log
+  FALLA falta outputs/L1-green.log
+  FALLA falta outputs/L1-annulment.log
+  scope: L1-0907 dentro de su alcance (alcance medido: 0 ruta(s) cambiada(s))
+  FALLA L1 no añadió ninguna prueba
+  grep: src/packages/local-models/localArtifactSource.ts: No such file or directory
+  grep: src/packages/local-models/artifactRecoverability.ts: No such file or directory
+  execution thyrox-worker-maintenance-mur3ro8z-11573 kind=maintenance task=TASK-THYROX-0907 exit=1
+  __BG_EXIT__=1
+  ```

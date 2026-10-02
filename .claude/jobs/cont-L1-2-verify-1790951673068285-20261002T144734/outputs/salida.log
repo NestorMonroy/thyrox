@@ -1,0 +1,9 @@
+FALLA falta outputs/L1-red.log
+FALLA falta outputs/L1-green.log
+FALLA falta outputs/L1-annulment.log
+scope: L1-0907 dentro de su alcance (alcance medido: 0 ruta(s) cambiada(s))
+FALLA L1 no añadió ninguna prueba
+grep: src/packages/local-models/localArtifactSource.ts: No such file or directory
+grep: src/packages/local-models/artifactRecoverability.ts: No such file or directory
+execution thyrox-worker-maintenance-mur2umao-7921 kind=maintenance task=TASK-THYROX-0907 exit=1
+__BG_EXIT__=1

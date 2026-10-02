@@ -27,9 +27,8 @@ Tarea: L1
 
 ## Intentos previos de este mismo tramo (evidencia, no objetivo nuevo)
 
-- deepseek-v4.1-flash: provider_transient (exit 1, verificación 1)
+- qwen3.8-flash: task_failure (exit 1, verificación 1)
   ```
-  FALLA typecheck de local-models
   FALLA falta outputs/L1-red.log
   FALLA falta outputs/L1-green.log
   FALLA falta outputs/L1-annulment.log
@@ -37,12 +36,11 @@ Tarea: L1
   FALLA L1 no añadió ninguna prueba
   grep: src/packages/local-models/localArtifactSource.ts: No such file or directory
   grep: src/packages/local-models/artifactRecoverability.ts: No such file or directory
-  execution thyrox-worker-maintenance-muqxi63t-5176 kind=maintenance task=TASK-THYROX-0907 exit=1
+  execution thyrox-worker-maintenance-mur2docf-5711 kind=maintenance task=TASK-THYROX-0907 exit=1
   __BG_EXIT__=1
   ```
 - deepseek-v4.1-flash: provider_transient (exit 1, verificación 1)
   ```
-  FALLA typecheck de local-models
   FALLA falta outputs/L1-red.log
   FALLA falta outputs/L1-green.log
   FALLA falta outputs/L1-annulment.log
@@ -50,6 +48,6 @@ Tarea: L1
   FALLA L1 no añadió ninguna prueba
   grep: src/packages/local-models/localArtifactSource.ts: No such file or directory
   grep: src/packages/local-models/artifactRecoverability.ts: No such file or directory
-  execution thyrox-worker-maintenance-muqxtcxx-6461 kind=maintenance task=TASK-THYROX-0907 exit=1
+  execution thyrox-worker-maintenance-mur2umao-7921 kind=maintenance task=TASK-THYROX-0907 exit=1
   __BG_EXIT__=1
   ```
