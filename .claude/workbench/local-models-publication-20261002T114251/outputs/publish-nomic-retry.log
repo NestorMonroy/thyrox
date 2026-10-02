@@ -1,0 +1,15 @@
+publish-artifact: → HEAD https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:d993121668b4550457b9669dbc9bf3d7d57317dcadc1a4d54f6a2b4ed5e84a67
+publish-artifact: ← 401 HEAD /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:d993121668b4550457b9669dbc9bf3d7d57317dcadc1a4d54f6a2b4ed5e84a67 609ms
+publish-artifact: → GET https://auth.docker.io/token
+publish-artifact: ← 200 GET /token 294ms
+publish-artifact: → HEAD https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:d993121668b4550457b9669dbc9bf3d7d57317dcadc1a4d54f6a2b4ed5e84a67
+publish-artifact: ← 200 HEAD /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:d993121668b4550457b9669dbc9bf3d7d57317dcadc1a4d54f6a2b4ed5e84a67 100ms
+publish-artifact: → HEAD https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:2e1a99a21b550c6cdd965859790d0d10cca21a48800c8c83d6345afebb49cd98
+publish-artifact: ← 200 HEAD /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:2e1a99a21b550c6cdd965859790d0d10cca21a48800c8c83d6345afebb49cd98 103ms
+publish-artifact: → HEAD https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:2e1a99a21b550c6cdd965859790d0d10cca21a48800c8c83d6345afebb49cd98
+publish-artifact: ← 200 HEAD /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:2e1a99a21b550c6cdd965859790d0d10cca21a48800c8c83d6345afebb49cd98 146ms
+publish-artifact: → HEAD https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:f7af6f66802f4df86eda10fe9bbcfc75c39562bed48ef6ace719a251cf1c2fdb
+publish-artifact: ← 200 HEAD /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:f7af6f66802f4df86eda10fe9bbcfc75c39562bed48ef6ace719a251cf1c2fdb 112ms
+publish-artifact: → PUT https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/manifests/nomic-embed-text-v1.5-0188c9b-f16
+publish-artifact: ← 201 PUT /v2/th3rox/thyrox-quantization-lab-artifacts/manifests/nomic-embed-text-v1.5-0188c9b-f16 1469ms
+publish-artifact: unverified
