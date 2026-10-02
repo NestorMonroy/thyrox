@@ -13,7 +13,7 @@
 
 import { parseArgs } from 'node:util'
 
-import { runExecution, InvalidExecutionAuthorizationError, type ExecutionAuthorization, type ExecutionKind, type ExecutionReference, type ExecutionSecret } from './executionAuthorization.js'
+import { EXECUTION_REFERENCE_LABEL_KEY, runExecution, InvalidExecutionAuthorizationError, type ExecutionAuthorization, type ExecutionKind, type ExecutionReference, type ExecutionSecret } from './executionAuthorization.js'
 import { ensureSecretValue } from './resourceMaterialization.js'
 import { buildImage } from './imageStore.js'
 import { retireOrphanedWorkerContainers, type ContainerOwner } from './workerContainerLifecycle.js'
@@ -59,7 +59,7 @@ const USAGE = [
   '                    [--cpus N] [--memory-mib N] [--pids N] [--output RUTA]... [--secret-from-env NOMBRE]...',
   '                    (--script-stdin | -- ARGV...)',
   '     podman-execution-execute reconcile-orphans',
-  '     podman-execution-execute build-image --task TASK-<CAPA>-NNNN --context DIR --tag TAG [--containerfile F] [--network host]',
+  '     podman-execution-execute build-image (--task TASK-<CAPA>-NNNN | --work CONSUMIDOR:ID) --context DIR --tag TAG [--containerfile F] [--network host]',
 ].join('\n')
 
 class UsageError extends Error {}
@@ -221,6 +221,12 @@ function ownerOf(declared: string | undefined, reference: ExecutionReference, pi
   throw new UsageError(`una ejecución por línea de orden no se autoriza por ${reference.kind}`)
 }
 
+/** La etiqueta que cita a quién pertenece la imagen: la de hoy para una tarea, la referencia para un consumidor. */
+function imageReferenceLabels(reference: ExecutionReference): Record<string, string> {
+  if (reference.kind === 'task') return { 'thyrox.task': reference.citation }
+  return { [EXECUTION_REFERENCE_LABEL_KEY]: referenceText(reference).replace('=', ':') }
+}
+
 function referenceText(reference: ExecutionReference): string {
   return reference.kind === 'task' ? `task=${reference.citation}` : reference.kind === 'work' ? `work=${reference.consumer}:${reference.workId}` : reference.kind
 }
@@ -231,13 +237,15 @@ async function buildImageCommand(argv: string[], deps: ExecutionCommandDeps): Pr
     strict: true,
     options: {
       task: { type: 'string' },
+      work: { type: 'string' },
       context: { type: 'string' },
       containerfile: { type: 'string' },
       tag: { type: 'string' },
       network: { type: 'string' },
     },
   })
-  const task = requireValue(values.task, 'task')
+  // Un consumidor construye su imagen de ejecución bajo su propia referencia de trabajo.
+  const reference = referenceOf(values.task, values.work)
   const network = parseNetwork(values.network)
   const ca = deps.env[PROXY_CA_KEY]
   const egress = network === 'host'
@@ -245,7 +253,7 @@ async function buildImageCommand(argv: string[], deps: ExecutionCommandDeps): Pr
     context: requireValue(values.context, 'context'),
     containerfile: values.containerfile,
     tag: requireValue(values.tag, 'tag'),
-    labels: { 'thyrox.task': task, [IMAGE_LIFECYCLE_LABEL]: 'cache' },
+    labels: { ...imageReferenceLabels(reference), [IMAGE_LIFECYCLE_LABEL]: 'cache' },
     network: egress ? 'host' : undefined,
     buildArgs: egress ? { ...forwardedEnvironment(deps.env, ['HTTPS_PROXY', 'https_proxy']), ...(ca ? { PROXY_CA: PROXY_CA_BUILD_PATH } : {}) } : undefined,
     readOnlyMounts: egress && ca ? [{ source: ca, destination: PROXY_CA_BUILD_PATH }] : undefined,
