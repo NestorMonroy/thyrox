@@ -1,0 +1,1 @@
+thyrox-postgres action=recreated drift=stale-runtime-state created=yes started=yes health=healthy provision=applied volumes=thyrox-postgres-data:preserved
