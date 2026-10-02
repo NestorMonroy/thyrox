@@ -1,0 +1,23 @@
+OK   ollama: exit 0
+OK   ollama: asegura el servicio gestionado
+OK   ollama: el ítem recibe el modelo y ningún upstream por entorno
+OK   ollama: la línea modelo dice el runtime
+OK   puerto declarado: tampoco viaja al ítem
+FALLA respaldo por servicio: exit 0 — esperado '0', obtenido '2'
+FALLA respaldo por servicio: pide el proveedor forzado — esperado '1', obtenido '0'
+FALLA respaldo por servicio: el ítem va a claude sin upstream abierto — esperado 'model=claude-sonnet-5|base=none|open=none', obtenido ''
+FALLA respaldo por servicio: la línea nombra runtime y motivo — esperado 'modelo: claude-sonnet-5 (derivado de --task-class analisis) runtime: claude-cli — respaldo: thyrox-ollama no arrancó (infrastructure_ensure salió 3)', obtenido ''
+FALLA respaldo del selector: exit 0 — esperado '0', obtenido '2'
+OK   respaldo del selector: no asegura el servicio
+FALLA respaldo del selector: la línea lleva su motivo — esperado 'modelo: claude-sonnet-5 (derivado de --task-class analisis) runtime: claude-cli — respaldo: catálogo vacío', obtenido ''
+FALLA respaldo del selector: sin upstream abierto — esperado 'model=claude-sonnet-5|base=none|open=none', obtenido ''
+OK   ollama con id claude: exit 2
+OK   ollama con id claude: no asegura el servicio
+OK   claude-cli con nombre thyrox: exit 2
+OK   runtime desconocido: exit 2
+OK   runtime desconocido: lo nombra
+FALLA sin runtime: exit 0 — esperado '0', obtenido '2'
+FALLA sin runtime: claude-cli sin motivo — esperado 'modelo: claude-sonnet-5 (derivado de --task-class analisis) runtime: claude-cli', obtenido ''
+OK   runner claude con ollama: exit 2
+OK   runner claude con ollama: no asegura el servicio
+13/22 aserciones

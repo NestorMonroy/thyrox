@@ -1,0 +1,7 @@
+rc=1
+(fail) admittedChat > la petición no hereda el plazo de 300 s del runtime [1.14ms]
+(pass) admittedChat > sin plazo declarado no hay señal que corte [0.28ms]
+(fail) admittedChat > un plazo declarado corta la petición lenta [505.89ms]
+(pass) admittedChat > dentro del plazo la respuesta llega [2.76ms]
+execution thyrox-worker-test-murg6tbp-21329 kind=test task=TASK-THYROX-0710 exit=0
+__BG_EXIT__=0

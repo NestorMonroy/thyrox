@@ -1,0 +1,106 @@
+{
+  "hooks": {
+    "SubagentStart": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /home/user/thyrox/bin/measure_delta --start --repo docs=/home/user/kaupamex-docs --results-dir /home/user/kaupamex-docs/.claude/agent-results"
+          },
+          {
+            "type": "command",
+            "command": "bash /home/user/thyrox/bin/register_session --start"
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /home/user/thyrox/bin/compact_context --root /home/user/kaupamex-docs",
+            "timeout": 20
+          }
+        ]
+      },
+      {
+        "matcher": "startup",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /home/user/thyrox/bin/item_worktree sweep-orphans /home/user/thyrox",
+            "timeout": 120
+          },
+          {
+            "type": "command",
+            "command": "bash /home/user/thyrox/bin/item_worktree sweep-orphans /home/user/kaupamex-docs",
+            "timeout": 120
+          }
+        ]
+      }
+    ],
+    "PreModelSwitch": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bun run /home/user/thyrox/src/packages/agent/bin/preModelSwitch.ts",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash|Agent|Write|Edit|MultiEdit|Read",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /home/user/thyrox/bin/tool_use_preflight",
+            "timeout": 10
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node /home/user/thyrox/src/agents/save_result.mjs --log-dir /home/user/kaupamex-docs/.claude/agent-results"
+          },
+          {
+            "type": "command",
+            "command": "bash /home/user/thyrox/bin/measure_delta --stop --repo docs=/home/user/kaupamex-docs --results-dir /home/user/kaupamex-docs/.claude/agent-results"
+          },
+          {
+            "type": "command",
+            "command": "bash /home/user/thyrox/bin/register_session --stop"
+          }
+        ]
+      }
+    ],
+    "TaskCreated": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /home/user/thyrox/bin/task_lifecycle"
+          }
+        ]
+      }
+    ],
+    "TaskCompleted": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash /home/user/thyrox/bin/task_lifecycle"
+          }
+        ]
+      }
+    ]
+  }
+}

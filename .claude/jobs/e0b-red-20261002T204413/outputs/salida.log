@@ -1,0 +1,4 @@
+rc=1
+0
+execution thyrox-worker-test-murfla32-27286 kind=test task=TASK-THYROX-0773 exit=1
+__BG_EXIT__=1

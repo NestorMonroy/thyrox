@@ -1,0 +1,9 @@
+# GREEN: sobre el cambio
+tests/hooks/test_execution_policy_enforcement.py	exit=0	execution_policy: 39 ok, 0 fallas
+tests/hooks/test_detect_client_background.py	exit=0	12 ok, 0 fallos
+tests/hooks/test_detect_agent_dispatch.py	exit=0	11 passed, 0 failed: []
+src/packages/provider/__tests__/recommendExecution.test.ts	exit=0	Ran 21 tests across 1 file. [65.00ms]
+tests/agents/test_recommend_cli.py	exit=0	58 aprobada(s) · 0 fallida(s) (alcance medido: recommend.ts)
+tests/session/test-headless-pool-model-policy.sh	exit=0	20 ok · 0 falla(s) (alcance medido: headless-pool --model-policy)
+tests/hooks/test_tool_use_preflight.py	exit=0	36 ok, 0 fallos
+tests/session/test_user_wiring.py	exit=1	123 ok, 2 fallos

@@ -1,0 +1,16 @@
+# e0-lint-fix-suites
+
+## Qué se lanzó
+
+```
+bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts run --task TASK-THYROX-0773 --kind test --env THYROX_EXECUTION_ENTRY -- bash -c O=.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/pool-suites-r4; for s in tests/session/test-headless-pool*.sh; do bash $s > $O/$(basename $s).log 2>&1; echo "$(basename $s) exit=$? $(tail -1 $O/$(basename $s).log)"; done; for p in tests/session/test_user_wiring.py tests/hooks/test_detect_agent_dispatch.py tests/hooks/test_detect_client_background.py tests/hooks/test_execution_policy_enforcement.py; do python3 $p > $O/$(basename $p).log 2>&1; echo "$(basename $p) exit=$? $(tail -1 $O/$(basename $p).log)"; done
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

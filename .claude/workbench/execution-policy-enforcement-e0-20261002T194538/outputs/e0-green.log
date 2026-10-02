@@ -1,0 +1,16 @@
+# GREEN
+## test_execution_policy_enforcement.py
+execution_policy: 14 ok, 0 fallas
+## test_detect_client_background.py
+12 ok, 0 fallos
+## test_detect_agent_dispatch.py
+11 passed in 0.05s
+## test_tool_use_preflight.py
+36 ok, 0 fallos
+## test_recommend_cli.py
+58 aprobada(s) · 0 fallida(s) (alcance medido: recommend.ts)
+## test_user_wiring.py (2 fallos previos, iguales en la base)
+  FALLO el comando cableado carga todos los detectores sin PYTHONPATH
+  FALLO el comando cableado corre sin PYTHONPATH y calla fuera de una compactación
+== 16. el destino del store en el CUERPO del hook, no en su cableado ==
+123 ok, 2 fallos

@@ -1,0 +1,10 @@
+  | the item never started:
+  | headless-pool: REHUSA — la política de modelo bloquea --task-class analisis: la política no permite respaldo y ningún modelo permitido cumple: catálogo local vacío: ningún modelo declarado
+  | headless-pool: REHUSA — la política de modelo bloquea --task-class analisis: la política no permite respaldo y ningún modelo permitido cumple: catálogo local vacío: ningún modelo declarado
+FAIL the live pool keeps the summary of the copy it started with — expected '1', got '0'
+OK   the rewritten source does not reach the live pool
+FAIL a frozen copy of the launcher exists while the item runs — expected 'yes', got 'no'
+OK   the frozen copy is removed when the pool exits
+OK   control: the freeze block was removed from the unfrozen copy
+FAIL control: without the freeze, the rewrite reaches the live pool — expected '1', got '0'
+result: 3 of 6 assertions green

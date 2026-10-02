@@ -1,0 +1,9 @@
+test_execution_policy_enforcement.py rc=1 execution_policy: 62 ok, 1 fallas
+test_detect_client_background.py rc=0 12 ok, 0 fallos
+test_detect_agent_dispatch.py rc=0 11 caso(s); 0 fallo(s)
+lint rc=1
+  File "/home/user/thyrox/src/verify/check_lint_zero.py", line 33, in <module>
+    from paths import reach
+ModuleNotFoundError: No module named 'paths'
+execution thyrox-worker-test-murfoaj6-28259 kind=test task=TASK-THYROX-0773 exit=1
+__BG_EXIT__=1

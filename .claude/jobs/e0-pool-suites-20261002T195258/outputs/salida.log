@@ -1,0 +1,38 @@
+tests/session/test-headless-pool-credential-source.sh	exit=1	
+tests/session/test-headless-pool-execution-unit.sh	exit=1	
+tests/session/test-headless-pool-exit-live-items.sh	exit=1	
+tests/session/test-headless-pool-frozen-launcher.sh	exit=1	
+tests/session/test-headless-pool-item-drain.sh	exit=1	
+tests/session/test-headless-pool-lifecycle.sh	exit=1	
+tests/session/test-headless-pool-local-model-e2e.sh	exit=1	
+tests/session/test-headless-pool-model-policy.sh	exit=1	
+tests/session/test-headless-pool-runtime.sh	exit=1	
+tests/session/test-headless-pool-thyrox-p.sh	exit=1	
+tests/session/test-headless-pool-worktree.sh	exit=1	
+tests/session/test-headless-pool.sh	exit=1	
+/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/probes/pool_suites.sh: line 8: /home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/pool-suites/test-headless-pool-credential-source.sh.log: No such file or directory
+tail: cannot open '/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/pool-suites/test-headless-pool-credential-source.sh.log' for reading: No such file or directory
+/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/probes/pool_suites.sh: line 8: /home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/pool-suites/test-headless-pool-execution-unit.sh.log: No such file or directory
+tail: cannot open '/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/pool-suites/test-headless-pool-execution-unit.sh.log' for reading: No such file or directory
+/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/probes/pool_suites.sh: line 8: /home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/pool-suites/test-headless-pool-exit-live-items.sh.log: No such file or directory
+tail: cannot open '/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/pool-suites/test-headless-pool-exit-live-items.sh.log' for reading: No such file or directory
+/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/probes/pool_suites.sh: line 8: /home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/pool-suites/test-headless-pool-frozen-launcher.sh.log: No such file or directory
+tail: cannot open '/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/pool-suites/test-headless-pool-frozen-launcher.sh.log' for reading: No such file or directory
+/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/probes/pool_suites.sh: line 8: /home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/pool-suites/test-headless-pool-item-drain.sh.log: No such file or directory
+tail: cannot open '/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/pool-suites/test-headless-pool-item-drain.sh.log' for reading: No such file or directory
+/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/probes/pool_suites.sh: line 8: /home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/pool-suites/test-headless-pool-lifecycle.sh.log: No such file or directory
+tail: cannot open '/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/pool-suites/test-headless-pool-lifecycle.sh.log' for reading: No such file or directory
+/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/probes/pool_suites.sh: line 8: /home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/pool-suites/test-headless-pool-local-model-e2e.sh.log: No such file or directory
+tail: cannot open '/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/pool-suites/test-headless-pool-local-model-e2e.sh.log' for reading: No such file or directory
+/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/probes/pool_suites.sh: line 8: /home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/pool-suites/test-headless-pool-model-policy.sh.log: No such file or directory
+tail: cannot open '/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/pool-suites/test-headless-pool-model-policy.sh.log' for reading: No such file or directory
+/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/probes/pool_suites.sh: line 8: /home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/pool-suites/test-headless-pool-runtime.sh.log: No such file or directory
+tail: cannot open '/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/pool-suites/test-headless-pool-runtime.sh.log' for reading: No such file or directory
+/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/probes/pool_suites.sh: line 8: /home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/pool-suites/test-headless-pool-thyrox-p.sh.log: No such file or directory
+tail: cannot open '/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/pool-suites/test-headless-pool-thyrox-p.sh.log' for reading: No such file or directory
+/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/probes/pool_suites.sh: line 8: /home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/pool-suites/test-headless-pool-worktree.sh.log: No such file or directory
+tail: cannot open '/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/pool-suites/test-headless-pool-worktree.sh.log' for reading: No such file or directory
+/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/probes/pool_suites.sh: line 8: /home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/pool-suites/test-headless-pool.sh.log: No such file or directory
+tail: cannot open '/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/pool-suites/test-headless-pool.sh.log' for reading: No such file or directory
+execution thyrox-worker-test-murdrdi9-19723 kind=test task=TASK-THYROX-0773 exit=1
+__BG_EXIT__=1
