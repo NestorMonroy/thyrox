@@ -33,6 +33,7 @@ export const VALIDATION_OUTPUT_DIR = 'validation'
 
 const PERPLEXITY_PATTERN = /Final estimate: PPL = ([0-9.]+)/
 const TOKENS_PER_SECOND_PATTERN = /speed:\s*([0-9.]+)\s*t\/s/
+const EMBEDDING_PROMPT = 'search_document: def fibonacci(n):'
 
 export class GgufValidationError extends Error {
   constructor(reason: string) {
@@ -45,6 +46,12 @@ export interface ArtifactValidationFacts {
   readonly perplexity: number
   readonly tokensPerSecond: number
   readonly loaded: boolean
+}
+
+/** Lo que valida un modelo de embeddings: carga y produce un vector del ancho que declara. */
+export interface EmbeddingValidationFacts {
+  readonly loaded: boolean
+  readonly embeddingDimensions: number
 }
 
 export interface GgufValidationInput {
@@ -60,7 +67,7 @@ export interface GgufValidation {
   readonly architecture: string
   readonly bytes: number
   readonly sha256: string
-  readonly validation: ArtifactValidationFacts
+  readonly validation: ArtifactValidationFacts | EmbeddingValidationFacts
 }
 
 export function evalCorpusPath(scratchDir: string): string {
@@ -93,6 +100,14 @@ export async function declaredCapabilitiesOf(path: string): Promise<readonly Mod
 export async function validateGgufArtifact(input: GgufValidationInput): Promise<GgufValidation> {
   const architecture = await readGgufFacts(input.path, input.expectedFileType)
   const model = labPathOf(input.path, input.scratchDir)
+  if ((await declaredCapabilitiesOf(input.path)).includes('embeddings')) {
+    return {
+      architecture,
+      bytes: (await stat(input.path)).size,
+      sha256: await sha256OfFile(input.path),
+      validation: await validateEmbedding(input, model, architecture),
+    }
+  }
   const inference = await runCaptured(input, 'llama-simple', ['-m', model, '-n', INFERENCE_TOKENS, INFERENCE_PROMPT])
   if (inference.stdout.trim().length === 0) throw new GgufValidationError('llama-simple no generó texto')
   const perplexity = await runCaptured(input, 'llama-perplexity', ['-m', model,
@@ -107,6 +122,25 @@ export async function validateGgufArtifact(input: GgufValidationInput): Promise<
       perplexity: parseNumber(PERPLEXITY_PATTERN, combined(perplexity), 'perplejidad final'),
     },
   }
+}
+
+/**
+ * Pide un vector con `llama-embedding` y exige el ancho que el GGUF declara en
+ * `<arquitectura>.embedding_length`: un ancho distinto es un artefacto que no
+ * produce lo que dice, y nunca se recorta ni se rellena.
+ */
+async function validateEmbedding(input: GgufValidationInput, model: string, architecture: string): Promise<EmbeddingValidationFacts> {
+  const declared = Number((await readGgufMetadata(input.path)).metadata[`${architecture}.embedding_length`])
+  if (!Number.isSafeInteger(declared) || declared <= 0) throw new GgufValidationError(`el GGUF no declara ${architecture}.embedding_length`)
+  const output = await runCaptured(input, 'llama-embedding', ['-m', model, '-p', EMBEDDING_PROMPT, '--embd-output-format', 'json'])
+  let produced: number
+  try {
+    produced = (JSON.parse(output.stdout) as { data: { embedding: unknown[] }[] }).data[0]!.embedding.length
+  } catch {
+    throw new GgufValidationError('llama-embedding no devolvió un vector legible')
+  }
+  if (produced !== declared) throw new GgufValidationError(`llama-embedding devolvió ${produced} dimensiones; el GGUF declara ${declared}`)
+  return { loaded: true, embeddingDimensions: produced }
 }
 
 function requireFileType(header: GgufHeader, expected: number): void {
