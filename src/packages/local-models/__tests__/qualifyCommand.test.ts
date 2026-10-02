@@ -100,7 +100,10 @@ function contextFor(): CommandContext {
 }
 
 async function coordinatorWith(refusal?: string): Promise<FakeCoordinator> {
-  ollama = startFakeOllama({ chat: prompt => CORRECT_TOOL_CALLING_REPLIES[prompt] ?? { content: '' } })
+  ollama = startFakeOllama({
+    chat: prompt => CORRECT_TOOL_CALLING_REPLIES[prompt] ?? { content: '' },
+    embed: text => text.includes('cancel') ? [1, 0.1] : [0.1, 1],
+  })
   const coordinator = new FakeCoordinator(ollama.baseUrl, refusal)
   server = await startModelCoordinatorServer(coordinator, { socketPath: modelCoordinatorSocketPath(contextFor().env) })
   return coordinator
@@ -170,6 +173,34 @@ describe('runQualifyCommand --suite: la cualificación de tarea de un consumidor
     const coordinator = await coordinatorWith()
     expect(await runQualifyCommand([MODEL, '--suite', join(directory, 'no-existe.json')], contextFor())).toBe(EXIT_REFUSED)
     expect(stderr.join('\n')).toContain('no-existe.json')
+    expect(coordinator.admitted).toHaveLength(0)
+  })
+})
+
+describe('runQualifyCommand --embedding-suite: la cualificación de embeddings', () => {
+  function embeddingSuiteFile(): string {
+    const path = join(directory, 'embedding-suite.json')
+    writeFileSync(path, JSON.stringify({
+      id: 'embedding-findings@1',
+      cases: [{ id: 'cancel', query: 'cancel a job', relevant: 'cancel the running job', distractors: ['bake bread'] }],
+    }))
+    return path
+  }
+
+  test('embebe cada caso por la unidad del ticket y escribe una cualificación de embeddings', async () => {
+    const coordinator = await coordinatorWith()
+    expect(await runQualifyCommand([MODEL, '--embedding-suite', embeddingSuiteFile()], contextFor())).toBe(EXIT_OK)
+    expect((ollama?.requests ?? []).filter(request => request.path === '/api/embed')).toHaveLength(1)
+    expect(chats()).toHaveLength(0)
+    expect(coordinator.finished).toEqual(['admission-1'])
+    const written = JSON.stringify(JSON.parse(readFileSync(join(directory, 'qualifications.json'), 'utf8')))
+    expect(written).toContain('"kind":"embedding"')
+    expect(stdout.join('\n')).toContain('embeddings embedding-findings@1')
+  })
+
+  test('--suite y --embedding-suite juntas se rehúsan antes de pedir admisión', async () => {
+    const coordinator = await coordinatorWith()
+    expect(await runQualifyCommand([MODEL, '--suite', embeddingSuiteFile(), '--embedding-suite', embeddingSuiteFile()], contextFor())).toBe(EXIT_REFUSED)
     expect(coordinator.admitted).toHaveLength(0)
   })
 })

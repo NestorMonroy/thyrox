@@ -28,7 +28,8 @@ import type { AdmissionTicket, CoordinatorAdmission } from '@thyrox/model-schedu
 import type { CommandContext } from './catalogCommand.js'
 import { EXIT_NOT_APPROVED, EXIT_OK, EXIT_REFUSED } from './commandOutput.js'
 import { appendQualification } from './qualificationStore.js'
-import { runQualification, runTaskQualification, type MeasurementSettings, type QualificationRun } from './qualifyModel.js'
+import { loadEmbeddingSuite } from './embeddingSuite.js'
+import { runEmbeddingQualification, runQualification, runTaskQualification, type MeasurementSettings, type QualificationRun } from './qualifyModel.js'
 import { loadTaskSuite } from './taskSuite.js'
 import { TOOL_CALLING_SUITE_PATH, loadSuite } from './toolCallingSuite.js'
 
@@ -37,11 +38,12 @@ const QUALIFY_CLIENT = 'local-models-qualify'
 /** Contexto de servicio de la medición si no se declara; el coordinador lo acota al máximo del modelo. */
 export const DEFAULT_QUALIFICATION_CONTEXT_TOKENS = 8192
 
-export const QUALIFY_USAGE = 'uso: local-models-qualify <nombre-contractual> [--context N] [--isolated] [--suite SUITE.json]'
+export const QUALIFY_USAGE = 'uso: local-models-qualify <nombre-contractual> [--context N] [--isolated] [--suite SUITE.json | --embedding-suite SUITE.json]'
 
 const CONTEXT_FLAG = '--context'
 const ISOLATED_FLAG = '--isolated'
 const SUITE_FLAG = '--suite'
+const EMBEDDING_SUITE_FLAG = '--embedding-suite'
 
 class QualifyRefusal extends Error {}
 
@@ -49,8 +51,10 @@ interface QualifyArguments {
   readonly model: string
   readonly measurementCondition: MeasurementCondition
   readonly contextTokens: number | undefined
-  /** La suite de tarea del consumidor; sin ella, la de protocolo. */
+  /** La suite de tarea del consumidor; sin ella ni la de embeddings, la de protocolo. */
   readonly suitePath: string | undefined
+  /** La suite de recuperación de un modelo de embeddings. */
+  readonly embeddingSuitePath: string | undefined
 }
 
 /** La medición elegida, ya con su suite leída: sólo falta el ticket. */
@@ -69,7 +73,7 @@ export async function runQualifyCommand(argv: readonly string[], context: Comman
 async function qualify(args: QualifyArguments, context: CommandContext): Promise<number> {
   const home = localModelHome(context.env, context.thyroxRoot)
   const contextTokens = args.contextTokens ?? DEFAULT_QUALIFICATION_CONTEXT_TOKENS
-  const plan = await qualificationPlan(args.suitePath)
+  const plan = await qualificationPlan(args)
   const client = await ModelCoordinatorClient.connect(modelCoordinatorSocketPath(context.env))
   try {
     const ticket = admittedTicketOf(await client.admit({ requestId: randomUUID(), client: QUALIFY_CLIENT, model: args.model, contextLength: contextTokens }))
@@ -89,7 +93,11 @@ function admittedTicketOf(admission: CoordinatorAdmission): AdmissionTicket {
   throw new Error(`el coordinador ${admission.status === 'refused' ? 'rehusó' : 'falló'} la admisión en ${admission.stage}: ${admission.reason}`)
 }
 
-async function qualificationPlan(suitePath: string | undefined): Promise<QualificationPlan> {
+async function qualificationPlan({ suitePath, embeddingSuitePath }: QualifyArguments): Promise<QualificationPlan> {
+  if (embeddingSuitePath !== undefined) {
+    const suite = await loadEmbeddingSuite(embeddingSuitePath)
+    return settings => runEmbeddingQualification({ ...settings, suite })
+  }
   if (suitePath === undefined) {
     const suite = await loadSuite(TOOL_CALLING_SUITE_PATH)
     return settings => runQualification({ ...settings, suite })
@@ -110,23 +118,29 @@ async function qualifyAdmitted(ticket: AdmissionTicket, plan: QualificationPlan,
 
 /** Qué cualifica la medición, para la línea del veredicto. */
 function scopeOf(qualification: QualificationRun['qualification']): string {
-  return qualification.kind === 'task' ? `tarea ${qualification.taskClass}` : 'protocolo'
+  if (qualification.kind === 'task') return `tarea ${qualification.taskClass}`
+  return qualification.kind === 'embedding' ? 'embeddings' : 'protocolo'
 }
 
 function parseArguments(argv: readonly string[]): QualifyArguments {
   const positional: string[] = []
   let contextTokens: number | undefined
   let suitePath: string | undefined
+  let embeddingSuitePath: string | undefined
   let isolated = false
   for (let index = 0; index < argv.length; index++) {
     const argument = argv[index]
     if (argument === ISOLATED_FLAG) isolated = true
     else if (argument === CONTEXT_FLAG) contextTokens = positiveInteger(argv[++index])
     else if (argument === SUITE_FLAG) suitePath = requiredValue(SUITE_FLAG, argv[++index])
+    else if (argument === EMBEDDING_SUITE_FLAG) embeddingSuitePath = requiredValue(EMBEDDING_SUITE_FLAG, argv[++index])
     else positional.push(argument ?? '')
   }
   if (positional.length !== 1) throw new QualifyRefusal('se espera exactamente el nombre contractual')
-  return { model: positional[0] ?? '', measurementCondition: isolated ? 'isolated' : 'contended', contextTokens, suitePath }
+  if (suitePath !== undefined && embeddingSuitePath !== undefined) {
+    throw new QualifyRefusal(`${SUITE_FLAG} y ${EMBEDDING_SUITE_FLAG} miden capacidades distintas: una por invocación`)
+  }
+  return { model: positional[0] ?? '', measurementCondition: isolated ? 'isolated' : 'contended', contextTokens, suitePath, embeddingSuitePath }
 }
 
 function requiredValue(flag: string, value: string | undefined): string {

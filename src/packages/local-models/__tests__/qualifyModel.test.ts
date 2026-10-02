@@ -8,7 +8,8 @@ import { resolvedArtifact } from '@thyrox/model-artifacts/testing/resolvedArtifa
 import type { AdmissionTicket } from '@thyrox/model-scheduling/hostCoordinator.ts'
 
 import { OllamaRequestError } from '../ollamaApi.js'
-import { ContextBeyondGrantError, runQualification, runTaskQualification } from '../qualifyModel.js'
+import { ContextBeyondGrantError, UnmeasuredSpeedError, runEmbeddingQualification, runQualification, runTaskQualification } from '../qualifyModel.js'
+import type { EmbeddingSuite } from '../embeddingSuite.js'
 import { loadTaskSuite, type TaskSuite } from '../taskSuite.js'
 import { TOOL_CALLING_SUITE_PATH, loadSuite } from '../toolCallingSuite.js'
 import { CORRECT_TOOL_CALLING_REPLIES, startFakeOllama, type FakeChatReply, type FakeOllama } from '../testing/fakeOllama.js'
@@ -176,5 +177,42 @@ describe('runTaskQualification — la suite de tarea de un consumidor (TASK-THYR
   test('pedir más contexto que el concedido se rehúsa sin tocar el runtime', async () => {
     await expect(qualifyTask(translated, GRANTED_CONTEXT + 1)).rejects.toThrow(ContextBeyondGrantError)
     expect(server?.requests ?? []).toHaveLength(0)
+  })
+})
+
+describe('runEmbeddingQualification', () => {
+  const SUITE: EmbeddingSuite = {
+    id: 'embedding-findings@1',
+    cases: [{ id: 'cancel', query: 'cancel a job', relevant: 'cancel the running job', distractors: ['bake bread', 'paint a wall'] }],
+  }
+  /** Un embedder de juguete: el texto que menciona «cancel» apunta a un eje, el resto al otro. */
+  const topical = (text: string): number[] => text.includes('cancel') ? [1, 0.1] : [0.1, 1]
+  const inverted = (text: string): number[] => text === 'cancel a job' ? [1, 0] : text.includes('cancel') ? [0, 1] : [1, 0.05]
+
+  async function qualifyEmbedding(embed: (text: string) => readonly number[], measurement?: { promptEvalCount: number, totalDurationNs: number }) {
+    server = startFakeOllama({ embed, ...(measurement ? { embedMeasurement: measurement } : {}) })
+    return runEmbeddingQualification({ ticket: ticketTo(server.baseUrl), suite: SUITE, measurementCondition: 'isolated', contextTokens: CONTEXT_TOKENS, now: () => NOW })
+  }
+
+  test('passes when every query retrieves its relevant document, as an embedding qualification', async () => {
+    const run = await qualifyEmbedding(topical)
+    expect(run.qualification).toMatchObject({ model: MODEL, kind: 'embedding', suite: 'embedding-findings@1', casesPassed: 1, casesTotal: 1, passed: true })
+    expect(run.qualification.taskClass).toBeUndefined()
+    expect(server!.requests[0]).toMatchObject({ path: '/api/embed', body: { model: MODEL, input: ['cancel a job', 'cancel the running job', 'bake bread', 'paint a wall'] } })
+  })
+
+  test('fails the case when a distractor is nearer than the relevant document', async () => {
+    const run = await qualifyEmbedding(inverted)
+    expect(run.qualification.passed).toBe(false)
+    expect(run.outcomes[0]).toMatchObject({ caseId: 'cancel', passed: false })
+  })
+
+  test('speed is input tokens over total duration, as Ollama declares them', async () => {
+    const run = await qualifyEmbedding(topical, { promptEvalCount: 40, totalDurationNs: 2_000_000_000 })
+    expect(run.qualification.tokensPerSecond).toBe(20)
+  })
+
+  test('without a declared duration there is no qualification', async () => {
+    await expect(qualifyEmbedding(topical, { promptEvalCount: 40, totalDurationNs: 0 })).rejects.toThrow(UnmeasuredSpeedError)
   })
 })

@@ -23,6 +23,10 @@ export interface FakeOllamaScript {
   readonly copyStatus?: number
   /** Respuesta del chat según el contenido del primer mensaje del usuario. */
   readonly chat?: (firstUserContent: string, body: Record<string, unknown>) => FakeChatReply
+  /** Vector de `/api/embed` para cada texto de `input`; sin declarar, la ruta no existe. */
+  readonly embed?: (text: string) => readonly number[]
+  /** Lo que `/api/embed` declara medir; por defecto, una cifra positiva. */
+  readonly embedMeasurement?: { readonly promptEvalCount: number, readonly totalDurationNs: number }
 }
 
 export interface FakeOllama {
@@ -57,11 +61,23 @@ function chatResponse(reply: FakeChatReply): Response {
   }, reply.status ?? HTTP_OK)
 }
 
+function embedResponse(script: FakeOllamaScript, body: Record<string, unknown>): Response {
+  const input = (body.input ?? []) as string[]
+  const measurement = script.embedMeasurement ?? { promptEvalCount: DEFAULT_EVAL_COUNT * input.length, totalDurationNs: DEFAULT_EVAL_DURATION_NS }
+  return json({
+    model: body.model,
+    embeddings: input.map(text => script.embed!(text)),
+    prompt_eval_count: measurement.promptEvalCount,
+    total_duration: measurement.totalDurationNs,
+  })
+}
+
 function route(script: FakeOllamaScript, path: string, body: Record<string, unknown>): Response {
   if (path === '/api/tags') return json({ models: script.tags ?? [] })
   if (path === '/api/show') return script.show ? json(script.show) : json({ error: 'model not found' }, HTTP_NOT_FOUND)
   if (path === '/api/copy') return new Response(null, { status: script.copyStatus ?? HTTP_OK })
   if (path === '/api/chat' && script.chat) return chatResponse(script.chat(firstUserContent(body), body))
+  if (path === '/api/embed' && script.embed) return embedResponse(script, body)
   return json({ error: `ruta no declarada: ${path}` }, HTTP_NOT_FOUND)
 }
 

@@ -18,6 +18,8 @@ import type { MeasurementCondition, ModelQualification } from '@thyrox/model-art
 import type { AdmissionTicket } from '@thyrox/model-scheduling/hostCoordinator.ts'
 
 import { admittedChat } from './admittedChat.js'
+import { admittedEmbed, type EmbedReply } from './admittedEmbed.js'
+import { scoreEmbeddingCase, type EmbeddingCase, type EmbeddingSuite } from './embeddingSuite.js'
 import type { ChatReply } from './ollamaApi.js'
 import { scoreTaskReply, type TaskCase, type TaskSuite } from './taskSuite.js'
 import { scoreReply, type Suite, type SuiteCase } from './toolCallingSuite.js'
@@ -43,6 +45,10 @@ export interface QualificationRequest extends MeasurementSettings {
 
 export interface TaskQualificationRequest extends MeasurementSettings {
   readonly suite: TaskSuite
+}
+
+export interface EmbeddingQualificationRequest extends MeasurementSettings {
+  readonly suite: EmbeddingSuite
 }
 
 export interface CaseOutcome {
@@ -92,28 +98,62 @@ export async function runTaskQualification(request: TaskQualificationRequest): P
   return measure(request, cases, { kind: 'task', taskClass: request.suite.taskClass, suite: request.suite.id })
 }
 
+/**
+ * La suite de embeddings: cada caso se embebe en una sola petición
+ * (consulta, relevante, distractores) y se puntúa por coseno. La velocidad es
+ * la de entrada —`prompt_eval_count` entre `total_duration`—, porque un
+ * embedding no genera tokens.
+ */
+export async function runEmbeddingQualification(request: EmbeddingQualificationRequest): Promise<QualificationRun> {
+  requireContextWithinGrant(request)
+  const model = request.ticket.grant.artifact.modelId
+  const replies: EmbedReply[] = []
+  for (const embeddingCase of request.suite.cases) replies.push(await admittedEmbed(request.ticket, textsOf(embeddingCase)))
+  const outcomes = request.suite.cases.map((embeddingCase, index) => embeddingOutcome(embeddingCase, replies[index] as EmbedReply))
+  const speed = ratePerSecond(model, replies.map(reply => ({ tokens: reply.promptEvalCount, nanoseconds: reply.totalDurationNs })))
+  return qualificationRun(request, { kind: 'embedding', suite: request.suite.id }, outcomes, speed)
+}
+
 async function measure(settings: MeasurementSettings, cases: readonly MeasuredCase[], identity: QualificationIdentity): Promise<QualificationRun> {
-  const granted = settings.ticket.grant.contextLength
-  if (settings.contextTokens > granted) throw new ContextBeyondGrantError(settings.contextTokens, granted)
+  requireContextWithinGrant(settings)
   const model = settings.ticket.grant.artifact.modelId
   const replies: ChatReply[] = []
   for (const measuredCase of cases) replies.push(await admittedChat(settings.ticket, chatBody(settings, measuredCase)))
   const outcomes = cases.map((measuredCase, index) => measuredCase.outcome(replies[index] as ChatReply))
+  return qualificationRun(settings, identity, outcomes, tokensPerSecond(model, replies))
+}
+
+function requireContextWithinGrant(settings: MeasurementSettings): void {
+  const granted = settings.ticket.grant.contextLength
+  if (settings.contextTokens > granted) throw new ContextBeyondGrantError(settings.contextTokens, granted)
+}
+
+function qualificationRun(settings: MeasurementSettings, identity: QualificationIdentity, outcomes: readonly CaseOutcome[], speed: number): QualificationRun {
   const casesPassed = outcomes.filter(outcome => outcome.passed).length
   return {
     outcomes,
     qualification: {
-      model,
+      model: settings.ticket.grant.artifact.modelId,
       ...identity,
       casesPassed,
       casesTotal: outcomes.length,
       passed: casesPassed === outcomes.length,
       contextTokens: settings.contextTokens,
-      tokensPerSecond: tokensPerSecond(model, replies),
+      tokensPerSecond: speed,
       measurementCondition: settings.measurementCondition,
       measuredAt: settings.now().toISOString(),
     },
   }
+}
+
+function textsOf(embeddingCase: EmbeddingCase): string[] {
+  return [embeddingCase.query, embeddingCase.relevant, ...embeddingCase.distractors]
+}
+
+function embeddingOutcome(embeddingCase: EmbeddingCase, reply: EmbedReply): CaseOutcome {
+  const [query, relevant, ...distractors] = reply.embeddings
+  const score = scoreEmbeddingCase({ query: query ?? [], relevant: relevant ?? [], distractors })
+  return { caseId: embeddingCase.id, passed: score.passed, observed: `margen ${score.margin.toFixed(4)}` }
 }
 
 function protocolCase(suiteCase: SuiteCase): MeasuredCase {
@@ -147,8 +187,12 @@ function chatBody(settings: MeasurementSettings, measuredCase: MeasuredCase): Re
 }
 
 function tokensPerSecond(model: string, replies: readonly ChatReply[]): number {
-  const tokens = replies.reduce((sum, reply) => sum + reply.evalCount, 0)
-  const nanoseconds = replies.reduce((sum, reply) => sum + reply.evalDurationNs, 0)
+  return ratePerSecond(model, replies.map(reply => ({ tokens: reply.evalCount, nanoseconds: reply.evalDurationNs })))
+}
+
+function ratePerSecond(model: string, samples: readonly { readonly tokens: number, readonly nanoseconds: number }[]): number {
+  const tokens = samples.reduce((sum, sample) => sum + sample.tokens, 0)
+  const nanoseconds = samples.reduce((sum, sample) => sum + sample.nanoseconds, 0)
   if (!(nanoseconds > 0) || !(tokens > 0)) throw new UnmeasuredSpeedError(model)
   return tokens / (nanoseconds / NANOSECONDS_PER_SECOND)
 }
