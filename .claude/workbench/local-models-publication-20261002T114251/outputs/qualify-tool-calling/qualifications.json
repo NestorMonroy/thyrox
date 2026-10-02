@@ -1,0 +1,16 @@
+{
+  "qualifications": [
+    {
+      "model": "thyrox-qwen--qwen2.5-coder-1.5b-instruct:q4_k_m-hf-2e1fd397ee46",
+      "kind": "protocol",
+      "suite": "tool-calling@1",
+      "casesPassed": 1,
+      "casesTotal": 6,
+      "passed": false,
+      "contextTokens": 8192,
+      "tokensPerSecond": 8.2042348382157,
+      "measurementCondition": "contended",
+      "measuredAt": "2026-10-02T12:52:05.467Z"
+    }
+  ]
+}
