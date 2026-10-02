@@ -32,15 +32,20 @@ function gitBlobSha1(content: string): string {
   return createHash('sha1').update(`blob ${Buffer.byteLength(content)}\0`).update(content).digest('hex')
 }
 
-function fakeHub(publishedSha256 = GGUF_SHA256) {
+const CORPUS_SIBLINGS = {
+  'README.md': { rfilename: 'README.md', size: README.length, blobId: gitBlobSha1(README) },
+  LICENSE: { rfilename: 'LICENSE', size: LICENSE.length, blobId: gitBlobSha1(LICENSE) },
+}
+
+/** `corpusFiles` declara qué archivos del corpus publica la fuente; por defecto, los dos. */
+function fakeHub(publishedSha256 = GGUF_SHA256, corpusFiles: readonly (keyof typeof CORPUS_SIBLINGS)[] = ['README.md', 'LICENSE']) {
   const downloads: string[] = []
   const files: Record<string, Uint8Array | string> = { [FILE]: GGUF, 'README.md': README, LICENSE }
   const fetcher = async (url: string): Promise<Response> => {
     if (url.includes('/api/models/')) {
       return Response.json({ sha: REVISION, cardData: { license: 'apache-2.0' }, siblings: [
         { rfilename: FILE, size: GGUF.length, lfs: { sha256: publishedSha256 } },
-        { rfilename: 'README.md', size: README.length, blobId: gitBlobSha1(README) },
-        { rfilename: 'LICENSE', size: LICENSE.length, blobId: gitBlobSha1(LICENSE) },
+        ...corpusFiles.map(name => CORPUS_SIBLINGS[name]),
         { rfilename: 'other-q8_0.gguf', size: 999, lfs: { sha256: 'd'.repeat(64) } },
       ] })
     }
@@ -99,6 +104,20 @@ describe('external artifact import', () => {
     })
     expect(hub.downloads.sort()).toEqual([FILE, 'LICENSE', 'README.md'].sort())
     expect(JSON.parse(readFileSync(request.runDir.replace(/run$/, 'catalog.json'), 'utf8')).entries).toHaveLength(1)
+  })
+
+  test('builds the validation corpus from the corpus files the source publishes', async () => {
+    const hub = fakeHub(GGUF_SHA256, ['README.md'])
+    const outcome = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: fakeLab(() => request.scratchDir).runInLab }))
+    expect(outcome.kind).toBe('completed')
+    expect(hub.downloads.sort()).toEqual([FILE, 'README.md'].sort())
+  })
+
+  test('refuses before downloading when the source publishes no corpus file', async () => {
+    const hub = fakeHub(GGUF_SHA256, [])
+    const outcome = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: fakeLab(() => request.scratchDir).runInLab }))
+    expect(outcome).toMatchObject({ kind: 'refused', reason: expect.stringContaining('README.md') })
+    expect(hub.downloads).toHaveLength(0)
   })
 
   test('refuses before downloading when the published sha256 differs from the pinned one', async () => {

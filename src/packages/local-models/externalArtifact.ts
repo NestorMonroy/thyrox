@@ -177,6 +177,9 @@ function artifactSubset(source: SourceSpec, parts: readonly ArtifactPart[]): Sou
 async function preflight(request: ExternalArtifactRequest, subset: SourceSpec, deps: ExternalArtifactDeps): Promise<string | undefined> {
   const split = splitRefusal(request.parts)
   if (split !== undefined) return split
+  if (publishedCorpusFiles(subset).length === 0) {
+    return `${request.repository}@${request.revision} no publica ningún archivo del corpus de validación (${EVAL_CORPUS_FILES.join(', ')})`
+  }
   for (const part of request.parts) {
     const artifact = subset.files.find(file => file.path === part.file)
     if (artifact === undefined) return `${request.repository}@${request.revision} no publica ${part.file}`
@@ -228,7 +231,7 @@ async function acquire(request: ExternalArtifactRequest, subset: SourceSpec, dep
   const path = join(request.scratchDir, artifactFileOf(request.parts))
   await downloadSource(deps.fetcher, subset, request.scratchDir)
   state.acquiredAt ??= deps.now().toISOString()
-  await writeCorpus(request.scratchDir)
+  await writeCorpus(request.scratchDir, publishedCorpusFiles(subset))
   if (isSharded(request.parts)) await assemble(request, path, state, deps)
   const identity = await evaluationIdentityOf(request, deps)
   if (!(await isValidated(state, identity, path, subset, request))) {
@@ -296,8 +299,18 @@ async function evaluationIdentityOf(request: ExternalArtifactRequest, deps: Exte
   }
 }
 
-async function writeCorpus(scratchDir: string): Promise<void> {
-  const parts = await Promise.all(EVAL_CORPUS_FILES.map(name => readFile(join(scratchDir, name), 'utf8')))
+/**
+ * Los archivos del corpus que la fuente publica: no toda fuente trae `LICENSE`
+ * (nomic-embed-text-v1.5-GGUF declara su licencia en la metadata del modelo y
+ * sólo publica `README.md`), y el corpus se arma con lo que hay.
+ */
+function publishedCorpusFiles(subset: SourceSpec): string[] {
+  const published = new Set(subset.files.map(file => file.path))
+  return EVAL_CORPUS_FILES.filter(name => published.has(name))
+}
+
+async function writeCorpus(scratchDir: string, corpusFiles: readonly string[]): Promise<void> {
+  const parts = await Promise.all(corpusFiles.map(name => readFile(join(scratchDir, name), 'utf8')))
   await writeFile(evalCorpusPath(scratchDir), parts.join('\n'))
 }
 
