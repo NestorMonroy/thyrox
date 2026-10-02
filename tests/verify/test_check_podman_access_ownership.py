@@ -73,6 +73,16 @@ check("mensajes, comentarios, el dueño y las pruebas no cuentan", 0, gate(quiet
 consumer = tree({"src/packages/consumer/observe.ts": "await podman.run(['ps', '--all'])\n"})
 check("un consumidor TS con .run(['ps'…]) falla", 1, gate(consumer, "--pending", "/dev/null").returncode)
 
+print("== ceguera cerrada: el consumidor ejecuta argv del dueño con su executor ==")
+borrowed = tree({"src/packages/consumer/unit.ts": "await this.options.podman.run(removeWorkerContainerArgv(name))\n"})
+ran = gate(borrowed, "--pending", "/dev/null")
+check("podman.run(<argv del dueño>) desde un consumidor falla", 1, ran.returncode)
+check("y lo nombra podman-executor-run", True, "podman-executor-run" in ran.stdout)
+indirect = tree({"src/packages/consumer/bin/publish.ts": "const value = await podman.run(args)\n"})
+check("podman.run(args) con el verbo en una variable falla", 1, gate(indirect, "--pending", "/dev/null").returncode)
+asked = tree({"src/packages/consumer/unit.ts": "await removeExecutionContainer(this.options.podman, name)\n"})
+check("pedir la retirada al dueño pasa", 0, gate(asked, "--pending", "/dev/null").returncode)
+
 print("== lista cerrada: la entrada vale mientras su tarea esté abierta ==")
 listed = tree({"src/lib/legacy.sh": DIRECT_SHELL})
 store = listed / "store.sqlite3"

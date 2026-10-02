@@ -1,0 +1,10 @@
+run1 exit=1
+ 108 pass
+ 1 fail
+run2 exit=1
+ 108 pass
+ 1 fail
+run3 exit=1
+ 108 pass
+ 1 fail
+execution thyrox-worker-test-muqeu5cz-13436 kind=test task=TASK-THYROX-0758 exit=0

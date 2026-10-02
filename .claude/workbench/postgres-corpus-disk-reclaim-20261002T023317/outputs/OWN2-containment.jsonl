@@ -1,0 +1,4 @@
+{"gate": "ManagedExecutionContainmentGate", "step": "OWN2-suites", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "OWN2-materializer", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "RT-ollama-ps", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "RT-infra-idle", "passed": true, "executions": 1, "reasons": []}

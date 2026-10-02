@@ -23,6 +23,7 @@ import { createIndexedArtifactResolver, loadArtifactLocationIndex } from '@thyro
 import { loadModelCatalog } from '@thyrox/model-artifacts/modelCatalog.ts'
 import { productionDeclarations, thyroxRoot } from '@thyrox/paths/reach.ts'
 import { createPodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
+import { inspectImage } from '@thyrox/podman-execution/podmanObservation.ts'
 
 import { ensureModel, type EnsureOutcome } from '../ensureModel.js'
 import { infrastructureEnsureCommand, OLLAMA_CONTAINER, requireInfrastructure } from '../infrastructureReadiness.js'
@@ -62,9 +63,8 @@ function registeredHome(key: string): string {
 }
 
 const imageRef = declared(JOB_IMAGE_ENV) || DEFAULT_JOB_IMAGE
-const inspected = await podman.run(['image', 'inspect', imageRef, '--format', '{{.Id}}'])
-const image = inspected.stdout.trim()
-if (inspected.exitCode !== 0 || !image) refuse(`la imagen de trabajo ${imageRef} no está local (no se descarga implícitamente): ${inspected.stderr.trim()}`)
+const image = (await inspectImage(podman, imageRef))?.id
+if (!image) refuse(`la imagen de trabajo ${imageRef} no está local (no se descarga implícitamente)`)
 
 const egress = (() => {
   try {

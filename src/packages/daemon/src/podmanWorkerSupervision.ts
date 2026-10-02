@@ -21,6 +21,7 @@
 import { join } from 'node:path'
 
 import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+import { probePodman } from '@thyrox/podman-execution/podmanObservation.ts'
 
 import {
   PodmanWorkerManager,
@@ -36,9 +37,6 @@ import {
 
 /** Etiqueta de las líneas de esta supervisión en el log del supervisor. */
 export const PODMAN_LOG_LABEL = 'podman'
-
-/** `--version` no contacta el servicio de Podman: mide sólo que el binario existe y responde. */
-export const PODMAN_PROBE_ARGV: readonly string[] = ['--version']
 
 /** Registro compartido de VRAM, el mismo que usa `headless-pool.sh` cuando se declara. */
 const VRAM_LEDGER_ENV = 'HEADLESS_POOL_VRAM_LEDGER'
@@ -58,7 +56,8 @@ export interface SupervisorLogSink {
   write(label: string, message: string): void
 }
 
-export type PodmanAvailability = { available: true } | { available: false; cause: string }
+/** El sondeo es del dueño de Podman (ADR-007 Regla 4, P3); se reexporta para los consumidores del daemon. */
+export { PODMAN_PROBE_ARGV, probePodman, type PodmanAvailability } from '@thyrox/podman-execution/podmanObservation.ts'
 
 /** El ciclo de vida de los workers una vez arrancado; `shutdown` nunca lanza. */
 export interface WorkerSupervision {
@@ -72,18 +71,6 @@ function errorMessage(error: unknown): string {
 function describeRetirements(retirements: readonly WorkerContainerRetirement[]): string {
   const names = retirements.map(retirement => retirement.name)
   return names.length === 0 ? '0' : `${names.length} (${names.join(', ')})`
-}
-
-/** Sondea el binario de Podman; un rechazo o una salida distinta de 0 es «no disponible» con su causa. */
-export async function probePodman(podman: PodmanExecutor): Promise<PodmanAvailability> {
-  try {
-    const result = await podman.run(PODMAN_PROBE_ARGV)
-    if (result.exitCode === 0) return { available: true }
-    const detail = result.stderr.trim() || 'sin stderr'
-    return { available: false, cause: `podman ${PODMAN_PROBE_ARGV.join(' ')} salió ${result.exitCode}: ${detail}` }
-  } catch (error) {
-    return { available: false, cause: errorMessage(error) }
-  }
 }
 
 class InactiveWorkerSupervision implements WorkerSupervision {

@@ -21,10 +21,10 @@ Salida: 0 sin violaciones (o con ellas, sin ``--strict``); 1 con violaciones y
 ``--strict``; 2 sin poder medir.
 
 *Métrica:* líneas de código productivo con una invocación de Podman por sus
-formas reconocibles (``.run(['<sub>'``, ``podman <sub>``, ``"$PODMAN" <sub>``,
-``["podman", "<sub>"``).
-*Ciega a:* una invocación cuyo subcomando llega en una variable, un alias del
-binario y un proceso que alcance Podman por otro programa.
+formas reconocibles (``.run(['<sub>'``, ``podman.run(`` con cualquier argv,
+``podman <sub>``, ``"$PODMAN" <sub>``, ``["podman", "<sub>"``); una por línea.
+*Ciega a:* un executor de Podman guardado bajo otro nombre que ``podman``, un
+alias del binario y un proceso que alcance Podman por otro programa.
 """
 from __future__ import annotations
 
@@ -49,6 +49,10 @@ SUBCOMMANDS = (r"(attach|build|commit|container|cp|create|diff|events|exec|exist
 SCRIPT_FORMS = (
     ("podman-subcommand", re.compile(r"\.run\(\[\s*['\"`]" + SUBCOMMANDS + r"['\"`]")),
     ("podman-spawn", re.compile(r"spawn(Sync)?\(\s*\[?\s*['\"`]podman['\"`]")),
+    # El executor del dueño ejecutado por el consumidor: el verbo puede llegar
+    # en una variable o salir de un constructor de argv del dueño, y aun así
+    # quien decide la orden es el consumidor.
+    ("podman-executor-run", re.compile(r"\bpodman\.run\(")),
 )
 SHELL_FORMS = (
     ("podman-subcommand", re.compile(r"(\"\$\{?(PODMAN|THYROX_TOOLCHAIN_PODMAN_BIN)\}?\"|\$\{?(PODMAN|THYROX_TOOLCHAIN_PODMAN_BIN)\}?"
@@ -93,6 +97,7 @@ def violations_in(root: Path, includes: list[Path]) -> tuple[list[Violation], in
             for kind, pattern in forms_for(path.suffix):
                 if pattern.search(line):
                     violations.append(Violation(relative, number, kind))
+                    break
     return violations, measured
 
 

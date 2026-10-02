@@ -200,3 +200,51 @@ export async function snapshot(podman: PodmanExecutor): Promise<PodmanSnapshot> 
       uniqueBytes: uniqueFor(image.id) })),
   }
 }
+
+/** Una imagen por su referencia: id inmutable, primer digest y variables de su `Config.Env`. */
+export type ObservedImageReference = { id: string; digest: string; digests: string[]; env: string[] }
+
+/** La imagen con esa referencia, o `null` si no está en el almacén local (nunca la descarga). */
+export async function inspectImage(podman: PodmanExecutor, reference: string): Promise<ObservedImageReference | null> {
+  const result = await podman.run(['image', 'inspect', reference])
+  if (result.exitCode !== 0) {
+    if (/(no such|image not known|failed to find image)/i.test(result.stderr)) return null
+    throw new PodmanObservationError('image inspect', result)
+  }
+  const [document] = parseList('image inspect', result.stdout)
+  if (!document) return null
+  const digests = (document.RepoDigests ?? []) as string[]
+  const env = (((document.Config ?? {}) as Json).Env ?? []) as string[]
+  return { id: asString(document.Id), digest: asString(document.Digest) || (digests[0]?.split('@')[1] ?? ''), digests, env }
+}
+
+/** La orden que creó cada capa de la imagen (`CreatedBy`), de la más nueva a la más vieja. */
+export async function imageHistory(podman: PodmanExecutor, reference: string): Promise<string[]> {
+  return (await read(podman, 'history', ['history', '--no-trunc', '--format', '{{.CreatedBy}}', reference])).split('\n').filter(Boolean)
+}
+
+/**
+ * Los contenedores, vivos y detenidos, que llevan la etiqueta `labelKey`, tal
+ * como los lista Podman (`Names`, `Labels`, `Id`, `Pid`…). Lanza si Podman no
+ * lista: una lista vacía no distinguiría «no hay» de «no se pudo mirar».
+ */
+export async function listLabeledContainers(podman: PodmanExecutor, labelKey: string): Promise<Record<string, unknown>[]> {
+  return parseList('ps', await read(podman, 'ps', ['ps', '--all', '--filter', `label=${labelKey}`, '--format', 'json']))
+}
+
+/** El argv con que se sondea si el binario de Podman responde. */
+export const PODMAN_PROBE_ARGV: readonly string[] = ['--version']
+
+export type PodmanAvailability = { available: true } | { available: false; cause: string }
+
+/** Sondea el binario de Podman; un rechazo o una salida distinta de 0 es «no disponible» con su causa. */
+export async function probePodman(podman: PodmanExecutor): Promise<PodmanAvailability> {
+  try {
+    const result = await podman.run(PODMAN_PROBE_ARGV)
+    if (result.exitCode === 0) return { available: true }
+    const detail = result.stderr.trim() || 'sin stderr'
+    return { available: false, cause: `podman ${PODMAN_PROBE_ARGV.join(' ')} salió ${result.exitCode}: ${detail}` }
+  } catch (error) {
+    return { available: false, cause: error instanceof Error ? error.message : String(error) }
+  }
+}

@@ -1,0 +1,10 @@
+70:(pass) servidor del coordinador > una petición malformada recibe un error y el servidor sigue sirviendo [3.99ms]
+72:(pass) cliente del coordinador > sin coordinador escuchando lo dice con CoordinatorUnavailableError [1.42ms]
+87:# Unhandled error between tests
+94:21 |     throw new Error(
+96:error: thyrox_toolchain_require_redis no resolvió redis-server (exit 2): thyrox_toolchain: falta 'redis-server' (paquete redis-server) y la instalacion es opt-in.
+156:1 tests failed:
+159: 1 fail
+160: 1 error
+161: 297 expect() calls
+execution thyrox-worker-test-muqeub86-13782 kind=test task=TASK-THYROX-0758 exit=0

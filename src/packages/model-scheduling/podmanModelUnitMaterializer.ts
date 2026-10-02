@@ -20,13 +20,14 @@ import type { ArtifactFormat } from '@thyrox/model-artifacts/catalogEntry.ts'
 import type { ModelSource } from '@thyrox/model-artifacts/modelName.ts'
 import { QUANTIZATION_LEVELS, type QuantizationLevel } from '@thyrox/model-artifacts/quantizationLevel.ts'
 import type { ResolvedModelArtifact } from '@thyrox/model-artifacts/resolvedModelArtifact.ts'
-import type { PodmanCommandResult, PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
+import type { PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
 import { ContainerRunError } from '@thyrox/podman-execution/containerRun.ts'
+import { listLabeledContainers } from '@thyrox/podman-execution/podmanObservation.ts'
 import { type ExecutionAuthorization, type ExecutionUnit, materializeExecution } from '@thyrox/podman-execution/executionAuthorization.ts'
 import {
   ownerFromLabels,
   type ContainerOwner,
-  removeWorkerContainerArgv,
+  removeExecutionContainer,
   WORKER_CONTAINER_NAME_PREFIX,
   workerContainerName,
 } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
@@ -104,8 +105,6 @@ const UNIT_ID_PREFIX = 'unit-'
 const LOOPBACK_HOST: WorkerPublishedPort['hostAddress'] = '127.0.0.1'
 const GPU_DEVICE_PREFIX = 'nvidia.com/gpu='
 const DEVICE_SEPARATOR = ','
-/** Lo que Podman escribe en stderr cuando el contenedor a retirar no existe. */
-const NO_SUCH_CONTAINER = /no such container/i
 /** Pid que Podman informa para un contenedor que no corre. */
 const NOT_RUNNING_PID = 0
 const DECIMAL_INTEGER = /^-?\d+$/
@@ -130,14 +129,6 @@ function grantedDevices(grant: ExecutionGrant): readonly string[] {
 
 function isExpired(grant: ExecutionGrant, now: Date): boolean {
   return now.getTime() >= Date.parse(grant.expiresAt)
-}
-
-function podmanDiagnostic(result: PodmanCommandResult): string {
-  return result.stderr.trim() || `exit ${result.exitCode}`
-}
-
-function succeeded(result: PodmanCommandResult): boolean {
-  return result.exitCode === 0
 }
 
 /** Lo que fija el contenedor de una unidad antes de crearlo. */
@@ -287,18 +278,14 @@ export class PodmanModelUnitMaterializer implements ModelUnitMaterializer {
     return this.createUnit(grant, profile)
   }
 
+  /** La retirada la hace el dueño de Podman (ADR-007 Regla 4, P2); aquí sólo se nombra la unidad. */
   async destroy(unitId: string): Promise<'destroyed' | 'absent' | 'failed'> {
-    const result = await this.options.podman.run(removeWorkerContainerArgv(modelUnitContainerName(unitId)))
-    if (succeeded(result)) return 'destroyed'
-    return NO_SUCH_CONTAINER.test(result.stderr) ? 'absent' : 'failed'
+    return removeExecutionContainer(this.options.podman, modelUnitContainerName(unitId))
   }
 
-  /** Lanza si Podman no lista: un vacío no distingue «no hay unidades» de «no se pudo mirar». */
+  /** La lista la observa el dueño (P3) y lanza si Podman no lista: un vacío no distingue «no hay» de «no se pudo mirar». */
   async units(): Promise<readonly ModelExecutionUnit[]> {
-    const result = await this.options.podman.run(['ps', '--all', '--filter', `label=${MODEL_UNIT_LABELS.unit}`, '--format', 'json'])
-    if (!succeeded(result)) throw new Error(`podman ps no listó las unidades de modelo: ${podmanDiagnostic(result)}`)
-    const listed: unknown = JSON.parse(result.stdout.trim() || '[]')
-    if (!Array.isArray(listed)) throw new Error(`podman ps no devolvió una lista: «${result.stdout.trim()}»`)
+    const listed = await listLabeledContainers(this.options.podman, MODEL_UNIT_LABELS.unit)
     return listed.flatMap(container => unitFromContainer(container as ListedContainer) ?? [])
   }
 

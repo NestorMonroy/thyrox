@@ -131,6 +131,7 @@ export function createFakePodmanRegistry(): FakePodmanRegistry {
           const format = args[4] ?? ''
           if (format === '{{json .Config.Env}}') return { ...OK, stdout: fake.env }
           if (image === undefined) return failure(`image not known: ${reference}`)
+          if (format === '') return { ...OK, stdout: JSON.stringify([{ Id: image.id, Digest: image.digest, RepoDigests: [], Config: { Env: JSON.parse(fake.env) } }]) }
           if (format === '{{.Id}}') return { ...OK, stdout: `${image.id}\n` }
           if (format === '{{.Digest}}') return { ...OK, stdout: `${image.digest}\n` }
           if (format === '{{json .Labels}}') return { ...OK, stdout: `${JSON.stringify(image.labels)}\n` }
