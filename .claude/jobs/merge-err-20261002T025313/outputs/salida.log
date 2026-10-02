@@ -1,0 +1,14 @@
+107:# Unhandled error between tests
+111:error: Unexpected end of file
+121:(pass) ContainerRunError ante una colisión de locks > exit 126 con el literal en create: lockCollision y remedio en el mensaje, sin reintento [0.49ms]
+122:(pass) ContainerRunError ante una colisión de locks > exit 126 con el literal en start: lockCollision y remedio en el mensaje, sin reintento [0.09ms]
+123:(pass) ContainerRunError ante una colisión de locks > exit 126 con otro stderr: no es colisión y el mensaje no lleva remedio [0.20ms]
+181:(pass) ensureResource — convergencia > start que falla por otra causa: failed, sin recrear [0.70ms]
+182:(pass) ensureResource — convergencia > el estado stale persiste tras recrear: failed, sin bucle [0.76ms]
+184:(pass) ensureResource — ownership > un contenedor con ese nombre y otro dueño es una colisión: failed, sin tocarlo [0.29ms]
+187:(pass) ensureResource — salud y fallos > running no es ready: sin salud, failed con su razón y created/started reportados aparte [0.39ms]
+227:(pass) runJobAndCollect — exportar antes de limpiar > si la ejecución falla, igual retira lo creado y propaga el error [0.16ms]
+230:(pass) runJobWithOutput > removes the container even when a stage fails [0.30ms]
+251:1 tests failed:
+execution thyrox-worker-test-muqdbyqd-4012 kind=test task=TASK-THYROX-0756 exit=0
+__BG_EXIT__=0

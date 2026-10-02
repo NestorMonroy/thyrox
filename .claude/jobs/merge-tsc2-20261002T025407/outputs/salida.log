@@ -1,0 +1,4 @@
+errores: 1
+1:__tests__/executionCommand.test.ts(138,11): error TS2741: Property 'isProcessAlive' is missing in type '{ env: Record<string, string>; readStdin: () => Promise<string>; pid: number; now: () => numbe
+execution thyrox-worker-test-muqdd407-5296 kind=test task=TASK-THYROX-0756 exit=0
+__BG_EXIT__=0

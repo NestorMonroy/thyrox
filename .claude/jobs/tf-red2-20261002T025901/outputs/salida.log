@@ -1,0 +1,7 @@
+ModuleNotFoundError: No module named 'transformers_runtime_server'
+# Unhandled error between tests
+error: Cannot find module '../snapshotManifest.ts' from '/home/user/thyrox/src/packages/model-artifacts/__tests__/snapshotManifest.test.ts'
+ 0 pass
+ 1 fail
+execution thyrox-worker-test-muqdjf7t-7550 kind=test task=TASK-THYROX-0761 exit=0
+__BG_EXIT__=0

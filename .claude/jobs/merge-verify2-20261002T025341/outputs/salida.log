@@ -1,0 +1,5 @@
+ 0 fail
+ 199 pass
+1
+execution thyrox-worker-test-muqdcjz4-4672 kind=test task=TASK-THYROX-0756 exit=0
+__BG_EXIT__=0
