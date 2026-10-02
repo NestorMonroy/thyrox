@@ -11,6 +11,7 @@
  * RUN son también ejecución gestionada.
  */
 
+import { appendFileSync } from 'node:fs'
 import { parseArgs } from 'node:util'
 
 import { runExecution, InvalidExecutionAuthorizationError, type ExecutionAuthorization, type ExecutionKind, type ExecutionSecret } from './executionAuthorization.js'
@@ -53,7 +54,7 @@ export type ExecutionCommandDeps = {
 }
 
 const USAGE = [
-  'uso: podman-execution-execute run --task TASK-<CAPA>-NNNN --kind <tipo> [--image REF] [--network none|host]',
+  'uso: podman-execution-execute run --task TASK-<CAPA>-NNNN --kind <tipo> [--image REF] [--network none|host] [--attest ARCHIVO]',
   '                    [--mount ORIGEN[:DESTINO][:ro|rw]]... [--workdir DIR] [--env NOMBRE]...',
   '                    [--cpus N] [--memory-mib N] [--pids N] [--output RUTA]... [--secret-from-env NOMBRE]...',
   '                    (--script-stdin | -- ARGV...)',
@@ -160,6 +161,7 @@ async function runCommand(argv: string[], deps: ExecutionCommandDeps): Promise<n
       output: { type: 'string', multiple: true },
       'script-stdin': { type: 'boolean' },
       'secret-from-env': { type: 'string', multiple: true },
+      attest: { type: 'string' },
     },
   })
   const task = requireValue(values.task, 'task')
@@ -191,10 +193,32 @@ async function runCommand(argv: string[], deps: ExecutionCommandDeps): Promise<n
     secrets: await materializeSecretsFromEnvironment(deps, secretNames),
   }
   const result = await runExecution(deps.podman, authorization)
+  if (values.attest !== undefined) attestExecution(values.attest, authorization, task, result)
   deps.output.stdout(result.stdout)
   deps.output.stderr(result.stderr)
   deps.output.stderr(`execution ${result.containerName} kind=${kind} task=${task} exit=${result.exitCode}\n`)
   return result.exitCode
+}
+
+/** El nombre con que el primitivo firma lo que materializó; ningún otro escritor lo emite. */
+export const PRIMITIVE_MATERIALIZER = 'podman-execution-primitive'
+
+/**
+ * Atestación del primitivo: la unidad que ESTE proceso materializó, con el id
+ * de contenedor que devolvió `podman create`. Es la mitad del anfitrión de la
+ * contención; la otra mitad la escribe el payload desde dentro de su cgroup.
+ */
+function attestExecution(file: string, authorization: ExecutionAuthorization, task: string, result: { containerName: string; containerId: string; exitCode: number }): void {
+  appendFileSync(file, `${JSON.stringify({
+    materializer: PRIMITIVE_MATERIALIZER,
+    executionId: authorization.executionId,
+    task,
+    kind: authorization.kind,
+    containerName: result.containerName,
+    containerId: result.containerId,
+    exitCode: result.exitCode,
+    utc: new Date().toISOString(),
+  })}\n`)
 }
 
 const BUILD_LIFECYCLES = ['cache', 'permanent'] as const

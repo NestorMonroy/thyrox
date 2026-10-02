@@ -1,4 +1,7 @@
 import { describe, expect, test } from 'bun:test'
+import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 import { DEFAULT_EXECUTION_IMAGE, parseMount, runExecutionCommand, type ExecutionCommandDeps } from '../executionCommand.js'
 import type { PodmanCommandResult, PodmanExecutor } from '../podmanExecutor.js'
@@ -14,7 +17,7 @@ function harness(env: Record<string, string> = {}, stdin = ''): Harness {
   const podman: PodmanExecutor = {
     async run(args) {
       calls.push([...args])
-      const out = args[0] === 'wait' ? '0\n' : args[0] === 'logs' ? 'salida\n' : ''
+      const out = args[0] === 'wait' ? '0\n' : args[0] === 'logs' ? 'salida\n' : args[0] === 'create' ? `${'c'.repeat(64)}\n` : ''
       const result: PodmanCommandResult = { exitCode: 0, stdout: out, stderr: '' }
       return result
     },
@@ -245,5 +248,37 @@ describe('thyrox-exec build-image', () => {
     const h = harness()
     expect(await runExecutionCommand(['build-image', '--task', 'TASK-THYROX-0724', '--context', '/ctx', '--tag', 'localhost/t:1', '--lifecycle', 'forever'], h.deps)).toBe(2)
     expect(h.calls).toEqual([])
+  })
+})
+
+describe('thyrox-exec run --attest', () => {
+  test('el primitivo atesta la unidad que materializó: id de ejecución, contenedor y materializador', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'attest-'))
+    try {
+      const file = join(dir, 'executions.jsonl')
+      const h = harness()
+      const code = await runExecutionCommand(['run', '--task', 'TASK-THYROX-0758', '--kind', 'probe', '--attest', file, '--', 'true'], h.deps)
+      expect(code).toBe(0)
+      const rows = readFileSync(file, 'utf8').trim().split('\n').map(line => JSON.parse(line))
+      expect(rows).toHaveLength(1)
+      expect(rows[0]).toMatchObject({
+        materializer: 'podman-execution-primitive', task: 'TASK-THYROX-0758', kind: 'probe',
+        containerId: 'c'.repeat(64), exitCode: 0,
+      })
+      expect(rows[0].executionId).toMatch(/^probe-/)
+      expect(rows[0].containerName).toContain(rows[0].executionId)
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  test('sin --attest no escribe nada', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'attest-'))
+    try {
+      await runExecutionCommand(['run', '--task', 'TASK-THYROX-0758', '--kind', 'probe', '--', 'true'], harness().deps)
+      expect(readdirSync(dir)).toEqual([])
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
   })
 })
