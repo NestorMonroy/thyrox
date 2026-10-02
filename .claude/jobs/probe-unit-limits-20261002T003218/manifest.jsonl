@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts run --task TASK-THYROX-0754 --kind test --cpus 1 --memory-mib 256 -- bash -c echo memory.max=$(cat /sys/fs/cgroup/memory.max); echo cpu.max=$(cat /sys/fs/cgroup/cpu.max)", "started_at": "2026-10-02T00:32:18+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-02T00:32:20+00:00", "duration_seconds": 2.194935}
