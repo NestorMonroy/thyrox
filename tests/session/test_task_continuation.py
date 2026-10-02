@@ -112,8 +112,18 @@ check("la máscara va antes del payload", True, argv.index("--mount") < argv.ind
 # el despacho del trabajador pasa la máscara; la verificación, no (no lleva juicio ni proveedor)
 import session.task_continuation as controller  # noqa: E402
 calls = []
+def managed_evidence(name, task, unit):
+    """Las dos evidencias que una unidad real deja: la del primitivo y la de dentro."""
+    container = "c" * 64
+    primitive_file, unit_file = controller.containment_files(unit["evidence_dir"], name)
+    primitive_file.parent.mkdir(parents=True, exist_ok=True)
+    primitive_file.write_text(json.dumps({"materializer": "podman-execution-primitive", "executionId": f"e-{name}",
+                                          "task": task, "containerId": container}) + "\n")
+    unit_file.write_text(json.dumps({"step": name, "containerId": container, "inUnit": True,
+                                     "cgroup": f"/machine.slice/libpod-{container}.scope", "pid": 1}) + "\n")
 def fake_unit(name, task, argv, network=None, secrets=(), mounts=(), **unit):
     calls.append({"name": name, "mounts": mounts})
+    managed_evidence(name, task, unit)
     return (1, "") if "preverify" in name else (0, "")
 with tempfile.TemporaryDirectory() as tmp:
     wb = Path(tmp); (wb / "outputs").mkdir(); (wb / "p.md").write_text("x\n")
@@ -180,6 +190,41 @@ with tempfile.TemporaryDirectory() as tmp:
                                          PlanItem(id="k", prompt="p", verify="v", candidates=("m",))],
                                         item_states([{"kind": "start"}, {"kind": "blocked", "item": "j"}]))])
 
+# ManagedExecutionContainmentGate. Anulación: run_in_unit sustituido por un
+# subproceso del anfitrión. El payload corre de verdad (unit_attest.sh incluido)
+# y la verificación sale 0, pero no hay unidad: el ítem no se acepta.
+import subprocess  # noqa: E402
+def host_unit(name, task, argv, network=None, secrets=(), mounts=(), **unit):
+    unit["evidence_dir"].mkdir(parents=True, exist_ok=True)
+    ran = subprocess.run(controller.attested_argv(unit["evidence_dir"], task, name, argv), capture_output=True, text=True)
+    return ran.returncode, ran.stdout + ran.stderr
+for label, runner, expected in (("unidad gestionada", fake_unit, "accepted"), ("subproceso del anfitrión", host_unit, "hard_block")):
+    with tempfile.TemporaryDirectory() as tmp:
+        wb = Path(tmp); (wb / "outputs").mkdir(); (wb / "p.md").write_text("x\n")
+        saved = (controller.run_in_unit, controller.reconcile_orphans, controller.commit_item)
+        controller.run_in_unit, controller.reconcile_orphans = runner, lambda: ""
+        controller.commit_item = lambda *a, **k: (0, "")
+        try:
+            result = controller.run_item(wb, PlanItem(id="g", prompt="p.md", verify="true", candidates=("m",)),
+                                         "TASK-THYROX-0001", random.Random(0), None)
+        finally:
+            controller.run_in_unit, controller.reconcile_orphans, controller.commit_item = saved
+        gate = [json.loads(line) for line in (wb / "outputs" / "containment.jsonl").read_text().splitlines()]
+        check(f"contención, {label}: veredicto del ítem", expected, result)
+        check(f"contención, {label}: el gate deja su veredicto", expected == "accepted", gate[-1]["passed"])
+        if expected == "hard_block":
+            reasons = " ".join(r for step in gate[-1]["steps"] for r in step["reasons"])
+            # En el anfitrión el cgroup delata hostPayload; dentro de una unidad de prueba el
+            # subproceso hereda su cgroup, pero ningún primitivo lo materializó.
+            check("la anulación nombra la ruta no gestionada", True,
+                  "hostPayload=true" in reasons or "no tiene atestación del primitivo" in reasons)
+
+# la orden de lanzamiento lleva la atestación del primitivo y el envoltorio de dentro
+argv = unit_start_argv("n", "TASK-THYROX-0001", controller.attested_argv(Path("/e"), "TASK-THYROX-0001", "n", ["true"]),
+                       attest=Path("/e/n.primitive.jsonl"))
+check("--attest viaja a thyrox-bg", "/e/n.primitive.jsonl", argv[argv.index("--attest") + 1])
+check("el payload va envuelto por unit_attest.sh", str(controller.UNIT_ATTEST), argv[argv.index("--") + 2])
+
 # un registro de trabajo vivo no viaja en el commit: se mide por su PID
 import os  # noqa: E402
 from session.task_continuation import job_is_live  # noqa: E402
@@ -193,6 +238,7 @@ with tempfile.TemporaryDirectory() as tmp:
 # los fallos de proveedor tienen su presupuesto: cinco 502 seguidos no bloquean el ítem
 dispatches = []
 def flaky_unit(name, task, argv, network=None, secrets=(), mounts=(), **unit):
+    managed_evidence(name, task, unit)
     if "preverify" in name:
         return (1, "")
     if name.endswith(tuple("0123456789")) and "-verify-" not in name:
@@ -214,7 +260,6 @@ check("los dos candidatos vuelven a la rotación", {"a", "b"}, set(dispatches))
 check("seis despachos en total", 6, len(dispatches))
 
 # el presupuesto de fallos de proveedor se declara en el entorno
-import subprocess  # noqa: E402
 budget = subprocess.run([sys.executable, "-c", "import session.task_continuation as t; print(t.TRANSIENT_BUDGET)"],
                         env={**os.environ, "THYROX_CONTINUATION_TRANSIENT_BUDGET": "7",
                              "PYTHONPATH": str(Path(__file__).resolve().parents[2] / "src")},
@@ -225,7 +270,9 @@ check("THYROX_CONTINUATION_TRANSIENT_BUDGET fija el presupuesto", "7", budget)
 import os  # noqa: E402
 from session.task_continuation import learned_classifier_from_environment, main  # noqa: E402
 os.environ["THYROX_OUTCOME_CLASSIFIER_COMMAND"] = "cat >/dev/null; echo stalled"
-check("el clasificador externo lee su orden del entorno", "stalled", learned_classifier_from_environment()({"exit": 1}))
+learned = learned_classifier_from_environment()
+assert learned is not None
+check("el clasificador externo lee su orden del entorno", "stalled", learned({"exit": 1}))
 os.environ["THYROX_OUTCOME_CLASSIFIER_COMMAND"] = ""
 check("sin orden, sin clasificador aprendido", None, learned_classifier_from_environment())
 with tempfile.TemporaryDirectory() as tmp:

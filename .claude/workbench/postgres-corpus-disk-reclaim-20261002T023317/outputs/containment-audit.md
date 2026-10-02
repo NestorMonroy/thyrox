@@ -57,3 +57,20 @@ Es despacho y observación, no payload.
 **git commit/push**: operación de reconciliación del plano de control
 (publicar estado durable ya producido y verificado), no un payload de la
 tarea. Se declara por operación en cada commit, no como excepción general.
+
+## El gate en el controlador (`task_continuation`)
+
+`run_in_unit` lanza toda unidad con `--attest` (vía `thyrox-bg start
+--attest`) y con el payload envuelto por `unit_attest.sh`; antes de aceptar,
+`contained()` aplica el gate a los pasos que sostienen la aceptación
+(preverify, o despacho + verificación). FAIL → `hard_block` con
+`architecture_invalid: contención`; el veredicto queda en
+`outputs/containment.jsonl` del banco.
+
+| step | payload | resultado | gate |
+|---|---|---|---|
+| controller-gate-green | `test_task_continuation.py` | 61/62 (la anulación esperaba `hostPayload`; dentro de una unidad el subproceso hereda el cgroup y la razón es «sin atestación del primitivo») | PASS |
+| controller-gate-green-2 | ídem, aserción por cualquiera de las dos razones | 62/62 | PASS |
+| controller-gate-green-3 | ídem tras corregir ruff/pyright del test | 62/62 | PASS |
+| controller-gate-annulment | ídem con `passed = True` forzado | 60/62: caen exactamente las 2 del sustituto del anfitrión | PASS |
+| bg-attest-forwarding | `test-bg-managed-execution.sh` | 14/14 | PASS |

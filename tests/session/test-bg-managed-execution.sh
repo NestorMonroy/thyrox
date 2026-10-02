@@ -85,4 +85,14 @@ else
 fi
 ! grep -q "valor-que-no-debe-aparecer" "$WORK/runner.log" && ok "caso 6: el valor no aparece en el argv" || bad "caso 6: el valor apareció en el argv"
 
+# La atestación del primitivo viaja al runner: es la mitad del primitivo de
+# ManagedExecutionContainmentGate.
+: > "$WORK/runner.log"
+bash "$BG" start con-atestacion --grace 10 --task TASK-THYROX-0001 --kind probe --attest /e/n.jsonl -- true >/dev/null 2>&1
+if grep -q -- "^run --task TASK-THYROX-0001 --kind probe --attest /e/n.jsonl -- true$" "$WORK/runner.log" 2>/dev/null; then
+  ok "caso 7: --attest llega al runner"
+else
+  bad "caso 7: el runner no recibió --attest: [$(cat "$WORK/runner.log" 2>/dev/null)]"
+fi
+
 thyrox_summary
