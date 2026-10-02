@@ -1,0 +1,26 @@
+## attempt row fields (task_continuation.py)
+650:        append_log(workbench, {"kind": "attempt", "item": item.id, "attempt": attempt, "model": model,
+651-                               "taskClass": item.task_class, "outcome": outcome, "source": source, "exit": code,
+652-                               "verifyExit": verify_code, "elapsedSeconds": evidence.elapsed_seconds,
+653-                               "stderrTail": stderr_tail[-600:],
+654-                               "transition": step, "orphans": reconcile_orphans()})
+## delegate usage line
+71:  inputTokens: ($r.usage.input_tokens // null), outputTokens: ($r.usage.output_tokens // null),
+72:  cachedTokens: ($r.usage.cache_read_input_tokens // null), exit: ($code | tonumber),
+## measured usage availability in cutover-executions.jsonl
+      3 		usage-null
+      1 	deepseek-v4.1-flash	usage-null
+      1 	qwen3.8-flash	usage-null
+      1 canary	deepseek-v4.1-flash	usage-present
+      2 p2a	deepseek-v4.1-flash	usage-null
+      1 p2a	deepseek-v4.1-flash	usage-present
+      6 p2a	qwen3.8-flash	usage-null
+      3 p2a-ro	deepseek-v4.1-flash	usage-null
+      1 p2a-ro	qwen3.8-flash	usage-present
+      3 p2b	deepseek-v4.1-flash	usage-null
+      1 p2b	qwen3.8-flash	usage-null
+      1 p2c	deepseek-v4.1-flash	usage-null
+      3 p2c	qwen3.8-flash	usage-null
+## agent_store token columns
+['model', 'input_tokens', 'cache_creation_tokens', 'cache_read_tokens', 'output_tokens', 'dropped_tokens', 'usage_source']
+## provider usage normalization

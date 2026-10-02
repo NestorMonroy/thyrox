@@ -1,0 +1,2 @@
+task_continuation: hard_block en p2b; evidencia en outputs/continuation.jsonl
+__BG_EXIT__=3

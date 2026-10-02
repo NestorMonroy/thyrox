@@ -1,0 +1,19 @@
+18:import { runJobWithOutput } from '@thyrox/podman-execution/containerRun.ts'
+20:import type { ContainerOwner, WorkerContainerSpec } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+53:export function installJobSpec(options: OllamaModelInstallerOptions, request: ModelInstallRequest): WorkerContainerSpec {
+107:      const job = await runJobWithOutput(this.options.podman, installJobSpec(this.options, request))
+FALLA src/packages/local-models/ollamaModelInstaller.ts aún usa una función por spec
+FALLA src/packages/local-models/ollamaModelInstaller.ts no compone ExecutionAuthorization
+26:import { ContainerRunError, runJobWithOutput } from '@thyrox/podman-execution/containerRun.ts'
+28:import type { ContainerOwner, WorkerContainerSpec } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+66:export function fetchJobSpec(options: PodmanArtifactFetcherOptions, pinned: PinnedModelArtifact, destination: string, scratchDir: string): WorkerContainerSpec {
+119:    const job = await runJobWithOutput(options.podman, fetchJobSpec(options, pinned, destination, scratchDir))
+FALLA src/packages/local-models/podmanArtifactFetcher.ts aún usa una función por spec
+FALLA src/packages/local-models/podmanArtifactFetcher.ts no compone ExecutionAuthorization
+FALLA falta outputs/p2b-red
+FALLA falta outputs/p2b-green
+FALLA falta outputs/p2b-annulment
+FALLA falta outputs/p2b-typecheck
+suite local-models: 5 fallas (admitidas 5)
+execution thyrox-worker-maintenance-muq6189y-676 kind=maintenance task=TASK-THYROX-0743 exit=1
+__BG_EXIT__=1

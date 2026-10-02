@@ -1,4 +1,3 @@
 # Sitios que todavía materializan fuera de src/packages/podman-execution/.
 # ruta<TAB>tarea que lo cierra<TAB>razón. Una entrada vale sólo mientras su tarea esté abierta.
 src/lib/podman_capabilities.sh	TASK-THYROX-0746	sondas de capacidades de Podman por mover a la primitiva
-src/packages/model-artifacts/quantizer-image/build.sh	TASK-THYROX-0747	construcción del cuantizador por mover a buildImage

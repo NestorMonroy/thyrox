@@ -1,0 +1,28 @@
+
+== 1. escribir la fila marcadora en una unidad
+written durability-20261002T014456-15132
+exit=0
+
+== 2. recrear por la primitiva: configuración distinta (plazo de salud 61 s)
+thyrox-postgres action=kept drift=- created=no started=no health=healthy volumes=thyrox-postgres-data:preserved
+exit=0
+
+== 3. leer la fila tras la recreación
+present durability-20261002T014456-15132 written_at=2026-10-02T01:44:57.451Z
+exit=0
+
+== 4. volver a la declaración
+thyrox-postgres action=kept drift=- created=no started=no health=healthy volumes=thyrox-postgres-data:preserved
+exit=0
+
+== 5. leer la fila otra vez
+present durability-20261002T014456-15132 written_at=2026-10-02T01:44:57.451Z
+exit=0
+
+== 6. ensure sin cambios conserva
+thyrox-postgres action=kept drift=- created=no started=no health=healthy volumes=thyrox-postgres-data:preserved
+exit=0
+
+== 7. control: un marcador que nunca se escribió no aparece
+absent never-written-15132
+exit=1

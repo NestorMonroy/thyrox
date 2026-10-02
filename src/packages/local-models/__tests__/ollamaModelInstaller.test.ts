@@ -4,10 +4,12 @@
  * primitiva de Podman.
  *
  * Dos niveles. Con un Podman doble que, al esperar el contenedor, ejecuta la
- * lógica del trabajo en proceso contra un Ollama falso: qué argv compone el
- * trabajo y cómo se decide el desenlace (sólo `installed` si el runtime
- * resuelve el contenido pedido). Con el Podman real, si la imagen está
- * local: que el trabajo alcanza el Ollama del loopback y deja su reporte.
+ * lógica del trabajo en proceso contra un Ollama falso: cómo se materializa el
+ * trabajo —componiendo la autorización canónica, clase `maintenance` y la cita
+ * de su tarea, nunca un spec suelto— y cómo se decide el desenlace (sólo
+ * `installed` si el runtime resuelve el contenido pedido). Con el Podman real, si
+ * la imagen está local: que el trabajo alcanza el Ollama del loopback y deja su
+ * reporte.
  *
  * Métrica: el argv entregado a `podman create`, el estado del Ollama falso y
  * el desenlace devuelto.
@@ -19,15 +21,18 @@ import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
 
+import { EXECUTION_ID_LABEL_KEY, EXECUTION_KIND_LABEL_KEY, EXECUTION_REFERENCE_LABEL_KEY } from '@thyrox/podman-execution/executionAuthorization.ts'
 import { createPodmanExecutor, type PodmanCommandResult, type PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
 
 import { OLLAMA_PORT_VAR } from '../managedOllama.js'
 import type { ModelInstallRequest } from '../modelInstaller.js'
 import { OllamaApi, installModelIntoOllama } from '../ollamaApi.js'
-import { INSTALL_REPORT_NAME, OllamaModelInstaller, installJobSpec, type OllamaModelInstallerOptions } from '../ollamaModelInstaller.js'
+import { INSTALL_REPORT_NAME, OllamaModelInstaller, type OllamaModelInstallerOptions } from '../ollamaModelInstaller.js'
 
 const REPOSITORY_ROOT = resolve(import.meta.dir, '../../../..')
 const MODEL_NAME = 'thyrox-library--qwen2.5-0.5b:q4_k_m'
+/** La imagen del trabajo: declarada, sirve para recortar el comando del argv de `create`. */
+const INSTALLER_IMAGE = 'sha256:' + 'b'.repeat(64)
 const HTTP_OK = 200
 const HTTP_CREATED = 201
 const HTTP_NOT_FOUND = 404
@@ -95,7 +100,7 @@ function artifact(content: string): ModelInstallRequest {
 function options(port: number, overrides: Partial<OllamaModelInstallerOptions> = {}): OllamaModelInstallerOptions {
   return {
     podman: { run: async () => ({ exitCode: 0, stdout: '0\n', stderr: '' }) },
-    image: 'sha256:' + 'b'.repeat(64),
+    image: INSTALLER_IMAGE,
     bunPath: process.execPath,
     repositoryRoot: REPOSITORY_ROOT,
     scratchDir: join(workdir, 'scratch'),
@@ -128,18 +133,49 @@ function installerRunningInProcess(port: number, request: ModelInstallRequest): 
   return new OllamaModelInstaller(options(port, { podman: podmanRunningInProcess(scratchDir, job) }))
 }
 
-describe('installJobSpec', () => {
-  test('red host, bun y repositorio de sólo lectura, el GGUF de sólo lectura y el montaje de trabajo rw', () => {
-    const request = artifact('gguf')
-    const spec = installJobSpec(options(4321), request)
-    const argv = spec.resourceArgv.join(' ')
-    expect(argv).toContain('--network host')
-    expect(argv).toContain('--read-only')
-    expect(argv).toContain(`-v ${process.execPath}:/usr/local/bin/bun:ro`)
-    expect(argv).toContain(`-v ${REPOSITORY_ROOT}:/w:ro`)
-    expect(argv).toContain(`-v ${request.artifactPath}:/artifact/model.gguf:ro`)
-    expect(argv).toContain(`-v ${join(workdir, 'scratch')}:/scratch:rw`)
-    expect(spec.command).toEqual([
+/**
+ * El doble que registra el argv de `podman create`. Sin reporte en el montaje,
+ * `install` devuelve antes de confirmar el runtime, así que ninguna prueba de
+ * composición toca Ollama: lo que se mide es cómo se materializa el trabajo.
+ */
+function recordingPodman(): { podman: PodmanExecutor; created: string[][] } {
+  const created: string[][] = []
+  return {
+    created,
+    podman: {
+      run: async (args): Promise<PodmanCommandResult> => {
+        if (args[0] === 'create') created.push([...args])
+        if (args[0] === 'wait') return { exitCode: 0, stdout: '0\n', stderr: '' }
+        return { exitCode: 0, stdout: '', stderr: '' }
+      },
+    },
+  }
+}
+
+/** El trabajo que el instalador materializa: el argv con que `podman create` lo recibió y el artefacto pedido. */
+async function createdInstallJob(overrides: Partial<OllamaModelInstallerOptions> = {}): Promise<{ argv: string[]; request: ModelInstallRequest }> {
+  const request = artifact('gguf')
+  const recorder = recordingPodman()
+  await new OllamaModelInstaller(options(4321, { ...overrides, podman: recorder.podman })).install(request)
+  return { argv: recorder.created[0] ?? [], request }
+}
+
+/** Lo que recibe el contenedor como comando: lo que sigue a la imagen en el argv de `create`. */
+function containerCommand(argv: readonly string[]): string[] {
+  return argv.slice(argv.indexOf(INSTALLER_IMAGE) + 1)
+}
+
+describe('la composición del trabajo', () => {
+  test('red host, bun y repositorio de sólo lectura, el GGUF de sólo lectura y el montaje de trabajo rw', async () => {
+    const { argv, request } = await createdInstallJob()
+    const joined = argv.join(' ')
+    expect(joined).toContain('--network host')
+    expect(joined).toContain('--read-only')
+    expect(joined).toContain(`-v ${process.execPath}:/usr/local/bin/bun:ro`)
+    expect(joined).toContain(`-v ${REPOSITORY_ROOT}:/w:ro`)
+    expect(joined).toContain(`-v ${request.artifactPath}:/artifact/model.gguf:ro`)
+    expect(joined).toContain(`-v ${join(workdir, 'scratch')}:/scratch:rw`)
+    expect(containerCommand(argv)).toEqual([
       '/usr/local/bin/bun', '/w/src/packages/local-models/bin/installModel.ts',
       '--ollama-url', 'http://127.0.0.1:4321',
       '--name', MODEL_NAME,
@@ -149,14 +185,29 @@ describe('installJobSpec', () => {
     ])
   })
 
-  test('la URL de Ollama sale del entorno declarado', () => {
-    const spec = installJobSpec(options(4321, { environment: {} }), artifact('gguf'))
-    expect(spec.command).toContain('http://127.0.0.1:51434')
+  test('la URL de Ollama sale del entorno declarado', async () => {
+    const { argv } = await createdInstallJob({ environment: {} })
+    expect(argv.join(' ')).toContain('http://127.0.0.1:51434')
   })
 
-  test('el trabajo no recibe ningún secreto', () => {
-    const spec = installJobSpec(options(4321), artifact('gguf'))
-    expect([...spec.resourceArgv, ...(spec.command ?? [])].join(' ')).not.toMatch(/TOKEN|PASSWORD|SECRET|KEY|containers\/storage/i)
+  test('el trabajo no recibe ningún secreto', async () => {
+    const { argv } = await createdInstallJob()
+    expect(argv.join(' ')).not.toMatch(/TOKEN|PASSWORD|SECRET|KEY|containers\/storage/i)
+  })
+})
+
+describe('la autorización del trabajo', () => {
+  test('corre como una ejecución autorizada: clase maintenance y la cita de su tarea', async () => {
+    const { argv } = await createdInstallJob()
+    const joined = argv.join(' ')
+    expect(joined).toContain(`--label ${EXECUTION_KIND_LABEL_KEY}=maintenance`)
+    expect(joined).toContain(`--label ${EXECUTION_REFERENCE_LABEL_KEY}=task:TASK-THYROX-0729`)
+    expect(joined).toContain(`--label ${EXECUTION_ID_LABEL_KEY}=model-install-test`)
+  })
+
+  test('la cita de la tarea que autoriza es declarable por el llamador', async () => {
+    const { argv } = await createdInstallJob({ taskCitation: 'TASK-THYROX-0001' })
+    expect(argv.join(' ')).toContain(`--label ${EXECUTION_REFERENCE_LABEL_KEY}=task:TASK-THYROX-0001`)
   })
 })
 

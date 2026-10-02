@@ -16,7 +16,9 @@ FROM ${BASE_IMAGE}
 # llega al entorno del RUN.
 ARG HTTPS_PROXY
 ARG https_proxy
-ARG PIP_CERT
+# La CA del proxy, con el nombre del contrato de la primitiva (build-image la
+# monta en esa ruta y la nombra en PROXY_CA). pip la lee de PIP_CERT.
+ARG PROXY_CA
 RUN apt-get update \
  && apt-get install -y --no-install-recommends python3 python3-venv libgomp1 libssl3t64 ca-certificates \
  && rm -rf /var/lib/apt/lists/*
@@ -28,7 +30,8 @@ COPY --from=llama /app/convert_hf_to_gguf.py /app/
 COPY --from=llama /app/conversion /app/conversion
 COPY --from=llama /app/gguf-py /app/gguf-py
 # Versiones exactas de la etapa de compilación (pip list sobre su digest).
-RUN python3 -m venv /opt/venv \
+RUN if [ -n "$PROXY_CA" ]; then export PIP_CERT="$PROXY_CA"; fi \
+ && python3 -m venv /opt/venv \
  && /opt/venv/bin/pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.11.0 \
  && /opt/venv/bin/pip install --no-cache-dir numpy==2.2.6 sentencepiece==0.2.2 transformers==4.57.6 \
       protobuf==4.25.9 safetensors==0.8.0 tokenizers==0.22.2 huggingface_hub==0.36.2 regex==2026.9.29 \

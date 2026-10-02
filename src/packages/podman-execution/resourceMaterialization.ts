@@ -59,6 +59,13 @@ export type DesiredResource = {
   labels?: Readonly<Record<string, string>>
   health?: HealthDeclaration
   /**
+   * Órdenes idempotentes que se ejecutan con `exec` dentro del contenedor ya
+   * sano, en cada ensure (también si se conserva): el estado que la imagen no
+   * crea sola sobre un volumen que ya existía, como una extensión de la base.
+   * No es configuración del contenedor: cambiarla no lo recrea.
+   */
+  provision?: readonly (readonly string[])[]
+  /**
    * La etiqueta con que el dueño marcó a sus contenedores antes de llevar las
    * etiquetas de dueño. Un contenedor con ese nombre que la lleva se migra
    * (se recrea), en vez de tratarse como colisión.
@@ -76,6 +83,7 @@ export type DriftReason =
   | 'secret-declaration'
   | 'secret-value'
   | 'stale-process'
+  | 'stale-runtime-state'
   | 'health-failure'
   | 'ownership-collision'
   | 'legacy-owner-labels'
@@ -100,8 +108,12 @@ export type EnsureOutcome = {
   started: boolean
   health: HealthState
   volumes: VolumeState[]
+  /** `not-declared` sin provisión; `applied` si todas salieron 0; `failed` en la primera que no. */
+  provision?: ProvisionState
   failure?: EnsureFailure
 }
+
+export type ProvisionState = 'not-declared' | 'applied' | 'failed'
 
 export interface ResourceMaterializationDeps {
   podman: PodmanExecutor
@@ -124,6 +136,8 @@ export class InvalidDesiredResourceError extends Error {
 
 /** Etiqueta con el tipo de recurso: decide la política de nombre al leerlo de vuelta. */
 export const RESOURCE_KIND_LABEL_KEY = 'thyrox.resource-kind'
+/** El recurso que declaró un volumen: lo conserva al recrear su contenedor y nadie más lo administra. */
+export const RESOURCE_NAME_LABEL_KEY = 'thyrox.resource-name'
 /** Huella de la configuración declarada que no tiene medida directa en `inspect`. */
 export const CONFIG_DIGEST_LABEL_KEY = 'thyrox.resource-config-digest'
 /** Huella de la declaración de secretos (nombre y destino, nunca el valor). */
@@ -374,6 +388,20 @@ async function ensureNetwork(deps: ResourceMaterializationDeps, network: Resourc
   if (exists.exitCode !== 0) await step(deps, 'network', ['network', 'create', network.name])
 }
 
+/**
+ * Las etiquetas de un volumen que crea la primitiva: su dueño y el recurso que lo
+ * declaró, nunca el pid. El volumen sobrevive al proceso que lo creó y a cada
+ * contenedor que lo monta; un volumen que ya existía se conserva como está.
+ */
+function volumeLabelArgv(desired: DesiredResource): string[] {
+  return [
+    ...labelArgv(OWNER_KIND_LABEL_KEY, desired.owner.kind),
+    ...labelArgv(OWNER_ID_LABEL_KEY, desired.owner.id),
+    ...labelArgv(RESOURCE_KIND_LABEL_KEY, desired.kind),
+    ...labelArgv(RESOURCE_NAME_LABEL_KEY, desired.name),
+  ]
+}
+
 async function ensureVolumes(deps: ResourceMaterializationDeps, desired: DesiredResource): Promise<VolumeState[]> {
   const states: VolumeState[] = []
   for (const mount of desired.namedVolumes ?? []) {
@@ -382,7 +410,7 @@ async function ensureVolumes(deps: ResourceMaterializationDeps, desired: Desired
       states.push({ volume: mount.volume, state: 'preserved' })
       continue
     }
-    await step(deps, 'volume', ['volume', 'create', mount.volume])
+    await step(deps, 'volume', ['volume', 'create', ...volumeLabelArgv(desired), mount.volume])
     states.push({ volume: mount.volume, state: 'created' })
   }
   return states
@@ -430,6 +458,17 @@ function describeResult(result: PodmanCommandResult): string {
   return [result.stderr.trim(), result.stdout.trim()].filter(text => text.length > 0).join(' | ') || `exit ${result.exitCode}`
 }
 
+/** Aplica la provisión declarada sobre un contenedor sano; la primera orden que falla deja el recurso fallido. */
+async function provisionHealthy(deps: ResourceMaterializationDeps, desired: DesiredResource, outcome: EnsureOutcome,
+  secrets: SecretValues): Promise<EnsureOutcome> {
+  if (!desired.provision?.length) return { ...outcome, provision: 'not-declared' }
+  for (const command of desired.provision) {
+    const result = await deps.podman.run(['exec', desired.name, ...command])
+    if (result.exitCode !== 0) return { ...outcome, action: 'failed', provision: 'failed', failure: failureOf('provision', result, secrets) }
+  }
+  return { ...outcome, provision: 'applied' }
+}
+
 function failureOf(stage: string, result: PodmanCommandResult, secrets: SecretValues): EnsureFailure {
   const text = `${result.stderr}\n${result.stdout}`
   return { stage, message: redactSecrets(describeResult(result), secrets), lockCollision: isLockCollision(text) }
@@ -446,6 +485,34 @@ function planFor(existing: InspectedResource | null, ownership: Ownership, desir
   if (alive) return { action: 'kept', drift: [], recreate: false, create: false, start: false }
   if (existing.status === 'running') return { action: 'recreated', drift: ['stale-process'], recreate: true, create: true, start: true }
   return { action: 'started', drift: [], recreate: false, create: false, start: true }
+}
+
+/**
+ * Lo que runc dice cuando conserva el directorio de estado de un contenedor
+ * cuyo proceso ya no existe —tras reiniciar la VM, `/run/runc` sobrevive— y
+ * rehúsa crear otro con el mismo ID (medido el 2026-10-02 con thyrox-postgres).
+ */
+const STALE_RUNTIME_STATE_LITERAL = 'container with given ID already exists'
+
+/**
+ * Arranca el contenedor. Si runc rehúsa por estado stale de un contenedor que
+ * la primitiva no acaba de crear, lo recrea UNA vez —un ID nuevo no choca con
+ * el directorio huérfano— y vuelve a arrancar; los volúmenes no se tocan. Devuelve
+ * si hubo que recrear. Cualquier otro fallo, o el mismo tras recrear, se propaga.
+ */
+async function startOrRecreateStale(deps: ResourceMaterializationDeps, desired: DesiredResource, plan: Plan): Promise<boolean> {
+  try {
+    await step(deps, 'start', ['start', desired.name])
+    return false
+  } catch (error) {
+    const stale = error instanceof MaterializationStepError && !plan.create
+      && `${error.result.stderr}${error.result.stdout}`.includes(STALE_RUNTIME_STATE_LITERAL)
+    if (!stale) throw error
+  }
+  await step(deps, 'remove', ['rm', '--force', desired.name])
+  await step(deps, 'create', createResourceArgv(desired))
+  await step(deps, 'start', ['start', desired.name])
+  return true
 }
 
 /**
@@ -475,17 +542,25 @@ export async function ensureResource(
       outcome.created = true
     }
     if (plan.start) {
-      await step(deps, 'start', ['start', desired.name])
+      const recreatedForStaleRuntime = await startOrRecreateStale(deps, desired, plan)
+      if (recreatedForStaleRuntime) {
+        outcome.drift = [...plan.drift, 'stale-runtime-state']
+        outcome.created = true
+        outcome.action = 'recreated'
+      } else {
+        outcome.action = plan.action
+      }
       outcome.started = true
+    } else {
+      outcome.action = plan.action
     }
-    outcome.action = plan.action
   } catch (error) {
     if (error instanceof MaterializationStepError) return { ...outcome, action: 'failed', failure: failureOf(error.stage, error.result, secrets) }
     throw error
   }
   if (!desired.health) return { ...outcome, health: 'not-declared' }
   const unhealthy = await awaitHealthy(deps, desired, desired.health)
-  if (!unhealthy) return { ...outcome, health: 'healthy' }
+  if (!unhealthy) return provisionHealthy(deps, desired, { ...outcome, health: 'healthy' }, secrets)
   return {
     ...outcome,
     action: 'failed',

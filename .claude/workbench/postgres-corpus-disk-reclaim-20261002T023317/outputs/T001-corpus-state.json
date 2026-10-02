@@ -1,0 +1,2 @@
+{"database":"thyrox","postgres":"16.10 (Debian 16.10-1.pgdg12+1)","pgvector":null,"schema":"semantic_search","databaseBytes":7721443,"counts":{}}
+execution thyrox-worker-probe-muqcok1u-19387 kind=probe task=TASK-THYROX-0758 exit=0

@@ -3,12 +3,14 @@ import { beforeEach, describe, expect, test } from 'bun:test'
 import {
   InvalidDesiredResourceError,
   LEGACY_ROLE_DRIFT,
+  RESOURCE_KIND_LABEL_KEY,
+  RESOURCE_NAME_LABEL_KEY,
   SECRET_REDACTION,
   ensureResource,
   type DesiredResource,
   type ResourceMaterializationDeps,
 } from '../resourceMaterialization.js'
-import { OWNER_ID_LABEL_KEY, OWNER_KIND_LABEL_KEY, WORKER_CONTAINER_NAME_PREFIX } from '../workerContainerLifecycle.js'
+import { OWNER_ID_LABEL_KEY, OWNER_KIND_LABEL_KEY, OWNER_PID_LABEL_KEY, WORKER_CONTAINER_NAME_PREFIX } from '../workerContainerLifecycle.js'
 import { FakePodmanHost } from '../testing/fakePodmanHost.js'
 
 const PASSWORD = 'super-secret-value-4471'
@@ -73,6 +75,13 @@ describe('ensureResource — primera materialización', () => {
     expect(outcome.drift).toEqual([])
     expect(outcome.volumes).toEqual([{ volume: VOLUME, state: 'created' }])
     expect(host.volumes.has(VOLUME)).toBe(true)
+    // el volumen es de la infraestructura que lo declaró, no del proceso que lo creó
+    const volumeLabels = host.volumeLabels.get(VOLUME) ?? {}
+    expect(volumeLabels[OWNER_KIND_LABEL_KEY]).toBe('infrastructure')
+    expect(volumeLabels[OWNER_ID_LABEL_KEY]).toBe("infrastructure-bootstrap")
+    expect(volumeLabels[RESOURCE_KIND_LABEL_KEY]).toBe('infrastructure')
+    expect(volumeLabels[RESOURCE_NAME_LABEL_KEY]).toBe(NAME)
+    expect(Object.keys(volumeLabels)).not.toContain(OWNER_PID_LABEL_KEY)
     expect(host.secrets.get(SECRET)?.value).toBe(PASSWORD)
     const container = host.containers.get(NAME)
     expect(container?.labels[OWNER_KIND_LABEL_KEY]).toBe('infrastructure')
@@ -178,6 +187,48 @@ describe('ensureResource — convergencia', () => {
     expectNoVolumeRemoved()
   })
 
+  // Tras reiniciar la VM, runc conserva el directorio de estado de un contenedor
+  // cuyo proceso ya no existe, y rehúsa crear otro con el mismo ID (medido el
+  // 2026-10-02 con thyrox-postgres). El recurso es de thyrox: lo converge la
+  // primitiva recreándolo con un ID nuevo, una sola vez y sin tocar el volumen.
+  const RUNC_STALE = { exitCode: 125, stdout: '', stderr: 'Error: OCI runtime error: unable to start container "abc": runc: runc create failed: container with given ID already exists' }
+
+  function stopWithoutProcess(): void {
+    const container = host.containers.get(NAME)
+    if (container) { host.alivePids.delete(container.pid); container.status = 'created'; container.pid = 0 }
+  }
+
+  test('start rehusado por estado stale de runc: recreated una vez, volumen intacto', async () => {
+    await ensureHealthy()
+    stopWithoutProcess()
+    host.failNextStarts.push(RUNC_STALE)
+    const outcome = await ensureHealthy()
+    expect(outcome).toMatchObject({ action: 'recreated', drift: ['stale-runtime-state'], created: true, started: true, health: 'healthy' })
+    expect(outcome.volumes).toEqual([{ volume: VOLUME, state: 'preserved' }])
+    expectNoVolumeRemoved()
+  })
+
+  test('start que falla por otra causa: failed, sin recrear', async () => {
+    await ensureHealthy()
+    stopWithoutProcess()
+    host.calls.length = 0
+    host.failNextStarts.push({ exitCode: 125, stdout: '', stderr: 'Error: some other start failure' })
+    const outcome = await ensureHealthy()
+    expect(outcome.action).toBe('failed')
+    expect(outcome.failure?.stage).toBe('start')
+    expect(host.calls.some(argv => argv[0] === 'rm' || argv[0] === 'create')).toBe(false)
+  })
+
+  test('el estado stale persiste tras recrear: failed, sin bucle', async () => {
+    await ensureHealthy()
+    stopWithoutProcess()
+    host.calls.length = 0
+    host.failNextStarts.push(RUNC_STALE, RUNC_STALE)
+    const outcome = await ensureHealthy()
+    expect(outcome.action).toBe('failed')
+    expect(host.calls.filter(argv => argv[0] === 'create').length).toBe(1)
+  })
+
   test('detenido sin deriva: started, sin recrear', async () => {
     await ensureHealthy()
     const container = host.containers.get(NAME)
@@ -278,5 +329,39 @@ describe('ensureResource — validación antes de tocar Podman', () => {
   test('la red del anfitrión con puertos publicados se rehúsa', async () => {
     const resource = desired({ network: { mode: 'host' } })
     await expect(ensureResource(deps, resource, SECRETS)).rejects.toBeInstanceOf(InvalidDesiredResourceError)
+  })
+})
+
+describe('ensureResource — provisión tras la salud', () => {
+  const PROVISION = ['psql', '-v', 'ON_ERROR_STOP=1', '-U', 'thyrox', '-d', 'thyrox', '-c', 'CREATE EXTENSION IF NOT EXISTS vector']
+
+  test('sano: aplica la provisión con exec, después de la salud', async () => {
+    const outcome = await ensureHealthy(desired({ provision: [PROVISION] }))
+    expect(outcome.provision).toBe('applied')
+    const execs = host.calls.filter(call => call[0] === 'exec')
+    expect(execs[execs.length - 1]).toEqual(['exec', NAME, ...PROVISION])
+  })
+
+  test('kept también provisiona: la provisión es idempotente y se reafirma en cada ensure', async () => {
+    await ensureHealthy(desired({ provision: [PROVISION] }))
+    host.calls.length = 0
+    const outcome = await ensureHealthy(desired({ provision: [PROVISION] }))
+    expect(outcome.action).toBe('kept')
+    expect(outcome.provision).toBe('applied')
+    expect(host.calls).toContainEqual(['exec', NAME, ...PROVISION])
+  })
+
+  test('una provisión que falla deja el recurso fallido, con su etapa', async () => {
+    host.failingExecPrograms.add('psql')
+    const outcome = await ensureHealthy(desired({ provision: [PROVISION] }))
+    expect(outcome.action).toBe('failed')
+    expect(outcome.provision).toBe('failed')
+    expect(outcome.failure?.stage).toBe('provision')
+  })
+
+  test('la provisión no es configuración del contenedor: cambiarla no lo recrea', async () => {
+    await ensureHealthy(desired())
+    const outcome = await ensureHealthy(desired({ provision: [PROVISION] }))
+    expect(outcome.action).toBe('kept')
   })
 })

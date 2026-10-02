@@ -1,4 +1,7 @@
 import { describe, expect, test } from 'bun:test'
+import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 
 import { DEFAULT_EXECUTION_IMAGE, parseMount, runExecutionCommand, type ExecutionCommandDeps } from '../executionCommand.js'
 import type { PodmanCommandResult, PodmanExecutor } from '../podmanExecutor.js'
@@ -14,7 +17,7 @@ function harness(env: Record<string, string> = {}, stdin = ''): Harness {
   const podman: PodmanExecutor = {
     async run(args) {
       calls.push([...args])
-      const out = args[0] === 'wait' ? '0\n' : args[0] === 'logs' ? 'salida\n' : ''
+      const out = args[0] === 'wait' ? '0\n' : args[0] === 'logs' ? 'salida\n' : args[0] === 'create' ? `${'c'.repeat(64)}\n` : ''
       const result: PodmanCommandResult = { exitCode: 0, stdout: out, stderr: '' }
       return result
     },
@@ -265,5 +268,71 @@ describe('build-image con la referencia de trabajo de un consumidor (TASK-THYROX
       '--context', '/srv/ctx', '--tag', 'localhost/x:dev'], h.deps)
     expect(code).toBe(2)
     expect(h.calls).toHaveLength(0)
+  })
+})
+
+describe('thyrox-exec build-image', () => {
+  function buildArgv(h: Harness): string {
+    return (h.calls.find(call => call[0] === 'build') ?? []).join(' ')
+  }
+
+  test('con egreso, el proxy NO es argumento de build: quedaría grabado en la historia de la imagen', async () => {
+    const h = harness({ HTTPS_PROXY: 'http://127.0.0.1:9', https_proxy: 'http://127.0.0.1:9', GIT_SSL_CAINFO: '/ca.crt' })
+    await runExecutionCommand(['build-image', '--task', 'TASK-THYROX-0724', '--context', '/ctx', '--tag', 'localhost/t:1', '--network', 'host'], h.deps)
+    const argv = buildArgv(h)
+    expect(argv).not.toContain('HTTPS_PROXY=')
+    expect(argv).not.toContain('https_proxy=')
+    expect(argv).toContain('--build-arg PROXY_CA=/etc/ssl/certs/proxy-ca.crt')
+    expect(argv).toContain('-v /ca.crt:/etc/ssl/certs/proxy-ca.crt:ro')
+  })
+
+  test('el ciclo de vida por defecto es cache', async () => {
+    const h = harness()
+    await runExecutionCommand(['build-image', '--task', 'TASK-THYROX-0724', '--context', '/ctx', '--tag', 'localhost/t:1'], h.deps)
+    expect(buildArgv(h)).toContain('--label io.thyrox.image.lifecycle=cache')
+  })
+
+  test('--lifecycle permanent declara la candidata que la promoción acepta', async () => {
+    const h = harness()
+    await runExecutionCommand(['build-image', '--task', 'TASK-THYROX-0724', '--context', '/ctx', '--tag', 'localhost/t:1', '--lifecycle', 'permanent'], h.deps)
+    expect(buildArgv(h)).toContain('--label io.thyrox.image.lifecycle=permanent')
+  })
+
+  test('un ciclo de vida desconocido rehúsa con 2 y no invoca Podman', async () => {
+    const h = harness()
+    expect(await runExecutionCommand(['build-image', '--task', 'TASK-THYROX-0724', '--context', '/ctx', '--tag', 'localhost/t:1', '--lifecycle', 'forever'], h.deps)).toBe(2)
+    expect(h.calls).toEqual([])
+  })
+})
+
+describe('thyrox-exec run --attest', () => {
+  test('el primitivo atesta la unidad que materializó: id de ejecución, contenedor y materializador', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'attest-'))
+    try {
+      const file = join(dir, 'executions.jsonl')
+      const h = harness()
+      const code = await runExecutionCommand(['run', '--task', 'TASK-THYROX-0758', '--kind', 'probe', '--attest', file, '--', 'true'], h.deps)
+      expect(code).toBe(0)
+      const rows = readFileSync(file, 'utf8').trim().split('\n').map(line => JSON.parse(line))
+      expect(rows).toHaveLength(1)
+      expect(rows[0]).toMatchObject({
+        materializer: 'podman-execution-primitive', task: 'TASK-THYROX-0758', kind: 'probe',
+        containerId: 'c'.repeat(64), exitCode: 0,
+      })
+      expect(rows[0].executionId).toMatch(/^probe-/)
+      expect(rows[0].containerName).toContain(rows[0].executionId)
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
+  })
+
+  test('sin --attest no escribe nada', async () => {
+    const dir = mkdtempSync(join(tmpdir(), 'attest-'))
+    try {
+      await runExecutionCommand(['run', '--task', 'TASK-THYROX-0758', '--kind', 'probe', '--', 'true'], harness().deps)
+      expect(readdirSync(dir)).toEqual([])
+    } finally {
+      rmSync(dir, { recursive: true, force: true })
+    }
   })
 })

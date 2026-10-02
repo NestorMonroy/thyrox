@@ -23,13 +23,6 @@ if type thyrox_podman_lock_balance &>/dev/null; then return 0 2>/dev/null || tru
 # shellcheck source=/dev/null
 source "$(dirname "${BASH_SOURCE[0]}")/infrastructure.sh"
 
-# Las dos partes de la salida con que `podman system renumber` falla en Podman
-# 4.9.3 sobre backend sqlite: la reescritura de la configuración de un volumen
-# usa una columna `ID` que la tabla de volúmenes no tiene. Renumber asigna los
-# locks de los contenedores y se detiene en el primer volumen.
-readonly _PODMAN_SQLITE_VOLUME_RENUMBER_STAGE="updating volume config table"
-readonly _PODMAN_SQLITE_VOLUME_RENUMBER_CAUSE="no such column: ID"
-
 _podman_locks_bin() { echo "${THYROX_TOOLCHAIN_PODMAN_BIN:-podman}"; }
 
 # @description Total de locks del motor: `num_locks` de containers.conf, o el
@@ -90,14 +83,3 @@ thyrox_podman_live_containers() {
   done < <("$podman" ps -a --format '{{.Names}}' 2>/dev/null)
 }
 export -f thyrox_podman_live_containers
-
-# @description ¿La salida de `podman system renumber` es el defecto conocido
-# de Podman 4.9.3 sobre backend sqlite? Exige las dos partes del mensaje: un
-# fallo cualquiera de renumber no se atribuye a este defecto.
-# @arg $1 string salida de renumber (stdout y stderr: Podman 4.9.3 lo escribe en stdout).
-# @exitcode 0 es el defecto conocido.
-# @exitcode 1 no lo es.
-thyrox_podman_is_sqlite_volume_renumber_defect() {
-  [[ "${1:-}" == *"$_PODMAN_SQLITE_VOLUME_RENUMBER_STAGE"* && "${1:-}" == *"$_PODMAN_SQLITE_VOLUME_RENUMBER_CAUSE"* ]]
-}
-export -f thyrox_podman_is_sqlite_volume_renumber_defect

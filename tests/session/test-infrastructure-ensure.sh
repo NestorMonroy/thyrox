@@ -43,6 +43,10 @@ printf '%s\n' "\$*" >> "\$STATE/calls.log"
 case "\$1" in
   info)
     [[ "\$*" == *FreeLocks* && -f "\$STATE/free-locks" ]] && cat "\$STATE/free-locks"
+    [[ "\$*" == *DatabaseBackend* && -f "\$STATE/backend" ]] && cat "\$STATE/backend"
+    exit 0 ;;
+  version)
+    [[ -f "\$STATE/version" ]] && cat "\$STATE/version"
     exit 0 ;;
   ps)
     for f in "\$STATE"/*.status; do [[ -e "\$f" ]] && basename "\$f" .status; done
@@ -54,6 +58,7 @@ case "\$1" in
   pod|volume)
     file="\$STATE/\${1}s"
     [[ "\$2" == inspect ]] && { cut -d' ' -f2 "\$file" 2>/dev/null; exit 0; }
+    [[ "\$2" == ls ]] && { cut -d' ' -f1 "\$file" 2>/dev/null; exit 0; }
     exit 0 ;;
   system)
     if [[ "\$2" == renumber && -f "\$STATE/renumber-fails" ]]; then
@@ -237,8 +242,10 @@ for key in THYROX_INFRA_DISK_ADMISSION_BIN THYROX_INFRA_BOOTSTRAP_BIN; do
 done
 
 # =====================================================================
-# Casos 12-18 — gate de locks: el balance se mide antes de invocar el
-# bootstrap, y renumber sólo se intenta sin contenedores vivos.
+# Casos 12-17 — gate de locks: el balance se mide antes de invocar el
+# bootstrap. El ensure DETECTA y DIAGNOSTICA; nunca repara el runtime de
+# Podman (decisión del ejecutor 2026-10-02): sin `podman system renumber`, un
+# desfase sale con exit 3 y nombra bin/podman_lock_recovery.
 # =====================================================================
 seed_stale_base() {
   reset_state
@@ -248,20 +255,14 @@ seed_stale_base() {
   printf 'vol-a 1\nvol-b 1\n' > "$STATE/volumes"
   echo 2048 > "$STATE/free-locks"
 }
-first_line_matching() { grep -nE "$1" "$STATE/calls.log" | head -1 | cut -d: -f1; }
 
 seed_stale_base
 out="$(run_ensure thyrox-postgres 2>&1)"; rc=$?
-thyrox_check "caso 12: locks desfasados con todo parado -> exit 0" "0" "$rc"
-thyrox_check "caso 12: renumera una sola vez" "1" "$(grep -c '^system renumber' "$STATE/calls.log")"
-renumber_at="$(first_line_matching '^system renumber')"
-bootstrap_at="$(first_line_matching '^bootstrap')"
-if [[ -n "$renumber_at" && -n "$bootstrap_at" && "$renumber_at" -lt "$bootstrap_at" ]]; then
-  ok "caso 12: renumera ANTES de materializar"
-else
-  bad "caso 12: el orden no es renumerar primero: $(cat "$STATE/calls.log")"
-fi
-[[ "$out" == *"asignados 0"*"referenciados 2"*"renumerados"* ]] && ok "caso 12: publica la medida y la acción" || bad "caso 12: no publica la medida: [$out]"
+thyrox_check "caso 12: locks desfasados con todo parado -> exit $EXIT_LOCK_COLLISION" "$EXIT_LOCK_COLLISION" "$rc"
+thyrox_check "caso 12: el ensure no ejecuta ningún podman system" "0" "$(grep -c '^system ' "$STATE/calls.log")"
+thyrox_check "caso 12: sin locks sanos no se invoca el bootstrap" "0" "$(grep -c '^bootstrap' "$STATE/calls.log")"
+[[ "$out" == *"asignados 0"*"referenciados 2"* ]] && ok "caso 12: publica la medida" || bad "caso 12: no publica la medida: [$out]"
+[[ "$out" == *"bin/podman_lock_recovery"* ]] && ok "caso 12: nombra la reparación explícita" || bad "caso 12: no nombra la reparación: [$out]"
 expect_no_materialization "caso 12"
 
 reset_state
@@ -269,7 +270,7 @@ printf 'vol-a 1\nvol-b 1\n' > "$STATE/volumes"
 echo 2047 > "$STATE/free-locks"
 run_ensure thyrox-postgres >/dev/null 2>&1; rc=$?
 thyrox_check "caso 13: base coherente -> exit 0" "0" "$rc"
-thyrox_check "caso 13: base coherente -> no renumera" "0" "$(grep -c '^system ' "$STATE/calls.log")"
+thyrox_check "caso 13: base coherente -> ningún podman system" "0" "$(grep -c '^system ' "$STATE/calls.log")"
 
 seed_stale_base
 nohup bash -c "exec -a ${MARKER}-live sleep 999" >/dev/null 2>&1 &
@@ -278,41 +279,30 @@ echo running > "$STATE/thyrox-redis.status"
 echo "$live_pid" > "$STATE/thyrox-redis.pid"
 err="$(run_ensure thyrox-postgres 2>&1 >/dev/null)"; rc=$?
 thyrox_check "caso 14: desfase con un contenedor vivo -> exit $EXIT_LOCK_COLLISION" "$EXIT_LOCK_COLLISION" "$rc"
-thyrox_check "caso 14: con un contenedor vivo no renumera" "0" "$(grep -c '^system ' "$STATE/calls.log")"
+thyrox_check "caso 14: con un contenedor vivo, ningún podman system" "0" "$(grep -c '^system ' "$STATE/calls.log")"
 thyrox_check "caso 14: con un contenedor vivo no se invoca el bootstrap" "0" "$(grep -c '^bootstrap' "$STATE/calls.log")"
-[[ "$err" == *thyrox-redis* && "$err" == *"podman system renumber"* ]] && ok "caso 14: nombra el contenedor vivo y el remedio" || bad "caso 14: no nombra el contenedor ni el remedio: [$err]"
+[[ "$err" == *thyrox-redis* && "$err" == *"bin/podman_lock_recovery"* ]] && ok "caso 14: nombra el contenedor vivo y la reparación" || bad "caso 14: no nombra el contenedor ni la reparación: [$err]"
 
 seed_stale_base
 rm -f "$STATE/free-locks"
 run_ensure thyrox-postgres >/dev/null 2>&1; rc=$?
 thyrox_check "caso 15: sin medida de locks -> sigue (exit 0)" "0" "$rc"
-thyrox_check "caso 15: sin medida de locks no renumera a ciegas" "0" "$(grep -c '^system ' "$STATE/calls.log")"
+thyrox_check "caso 15: sin medida de locks, ningún podman system" "0" "$(grep -c '^system ' "$STATE/calls.log")"
 
 seed_stale_base
-touch "$STATE/renumber-noop"
+echo sqlite > "$STATE/backend"
+echo 4.9.3 > "$STATE/version"
 err="$(run_ensure thyrox-postgres 2>&1 >/dev/null)"; rc=$?
-thyrox_check "caso 16: renumerar no corrige -> exit $EXIT_LOCK_COLLISION" "$EXIT_LOCK_COLLISION" "$rc"
-[[ "$err" == *"asignados 0"*"referenciados 2"* ]] && ok "caso 16: publica la medida tras renumerar" || bad "caso 16: no publica la medida: [$err]"
-thyrox_check "caso 16: sin locks corregidos no se invoca el bootstrap" "0" "$(grep -c '^bootstrap' "$STATE/calls.log")"
-
-SQLITE_RENUMBER_ERROR="updating volume config table with new configuration for volume vol-a: no such column: ID"
-seed_stale_base
-echo "$SQLITE_RENUMBER_ERROR" > "$STATE/renumber-fails"
-err="$(run_ensure thyrox-postgres 2>&1 >/dev/null)"; rc=$?
-thyrox_check "caso 17: renumber falla -> exit $EXIT_LOCK_COLLISION" "$EXIT_LOCK_COLLISION" "$rc"
-[[ "$err" == *"$SQLITE_RENUMBER_ERROR"* ]] && ok "caso 17: la salida de renumber se publica verbatim" || bad "caso 17: la salida de renumber se perdió: [$err]"
-[[ "$err" == *"defecto conocido"*"sqlite"* ]] && ok "caso 17: nombra el defecto conocido del backend sqlite" || bad "caso 17: no nombra el defecto conocido: [$err]"
-[[ "$err" == *"bin/podman_lock_recovery"* ]] && ok "caso 17: nombra el procedimiento explícito de recuperación" || bad "caso 17: no nombra la recuperación: [$err]"
-expect_no_materialization "caso 17"
+thyrox_check "caso 16: sqlite 4.9 con volúmenes -> exit $EXIT_LOCK_COLLISION" "$EXIT_LOCK_COLLISION" "$rc"
+[[ "$err" == *"H-THYROX-308"* && "$err" == *sqlite* ]] && ok "caso 16: reconoce las precondiciones de H-THYROX-308" || bad "caso 16: no reconoce H-THYROX-308: [$err]"
+[[ "$err" == *"Podman 4.9.3"* && "$err" == *"2 volumen"* ]] && ok "caso 16: publica versión, backend y volúmenes medidos" || bad "caso 16: diagnóstico incompleto: [$err]"
+thyrox_check "caso 16: reconocerlo no ejecuta renumber" "0" "$(grep -c '^system ' "$STATE/calls.log")"
 
 seed_stale_base
-echo "Error: some other renumber failure" > "$STATE/renumber-fails"
+echo boltdb > "$STATE/backend"
+echo 4.9.3 > "$STATE/version"
 err="$(run_ensure thyrox-postgres 2>&1 >/dev/null)"; rc=$?
-thyrox_check "caso 18: renumber falla por otra causa -> exit $EXIT_LOCK_COLLISION" "$EXIT_LOCK_COLLISION" "$rc"
-if [[ "$err" == *"Error: some other renumber failure"* && "$err" != *"defecto conocido"* ]]; then
-  ok "caso 18: publica la salida sin atribuirla al defecto de sqlite"
-else
-  bad "caso 18: diagnóstico equivocado: [$err]"
-fi
+thyrox_check "caso 17: otro backend -> exit $EXIT_LOCK_COLLISION" "$EXIT_LOCK_COLLISION" "$rc"
+[[ "$err" != *"H-THYROX-308"* ]] && ok "caso 17: con boltdb no se atribuye a H-THYROX-308" || bad "caso 17: atribuyó H-THYROX-308 sin sus precondiciones: [$err]"
 
 thyrox_summary

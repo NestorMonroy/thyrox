@@ -1,0 +1,24 @@
+# T001 — capacidades de aprendizaje, medidas el 2026-10-02 sobre 1c9b8d123 (+a02f15fc8)
+# fuentes: T001-existing-rl.txt, T001-existing-telemetry.txt, T001-transformers-version.txt
+
+capability | existing | production-wired | measured | missing
+---|---|---|---|---
+Beta posterior + Thompson sampling | yes: verify/tsc_schedule.py:61,101 | yes: tsc loop (bin/tsc_schedule) and task_continuation.py:290 | tsc ledger; continuation.jsonl attempts | context beyond taskClass; policy events; learning on/off
+candidate choice per item | yes: task_continuation.choose_candidate | yes: run-one of the frontier | attempts per model in continuation.jsonl | policyVersion, selectionReason, explore flag
+reward = verifier acceptance | implicit: candidate_counts counts outcome=="success" | yes | yes | explicit hard gates, separate cost record, ranking
+provider failures excluded from reward | yes: NOT_COUNTED | yes | yes | separate provider-health record
+learned outcome classifier hook | yes: classify(evidence, learned), THYROX_OUTCOME_CLASSIFIER_COMMAND | hook only; no backend declared | no | a real backend (Transformers) with provenance
+Reflexion (verbal memory between attempts) | yes: verify/tsc_reflect.py; attempt_prompt carries failures | yes | in tsc loop | —
+verifiable reward suite | yes: local-models/toolCallingSuite.ts scoreReply | qualification only | yes (local models) | task-level reward for engineering items
+GRPO / LoRA RLVR | lab probe only (rlvr-local-models workbench) | no | 2 steps, zero gradient (saturated reward) | out of scope by directive
+token usage per delegated execution | partial: delegate.sh writes result.usage or null | yes | 3 of 28 rows carry usage; 25 null | transcript fallback, join to the attempt row, usageSource
+token usage per subagent | yes: agent_store.agent_sessions (+usage_source) | yes (Claude subagents) | yes | not used by the controller
+experience (S,A,R,S') store | no | no | — | schema, versions, store table
+Transformers runtime | yes: image thyrox-model-quantizer:dev, transformers 4.57.6, torch 2.11.0+cpu | quantization only | yes | trl, datasets, accelerate, peft absent
+reward model training (RewardTrainer) | no | no | — | everything
+SWE-Gym / SWE-smith adapters | no | no | — | everything
+actor baseline OpenHands LM | no | no | — | assessment
+
+## lateral, from measuring
+- usage is unknown for 25 of 28 delegated executions: thyrox -p writes the stream-json result only at the end (H-THYROX-309), so a killed or failing worker leaves no usage line; the per-turn usage is in its transcript, which delegate.sh already links into the workbench.
+- a direct `podman run --rm` was used once before this inventory to read package versions (Rule 4 violation, read-only, no resource kept). Every later probe goes through bin/podman-execution-execute run --image.

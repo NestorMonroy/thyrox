@@ -1,0 +1,3 @@
+# Declara la candidata como permanent: lo único que añade es la etiqueta de ciclo de vida.
+FROM localhost/thyrox-task-runner:candidate
+LABEL io.thyrox.image.lifecycle="permanent" thyrox.task="TASK-THYROX-0724"

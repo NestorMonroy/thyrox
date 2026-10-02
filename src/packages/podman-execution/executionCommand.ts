@@ -11,6 +11,7 @@
  * RUN son también ejecución gestionada.
  */
 
+import { appendFileSync } from 'node:fs'
 import { parseArgs } from 'node:util'
 
 import { EXECUTION_REFERENCE_LABEL_KEY, runExecution, InvalidExecutionAuthorizationError, type ExecutionAuthorization, type ExecutionKind, type ExecutionReference, type ExecutionSecret } from './executionAuthorization.js'
@@ -54,12 +55,12 @@ export type ExecutionCommandDeps = {
 }
 
 const USAGE = [
-  'uso: podman-execution-execute run (--task TASK-<CAPA>-NNNN | --work CONSUMIDOR:ID) [--owner pool:ID] --kind <tipo> [--image REF] [--network none|host]',
+  'uso: podman-execution-execute run (--task TASK-<CAPA>-NNNN | --work CONSUMIDOR:ID) [--owner pool:ID] --kind <tipo> [--image REF] [--network none|host] [--attest ARCHIVO]',
   '                    [--mount ORIGEN[:DESTINO][:ro|rw]]... [--workdir DIR] [--env NOMBRE]...',
   '                    [--cpus N] [--memory-mib N] [--pids N] [--output RUTA]... [--secret-from-env NOMBRE]...',
   '                    (--script-stdin | -- ARGV...)',
   '     podman-execution-execute reconcile-orphans',
-  '     podman-execution-execute build-image (--task TASK-<CAPA>-NNNN | --work CONSUMIDOR:ID) --context DIR --tag TAG [--containerfile F] [--network host]',
+  '     podman-execution-execute build-image (--task TASK-<CAPA>-NNNN | --work CONSUMIDOR:ID) --context DIR --tag TAG [--containerfile F] [--network host] [--lifecycle cache|permanent]',
 ].join('\n')
 
 class UsageError extends Error {}
@@ -163,6 +164,7 @@ async function runCommand(argv: string[], deps: ExecutionCommandDeps): Promise<n
       output: { type: 'string', multiple: true },
       'script-stdin': { type: 'boolean' },
       'secret-from-env': { type: 'string', multiple: true },
+      attest: { type: 'string' },
     },
   })
   const reference = referenceOf(values.task, values.work)
@@ -194,6 +196,7 @@ async function runCommand(argv: string[], deps: ExecutionCommandDeps): Promise<n
     secrets: await materializeSecretsFromEnvironment(deps, secretNames),
   }
   const result = await runExecution(deps.podman, authorization)
+  if (values.attest !== undefined) attestExecution(values.attest, authorization, result)
   deps.output.stdout(result.stdout)
   deps.output.stderr(result.stderr)
   deps.output.stderr(`execution ${result.containerName} kind=${kind} ${referenceText(reference)} exit=${result.exitCode}\n`)
@@ -231,6 +234,39 @@ function referenceText(reference: ExecutionReference): string {
   return reference.kind === 'task' ? `task=${reference.citation}` : reference.kind === 'work' ? `work=${reference.consumer}:${reference.workId}` : reference.kind
 }
 
+/** El nombre con que el primitivo firma lo que materializó; ningún otro escritor lo emite. */
+export const PRIMITIVE_MATERIALIZER = 'podman-execution-primitive'
+
+/**
+ * Atestación del primitivo: la unidad que ESTE proceso materializó, con el id
+ * de contenedor que devolvió `podman create`. Es la mitad del anfitrión de la
+ * contención; la otra mitad la escribe el payload desde dentro de su cgroup.
+ */
+function attestExecution(file: string, authorization: ExecutionAuthorization, result: { containerName: string; containerId: string; exitCode: number }): void {
+  const { reference } = authorization
+  appendFileSync(file, `${JSON.stringify({
+    materializer: PRIMITIVE_MATERIALIZER,
+    executionId: authorization.executionId,
+    ...(reference.kind === 'task' ? { task: reference.citation } : {}),
+    reference: referenceText(reference).replace('=', ':'),
+    kind: authorization.kind,
+    containerName: result.containerName,
+    containerId: result.containerId,
+    exitCode: result.exitCode,
+    utc: new Date().toISOString(),
+  })}\n`)
+}
+
+const BUILD_LIFECYCLES = ['cache', 'permanent'] as const
+
+/** El ciclo de vida que declara una construcción: `cache` por defecto; `permanent` sólo para una candidata a publicar. */
+function parseLifecycle(value: string | undefined): (typeof BUILD_LIFECYCLES)[number] {
+  if (value === undefined) return 'cache'
+  const known = BUILD_LIFECYCLES.find(lifecycle => lifecycle === value)
+  if (known === undefined) throw new InvalidExecutionAuthorizationError('lifecycle', `ciclo de vida desconocido: ${value} (${BUILD_LIFECYCLES.join(', ')})`)
+  return known
+}
+
 async function buildImageCommand(argv: string[], deps: ExecutionCommandDeps): Promise<number> {
   const { values } = parseArgs({
     args: argv,
@@ -242,20 +278,25 @@ async function buildImageCommand(argv: string[], deps: ExecutionCommandDeps): Pr
       containerfile: { type: 'string' },
       tag: { type: 'string' },
       network: { type: 'string' },
+      lifecycle: { type: 'string' },
     },
   })
   // Un consumidor construye su imagen de ejecución bajo su propia referencia de trabajo.
   const reference = referenceOf(values.task, values.work)
   const network = parseNetwork(values.network)
+  const lifecycle = parseLifecycle(values.lifecycle)
   const ca = deps.env[PROXY_CA_KEY]
   const egress = network === 'host'
   const id = await buildImage(deps.podman, {
     context: requireValue(values.context, 'context'),
     containerfile: values.containerfile,
     tag: requireValue(values.tag, 'tag'),
-    labels: { ...imageReferenceLabels(reference), [IMAGE_LIFECYCLE_LABEL]: 'cache' },
+    labels: { ...imageReferenceLabels(reference), [IMAGE_LIFECYCLE_LABEL]: lifecycle },
     network: egress ? 'host' : undefined,
-    buildArgs: egress ? { ...forwardedEnvironment(deps.env, ['HTTPS_PROXY', 'https_proxy']), ...(ca ? { PROXY_CA: PROXY_CA_BUILD_PATH } : {}) } : undefined,
+    // El proxy no va como argumento de build: Podman lo grabaría con su valor en
+    // la historia de cada RUN. `podman build` reenvía por defecto (--http-proxy)
+    // las variables de proxy de su propio entorno a cada RUN sin grabarlas.
+    buildArgs: egress && ca ? { PROXY_CA: PROXY_CA_BUILD_PATH } : undefined,
     readOnlyMounts: egress && ca ? [{ source: ca, destination: PROXY_CA_BUILD_PATH }] : undefined,
   })
   deps.output.stdout(`${id}\n`)

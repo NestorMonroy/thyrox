@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts run --task TASK-THYROX-0754 --kind maintenance --workdir /home/user/thyrox/.thyrox/runtime/continuation/worktrees/wb/T2-1790901120038865 -- bash -c test \"$(cat T2.txt 2>/dev/null)\" = ok", "started_at": "2026-10-02T00:32:03+00:00"}
+{"kind": "settle", "exit_code": 1, "finished_at": "2026-10-02T00:32:07+00:00", "duration_seconds": 4.553998}

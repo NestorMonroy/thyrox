@@ -8,6 +8,10 @@
  * loopback) y ningún secreto. El trabajo deja su veredicto en un archivo del
  * montaje de trabajo; la salida estándar es diagnóstico.
  *
+ * La composición pasa por la autorización canónica (clase `maintenance`, con
+ * la cita de la tarea que deja el modelo disponible): el instalador no compone
+ * un spec ni alcanza ninguna función interna de la primitiva.
+ *
  * Que el trabajo diga `installed` no basta: después se vuelve a inspeccionar
  * el runtime, y sólo es `installed` si el nombre resuelve al contenido
  * pedido (H-THYROX-304).
@@ -15,10 +19,10 @@
 import { mkdir, readFile, rm } from 'node:fs/promises'
 import { join } from 'node:path'
 
-import { runJobWithOutput } from '@thyrox/podman-execution/containerRun.ts'
+import { runExecution, type ExecutionAuthorization } from '@thyrox/podman-execution/executionAuthorization.ts'
 import type { PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
-import type { ContainerOwner, WorkerContainerSpec } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
-import { workerResourceLimitArgv, type WorkerResourceProfile } from '@thyrox/podman-execution/workerResourceProfile.ts'
+import type { ContainerOwner } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+import type { WorkerResourceProfile } from '@thyrox/podman-execution/workerResourceProfile.ts'
 
 import { managedOllama, type Environment } from './managedOllama.js'
 import type { InstallOutcome, InstalledModelState, ModelInstaller, ModelInstallRequest } from './modelInstaller.js'
@@ -26,6 +30,9 @@ import { OllamaApi } from './ollamaApi.js'
 import { modelBlobOfModelfile } from './volumeBlobs.js'
 
 export const INSTALL_REPORT_NAME = 'install.json'
+
+/** La cita de la tarea que autoriza la instalación; el llamador puede declarar otra. */
+export const DEFAULT_INSTALL_TASK_CITATION = 'TASK-THYROX-0729'
 
 const CONTAINER_BUN = '/usr/local/bin/bun'
 const CONTAINER_REPOSITORY = '/w'
@@ -48,26 +55,24 @@ export interface OllamaModelInstallerOptions {
   readonly owner: ContainerOwner
   readonly workerId: string
   readonly limits: Pick<WorkerResourceProfile, 'cpus' | 'memoryMib' | 'pidsLimit'>
+  /** Cita de la tarea que autoriza la instalación; por defecto, la del flujo que deja el modelo disponible. */
+  readonly taskCitation?: string
 }
 
-export function installJobSpec(options: OllamaModelInstallerOptions, request: ModelInstallRequest): WorkerContainerSpec {
-  const profile: WorkerResourceProfile = {
-    ...options.limits,
-    network: 'host',
-    environment: { HOME: `${CONTAINER_SCRATCH}/home`, TMPDIR: `${CONTAINER_SCRATCH}/tmp` },
-    readOnlyRootfs: true,
-    mounts: [
-      { source: options.bunPath, destination: CONTAINER_BUN, mode: 'ro' },
-      { source: options.repositoryRoot, destination: CONTAINER_REPOSITORY, mode: 'ro' },
-      { source: request.artifactPath, destination: CONTAINER_ARTIFACT, mode: 'ro' },
-      { source: options.scratchDir, destination: CONTAINER_SCRATCH, mode: 'rw' },
-    ],
-  }
+/**
+ * La instalación compuesta en la autorización canónica: clase `maintenance`
+ * con la cita de su tarea, red del anfitrión para alcanzar el Ollama gestionado
+ * y los montajes de siempre —intérprete, repositorio y GGUF de sólo lectura,
+ * scratch de escritura—. El raíz se declara de sólo lectura: lo que el trabajo
+ * escribe vive en el montaje, y HOME y TMPDIR apuntan a él.
+ */
+export function installAuthorization(options: OllamaModelInstallerOptions, request: ModelInstallRequest): ExecutionAuthorization {
   return {
-    workerId: options.workerId,
-    image: options.image,
+    executionId: options.workerId,
+    reference: { kind: 'task', citation: options.taskCitation ?? DEFAULT_INSTALL_TASK_CITATION },
     owner: options.owner,
-    resourceArgv: workerResourceLimitArgv(profile),
+    kind: 'maintenance',
+    image: options.image,
     command: [
       CONTAINER_BUN, INSTALL_ENTRY,
       '--ollama-url', managedOllama(options.environment).baseUrl,
@@ -76,6 +81,16 @@ export function installJobSpec(options: OllamaModelInstallerOptions, request: Mo
       '--sha256', request.contentSha256,
       '--report', `${CONTAINER_SCRATCH}/${INSTALL_REPORT_NAME}`,
     ],
+    mounts: [
+      { source: options.bunPath, destination: CONTAINER_BUN, mode: 'ro' },
+      { source: options.repositoryRoot, destination: CONTAINER_REPOSITORY, mode: 'ro' },
+      { source: request.artifactPath, destination: CONTAINER_ARTIFACT, mode: 'ro' },
+      { source: options.scratchDir, destination: CONTAINER_SCRATCH, mode: 'rw' },
+    ],
+    resources: options.limits,
+    network: 'host',
+    readOnlyRootfs: true,
+    environment: { HOME: `${CONTAINER_SCRATCH}/home`, TMPDIR: `${CONTAINER_SCRATCH}/tmp` },
   }
 }
 
@@ -104,7 +119,7 @@ export class OllamaModelInstaller implements ModelInstaller {
     await rm(scratchDir, { recursive: true, force: true })
     await Promise.all(['home', 'tmp'].map(name => mkdir(join(scratchDir, name), { recursive: true })))
     try {
-      const job = await runJobWithOutput(this.options.podman, installJobSpec(this.options, request))
+      const job = await runExecution(this.options.podman, installAuthorization(this.options, request))
       const report = await readReport(join(scratchDir, INSTALL_REPORT_NAME))
       if (report) return report
       return { status: 'failed', reason: `${job.containerName} salió ${job.exitCode} sin reporte: ${job.stderr.trim().slice(-DIAGNOSTIC_TAIL_CHARS)}` }

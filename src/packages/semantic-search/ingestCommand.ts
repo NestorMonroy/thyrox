@@ -17,7 +17,7 @@ import { spawnSync } from 'node:child_process'
 import { basename, resolve } from 'node:path'
 
 import { resolveSemanticSearchDatabaseUrl } from './config.ts'
-import { FINDING_DOMAIN, ingestFindings, recognizeFindings, type IngestionSource } from './findingIngestion.ts'
+import { ingestFindings, recognizeDocuments, recognizedDomains, type IngestionSource } from './findingIngestion.ts'
 import { openSemanticSearchStore } from './store.ts'
 
 export const SEMANTIC_SEARCH_SCHEMA_VAR = 'THYROX_SEMANTIC_SEARCH_SCHEMA'
@@ -25,7 +25,7 @@ export const DEFAULT_SEMANTIC_SEARCH_SCHEMA = 'semantic_search'
 export const INGEST_EXIT_OK = 0
 export const INGEST_EXIT_REFUSED = 2
 
-export const INGEST_USAGE = 'uso: semantic-search-ingest finding --root <dir> [--source-label <nombre>]'
+export const INGEST_USAGE = 'uso: semantic-search-ingest finding|error --root <dir> [--source-label <nombre>]'
 
 export type IngestCommandContext = {
   env: Readonly<Record<string, string | undefined>>
@@ -38,7 +38,7 @@ class IngestRefusal extends Error {}
 
 const ROOT_FLAG = '--root'
 const SOURCE_LABEL_FLAG = '--source-label'
-const SUPPORTED_DOMAINS = [FINDING_DOMAIN]
+const SUPPORTED_DOMAINS = recognizedDomains()
 
 export async function runIngestCommand(argv: readonly string[], context: IngestCommandContext): Promise<number> {
   try {
@@ -54,7 +54,7 @@ export async function runIngestCommand(argv: readonly string[], context: IngestC
 
 async function ingest(args: IngestArguments, url: string, schema: string, context: IngestCommandContext): Promise<number> {
   const source = sourceOf(args)
-  const { recognized, unrecognized } = recognizeFindings(args.root, source)
+  const { recognized, unrecognized } = recognizeDocuments(args.domain, args.root, source)
   const store = openSemanticSearchStore({ url, schema: { name: schema } })
   try {
     await store.migrate()

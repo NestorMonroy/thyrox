@@ -1,0 +1,15 @@
+== 1. versiones y forma ==
+ok   schemaVersion presente
+ok   policyVersion y rewardVersion
+ok   S' acumula el resultado del intento
+ok   S' avanza el intento
+== 2. ida y vuelta ==
+ok   from_record(to_record(e)) == e
+== 3. secretos ==
+ok   un nombre de credencial se rehúsa
+ok   un valor con forma de clave se rehúsa
+== 4. versión de esquema ==
+ok   otra versión se rehúsa
+
+8 casos: 8 ok, 0 fallos
+execution thyrox-worker-test-muqcf4mn-11065 kind=test task=TASK-THYROX-0755 exit=0

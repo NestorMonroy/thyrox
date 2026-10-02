@@ -11,6 +11,10 @@
  * `materializeArtifact`. Su resultado lo deja en `fetch.json` de un montaje de
  * trabajo propio, que se borra al terminar: la salida estándar es diagnóstico.
  *
+ * La composición pasa por la autorización canónica (clase `registry-operation`,
+ * con la cita de la tarea que trae el artefacto): el fetcher no compone un spec
+ * ni alcanza ninguna función interna de la primitiva.
+ *
  * Un límite del provider, una capa ajena al manifest o un blob corrupto llegan
  * como reporte y se devuelven como `failed` con su causa: nunca como contenido.
  */
@@ -23,14 +27,18 @@ import { DOCKER_HUB_REGISTRY_URL, dockerHubRepository } from '@thyrox/artifact-r
 import { jobNetworkProfile, type JobEgress } from '@thyrox/artifact-registry/jobEgress.ts'
 import { registryBaseUrl } from '@thyrox/artifact-registry/publishCommand.ts'
 import type { PinnedModelArtifact } from '@thyrox/model-artifacts/modelArtifactResolver.ts'
-import { ContainerRunError, runJobWithOutput } from '@thyrox/podman-execution/containerRun.ts'
+import { ContainerRunError } from '@thyrox/podman-execution/containerRun.ts'
+import { runExecution, type ExecutionAuthorization } from '@thyrox/podman-execution/executionAuthorization.ts'
 import type { PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
-import type { ContainerOwner, WorkerContainerSpec } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
-import { workerResourceLimitArgv, type WorkerResourceProfile } from '@thyrox/podman-execution/workerResourceProfile.ts'
+import type { ContainerOwner } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+import type { WorkerResourceProfile } from '@thyrox/podman-execution/workerResourceProfile.ts'
 
 import type { ArtifactFetcher, FetchOutcome } from './modelArtifactCache.js'
 
 export const FETCH_REPORT_NAME = 'fetch.json'
+
+/** La cita de la tarea que autoriza la bajada del artefacto; el llamador puede declarar otra. */
+export const DEFAULT_FETCH_TASK_CITATION = 'TASK-THYROX-0729'
 
 const CONTAINER_BUN = '/usr/local/bin/bun'
 const CONTAINER_REPOSITORY = '/w'
@@ -52,6 +60,8 @@ export interface PodmanArtifactFetcherOptions {
   readonly owner: ContainerOwner
   readonly workerId: string
   readonly limits: Pick<WorkerResourceProfile, 'cpus' | 'memoryMib' | 'pidsLimit'>
+  /** Cita de la tarea que autoriza la bajada; por defecto, la del flujo que trae el artefacto. */
+  readonly taskCitation?: string
   /** La URL de la API de distribución de un registry declarado por host; sin declarar, `registryBaseUrl`. */
   readonly registryUrlOf?: (registry: string) => string
 }
@@ -63,27 +73,22 @@ function repositoryFor(registryUrl: string, repository: string): string {
   return registryUrl === DOCKER_HUB_REGISTRY_URL ? dockerHubRepository(repository) : repository
 }
 
-export function fetchJobSpec(options: PodmanArtifactFetcherOptions, pinned: PinnedModelArtifact, destination: string, scratchDir: string): WorkerContainerSpec {
+/**
+ * La bajada de la capa compuesta en la autorización canónica: clase
+ * `registry-operation` con la cita de su tarea, la red que decide el egress y
+ * los montajes de siempre —intérprete y repositorio de sólo lectura, el
+ * directorio del destino y el scratch de escritura—. El raíz se declara de sólo
+ * lectura: lo que el trabajo escribe vive en esos montajes.
+ */
+export function fetchAuthorization(options: PodmanArtifactFetcherOptions, pinned: PinnedModelArtifact, destination: string, scratchDir: string): ExecutionAuthorization {
   const registryUrl = (options.registryUrlOf ?? registryBaseUrl)(pinned.registry)
   const network = jobNetworkProfile(options.egress)
-  const profile: WorkerResourceProfile = {
-    ...options.limits,
-    network: network.network,
-    environment: { ...network.environment, HOME: `${CONTAINER_SCRATCH}/home`, TMPDIR: `${CONTAINER_SCRATCH}/tmp` },
-    readOnlyRootfs: true,
-    mounts: [
-      { source: options.bunPath, destination: CONTAINER_BUN, mode: 'ro' },
-      { source: options.repositoryRoot, destination: CONTAINER_REPOSITORY, mode: 'ro' },
-      { source: dirname(destination), destination: CONTAINER_DESTINATION, mode: 'rw' },
-      { source: scratchDir, destination: CONTAINER_SCRATCH, mode: 'rw' },
-      ...network.mounts,
-    ],
-  }
   return {
-    workerId: options.workerId,
-    image: options.image,
+    executionId: options.workerId,
+    reference: { kind: 'task', citation: options.taskCitation ?? DEFAULT_FETCH_TASK_CITATION },
     owner: options.owner,
-    resourceArgv: workerResourceLimitArgv(profile),
+    kind: 'registry-operation',
+    image: options.image,
     command: [
       CONTAINER_BUN, FETCH_ENTRY,
       '--registry', registryUrl,
@@ -93,6 +98,17 @@ export function fetchJobSpec(options: PodmanArtifactFetcherOptions, pinned: Pinn
       '--destination', `${CONTAINER_DESTINATION}/${basename(destination)}`,
       '--report', `${CONTAINER_SCRATCH}/${FETCH_REPORT_NAME}`,
     ],
+    mounts: [
+      { source: options.bunPath, destination: CONTAINER_BUN, mode: 'ro' },
+      { source: options.repositoryRoot, destination: CONTAINER_REPOSITORY, mode: 'ro' },
+      { source: dirname(destination), destination: CONTAINER_DESTINATION, mode: 'rw' },
+      { source: scratchDir, destination: CONTAINER_SCRATCH, mode: 'rw' },
+      ...network.mounts,
+    ],
+    resources: options.limits,
+    network: network.network,
+    readOnlyRootfs: true,
+    environment: { ...network.environment, HOME: `${CONTAINER_SCRATCH}/home`, TMPDIR: `${CONTAINER_SCRATCH}/tmp` },
   }
 }
 
@@ -116,7 +132,7 @@ function outcomeOf(report: FetchReport): FetchOutcome {
 
 async function runFetchJob(options: PodmanArtifactFetcherOptions, pinned: PinnedModelArtifact, destination: string, scratchDir: string): Promise<FetchOutcome> {
   try {
-    const job = await runJobWithOutput(options.podman, fetchJobSpec(options, pinned, destination, scratchDir))
+    const job = await runExecution(options.podman, fetchAuthorization(options, pinned, destination, scratchDir))
     const report = await readReport(join(scratchDir, FETCH_REPORT_NAME))
     if (report) return outcomeOf(report)
     return { status: 'failed', reason: `${job.containerName} salió con ${job.exitCode} sin reporte: ${job.stderr.trim().slice(-DIAGNOSTIC_TAIL_CHARS)}` }

@@ -77,8 +77,8 @@ describe('bootstrapInfrastructure', () => {
     expect(labels[OWNER_KIND_LABEL_KEY]).toBe('infrastructure')
     expect(labels[OWNER_ID_LABEL_KEY]).toBe(INFRASTRUCTURE_OWNER_ID)
     expect(report.lines).toEqual([
-      'thyrox-postgres action=created drift=- created=yes started=yes health=healthy volumes=thyrox-postgres-data:created',
-      'thyrox-redis action=created drift=- created=yes started=yes health=healthy volumes=-',
+      'thyrox-postgres action=created drift=- created=yes started=yes health=healthy provision=not-declared volumes=thyrox-postgres-data:created',
+      'thyrox-redis action=created drift=- created=yes started=yes health=healthy provision=not-declared volumes=-',
     ])
     expect(host.secrets.get('thyrox-postgres-password')?.value).toBe(PASSWORD)
     expect(everyText(report)).not.toContain(PASSWORD)

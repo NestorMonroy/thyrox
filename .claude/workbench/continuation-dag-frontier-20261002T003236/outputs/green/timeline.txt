@@ -1,0 +1,10 @@
+# dag: segundos desde el primer despacho
+T1	despachado    0.0	trabajo    7.8..  10.8	aceptado   20.9	contenedor 24d554fc6fdb
+T2	despachado    0.0	trabajo    8.9..  58.9	aceptado   71.6	contenedor 468c90043bab
+T3	despachado   22.0	trabajo   28.8..  31.8	aceptado   41.0	contenedor da965e08294a
+T4	despachado    0.0	trabajo    7.9..  57.9	aceptado   67.9	contenedor 385cbb814f41
+# batch: segundos desde el primer despacho
+A1	despachado    0.0	trabajo    8.7..  11.7	aceptado   20.6	contenedor 87958faf450e
+A2	despachado   22.0	trabajo   29.0..  32.0	aceptado   46.1	contenedor ef52cb0d61a6
+B1	despachado    0.0	trabajo    8.8..  48.8	aceptado   64.8	contenedor 0fff8c0cd5f5
+C1	despachado    0.0	trabajo    8.8..  48.8	aceptado   70.5	contenedor 633cdf57b2cc

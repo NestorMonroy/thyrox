@@ -15,9 +15,9 @@
 #   admision del disco de las imagenes que faltan -> estado deseado (JSON)
 #   -> InfrastructureBootstrap -> primitiva -> Podman
 #
-# Lo que este guion invoca de `podman` es sólo medida: `info`, `ps`,
-# `inspect`, `image exists` y, como mecanismo soportado ante un desfase de
-# locks, `system renumber`.
+# Lo que este guion invoca de `podman` es sólo medida: `info`, `version`,
+# `ps`, `inspect`, `volume ls` e `image exists`. No repara el motor: ante un
+# desfase de locks sale con exit 3 y nombra `bin/podman_lock_recovery`.
 #
 # Salida: la del bootstrap, una linea por recurso (accion, deriva, creado,
 # arrancado, salud, volumenes); su diagnostico va a stderr.
@@ -31,8 +31,8 @@
 #         la credencial de PostgreSQL con PostgreSQL seleccionado, o las
 #         imagenes que faltan no caben en disco (TASK-THYROX-0671); o el
 #         bootstrap rehuso por una colision de dueño.
-# Exit 3  colision de locks de Podman: desfase con contenedores vivos, o
-#         renumber que no lo corrige; o el bootstrap choco con un lock ajeno.
+# Exit 3  colision de locks de Podman: desfase medido (con o sin contenedores
+#         vivos), o el bootstrap choco con un lock ajeno.
 # =============================================================================
 set -uo pipefail
 
@@ -78,52 +78,31 @@ _infra_refuse_unknown_names() {
   done
 }
 
-# @description Locks desfasados tras reiniciar la VM: la
-# memoria compartida de Podman se rehace vacía y la base conserva el número
-# de lock de cada objeto, así que el siguiente objeto nuevo recibe un lock
-# ocupado. Se mide ANTES de materializar. Con un contenedor vivo se rehúsa.
-# Sin ninguno, se intenta el mecanismo soportado, `podman system renumber`, y
-# su salida se conserva: si falla, o si no corrige la medida, se rehúsa
-# publicándolo, y se nombra el defecto conocido de sqlite cuando el mensaje
-# coincide. El ensure no repara internals de Podman: esa
-# recuperación es el procedimiento explícito `bin/podman_lock_recovery`.
-_infra_reconcile_locks() {
-  local balance allocated objects live renumber_output renumber_rc
+# @description Locks desfasados tras reiniciar la VM: la memoria compartida
+# de Podman se rehace vacía y la base conserva el número de lock de cada
+# objeto, así que el siguiente objeto nuevo recibe un lock ocupado. Se mide
+# ANTES de materializar. El ensure DETECTA y DIAGNOSTICA; nunca repara el
+# motor: converger el estado declarado de thyrox y reparar el runtime de
+# Podman son dos contratos (decisión del ejecutor 2026-10-02). Con el desfase
+# sale con exit 3, publica la medida y el diagnóstico real, reconoce las
+# precondiciones de H-THYROX-308 si coinciden, y nombra la reparación
+# explícita. Sin medida no hay desfase que afirmar: sigue.
+_infra_gate_locks() {
+  local balance allocated objects live version backend volumes
   balance="$(thyrox_podman_lock_balance)" || return 0
   read -r allocated objects <<< "$balance"
   (( allocated >= objects )) && return 0
   live="$(thyrox_podman_live_containers | paste -sd, -)"
-  if [[ -n "$live" ]]; then
-    echo "infrastructure_ensure: locks de Podman desfasados (asignados $allocated, referenciados $objects) con contenedores vivos: $live." >&2
-    echo "                       Detenerlos y ejecutar \`$_INFRASTRUCTURE_RENUMBER_COMMAND\`; no se renumera con procesos vivos." >&2
-    exit "$EXIT_LOCK_COLLISION"
+  version="$("$PODMAN" version --format '{{.Client.Version}}' 2>/dev/null)"
+  backend="$("$PODMAN" info --format '{{.Host.DatabaseBackend}}' 2>/dev/null)"
+  volumes="$("$PODMAN" volume ls --format '{{.Name}}' 2>/dev/null | grep -c .)"
+  echo "infrastructure_ensure: locks de Podman desfasados (asignados $allocated, referenciados $objects); no se materializa nada." >&2
+  echo "                       Podman ${version:-?} · backend ${backend:-?} · $volumes volumen(es) · vivos: ${live:-ninguno}" >&2
+  if [[ "$backend" == sqlite && "$version" == 4.9.* && "$volumes" -gt 0 ]]; then
+    echo "                       Coincide con las precondiciones de H-THYROX-308: con backend sqlite, \`podman system renumber\` se detiene en el primer volumen." >&2
   fi
-  # Podman 4.9.3 escribe este error en stdout, no en stderr: se capturan los dos.
-  renumber_output="$("$PODMAN" system renumber 2>&1)"
-  renumber_rc=$?
-  local after_allocated after_objects
-  read -r after_allocated after_objects <<< "$(thyrox_podman_lock_balance)"
-  if (( renumber_rc == 0 && after_allocated >= after_objects )); then
-    printf 'locks asignados %s de referenciados %s: desfasados, renumerados (ahora %s)\n' "$allocated" "$objects" "$after_allocated"
-    return 0
-  fi
-  _infra_refuse_unreconciled_locks "$renumber_rc" "$renumber_output" "$after_allocated" "$after_objects"
-}
-
-# @description Rehúsa tras un renumber que falló o no corrigió la medida:
-# publica la medida, el exit y la salida verbatim de Podman, y el remedio.
-# @arg $1 int exit de renumber.
-# @arg $2 string salida de renumber (stdout y stderr).
-# @arg $3 int locks asignados tras renumber.
-# @arg $4 int números de lock referenciados tras renumber.
-_infra_refuse_unreconciled_locks() {
-  local rc="$1" output_text="$2" after_allocated="$3" after_objects="$4"
-  echo "infrastructure_ensure: \`$_INFRASTRUCTURE_RENUMBER_COMMAND\` no corrigió los locks (asignados $after_allocated, referenciados $after_objects; exit $rc)." >&2
-  [[ -n "$output_text" ]] && printf '                       salida de Podman: %s\n' "$output_text" >&2
-  if thyrox_podman_is_sqlite_volume_renumber_defect "$output_text"; then
-    echo "                       Es el defecto conocido de Podman 4.9.3 con backend sqlite (H-THYROX-308): renumber se detiene en el primer volumen." >&2
-  fi
-  echo "                       El ensure no repara internals de Podman. Recuperación explícita: bin/podman_lock_recovery (sin --confirm muestra el plan)." >&2
+  [[ -z "$live" ]] || echo "                       Detener antes los contenedores vivos ($live): la reparación los rehúsa." >&2
+  echo "                       El ensure no repara el motor. Reparación explícita: $_INFRASTRUCTURE_LOCK_RECOVERY (sin --confirm muestra el plan); después, volver a correr el ensure." >&2
   exit "$EXIT_LOCK_COLLISION"
 }
 
@@ -203,7 +182,7 @@ if ! thyrox_toolchain_require_podman; then
 fi
 PODMAN="$THYROX_TOOLCHAIN_PODMAN_BIN"
 
-_infra_reconcile_locks
+_infra_gate_locks
 
 if ! DESIRED_STATE="$(_infra_desired_state)"; then
   echo "infrastructure_ensure: no se pudo componer el estado deseado; no se toca nada." >&2

@@ -1,0 +1,27 @@
+{
+  "schemaVersion": 1,
+  "record": "attempt telemetry (src/session/task_continuation.py::attempt_telemetry)",
+  "fields": {
+    "taskId": "string", "itemId": "string", "attempt": "integer", "executionId": "string|null",
+    "containerId": "string|null", "provider": "string|null", "model": "string", "taskClass": "string",
+    "elapsedMs": "integer", "providerRetries": "integer",
+    "inputTokens": "integer|null", "cachedInputTokens": "integer|null", "cacheCreationTokens": "integer|null",
+    "outputTokens": "integer|null", "totalTokens": "integer|null", "billableTokens": "integer|null",
+    "toolCalls": "integer|null", "turns": "integer|null",
+    "usageSource": "result|transcript|unavailable", "usageAvailable": "boolean",
+    "outcome": "one of task_continuation.OUTCOMES", "verdict": "accepted|rejected|null"
+  },
+  "rules": [
+    "billableTokens = inputTokens + cacheCreationTokens + outputTokens; null if any part is null",
+    "totalTokens = billableTokens + cachedInputTokens; null if any part is null",
+    "usageSource=unavailable implies every token field is null, never 0",
+    "result (stream-json) takes precedence over transcript",
+    "transcript usage is summed once per message.id, only for files written since the attempt launched",
+    "USD is not computed: the provider plan publishes no per-token price here"
+  ],
+  "measured": {
+    "delegateLineWithUsage": "3 of 28 rows of cutover-executions.jsonl",
+    "transcriptSessionsWithUsage": "19 of 19 sessions (T002-telemetry.jsonl)",
+    "crossCheck": "p2a deepseek session: transcript input 451969 == stream result input 451969"
+  }
+}

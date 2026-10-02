@@ -149,57 +149,6 @@ thyrox_infrastructure_container_names() {
 }
 export -f thyrox_infrastructure_container_names
 
-# _thyrox_infrastructure_create_argv_postgres — compone el argv de
-# `podman create` para thyrox-postgres. La credencial NUNCA vive en el
-# codigo: se lee de THYROX_INFRA_POSTGRES_PASSWORD, y si falta esta funcion
-# rehusa con exit 2 nombrandola, SIN emitir ningun argumento — un argv a
-# medias con la contraseña vacia seria un contenedor sin auth valida creado
-# en silencio.
-_thyrox_infrastructure_create_argv_postgres() {
-  local password
-  password="$(thyrox_infrastructure_setting THYROX_INFRA_POSTGRES_PASSWORD '')"
-  if [[ -z "$password" ]]; then
-    printf 'thyrox_infrastructure: falta THYROX_INFRA_POSTGRES_PASSWORD (credencial de PostgreSQL); no se emite argv\n' >&2
-    return 2
-  fi
-  printf '%s\n' \
-    create \
-    --name "$_INFRASTRUCTURE_POSTGRES_NAME" \
-    --network "$_INFRASTRUCTURE_NETWORK" \
-    --label "$_INFRASTRUCTURE_ROLE_LABEL" \
-    --label "${_INFRASTRUCTURE_SERVICE_LABEL_KEY}=postgres" \
-    --restart=on-failure \
-    -p "127.0.0.1:${THYROX_INFRA_POSTGRES_PORT}:5432" \
-    -v "${_INFRASTRUCTURE_POSTGRES_VOLUME}:${_INFRASTRUCTURE_POSTGRES_DATA_DIR}" \
-    -e "POSTGRES_PASSWORD=${password}" \
-    -e "POSTGRES_USER=${THYROX_INFRA_POSTGRES_USER}" \
-    -e "POSTGRES_DB=${THYROX_INFRA_POSTGRES_DB}" \
-    "$THYROX_INFRA_POSTGRES_IMAGE"
-}
-
-# _thyrox_infrastructure_create_argv_redis — compone el argv de
-# `podman create` para thyrox-redis. SIN volumen: Redis aqui es estado
-# compartido EFIMERO, no fuente de verdad, y la persistencia queda
-# desactivada en el propio comando del servidor (`--save ''`,
-# `--appendonly no`) para que un `podman restart` no reviva un RDB/AOF
-# viejo desde un disco que este contenedor no monta.
-_thyrox_infrastructure_create_argv_redis() {
-  printf '%s\n' \
-    create \
-    --name "$_INFRASTRUCTURE_REDIS_NAME" \
-    --network "$_INFRASTRUCTURE_NETWORK" \
-    --label "$_INFRASTRUCTURE_ROLE_LABEL" \
-    --label "${_INFRASTRUCTURE_SERVICE_LABEL_KEY}=redis" \
-    --restart=on-failure \
-    -p "127.0.0.1:${THYROX_INFRA_REDIS_PORT}:6379" \
-    "$THYROX_INFRA_REDIS_IMAGE" \
-    redis-server \
-    --save \
-    '' \
-    --appendonly \
-    no
-}
-
 # _thyrox_infrastructure_outbound_proxy_declared — ¿el entorno declara un
 # proxy de salida? Se lee al componer, no al sourcear.
 _thyrox_infrastructure_outbound_proxy_declared() {
@@ -220,60 +169,6 @@ _thyrox_infrastructure_proxy_ca_readable() {
   bundle="$(_thyrox_infrastructure_proxy_ca_bundle)"
   [[ -n "$bundle" && -f "$bundle" && -r "$bundle" ]]
 }
-
-# _thyrox_infrastructure_proxy_argv — las palabras del proxy de salida para
-# un contenedor que descarga: las tres variables del proxy si el entorno lo
-# declara, y ademas el montaje de su CA con SSL_CERT_FILE si esta es legible.
-# Sin proxy no imprime nada.
-_thyrox_infrastructure_proxy_argv() {
-  _thyrox_infrastructure_outbound_proxy_declared || return 0
-  printf '%s\n' \
-    -e "HTTPS_PROXY=${HTTPS_PROXY}" \
-    -e "https_proxy=${HTTPS_PROXY}" \
-    -e "NO_PROXY=${_INFRASTRUCTURE_PROXY_NO_PROXY}"
-  _thyrox_infrastructure_proxy_ca_readable || return 0
-  printf '%s\n' \
-    -v "$(_thyrox_infrastructure_proxy_ca_bundle):${_INFRASTRUCTURE_PROXY_CA_TARGET}:ro" \
-    -e "SSL_CERT_FILE=${_INFRASTRUCTURE_PROXY_CA_TARGET}"
-}
-
-# _thyrox_infrastructure_create_argv_ollama — compone el argv de
-# `podman create` para thyrox-ollama: red del anfitrion, API en loopback,
-# volumen de modelos y, si lo hay, el proxy de salida con el que baja modelos.
-_thyrox_infrastructure_create_argv_ollama() {
-  printf '%s\n' \
-    create \
-    --name "$_INFRASTRUCTURE_OLLAMA_NAME" \
-    --network "$_INFRASTRUCTURE_HOST_NETWORK" \
-    --label "$_INFRASTRUCTURE_ROLE_LABEL" \
-    --label "${_INFRASTRUCTURE_SERVICE_LABEL_KEY}=ollama" \
-    --restart=on-failure \
-    -v "${THYROX_INFRA_OLLAMA_VOLUME}:${_INFRASTRUCTURE_OLLAMA_MODELS_DIR}" \
-    -e "OLLAMA_HOST=${_INFRASTRUCTURE_LOOPBACK}:${THYROX_INFRA_OLLAMA_PORT}"
-  _thyrox_infrastructure_proxy_argv
-  printf '%s\n' "$THYROX_INFRA_OLLAMA_IMAGE"
-}
-
-# @description Imprime el argv COMPLETO de `podman create` para un nombre de
-# contenedor conocido, una palabra por linea, SIN ejecutarlo — el bootstrap
-# (TASK-THYROX-0606) es quien decide cuando correrlo.
-# @arg $1 string `thyrox-postgres`, `thyrox-redis` o `thyrox-ollama`.
-# @stdout el argv, una palabra por linea.
-# @exitcode 0 argv compuesto.
-# @exitcode 2 nombre desconocido, o (solo postgres) falta la credencial.
-thyrox_infrastructure_create_argv() {
-  local name="${1:-}"
-  case "$name" in
-    "$_INFRASTRUCTURE_POSTGRES_NAME") _thyrox_infrastructure_create_argv_postgres ;;
-    "$_INFRASTRUCTURE_REDIS_NAME") _thyrox_infrastructure_create_argv_redis ;;
-    "$_INFRASTRUCTURE_OLLAMA_NAME") _thyrox_infrastructure_create_argv_ollama ;;
-    *)
-      printf 'thyrox_infrastructure: contenedor desconocido: %s\n' "$name" >&2
-      return 2
-      ;;
-  esac
-}
-export -f thyrox_infrastructure_create_argv
 
 # --- estado deseado para la primitiva Podman (ADR-007 1.15.0, TASK-THYROX-0740) ---
 #
@@ -314,6 +209,9 @@ _thyrox_infrastructure_resource_json() {
       legacyRoleLabel: {key: $roleKey, value: $roleValue}, health: $health}'
 }
 
+# La imagen crea la base sólo sobre un volumen vacío; pgvector se habilita en
+# ella con una provisión idempotente que el ensure reafirma tras cada salud
+# (el store semántico no crea extensiones: la base tiene que llegarle lista).
 _thyrox_infrastructure_desired_postgres() {
   _thyrox_infrastructure_resource_json "$_INFRASTRUCTURE_POSTGRES_NAME" postgres | jq \
     --arg image "$THYROX_INFRA_POSTGRES_IMAGE" --arg network "$_INFRASTRUCTURE_NETWORK" \
@@ -325,7 +223,8 @@ _thyrox_infrastructure_desired_postgres() {
      | .publishedPorts = [{hostAddress: "127.0.0.1", hostPort: $port, containerPort: 5432}]
      | .namedVolumes = [{volume: $volume, destination: $dataDir}]
      | .environment = {POSTGRES_USER: $user, POSTGRES_DB: $db, POSTGRES_PASSWORD_FILE: ($secretDir + "/" + $target)}
-     | .secrets = [{secret: $secret, target: $target, valueFrom: "THYROX_INFRA_POSTGRES_PASSWORD"}]'
+     | .secrets = [{secret: $secret, target: $target, valueFrom: "THYROX_INFRA_POSTGRES_PASSWORD"}]
+     | .provision = [["psql", "-v", "ON_ERROR_STOP=1", "-U", $user, "-d", $db, "-c", "CREATE EXTENSION IF NOT EXISTS vector"]]'
 }
 
 _thyrox_infrastructure_desired_redis() {
@@ -524,11 +423,11 @@ readonly _INFRASTRUCTURE_LOCK_COLLISION_LITERAL="deadlock due to lock mismatch"
 # La misma causa vista desde el borrado: `podman volume rm` sobre un objeto
 # cuyo lock no esta en la memoria compartida (2026-10-01, H-THYROX-302).
 readonly _INFRASTRUCTURE_LOCK_RELEASE_LITERAL="freeing lock for"
-# El remedio que Podman nombra. Exige que no corra ningun otro proceso de
-# Podman: `infrastructure_ensure` lo corre solo al arrancar, con el desfase
-# medido y ningun contenedor vivo (H-THYROX-302); en cualquier otro momento
-# lo decide el operador.
-readonly _INFRASTRUCTURE_RENUMBER_COMMAND="podman system renumber"
+# La reparacion del motor de Podman tiene un solo camino, explicito y del
+# operador: `bin/podman_lock_recovery` (que puede usar `podman system renumber`
+# o el marcador `alive` segun su contrato). Ni el ensure ni este remedio
+# reparan por su cuenta (decision del ejecutor 2026-10-02).
+readonly _INFRASTRUCTURE_LOCK_RECOVERY="bin/podman_lock_recovery"
 
 # @description ¿El stderr de un comando de Podman declara una colision de locks?
 # @arg $1 string el stderr capturado.
@@ -541,13 +440,13 @@ thyrox_infrastructure_is_lock_collision() {
 export -f thyrox_infrastructure_is_lock_collision
 
 # @description Imprime el remedio de una colision de locks sobre un objeto:
-# retirar el objeto anterior que comparte su lock, o renumerar con Podman
-# parado. No ejecuta nada.
+# retirar el objeto anterior que comparte su lock, o la reparacion explicita
+# del motor. No ejecuta nada.
 # @arg $1 string el objeto afectado (contenedor o volumen).
 # @stdout una linea con el literal y el remedio.
 thyrox_infrastructure_lock_collision_remedy() {
-  printf 'colision de locks de Podman sobre %s (%s): retirar el objeto anterior que comparte su lock, o ejecutar `%s` sin ningun otro proceso de Podman en marcha\n' \
-    "${1:-}" "$_INFRASTRUCTURE_LOCK_COLLISION_LITERAL" "$_INFRASTRUCTURE_RENUMBER_COMMAND"
+  printf 'colision de locks de Podman sobre %s (%s): retirar el objeto anterior que comparte su lock, o reparar el motor con `%s` (sin --confirm muestra el plan)\n' \
+    "${1:-}" "$_INFRASTRUCTURE_LOCK_COLLISION_LITERAL" "$_INFRASTRUCTURE_LOCK_RECOVERY"
 }
 export -f thyrox_infrastructure_lock_collision_remedy
 

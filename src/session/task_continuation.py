@@ -1,8 +1,21 @@
 #!/usr/bin/env python3
-"""Controlador de continuación: consume el plan declarado de un banco, ítem por ítem.
+"""Controlador de continuación: consume el plan declarado de un banco como un DAG.
 
-El banco dice QUÉ se hace (``plan.jsonl``, en orden); este controlador sólo
-elige la TRANSICIÓN siguiente entre las declaradas. Nunca crea trabajo.
+El banco dice QUÉ se hace (``plan.jsonl``: un lote de ítems, cada uno de su
+tarea, con sus dependencias); este controlador sólo elige la TRANSICIÓN
+siguiente entre las declaradas. Nunca crea trabajo.
+
+Lote -> frontera -> GNU Parallel -> una unidad por ítem::
+
+    plan.jsonl -> runnable_items (continuation_frontier) -> parallel_map :::: -
+      -> run-one <ítem> -> ExecutionAuthorization -> PodmanExecutionPrimitive
+      -> ExecutionUnit
+
+La frontera se ESCRIBE en la entrada de GNU Parallel mientras crece: un ítem
+dependiente se despacha en cuanto su dependencia se acepta, aunque otros sigan
+corriendo. Cuántos corren a la vez lo decide Parallel (su anchura y la admisión
+de RAM de ``parallel_map``), no este módulo. La ejecución es concurrente; la
+integración no: commit y push de cada ítem pasan por un candado.
 
 Contrato por ítem::
 
@@ -38,12 +51,16 @@ Un reporte es una proyección de ``continuation.jsonl``; no es una transición.
 
 Uso::
 
-    bin/task_continuation run <banco> [--max-items N] [--seed S]
-    bin/task_continuation next <banco>        # qué ítem toca, sin despachar
+    bin/task_continuation run <banco> [--task T] [--width N] [--target DIR] [--seed S]
+    bin/task_continuation next <banco>        # la frontera actual, sin despachar
+    bin/task_continuation run-one <banco> <ítem> ...   # lo que Parallel invoca por ítem
 """
 from __future__ import annotations
 
 import argparse
+import calendar
+import contextlib
+import fcntl
 import json
 import os
 import random
@@ -51,9 +68,13 @@ import re
 import subprocess
 import sys
 import time
+import zlib
 from dataclasses import dataclass, field
+from typing import cast
 from pathlib import Path
 
+from learning.token_usage import attempt_usage
+from session.continuation_frontier import doomed_items, item_states, runnable_items
 from verify.tsc_schedule import posterior
 
 ROOT = Path(os.environ.get("THYROX_ROOT") or Path(__file__).resolve().parents[2])
@@ -107,6 +128,16 @@ class PlanItem:
     attempts: int = 4
     #: Las únicas credenciales que el trabajador recibe, como ExecutionSecret.
     secrets: tuple[str, ...] = DELEGATE_SECRETS
+    #: Ítems que tienen que estar aceptados antes de despachar éste.
+    depends_on: tuple[str, ...] = ()
+    #: Si el ítem escribe en el árbol; uno que sólo lee no choca con nadie.
+    mutates: bool = True
+    #: "" corre en el checkout; "worktree" en uno propio, integrado al aceptar.
+    isolation: str = ""
+    #: La tarea a la que pertenece; sus unidades llevan su cita.
+    task_id: str = ""
+    #: Límites de la unidad del trabajador: pares (cpus|memoryMib|pids, valor).
+    resource_profile: tuple[tuple[str, int], ...] = ()
 
 
 @dataclass
@@ -128,45 +159,77 @@ class Evidence:
         return {key: value for key, value in self.__dict__.items() if key != "findings"} | {"findings": len(self.findings)}
 
 
-def load_plan(workbench: Path) -> list[PlanItem]:
-    plan = workbench / "plan.jsonl"
-    if not plan.is_file():
-        raise SystemExit(f"task_continuation: el banco no declara plan: {plan}")
-    items = []
-    for line in plan.read_text().splitlines():
-        if not line.strip():
-            continue
-        row = json.loads(line)
+ISOLATIONS = ("", "worktree")
+RESOURCE_KEYS = ("cpus", "memoryMib", "pids")
+
+
+def plan_items_from_rows(rows: list[dict], default_task: str = "") -> list[PlanItem]:
+    """Los ítems de un plan. Un plan sin ``dependsOn`` en NINGUNA fila es el contrato
+    heredado —una secuencia en el orden declarado—; en cuanto una fila declara sus
+    dependencias, el plan es un DAG y una fila sin la clave no depende de nada."""
+    sequential = not any("dependsOn" in row for row in rows)
+    items, previous = [], None
+    for row in rows:
+        isolation = row.get("isolation", "")
+        if isolation not in ISOLATIONS:
+            raise SystemExit(f"task_continuation: isolation va vacío o \"worktree\", no {isolation!r} ({row['id']})")
+        profile = row.get("resourceProfile", {})
+        unknown = set(profile) - set(RESOURCE_KEYS)
+        if unknown:
+            raise SystemExit(f"task_continuation: resourceProfile no admite {sorted(unknown)} ({row['id']})")
+        depends = tuple(row.get("dependsOn", ())) if not sequential else ((previous,) if previous else ())
         items.append(PlanItem(
             id=row["id"], prompt=row["prompt"], verify=row["verify"], candidates=tuple(row["candidates"]),
             task_class=row.get("taskClass", "analisis"), owned=tuple(row.get("owned", ())),
             max_turns=int(row.get("maxTurns", 150)), attempts=int(row.get("attempts", 4)),
-            secrets=tuple(row.get("secrets", DELEGATE_SECRETS)),
+            secrets=tuple(row.get("secrets", DELEGATE_SECRETS)), depends_on=depends,
+            mutates=bool(row.get("mutates", True)), isolation=isolation,
+            task_id=row.get("taskId", default_task),
+            resource_profile=tuple((key, int(profile[key])) for key in RESOURCE_KEYS if key in profile),
         ))
-    if not items:
-        raise SystemExit(f"task_continuation: plan vacío: {plan}")
+        previous = row["id"]
+    known = {entry.id for entry in items}
+    if len(known) != len(items):
+        raise SystemExit("task_continuation: ids de ítem repetidos en el plan")
+    for entry in items:
+        missing = set(entry.depends_on) - known
+        if missing:
+            raise SystemExit(f"task_continuation: {entry.id} depende de ítems no declarados: {sorted(missing)}")
     return items
+
+
+def load_plan(workbench: Path, default_task: str = "") -> list[PlanItem]:
+    plan = workbench / "plan.jsonl"
+    if not plan.is_file():
+        raise SystemExit(f"task_continuation: el banco no declara plan: {plan}")
+    rows = [json.loads(line) for line in plan.read_text().splitlines() if line.strip()]
+    if not rows:
+        raise SystemExit(f"task_continuation: plan vacío: {plan}")
+    return plan_items_from_rows(rows, default_task)
 
 
 def read_log(workbench: Path) -> list[dict]:
     path = workbench / "outputs" / "continuation.jsonl"
     if not path.is_file():
         return []
-    return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+    # Candado compartido: con N ítems escribiendo, una línea a medio escribir no se lee.
+    with path.open() as handle:
+        fcntl.flock(handle, fcntl.LOCK_SH)
+        text = handle.read()
+    return [json.loads(line) for line in text.splitlines() if line.strip()]
 
 
-def append_log(workbench: Path, row: dict) -> None:
-    path = workbench / "outputs" / "continuation.jsonl"
+def append_jsonl(path: Path, row: dict) -> None:
+    """Añade una fila fechada bajo candado exclusivo: N ítems escriben el mismo archivo."""
     path.parent.mkdir(parents=True, exist_ok=True)
-    row = {"utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), **row}
+    row = {"utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "epoch": round(time.time(), 3), **row}
     with path.open("a") as handle:
+        fcntl.flock(handle, fcntl.LOCK_EX)
         handle.write(json.dumps(row, ensure_ascii=False) + "\n")
 
 
-def next_item(plan: list[PlanItem], log: list[dict]) -> PlanItem | None:
-    """El primer ítem declarado sin aceptación registrada. El orden es el del plan."""
-    settled = {row["item"] for row in log if row.get("kind") in ("accepted", "blocked")}
-    return next((item for item in plan if item.id not in settled), None)
+def append_log(workbench: Path, row: dict) -> None:
+    append_jsonl(workbench / "outputs" / "continuation.jsonl", row)
 
 
 def classify_deterministic(evidence: Evidence) -> str | None:
@@ -282,12 +345,20 @@ def attempt_prompt(workbench: Path, item: PlanItem, failures: list[dict], attemp
 ENV_FILE_MASK = f"/dev/null:{ROOT}/.env:ro"
 
 
+LIMIT_FLAGS = {"cpus": "--cpus", "memoryMib": "--memory-mib", "pids": "--pids"}
+
+
 def unit_start_argv(name: str, task: str, argv: list[str], network: str | None = None,
-                    secrets: tuple[str, ...] = (), mounts: tuple[str, ...] = ()) -> list[str]:
+                    secrets: tuple[str, ...] = (), mounts: tuple[str, ...] = (),
+                    workdir: str | None = None, resources: tuple[tuple[str, int], ...] = ()) -> list[str]:
     """La orden de thyrox-bg que lanza ``argv`` en una ExecutionUnit."""
     start = [*BG, "start", name, "--grace", "0", "--task", task, "--kind", "maintenance"]
     if network:
         start += ["--network", network]
+    if workdir:
+        start += ["--workdir", workdir]
+    for key, value in resources:
+        start += [LIMIT_FLAGS[key], str(value)]
     for secret in secrets:
         start += ["--secret-from-env", secret]
     for mount in mounts:
@@ -373,9 +444,10 @@ def contain_secret_exposure(workbench: Path, item: str, model: str, names: tuple
 
 
 def run_in_unit(name: str, task: str, argv: list[str], network: str | None = None,
-                secrets: tuple[str, ...] = (), mounts: tuple[str, ...] = ()) -> tuple[int, str]:
+                secrets: tuple[str, ...] = (), mounts: tuple[str, ...] = (),
+                workdir: str | None = None, resources: tuple[tuple[str, int], ...] = ()) -> tuple[int, str]:
     """Lanza ``argv`` con thyrox-bg en una ExecutionUnit, espera y devuelve (exit, log)."""
-    launched = subprocess.run(unit_start_argv(name, task, argv, network, secrets, mounts),
+    launched = subprocess.run(unit_start_argv(name, task, argv, network, secrets, mounts, workdir, resources),
                               capture_output=True, text=True, cwd=ROOT)
     if launched.returncode != 0:
         # No hubo unidad: es un fallo de lanzamiento, no del trabajo ni del proveedor.
@@ -455,8 +527,81 @@ def tail(text: str, lines: int = 25) -> str:
     return "\n".join(text.strip().splitlines()[-lines:])
 
 
+def delegate_record(workbench: Path, item_id: str, model: str, launched_at: float) -> dict:
+    """La línea que ``delegate.sh`` dejó para este intento: contenedor y proveedor; ``{}`` si no la hay."""
+    path = workbench / "outputs" / "cutover-executions.jsonl"
+    if not path.is_file():
+        return {}
+    newest: dict = {}
+    for line in path.read_text().splitlines():
+        try:
+            row = json.loads(line)
+            stamp = calendar.timegm(time.strptime(row.get("utc", ""), "%Y-%m-%dT%H:%M:%SZ"))
+        except (json.JSONDecodeError, ValueError, TypeError):
+            continue
+        # el utc del registro tiene resolución de segundo: se admite el segundo del lanzamiento
+        if row.get("item") == item_id and row.get("model") == model and stamp >= int(launched_at):
+            newest = row
+    return newest
+
+
+def attempt_telemetry(workbench: Path, item: PlanItem, task: str, attempt: int, model: str, launched_at: float,
+                      elapsed_seconds: float, outcome: str, verify_exit: int | None, provider_retries: int) -> dict:
+    """La telemetría de un intento: identidad, uso de tokens con su procedencia y resultado."""
+    usage = attempt_usage(workbench / "outputs" / f"{item.id}-{model}.stream.jsonl",
+                          workbench / "outputs" / f"{item.id}-{model}.transcript", launched_at)
+    delegated = delegate_record(workbench, item.id, model, launched_at)
+    return {
+        "taskId": item.task_id or task, "itemId": item.id, "attempt": attempt,
+        "executionId": delegated.get("executionId"), "containerId": delegated.get("containerId"),
+        "provider": delegated.get("provider"), "model": model, "taskClass": item.task_class,
+        "elapsedMs": round(elapsed_seconds * 1000), "providerRetries": provider_retries,
+        **usage.to_record(), "outcome": outcome,
+        "verdict": None if verify_exit is None else ("accepted" if verify_exit == 0 else "rejected"),
+    }
+
+
+#: El árbol de git donde se integra lo aceptado; ``--target`` lo sustituye (p. ej. un
+#: repositorio de prueba). Por defecto, el propio thyrox.
+TARGET = ROOT
+#: Hogar de los worktrees y candados del controlador: runtime ignorado por git.
+RUNTIME = ROOT / ".thyrox" / "runtime" / "continuation"
+INTEGRATION_CONFLICT_EXIT = 10
+OUTSIDE_DECLARED_EXIT = 11
+
+
+@contextlib.contextmanager
+def integration_lock(workbench: Path):
+    """La sección crítica de la integración: un commit y un push a la vez por banco.
+
+    La ejecución de los ítems es concurrente; su integración no puede serlo —dos
+    commits en el mismo árbol chocan en ``index.lock`` y dos pushes se pisan—.
+    """
+    RUNTIME.mkdir(parents=True, exist_ok=True)
+    with (RUNTIME / f"{workbench.name}.integration.lock").open("a") as handle:
+        fcntl.flock(handle, fcntl.LOCK_EX)
+        yield
+
+
+def prepare_worktree(item: PlanItem, task: str, workbench: Path) -> tuple[int, str, Path]:
+    """Un worktree propio del ítem desde el HEAD del destino, creado en una unidad."""
+    tree = RUNTIME / "worktrees" / workbench.name / f"{item.id}-{job_suffix()}"
+    script = f"set -euo pipefail\nmkdir -p {tree.parent}\ngit -C {TARGET} worktree add -q --detach {tree} HEAD\n"
+    code, log = run_in_unit(f"cont-{item.id}-worktree-{job_suffix()}", task, ["bash", "-c", script])
+    return code, log, tree
+
+
+def accept(workbench: Path, item: PlanItem, task: str, model: str, tree: Path | None) -> tuple[int, str]:
+    """Integra lo aceptado bajo el candado: commit en el checkout, o parche del worktree."""
+    with integration_lock(workbench):
+        if tree is None:
+            return commit_item(workbench, item, task, model)
+        return integrate_worktree(workbench, item, task, model, tree)
+
+
 def run_item(workbench: Path, item: PlanItem, task: str, rng: random.Random, learned) -> str:
     """Corre un ítem hasta aceptarlo o agotar su presupuesto. Devuelve ``accepted`` o ``hard_block``."""
+    task = item.task_id or task
     log = read_log(workbench)
     # Una credencial expuesta no se entrega a ningún trabajador: el ítem que la
     # necesita queda bloqueado SOLO; los independientes siguen.
@@ -465,14 +610,24 @@ def run_item(workbench: Path, item: PlanItem, task: str, rng: random.Random, lea
         append_log(workbench, {"kind": "blocked", "item": item.id, "reason": "credencial expuesta",
                                "credentials": sorted(needed_exposed)})
         return "blocked"
+    tree: Path | None = None
+    if item.isolation == "worktree":
+        code, worktree_log, tree = prepare_worktree(item, task, workbench)
+        if code != 0:
+            append_log(workbench, {"kind": "hard_block", "item": item.id, "reason": "no se pudo preparar el worktree",
+                                   "tail": tail(worktree_log, 8)})
+            return "hard_block"
+        append_log(workbench, {"kind": "worktree", "item": item.id, "path": str(tree)})
+    workdir = str(tree) if tree else None
     # Reanudar: si lo declarado ya se verifica (un intento previo, o un controlador
     # que murió antes de commitear), se acepta sin volver a despachar.
     stamp = job_suffix()
-    verify_code, verify_log = run_in_unit(f"cont-{item.id}-preverify-{stamp}", task, ["bash", "-c", item.verify])
+    verify_code, verify_log = run_in_unit(f"cont-{item.id}-preverify-{stamp}", task, ["bash", "-c", item.verify],
+                                          workdir=workdir)
     if verify_code == 0:
         append_log(workbench, {"kind": "attempt", "item": item.id, "attempt": 0, "model": None, "taskClass": item.task_class,
                                "outcome": "success", "source": "preexisting", "verifyExit": 0, "transition": "commit"})
-        commit_code, commit_log = commit_item(workbench, item, task, "previous attempt")
+        commit_code, commit_log = accept(workbench, item, task, "previous attempt", tree)
         append_log(workbench, {"kind": "accepted" if commit_code == 0 else "commit-failed", "item": item.id,
                                "commitExit": commit_code, "commitTail": tail(commit_log, 8)})
         return "accepted" if commit_code == 0 else "hard_block"
@@ -504,14 +659,16 @@ def run_item(workbench: Path, item: PlanItem, task: str, rng: random.Random, lea
         code, worker_log = run_in_unit(
             f"cont-{item.id}-{attempt}-{stamp}", task,
             ["bash", str(workbench / "probes" / "delegate.sh"), str(workbench), item.id, model, str(prompt), str(item.max_turns)],
-            network="host", secrets=item.secrets, mounts=(ENV_FILE_MASK,))
+            network="host", secrets=item.secrets, mounts=(ENV_FILE_MASK,), workdir=workdir,
+            resources=item.resource_profile)
         elapsed = time.monotonic() - started
         # El stderr del trabajador sólo es evidencia si lo escribió ESTE intento; uno
         # viejo de otra ejecución clasificaría con un error que ya no ocurre.
         stderr_file = workbench / "outputs" / f"{item.id}-{model}.stderr.log"
         fresh = stderr_file.is_file() and stderr_file.stat().st_mtime >= launched_at
         stderr_tail = tail(stderr_file.read_text(errors="replace")) if fresh else tail(worker_log)
-        verify_code, verify_log = run_in_unit(f"cont-{item.id}-{attempt}-verify-{stamp}", task, ["bash", "-c", item.verify])
+        verify_code, verify_log = run_in_unit(f"cont-{item.id}-{attempt}-verify-{stamp}", task, ["bash", "-c", item.verify],
+                                              workdir=workdir)
         evidence = Evidence(item=item.id, model=model, exit=code, stderr_tail=stderr_tail, verify_exit=verify_code,
                             verify_tail=tail(verify_log), elapsed_seconds=round(elapsed, 1),
                             findings=read_findings(workbench, item))
@@ -531,13 +688,16 @@ def run_item(workbench: Path, item: PlanItem, task: str, rng: random.Random, lea
         for finding in evidence.findings:
             append_log(workbench, {"kind": "non_blocking_finding", "item": item.id, "model": model, **finding})
         step = transition(outcome, same_retries, infra_retries)
+        telemetry = attempt_telemetry(workbench, item, task, attempt, model, launched_at, elapsed, outcome,
+                                      verify_code, transients)
+        append_jsonl(workbench / "outputs" / "token-usage.jsonl", telemetry)
         append_log(workbench, {"kind": "attempt", "item": item.id, "attempt": attempt, "model": model,
                                "taskClass": item.task_class, "outcome": outcome, "source": source, "exit": code,
                                "verifyExit": verify_code, "elapsedSeconds": evidence.elapsed_seconds,
-                               "stderrTail": stderr_tail[-600:],
+                               "stderrTail": stderr_tail[-600:], "usage": telemetry,
                                "transition": step, "orphans": reconcile_orphans()})
         if step == "commit":
-            commit_code, commit_log = commit_item(workbench, item, task, model)
+            commit_code, commit_log = accept(workbench, item, task, model, tree)
             append_log(workbench, {"kind": "accepted" if commit_code == 0 else "commit-failed", "item": item.id,
                                    "model": model, "commitExit": commit_code, "commitTail": tail(commit_log, 8)})
             return "accepted" if commit_code == 0 else "hard_block"
@@ -566,73 +726,221 @@ def run_item(workbench: Path, item: PlanItem, task: str, rng: random.Random, lea
     return "hard_block"
 
 
-def commit_item(workbench: Path, item: PlanItem, task: str, model: str) -> tuple[int, str]:
-    """Commit por pathspec de lo que el ítem posee más el banco, y push; en una unidad con red."""
-    paths = " ".join((*item.owned, str(workbench.relative_to(ROOT)), *settled_job_dirs()))
-    script = f"""set -uo pipefail
-cd {ROOT}
-paths="{paths}"
-git add -N -- $paths 2>/dev/null || true
+def evidence_paths(workbench: Path) -> list[str]:
+    """El banco y los registros de trabajo asentados viajan con el commit, si viven en el destino."""
+    if not workbench.is_relative_to(TARGET):
+        return []
+    paths = [str(workbench.relative_to(TARGET))]
+    return paths + (settled_job_dirs() if TARGET == ROOT else [])
+
+
+COMMIT_AND_PUSH = """git add -N -- $paths 2>/dev/null || true
 changed="$(git status --porcelain -- $paths | wc -l)"
 [ "$changed" -gt 0 ] || {{ echo "sin cambios que commitear"; exit 0; }}
-git commit -q -m "Accept {item.id} of {task} from the continuation controller" \\
+git commit -q -m "Accept {item} of {task} from the continuation controller" \\
   -m "Delegated to {model}; accepted by its declared verification." -- $paths || exit 1
+git remote get-url origin >/dev/null 2>&1 || {{ echo "sin origin: commit local"; exit 0; }}
 for i in 1 2 3 4; do git push -q origin HEAD && exit 0; sleep $((2**i)); done
 exit 1
 """
+
+
+def commit_item(workbench: Path, item: PlanItem, task: str, model: str) -> tuple[int, str]:
+    """Commit por pathspec de lo que el ítem posee más el banco, y push; en una unidad con red."""
+    paths = " ".join((*item.owned, *evidence_paths(workbench)))
+    script = f"""set -uo pipefail
+cd {TARGET}
+paths="{paths}"
+""" + COMMIT_AND_PUSH.format(item=item.id, task=task, model=model)
     return run_in_unit(f"cont-{item.id}-commit-{job_suffix()}", task, ["bash", "-c", script], network="host")
 
 
+def integrate_worktree(workbench: Path, item: PlanItem, task: str, model: str, tree: Path) -> tuple[int, str]:
+    """Aplica el parche del worktree verificado sobre el destino actual, en una unidad.
+
+    Un parche que no aplica es un conflicto de integración: el ítem falla con su
+    motivo y su worktree se conserva. Nunca se resuelve con un modelo. Un archivo
+    fuera de lo que el ítem declaró (``owned``) tampoco se integra.
+    """
+    outputs = workbench / "outputs"
+    patch, files = outputs / f"{item.id}.patch", outputs / f"{item.id}.files"
+    script = f"""set -uo pipefail
+git -C {tree} add -A
+git -C {tree} diff --cached --binary HEAD > {patch}
+git -C {tree} diff --cached --name-only HEAD > {files}
+owned="{' '.join(item.owned)}"
+if [ -n "$owned" ]; then
+  while read -r f; do
+    inside=0; for o in $owned; do case "$f" in "$o"|"$o"/*) inside=1 ;; esac; done
+    [ "$inside" = 1 ] || {{ echo "fuera de lo declarado: $f"; exit {OUTSIDE_DECLARED_EXIT}; }}
+  done < {files}
+fi
+cd {TARGET}
+if [ -s {patch} ]; then
+  git apply --check {patch} || {{ echo "conflicto de integración: el parche no aplica sobre el destino"; exit {INTEGRATION_CONFLICT_EXIT}; }}
+  git apply {patch}
+fi
+paths="$(tr '\\n' ' ' < {files}) {' '.join(evidence_paths(workbench))}"
+""" + COMMIT_AND_PUSH.format(item=item.id, task=task, model=model).replace(
+        'git remote get-url origin', f'git worktree remove --force {tree}\ngit remote get-url origin')
+    return run_in_unit(f"cont-{item.id}-integrate-{job_suffix()}", task, ["bash", "-c", script], network="host")
+
+
+FRONTIER_POLL_SECONDS = 2.0
+
+
+def item_seed(seed: int | None, item_id: str) -> int | None:
+    """Cada ítem muestrea con su propia semilla: los procesos de Parallel no comparten generador."""
+    return None if seed is None else seed ^ zlib.crc32(item_id.encode())
+
+
+def run_one(workbench: Path, item_id: str, task: str, seed: int | None) -> int:
+    """Lo que GNU Parallel ejecuta por ítem: corre ese ítem y deja SIEMPRE su asiento."""
+    plan = {entry.id: entry for entry in load_plan(workbench, task)}
+    if item_id not in plan:
+        append_log(workbench, {"kind": "hard_block", "item": item_id, "reason": "ítem no declarado en el plan"})
+        return 3
+    try:
+        outcome = run_item(workbench, plan[item_id], task, random.Random(item_seed(seed, item_id)),
+                           learned_classifier_from_environment())
+    except Exception as error:  # el asiento es la garantía; sin él la frontera esperaría para siempre
+        append_log(workbench, {"kind": "hard_block", "item": item_id, "reason": f"excepción: {error!r}"})
+        return 3
+    return {"accepted": 0, "blocked": 4}.get(outcome, 3)
+
+
+def joblog_finished(joblog: Path) -> dict[str, int]:
+    """Ítems cuyo proceso de Parallel ya terminó, con su exit, leídos del ``--joblog``."""
+    finished: dict[str, int] = {}
+    if not joblog.is_file():
+        return finished
+    for line in joblog.read_text().splitlines()[1:]:
+        columns = line.split("\t")
+        if len(columns) < 9:
+            continue
+        words = columns[8].split()
+        if "run-one" in words and len(words) > words.index("run-one") + 2:
+            finished[words[words.index("run-one") + 2]] = int(columns[6])
+    return finished
+
+
+def frontier_command(workbench: Path, task: str, width: int, seed: int | None) -> list[str]:
+    """El despacho: ``parallel_map`` leyendo la frontera de su stdin (``:::: -``)."""
+    one = ["bash", str(ROOT / "bin" / "task_continuation"), "run-one", str(workbench), "{}", "--target", str(TARGET)]
+    if task:
+        one += ["--task", task]
+    if seed is not None:
+        one += ["--seed", str(seed)]
+    return ["bash", str(ROOT / "bin" / "parallel_map"), "--width", str(width), *one, "::::", "-"]
+
+
+def settle_doomed(workbench: Path, plan: list[PlanItem], exposed: set[str]) -> None:
+    for entry, reason in doomed_items(plan, item_states(read_log(workbench)), exposed):
+        kind = "blocked" if reason.startswith("credencial") else "dependency_blocked"
+        append_log(workbench, {"kind": kind, "item": cast(PlanItem, entry).id, "reason": reason})
+
+
+def run_frontier(workbench: Path, task: str, width: int, seed: int | None) -> int:
+    """Materializa la frontera con GNU Parallel hasta que no quede nada despachable ni en curso.
+
+    El controlador sólo calcula el conjunto y lo escribe en la entrada de
+    Parallel; cada línea es un ítem y Parallel decide cuándo arranca según su
+    anchura. Una frontera vacía con ítems en curso espera a que alguno se asiente.
+    """
+    RUNTIME.mkdir(parents=True, exist_ok=True)
+    joblog = RUNTIME / f"{workbench.name}-{job_suffix()}.joblog"
+    command = frontier_command(workbench, task, width, seed)
+    append_log(workbench, {"kind": "dispatcher", "command": command, "width": width, "joblog": str(joblog)})
+    env = {**os.environ, "PARALLEL": f"--joblog {joblog}"}
+    parallel = subprocess.Popen(command, stdin=subprocess.PIPE, text=True, cwd=ROOT, env=env)
+    feed = parallel.stdin
+    assert feed is not None  # stdin=PIPE siempre lo abre
+    while True:
+        plan = load_plan(workbench, task)
+        exposed = exposed_credentials(workbench)
+        settle_doomed(workbench, plan, exposed)
+        states = item_states(read_log(workbench))
+        for item_id, exit_code in joblog_finished(joblog).items():
+            if states.get(item_id) == "running":
+                append_log(workbench, {"kind": "hard_block", "item": item_id,
+                                       "reason": f"el proceso del ítem terminó sin asentarse (exit {exit_code})"})
+        states = item_states(read_log(workbench))
+        frontier = runnable_items(plan, states, exposed)
+        for entry in frontier:
+            append_log(workbench, {"kind": "dispatched", "item": entry.id, "taskId": entry.task_id or task})
+            feed.write(entry.id + "\n")
+            feed.flush()
+        in_flight = [entry.id for entry in plan if states.get(entry.id) == "running"]
+        if not frontier and not in_flight:
+            break
+        if parallel.poll() is not None:
+            for item_id in in_flight:
+                append_log(workbench, {"kind": "hard_block", "item": item_id, "reason": "GNU Parallel salió con el ítem en curso"})
+            break
+        time.sleep(FRONTIER_POLL_SECONDS)
+    feed.close()
+    parallel.wait()
+    states = item_states(read_log(workbench))
+    settled = {state: sorted(i for i, s in states.items() if s == state) for state in ("accepted", "blocked", "failed")}
+    append_log(workbench, {"kind": "end", **settled})
+    pending = [entry.id for entry in load_plan(workbench, task) if entry.id not in states]
+    print(f"aceptados={len(settled['accepted'])} bloqueados={len(settled['blocked'])} "
+          f"fallidos={len(settled['failed'])} sin-despachar={len(pending)}")
+    return 3 if settled["failed"] or pending else 0
+
+
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    global TARGET
+    parser = argparse.ArgumentParser(description=(__doc__ or "").split("\n")[0])
     sub = parser.add_subparsers(dest="command", required=True)
-    for name in ("run", "next"):
+    for name in ("run", "next", "run-one"):
         command = sub.add_parser(name)
         command.add_argument("workbench", type=Path)
-        command.add_argument("--task", default=os.environ.get("THYROX_CONTINUATION_TASK", ""))
-        command.add_argument("--max-items", type=int, default=0)
+        if name == "run-one":
+            command.add_argument("item")
+        command.add_argument("--task", default=os.environ.get("THYROX_CONTINUATION_TASK", ""),
+                             help="tarea de los ítems que no declaran taskId")
+        command.add_argument("--target", type=Path, default=ROOT, help="árbol de git donde se integra")
         command.add_argument("--seed", type=int, default=None)
-        command.add_argument("--after", default=None, help="espera a que este trabajo de thyrox-bg se asiente antes de empezar")
+        if name == "run":
+            command.add_argument("--width", type=int, default=0, help="anchura de GNU Parallel; 0 = la de width_cap")
+            command.add_argument("--after", default=None, help="espera a que este trabajo de thyrox-bg se asiente antes de empezar")
     args = parser.parse_args(argv)
     workbench = args.workbench.resolve()
-    plan = load_plan(workbench)
+    TARGET = args.target.resolve()
+    plan = load_plan(workbench, args.task)
     if args.command == "next":
-        item = next_item(plan, read_log(workbench))
-        print(item.id if item else "plan completo")
+        states = item_states(read_log(workbench))
+        frontier = runnable_items(plan, states, exposed_credentials(workbench))
+        print(" ".join(entry.id for entry in frontier) if frontier else
+              ("plan completo" if all(states.get(e.id) == "accepted" for e in plan) else "frontera vacía"))
         return 0
-    if not re.fullmatch(r"TASK-[A-Z]+-\d{4}", args.task):
-        print("task_continuation: --task TASK-<CAPA>-NNNN es obligatorio", file=sys.stderr)
+    untasked = [entry.id for entry in plan if not re.fullmatch(r"TASK-[A-Z]+-\d{4}", entry.task_id or "")]
+    if untasked:
+        print(f"task_continuation: sin tarea TASK-<CAPA>-NNNN (taskId o --task): {', '.join(untasked)}", file=sys.stderr)
         return 2
+    if args.command == "run-one":
+        return run_one(workbench, args.item, args.task, args.seed)
     if args.after:
         wait_for_job(args.after)
-    rng = random.Random(args.seed)
-    learned = learned_classifier_from_environment()
+    gate_task = args.task or plan[0].task_id
     append_log(workbench, {"kind": "start", "orphans": reconcile_orphans()})
     # Antes de despachar: una unidad con la misma forma que la de un trabajador no
     # puede heredar ningún secreto que no esté declarado. Sin eso no hay despacho seguro.
     gate_code, gate_log = run_in_unit(
-        f"cont-secret-gate-{job_suffix()}", args.task,
+        f"cont-secret-gate-{job_suffix()}", gate_task,
         ["bash", str(ROOT / "src" / "session" / "worker_secret_inheritance.sh"), *DELEGATE_SECRETS],
         network="host", secrets=DELEGATE_SECRETS, mounts=(ENV_FILE_MASK,))
     append_log(workbench, {"kind": "secret_inheritance_gate", "exit": gate_code, "sources": tail(gate_log, 9)})
     if gate_code != 0:
         print("task_continuation: hard_block — un trabajador heredaría secretos no declarados", file=sys.stderr)
         return 3
-    done = 0
-    # El plan se relee en cada vuelta: un ítem declarado mientras corre se consume en su orden.
-    while (item := next_item(load_plan(workbench), read_log(workbench))) is not None:
-        outcome = run_item(workbench, item, args.task, rng, learned)
-        if outcome == "blocked":
-            print(f"task_continuation: {item.id} bloqueado por una credencial expuesta; sigue el siguiente", file=sys.stderr)
-            continue
-        if outcome == "hard_block":
-            print(f"task_continuation: hard_block en {item.id}; evidencia en outputs/continuation.jsonl", file=sys.stderr)
-            return 3
-        done += 1
-        if args.max_items and done >= args.max_items:
-            break
-    print("plan completo" if next_item(load_plan(workbench), read_log(workbench)) is None else f"{done} ítem(s) aceptado(s)")
-    return 0
+    if args.width:
+        width = args.width
+    else:
+        from session.parallel import width_cap
+        width = width_cap()
+    return run_frontier(workbench, args.task, width, args.seed)
 
 
 if __name__ == "__main__":

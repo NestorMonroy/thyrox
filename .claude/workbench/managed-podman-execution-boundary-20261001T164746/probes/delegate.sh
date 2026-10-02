@@ -23,7 +23,7 @@ poll_seconds="${DELEGATE_POLL_SECONDS:-30}"
 declared_window="${DELEGATE_CONTEXT_WINDOW:-110000}"
 secret="${DELEGATE_SECRET_FILE:-/run/secrets/THYROX_OPENAI_COMPAT_API_KEY}"
 # Doble de prueba: otra orden en lugar de `bash bin/cli` (tests/test_delegate_stall.sh).
-cli="${DELEGATE_CLI:-bin/cli}"
+cli="${DELEGATE_CLI:-/home/user/thyrox/bin/cli}"
 [[ -s "$secret" ]] || { echo "delegate: credencial ausente en la unidad" >&2; exit 2; }
 bash "$workbench/probes/unit_identity.sh" "$workbench" "$item" "delegate-$model"
 stream="$workbench/outputs/$item-$model.stream.jsonl"
@@ -32,7 +32,8 @@ stream="$workbench/outputs/$item-$model.stream.jsonl"
 transcript="$workbench/outputs/$item-$model.transcript"
 mkdir -p "$transcript"
 [[ -e "$HOME/.harness" ]] || ln -s "$transcript" "$HOME/.harness"
-cd /home/user/thyrox
+# Trabaja donde su unidad lo pone: el checkout por defecto, o el worktree del ítem
+# (la frontera lo pasa con --workdir). Un cd fijo lo devolvería al checkout.
 ANTHROPIC_BASE_URL=https://token-plan.maas.qwencloudapi.com/apps/anthropic ANTHROPIC_API_KEY="$(cat "$secret")" \
   THYROX_CODE_PROMPT_CACHE_TTL=5m THYROX_CODE_DECLARED_CONTEXT_WINDOW="$declared_window" \
   timeout "$timeout_seconds" bash "$cli" -p --model "$model" --setting-sources project --tools Read,Bash --allowedTools Read,Bash \
