@@ -28,8 +28,13 @@ ventana declarada:
 
 `suspected_stall` no es `stalled`: el controlador sólo publica `stalled`
 según 6. El caso real (`outputs/fixture-attempt4-observation.json`) da
-`waiting_external` antes de `stall_after` y `suspected_stall` después; nunca
-`zombie` ni `dead`.
+`running_progress` mientras el transcript crece y nunca `zombie` ni `dead`.
+
+**Los destinos de `output_delta` se declaran por tipo de trabajo.** Un
+intento de `delegate.sh` progresa en su transcript, no en su stream-json, que
+sólo se escribe al terminar: medir los descriptores 1 y 2 dio «0 bytes en
+31 minutos» sobre un trabajo que avanzó 89 turnos. Un destino no declarado es
+`unmeasured`, nunca `0`.
 
 ## Requisitos
 

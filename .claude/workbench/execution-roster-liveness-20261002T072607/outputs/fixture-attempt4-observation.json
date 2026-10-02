@@ -26,5 +26,29 @@
     "progress": "not observed",
     "external_io_wait": "observed",
     "cause": "unknown"
+  },
+  "correction_2026_10_02T0740Z": {
+    "wrong_signal": "stream_bytes: delegate.sh escribe el stream-json AL TERMINAR (probes/delegate.sh, comentario «construye el stream-json al terminar»); su 0 no mide progreso",
+    "progress_signal": "transcript turno a turno en ~/.harness/<slug>, enlazado como outputs/T001-qwen3.8-flash.transcript/",
+    "transcript_bytes_at_end": 666865,
+    "last_assistant_turn": "2026-10-02T07:29:33.758Z",
+    "turns": 89,
+    "last_turn_context_tokens": {
+      "input": 91600,
+      "cache_read": 23339,
+      "total": 114939
+    },
+    "outcome": {
+      "utc": "2026-10-02T07:32:03Z",
+      "classification": "provider_transient",
+      "stderr_tail": "502 upstream request failed (tras 4 intentos)"
+    },
+    "corrected_verdict": {
+      "alive": true,
+      "zombie": false,
+      "progress": "observed (transcript grew; 89 turns)",
+      "stall": false,
+      "cause_of_502": "unknown"
+    }
   }
 }

@@ -53,6 +53,21 @@ Defectos medidos en el caso real (`mechanism-registry-run3`):
 Veredicto a mano del intento 4, sin intervenir antes de su `timeout 2700`:
 `alive=true · zombie=false · progress=not observed · external I/O wait observed · cause=unknown`.
 
+**Corregido 2026-10-02T07:40Z — el progreso se medía en el archivo equivocado.**
+`probes/delegate.sh` escribe el stream-json **al terminar**; su 0 no dice nada.
+El progreso estaba en el transcript, escrito turno a turno: 89 turnos, 666 865
+bytes, último turno 07:29:33; el 502 llegó a las 07:32:03. Veredicto corregido:
+`alive=true · zombie=false · progress=observed · stall=false · cause_of_502=unknown`.
+Consecuencia para el contrato: los destinos de salida de `output_delta` se
+DECLARAN por tipo de trabajo (aquí, el transcript), no se infieren de los
+descriptores 1 y 2 del proceso.
+
+El tamaño solo ya está refutado como causa del 502 por una medición previa
+(`managed-podman-execution-boundary-20261001T164746/outputs/p2-provider-502-size.txt`:
+344 447 tokens de entrada responden 200; ciega a streaming, herramientas y
+duración). En el último turno bueno el contexto era 114 939 tokens, por encima
+del techo de compactación que `delegate.sh` declara (110 000): hecho medido, no causa.
+
 *Metrica:* estado de `/proc/<pid>/stat` de los diez procesos del árbol, canal
 de espera de la hoja, CPU acumulada y bytes del stream en dos muestras.
 *Ciega a:* qué componente retiene la petición (proveedor, `thyrox -p`, proxy);
