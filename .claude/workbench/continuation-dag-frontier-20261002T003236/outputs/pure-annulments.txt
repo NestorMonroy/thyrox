@@ -1,0 +1,18 @@
+# tests/session/test_continuation_frontier.py — 23 OK con el código íntegro.
+# Anulación 1: runnable_items recortado a su primer elemento.
+FALLA primera ola T1 T2 T4: esperado ['T1', 'T2', 'T4'], obtenido ['T1']
+FALLA lote: A1 B1 C1: esperado ['A1', 'B1', 'C1'], obtenido ['A1']
+FALLA tras el fallo de T1, T2 y T4 siguen: esperado ['T2', 'T4'], obtenido ['T2']
+FALLA una ejecución nueva reintenta lo fallido: esperado ['T1', 'T2', 'T4'], obtenido ['T1']
+FALLA una aceptación vale entre ejecuciones: esperado ['T2', 'T3', 'T4'], obtenido ['T2']
+FALLA frontera respeta la exclusión: esperado ['a', 'c', 'd', 'r'], obtenido ['a']
+FALLA un mutador en curso retiene al otro: esperado ['c', 'd', 'r'], obtenido ['c']
+continuation_frontier: 16 OK, 7 FALLAN
+# Anulación 2: conflicts() siempre False.
+FALLA dos mutadores en el mismo checkout chocan: esperado True, obtenido False
+FALLA un worktree que solapa archivos choca: esperado True, obtenido False
+FALLA frontera respeta la exclusión: esperado ['a', 'c', 'd', 'r'], obtenido ['a', 'b', 'c', 'd', 'r']
+FALLA un mutador en curso retiene al otro: esperado ['c', 'd', 'r'], obtenido ['b', 'c', 'd', 'r']
+continuation_frontier: 19 OK, 4 FALLAN
+# Límites de la unidad vía thyrox-bg (--cpus 1 --memory-mib 256), podman inspect en vivo:
+memory=268435456 nanocpus=1000000000 pids=4096
