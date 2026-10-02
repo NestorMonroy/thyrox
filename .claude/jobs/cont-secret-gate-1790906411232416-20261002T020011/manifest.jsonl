@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts run --task TASK-THYROX-0743 --kind maintenance --network host --mount /dev/null:/home/user/thyrox/.env:ro --secret-from-env THYROX_OPENAI_COMPAT_API_KEY -- bash /home/user/thyrox/src/session/worker_secret_inheritance.sh THYROX_OPENAI_COMPAT_API_KEY", "started_at": "2026-10-02T02:00:11+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-02T02:00:13+00:00", "duration_seconds": 2.737847}

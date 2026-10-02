@@ -105,3 +105,19 @@ y **se descartó**: un FAIL por la causa equivocada no discrimina.
   probado con una imagen sin gawk ni jq (e2e 8/8).
 - T002 queda **blocked** (criterio obligatorio de embedding sin cumplir);
   T003 sigue por decisión del ejecutor, declarada en `plan.jsonl`.
+
+## T004 y T005
+
+- T004: 54 errors ingeridos, reingesta 0 creados / 0 versiones, verificación
+  desde PostgreSQL PASS. **blocked** por el mismo criterio obligatorio de
+  embedding que T002.
+- T005: metadatos de Podman observados por el plano de control; todos los
+  bytes medidos en unidades con montajes de sólo lectura. La caché de bun se
+  midió por número de enlaces: 729 MB están enlazados a `node_modules` y
+  borrarlos no libera nada.
+- Deriva de declaración corregida: el `.env` declaraba
+  `THYROX_INFRA_OLLAMA_VOLUME=thyrox-ollama-probe-models` (vacío), y el
+  contenedor vivo montaba `thyrox-ollama-bench-models` sólo por el override
+  del guion de recuperación. Ahora declara `thyrox-ollama-bench-models`;
+  `infrastructure_ensure thyrox-ollama` → `kept`
+  (`outputs/T005-ollama-ensure-declared.txt`). El `.env` no se versiona.

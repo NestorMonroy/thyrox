@@ -1,0 +1,5 @@
+{"gate": "ManagedExecutionContainmentGate", "step": "T005-measure", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T005-measure-caches", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T005-measure-cache-links", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T005-classify", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T005-classify-annulment", "passed": true, "executions": 1, "reasons": []}

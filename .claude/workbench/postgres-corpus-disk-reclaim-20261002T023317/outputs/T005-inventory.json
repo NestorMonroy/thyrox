@@ -1,0 +1,401 @@
+{
+ "rows": [
+  {
+   "resource": "volume:thyrox-ollama-probe-models",
+   "bytes": 2284,
+   "class": "H",
+   "reason": "lo declaraba el .env hasta esta tarea; 2.3 kB, nada que ganar y su historia no está medida",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [],
+   "mounted_by_running_container": [],
+   "declared_by_thyrox": true
+  },
+  {
+   "resource": "volume:thyrox-quantization-lab-models",
+   "bytes": 2284,
+   "class": "H",
+   "reason": "volumen del laboratorio de cuantización (TASK-THYROX-0730 fuera de alcance); 2.3 kB, nada que ganar",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [],
+   "mounted_by_running_container": [],
+   "declared_by_thyrox": true
+  },
+  {
+   "resource": "volume:thyrox-quantization-lab-artifacts",
+   "bytes": 1923174191,
+   "class": "A",
+   "reason": "protegido por directiva del ejecutor",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [],
+   "mounted_by_running_container": [],
+   "declared_by_thyrox": true
+  },
+  {
+   "resource": "volume:thyrox-ollama-bench-models",
+   "bytes": 2497304022,
+   "class": "B",
+   "reason": "almacén declarado de thyrox-ollama (THYROX_INFRA_OLLAMA_VOLUME), montado por el contenedor vivo; durabilidad PASS",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [
+    "thyrox-ollama"
+   ],
+   "mounted_by_running_container": [
+    "thyrox-ollama"
+   ],
+   "declared_by_thyrox": true
+  },
+  {
+   "resource": "volume:6cec042378060862a2531f5ec607d295e4ec4acabb69250e755ceffd7900b284",
+   "bytes": 0,
+   "class": "H",
+   "reason": "volúmenes anónimos de 0 B sin usuarios; origen no medido, reclamo 0",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [],
+   "mounted_by_running_container": [],
+   "declared_by_thyrox": false
+  },
+  {
+   "resource": "volume:thyrox-ollama-models",
+   "bytes": 2284,
+   "class": "H",
+   "reason": "valor por defecto declarado en infrastructure.sh; 2.3 kB",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [],
+   "mounted_by_running_container": [],
+   "declared_by_thyrox": true
+  },
+  {
+   "resource": "volume:167c474564b3b6588aaa1110f12541fd3576ad4a35e4dd34328931428bb9ff54",
+   "bytes": 0,
+   "class": "H",
+   "reason": "volúmenes anónimos de 0 B sin usuarios; origen no medido, reclamo 0",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [],
+   "mounted_by_running_container": [],
+   "declared_by_thyrox": false
+  },
+  {
+   "resource": "volume:thyrox-postgres-data",
+   "bytes": 78053382,
+   "class": "B",
+   "reason": "almacén durable del corpus (T003); protegido por el contrato",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [
+    "thyrox-postgres"
+   ],
+   "mounted_by_running_container": [
+    "thyrox-postgres"
+   ],
+   "declared_by_thyrox": true
+  },
+  {
+   "resource": "volume:a3af5ac1864dc136daeb19d2531b1d8082a821e7d3c17dc5512dea05f4fb9a4d",
+   "bytes": 0,
+   "class": "H",
+   "reason": "volúmenes anónimos de 0 B sin usuarios; origen no medido, reclamo 0",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [],
+   "mounted_by_running_container": [],
+   "declared_by_thyrox": false
+  },
+  {
+   "resource": "volume:0365981757d0bb26035a1c2c9fc3808e91b9bb54e3156c7088cc49b9dc398d75",
+   "bytes": 0,
+   "class": "H",
+   "reason": "volúmenes anónimos de 0 B sin usuarios; origen no medido, reclamo 0",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [
+    "thyrox-redis"
+   ],
+   "mounted_by_running_container": [
+    "thyrox-redis"
+   ],
+   "declared_by_thyrox": false
+  },
+  {
+   "resource": "volume:76dcb8e6032a4d7b93cc4a51b5a98fc471d40ed6e9e3517d178205ed18167e54",
+   "bytes": 0,
+   "class": "H",
+   "reason": "volúmenes anónimos de 0 B sin usuarios; origen no medido, reclamo 0",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [],
+   "mounted_by_running_container": [],
+   "declared_by_thyrox": false
+  },
+  {
+   "resource": "volume:97058b2e05e5058bfd9496da2b8f413cc9336f806ed98b95b7e45545a02fd347",
+   "bytes": 0,
+   "class": "H",
+   "reason": "volúmenes anónimos de 0 B sin usuarios; origen no medido, reclamo 0",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [],
+   "mounted_by_running_container": [],
+   "declared_by_thyrox": false
+  },
+  {
+   "resource": "volume:36a11794a762acb39462f3eb8bf6ae66f1697f0f3bfb3b5f24c6daf5ba65575f",
+   "bytes": 0,
+   "class": "H",
+   "reason": "volúmenes anónimos de 0 B sin usuarios; origen no medido, reclamo 0",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [],
+   "mounted_by_running_container": [],
+   "declared_by_thyrox": false
+  },
+  {
+   "resource": "volume:bd0cde8174d938a18c6f575eef48db7f24b7475f818923b229298d308eff26a9",
+   "bytes": 0,
+   "class": "H",
+   "reason": "volúmenes anónimos de 0 B sin usuarios; origen no medido, reclamo 0",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [],
+   "mounted_by_running_container": [],
+   "declared_by_thyrox": false
+  },
+  {
+   "resource": "volume:050d75c5cb46135dad7fa82e8d27c0f23e60cab7e37036d7d0e5016339802bc3",
+   "bytes": 0,
+   "class": "H",
+   "reason": "volúmenes anónimos de 0 B sin usuarios; origen no medido, reclamo 0",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [],
+   "mounted_by_running_container": [],
+   "declared_by_thyrox": false
+  },
+  {
+   "resource": "image:localhost/thyrox-task-runner:dev",
+   "id": "26af4d189984948a92ebc88a2c8b69e1fda2b089ea52a87818b3b1c094177d64",
+   "bytes": 386466937,
+   "class": "B",
+   "reason": "imagen de unidad publicada/candidata; tamaño único ~1 kB",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:docker.io/th3rox/thyrox-task-runner:ubuntu24.04-bun1.3.11-uv0.8.17",
+   "id": "2bb9f235830eb30689864b5447eeea083ae1e3607a18fdca353b5c91de5e5e5a",
+   "bytes": 386467718,
+   "class": "B",
+   "reason": "imagen de unidad publicada/candidata; tamaño único ~1 kB",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:docker.io/pgvector/pgvector:0.8.0-pg16",
+   "id": "56a5b20c7a157dbb94149ba3cce70da76f02e1645dec234379709ddaebe607ea",
+   "bytes": 446874579,
+   "class": "B",
+   "reason": "imagen de un contenedor vivo (postgres, redis, ollama)",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:docker.io/library/ubuntu:24.04",
+   "id": "6232b38791000e3818b58d8847b5a8f5612d606929e01156dd8febc423e0f2ef",
+   "bytes": 80700787,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:docker.io/library/redis:7.4",
+   "id": "64035c2c9726d90bea2a217d43da49d7a3f13dde8647c1f409059e02e0e61287",
+   "bytes": 116068690,
+   "class": "B",
+   "reason": "imagen de un contenedor vivo (postgres, redis, ollama)",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:ghcr.io/ggml-org/llama.cpp@sha256:88ef2d9c2a221e80d5eb96f707a719524e9fc522d34b272bf2852dde4898d2dc",
+   "id": "9ace0117e8ff59e3d54beeea8069d919b9a882168385a1dfc5a1d8b9503df50c",
+   "bytes": 2957557436,
+   "class": "E",
+   "reason": "base fijada por digest de quantizer-image/Containerfile; ningún contenedor la usa; reconstruible con pull por digest; tamaño único 2.958 GB",
+   "safe_to_delete": true,
+   "expected_reclaim_bytes": 2957557436,
+   "references": []
+  },
+  {
+   "resource": "image:docker.io/ollama/ollama:0.35.0",
+   "id": "c178b43788bbd8f33ac3a6aa17dc561bc15dcbdba08ceac19f9388cf2415cc48",
+   "bytes": 5513676936,
+   "class": "B",
+   "reason": "imagen de un contenedor vivo (postgres, redis, ollama)",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:localhost/thyrox-model-quantizer:dev",
+   "id": "ddf16d444d8bd2ac8cb4cfd94b7dd966b7da1de15e5a0ab9137a97d16fcf9156",
+   "bytes": 1279513437,
+   "class": "D",
+   "reason": "lleva los binarios del laboratorio sin necesitar la base; tamaño único 161 B, borrarla no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "path:/root/.npm/_cacache",
+   "bytes": 122751953,
+   "class": "E",
+   "reason": "caché de paquetes de npm; todo con un solo enlace (123 MB recuperables); npm la rehace al instalar",
+   "safe_to_delete": true,
+   "expected_reclaim_bytes": 122751953,
+   "references": []
+  },
+  {
+   "resource": "path:/root/.bun/install/cache",
+   "bytes": 69591904,
+   "class": "E",
+   "reason": "729 MB enlazados a node_modules (borrar no los libera); sólo 70 MB recuperables, y ralentiza la siguiente instalación",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "path:/root/.bun/bin",
+   "bytes": null,
+   "class": "A",
+   "reason": "toolchain (bun)",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "path:.git",
+   "bytes": 1246198420,
+   "class": "A",
+   "reason": "repositorio",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "path:_references",
+   "bytes": 958883004,
+   "class": "A",
+   "reason": "corpus vendorizado",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "path:/home/user/kaupamex-docs",
+   "bytes": 1373412742,
+   "class": "A",
+   "reason": "repositorio de documentación; fuente de los findings y errors",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "path:node_modules",
+   "bytes": 728077928,
+   "class": "A",
+   "reason": "dependencias instaladas del árbol",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "path:.claude/workbench",
+   "bytes": 813830485,
+   "class": "C",
+   "reason": "evidencia versionada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "path:.claude/jobs",
+   "bytes": 176769473,
+   "class": "C",
+   "reason": "registros de trabajos versionados (tracked)",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "path:.claude/cache",
+   "bytes": 7560852,
+   "class": "D",
+   "reason": "caché versionada con su gate de layout",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "path:.thyrox/runtime",
+   "bytes": 9678794,
+   "class": "F",
+   "reason": "9.7 MB de runtime; sus logs no tienen referencia durable medida pero tampoco se probó que no sean el único registro; reclamo despreciable",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "path:/tmp",
+   "bytes": 241121195,
+   "class": "H",
+   "reason": "temporales del anfitrión, incluido el estado del cliente; no son de thyrox",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "path:.claude/worktrees",
+   "bytes": null,
+   "class": "G",
+   "reason": "no existe en este árbol: 0 worktrees",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  }
+ ],
+ "safeCandidates": [
+  {
+   "resource": "image:ghcr.io/ggml-org/llama.cpp@sha256:88ef2d9c2a221e80d5eb96f707a719524e9fc522d34b272bf2852dde4898d2dc",
+   "id": "9ace0117e8ff59e3d54beeea8069d919b9a882168385a1dfc5a1d8b9503df50c",
+   "expected_reclaim_bytes": 2957557436
+  },
+  {
+   "resource": "path:/root/.npm/_cacache",
+   "id": null,
+   "expected_reclaim_bytes": 122751953
+  }
+ ],
+ "expectedReclaimBytes": 3080309389,
+ "stoppedContainers": 0,
+ "worktrees": 0,
+ "filesystem": {
+  "path": "/home/user/thyrox",
+  "sizeBytes": 270553174016,
+  "usedBytes": 36694323200,
+  "availBytes": 3086565376
+ },
+ "problems": [],
+ "passed": true
+}
