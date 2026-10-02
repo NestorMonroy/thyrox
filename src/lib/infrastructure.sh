@@ -419,11 +419,11 @@ readonly _INFRASTRUCTURE_LOCK_COLLISION_LITERAL="deadlock due to lock mismatch"
 # La misma causa vista desde el borrado: `podman volume rm` sobre un objeto
 # cuyo lock no esta en la memoria compartida (2026-10-01, H-THYROX-302).
 readonly _INFRASTRUCTURE_LOCK_RELEASE_LITERAL="freeing lock for"
-# El remedio que Podman nombra. Exige que no corra ningun otro proceso de
-# Podman: `infrastructure_ensure` lo corre solo al arrancar, con el desfase
-# medido y ningun contenedor vivo (H-THYROX-302); en cualquier otro momento
-# lo decide el operador.
-readonly _INFRASTRUCTURE_RENUMBER_COMMAND="podman system renumber"
+# La reparacion del motor de Podman tiene un solo camino, explicito y del
+# operador: `bin/podman_lock_recovery` (que puede usar `podman system renumber`
+# o el marcador `alive` segun su contrato). Ni el ensure ni este remedio
+# reparan por su cuenta (decision del ejecutor 2026-10-02).
+readonly _INFRASTRUCTURE_LOCK_RECOVERY="bin/podman_lock_recovery"
 
 # @description ¿El stderr de un comando de Podman declara una colision de locks?
 # @arg $1 string el stderr capturado.
@@ -436,13 +436,13 @@ thyrox_infrastructure_is_lock_collision() {
 export -f thyrox_infrastructure_is_lock_collision
 
 # @description Imprime el remedio de una colision de locks sobre un objeto:
-# retirar el objeto anterior que comparte su lock, o renumerar con Podman
-# parado. No ejecuta nada.
+# retirar el objeto anterior que comparte su lock, o la reparacion explicita
+# del motor. No ejecuta nada.
 # @arg $1 string el objeto afectado (contenedor o volumen).
 # @stdout una linea con el literal y el remedio.
 thyrox_infrastructure_lock_collision_remedy() {
-  printf 'colision de locks de Podman sobre %s (%s): retirar el objeto anterior que comparte su lock, o ejecutar `%s` sin ningun otro proceso de Podman en marcha\n' \
-    "${1:-}" "$_INFRASTRUCTURE_LOCK_COLLISION_LITERAL" "$_INFRASTRUCTURE_RENUMBER_COMMAND"
+  printf 'colision de locks de Podman sobre %s (%s): retirar el objeto anterior que comparte su lock, o reparar el motor con `%s` (sin --confirm muestra el plan)\n' \
+    "${1:-}" "$_INFRASTRUCTURE_LOCK_COLLISION_LITERAL" "$_INFRASTRUCTURE_LOCK_RECOVERY"
 }
 export -f thyrox_infrastructure_lock_collision_remedy
 

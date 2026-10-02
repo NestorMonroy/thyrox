@@ -136,13 +136,17 @@ for other in "Error: no such image" ""; do
   fi
 done
 remedy="$(bash -c "source '$SUBJECT'; thyrox_infrastructure_lock_collision_remedy thyrox-ollama")"
-for piece in thyrox-ollama retirar "podman system renumber"; do
+# La reparación del motor es explícita y tiene un solo camino (decisión del
+# ejecutor 2026-10-02): el remedio nombra bin/podman_lock_recovery, no
+# `podman system renumber` suelto.
+for piece in thyrox-ollama retirar "bin/podman_lock_recovery"; do
   if [[ "$remedy" == *"$piece"* ]]; then
     ok "el remedio nombra $piece"
   else
     bad "el remedio no nombra $piece: [$remedy]"
   fi
 done
+[[ "$remedy" != *"podman system renumber"* ]] && ok "el remedio no manda a renumerar a mano" || bad "el remedio manda a renumerar a mano: [$remedy]"
 
 # --- inspeccion contra un podman falso ---
 WORK="$(mktemp -d)"; trap 'rm -rf "$WORK" "$ISOLATED_HOMES"' EXIT
