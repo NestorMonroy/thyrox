@@ -1,0 +1,2 @@
+{"status":"ready","name":"thyrox-library--qwen3-4b:q4_k_m-ollama-359d7dd4bcda","evidence":{"catalogSha256":"3e4cb14174460404e7a233e531675303b2fbf7749c02f91864fe311ab6344e4f","materializedSha256":"3e4cb14174460404e7a233e531675303b2fbf7749c02f91864fe311ab6344e4f","runtimeSha256":"3e4cb14174460404e7a233e531675303b2fbf7749c02f91864fe311ab6344e4f"},"downloaded":true,"installed":false}
+EXIT=0 seconds=115 free_after=6532292608
