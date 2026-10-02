@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Doble del daemon que aloja el coordinador de modelos: habla el contrato que
+# `model_coordinator.sh` usa (`bg run --origin <o>`, `bg status`, `bg stop`).
+# `run` abre el socket declarado y atiende hasta SIGTERM; cada llamada queda en
+# `$MODEL_COORDINATOR_DOUBLE_DIR/calls`.
+set -uo pipefail
+dir="${MODEL_COORDINATOR_DOUBLE_DIR:?}"
+socket="${THYROX_MODEL_COORDINATOR_SOCKET:?}"
+shift   # `bg`
+verb="${1:-}"; shift || true
+echo "$verb $*" >> "$dir/calls"
+case "$verb" in
+  run)
+    exec python3 - "$socket" "$dir/daemon.pid" <<'PY'
+import os, signal, socket, sys
+path, pid_file = sys.argv[1], sys.argv[2]
+server = socket.socket(socket.AF_UNIX)
+server.bind(path)
+server.listen(8)
+open(pid_file, "w").write(str(os.getpid()))
+def stop(*_):
+    os.unlink(path)
+    sys.exit(0)
+signal.signal(signal.SIGTERM, stop)
+while True:
+    connection, _ = server.accept()
+    connection.close()
+PY
+    ;;
+  status) kill -0 "$(cat "$dir/daemon.pid" 2>/dev/null)" 2>/dev/null ;;
+  stop) kill -TERM "$(cat "$dir/daemon.pid")" ;;
+  *) exit 2 ;;
+esac

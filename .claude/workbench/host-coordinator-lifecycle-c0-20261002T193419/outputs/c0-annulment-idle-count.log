@@ -1,0 +1,5 @@
+## idle-count
+$ cd src/packages/daemon && bun test src/__tests__/bgDaemonTimers.test.ts src/__tests__/modelCoordinatorSupervision.test.ts
+(fail) makeIdleActivityCount > counts the model coordinator admissions, so a live residency keeps the daemon [0.17ms]
+ 19 pass
+ 1 fail

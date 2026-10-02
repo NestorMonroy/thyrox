@@ -10,8 +10,10 @@
  * servir junto a una unidad que no controla rompería la cuenta de memoria.
  *
  * Al detenerse, desaloja cada residencia con admisiones vivas, cierra el
- * servidor (que suelta los tickets de sus conexiones) y cierra la
- * coordinación.
+ * servidor (que suelta los tickets de sus conexiones), retira con el mismo
+ * barrido del arranque toda unidad que siga listada —una residencia caliente
+ * sin admisión no la desaloja nadie más— y cierra la coordinación. Una unidad
+ * que no se deja retirar se declara con `OrphanUnitSurvivedError`.
  */
 import type { ModelSchedulingCoordination } from './coordination.ts'
 import { startModelCoordinatorServer, type ModelCoordinatorServer, type ServedCoordinator } from './coordinatorServer.ts'
@@ -32,6 +34,8 @@ export interface HostCoordinatorService {
   readonly server: ModelCoordinatorServer
   /** Las unidades de una encarnación anterior destruidas al arrancar. */
   readonly sweptUnits: readonly string[]
+  /** Las admisiones vivas: trabajo que todavía necesita al coordinador. */
+  activeAdmissions(): number
   stop(): Promise<void>
 }
 
@@ -46,7 +50,12 @@ export class OrphanUnitSurvivedError extends Error {
 export async function startHostCoordinatorService(options: HostCoordinatorServiceOptions): Promise<HostCoordinatorService> {
   const sweptUnits = await sweepOrphanUnits(options.primitive)
   const server = await startModelCoordinatorServer(options.coordinator, { socketPath: options.socketPath })
-  return { server, sweptUnits, stop: () => stopService(options, server) }
+  return {
+    server,
+    sweptUnits,
+    activeAdmissions: () => options.coordinator.admissions().length,
+    stop: () => stopService(options, server),
+  }
 }
 
 /** Destruye cada unidad listada y comprueba que ya no lo esté; una que sobrevive impide arrancar. */
@@ -66,5 +75,9 @@ async function stopService(options: HostCoordinatorServiceOptions, server: Model
   const residencies = new Set(options.coordinator.admissions().map(ticket => ticket.unit.residencyKey))
   for (const residencyKey of residencies) await options.coordinator.evict(residencyKey)
   await server.close()
-  await options.coordination.close()
+  try {
+    await sweepOrphanUnits(options.primitive)
+  } finally {
+    await options.coordination.close()
+  }
 }

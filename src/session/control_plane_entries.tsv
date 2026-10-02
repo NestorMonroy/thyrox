@@ -6,3 +6,4 @@ infrastructure_ensure	src/session/infrastructure_ensure.sh	orquesta el bootstrap
 infrastructure-bootstrap	src/packages/infrastructure/bin/bootstrap.ts	entrega el estado deseado a ensureResource
 podman_lock_recovery	src/session/podman_lock_recovery.sh	recuperación explícita del motor, pedida por un operador
 task_continuation	src/session/task_continuation.py	materializa la frontera de un plan declarado con GNU Parallel; despacha, verifica e integra en unidades
+model_coordinator	src/session/model_coordinator.sh	ciclo de vida del coordinador de modelos del anfitrión; el daemon materializa sus unidades por la primitiva

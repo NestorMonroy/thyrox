@@ -20,16 +20,29 @@ import type { SupervisorLogSink, WorkerSupervision } from './podmanWorkerSupervi
 export const MODEL_COORDINATOR_LOG_LABEL = 'model-coordinator'
 
 /** Lo que el daemon necesita de un coordinador arrancado. */
-export type RunningModelCoordinator = { socketPath: string; sweptUnits: readonly string[]; stop(): Promise<void> }
+export type RunningModelCoordinator = { socketPath: string; sweptUnits: readonly string[]; activeAdmissions(): number; stop(): Promise<void> }
+
+/** La supervisión del coordinador: además de apagarlo, publica su actividad para el watchdog de inactividad. */
+export interface ModelCoordinatorSupervision extends WorkerSupervision {
+  activity(): number
+}
 
 export type ModelCoordinatorStarter = () => Promise<RunningModelCoordinator>
 
-class InactiveCoordinatorSupervision implements WorkerSupervision {
+class InactiveCoordinatorSupervision implements ModelCoordinatorSupervision {
+  activity(): number {
+    return 0
+  }
+
   async shutdown(): Promise<void> {}
 }
 
-class ActiveCoordinatorSupervision implements WorkerSupervision {
+class ActiveCoordinatorSupervision implements ModelCoordinatorSupervision {
   constructor(private readonly coordinator: RunningModelCoordinator, private readonly log: SupervisorLogSink) {}
+
+  activity(): number {
+    return this.coordinator.activeAdmissions()
+  }
 
   async shutdown(): Promise<void> {
     try {
@@ -42,7 +55,7 @@ class ActiveCoordinatorSupervision implements WorkerSupervision {
 }
 
 /** Arranca el coordinador; nunca lanza. */
-export async function startModelCoordinatorSupervision(start: ModelCoordinatorStarter, log: SupervisorLogSink): Promise<WorkerSupervision> {
+export async function startModelCoordinatorSupervision(start: ModelCoordinatorStarter, log: SupervisorLogSink): Promise<ModelCoordinatorSupervision> {
   let coordinator: RunningModelCoordinator
   try {
     coordinator = await start()
@@ -71,5 +84,10 @@ function thyroxRoot(): string {
 export const startHostModelCoordinator: ModelCoordinatorStarter = async () => {
   const { options } = composeHostCoordinatorService(process.env, thyroxRoot())
   const service = await startHostCoordinatorService(options)
-  return { socketPath: service.server.socketPath, sweptUnits: service.sweptUnits, stop: () => service.stop() }
+  return {
+    socketPath: service.server.socketPath,
+    sweptUnits: service.sweptUnits,
+    activeAdmissions: () => service.activeAdmissions(),
+    stop: () => service.stop(),
+  }
 }

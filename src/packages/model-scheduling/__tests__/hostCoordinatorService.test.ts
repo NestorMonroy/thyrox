@@ -131,4 +131,29 @@ describe('startHostCoordinatorService', () => {
     expect(existsSync(socketPath)).toBe(false)
     expect(coordinationClosed).toBe(1)
   })
+
+  test("publica cuántas admisiones siguen vivas", async () => {
+    const service = await start()
+    expect(service.activeAdmissions()).toBe(0)
+    coordinator.admitLive("residency-1")
+    coordinator.admitLive("residency-2")
+    expect(service.activeAdmissions()).toBe(2)
+    await service.stop()
+  })
+
+  test("al detenerse retira también las unidades que quedaron calientes sin admisión", async () => {
+    const service = await start()
+    primitive.live.push(orphan("unit-warm", "residency-warm"))
+    await service.stop()
+    expect(await primitive.units()).toEqual([])
+    expect(journal).toContain("primitive.destroy unit-warm")
+  })
+
+  test("una unidad caliente que no se deja retirar al detenerse se declara, sin dejar el socket", async () => {
+    const service = await start()
+    primitive.live.push(orphan("unit-stuck", "residency-stuck"))
+    primitive.failDestroy = true
+    await expect(service.stop()).rejects.toBeInstanceOf(OrphanUnitSurvivedError)
+    expect(existsSync(socketPath)).toBe(false)
+  })
 })

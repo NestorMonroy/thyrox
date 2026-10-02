@@ -1,0 +1,4 @@
+## liveness-check
+$ bash tests/session/test-model-coordinator-entry.sh
+  FALLA 3 no lanza un segundo daemon — esperado [1] obtenido [2]
+model_coordinator: 11 ok, 1 fallas

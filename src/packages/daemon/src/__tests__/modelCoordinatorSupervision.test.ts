@@ -22,7 +22,7 @@ function recordingLog(): SupervisorLogSink & { lines: string[] } {
 function starterOf(outcome: { socketPath: string; sweptUnits: string[] } | Error, stops: string[]): ModelCoordinatorStarter {
   return async () => {
     if (outcome instanceof Error) throw outcome
-    return { socketPath: outcome.socketPath, sweptUnits: outcome.sweptUnits, stop: async () => { stops.push('stop') } }
+    return { socketPath: outcome.socketPath, sweptUnits: outcome.sweptUnits, activeAdmissions: () => 2, stop: async () => { stops.push('stop') } }
   }
 }
 
@@ -46,9 +46,16 @@ describe('startModelCoordinatorSupervision', () => {
 
   test('un apagado que falla se declara y no lanza', async () => {
     const log = recordingLog()
-    const starter: ModelCoordinatorStarter = async () => ({ socketPath: '/s', sweptUnits: [], stop: async () => { throw new Error('podman rm falló') } })
+    const starter: ModelCoordinatorStarter = async () => ({ socketPath: '/s', sweptUnits: [], activeAdmissions: () => 0, stop: async () => { throw new Error('podman rm falló') } })
     const supervision = await startModelCoordinatorSupervision(starter, log)
     await supervision.shutdown()
     expect(log.lines.at(-1)).toBe(`${MODEL_COORDINATOR_LOG_LABEL}: no se detuvo limpio (podman rm falló)`)
+  })
+
+  test('publica las admisiones vivas del coordinador como actividad; sin coordinador, cero', async () => {
+    const running = await startModelCoordinatorSupervision(starterOf({ socketPath: '/s', sweptUnits: [] }, []), recordingLog())
+    expect(running.activity()).toBe(2)
+    const inactive = await startModelCoordinatorSupervision(starterOf(new Error('sin podman'), []), recordingLog())
+    expect(inactive.activity()).toBe(0)
   })
 })

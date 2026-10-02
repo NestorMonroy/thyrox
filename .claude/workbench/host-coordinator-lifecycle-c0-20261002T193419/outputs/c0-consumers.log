@@ -1,0 +1,13 @@
+== tests/session/test-bg-managed-execution.sh
+
+20 casos: 20 ok, 0 fallos
+exit=0
+== tests/session/test-bg-name-flag.sh
+
+resumen: 9 ok, 0 fallo
+exit=0
+== test_generate_bin.py
+/usr/local/bin/python3: No module named pytest
+== test_generate_bin.py (uv run)
+ERROR .thyrox/runtime/worktrees/c0/tests/session/test_generate_bin.py::test_cli_launcher_compiles_the_delivery_features
+13 passed, 25 errors in 21.21s

@@ -69,15 +69,20 @@ export function resolveStartupThresholds(
 
 /**
  * Cuenta todo lo que retiene al supervisor: leases (clientes conectados),
- * workers vivos y workers desatendidos. Cero significa inactivo, y un
- * daemon transitorio puede apagarse solo.
+ * workers vivos, workers desatendidos y las admisiones vivas del
+ * coordinador de modelos, porque una residencia en uso necesita al daemon
+ * que la aloja. Cero significa inactivo, y un daemon transitorio puede
+ * apagarse solo.
  */
-export function makeIdleActivityCount(state: {
-  leases: { readonly size: number }
-  workers: { readonly size: number }
-  detached: { readonly size: number }
-}): () => number {
-  return () => state.leases.size + state.workers.size + state.detached.size
+export function makeIdleActivityCount(
+  state: {
+    leases: { readonly size: number }
+    workers: { readonly size: number }
+    detached: { readonly size: number }
+  },
+  coordinatorActivity: () => number = () => 0,
+): () => number {
+  return () => state.leases.size + state.workers.size + state.detached.size + coordinatorActivity()
 }
 
 export interface IdleExitOptions {

@@ -443,6 +443,8 @@ export async function bgDaemonMain(args: readonly string[], deps: BgDaemonDeps =
   // inactividad + auto-reinicio al actualizar el binario. Las
   // implementaciones viven en ./bgDaemonTimers.ts para mantener este
   // archivo bajo el presupuesto de 800 LOC.
+  // El coordinador arranca más abajo; hasta entonces no aporta actividad.
+  let coordinatorActivity: () => number = () => 0
   const upgradeWatchdog = setupUpgradeWatchdog(state.abort, {
     busyWorkerCount: () => countBusyWorkers(state.workers),
     busyDeferCapMs: thresholds.upgradeBusyDeferCapMs,
@@ -452,7 +454,7 @@ export async function bgDaemonMain(args: readonly string[], deps: BgDaemonDeps =
     abort: state.abort,
     idleGraceMs: thresholds.idleGraceMs,
     startupIdleGraceMs: thresholds.startupIdleGraceMs,
-    countActivity: makeIdleActivityCount(state),
+    countActivity: makeIdleActivityCount(state, () => coordinatorActivity()),
     isUpgradePending: upgradeWatchdog.isUpgradePending,
   })
   const idleProbeTimer = setInterval(idleExit.probe, IDLE_PROBE_INTERVAL_MS)
@@ -1085,6 +1087,7 @@ export async function bgDaemonMain(args: readonly string[], deps: BgDaemonDeps =
   // modelos locales (ADR-007 1.14.0). Si no arranca, el daemon sigue.
   const coordinatorSupervision = await startModelCoordinatorSupervision(
     deps.modelCoordinator ?? startHostModelCoordinator, supervisorLog)
+  coordinatorActivity = () => coordinatorSupervision.activity()
 
   await new Promise<void>(resolve => {
     if (state.abort.signal.aborted) {

@@ -1,0 +1,21 @@
+# RED contra la base (HEAD 36f239173), con las pruebas nuevas
+(fail) startHostCoordinatorService > publica cuántas admisiones siguen vivas [2.27ms]
+(fail) startHostCoordinatorService > al detenerse retira también las unidades que quedaron calientes sin admisión [2.21ms]
+(fail) startHostCoordinatorService > una unidad caliente que no se deja retirar al detenerse se declara, sin dejar el socket [2.20ms]
+ 5 pass
+ 3 fail
+(fail) makeIdleActivityCount > counts the model coordinator admissions, so a live residency keeps the daemon [0.23ms]
+(fail) startModelCoordinatorSupervision > publica las admisiones vivas del coordinador como actividad; sin coordinador, cero [0.25ms]
+ 18 pass
+ 2 fail
+  FALLA 1 es entrada declarada del plano de control — esperado [0] obtenido [1]
+  FALLA 2 start sale 0 — esperado [0] obtenido [127]
+  FALLA 2 imprime el socket canónico — esperado [/tmp/tmp.hNX5guBU8O/coordinator.sock] obtenido [bash: /home/user/thyrox/.thyrox/runtime/worktrees/c0/bin/model_coordinator: No such file or directory]
+  FALLA 2 el socket acepta conexiones — esperado [vivo] obtenido []
+  FALLA 2 el daemon corre con origen service — esperado [1] obtenido []
+  FALLA 2 el trabajo está en el ledger de thyrox-bg — esperado [running] obtenido []
+  FALLA 3 un segundo start sale 0 — esperado [0] obtenido [127]
+  FALLA 3 no lanza un segundo daemon — esperado [1] obtenido []
+  FALLA 4 status vivo sale 0 — esperado [0] obtenido [127]
+  FALLA 5 stop sale 0 — esperado [0] obtenido [127]
+model_coordinator: 2 ok, 10 fallas
