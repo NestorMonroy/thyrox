@@ -1,0 +1,5 @@
+==== ne: 1 definicion(es) de nivel superior
+---- chunk-xz5ks3wt.js function ne [3600,4612)
+function ne(e){return{name:"keychain",async read(){let{stdout:r,code:n}=await Xe("security",["find-generic-password","-a",MY(),"-w","-s",E],{useCwd:!1,preserveOutputOnError:!1,timeout:C});if(n===ee)return null;if(te.has(n))return t(`[deviceKeyStore] this account has no login keychain (security exited ${n}); it holds no device key`),K;if(n!==0)return t(`[deviceKeyStore] keychain read failed: security exited ${n}`,{level:"warn"}),kc;let i=r.trim();if(!i)return null;let a=F(i);if(!a)return t("[deviceKeyStore] keychain item is not a device-key document",{level:"warn"}),kc;return a},async write(r){let n=MY(),i=Buffer.from(b(r),"utf8").toString("hex"),a=`add-generic-password -U -a "${n}" -s "${E}" -X "${i}"
+`;try{return(a.length<=U?await rg("security",["-i"],{input:a,stdio:["pipe","pipe","pipe"],reject:!1,timeout:C}):await rg("security",["add-generic-password","-U","-a",n,"-s",E,"-X",i],{stdio:["ignore","pipe","pipe"],reject:!1,timeout:C})).exitCode===0}catch{return!1}},withWriteLock(r){return A(e,r)}}}
+symbol: 1 de 1 nombre(s) resueltos

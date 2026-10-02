@@ -1,0 +1,4 @@
+==== cun: 1 definicion(es) de nivel superior
+---- chunk-sxsmhx1z.js function cun [23939,24131)
+function cun({status:e,headers:n,data:r,redact:s,label:a}){if(e!==403)return;let d=mJ(n,r,s),c=ANr(e,d);if(c!==void 0)t(`${a}: sandbox proxy denied, ${c} (${d.reason??"no reason"})`);return c}
+symbol: 1 de 1 nombre(s) resueltos

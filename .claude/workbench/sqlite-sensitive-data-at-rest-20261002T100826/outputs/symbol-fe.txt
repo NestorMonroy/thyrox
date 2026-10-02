@@ -1,0 +1,4 @@
+==== fe: 1 definicion(es) de nivel superior
+---- chunk-03237y1v.js function fe [5848,6374)
+function fe(e,r){if(!r.startsWith(K))return{ok:!1,reason:"v1"};let n=Be(r);if(!n)return{ok:!1,reason:"short"};if(n.digest!==N(e.cacheKey))return{ok:!1,reason:"header"};let i=Buffer.from(n.body,"base64url");if(i.length<J+H)return{ok:!1,reason:"short"};let s=i.subarray(0,J),c=i.subarray(i.length-H),h=i.subarray(J,i.length-H);try{let d=ct("aes-256-gcm",e.key,s,{authTagLength:H});return d.setAuthTag(c),d.setAAD(e.aad),{ok:!0,plaintext:Buffer.concat([d.update(h),d.final()]).toString("utf8")}}catch{return{ok:!1,reason:"tag"}}}
+symbol: 1 de 1 nombre(s) resueltos
