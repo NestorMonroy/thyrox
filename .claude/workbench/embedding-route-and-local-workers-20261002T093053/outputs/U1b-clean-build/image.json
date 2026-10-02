@@ -1,0 +1,92 @@
+{
+  "tag": "localhost/thyrox-model-quantizer:clean-candidate",
+  "id": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+  "digest": "sha256:0bca2a46b1603bac40ae0afc71747e2ef71097a4dcbe438a08455498530a58fa",
+  "size_bytes": 1279630682,
+  "layers": [
+    {
+      "size_bytes": 0,
+      "created_by": "/bin/sh -c #(nop) LABEL \"thyrox.task\"=\"TASK-THYROX-0747\" \"io.thyrox.image.lifecycle\"=\"cache\""
+    },
+    {
+      "size_bytes": 0,
+      "created_by": "/bin/sh -c #(nop) WORKDIR /work"
+    },
+    {
+      "size_bytes": 0,
+      "created_by": "/bin/sh -c #(nop) ENV PATH=/opt/venv/bin:/app:$PATH     LD_LIBRARY_PATH=/app"
+    },
+    {
+      "size_bytes": 66048,
+      "created_by": "/bin/sh -c #(nop) COPY file:990a0dece29ff3eaa1341df3880d160f766d7eafb1201c036b4d60dc54d174d9 in /app/ "
+    },
+    {
+      "size_bytes": 50176,
+      "created_by": "/bin/sh -c #(nop) COPY file:0da48b0a9c91731c0fc313c9671ea235084be0279bebeed2d912048162bbdef1 in /app/ "
+    },
+    {
+      "size_bytes": 29696,
+      "created_by": "/bin/sh -c #(nop) COPY file:1884e814e6fad2bfeba5ea8b55a54bdaf2cc0cdc30d5edc7209cb0a7a3eb2209 in /app/ "
+    },
+    {
+      "size_bytes": 1111400448,
+      "created_by": "|1 PROXY_CA=/etc/ssl/certs/proxy-ca.crt /bin/sh -c if [ -n \"$PROXY_CA\" ]; then export PIP_CERT=\"$PROXY_CA\"; fi  && python3 -m venv /opt/venv  && /opt/venv/bin/p"
+    },
+    {
+      "size_bytes": 803328,
+      "created_by": "/bin/sh -c #(nop) COPY dir:167afba5ed8be2ba784932de8b35cf77bb732789bca390e272a29d97b0b8f655 in /app/gguf-py "
+    },
+    {
+      "size_bytes": 1101824,
+      "created_by": "/bin/sh -c #(nop) COPY dir:b4fe55d149ede9b04e53a22e02680caac433bdf1eece8e784708610a8c4781fa in /app/conversion "
+    },
+    {
+      "size_bytes": 15360,
+      "created_by": "/bin/sh -c #(nop) COPY file:99b527a4ee8c0c711d929729992d3586987a1316bfb2c08ce1dcbe4349d21948 in /app/ "
+    },
+    {
+      "size_bytes": 21122560,
+      "created_by": "/bin/sh -c #(nop) COPY multi:0de4e50d1e25beff6dd7069e34bc2687c0b2f695cd704253498839d124603fcb in /app/ "
+    },
+    {
+      "size_bytes": 12169728,
+      "created_by": "/bin/sh -c #(nop) COPY multi:8e745ffb87b65fa2558c3862e64b8bfdefb90f49abdc9ddff464d9964dcf0592 in /app/ "
+    },
+    {
+      "size_bytes": 263680,
+      "created_by": "/bin/sh -c #(nop) COPY multi:7f027eca2eb54ee18a77d009a7856c61827cfe9b7fb5693a11d0a00ca6f4baa6 in /app/ "
+    },
+    {
+      "size_bytes": 36864,
+      "created_by": "/bin/sh -c #(nop) COPY multi:cf55f17013757c5dd9275d1e8c5832f401b5b1cbb24fb16c3aef0e08b354deef in /app/ "
+    },
+    {
+      "size_bytes": 51869184,
+      "created_by": "|1 PROXY_CA=/etc/ssl/certs/proxy-ca.crt /bin/sh -c apt-get update  && apt-get install -y --no-install-recommends python3 python3-venv libgomp1 libssl3t64 ca-cer"
+    },
+    {
+      "size_bytes": 0,
+      "created_by": "/bin/sh -c #(nop) ARG PROXY_CA"
+    },
+    {
+      "size_bytes": 0,
+      "created_by": "/bin/sh -c #(nop)  CMD [\"/bin/bash\"]"
+    },
+    {
+      "size_bytes": 80691200,
+      "created_by": "/bin/sh -c #(nop) ADD file:43d479b270bbaf47965cfc86b37f4c517bda83ddefda6f708f98c3b2b7d15396 in / "
+    },
+    {
+      "size_bytes": 0,
+      "created_by": "/bin/sh -c #(nop)  LABEL org.opencontainers.image.version=24.04"
+    },
+    {
+      "size_bytes": 0,
+      "created_by": "/bin/sh -c #(nop)  ARG LAUNCHPAD_BUILD_ARCH"
+    },
+    {
+      "size_bytes": 0,
+      "created_by": "/bin/sh -c #(nop)  ARG RELEASE"
+    }
+  ]
+}
