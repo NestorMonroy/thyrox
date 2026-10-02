@@ -142,3 +142,23 @@ este cambio extiende ese invariante, no revierte una decisión.
 8. Tareas ya registradas sobre el mismo flujo, con cita efímera en el store:
    «Empaquetado P8 — instalar activa y verifica los githooks de cada clon»
    (pending), P12 y P13 (pending). Esta rama no las cierra.
+
+## Lo que destapó el primer commit con los githooks activos
+
+El checklist termina en `install.sh` y `tests/run.sh`; el primer commit real
+exigió además, en este orden:
+
+| Rehúse | Causa | Remedio aplicado (`.env` no versionado) |
+|---|---|---|
+| `check_identifier_language`: «El baseline de deuda heredada no está declarado» | `write-env.sh` no escribe `IDENTIFIER_LANGUAGE_BASELINE`; `.env.example:942-948` la documenta vacía | `IDENTIFIER_LANGUAGE_BASELINE=<raíz>/.claude/baselines/identifier_language_baseline.txt`, `IDENTIFIER_LANGUAGE_ROOTS=src:tests` |
+| `check-lint-zero`: «falta el verificador `shellcheck`» | `uv sync` sin `--group lint` | `uv sync --group lint` |
+| `check_bench_untracked` | la salida del propio commit se escribió dentro del banco | escribirla fuera del banco |
+
+9. **El preflight no ve ninguno de los dos primeros**: publica 7 ok y el
+   commit rehúsa después. Las dos claves y el grupo `lint` son candidatos a
+   sonda, con la misma forma que `commit-identity`.
+10. **Hallazgo sin `H-THYROX-NNN`.** `bin/hallazgo_ids propose-id THYROX`
+    rehúsa (`ReachRootError`): el corpus `kaupamex-docs` no está en el
+    contenedor, y un número tomado sólo del store podría estar ocupado por un
+    `.rst`. Queda en este banco hasta registrarlo desde un clon con el
+    consumidor.
