@@ -1,0 +1,10 @@
+  sintaxis ok
+== work-label
+(fail) build-image con la referencia de trabajo de un consumidor (TASK-THYROX-0760) > --work construye bajo la identidad
+  sintaxis ok
+== build-reference
+(fail) build-image con la referencia de trabajo de un consumidor (TASK-THYROX-0760) > --task y --work juntos no construy
+(fail) run con la referencia de trabajo de un consumidor > --task y --work juntos no son una autorización [0.45ms]
+8510cace6 Let a consumer build its execution image
+execution thyrox-worker-test-muqaukge-1431 kind=test task=TASK-THYROX-0760 exit=0
+__BG_EXIT__=0
