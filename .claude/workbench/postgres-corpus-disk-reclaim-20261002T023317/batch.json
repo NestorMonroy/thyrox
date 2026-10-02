@@ -1,0 +1,20 @@
+{
+  "schemaVersion": 1,
+  "batchId": "POSTGRES-CORPUS-DISK-RECLAIM",
+  "taskId": "TASK-THYROX-0758",
+  "contract": "contract.md (verbatim, from the executor 2026-10-02)",
+  "baseCommit": "3165df440419530026dc9fde59badc8504f77dde",
+  "branch": "feature/complete-orm-root",
+  "afterT007": "remain paused; do not resume the RL batch",
+  "protected": ["thyrox-postgres-data", ".git", "canonical repos", ".env", "secrets", "not-yet-ingested data", "required evidence"],
+  "tasks": [
+    {"id": "T001", "dependsOn": []},
+    {"id": "T002", "dependsOn": ["T001"]},
+    {"id": "T003", "dependsOn": ["T002"]},
+    {"id": "T004", "dependsOn": ["T003"]},
+    {"id": "T005", "dependsOn": ["T003"]},
+    {"id": "T006", "dependsOn": ["T004", "T005"]},
+    {"id": "T007", "dependsOn": ["T006"]}
+  ],
+  "freeBeforeBatchBytes": 3119812608
+}

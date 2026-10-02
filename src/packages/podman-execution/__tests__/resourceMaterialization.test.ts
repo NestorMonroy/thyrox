@@ -331,3 +331,37 @@ describe('ensureResource — validación antes de tocar Podman', () => {
     await expect(ensureResource(deps, resource, SECRETS)).rejects.toBeInstanceOf(InvalidDesiredResourceError)
   })
 })
+
+describe('ensureResource — provisión tras la salud', () => {
+  const PROVISION = ['psql', '-v', 'ON_ERROR_STOP=1', '-U', 'thyrox', '-d', 'thyrox', '-c', 'CREATE EXTENSION IF NOT EXISTS vector']
+
+  test('sano: aplica la provisión con exec, después de la salud', async () => {
+    const outcome = await ensureHealthy(desired({ provision: [PROVISION] }))
+    expect(outcome.provision).toBe('applied')
+    const execs = host.calls.filter(call => call[0] === 'exec')
+    expect(execs[execs.length - 1]).toEqual(['exec', NAME, ...PROVISION])
+  })
+
+  test('kept también provisiona: la provisión es idempotente y se reafirma en cada ensure', async () => {
+    await ensureHealthy(desired({ provision: [PROVISION] }))
+    host.calls.length = 0
+    const outcome = await ensureHealthy(desired({ provision: [PROVISION] }))
+    expect(outcome.action).toBe('kept')
+    expect(outcome.provision).toBe('applied')
+    expect(host.calls).toContainEqual(['exec', NAME, ...PROVISION])
+  })
+
+  test('una provisión que falla deja el recurso fallido, con su etapa', async () => {
+    host.failingExecPrograms.add('psql')
+    const outcome = await ensureHealthy(desired({ provision: [PROVISION] }))
+    expect(outcome.action).toBe('failed')
+    expect(outcome.provision).toBe('failed')
+    expect(outcome.failure?.stage).toBe('provision')
+  })
+
+  test('la provisión no es configuración del contenedor: cambiarla no lo recrea', async () => {
+    await ensureHealthy(desired())
+    const outcome = await ensureHealthy(desired({ provision: [PROVISION] }))
+    expect(outcome.action).toBe('kept')
+  })
+})

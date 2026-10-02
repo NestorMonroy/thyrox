@@ -94,7 +94,7 @@ export function parseInfrastructureDeclarations(text: string): InfrastructureDec
 function statusLine(outcome: EnsureOutcome): string {
   const yesNo = (value: boolean) => (value ? 'yes' : 'no')
   const volumes = outcome.volumes.map(volume => `${volume.volume}:${volume.state}`).join(',') || '-'
-  return `${outcome.name} action=${outcome.action} drift=${outcome.drift.join(',') || '-'} created=${yesNo(outcome.created)} started=${yesNo(outcome.started)} health=${outcome.health} volumes=${volumes}`
+  return `${outcome.name} action=${outcome.action} drift=${outcome.drift.join(',') || '-'} created=${yesNo(outcome.created)} started=${yesNo(outcome.started)} health=${outcome.health} provision=${outcome.provision ?? 'not-checked'} volumes=${volumes}`
 }
 
 type Verdict = { exitCode: number; problem?: string }

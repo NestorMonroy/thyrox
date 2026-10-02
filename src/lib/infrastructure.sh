@@ -209,6 +209,9 @@ _thyrox_infrastructure_resource_json() {
       legacyRoleLabel: {key: $roleKey, value: $roleValue}, health: $health}'
 }
 
+# La imagen crea la base sólo sobre un volumen vacío; pgvector se habilita en
+# ella con una provisión idempotente que el ensure reafirma tras cada salud
+# (el store semántico no crea extensiones: la base tiene que llegarle lista).
 _thyrox_infrastructure_desired_postgres() {
   _thyrox_infrastructure_resource_json "$_INFRASTRUCTURE_POSTGRES_NAME" postgres | jq \
     --arg image "$THYROX_INFRA_POSTGRES_IMAGE" --arg network "$_INFRASTRUCTURE_NETWORK" \
@@ -220,7 +223,8 @@ _thyrox_infrastructure_desired_postgres() {
      | .publishedPorts = [{hostAddress: "127.0.0.1", hostPort: $port, containerPort: 5432}]
      | .namedVolumes = [{volume: $volume, destination: $dataDir}]
      | .environment = {POSTGRES_USER: $user, POSTGRES_DB: $db, POSTGRES_PASSWORD_FILE: ($secretDir + "/" + $target)}
-     | .secrets = [{secret: $secret, target: $target, valueFrom: "THYROX_INFRA_POSTGRES_PASSWORD"}]'
+     | .secrets = [{secret: $secret, target: $target, valueFrom: "THYROX_INFRA_POSTGRES_PASSWORD"}]
+     | .provision = [["psql", "-v", "ON_ERROR_STOP=1", "-U", $user, "-d", $db, "-c", "CREATE EXTENSION IF NOT EXISTS vector"]]'
 }
 
 _thyrox_infrastructure_desired_redis() {

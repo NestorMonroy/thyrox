@@ -59,6 +59,13 @@ export type DesiredResource = {
   labels?: Readonly<Record<string, string>>
   health?: HealthDeclaration
   /**
+   * Órdenes idempotentes que se ejecutan con `exec` dentro del contenedor ya
+   * sano, en cada ensure (también si se conserva): el estado que la imagen no
+   * crea sola sobre un volumen que ya existía, como una extensión de la base.
+   * No es configuración del contenedor: cambiarla no lo recrea.
+   */
+  provision?: readonly (readonly string[])[]
+  /**
    * La etiqueta con que el dueño marcó a sus contenedores antes de llevar las
    * etiquetas de dueño. Un contenedor con ese nombre que la lleva se migra
    * (se recrea), en vez de tratarse como colisión.
@@ -101,8 +108,12 @@ export type EnsureOutcome = {
   started: boolean
   health: HealthState
   volumes: VolumeState[]
+  /** `not-declared` sin provisión; `applied` si todas salieron 0; `failed` en la primera que no. */
+  provision?: ProvisionState
   failure?: EnsureFailure
 }
+
+export type ProvisionState = 'not-declared' | 'applied' | 'failed'
 
 export interface ResourceMaterializationDeps {
   podman: PodmanExecutor
@@ -447,6 +458,17 @@ function describeResult(result: PodmanCommandResult): string {
   return [result.stderr.trim(), result.stdout.trim()].filter(text => text.length > 0).join(' | ') || `exit ${result.exitCode}`
 }
 
+/** Aplica la provisión declarada sobre un contenedor sano; la primera orden que falla deja el recurso fallido. */
+async function provisionHealthy(deps: ResourceMaterializationDeps, desired: DesiredResource, outcome: EnsureOutcome,
+  secrets: SecretValues): Promise<EnsureOutcome> {
+  if (!desired.provision?.length) return { ...outcome, provision: 'not-declared' }
+  for (const command of desired.provision) {
+    const result = await deps.podman.run(['exec', desired.name, ...command])
+    if (result.exitCode !== 0) return { ...outcome, action: 'failed', provision: 'failed', failure: failureOf('provision', result, secrets) }
+  }
+  return { ...outcome, provision: 'applied' }
+}
+
 function failureOf(stage: string, result: PodmanCommandResult, secrets: SecretValues): EnsureFailure {
   const text = `${result.stderr}\n${result.stdout}`
   return { stage, message: redactSecrets(describeResult(result), secrets), lockCollision: isLockCollision(text) }
@@ -538,7 +560,7 @@ export async function ensureResource(
   }
   if (!desired.health) return { ...outcome, health: 'not-declared' }
   const unhealthy = await awaitHealthy(deps, desired, desired.health)
-  if (!unhealthy) return { ...outcome, health: 'healthy' }
+  if (!unhealthy) return provisionHealthy(deps, desired, { ...outcome, health: 'healthy' }, secrets)
   return {
     ...outcome,
     action: 'failed',

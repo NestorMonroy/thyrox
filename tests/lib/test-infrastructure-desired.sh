@@ -44,6 +44,8 @@ expect_jq "postgres: puerto sólo en loopback" "$pg" '.publishedPorts == [{hostA
 expect_jq "postgres: volumen durable con nombre" "$pg" '.namedVolumes == [{volume: "thyrox-postgres-data", destination: "/var/lib/postgresql/data"}]'
 expect_jq "postgres: el contenedor recibe la RUTA del secreto" "$pg" '.environment.POSTGRES_PASSWORD_FILE == "/run/secrets/postgres-password"'
 expect_jq "postgres: nunca POSTGRES_PASSWORD en el entorno" "$pg" '.environment | has("POSTGRES_PASSWORD") | not'
+expect_jq "postgres: provisiona pgvector en su base, idempotente" "$pg" \
+  '.provision == [["psql", "-v", "ON_ERROR_STOP=1", "-U", "thyrox", "-d", "thyrox", "-c", "CREATE EXTENSION IF NOT EXISTS vector"]]'
 expect_jq "postgres: secreto declarado por nombre, con la variable que da su valor" "$pg" \
   '.secrets == [{secret: "thyrox-postgres-password", target: "postgres-password", valueFrom: "THYROX_INFRA_POSTGRES_PASSWORD"}]'
 expect_jq "postgres: usuario y base públicos" "$pg" '.environment.POSTGRES_USER == "thyrox" and .environment.POSTGRES_DB == "thyrox"'

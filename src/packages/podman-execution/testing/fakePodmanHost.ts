@@ -60,6 +60,8 @@ const CREATE_VALUE_FLAGS = new Set(['--name', '--label', '--mount', '--secret', 
 export class FakePodmanHost implements PodmanExecutor {
   readonly containers = new Map<string, FakeContainer>()
   readonly volumes = new Set<string>()
+  /** Programas cuyo `exec` falla aunque el contenedor esté sano (una provisión que no aplica). */
+  readonly failingExecPrograms = new Set<string>()
   /** Etiquetas con que `volume create` creó cada volumen. */
   readonly volumeLabels = new Map<string, Record<string, string>>()
   readonly secrets = new Map<string, FakeSecret>()
@@ -86,7 +88,10 @@ export class FakePodmanHost implements PodmanExecutor {
     if (command === 'create') return this.create(args.slice(1))
     if (command === 'start') return this.start(args[1] ?? '')
     if (command === 'rm') return this.remove(args[args.length - 1] ?? '')
-    if (command === 'exec') return this.healthyContainers.has(args[1] ?? '') ? OK : fail('unhealthy', 1)
+    if (command === 'exec') {
+      if (this.failingExecPrograms.has(args[2] ?? '')) return fail(`fake: ${args[2]} falló`, 1)
+      return this.healthyContainers.has(args[1] ?? '') ? OK : fail('unhealthy', 1)
+    }
     if (command === 'volume') return this.volume(sub ?? '', args.slice(2))
     if (command === 'network') return this.network(sub ?? '', args[2] ?? '')
     if (command === 'secret') return this.secret(args.slice(1), options.stdin)
