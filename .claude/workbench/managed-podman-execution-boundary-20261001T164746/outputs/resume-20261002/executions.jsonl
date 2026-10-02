@@ -1,0 +1,1 @@
+{"materializer":"podman-execution-primitive","executionId":"test-muqfdzgr-21303","task":"TASK-THYROX-0743","kind":"test","containerName":"thyrox-worker-test-muqfdzgr-21303","containerId":"4a8229a6663ec7e6c9fd2ed617281f45f168477ae838ed06f1e841d882664f04","exitCode":0,"utc":"2026-10-02T03:51:02.470Z"}
