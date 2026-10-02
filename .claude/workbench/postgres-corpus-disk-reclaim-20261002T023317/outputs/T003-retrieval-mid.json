@@ -1,0 +1,30 @@
+{
+ "domain": "finding",
+ "documents": 1621,
+ "withoutChunks": 0,
+ "duplicateChunks": 0,
+ "hashMismatch": [],
+ "chunkHashMismatch": [],
+ "missingIdentity": [],
+ "retrieval": [
+  {
+   "domainId": "H-DOCS-191",
+   "found": true,
+   "sourceRef": "kaupamex-docs:source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-191-las-tres-firmas-de-estado-usaban-separadores-distintos.rst",
+   "firstChunk": "H-DOCS-191 — las tres firmas de estado usaban separadores distintos, y el hook reescribía el tablero en cada Stop\n\n- **Severidad:** MEDIA\n- **Fecha:** 2026-08-1"
+  },
+  {
+   "domainId": "H-THYROX-26",
+   "found": true,
+   "sourceRef": "kaupamex-docs:source/gestion/pm/thyrox/iniciativas/agregar-entrypoints-cortos-thyrox/hallazgos/hallazgo-H-THYROX-26-dos-hallazgos-distintos-colisionaron-en-el-mismo-id.rst",
+   "firstChunk": "H-THYROX-26 — acuñar no leía el store y ``agregar-hallazgo`` hacía ``UPSERT``\n\n- **Severidad:** ALTA\n- **Fecha:** 2026-09-16T20:25:59\n- **Archivo:** ``thyrox: s"
+  },
+  {
+   "domainId": "H-API-1112",
+   "found": true,
+   "sourceRef": "kaupamex-docs:source/gestion/pm/api/iniciativas/completar-raiz-orm/hallazgos/hallazgo-H-API-1112-verificar-por-mensaje-de-commit-en-vez-de-por-diff-dio-falso-negativo.rst",
+   "firstChunk": "H-API-1112 — verificar por mensaje de commit en vez de por diff dio falso negativo\n\n- **Severidad:** MEDIA\n- **Fecha:** 2026-09-14T06:25:52\n- **Archivo:** el pr"
+  }
+ ],
+ "passed": true
+}

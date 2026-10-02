@@ -15,16 +15,20 @@
  *   VRAM → `create` → `start` → vida confirmada por el PID. Un paso que falla
  *   deshace los anteriores: retira el contenedor a medio crear y suelta la
  *   VRAM reservada;
+ * - la AUTORIZACIÓN de cada lanzamiento: el manager compone la suya —clase
+ *   `infrastructure`, referencia `infrastructure:daemon`, dueño `daemon`— y
+ *   la materializa por `materializeExecution`, la primitiva común; ningún
+ *   dominio de este árbol compone su propio `create`/`start`;
  * - la vivacidad por el PID real, nunca por `.State.Status`
  *   (TASK-THYROX-0605 midió `running` con el proceso muerto);
  * - el registro de qué workers gestiona este daemon, para retirarlos todos.
  *
  * Dos restricciones medidas que la ruta CUDA hereda y no oculta:
  *
- * 1. El argv de dispositivo GPU (CDI `--device nvidia.com/gpu=…` u otro) no
- *    se ha medido en ningún host de este árbol: `bin/hardware-inventory` da
- *    `none` aquí. El manager no lo inventa: sin `gpuDeviceArgv` declarado,
- *    la ruta CUDA rehúsa con exit 2, igual que con un veredicto distinto de
+ * 1. Los dispositivos GPU concedidos, en forma CDI (`nvidia.com/gpu=…`), no
+ *    se han medido en ningún host de este árbol: `bin/hardware-inventory` da
+ *    `none` aquí. El manager no los inventa: sin `gpuDevices` declarados, la
+ *    ruta CUDA rehúsa con exit 2, igual que con un veredicto distinto de
  *    `nvidia-usable`.
  * 2. `gpu_monitor` reserva por DUEÑO (`--owner`), y `release` suelta todas
  *    las reservas de ese dueño. El dueño de un worker es el daemon, así que
@@ -41,24 +45,26 @@
 import { join } from 'node:path'
 
 import { admitVram, releaseVram, type VramAdmission } from '@thyrox/config/gpuAdmission'
-import { ContainerRunError, materializeContainer } from '@thyrox/podman-execution/containerRun.ts'
+import { ContainerRunError, type ContainerRunStage } from '@thyrox/podman-execution/containerRun.ts'
+import {
+  materializeExecution,
+  validateExecutionAuthorization,
+  InvalidExecutionAuthorizationError,
+  type ExecutionAuthorization,
+  type ExecutionUnit,
+} from '@thyrox/podman-execution/executionAuthorization.ts'
 import { runCommand } from '@thyrox/podman-execution/podmanExecutor.ts'
+import type { WorkerResourceProfile } from '@thyrox/podman-execution/workerResourceProfile.ts'
 
 import {
   DEFAULT_STOP_TIMEOUT_SECONDS,
-  InvalidWorkerContainerSpecError,
   daemonContainerOwner,
-  inspectWorkerContainer,
-  isWorkerContainerProcessAlive,
   retireDaemonOrphanedWorkerContainers,
   retireWorkerContainer,
-  validateWorkerContainerSpec,
   workerContainerName,
   type PodmanCommandResult,
-  type PodmanExecutor,
   type WorkerContainerLifecycleDeps,
   type WorkerContainerRetirement,
-  type WorkerContainerSpec,
 } from './workerContainerLifecycle.js'
 
 export type WorkerAccelerator = 'cpu' | 'cuda'
@@ -72,13 +78,16 @@ const HARDWARE_VERDICTS: readonly HardwareVerdict[] = ['nvidia-usable', 'partial
 export type WorkerLaunchRequest = {
   workerId: string
   image: string
-  /** Argv de límites ya compuesto por `workerResourceProfile.ts` o `repositoryJobProfile.ts`. */
-  resourceArgv: readonly string[]
+  /** El perfil de límites ya decidido por el daemon (`workerResourceProfile.ts`). */
+  profile: WorkerResourceProfile
   command?: readonly string[]
   accelerator: WorkerAccelerator
   /** VRAM que el worker reserva; obligatoria en la ruta CUDA, ignorada en la de CPU. */
   vramMib?: number
 }
+
+/** El recurso de infraestructura que el daemon materializa: él mismo. */
+export const DAEMON_INFRASTRUCTURE_RESOURCE = 'daemon'
 
 export type ManagedWorker = {
   workerId: string
@@ -99,8 +108,8 @@ export type PodmanWorkerManagerDeps = {
   daemonPid: number
   hardwareVerdict: () => Promise<HardwareVerdict>
   vram: VramAdmissionPort
-  /** Argv de dispositivo GPU medido en el anfitrión; sin él la ruta CUDA rehúsa. */
-  gpuDeviceArgv?: readonly string[]
+  /** Dispositivos GPU concedidos en forma CDI; sin ninguno la ruta CUDA rehúsa. */
+  gpuDevices?: readonly string[]
   stopTimeoutSeconds?: number
 }
 
@@ -150,9 +159,16 @@ export class WorkerLaunchError extends Error {
 
 function requirePositiveVram(vramMib: number | undefined): number {
   if (vramMib === undefined || !Number.isInteger(vramMib) || vramMib <= 0) {
-    throw new InvalidWorkerContainerSpecError('vramMib', `vramMib debe ser un entero > 0, recibido: ${vramMib}`)
+    throw new InvalidExecutionAuthorizationError('vramMib', `vramMib debe ser un entero > 0, recibido: ${vramMib}`)
   }
   return vramMib
+}
+
+/** La etapa del lanzamiento que nombra un fallo de la primitiva: crear, arrancar o confirmar vida. */
+function launchStageOf(stage: ContainerRunStage): WorkerLaunchStage {
+  if (stage === 'create') return 'create'
+  if (stage === 'start') return 'start'
+  return 'liveness'
 }
 
 function commandDetail(result: PodmanCommandResult): string {
@@ -170,14 +186,12 @@ export class PodmanWorkerManager {
 
   async launch(request: WorkerLaunchRequest): Promise<ManagedWorker> {
     if (this.workers.has(request.workerId)) throw new WorkerAlreadyManagedError(request.workerId)
-    const spec = this.containerSpec(request, [])
-    validateWorkerContainerSpec(spec)
-    if (request.accelerator === 'cpu') return this.materialize(request, spec)
-    const deviceArgv = await this.requireCudaHost(request)
-    const cudaSpec = this.containerSpec(request, deviceArgv)
+    validateExecutionAuthorization(this.authorizationOf(request, []))
+    if (request.accelerator === 'cpu') return this.materialize(request, [])
+    const devices = await this.requireCudaHost(request)
     await this.admitVram(request)
     try {
-      return await this.materialize(request, cudaSpec)
+      return await this.materialize(request, devices)
     } catch (error) {
       await this.deps.vram.release(this.deps.daemonPid)
       throw error
@@ -208,17 +222,27 @@ export class PodmanWorkerManager {
     return this.deps.stopTimeoutSeconds ?? DEFAULT_STOP_TIMEOUT_SECONDS
   }
 
-  private containerSpec(request: WorkerLaunchRequest, deviceArgv: readonly string[]): WorkerContainerSpec {
+  /** La autorización del lanzamiento: clase `infrastructure`, el recurso `daemon` y el perfil decidido. */
+  private authorizationOf(request: WorkerLaunchRequest, devices: readonly string[]): ExecutionAuthorization {
+    const { profile } = request
     return {
-      workerId: request.workerId,
-      image: request.image,
+      executionId: request.workerId,
+      reference: { kind: 'infrastructure', resource: DAEMON_INFRASTRUCTURE_RESOURCE },
       owner: daemonContainerOwner(this.deps.daemonPid),
-      resourceArgv: [...request.resourceArgv, ...deviceArgv],
+      kind: 'infrastructure',
+      image: request.image,
       command: request.command,
+      mounts: profile.mounts,
+      resources: { cpus: profile.cpus, memoryMib: profile.memoryMib, pidsLimit: profile.pidsLimit },
+      network: profile.network,
+      readOnlyRootfs: profile.readOnlyRootfs,
+      ...(profile.environment === undefined ? {} : { environment: profile.environment }),
+      ...(profile.publishedPorts === undefined ? {} : { publishedPorts: profile.publishedPorts }),
+      ...(devices.length === 0 ? {} : { devices }),
     }
   }
 
-  /** Comprueba, en este orden, lo que la ruta CUDA necesita del anfitrión; devuelve el argv de dispositivo. */
+  /** Comprueba, en este orden, lo que la ruta CUDA necesita del anfitrión; devuelve los dispositivos concedidos. */
   private async requireCudaHost(request: WorkerLaunchRequest): Promise<readonly string[]> {
     requirePositiveVram(request.vramMib)
     const verdict = await this.deps.hardwareVerdict()
@@ -226,13 +250,13 @@ export class PodmanWorkerManager {
       throw new UnsupportedAcceleratorError(
         `${request.workerId} pide CUDA y hardware-inventory da «${verdict}»: la ruta CPU sí está disponible`)
     }
-    if (!this.deps.gpuDeviceArgv || this.deps.gpuDeviceArgv.length === 0) {
+    if (!this.deps.gpuDevices || this.deps.gpuDevices.length === 0) {
       throw new UnsupportedAcceleratorError(
-        `${request.workerId} pide CUDA y no hay gpuDeviceArgv medido en este anfitrión; no se inventa la bandera`)
+        `${request.workerId} pide CUDA y no hay gpuDevices (CDI) concedidos en este anfitrión; no se inventan`)
     }
     const current = [...this.workers.values()].find(worker => worker.accelerator === 'cuda')
     if (current) throw new VramOwnerBusyError(request.workerId, current.workerId)
-    return this.deps.gpuDeviceArgv
+    return this.deps.gpuDevices
   }
 
   private async admitVram(request: WorkerLaunchRequest): Promise<void> {
@@ -241,29 +265,28 @@ export class PodmanWorkerManager {
     if (admission !== 'admitted') throw new VramAdmissionTimeoutError(request.workerId, needMib)
   }
 
-  /** `create` → `start` → vida por el PID; si un paso falla, retira lo creado antes de lanzar. */
-  private async materialize(request: WorkerLaunchRequest, spec: WorkerContainerSpec): Promise<ManagedWorker> {
-    const { podman } = this.deps.lifecycle
+  /** `create` → `start` → vida por el PID de la unidad; si un paso falla, retira lo creado antes de lanzar. */
+  private async materialize(request: WorkerLaunchRequest, devices: readonly string[]): Promise<ManagedWorker> {
     const name = workerContainerName(request.workerId)
+    const unit = await this.materializeUnit(request, devices)
+    const pid = unit.hostPids[0] ?? 0
+    if (pid === 0 || !this.deps.lifecycle.isProcessAlive(pid)) {
+      await this.abandon(request.workerId, 'liveness', 'el contenedor no tiene un proceso vivo tras arrancar')
+    }
+    const worker: ManagedWorker = { workerId: request.workerId, containerName: name, accelerator: request.accelerator, pid }
+    this.workers.set(request.workerId, worker)
+    return worker
+  }
+
+  /** Materializa la unidad por la primitiva; un fallo nombra la etapa y retira lo creado antes de lanzar. */
+  private async materializeUnit(request: WorkerLaunchRequest, devices: readonly string[]): Promise<ExecutionUnit> {
     try {
-      await materializeContainer(podman, spec)
+      return await materializeExecution(this.deps.lifecycle.podman, this.authorizationOf(request, devices))
     } catch (error) {
       if (!(error instanceof ContainerRunError)) throw error
       // La primitiva nombra la etapa; el daemon sólo decide retirar lo creado.
-      await this.abandon(request.workerId, error.stage === 'create' ? 'create' : 'start', error.message)
+      return await this.abandon(request.workerId, launchStageOf(error.stage), error.message)
     }
-    const inspection = await inspectWorkerContainer(this.deps.lifecycle, name)
-    if (!isWorkerContainerProcessAlive(inspection, this.deps.lifecycle.isProcessAlive)) {
-      await this.abandon(request.workerId, 'liveness', 'el contenedor no tiene un proceso vivo tras arrancar')
-    }
-    const worker: ManagedWorker = {
-      workerId: request.workerId,
-      containerName: name,
-      accelerator: request.accelerator,
-      pid: inspection.present ? inspection.pid : 0,
-    }
-    this.workers.set(request.workerId, worker)
-    return worker
   }
 
   private async abandon(workerId: string, stage: WorkerLaunchStage, detail: string): Promise<never> {

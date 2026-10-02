@@ -21,6 +21,7 @@
  */
 import { readLabels } from '@thyrox/podman-execution/imageStore.ts'
 import type { PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
+import { imageHistory, inspectImage } from '@thyrox/podman-execution/podmanObservation.ts'
 
 import { lifecycleOf } from './imageLifecycle.ts'
 import type { ImageReference, PinnedImageReference } from './imageReference.ts'
@@ -63,11 +64,6 @@ export class ImageLeakError extends Error {
 
 const promotions = new WeakSet<PromotedImage>()
 
-async function imageText(podman: PodmanExecutor, args: readonly string[]): Promise<string> {
-  const result = await podman.run(args)
-  if (result.exitCode !== 0) throw new Error(`no se pudo leer la imagen (${args.slice(0, 2).join(' ')}): ${result.stderr.trim()}`)
-  return result.stdout
-}
 
 function recordsKey(text: string, key: string): boolean {
   return new RegExp(`(^|[\\s"|])${key}=`).test(text)
@@ -75,9 +71,11 @@ function recordsKey(text: string, key: string): boolean {
 
 /** Rehúsa si el historial o el entorno de la imagen graban una variable o un valor prohibidos. */
 export async function assertImageFreeOf(podman: PodmanExecutor, source: string, guard: PublishGuard): Promise<void> {
-  const history = await imageText(podman, ['history', '--no-trunc', '--format', '{{.CreatedBy}}', source])
-  const env = await imageText(podman, ['image', 'inspect', source, '--format', '{{json .Config.Env}}'])
-  const recorded = `${history}\n${env}`
+  // Lo observa el dueño de Podman (ADR-007 Regla 4, P3); aquí sólo se juzga.
+  const history = await imageHistory(podman, source)
+  const image = await inspectImage(podman, source)
+  if (!image) throw new Error(`no se pudo leer la imagen ${source}: no está en el almacén local`)
+  const recorded = `${history.join('\n')}\n${JSON.stringify(image.env)}`
   const keys = (guard.forbiddenKeys ?? BUILD_ENVIRONMENT_KEYS).filter(key => recordsKey(recorded, key))
   const values = guard.forbiddenValues.filter(value => value !== '' && recorded.includes(value))
   if (keys.length > 0 || values.length > 0) throw new ImageLeakError(source, keys, values.length)

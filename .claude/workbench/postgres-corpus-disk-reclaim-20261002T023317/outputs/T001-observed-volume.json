@@ -1,0 +1,6 @@
+{
+ "name": "thyrox-postgres-data",
+ "mountpoint": "/var/lib/containers/storage/volumes/thyrox-postgres-data/_data",
+ "createdAt": "2026-10-02T01:42:47.809744242Z",
+ "labels": {}
+}

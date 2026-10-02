@@ -1,0 +1,723 @@
+{
+ "rows": [
+  {
+   "resource": "volume:thyrox-ollama-probe-models",
+   "bytes": 2284,
+   "class": "H",
+   "reason": "lo declaraba el .env hasta esta tarea; 2.3 kB, nada que ganar y su historia no está medida",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [],
+   "mounted_by_running_container": [],
+   "declared_by_thyrox": true
+  },
+  {
+   "resource": "volume:thyrox-quantization-lab-models",
+   "bytes": 2284,
+   "class": "H",
+   "reason": "volumen del laboratorio de cuantización (TASK-THYROX-0730 fuera de alcance); 2.3 kB, nada que ganar",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [],
+   "mounted_by_running_container": [],
+   "declared_by_thyrox": true
+  },
+  {
+   "resource": "volume:thyrox-quantization-lab-artifacts",
+   "bytes": 1923174191,
+   "class": "A",
+   "reason": "protegido por directiva del ejecutor",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [],
+   "mounted_by_running_container": [],
+   "declared_by_thyrox": true
+  },
+  {
+   "resource": "volume:thyrox-ollama-bench-models",
+   "bytes": 2497304022,
+   "class": "B",
+   "reason": "almacén declarado de thyrox-ollama (THYROX_INFRA_OLLAMA_VOLUME), montado por el contenedor vivo; durabilidad PASS",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [
+    "thyrox-ollama"
+   ],
+   "mounted_by_running_container": [
+    "thyrox-ollama"
+   ],
+   "declared_by_thyrox": true
+  },
+  {
+   "resource": "volume:6cec042378060862a2531f5ec607d295e4ec4acabb69250e755ceffd7900b284",
+   "bytes": 0,
+   "class": "H",
+   "reason": "volúmenes anónimos de 0 B sin usuarios; origen no medido, reclamo 0",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [],
+   "mounted_by_running_container": [],
+   "declared_by_thyrox": false
+  },
+  {
+   "resource": "volume:thyrox-ollama-models",
+   "bytes": 2284,
+   "class": "H",
+   "reason": "valor por defecto declarado en infrastructure.sh; 2.3 kB",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [],
+   "mounted_by_running_container": [],
+   "declared_by_thyrox": true
+  },
+  {
+   "resource": "volume:167c474564b3b6588aaa1110f12541fd3576ad4a35e4dd34328931428bb9ff54",
+   "bytes": 0,
+   "class": "H",
+   "reason": "volúmenes anónimos de 0 B sin usuarios; origen no medido, reclamo 0",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [],
+   "mounted_by_running_container": [],
+   "declared_by_thyrox": false
+  },
+  {
+   "resource": "volume:thyrox-postgres-data",
+   "bytes": 78053382,
+   "class": "B",
+   "reason": "almacén durable del corpus (T003); protegido por el contrato",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [
+    "thyrox-postgres"
+   ],
+   "mounted_by_running_container": [
+    "thyrox-postgres"
+   ],
+   "declared_by_thyrox": true
+  },
+  {
+   "resource": "volume:a3af5ac1864dc136daeb19d2531b1d8082a821e7d3c17dc5512dea05f4fb9a4d",
+   "bytes": 0,
+   "class": "H",
+   "reason": "volúmenes anónimos de 0 B sin usuarios; origen no medido, reclamo 0",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [],
+   "mounted_by_running_container": [],
+   "declared_by_thyrox": false
+  },
+  {
+   "resource": "volume:0365981757d0bb26035a1c2c9fc3808e91b9bb54e3156c7088cc49b9dc398d75",
+   "bytes": 0,
+   "class": "H",
+   "reason": "volúmenes anónimos de 0 B sin usuarios; origen no medido, reclamo 0",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [
+    "thyrox-redis"
+   ],
+   "mounted_by_running_container": [
+    "thyrox-redis"
+   ],
+   "declared_by_thyrox": false
+  },
+  {
+   "resource": "volume:76dcb8e6032a4d7b93cc4a51b5a98fc471d40ed6e9e3517d178205ed18167e54",
+   "bytes": 0,
+   "class": "H",
+   "reason": "volúmenes anónimos de 0 B sin usuarios; origen no medido, reclamo 0",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [],
+   "mounted_by_running_container": [],
+   "declared_by_thyrox": false
+  },
+  {
+   "resource": "volume:97058b2e05e5058bfd9496da2b8f413cc9336f806ed98b95b7e45545a02fd347",
+   "bytes": 0,
+   "class": "H",
+   "reason": "volúmenes anónimos de 0 B sin usuarios; origen no medido, reclamo 0",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [],
+   "mounted_by_running_container": [],
+   "declared_by_thyrox": false
+  },
+  {
+   "resource": "volume:36a11794a762acb39462f3eb8bf6ae66f1697f0f3bfb3b5f24c6daf5ba65575f",
+   "bytes": 0,
+   "class": "H",
+   "reason": "volúmenes anónimos de 0 B sin usuarios; origen no medido, reclamo 0",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [],
+   "mounted_by_running_container": [],
+   "declared_by_thyrox": false
+  },
+  {
+   "resource": "volume:bd0cde8174d938a18c6f575eef48db7f24b7475f818923b229298d308eff26a9",
+   "bytes": 0,
+   "class": "H",
+   "reason": "volúmenes anónimos de 0 B sin usuarios; origen no medido, reclamo 0",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [],
+   "mounted_by_running_container": [],
+   "declared_by_thyrox": false
+  },
+  {
+   "resource": "volume:050d75c5cb46135dad7fa82e8d27c0f23e60cab7e37036d7d0e5016339802bc3",
+   "bytes": 0,
+   "class": "H",
+   "reason": "volúmenes anónimos de 0 B sin usuarios; origen no medido, reclamo 0",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [],
+   "mounted_by_running_container": [],
+   "declared_by_thyrox": false
+  },
+  {
+   "resource": "image:docker.io/th3rox/thyrox-task-runner:ubuntu24.04-bun1.3.11-uv0.8.17",
+   "id": "2bb9f235830eb30689864b5447eeea083ae1e3607a18fdca353b5c91de5e5e5a",
+   "bytes": 386467718,
+   "uniqueBytes": 1390,
+   "class": "B",
+   "reason": "imagen de unidad publicada/candidata; tamaño único ~1 kB",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:1e02a8954079",
+   "id": "1e02a895407958a517a0b82851aa76befb8f65f405e7ea8422d434691f415c26",
+   "bytes": 386466328,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:05ae188ca037",
+   "id": "05ae188ca037bcab1e61af8387e96c37029e0f09c82f15dfe0306053353deee8",
+   "bytes": 334286445,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:264da9d03eb3",
+   "id": "264da9d03eb3003c3cfa8af7cd57707e6e6e1bd283f4f5452fbf3c1ddff259bf",
+   "bytes": 234985179,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:95d7e60fc00b",
+   "id": "95d7e60fc00bfc1baf54e911f389232d0bc604555258272ec0b57b1bd7abf006",
+   "bytes": 80694184,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:24c9da34a856",
+   "id": "24c9da34a856faa8b02a35daeecf7ab4b279c1242dede9de07f28d2296793059",
+   "bytes": 80694023,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:8ee2ef2046c4",
+   "id": "8ee2ef2046c4dc392dae9da8988301e9322e1b96fcf28b574c4b72e1bd2a1bc7",
+   "bytes": 80693871,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:78f62cf98610",
+   "id": "78f62cf986107cbf34d06d5d967889b80a938e2c9d410ba084a54d29212116dd",
+   "bytes": 80693731,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:82d1a3f1a1cb",
+   "id": "82d1a3f1a1cbb2e2fc43bfcc6d576f68bcf50510d8b798bd6f1c260b16052903",
+   "bytes": 80693600,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:localhost/thyrox-task-runner:dev",
+   "id": "26af4d189984948a92ebc88a2c8b69e1fda2b089ea52a87818b3b1c094177d64",
+   "bytes": 386466937,
+   "uniqueBytes": 279,
+   "class": "B",
+   "reason": "imagen de unidad publicada/candidata; tamaño único ~1 kB",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:0d469d62f999",
+   "id": "0d469d62f999f18272430918a9d655d1c352e9f56337a9da35f372fc7a7c4e48",
+   "bytes": 386466658,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:4f65c7dfee65",
+   "id": "4f65c7dfee65d4173b6de744c7f335c7e1f2ea88f3527a02808addf7b376c457",
+   "bytes": 334286704,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:61b9d21cee35",
+   "id": "61b9d21cee35de6b2849d6d92e224511e6feb167d9d2c24a5708d7c2778ef834",
+   "bytes": 234985368,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:f3e7b383fcaf",
+   "id": "f3e7b383fcafd936c4b78eaf181c94265d2ce0964551201edb01f34ebc60c538",
+   "bytes": 80693942,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:28c023aeef75",
+   "id": "28c023aeef75d983fe44ae713f3992b88ab5818e1e5d7730c65fd3c97e416d07",
+   "bytes": 80694118,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:5c810f8d34a2",
+   "id": "5c810f8d34a2e2f647a604735480e63a15293242044e273fb84f7c622e237465",
+   "bytes": 80694305,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:6a743396463c",
+   "id": "6a743396463c3b6ef7307fa7a2fc8e710559125fc82b3592d6e1b6c8bba13229",
+   "bytes": 1279513276,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:localhost/thyrox-model-quantizer:dev",
+   "id": "ddf16d444d8bd2ac8cb4cfd94b7dd966b7da1de15e5a0ab9137a97d16fcf9156",
+   "bytes": 1279513437,
+   "uniqueBytes": 161,
+   "class": "D",
+   "reason": "lleva los binarios del laboratorio sin necesitar la base; tamaño único 161 B, borrarla no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:6f01f65a1688",
+   "id": "6f01f65a16880f9946e7069f4df734b868b01d91594d7c7c0b7a297ebfef31cb",
+   "bytes": 1279513048,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:e9287f726381",
+   "id": "e9287f72638197384e1cb45890d9191ab701ada8bdec41da2625dcbf372f09ed",
+   "bytes": 1279482783,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:bcffef11e5b4",
+   "id": "bcffef11e5b4a20d4a9a243109d5a14b9dd3d2dd8a02adfac283f09dfe414c01",
+   "bytes": 166174944,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:c836eff6528c",
+   "id": "c836eff6528cf6dae3ee58c5d2c4ab4a88152412cea50e31573bec5e31bb4dc3",
+   "bytes": 168081255,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:16917d594fb0",
+   "id": "16917d594fb0d756554a65fa3e9d0689850ef7d5d9bb0ef8095d4df611f0436a",
+   "bytes": 167277350,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:eef293cd6643",
+   "id": "eef293cd6643c01453f93b5b6e0f969e6a9533d3b3f960616c32e0bddb541fc3",
+   "bytes": 145035878,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:a7e93b19c8c3",
+   "id": "a7e93b19c8c3f444ca1067e98159e6ea412b98ed2bc22d05b6cc2b65e92a9afe",
+   "bytes": 166159015,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:0a829950cd51",
+   "id": "0a829950cd5181a68f290ebf3a1157314e93b14d6590da25683bd33373bb6467",
+   "bytes": 132865575,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:8f7f65176514",
+   "id": "8f7f65176514da66f27a79fbba5f689e0f215f9ec2748ce78707b62fe4921d63",
+   "bytes": 132601324,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:8f8efcfd9bcf",
+   "id": "8f8efcfd9bcfc2cadf4979b43441a473716902bd591436f73b1df4c012cf17d1",
+   "bytes": 132563890,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:2af5de6d521f",
+   "id": "2af5de6d521fde3902ac4396992c529ddcf5e07296ce6794b8895bdb151a55d5",
+   "bytes": 80693942,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:efc2db794f6d",
+   "id": "efc2db794f6d3d2d903ff8e5dc1f7d68714a63b5ca879d70bfb5cc91798d7bbb",
+   "bytes": 80693778,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:b78504eefd22",
+   "id": "b78504eefd22adbeb9b87013f5740fbe103e83030b1d5a1242f7d9cc929f0732",
+   "bytes": 80693623,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:ghcr.io/ggml-org/llama.cpp@sha256:88ef2d9c2a221e80d5eb96f707a719524e9fc522d34b272bf2852dde4898d2dc",
+   "id": "9ace0117e8ff59e3d54beeea8069d919b9a882168385a1dfc5a1d8b9503df50c",
+   "bytes": 2957557436,
+   "uniqueBytes": 2958000000,
+   "class": "E",
+   "reason": "base fijada por digest de quantizer-image/Containerfile; ningún contenedor la usa; reconstruible con pull por digest; tamaño único 2.958 GB",
+   "safe_to_delete": true,
+   "expected_reclaim_bytes": 2958000000,
+   "references": []
+  },
+  {
+   "resource": "image:docker.io/ollama/ollama:0.35.0",
+   "id": "c178b43788bbd8f33ac3a6aa17dc561bc15dcbdba08ceac19f9388cf2415cc48",
+   "bytes": 5513676936,
+   "uniqueBytes": 5514000000,
+   "class": "B",
+   "reason": "imagen de un contenedor vivo (postgres, redis, ollama)",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [
+    "thyrox-ollama"
+   ]
+  },
+  {
+   "resource": "image:docker.io/library/redis:7.4",
+   "id": "64035c2c9726d90bea2a217d43da49d7a3f13dde8647c1f409059e02e0e61287",
+   "bytes": 116068690,
+   "uniqueBytes": 116100000,
+   "class": "B",
+   "reason": "imagen de un contenedor vivo (postgres, redis, ollama)",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [
+    "thyrox-redis"
+   ]
+  },
+  {
+   "resource": "image:docker.io/library/ubuntu:24.04",
+   "id": "6232b38791000e3818b58d8847b5a8f5612d606929e01156dd8febc423e0f2ef",
+   "bytes": 80700787,
+   "uniqueBytes": 0,
+   "class": "E",
+   "reason": "capas intermedias de build con tamaño único 0 B: borrarlas no libera nada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "image:docker.io/pgvector/pgvector:0.8.0-pg16",
+   "id": "56a5b20c7a157dbb94149ba3cce70da76f02e1645dec234379709ddaebe607ea",
+   "bytes": 446874579,
+   "uniqueBytes": 446900000,
+   "class": "B",
+   "reason": "imagen de un contenedor vivo (postgres, redis, ollama)",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": [
+    "thyrox-postgres"
+   ]
+  },
+  {
+   "resource": "path:/root/.npm/_cacache",
+   "bytes": 122751953,
+   "class": "E",
+   "reason": "caché de paquetes de npm; todo con un solo enlace (123 MB recuperables); npm la rehace al instalar",
+   "safe_to_delete": true,
+   "expected_reclaim_bytes": 122751953,
+   "references": []
+  },
+  {
+   "resource": "path:/root/.bun/install/cache",
+   "bytes": 69591904,
+   "class": "E",
+   "reason": "729 MB enlazados a node_modules (borrar no los libera); sólo 70 MB recuperables, y ralentiza la siguiente instalación",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "path:/root/.bun/bin",
+   "bytes": null,
+   "class": "A",
+   "reason": "toolchain (bun)",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "path:.git",
+   "bytes": 1246198420,
+   "class": "A",
+   "reason": "repositorio",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "path:_references",
+   "bytes": 958883004,
+   "class": "A",
+   "reason": "corpus vendorizado",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "path:/home/user/kaupamex-docs",
+   "bytes": 1373412742,
+   "class": "A",
+   "reason": "repositorio de documentación; fuente de los findings y errors",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "path:node_modules",
+   "bytes": 728077928,
+   "class": "A",
+   "reason": "dependencias instaladas del árbol",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "path:.claude/workbench",
+   "bytes": 813830485,
+   "class": "C",
+   "reason": "evidencia versionada",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "path:.claude/jobs",
+   "bytes": 176769473,
+   "class": "C",
+   "reason": "registros de trabajos versionados (tracked)",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "path:.claude/cache",
+   "bytes": 7560852,
+   "class": "D",
+   "reason": "caché versionada con su gate de layout",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "path:.thyrox/runtime",
+   "bytes": 9678794,
+   "class": "F",
+   "reason": "9.7 MB de runtime; sus logs no tienen referencia durable medida pero tampoco se probó que no sean el único registro; reclamo despreciable",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "path:/tmp",
+   "bytes": 241121195,
+   "class": "H",
+   "reason": "temporales del anfitrión, incluido el estado del cliente; no son de thyrox",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  },
+  {
+   "resource": "path:.claude/worktrees",
+   "bytes": null,
+   "class": "G",
+   "reason": "no existe en este árbol: 0 worktrees",
+   "safe_to_delete": false,
+   "expected_reclaim_bytes": 0,
+   "references": []
+  }
+ ],
+ "safeCandidates": [
+  {
+   "resource": "image:ghcr.io/ggml-org/llama.cpp@sha256:88ef2d9c2a221e80d5eb96f707a719524e9fc522d34b272bf2852dde4898d2dc",
+   "id": "9ace0117e8ff59e3d54beeea8069d919b9a882168385a1dfc5a1d8b9503df50c",
+   "expected_reclaim_bytes": 2958000000
+  },
+  {
+   "resource": "path:/root/.npm/_cacache",
+   "id": null,
+   "expected_reclaim_bytes": 122751953
+  }
+ ],
+ "expectedReclaimBytes": 3080751953,
+ "stoppedContainers": 0,
+ "worktrees": 0,
+ "filesystem": {
+  "path": "/home/user/thyrox",
+  "sizeBytes": 270553174016,
+  "usedBytes": 36694323200,
+  "availBytes": 3086565376
+ },
+ "problems": [],
+ "passed": true
+}

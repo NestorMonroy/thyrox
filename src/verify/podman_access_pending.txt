@@ -1,0 +1,8 @@
+# Consumidores que todavía emiten un verbo de Podman fuera de @thyrox/podman-execution.
+# Lista CERRADA: una entrada vale mientras su tarea esté abierta en el store; cerrada,
+# deja de eximir (check_podman_access_ownership.py). Nada nuevo entra aquí sin tarea.
+# ruta	tarea	motivo
+src/lib/podman_capabilities.sh	TASK-THYROX-0746	sondas de capacidades de Podman por mover a la primitiva
+src/session/infrastructure_ensure.sh	TASK-THYROX-0759	preflight (version, info, volume ls) por pedir a observe
+src/session/podman_lock_recovery.sh	TASK-THYROX-0759	recuento de locks y objetos por pedir a observe
+src/packages/local-models/quantizationLab.ts	TASK-THYROX-0759	observación del laboratorio por pedir a observe

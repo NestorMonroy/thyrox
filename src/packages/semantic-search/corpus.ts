@@ -153,6 +153,32 @@ async function keepVersion(tx: Transaction, existing: DocumentRow, input: Docume
   return { status: 'unchanged', documentId: existing.document_id, version: existing.version }
 }
 
+/** El carácter que PostgreSQL no admite en `TEXT` ni en `JSONB`. */
+const NUL = '\u0000'
+/** Su representación visible (SYMBOL FOR NULL): el texto conserva dónde estaba. */
+export const NUL_REPLACEMENT = '␀'
+
+function storableValue(value: unknown): unknown {
+  if (typeof value === 'string') return value.replaceAll(NUL, NUL_REPLACEMENT)
+  if (Array.isArray(value)) return value.map(storableValue)
+  if (value !== null && typeof value === 'object') {
+    return Object.fromEntries(Object.entries(value).map(([key, item]) => [storableValue(key), storableValue(item)]))
+  }
+  return value
+}
+
+/**
+ * El documento tal como PostgreSQL puede guardarlo: cada U+0000 del texto y de
+ * la metadata pasa a U+2400. El hash se calcula DESPUÉS, sobre el texto
+ * guardado, así que el texto recuperado y su `content_hash` siempre coinciden.
+ * Medido: H-DOCS-191 documenta un separador NUL dentro de un bloque de código,
+ * y sin esto su ingesta abortaba la del corpus entero.
+ */
+export function storableDocument(input: DocumentInput): DocumentInput {
+  return { ...input, chunks: input.chunks.map(chunk => chunk.replaceAll(NUL, NUL_REPLACEMENT)),
+    metadata: storableValue(input.metadata) as DocumentInput['metadata'] }
+}
+
 /**
  * Ingiere un documento. Misma identidad y mismo hash: `unchanged`, sin
  * versión ni chunks nuevos —sólo la procedencia, si cambió—. Hash distinto:
@@ -163,8 +189,9 @@ async function keepVersion(tx: Transaction, existing: DocumentRow, input: Docume
  * sólo se guarda con el documento nuevo. El dueño forma parte de la identidad,
  * así que una reingesta nunca cambia la visibilidad de un documento existente.
  */
-export async function ingestDocument(sql: SQL, input: DocumentInput, visibility: DurableVisibility): Promise<IngestResult> {
-  assertValidDocument(input)
+export async function ingestDocument(sql: SQL, received: DocumentInput, visibility: DurableVisibility): Promise<IngestResult> {
+  assertValidDocument(received)
+  const input = storableDocument(received)
   const contentHash = documentHash(input.chunks)
   return sql.begin(async tx => {
     const [existing] = (await tx.unsafe(LOCK_DOCUMENT_QUERY, identityParameters(input))) as DocumentRow[]

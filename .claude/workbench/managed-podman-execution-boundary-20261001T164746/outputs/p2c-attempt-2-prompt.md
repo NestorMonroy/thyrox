@@ -33,7 +33,7 @@ antes y después), p2c-diff.txt (git diff de tus archivos). Cada log con el coma
 
 ## Intentos previos de este mismo tramo (evidencia, no objetivo nuevo)
 
-- deepseek-v4.1-flash: task_failure (exit 1, verificación 1)
+- qwen3.8-flash: secret_exposure_detected (exit 1, verificación 1)
   ```
   11:import { runJobWithOutput, type JobOutput } from '@thyrox/podman-execution/containerRun.ts'
   13:import { workerContainerName, type WorkerContainerSpec } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
@@ -47,6 +47,6 @@ antes y después), p2c-diff.txt (git diff de tus archivos). Cada log con el coma
   FALLA falta outputs/p2c-annulment
   FALLA falta outputs/p2c-typecheck
   suite local-models: 5 fallas (admitidas 5)
-  execution thyrox-worker-maintenance-muq7ad9n-10840 kind=maintenance task=TASK-THYROX-0743 exit=1
+  execution thyrox-worker-maintenance-muqc7n03-2070 kind=maintenance task=TASK-THYROX-0743 exit=1
   __BG_EXIT__=1
   ```

@@ -1,0 +1,33 @@
+{
+ "passed": true,
+ "checks": {
+  "containerChanged_before_mid": true,
+  "volumeSame_mid": true,
+  "countsSame_mid": true,
+  "sampleSame_mid": true,
+  "retrieval_mid": true,
+  "containerChanged_mid_after": true,
+  "volumeSame_after": true,
+  "countsSame_after": true,
+  "sampleSame_after": true,
+  "retrieval_after": true,
+  "sampleNonEmpty": true,
+  "declaredPortRestored": true
+ },
+ "containers": {
+  "before": "587a193241fd41435609a7ebb250eb50012c19e00362368058b4e4c2f56674be",
+  "mid": "187819df88d2e1a7149598d08be59babb6a654ce2a4005aac119a826eae91ded",
+  "after": "c3d379f208b799723d74923d624d10f5a08383f5f25ef6af81fe3fae5709e6bc"
+ },
+ "volume": {
+  "volume": "thyrox-postgres-data",
+  "volumeCreatedAt": "2026-10-02T01:42:47.809744242Z",
+  "mountpoint": "/var/lib/containers/storage/volumes/thyrox-postgres-data/_data",
+  "mountedVolume": "thyrox-postgres-data"
+ },
+ "counts": {
+  "documents": 1675,
+  "chunks": 9981,
+  "embeddingSpaces": 0
+ }
+}

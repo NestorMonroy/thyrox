@@ -1,0 +1,2 @@
+check_infrastructure_runtime_idle: 0 residencia(s) en http://127.0.0.1:51434
+execution thyrox-worker-test-muqevy9r-14690 kind=test task=TASK-THYROX-0758 exit=0

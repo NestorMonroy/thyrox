@@ -7,7 +7,7 @@
  * Tres operaciones, una por invocación:
  *
  *   launch    --worker-id --image --daemon-pid [--accelerator] [--vram-mib]
- *             [--resource-arg …] -- <comando…>
+ *             [--profile-json <json>] -- <comando…>
  *   retire    --worker-id --daemon-pid
  *   reconcile --daemon-pid
  *
@@ -31,6 +31,11 @@ import {
   type WorkerLaunchRequest,
 } from '../../src/packages/daemon/src/podman/podmanWorkerManager.js'
 import { createWorkerContainerLifecycleDeps } from '../../src/packages/daemon/src/podman/workerContainerLifecycle.js'
+import {
+  DEFAULT_WORKER_RESOURCE_PROFILE,
+  validateWorkerResourceProfile,
+  type WorkerResourceProfile,
+} from '../../src/packages/podman-execution/workerResourceProfile.js'
 
 const GENERIC_FAILURE_EXIT_CODE = 1
 
@@ -41,7 +46,7 @@ type ProbeOptions = {
   daemonPid: number
   accelerator: WorkerAccelerator
   vramMib?: number
-  resourceArgv: string[]
+  profile: WorkerResourceProfile
   command: string[]
 }
 
@@ -75,6 +80,20 @@ function parseAccelerator(raw: string | undefined): WorkerAccelerator {
   throw new ProbeUsageError(`acelerador desconocido: ${raw}`)
 }
 
+/** El perfil de límites de la sonda: el más restrictivo, salvo `--profile-json` declarado. */
+function parseProfile(raw: string | undefined): WorkerResourceProfile {
+  if (raw === undefined) return DEFAULT_WORKER_RESOURCE_PROFILE
+  let parsed: unknown
+  try {
+    parsed = JSON.parse(raw)
+  } catch {
+    throw new ProbeUsageError(`--profile-json no es JSON: ${raw}`)
+  }
+  const profile = parsed as WorkerResourceProfile
+  validateWorkerResourceProfile(profile)
+  return profile
+}
+
 function parseProbeOptions(argv: string[]): ProbeOptions {
   const { values, positionals } = parseArgs({
     args: argv,
@@ -85,7 +104,7 @@ function parseProbeOptions(argv: string[]): ProbeOptions {
       'daemon-pid': { type: 'string' },
       accelerator: { type: 'string' },
       'vram-mib': { type: 'string' },
-      'resource-arg': { type: 'string', multiple: true },
+      'profile-json': { type: 'string' },
     },
   })
   const [operation, ...command] = positionals
@@ -96,7 +115,7 @@ function parseProbeOptions(argv: string[]): ProbeOptions {
     daemonPid: Number(requireOption(values['daemon-pid'], 'daemon-pid')),
     accelerator: parseAccelerator(values.accelerator),
     vramMib: values['vram-mib'] === undefined ? undefined : Number(values['vram-mib']),
-    resourceArgv: values['resource-arg'] ?? [],
+    profile: parseProfile(values['profile-json']),
     command,
   }
 }
@@ -118,7 +137,7 @@ function launchRequest(options: ProbeOptions): WorkerLaunchRequest {
   return {
     workerId: requireOption(options.workerId, 'worker-id'),
     image: requireOption(options.image, 'image'),
-    resourceArgv: options.resourceArgv,
+    profile: options.profile,
     command: options.command,
     accelerator: options.accelerator,
     vramMib: options.vramMib,

@@ -1,0 +1,32 @@
+
+== 02:49:17 ventana sin unidades vivas (intento 121): detener la infraestructura viva y recuperar
+podman 4.9.3 · backend sqlite · locks asignados 6, referenciados 7 · marcador /run/libpod/alive
+tras refrescar: locks asignados 7, referenciados 7
+
+== 02:49:19 re-materializar la infraestructura por el bootstrap
+thyrox-postgres action=started drift=- created=no started=yes health=healthy provision=applied volumes=thyrox-postgres-data:preserved
+thyrox-postgres exit=0
+thyrox-redis action=recreated drift=volume created=yes started=yes health=healthy provision=not-declared volumes=-
+thyrox-redis exit=0
+thyrox-ollama action=created drift=- created=yes started=yes health=healthy provision=not-declared volumes=thyrox-ollama-bench-models:preserved
+thyrox-ollama exit=0
+container=b7fcdd7926310e15a0fb7d78d9076507bfc090c4a8676974ad7dab83ced8eef1 mount=thyrox-ollama-bench-models:/root/.ollama
+
+== 02:49:25 5. verificar
+jq: parse error: Invalid numeric literal at line 1, column 922
+PASS mismo volumen
+PASS artefacto presente con la misma identidad
+PASS blobs idénticos (nombre, tamaño, inodo, mtime)
+PASS sin descarga en el log del contenedor nuevo
+
+== 02:49:25 6. anulación: el mismo bootstrap sobre un volumen sin el store (thyrox-ollama-models)
+thyrox-ollama action=recreated drift=volume created=yes started=yes health=healthy provision=not-declared volumes=thyrox-ollama-models:preserved
+exit=0
+jq: parse error: Invalid numeric literal at line 1, column 23
+ANNULMENT-OK artefacto ausente sin su volumen (digest='')
+
+== 02:49:28 7. volver al store declarado
+thyrox-ollama action=recreated drift=volume created=yes started=yes health=healthy provision=not-declared volumes=thyrox-ollama-bench-models:preserved
+exit=0
+jq: parse error: Invalid numeric literal at line 1, column 922
+PASS restaurado

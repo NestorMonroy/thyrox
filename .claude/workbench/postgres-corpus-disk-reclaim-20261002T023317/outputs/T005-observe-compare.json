@@ -1,0 +1,1 @@
+{"passed": true, "checks": {"graphRoot": true, "volumes": true, "containers": true, "images": true, "running": true}, "directImages": 8, "canonicalImages": 36}

@@ -1,0 +1,642 @@
+diff --git a/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts b/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts
+index 0d0c458c6..2bccfcd2d 100644
+--- a/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts
++++ b/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts
+@@ -19,13 +19,19 @@ import {
+   type WorkerLaunchRequest,
+ } from '../podman/podmanWorkerManager.js'
+ import {
+-  InvalidWorkerContainerSpecError,
+   createWorkerContainerArgv,
+   daemonContainerOwner,
+   workerContainerName,
+   type PodmanCommandResult,
+   type PodmanExecutor,
+ } from '../podman/workerContainerLifecycle.js'
++import {
++  EXECUTION_ID_LABEL_KEY,
++  EXECUTION_KIND_LABEL_KEY,
++  EXECUTION_REFERENCE_LABEL_KEY,
++  InvalidExecutionAuthorizationError,
++} from '@thyrox/podman-execution/executionAuthorization.ts'
++import { workerResourceLimitArgv, type WorkerResourceProfile } from '@thyrox/podman-execution/workerResourceProfile.ts'
+ 
+ const OK: PodmanCommandResult = { exitCode: 0, stdout: '', stderr: '' }
+ const DAEMON_PID = 4100
+@@ -43,6 +49,13 @@ function fakePodman(
+       const answer = responses[args[0]]
+       if (answer) return answer
+       if (args[0] === 'inspect') {
++        if (args.includes('json')) {
++          return {
++            exitCode: 0,
++            stdout: JSON.stringify([{ State: { Pid: CONTAINER_PID, CgroupPath: '/user.slice/thyrox.slice/w1' } }]),
++            stderr: '',
++          }
++        }
+         return { exitCode: 0, stdout: `running\t${CONTAINER_PID}\tdaemon\t${DAEMON_PID}\t${DAEMON_PID}\tw1`, stderr: '' }
+       }
+       return OK
+@@ -75,7 +88,7 @@ function deps(
+   options: {
+     verdict?: HardwareVerdict
+     vram?: VramAdmissionPort
+-    gpuDeviceArgv?: readonly string[]
++    gpuDevices?: readonly string[]
+     alive?: readonly number[]
+   } = {},
+ ): PodmanWorkerManagerDeps & { readonly killed: number[] } {
+@@ -92,16 +105,26 @@ function deps(
+     daemonPid: DAEMON_PID,
+     hardwareVerdict: async () => options.verdict ?? 'none',
+     vram: options.vram ?? fakeVram(),
+-    gpuDeviceArgv: options.gpuDeviceArgv,
++    gpuDevices: options.gpuDevices,
+     killed,
+   }
+ }
+ 
++/** El perfil que el daemon decide en estas pruebas: dos CPUs, 2 GiB y 64 procesos. */
++const CPU_PROFILE: WorkerResourceProfile = {
++  cpus: 2,
++  memoryMib: 2048,
++  pidsLimit: 64,
++  network: 'none',
++  readOnlyRootfs: true,
++  mounts: [],
++}
++
+ function cpuRequest(overrides: Partial<WorkerLaunchRequest> = {}): WorkerLaunchRequest {
+   return {
+     workerId: 'w1',
+     image: 'localhost/thyrox-worker:test',
+-    resourceArgv: ['--network', 'none', '--read-only'],
++    profile: CPU_PROFILE,
+     command: ['/bin/worker'],
+     accelerator: 'cpu',
+     ...overrides,
+@@ -124,7 +147,12 @@ describe('launch — ruta CPU', () => {
+       workerId: 'w1',
+       image: 'localhost/thyrox-worker:test',
+       owner: daemonContainerOwner(DAEMON_PID),
+-      resourceArgv: ['--network', 'none', '--read-only'],
++      labels: {
++        [EXECUTION_ID_LABEL_KEY]: 'w1',
++        [EXECUTION_KIND_LABEL_KEY]: 'infrastructure',
++        [EXECUTION_REFERENCE_LABEL_KEY]: 'infrastructure:daemon',
++      },
++      resourceArgv: workerResourceLimitArgv(CPU_PROFILE),
+       command: ['/bin/worker'],
+     }))
+     expect(vram.admitted).toEqual([])
+@@ -140,10 +168,10 @@ describe('launch — ruta CPU', () => {
+     expect(podman.calls.length).toBe(callsBefore)
+   })
+ 
+-  test('un spec inválido rehúsa antes de llamar a Podman', async () => {
++  test('un executionId inválido rehúsa antes de llamar a Podman', async () => {
+     const podman = fakePodman()
+     const manager = new PodmanWorkerManager(deps(podman))
+-    await expect(manager.launch(cpuRequest({ workerId: '../x' }))).rejects.toBeInstanceOf(InvalidWorkerContainerSpecError)
++    await expect(manager.launch(cpuRequest({ workerId: '../x' }))).rejects.toBeInstanceOf(InvalidExecutionAuthorizationError)
+     expect(podman.calls).toEqual([])
+   })
+ 
+@@ -182,7 +210,7 @@ describe('launch — ruta CUDA', () => {
+   test('sin GPU utilizable rehúsa con el veredicto, sin reservar ni crear', async () => {
+     const podman = fakePodman()
+     const vram = fakeVram()
+-    const manager = new PodmanWorkerManager(deps(podman, { verdict: 'none', vram, gpuDeviceArgv: ['--device', 'x'] }))
++    const manager = new PodmanWorkerManager(deps(podman, { verdict: 'none', vram, gpuDevices: ['nvidia.com/gpu=x'] }))
+     const failure = await manager.launch(cudaRequest()).catch(error => error)
+     expect(failure).toBeInstanceOf(UnsupportedAcceleratorError)
+     expect(failure.exitCode).toBe(2)
+@@ -196,24 +224,24 @@ describe('launch — ruta CUDA', () => {
+     const manager = new PodmanWorkerManager(deps(podman, { verdict: 'nvidia-usable' }))
+     const failure = await manager.launch(cudaRequest()).catch(error => error)
+     expect(failure).toBeInstanceOf(UnsupportedAcceleratorError)
+-    expect(failure.message).toContain('gpuDeviceArgv')
++    expect(failure.message).toContain('gpuDevices')
+     expect(podman.calls).toEqual([])
+   })
+ 
+   test('exige vramMib entero positivo', async () => {
+     const podman = fakePodman()
+-    const manager = new PodmanWorkerManager(deps(podman, { verdict: 'nvidia-usable', gpuDeviceArgv: ['--device', 'x'] }))
+-    await expect(manager.launch(cudaRequest({ vramMib: 0 }))).rejects.toBeInstanceOf(InvalidWorkerContainerSpecError)
++    const manager = new PodmanWorkerManager(deps(podman, { verdict: 'nvidia-usable', gpuDevices: ['nvidia.com/gpu=x'] }))
++    await expect(manager.launch(cudaRequest({ vramMib: 0 }))).rejects.toBeInstanceOf(InvalidExecutionAuthorizationError)
+     expect(podman.calls).toEqual([])
+   })
+ 
+   test('reserva la VRAM a nombre del daemon, añade el dispositivo y la suelta al retirar', async () => {
+     const podman = fakePodman()
+     const vram = fakeVram()
+-    const manager = new PodmanWorkerManager(deps(podman, { verdict: 'nvidia-usable', vram, gpuDeviceArgv: ['--device', 'gpu0'] }))
++    const manager = new PodmanWorkerManager(deps(podman, { verdict: 'nvidia-usable', vram, gpuDevices: ['nvidia.com/gpu=gpu0'] }))
+     await manager.launch(cudaRequest())
+     expect(vram.admitted).toEqual([{ needMib: 2048, ownerPid: DAEMON_PID }])
+-    expect(podman.calls[0]).toContain('gpu0')
++    expect(podman.calls[0]).toContain('nvidia.com/gpu=gpu0')
+     await manager.retire('w1')
+     expect(vram.released).toEqual([DAEMON_PID])
+     expect(manager.managedWorkers()).toEqual([])
+@@ -222,7 +250,7 @@ describe('launch — ruta CUDA', () => {
+   test('un plazo de admisión vencido no crea nada', async () => {
+     const podman = fakePodman()
+     const manager = new PodmanWorkerManager(deps(podman, {
+-      verdict: 'nvidia-usable', vram: fakeVram('timeout'), gpuDeviceArgv: ['--device', 'x'],
++      verdict: 'nvidia-usable', vram: fakeVram('timeout'), gpuDevices: ['nvidia.com/gpu=x'],
+     }))
+     await expect(manager.launch(cudaRequest())).rejects.toBeInstanceOf(VramAdmissionTimeoutError)
+     expect(podman.calls).toEqual([])
+@@ -231,7 +259,7 @@ describe('launch — ruta CUDA', () => {
+   test('un lanzamiento fallido suelta la VRAM que reservó', async () => {
+     const podman = fakePodman({ start: { exitCode: 126, stdout: '', stderr: 'boom' } })
+     const vram = fakeVram()
+-    const manager = new PodmanWorkerManager(deps(podman, { verdict: 'nvidia-usable', vram, gpuDeviceArgv: ['--device', 'x'] }))
++    const manager = new PodmanWorkerManager(deps(podman, { verdict: 'nvidia-usable', vram, gpuDevices: ['nvidia.com/gpu=x'] }))
+     await expect(manager.launch(cudaRequest())).rejects.toBeInstanceOf(WorkerLaunchError)
+     expect(vram.released).toEqual([DAEMON_PID])
+   })
+@@ -239,13 +267,32 @@ describe('launch — ruta CUDA', () => {
+   test('un segundo worker CUDA rehúsa: el registro reserva por dueño y soltar uno soltaría los dos', async () => {
+     const podman = fakePodman()
+     const vram = fakeVram()
+-    const manager = new PodmanWorkerManager(deps(podman, { verdict: 'nvidia-usable', vram, gpuDeviceArgv: ['--device', 'x'] }))
++    const manager = new PodmanWorkerManager(deps(podman, { verdict: 'nvidia-usable', vram, gpuDevices: ['nvidia.com/gpu=x'] }))
+     await manager.launch(cudaRequest())
+     await expect(manager.launch(cudaRequest({ workerId: 'w2' }))).rejects.toBeInstanceOf(VramOwnerBusyError)
+     expect(vram.admitted).toHaveLength(1)
+   })
+ })
+ 
++describe('la autorización de cada lanzamiento', () => {
++  test('compone la autorización de infraestructura del daemon con su clase y su referencia', async () => {
++    const podman = fakePodman()
++    const manager = new PodmanWorkerManager(deps(podman))
++    await manager.launch(cpuRequest())
++    const create = podman.calls[0]!.join(' ')
++    expect(create).toContain(`--label ${EXECUTION_KIND_LABEL_KEY}=infrastructure`)
++    expect(create).toContain(`--label ${EXECUTION_REFERENCE_LABEL_KEY}=infrastructure:daemon`)
++    expect(create).toContain(`--label ${EXECUTION_ID_LABEL_KEY}=w1`)
++  })
++
++  test('la vida se confirma con la inspección de la unidad materializada', async () => {
++    const podman = fakePodman()
++    const manager = new PodmanWorkerManager(deps(podman))
++    await manager.launch(cpuRequest())
++    expect(podman.calls[2]).toEqual(['inspect', '--format', 'json', workerContainerName('w1')])
++  })
++})
++
+ describe('retire / retireAll / reconcileOrphans', () => {
+   test('retire detiene y borra el contenedor y olvida el worker', async () => {
+     const podman = fakePodman()
+diff --git a/src/packages/daemon/src/podman/podmanWorkerManager.ts b/src/packages/daemon/src/podman/podmanWorkerManager.ts
+index e3c4b08fa..05045e002 100644
+--- a/src/packages/daemon/src/podman/podmanWorkerManager.ts
++++ b/src/packages/daemon/src/podman/podmanWorkerManager.ts
+@@ -15,16 +15,20 @@
+  *   VRAM → `create` → `start` → vida confirmada por el PID. Un paso que falla
+  *   deshace los anteriores: retira el contenedor a medio crear y suelta la
+  *   VRAM reservada;
++ * - la AUTORIZACIÓN de cada lanzamiento: el manager compone la suya —clase
++ *   `infrastructure`, referencia `infrastructure:daemon`, dueño `daemon`— y
++ *   la materializa por `materializeExecution`, la primitiva común; ningún
++ *   dominio de este árbol compone su propio `create`/`start`;
+  * - la vivacidad por el PID real, nunca por `.State.Status`
+  *   (TASK-THYROX-0605 midió `running` con el proceso muerto);
+  * - el registro de qué workers gestiona este daemon, para retirarlos todos.
+  *
+  * Dos restricciones medidas que la ruta CUDA hereda y no oculta:
+  *
+- * 1. El argv de dispositivo GPU (CDI `--device nvidia.com/gpu=…` u otro) no
+- *    se ha medido en ningún host de este árbol: `bin/hardware-inventory` da
+- *    `none` aquí. El manager no lo inventa: sin `gpuDeviceArgv` declarado,
+- *    la ruta CUDA rehúsa con exit 2, igual que con un veredicto distinto de
++ * 1. Los dispositivos GPU concedidos, en forma CDI (`nvidia.com/gpu=…`), no
++ *    se han medido en ningún host de este árbol: `bin/hardware-inventory` da
++ *    `none` aquí. El manager no los inventa: sin `gpuDevices` declarados, la
++ *    ruta CUDA rehúsa con exit 2, igual que con un veredicto distinto de
+  *    `nvidia-usable`.
+  * 2. `gpu_monitor` reserva por DUEÑO (`--owner`), y `release` suelta todas
+  *    las reservas de ese dueño. El dueño de un worker es el daemon, así que
+@@ -41,24 +45,26 @@
+ import { join } from 'node:path'
+ 
+ import { admitVram, releaseVram, type VramAdmission } from '@thyrox/config/gpuAdmission'
+-import { ContainerRunError, materializeContainer } from '@thyrox/podman-execution/containerRun.ts'
++import { ContainerRunError, type ContainerRunStage } from '@thyrox/podman-execution/containerRun.ts'
++import {
++  materializeExecution,
++  validateExecutionAuthorization,
++  InvalidExecutionAuthorizationError,
++  type ExecutionAuthorization,
++  type ExecutionUnit,
++} from '@thyrox/podman-execution/executionAuthorization.ts'
+ import { runCommand } from '@thyrox/podman-execution/podmanExecutor.ts'
++import type { WorkerResourceProfile } from '@thyrox/podman-execution/workerResourceProfile.ts'
+ 
+ import {
+   DEFAULT_STOP_TIMEOUT_SECONDS,
+-  InvalidWorkerContainerSpecError,
+   daemonContainerOwner,
+-  inspectWorkerContainer,
+-  isWorkerContainerProcessAlive,
+   retireDaemonOrphanedWorkerContainers,
+   retireWorkerContainer,
+-  validateWorkerContainerSpec,
+   workerContainerName,
+   type PodmanCommandResult,
+-  type PodmanExecutor,
+   type WorkerContainerLifecycleDeps,
+   type WorkerContainerRetirement,
+-  type WorkerContainerSpec,
+ } from './workerContainerLifecycle.js'
+ 
+ export type WorkerAccelerator = 'cpu' | 'cuda'
+@@ -72,14 +78,17 @@ const HARDWARE_VERDICTS: readonly HardwareVerdict[] = ['nvidia-usable', 'partial
+ export type WorkerLaunchRequest = {
+   workerId: string
+   image: string
+-  /** Argv de límites ya compuesto por `workerResourceProfile.ts` o `repositoryJobProfile.ts`. */
+-  resourceArgv: readonly string[]
++  /** El perfil de límites ya decidido por el daemon (`workerResourceProfile.ts`). */
++  profile: WorkerResourceProfile
+   command?: readonly string[]
+   accelerator: WorkerAccelerator
+   /** VRAM que el worker reserva; obligatoria en la ruta CUDA, ignorada en la de CPU. */
+   vramMib?: number
+ }
+ 
++/** El recurso de infraestructura que el daemon materializa: él mismo. */
++export const DAEMON_INFRASTRUCTURE_RESOURCE = 'daemon'
++
+ export type ManagedWorker = {
+   workerId: string
+   containerName: string
+@@ -99,8 +108,8 @@ export type PodmanWorkerManagerDeps = {
+   daemonPid: number
+   hardwareVerdict: () => Promise<HardwareVerdict>
+   vram: VramAdmissionPort
+-  /** Argv de dispositivo GPU medido en el anfitrión; sin él la ruta CUDA rehúsa. */
+-  gpuDeviceArgv?: readonly string[]
++  /** Dispositivos GPU concedidos en forma CDI; sin ninguno la ruta CUDA rehúsa. */
++  gpuDevices?: readonly string[]
+   stopTimeoutSeconds?: number
+ }
+ 
+@@ -150,11 +159,18 @@ export class WorkerLaunchError extends Error {
+ 
+ function requirePositiveVram(vramMib: number | undefined): number {
+   if (vramMib === undefined || !Number.isInteger(vramMib) || vramMib <= 0) {
+-    throw new InvalidWorkerContainerSpecError('vramMib', `vramMib debe ser un entero > 0, recibido: ${vramMib}`)
++    throw new InvalidExecutionAuthorizationError('vramMib', `vramMib debe ser un entero > 0, recibido: ${vramMib}`)
+   }
+   return vramMib
+ }
+ 
++/** La etapa del lanzamiento que nombra un fallo de la primitiva: crear, arrancar o confirmar vida. */
++function launchStageOf(stage: ContainerRunStage): WorkerLaunchStage {
++  if (stage === 'create') return 'create'
++  if (stage === 'start') return 'start'
++  return 'liveness'
++}
++
+ function commandDetail(result: PodmanCommandResult): string {
+   return result.stderr.trim() || `exit ${result.exitCode}`
+ }
+@@ -170,14 +186,12 @@ export class PodmanWorkerManager {
+ 
+   async launch(request: WorkerLaunchRequest): Promise<ManagedWorker> {
+     if (this.workers.has(request.workerId)) throw new WorkerAlreadyManagedError(request.workerId)
+-    const spec = this.containerSpec(request, [])
+-    validateWorkerContainerSpec(spec)
+-    if (request.accelerator === 'cpu') return this.materialize(request, spec)
+-    const deviceArgv = await this.requireCudaHost(request)
+-    const cudaSpec = this.containerSpec(request, deviceArgv)
++    validateExecutionAuthorization(this.authorizationOf(request, []))
++    if (request.accelerator === 'cpu') return this.materialize(request, [])
++    const devices = await this.requireCudaHost(request)
+     await this.admitVram(request)
+     try {
+-      return await this.materialize(request, cudaSpec)
++      return await this.materialize(request, devices)
+     } catch (error) {
+       await this.deps.vram.release(this.deps.daemonPid)
+       throw error
+@@ -208,17 +222,27 @@ export class PodmanWorkerManager {
+     return this.deps.stopTimeoutSeconds ?? DEFAULT_STOP_TIMEOUT_SECONDS
+   }
+ 
+-  private containerSpec(request: WorkerLaunchRequest, deviceArgv: readonly string[]): WorkerContainerSpec {
++  /** La autorización del lanzamiento: clase `infrastructure`, el recurso `daemon` y el perfil decidido. */
++  private authorizationOf(request: WorkerLaunchRequest, devices: readonly string[]): ExecutionAuthorization {
++    const { profile } = request
+     return {
+-      workerId: request.workerId,
+-      image: request.image,
++      executionId: request.workerId,
++      reference: { kind: 'infrastructure', resource: DAEMON_INFRASTRUCTURE_RESOURCE },
+       owner: daemonContainerOwner(this.deps.daemonPid),
+-      resourceArgv: [...request.resourceArgv, ...deviceArgv],
++      kind: 'infrastructure',
++      image: request.image,
+       command: request.command,
++      mounts: profile.mounts,
++      resources: { cpus: profile.cpus, memoryMib: profile.memoryMib, pidsLimit: profile.pidsLimit },
++      network: profile.network,
++      readOnlyRootfs: profile.readOnlyRootfs,
++      ...(profile.environment === undefined ? {} : { environment: profile.environment }),
++      ...(profile.publishedPorts === undefined ? {} : { publishedPorts: profile.publishedPorts }),
++      ...(devices.length === 0 ? {} : { devices }),
+     }
+   }
+ 
+-  /** Comprueba, en este orden, lo que la ruta CUDA necesita del anfitrión; devuelve el argv de dispositivo. */
++  /** Comprueba, en este orden, lo que la ruta CUDA necesita del anfitrión; devuelve los dispositivos concedidos. */
+   private async requireCudaHost(request: WorkerLaunchRequest): Promise<readonly string[]> {
+     requirePositiveVram(request.vramMib)
+     const verdict = await this.deps.hardwareVerdict()
+@@ -226,13 +250,13 @@ export class PodmanWorkerManager {
+       throw new UnsupportedAcceleratorError(
+         `${request.workerId} pide CUDA y hardware-inventory da «${verdict}»: la ruta CPU sí está disponible`)
+     }
+-    if (!this.deps.gpuDeviceArgv || this.deps.gpuDeviceArgv.length === 0) {
++    if (!this.deps.gpuDevices || this.deps.gpuDevices.length === 0) {
+       throw new UnsupportedAcceleratorError(
+-        `${request.workerId} pide CUDA y no hay gpuDeviceArgv medido en este anfitrión; no se inventa la bandera`)
++        `${request.workerId} pide CUDA y no hay gpuDevices (CDI) concedidos en este anfitrión; no se inventan`)
+     }
+     const current = [...this.workers.values()].find(worker => worker.accelerator === 'cuda')
+     if (current) throw new VramOwnerBusyError(request.workerId, current.workerId)
+-    return this.deps.gpuDeviceArgv
++    return this.deps.gpuDevices
+   }
+ 
+   private async admitVram(request: WorkerLaunchRequest): Promise<void> {
+@@ -241,29 +265,28 @@ export class PodmanWorkerManager {
+     if (admission !== 'admitted') throw new VramAdmissionTimeoutError(request.workerId, needMib)
+   }
+ 
+-  /** `create` → `start` → vida por el PID; si un paso falla, retira lo creado antes de lanzar. */
+-  private async materialize(request: WorkerLaunchRequest, spec: WorkerContainerSpec): Promise<ManagedWorker> {
+-    const { podman } = this.deps.lifecycle
++  /** `create` → `start` → vida por el PID de la unidad; si un paso falla, retira lo creado antes de lanzar. */
++  private async materialize(request: WorkerLaunchRequest, devices: readonly string[]): Promise<ManagedWorker> {
+     const name = workerContainerName(request.workerId)
++    const unit = await this.materializeUnit(request, devices)
++    const pid = unit.hostPids[0] ?? 0
++    if (pid === 0 || !this.deps.lifecycle.isProcessAlive(pid)) {
++      await this.abandon(request.workerId, 'liveness', 'el contenedor no tiene un proceso vivo tras arrancar')
++    }
++    const worker: ManagedWorker = { workerId: request.workerId, containerName: name, accelerator: request.accelerator, pid }
++    this.workers.set(request.workerId, worker)
++    return worker
++  }
++
++  /** Materializa la unidad por la primitiva; un fallo nombra la etapa y retira lo creado antes de lanzar. */
++  private async materializeUnit(request: WorkerLaunchRequest, devices: readonly string[]): Promise<ExecutionUnit> {
+     try {
+-      await materializeContainer(podman, spec)
++      return await materializeExecution(this.deps.lifecycle.podman, this.authorizationOf(request, devices))
+     } catch (error) {
+       if (!(error instanceof ContainerRunError)) throw error
+       // La primitiva nombra la etapa; el daemon sólo decide retirar lo creado.
+-      await this.abandon(request.workerId, error.stage === 'create' ? 'create' : 'start', error.message)
+-    }
+-    const inspection = await inspectWorkerContainer(this.deps.lifecycle, name)
+-    if (!isWorkerContainerProcessAlive(inspection, this.deps.lifecycle.isProcessAlive)) {
+-      await this.abandon(request.workerId, 'liveness', 'el contenedor no tiene un proceso vivo tras arrancar')
+-    }
+-    const worker: ManagedWorker = {
+-      workerId: request.workerId,
+-      containerName: name,
+-      accelerator: request.accelerator,
+-      pid: inspection.present ? inspection.pid : 0,
++      return await this.abandon(request.workerId, launchStageOf(error.stage), error.message)
+     }
+-    this.workers.set(request.workerId, worker)
+-    return worker
+   }
+ 
+   private async abandon(workerId: string, stage: WorkerLaunchStage, detail: string): Promise<never> {
+diff --git a/src/packages/local-models/__tests__/quantizationLab.test.ts b/src/packages/local-models/__tests__/quantizationLab.test.ts
+index 224d91cdf..7233e9d02 100644
+--- a/src/packages/local-models/__tests__/quantizationLab.test.ts
++++ b/src/packages/local-models/__tests__/quantizationLab.test.ts
+@@ -1,5 +1,10 @@
+ import { describe, expect, test } from 'bun:test'
+ 
++import {
++  EXECUTION_ID_LABEL_KEY,
++  EXECUTION_KIND_LABEL_KEY,
++  EXECUTION_REFERENCE_LABEL_KEY,
++} from '@thyrox/podman-execution/executionAuthorization.ts'
+ import type { PodmanCommandResult, PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
+ 
+ import { QuantizationLab } from '../quantizationLab.js'
+@@ -43,6 +48,25 @@ describe('quantization lab', () => {
+   })
+ })
+ 
++describe('la ejecución se autoriza por paso', () => {
++  test('compone la autorización de la clase quantization citando su tarea dueña', async () => {
++    const podman = fakePodman()
++    const lab = new QuantizationLab(podman, 'image-id', '/scratch-host', LIMITS, async () => undefined, OWNER)
++    await lab.run({ workerId: 'quantize-run', command: ['true'] })
++    const create = podman.calls[0]!.join(' ')
++    expect(create).toContain(`--label ${EXECUTION_KIND_LABEL_KEY}=quantization`)
++    expect(create).toContain(`--label ${EXECUTION_REFERENCE_LABEL_KEY}=task:TASK-THYROX-0718`)
++    expect(create).toContain(`--label ${EXECUTION_ID_LABEL_KEY}=quantize-run`)
++  })
++
++  test('la cita de la tarea que autoriza es declarable por el llamador', async () => {
++    const podman = fakePodman()
++    const lab = new QuantizationLab(podman, 'image-id', '/scratch-host', LIMITS, async () => undefined, OWNER, 'TASK-THYROX-0743')
++    await lab.run({ workerId: 'quantize-run', command: ['true'] })
++    expect(podman.calls[0]!.join(' ')).toContain(`--label ${EXECUTION_REFERENCE_LABEL_KEY}=task:TASK-THYROX-0743`)
++  })
++})
++
+ describe('mandatory execution path', () => {
+   test('no module of the package composes its own podman run', async () => {
+     const glob = new Bun.Glob('*.ts')
+diff --git a/src/packages/local-models/quantizationLab.ts b/src/packages/local-models/quantizationLab.ts
+index 4223afa62..3f449edfc 100644
+--- a/src/packages/local-models/quantizationLab.ts
++++ b/src/packages/local-models/quantizationLab.ts
+@@ -8,10 +8,10 @@
+  * La memoria se mide en el cgroup del contenedor (`container_measure`),
+  * muestreada mientras corre: GNU Time sólo vería al cliente de podman.
+  */
+-import { runJobWithOutput, type JobOutput } from '@thyrox/podman-execution/containerRun.ts'
++import type { JobOutput } from '@thyrox/podman-execution/containerRun.ts'
++import { runExecution, type ExecutionAuthorization } from '@thyrox/podman-execution/executionAuthorization.ts'
+ import { runCommand, type PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
+-import { workerContainerName, type WorkerContainerSpec } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+-import { workerResourceLimitArgv, type WorkerResourceProfile } from '@thyrox/podman-execution/workerResourceProfile.ts'
++import { workerContainerName } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+ 
+ /** Dónde ve el contenedor el scratch del anfitrión. */
+ export const LAB_SCRATCH_MOUNT = '/scratch'
+@@ -46,12 +46,17 @@ export interface LabStepResult extends JobOutput {
+ /** Lee el pico de memoria del cgroup de un contenedor vivo; `undefined` si no pudo medirlo. */
+ export type ContainerMemoryProbe = (containerName: string) => Promise<number | undefined>
+ 
++/** La tarea dueña del laboratorio: la cita que ampara cada paso por defecto. */
++export const DEFAULT_QUANTIZATION_TASK_CITATION = 'TASK-THYROX-0718'
++
+ /**
+- * El laboratorio ejecuta cada paso por la primitiva de Podman
+- * (`runJobWithOutput`): crear, arrancar, esperar, leer salidas y retirar,
+- * con el dueño `lab` en sus etiquetas para que un barrido de huérfanos lo
+- * reconozca. El rootfs es escribible a propósito: el convertidor y sus
+- * dependencias escriben temporales fuera del scratch.
++ * El laboratorio ejecuta cada paso por la primitiva de Podman autorizada
++ * (`runExecution`): crear, arrancar, esperar, leer salidas y retirar, con el
++ * dueño `lab` en sus etiquetas para que un barrido de huérfanos lo reconozca.
++ * Cada paso compone su propia autorización —clase `quantization` y la tarea
++ * que lo ampara—, así que la cita es declarable por el llamador. El rootfs es
++ * escribible a propósito: el convertidor y sus dependencias escriben
++ * temporales fuera del scratch.
+  */
+ export class QuantizationLab {
+   constructor(
+@@ -61,6 +66,8 @@ export class QuantizationLab {
+     private readonly limits: LabLimits,
+     private readonly probe: ContainerMemoryProbe,
+     private readonly owner: LabOwner,
++    /** Tarea que autoriza los pasos; sin declararla, la dueña del módulo. */
++    private readonly taskCitation: string = DEFAULT_QUANTIZATION_TASK_CITATION,
+   ) {}
+ 
+   async run(step: LabStep): Promise<LabStepResult> {
+@@ -68,31 +75,30 @@ export class QuantizationLab {
+     const peak = new PeakTracker()
+     const sampler = setInterval(() => { void this.probe(containerName).then(value => peak.observe(value)) }, MEMORY_SAMPLE_INTERVAL_MS)
+     try {
+-      const output = await runJobWithOutput(this.podman, this.specOf(step))
++      const output = await runExecution(this.podman, this.authorizationOf(step))
+       return { ...output, ...peak.asResult() }
+     } finally {
+       clearInterval(sampler)
+     }
+   }
+ 
+-  private specOf(step: LabStep): WorkerContainerSpec {
++  /** La autorización del paso: clase `quantization`, dueño `lab` y la tarea que la ampara. */
++  private authorizationOf(step: LabStep): ExecutionAuthorization {
+     return {
+-      workerId: step.workerId,
+-      image: this.imageId,
++      executionId: step.workerId,
++      reference: { kind: 'task', citation: this.taskCitation },
+       owner: { kind: 'lab', id: this.owner.id, pid: this.owner.pid },
+-      resourceArgv: workerResourceLimitArgv(this.profile()),
++      kind: 'quantization',
++      image: this.imageId,
+       command: step.command,
+-    }
+-  }
+-
+-  private profile(): WorkerResourceProfile {
+-    return {
+-      cpus: this.limits.cpus,
+-      memoryMib: Math.floor(this.limits.memoryBytes / BYTES_PER_MIB),
+-      pidsLimit: LAB_PIDS_LIMIT,
++      mounts: [{ source: this.scratchDir, destination: LAB_SCRATCH_MOUNT, mode: 'rw' }],
++      resources: {
++        cpus: this.limits.cpus,
++        memoryMib: Math.floor(this.limits.memoryBytes / BYTES_PER_MIB),
++        pidsLimit: LAB_PIDS_LIMIT,
++      },
+       network: 'none',
+       readOnlyRootfs: false,
+-      mounts: [{ source: this.scratchDir, destination: LAB_SCRATCH_MOUNT, mode: 'rw' }],
+     }
+   }
+ }
+diff --git a/tests/daemon/podman_worker_manager_probe.ts b/tests/daemon/podman_worker_manager_probe.ts
+index d9dbd8254..527344e75 100644
+--- a/tests/daemon/podman_worker_manager_probe.ts
++++ b/tests/daemon/podman_worker_manager_probe.ts
+@@ -7,7 +7,7 @@
+  * Tres operaciones, una por invocación:
+  *
+  *   launch    --worker-id --image --daemon-pid [--accelerator] [--vram-mib]
+- *             [--resource-arg …] -- <comando…>
++ *             [--profile-json <json>] -- <comando…>
+  *   retire    --worker-id --daemon-pid
+  *   reconcile --daemon-pid
+  *
+@@ -31,6 +31,11 @@ import {
+   type WorkerLaunchRequest,
+ } from '../../src/packages/daemon/src/podman/podmanWorkerManager.js'
+ import { createWorkerContainerLifecycleDeps } from '../../src/packages/daemon/src/podman/workerContainerLifecycle.js'
++import {
++  DEFAULT_WORKER_RESOURCE_PROFILE,
++  validateWorkerResourceProfile,
++  type WorkerResourceProfile,
++} from '../../src/packages/podman-execution/workerResourceProfile.js'
+ 
+ const GENERIC_FAILURE_EXIT_CODE = 1
+ 
+@@ -41,7 +46,7 @@ type ProbeOptions = {
+   daemonPid: number
+   accelerator: WorkerAccelerator
+   vramMib?: number
+-  resourceArgv: string[]
++  profile: WorkerResourceProfile
+   command: string[]
+ }
+ 
+@@ -75,6 +80,20 @@ function parseAccelerator(raw: string | undefined): WorkerAccelerator {
+   throw new ProbeUsageError(`acelerador desconocido: ${raw}`)
+ }
+ 
++/** El perfil de límites de la sonda: el más restrictivo, salvo `--profile-json` declarado. */
++function parseProfile(raw: string | undefined): WorkerResourceProfile {
++  if (raw === undefined) return DEFAULT_WORKER_RESOURCE_PROFILE
++  let parsed: unknown
++  try {
++    parsed = JSON.parse(raw)
++  } catch {
++    throw new ProbeUsageError(`--profile-json no es JSON: ${raw}`)
++  }
++  const profile = parsed as WorkerResourceProfile
++  validateWorkerResourceProfile(profile)
++  return profile
++}
++
+ function parseProbeOptions(argv: string[]): ProbeOptions {
+   const { values, positionals } = parseArgs({
+     args: argv,
+@@ -85,7 +104,7 @@ function parseProbeOptions(argv: string[]): ProbeOptions {
+       'daemon-pid': { type: 'string' },
+       accelerator: { type: 'string' },
+       'vram-mib': { type: 'string' },
+-      'resource-arg': { type: 'string', multiple: true },
++      'profile-json': { type: 'string' },
+     },
+   })
+   const [operation, ...command] = positionals
+@@ -96,7 +115,7 @@ function parseProbeOptions(argv: string[]): ProbeOptions {
+     daemonPid: Number(requireOption(values['daemon-pid'], 'daemon-pid')),
+     accelerator: parseAccelerator(values.accelerator),
+     vramMib: values['vram-mib'] === undefined ? undefined : Number(values['vram-mib']),
+-    resourceArgv: values['resource-arg'] ?? [],
++    profile: parseProfile(values['profile-json']),
+     command,
+   }
+ }
+@@ -118,7 +137,7 @@ function launchRequest(options: ProbeOptions): WorkerLaunchRequest {
+   return {
+     workerId: requireOption(options.workerId, 'worker-id'),
+     image: requireOption(options.image, 'image'),
+-    resourceArgv: options.resourceArgv,
++    profile: options.profile,
+     command: options.command,
+     accelerator: options.accelerator,
+     vramMib: options.vramMib,

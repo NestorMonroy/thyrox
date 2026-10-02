@@ -1,0 +1,6 @@
+/usr/local/bin/uv
+uv 0.8.17
+/home/user/thyrox/.venv
+probe-exit=0
+execution thyrox-worker-probe-muqknkns-19891 kind=probe task=TASK-THYROX-0769 exit=0
+__BG_EXIT__=0

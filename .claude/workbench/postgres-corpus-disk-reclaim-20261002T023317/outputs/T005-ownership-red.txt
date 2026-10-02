@@ -1,0 +1,8 @@
+  .claude/workbench/postgres-corpus-disk-reclaim-20261002T023317/probes/inventory_observe.sh:8  podman-subcommand
+  .claude/workbench/postgres-corpus-disk-reclaim-20261002T023317/probes/inventory_observe.sh:9  podman-subcommand
+  .claude/workbench/postgres-corpus-disk-reclaim-20261002T023317/probes/inventory_observe.sh:10  podman-subcommand
+  .claude/workbench/postgres-corpus-disk-reclaim-20261002T023317/probes/inventory_observe.sh:13  podman-subcommand
+  .claude/workbench/postgres-corpus-disk-reclaim-20261002T023317/probes/inventory_observe.sh:14  podman-subcommand
+  .claude/workbench/postgres-corpus-disk-reclaim-20261002T023317/probes/inventory_observe.sh:17  podman-subcommand
+  .claude/workbench/postgres-corpus-disk-reclaim-20261002T023317/probes/inventory_observe.sh:18  podman-subcommand
+check_podman_access_ownership: 46 acceso(s) a Podman fuera de src/packages/podman-execution/, 0 pendiente(s) vencido(s), 0 pendiente(s) vigente(s) (alcance medido: 4181 archivo(s))

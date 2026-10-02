@@ -14,4 +14,4 @@ shift
 cd "$ROOT"
 exec bash bin/podman-execution-execute run --task TASK-THYROX-0758 --kind "$kind" \
   --attest "$B/outputs/executions.jsonl" "${options[@]}" -- \
-  bash src/session/unit_attest.sh "$B/outputs/units.jsonl" TASK-THYROX-0758 "$step" -- "$@"
+  sh src/session/unit_attest.sh "$B/outputs/units.jsonl" TASK-THYROX-0758 "$step" -- "$@"

@@ -326,7 +326,7 @@ cmd_start() {
         exit 2
     fi
     local grace="$_GRACE_DEFAULT" memfree_spec="" memfree_wait=1800 memfree=0
-    local task="" work="" kind="" network="" workdir="" mounts=() environment=() secrets=() limits=()
+    local task="" work="" kind="" network="" workdir="" attest="" mounts=() environment=() secrets=() limits=()
     while [[ "${1:-}" == --* ]]; do
         case "$1" in
             --grace) grace="${2:-}"; shift 2 ;;
@@ -335,6 +335,8 @@ cmd_start() {
             --kind) kind="${2:-}"; shift 2 ;;
             --network) network="${2:-}"; shift 2 ;;
             --workdir) workdir="${2:-}"; shift 2 ;;
+            # La atestación del primitivo: el runner escribe en ella la unidad que materializó.
+            --attest) attest="${2:-}"; shift 2 ;;
             --mount) mounts+=("${2:-}"); shift 2 ;;
             --env) environment+=("${2:-}"); shift 2 ;;
             --secret-from-env) secrets+=("${2:-}"); shift 2 ;;
@@ -364,6 +366,7 @@ cmd_start() {
         mapfile -t runner < <(thyrox_managed_execution_runner_argv)
         [[ -n "$network" ]] && authorization+=(--network "$network")
         [[ -n "$workdir" ]] && authorization+=(--workdir "$workdir")
+        [[ -n "$attest" ]] && authorization+=(--attest "$attest")
         for item in "${mounts[@]}"; do authorization+=(--mount "$item"); done
         for item in "${environment[@]}"; do authorization+=(--env "$item"); done
         # Una credencial se pasa por su nombre: el runner la monta como secreto.

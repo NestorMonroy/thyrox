@@ -1,0 +1,73 @@
+# p2c-green — la migración de los dos llamadores, con sus pruebas (estado final)
+$ grep -cE 'runJobWithOutput|materializeContainer|WorkerContainerSpec' src/packages/local-models/quantizationLab.ts src/packages/daemon/src/podman/podmanWorkerManager.ts
+src/packages/local-models/quantizationLab.ts:0
+src/packages/daemon/src/podman/podmanWorkerManager.ts:0
+
+$ cd src/packages/local-models && bun test __tests__/quantizationLab.test.ts
+bun test v1.3.11 (af24e281)
+
+__tests__/quantizationLab.test.ts:
+(pass) quantization lab > runs a step through the podman execution primitive, never podman run [3.34ms]
+(pass) quantization lab > declares the lab owner, no network, the memory limit and the scratch mount [0.54ms]
+(pass) la ejecución se autoriza por paso > compone la autorización de la clase quantization citando su tarea dueña [0.32ms]
+(pass) la ejecución se autoriza por paso > la cita de la tarea que autoriza es declarable por el llamador [0.37ms]
+(pass) mandatory execution path > no module of the package composes its own podman run [3.49ms]
+
+ 5 pass
+ 0 fail
+ 11 expect() calls
+Ran 5 tests across 1 file. [188.00ms]
+exit=0
+
+$ cd src/packages/daemon && bun test src/__tests__/podmanWorkerManager.test.ts
+bun test v1.3.11 (af24e281)
+
+src/__tests__/podmanWorkerManager.test.ts:
+(pass) launch — ruta CPU > crea, arranca y confirma la vida por el PID, sin tocar la VRAM [4.80ms]
+(pass) launch — ruta CPU > rehúsa un segundo lanzamiento del mismo worker sin hablar con Podman [0.37ms]
+(pass) launch — ruta CPU > un executionId inválido rehúsa antes de llamar a Podman [0.21ms]
+(pass) launch — ruta CPU > si el create falla nombra la etapa y retira lo que haya quedado [0.84ms]
+(pass) launch — ruta CPU > si el start falla retira el contenedor creado [0.30ms]
+(pass) launch — ruta CPU > un contenedor «running» con el PID muerto no cuenta como lanzado [0.81ms]
+(pass) launch — ruta CUDA > sin GPU utilizable rehúsa con el veredicto, sin reservar ni crear [0.70ms]
+(pass) launch — ruta CUDA > con GPU pero sin argv de dispositivo medido rehúsa: no se inventa la bandera [0.35ms]
+(pass) launch — ruta CUDA > exige vramMib entero positivo [0.29ms]
+(pass) launch — ruta CUDA > reserva la VRAM a nombre del daemon, añade el dispositivo y la suelta al retirar [0.90ms]
+(pass) launch — ruta CUDA > un plazo de admisión vencido no crea nada [0.27ms]
+(pass) launch — ruta CUDA > un lanzamiento fallido suelta la VRAM que reservó [0.46ms]
+(pass) launch — ruta CUDA > un segundo worker CUDA rehúsa: el registro reserva por dueño y soltar uno soltaría los dos [0.69ms]
+(pass) la autorización de cada lanzamiento > compone la autorización de infraestructura del daemon con su clase y su referencia [0.38ms]
+(pass) la autorización de cada lanzamiento > la vida se confirma con la inspección de la unidad materializada [0.41ms]
+(pass) retire / retireAll / reconcileOrphans > retire detiene y borra el contenedor y olvida el worker [0.65ms]
+(pass) retire / retireAll / reconcileOrphans > retireAll retira cada worker gestionado [0.85ms]
+(pass) retire / retireAll / reconcileOrphans > reconcileOrphans retira los contenedores cuyo daemon murió [0.85ms]
+(pass) parseHardwareVerdict > lee la línea verdict de hardware-inventory [0.17ms]
+(pass) parseHardwareVerdict > sin veredicto reconocible lanza: no poder medir no es «none» [0.14ms]
+(pass) createPodmanExecutor > lanza el binario declarado en THYROX_TOOLCHAIN_PODMAN_BIN y devuelve su salida [9.27ms]
+(pass) readHardwareVerdict — contrato de salida de hardware-inventory > exit 0 con verdict nvidia-usable es un veredicto medido [7.67ms]
+(pass) readHardwareVerdict — contrato de salida de hardware-inventory > exit 1 con verdict none es un veredicto medido, no un error [6.64ms]
+(pass) readHardwareVerdict — contrato de salida de hardware-inventory > exit 3 con verdict partial es un veredicto medido [6.83ms]
+(pass) readHardwareVerdict — contrato de salida de hardware-inventory > exit 2 lanza con su stderr: no poder medir no es «none» [5.42ms]
+(pass) readHardwareVerdict — contrato de salida de hardware-inventory > una línea verdict que contradice su código de salida lanza [5.23ms]
+
+ 26 pass
+ 0 fail
+ 62 expect() calls
+Ran 26 tests across 1 file. [340.00ms]
+exit=0
+
+# suites completas de los dos paquetes (baseline: local-models 182 pass/5 fail admitidas; daemon 693 pass/0 fail)
+$ cd src/packages/local-models && bun test
+
+ 184 pass
+ 3 skip
+ 5 fail
+ 454 expect() calls
+Ran 192 tests across 22 files. [1403.00ms]
+$ cd src/packages/daemon && bun test
+
+ 695 pass
+ 3 skip
+ 0 fail
+ 1172 expect() calls
+Ran 698 tests across 45 files. [13.42s]

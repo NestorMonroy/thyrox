@@ -61,6 +61,7 @@ import argparse
 import calendar
 import contextlib
 import fcntl
+import hashlib
 import json
 import os
 import random
@@ -75,11 +76,16 @@ from pathlib import Path
 
 from learning.token_usage import attempt_usage
 from session.continuation_frontier import doomed_items, item_states, runnable_items
+from verify.managed_execution_containment import ContainmentVerdict, containment_verdict
 from verify.tsc_schedule import posterior
 
 ROOT = Path(os.environ.get("THYROX_ROOT") or Path(__file__).resolve().parents[2])
 BG = ["bash", str(ROOT / "bin" / "thyrox-bg")]
 EXECUTE = ["bash", str(ROOT / "bin" / "podman-execution-execute")]
+#: Identidad del payload vista desde dentro de la unidad (ManagedExecutionContainmentGate).
+UNIT_ATTEST = ROOT / "src" / "session" / "unit_attest.sh"
+#: Evidencia de contención de una unidad lanzada fuera de un banco.
+CONTAINMENT_FALLBACK_DIR = ROOT / ".thyrox" / "runtime" / "containment"
 
 OUTCOMES = (
     "success", "provider_transient", "provider_permanent", "task_failure",
@@ -350,9 +356,12 @@ LIMIT_FLAGS = {"cpus": "--cpus", "memoryMib": "--memory-mib", "pids": "--pids"}
 
 def unit_start_argv(name: str, task: str, argv: list[str], network: str | None = None,
                     secrets: tuple[str, ...] = (), mounts: tuple[str, ...] = (),
-                    workdir: str | None = None, resources: tuple[tuple[str, int], ...] = ()) -> list[str]:
+                    workdir: str | None = None, resources: tuple[tuple[str, int], ...] = (),
+                    attest: Path | None = None) -> list[str]:
     """La orden de thyrox-bg que lanza ``argv`` en una ExecutionUnit."""
     start = [*BG, "start", name, "--grace", "0", "--task", task, "--kind", "maintenance"]
+    if attest:
+        start += ["--attest", str(attest)]
     if network:
         start += ["--network", network]
     if workdir:
@@ -370,7 +379,39 @@ def unit_start_argv(name: str, task: str, argv: list[str], network: str | None =
 #: `.env.example` que lo cumplen: se trabaja por NOMBRE, nunca con sus valores.
 SECRET_NAME_PATTERN = re.compile(r"(TOKEN|KEY|PASSWORD|SECRET|_PAT|CREDENTIAL)")
 REDACTED = "[REDACTADO]"
-QUARANTINE_DIR = ROOT / ".thyrox" / "runtime" / "quarantine"
+#: La evidencia original de una exposición: se conserva entera (es analítica de lo que no
+#: debe ocurrir), pero conservar no es montar. Una unidad monta la raíz del repositorio
+#: completa, así que el custodio la guarda FUERA de ella. Sobrescribible en pruebas.
+QUARANTINE_DIR: Path | None = None
+EVIDENCE_HOME_VAR = "THYROX_EXPOSURE_EVIDENCE_DIR"
+DEFAULT_EVIDENCE_HOME = Path.home() / ".local" / "state" / "thyrox" / "exposure-evidence"
+EVIDENCE_LEDGER = "exposure-evidence.jsonl"
+
+
+class EvidenceInsideWorkerViewError(RuntimeError):
+    """El hogar de la evidencia cae dentro de lo que una unidad monta."""
+
+
+def exposure_evidence_home(root: Path, declared: str | None) -> Path:
+    """El hogar de la evidencia original, rehusado si una unidad podría verlo."""
+    home = Path(declared).expanduser() if declared else DEFAULT_EVIDENCE_HOME
+    if home.resolve().is_relative_to(root.resolve()):
+        raise EvidenceInsideWorkerViewError(
+            f"{EVIDENCE_HOME_VAR}={home} queda dentro de {root}, que toda unidad monta; declara un hogar fuera del clon")
+    return home
+
+
+def evidence_dir() -> Path:
+    if QUARANTINE_DIR is not None:
+        return QUARANTINE_DIR
+    declared = os.environ.get(EVIDENCE_HOME_VAR)
+    if declared is None:
+        try:
+            from paths.reach import production_declarations
+            declared = production_declarations().declared(EVIDENCE_HOME_VAR)
+        except (ImportError, OSError):
+            declared = None
+    return exposure_evidence_home(ROOT, declared)
 
 
 def declared_secret_names(example: Path | None = None) -> tuple[str, ...]:
@@ -433,21 +474,61 @@ def contain_secret_exposure(workbench: Path, item: str, model: str, names: tuple
         if not hit:
             continue
         found |= hit
-        target = QUARANTINE_DIR / f"{item}-{model}-{job_suffix()}" / path.name
+        target = evidence_dir() / f"{item}-{model}-{job_suffix()}" / path.name
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(text)
+        target.parent.chmod(0o700)
+        original = path.read_bytes()
+        target.write_bytes(original)
         target.chmod(0o600)
+        append_jsonl(outputs / EVIDENCE_LEDGER, {
+            "utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "item": item, "model": model,
+            "source": str(path.relative_to(workbench)), "sha256": hashlib.sha256(original).hexdigest(),
+            "bytes": len(original), "names": sorted(hit), "custodian": "task_continuation",
+            "evidence": str(target)})
         path.write_text(redact_secret_assignments(text, names))
         if exposed_secret_names(path.read_text(errors="replace"), names):
             raise RuntimeError(f"la redacción no dejó limpio {path}")
     return found
 
 
+def containment_files(evidence_dir: Path, name: str) -> tuple[Path, Path]:
+    """Las dos evidencias de contención de un paso: la del primitivo y la de dentro."""
+    return evidence_dir / f"{name}.primitive.jsonl", evidence_dir / f"{name}.unit.jsonl"
+
+
+def attested_argv(evidence_dir: Path, task: str, name: str, argv: list[str]) -> list[str]:
+    """``argv`` precedido de la identidad que el payload escribe desde dentro."""
+    _, unit_file = containment_files(evidence_dir, name)
+    return ["sh", str(UNIT_ATTEST), str(unit_file), task, name, "--", *argv]
+
+
+def step_containment(evidence_dir: Path, name: str) -> ContainmentVerdict:
+    """Veredicto de ManagedExecutionContainmentGate para un paso ya asentado."""
+    primitive_file, unit_file = containment_files(evidence_dir, name)
+    return containment_verdict(name, read_rows(primitive_file), read_rows(unit_file))
+
+
+def read_rows(path: Path) -> list[dict]:
+    """Las filas de un JSONL; vacío si el archivo no existe (el gate lo lee como FAIL)."""
+    if not path.is_file():
+        return []
+    return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+
+
 def run_in_unit(name: str, task: str, argv: list[str], network: str | None = None,
                 secrets: tuple[str, ...] = (), mounts: tuple[str, ...] = (),
-                workdir: str | None = None, resources: tuple[tuple[str, int], ...] = ()) -> tuple[int, str]:
-    """Lanza ``argv`` con thyrox-bg en una ExecutionUnit, espera y devuelve (exit, log)."""
-    launched = subprocess.run(unit_start_argv(name, task, argv, network, secrets, mounts, workdir, resources),
+                workdir: str | None = None, resources: tuple[tuple[str, int], ...] = (),
+                evidence_dir: Path | None = None) -> tuple[int, str]:
+    """Lanza ``argv`` con thyrox-bg en una ExecutionUnit, espera y devuelve (exit, log).
+
+    Toda unidad deja sus dos evidencias de contención: la atestación del
+    primitivo y la identidad del payload vista desde dentro.
+    """
+    evidence_dir = evidence_dir or CONTAINMENT_FALLBACK_DIR
+    evidence_dir.mkdir(parents=True, exist_ok=True)
+    primitive_file, _ = containment_files(evidence_dir, name)
+    launched = subprocess.run(unit_start_argv(name, task, attested_argv(evidence_dir, task, name, argv), network,
+                                              secrets, mounts, workdir, resources, attest=primitive_file),
                               capture_output=True, text=True, cwd=ROOT)
     if launched.returncode != 0:
         # No hubo unidad: es un fallo de lanzamiento, no del trabajo ni del proveedor.
@@ -599,6 +680,22 @@ def accept(workbench: Path, item: PlanItem, task: str, model: str, tree: Path | 
         return integrate_worktree(workbench, item, task, model, tree)
 
 
+def contained(workbench: Path, item: PlanItem, evidence_dir: Path, steps: list[str]) -> bool:
+    """ManagedExecutionContainmentGate: aceptar exige que cada paso corriera en su unidad.
+
+    Correcto por una ruta equivocada no se acepta: un payload del anfitrión
+    deja la tarea en ``hard_block`` aunque su verificación haya salido 0.
+    """
+    verdicts = [step_containment(evidence_dir, step) for step in steps]
+    passed = all(verdict.passed for verdict in verdicts)
+    append_jsonl(workbench / "outputs" / "containment.jsonl",
+                 {"item": item.id, "passed": passed, "steps": [verdict.to_record() for verdict in verdicts]})
+    if not passed:
+        append_log(workbench, {"kind": "hard_block", "item": item.id, "reason": "architecture_invalid: contención",
+                               "containment": [verdict.to_record() for verdict in verdicts if not verdict.passed]})
+    return passed
+
+
 def run_item(workbench: Path, item: PlanItem, task: str, rng: random.Random, learned) -> str:
     """Corre un ítem hasta aceptarlo o agotar su presupuesto. Devuelve ``accepted`` o ``hard_block``."""
     task = item.task_id or task
@@ -622,9 +719,13 @@ def run_item(workbench: Path, item: PlanItem, task: str, rng: random.Random, lea
     # Reanudar: si lo declarado ya se verifica (un intento previo, o un controlador
     # que murió antes de commitear), se acepta sin volver a despachar.
     stamp = job_suffix()
-    verify_code, verify_log = run_in_unit(f"cont-{item.id}-preverify-{stamp}", task, ["bash", "-c", item.verify],
-                                          workdir=workdir)
+    evidence_dir = workbench / "outputs" / "containment"
+    preverify = f"cont-{item.id}-preverify-{stamp}"
+    verify_code, verify_log = run_in_unit(preverify, task, ["bash", "-c", item.verify], workdir=workdir,
+                                          evidence_dir=evidence_dir)
     if verify_code == 0:
+        if not contained(workbench, item, evidence_dir, [preverify]):
+            return "hard_block"
         append_log(workbench, {"kind": "attempt", "item": item.id, "attempt": 0, "model": None, "taskClass": item.task_class,
                                "outcome": "success", "source": "preexisting", "verifyExit": 0, "transition": "commit"})
         commit_code, commit_log = accept(workbench, item, task, "previous attempt", tree)
@@ -656,19 +757,21 @@ def run_item(workbench: Path, item: PlanItem, task: str, rng: random.Random, lea
         stamp = job_suffix()
         prompt = attempt_prompt(workbench, item, failures, attempt)
         started, launched_at = time.monotonic(), time.time()
+        dispatch = f"cont-{item.id}-{attempt}-{stamp}"
         code, worker_log = run_in_unit(
-            f"cont-{item.id}-{attempt}-{stamp}", task,
+            dispatch, task,
             ["bash", str(workbench / "probes" / "delegate.sh"), str(workbench), item.id, model, str(prompt), str(item.max_turns)],
             network="host", secrets=item.secrets, mounts=(ENV_FILE_MASK,), workdir=workdir,
-            resources=item.resource_profile)
+            resources=item.resource_profile, evidence_dir=evidence_dir)
         elapsed = time.monotonic() - started
         # El stderr del trabajador sólo es evidencia si lo escribió ESTE intento; uno
         # viejo de otra ejecución clasificaría con un error que ya no ocurre.
         stderr_file = workbench / "outputs" / f"{item.id}-{model}.stderr.log"
         fresh = stderr_file.is_file() and stderr_file.stat().st_mtime >= launched_at
         stderr_tail = tail(stderr_file.read_text(errors="replace")) if fresh else tail(worker_log)
-        verify_code, verify_log = run_in_unit(f"cont-{item.id}-{attempt}-verify-{stamp}", task, ["bash", "-c", item.verify],
-                                              workdir=workdir)
+        verify = f"cont-{item.id}-{attempt}-verify-{stamp}"
+        verify_code, verify_log = run_in_unit(verify, task, ["bash", "-c", item.verify], workdir=workdir,
+                                              evidence_dir=evidence_dir)
         evidence = Evidence(item=item.id, model=model, exit=code, stderr_tail=stderr_tail, verify_exit=verify_code,
                             verify_tail=tail(verify_log), elapsed_seconds=round(elapsed, 1),
                             findings=read_findings(workbench, item))
@@ -697,6 +800,8 @@ def run_item(workbench: Path, item: PlanItem, task: str, rng: random.Random, lea
                                "stderrTail": stderr_tail[-600:], "usage": telemetry,
                                "transition": step, "orphans": reconcile_orphans()})
         if step == "commit":
+            if not contained(workbench, item, evidence_dir, [dispatch, verify]):
+                return "hard_block"
             commit_code, commit_log = accept(workbench, item, task, model, tree)
             append_log(workbench, {"kind": "accepted" if commit_code == 0 else "commit-failed", "item": item.id,
                                    "model": model, "commitExit": commit_code, "commitTail": tail(commit_log, 8)})

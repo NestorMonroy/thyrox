@@ -23,6 +23,18 @@ python3 src/verify/managed_execution_containment.py --task-step host --primitive
 check "subproceso del anfitrión (anulación): FAIL" 1 $?
 check "el FAIL nombra hostPayload" true "$(jq -r '[.reasons[] | test("hostPayload")] | any' "$work/host.json")"
 check "la atestación del primitivo nombra su contenedor" true "$(jq -rs '.[0].containerId | test("^[0-9a-f]{64}$")' "$work/executions.jsonl")"
+
+# Una imagen invitada sin gawk ni jq (pgvector): la atestación no puede depender
+# de las herramientas de la imagen que se prueba.
+GUEST_IMAGE="${CONTAINMENT_E2E_GUEST_IMAGE:-docker.io/pgvector/pgvector:0.8.0-pg16}"
+guest="$(bash bin/podman-execution-execute run --task TASK-THYROX-0758 --kind test --image "$GUEST_IMAGE" --attest "$work/executions.jsonl" -- \
+  sh src/session/unit_attest.sh "$work/units.jsonl" TASK-THYROX-0758 guest -- "${payload[@]}" 2>/dev/null)"
+check "imagen sin gawk ni jq: misma salida funcional" "$managed" "$guest"
+python3 src/verify/managed_execution_containment.py --task-step guest --primitive "$work/executions.jsonl" --unit "$work/units.jsonl" > "$work/guest.json"
+check "imagen sin gawk ni jq: PASS" 0 $?
+sh src/session/unit_attest.sh "$work/units.jsonl" TASK-THYROX-0758 guest-host -- "${payload[@]}" >/dev/null
+python3 src/verify/managed_execution_containment.py --task-step guest-host --primitive "$work/executions.jsonl" --unit "$work/units.jsonl" > /dev/null
+check "el mismo guion fuera de la unidad (anulación): FAIL" 1 $?
 echo
 echo "$((OK + FAILED)) casos: $OK ok, $FAILED fallos"
 (( FAILED == 0 ))

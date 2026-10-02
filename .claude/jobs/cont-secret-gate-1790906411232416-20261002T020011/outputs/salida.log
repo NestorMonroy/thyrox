@@ -1,0 +1,10 @@
+process_env	0
+shell_startup	0
+mounted_credential_files	0
+provider_config	0
+git_credential_helper	0
+registry_auth	0
+runtime_env	0
+inventory	43	authorized	1
+execution thyrox-worker-maintenance-muqbfr22-31521 kind=maintenance task=TASK-THYROX-0743 exit=0
+__BG_EXIT__=0

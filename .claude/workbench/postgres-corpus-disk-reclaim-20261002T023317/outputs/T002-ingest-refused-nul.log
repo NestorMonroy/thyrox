@@ -1,0 +1,2 @@
+semantic-search-ingest: invalid byte sequence for encoding "UTF8": 0x00
+execution thyrox-worker-probe-muqdeup5-14289 kind=probe task=TASK-THYROX-0758 exit=2

@@ -1,0 +1,7 @@
+podman: ausente en PATH
+ls: cannot access '/run/podman/podman.sock': No such file or directory
+ls: cannot access '/run/user/0/podman/podman.sock': No such file or directory
+bash: line 1: podman: command not found
+probe-exit=0
+execution thyrox-worker-probe-muqhiisu-5749 kind=probe task=TASK-THYROX-0743 exit=0
+__BG_EXIT__=0

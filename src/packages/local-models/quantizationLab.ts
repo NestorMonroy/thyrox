@@ -8,10 +8,10 @@
  * La memoria se mide en el cgroup del contenedor (`container_measure`),
  * muestreada mientras corre: GNU Time sólo vería al cliente de podman.
  */
-import { runJobWithOutput, type JobOutput } from '@thyrox/podman-execution/containerRun.ts'
+import type { JobOutput } from '@thyrox/podman-execution/containerRun.ts'
+import { runExecution, type ExecutionAuthorization } from '@thyrox/podman-execution/executionAuthorization.ts'
 import { runCommand, type PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
-import { workerContainerName, type WorkerContainerSpec } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
-import { workerResourceLimitArgv, type WorkerResourceProfile } from '@thyrox/podman-execution/workerResourceProfile.ts'
+import { workerContainerName } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
 
 /** Dónde ve el contenedor el scratch del anfitrión. */
 export const LAB_SCRATCH_MOUNT = '/scratch'
@@ -46,12 +46,17 @@ export interface LabStepResult extends JobOutput {
 /** Lee el pico de memoria del cgroup de un contenedor vivo; `undefined` si no pudo medirlo. */
 export type ContainerMemoryProbe = (containerName: string) => Promise<number | undefined>
 
+/** La tarea dueña del laboratorio: la cita que ampara cada paso por defecto. */
+export const DEFAULT_QUANTIZATION_TASK_CITATION = 'TASK-THYROX-0718'
+
 /**
- * El laboratorio ejecuta cada paso por la primitiva de Podman
- * (`runJobWithOutput`): crear, arrancar, esperar, leer salidas y retirar,
- * con el dueño `lab` en sus etiquetas para que un barrido de huérfanos lo
- * reconozca. El rootfs es escribible a propósito: el convertidor y sus
- * dependencias escriben temporales fuera del scratch.
+ * El laboratorio ejecuta cada paso por la primitiva de Podman autorizada
+ * (`runExecution`): crear, arrancar, esperar, leer salidas y retirar, con el
+ * dueño `lab` en sus etiquetas para que un barrido de huérfanos lo reconozca.
+ * Cada paso compone su propia autorización —clase `quantization` y la tarea
+ * que lo ampara—, así que la cita es declarable por el llamador. El rootfs es
+ * escribible a propósito: el convertidor y sus dependencias escriben
+ * temporales fuera del scratch.
  */
 export class QuantizationLab {
   constructor(
@@ -61,6 +66,8 @@ export class QuantizationLab {
     private readonly limits: LabLimits,
     private readonly probe: ContainerMemoryProbe,
     private readonly owner: LabOwner,
+    /** Tarea que autoriza los pasos; sin declararla, la dueña del módulo. */
+    private readonly taskCitation: string = DEFAULT_QUANTIZATION_TASK_CITATION,
   ) {}
 
   async run(step: LabStep): Promise<LabStepResult> {
@@ -68,31 +75,30 @@ export class QuantizationLab {
     const peak = new PeakTracker()
     const sampler = setInterval(() => { void this.probe(containerName).then(value => peak.observe(value)) }, MEMORY_SAMPLE_INTERVAL_MS)
     try {
-      const output = await runJobWithOutput(this.podman, this.specOf(step))
+      const output = await runExecution(this.podman, this.authorizationOf(step))
       return { ...output, ...peak.asResult() }
     } finally {
       clearInterval(sampler)
     }
   }
 
-  private specOf(step: LabStep): WorkerContainerSpec {
+  /** La autorización del paso: clase `quantization`, dueño `lab` y la tarea que la ampara. */
+  private authorizationOf(step: LabStep): ExecutionAuthorization {
     return {
-      workerId: step.workerId,
-      image: this.imageId,
+      executionId: step.workerId,
+      reference: { kind: 'task', citation: this.taskCitation },
       owner: { kind: 'lab', id: this.owner.id, pid: this.owner.pid },
-      resourceArgv: workerResourceLimitArgv(this.profile()),
+      kind: 'quantization',
+      image: this.imageId,
       command: step.command,
-    }
-  }
-
-  private profile(): WorkerResourceProfile {
-    return {
-      cpus: this.limits.cpus,
-      memoryMib: Math.floor(this.limits.memoryBytes / BYTES_PER_MIB),
-      pidsLimit: LAB_PIDS_LIMIT,
+      mounts: [{ source: this.scratchDir, destination: LAB_SCRATCH_MOUNT, mode: 'rw' }],
+      resources: {
+        cpus: this.limits.cpus,
+        memoryMib: Math.floor(this.limits.memoryBytes / BYTES_PER_MIB),
+        pidsLimit: LAB_PIDS_LIMIT,
+      },
       network: 'none',
       readOnlyRootfs: false,
-      mounts: [{ source: this.scratchDir, destination: LAB_SCRATCH_MOUNT, mode: 'rw' }],
     }
   }
 }

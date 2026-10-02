@@ -1,0 +1,5 @@
+psql:.claude/workbench/postgres-corpus-disk-reclaim-20261002T023317/probes/snapshot.sql:14: ERROR:  relation "documents" does not exist
+LINE 3:     'documents', (SELECT count(*) FROM documents),
+                                               ^
+/var/run/postgresql:5432 - accepting connections
+execution thyrox-worker-probe-muqe0jsj-25777 kind=probe task=TASK-THYROX-0758 exit=0

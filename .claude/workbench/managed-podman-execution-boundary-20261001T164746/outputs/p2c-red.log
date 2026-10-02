@@ -1,0 +1,378 @@
+# p2c-red — la prueba nueva contra el código de HEAD (sin migrar), por archivo
+# estado: quantizationLab.ts y podmanWorkerManager.ts = HEAD (fd97e9f32)
+$ grep -c 'runJobWithOutput' src/packages/local-models/quantizationLab.ts
+3
+$ grep -c 'materializeContainer' src/packages/daemon/src/podman/podmanWorkerManager.ts
+2
+
+$ cd src/packages/local-models && bun test __tests__/quantizationLab.test.ts
+bun test v1.3.11 (af24e281)
+
+__tests__/quantizationLab.test.ts:
+(pass) quantization lab > runs a step through the podman execution primitive, never podman run [1.68ms]
+(pass) quantization lab > declares the lab owner, no network, the memory limit and the scratch mount [0.20ms]
+52 |   test('compone la autorización de la clase quantization citando su tarea dueña', async () => {
+53 |     const podman = fakePodman()
+54 |     const lab = new QuantizationLab(podman, 'image-id', '/scratch-host', LIMITS, async () => undefined, OWNER)
+55 |     await lab.run({ workerId: 'quantize-run', command: ['true'] })
+56 |     const create = podman.calls[0]!.join(' ')
+57 |     expect(create).toContain(`--label ${EXECUTION_KIND_LABEL_KEY}=quantization`)
+                        ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "--label thyrox.execution-kind=quantization"
+Received: "create --name thyrox-worker-quantize-run --label thyrox.owner-kind=lab --label thyrox.owner-id=quantize-run --label thyrox.owner-pid=4321 --label thyrox.worker-id=quantize-run --cpus 4 --memory 8192m --pids-limit 512 --network none -v /scratch-host:/scratch:rw image-id true"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/quantizationLab.test.ts:57:20)
+(fail) la ejecución se autoriza por paso > compone la autorización de la clase quantization citando su tarea dueña [0.31ms]
+61 | 
+62 |   test('la cita de la tarea que autoriza es declarable por el llamador', async () => {
+63 |     const podman = fakePodman()
+64 |     const lab = new QuantizationLab(podman, 'image-id', '/scratch-host', LIMITS, async () => undefined, OWNER, 'TASK-THYROX-0743')
+65 |     await lab.run({ workerId: 'quantize-run', command: ['true'] })
+66 |     expect(podman.calls[0]!.join(' ')).toContain(`--label ${EXECUTION_REFERENCE_LABEL_KEY}=task:TASK-THYROX-0743`)
+                                            ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "--label thyrox.execution-reference=task:TASK-THYROX-0743"
+Received: "create --name thyrox-worker-quantize-run --label thyrox.owner-kind=lab --label thyrox.owner-id=quantize-run --label thyrox.owner-pid=4321 --label thyrox.worker-id=quantize-run --cpus 4 --memory 8192m --pids-limit 512 --network none -v /scratch-host:/scratch:rw image-id true"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/quantizationLab.test.ts:66:40)
+(fail) la ejecución se autoriza por paso > la cita de la tarea que autoriza es declarable por el llamador [0.24ms]
+(pass) mandatory execution path > no module of the package composes its own podman run [5.00ms]
+
+ 3 pass
+ 2 fail
+ 9 expect() calls
+Ran 5 tests across 1 file. [160.00ms]
+exit=1
+
+$ cd src/packages/daemon && bun test src/__tests__/podmanWorkerManager.test.ts
+bun test v1.3.11 (af24e281)
+
+src/__tests__/podmanWorkerManager.test.ts:
+211 |   private containerSpec(request: WorkerLaunchRequest, deviceArgv: readonly string[]): WorkerContainerSpec {
+212 |     return {
+213 |       workerId: request.workerId,
+214 |       image: request.image,
+215 |       owner: daemonContainerOwner(this.deps.daemonPid),
+216 |       resourceArgv: [...request.resourceArgv, ...deviceArgv],
+                              ^
+TypeError: Spread syntax requires ...iterable not be null or undefined
+      at containerSpec (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:216:25)
+      at launch (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:173:23)
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:143:34)
+(fail) launch — ruta CPU > crea, arranca y confirma la vida por el PID, sin tocar la VRAM [0.86ms]
+211 |   private containerSpec(request: WorkerLaunchRequest, deviceArgv: readonly string[]): WorkerContainerSpec {
+212 |     return {
+213 |       workerId: request.workerId,
+214 |       image: request.image,
+215 |       owner: daemonContainerOwner(this.deps.daemonPid),
+216 |       resourceArgv: [...request.resourceArgv, ...deviceArgv],
+                              ^
+TypeError: Spread syntax requires ...iterable not be null or undefined
+      at containerSpec (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:216:25)
+      at launch (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:173:23)
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:165:19)
+(fail) launch — ruta CPU > rehúsa un segundo lanzamiento del mismo worker sin hablar con Podman [0.23ms]
+169 |   })
+170 | 
+171 |   test('un executionId inválido rehúsa antes de llamar a Podman', async () => {
+172 |     const podman = fakePodman()
+173 |     const manager = new PodmanWorkerManager(deps(podman))
+174 |     await expect(manager.launch(cpuRequest({ workerId: '../x' }))).rejects.toBeInstanceOf(InvalidExecutionAuthorizationError)
+                                                                                 ^
+error: expect(received).toBeInstanceOf(expected)
+
+Expected constructor: [class InvalidExecutionAuthorizationError extends Error]
+Received value: 211 |   private containerSpec(request: WorkerLaunchRequest, deviceArgv: readonly string[]): WorkerContainerSpec {
+212 |     return {
+213 |       workerId: request.workerId,
+214 |       image: request.image,
+215 |       owner: daemonContainerOwner(this.deps.daemonPid),
+216 |       resourceArgv: [...request.resourceArgv, ...deviceArgv],
+                              ^
+TypeError: Spread syntax requires ...iterable not be null or undefined
+      at containerSpec (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:216:25)
+      at launch (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:173:23)
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:174:26)
+
+
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:174:76)
+(fail) launch — ruta CPU > un executionId inválido rehúsa antes de llamar a Podman [2.63ms]
+177 | 
+178 |   test('si el create falla nombra la etapa y retira lo que haya quedado', async () => {
+179 |     const podman = fakePodman({ create: { exitCode: 125, stdout: '', stderr: 'no such image' } })
+180 |     const manager = new PodmanWorkerManager(deps(podman))
+181 |     const failure = await manager.launch(cpuRequest()).catch(error => error)
+182 |     expect(failure).toBeInstanceOf(WorkerLaunchError)
+                          ^
+error: expect(received).toBeInstanceOf(expected)
+
+Expected constructor: [class WorkerLaunchError extends Error]
+Received value: 211 |   private containerSpec(request: WorkerLaunchRequest, deviceArgv: readonly string[]): WorkerContainerSpec {
+212 |     return {
+213 |       workerId: request.workerId,
+214 |       image: request.image,
+215 |       owner: daemonContainerOwner(this.deps.daemonPid),
+216 |       resourceArgv: [...request.resourceArgv, ...deviceArgv],
+                              ^
+TypeError: Spread syntax requires ...iterable not be null or undefined
+      at containerSpec (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:216:25)
+      at launch (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:173:23)
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:181:35)
+
+
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:182:21)
+(fail) launch — ruta CPU > si el create falla nombra la etapa y retira lo que haya quedado [0.34ms]
+188 | 
+189 |   test('si el start falla retira el contenedor creado', async () => {
+190 |     const podman = fakePodman({ start: { exitCode: 126, stdout: '', stderr: 'oci runtime error' } })
+191 |     const manager = new PodmanWorkerManager(deps(podman))
+192 |     const failure = await manager.launch(cpuRequest()).catch(error => error)
+193 |     expect(failure.stage).toBe('start')
+                                ^
+error: expect(received).toBe(expected)
+
+Expected: "start"
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:193:27)
+(fail) launch — ruta CPU > si el start falla retira el contenedor creado [0.22ms]
+197 | 
+198 |   test('un contenedor «running» con el PID muerto no cuenta como lanzado', async () => {
+199 |     const podman = fakePodman()
+200 |     const manager = new PodmanWorkerManager(deps(podman, { alive: [DAEMON_PID] }))
+201 |     const failure = await manager.launch(cpuRequest()).catch(error => error)
+202 |     expect(failure).toBeInstanceOf(WorkerLaunchError)
+                          ^
+error: expect(received).toBeInstanceOf(expected)
+
+Expected constructor: [class WorkerLaunchError extends Error]
+Received value: 211 |   private containerSpec(request: WorkerLaunchRequest, deviceArgv: readonly string[]): WorkerContainerSpec {
+212 |     return {
+213 |       workerId: request.workerId,
+214 |       image: request.image,
+215 |       owner: daemonContainerOwner(this.deps.daemonPid),
+216 |       resourceArgv: [...request.resourceArgv, ...deviceArgv],
+                              ^
+TypeError: Spread syntax requires ...iterable not be null or undefined
+      at containerSpec (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:216:25)
+      at launch (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:173:23)
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:201:35)
+
+
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:202:21)
+(fail) launch — ruta CPU > un contenedor «running» con el PID muerto no cuenta como lanzado [0.18ms]
+210 |   test('sin GPU utilizable rehúsa con el veredicto, sin reservar ni crear', async () => {
+211 |     const podman = fakePodman()
+212 |     const vram = fakeVram()
+213 |     const manager = new PodmanWorkerManager(deps(podman, { verdict: 'none', vram, gpuDevices: ['nvidia.com/gpu=x'] }))
+214 |     const failure = await manager.launch(cudaRequest()).catch(error => error)
+215 |     expect(failure).toBeInstanceOf(UnsupportedAcceleratorError)
+                          ^
+error: expect(received).toBeInstanceOf(expected)
+
+Expected constructor: [class UnsupportedAcceleratorError extends Error]
+Received value: 211 |   private containerSpec(request: WorkerLaunchRequest, deviceArgv: readonly string[]): WorkerContainerSpec {
+212 |     return {
+213 |       workerId: request.workerId,
+214 |       image: request.image,
+215 |       owner: daemonContainerOwner(this.deps.daemonPid),
+216 |       resourceArgv: [...request.resourceArgv, ...deviceArgv],
+                              ^
+TypeError: Spread syntax requires ...iterable not be null or undefined
+      at containerSpec (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:216:25)
+      at launch (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:173:23)
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:214:35)
+
+
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:215:21)
+(fail) launch — ruta CUDA > sin GPU utilizable rehúsa con el veredicto, sin reservar ni crear [0.21ms]
+221 | 
+222 |   test('con GPU pero sin argv de dispositivo medido rehúsa: no se inventa la bandera', async () => {
+223 |     const podman = fakePodman()
+224 |     const manager = new PodmanWorkerManager(deps(podman, { verdict: 'nvidia-usable' }))
+225 |     const failure = await manager.launch(cudaRequest()).catch(error => error)
+226 |     expect(failure).toBeInstanceOf(UnsupportedAcceleratorError)
+                          ^
+error: expect(received).toBeInstanceOf(expected)
+
+Expected constructor: [class UnsupportedAcceleratorError extends Error]
+Received value: 211 |   private containerSpec(request: WorkerLaunchRequest, deviceArgv: readonly string[]): WorkerContainerSpec {
+212 |     return {
+213 |       workerId: request.workerId,
+214 |       image: request.image,
+215 |       owner: daemonContainerOwner(this.deps.daemonPid),
+216 |       resourceArgv: [...request.resourceArgv, ...deviceArgv],
+                              ^
+TypeError: Spread syntax requires ...iterable not be null or undefined
+      at containerSpec (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:216:25)
+      at launch (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:173:23)
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:225:35)
+
+
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:226:21)
+(fail) launch — ruta CUDA > con GPU pero sin argv de dispositivo medido rehúsa: no se inventa la bandera [0.15ms]
+229 |   })
+230 | 
+231 |   test('exige vramMib entero positivo', async () => {
+232 |     const podman = fakePodman()
+233 |     const manager = new PodmanWorkerManager(deps(podman, { verdict: 'nvidia-usable', gpuDevices: ['nvidia.com/gpu=x'] }))
+234 |     await expect(manager.launch(cudaRequest({ vramMib: 0 }))).rejects.toBeInstanceOf(InvalidExecutionAuthorizationError)
+                                                                            ^
+error: expect(received).toBeInstanceOf(expected)
+
+Expected constructor: [class InvalidExecutionAuthorizationError extends Error]
+Received value: 211 |   private containerSpec(request: WorkerLaunchRequest, deviceArgv: readonly string[]): WorkerContainerSpec {
+212 |     return {
+213 |       workerId: request.workerId,
+214 |       image: request.image,
+215 |       owner: daemonContainerOwner(this.deps.daemonPid),
+216 |       resourceArgv: [...request.resourceArgv, ...deviceArgv],
+                              ^
+TypeError: Spread syntax requires ...iterable not be null or undefined
+      at containerSpec (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:216:25)
+      at launch (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:173:23)
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:234:26)
+
+
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:234:71)
+(fail) launch — ruta CUDA > exige vramMib entero positivo [0.14ms]
+211 |   private containerSpec(request: WorkerLaunchRequest, deviceArgv: readonly string[]): WorkerContainerSpec {
+212 |     return {
+213 |       workerId: request.workerId,
+214 |       image: request.image,
+215 |       owner: daemonContainerOwner(this.deps.daemonPid),
+216 |       resourceArgv: [...request.resourceArgv, ...deviceArgv],
+                              ^
+TypeError: Spread syntax requires ...iterable not be null or undefined
+      at containerSpec (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:216:25)
+      at launch (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:173:23)
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:242:19)
+(fail) launch — ruta CUDA > reserva la VRAM a nombre del daemon, añade el dispositivo y la suelta al retirar [0.16ms]
+250 |   test('un plazo de admisión vencido no crea nada', async () => {
+251 |     const podman = fakePodman()
+252 |     const manager = new PodmanWorkerManager(deps(podman, {
+253 |       verdict: 'nvidia-usable', vram: fakeVram('timeout'), gpuDevices: ['nvidia.com/gpu=x'],
+254 |     }))
+255 |     await expect(manager.launch(cudaRequest())).rejects.toBeInstanceOf(VramAdmissionTimeoutError)
+                                                              ^
+error: expect(received).toBeInstanceOf(expected)
+
+Expected constructor: [class VramAdmissionTimeoutError extends Error]
+Received value: 211 |   private containerSpec(request: WorkerLaunchRequest, deviceArgv: readonly string[]): WorkerContainerSpec {
+212 |     return {
+213 |       workerId: request.workerId,
+214 |       image: request.image,
+215 |       owner: daemonContainerOwner(this.deps.daemonPid),
+216 |       resourceArgv: [...request.resourceArgv, ...deviceArgv],
+                              ^
+TypeError: Spread syntax requires ...iterable not be null or undefined
+      at containerSpec (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:216:25)
+      at launch (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:173:23)
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:255:26)
+
+
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:255:57)
+(fail) launch — ruta CUDA > un plazo de admisión vencido no crea nada [0.18ms]
+258 | 
+259 |   test('un lanzamiento fallido suelta la VRAM que reservó', async () => {
+260 |     const podman = fakePodman({ start: { exitCode: 126, stdout: '', stderr: 'boom' } })
+261 |     const vram = fakeVram()
+262 |     const manager = new PodmanWorkerManager(deps(podman, { verdict: 'nvidia-usable', vram, gpuDevices: ['nvidia.com/gpu=x'] }))
+263 |     await expect(manager.launch(cudaRequest())).rejects.toBeInstanceOf(WorkerLaunchError)
+                                                              ^
+error: expect(received).toBeInstanceOf(expected)
+
+Expected constructor: [class WorkerLaunchError extends Error]
+Received value: 211 |   private containerSpec(request: WorkerLaunchRequest, deviceArgv: readonly string[]): WorkerContainerSpec {
+212 |     return {
+213 |       workerId: request.workerId,
+214 |       image: request.image,
+215 |       owner: daemonContainerOwner(this.deps.daemonPid),
+216 |       resourceArgv: [...request.resourceArgv, ...deviceArgv],
+                              ^
+TypeError: Spread syntax requires ...iterable not be null or undefined
+      at containerSpec (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:216:25)
+      at launch (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:173:23)
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:263:26)
+
+
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:263:57)
+(fail) launch — ruta CUDA > un lanzamiento fallido suelta la VRAM que reservó [0.17ms]
+211 |   private containerSpec(request: WorkerLaunchRequest, deviceArgv: readonly string[]): WorkerContainerSpec {
+212 |     return {
+213 |       workerId: request.workerId,
+214 |       image: request.image,
+215 |       owner: daemonContainerOwner(this.deps.daemonPid),
+216 |       resourceArgv: [...request.resourceArgv, ...deviceArgv],
+                              ^
+TypeError: Spread syntax requires ...iterable not be null or undefined
+      at containerSpec (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:216:25)
+      at launch (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:173:23)
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:271:19)
+(fail) launch — ruta CUDA > un segundo worker CUDA rehúsa: el registro reserva por dueño y soltar uno soltaría los dos [0.14ms]
+211 |   private containerSpec(request: WorkerLaunchRequest, deviceArgv: readonly string[]): WorkerContainerSpec {
+212 |     return {
+213 |       workerId: request.workerId,
+214 |       image: request.image,
+215 |       owner: daemonContainerOwner(this.deps.daemonPid),
+216 |       resourceArgv: [...request.resourceArgv, ...deviceArgv],
+                              ^
+TypeError: Spread syntax requires ...iterable not be null or undefined
+      at containerSpec (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:216:25)
+      at launch (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:173:23)
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:281:19)
+(fail) la autorización de cada lanzamiento > compone la autorización de infraestructura del daemon con su clase y su referencia [0.13ms]
+211 |   private containerSpec(request: WorkerLaunchRequest, deviceArgv: readonly string[]): WorkerContainerSpec {
+212 |     return {
+213 |       workerId: request.workerId,
+214 |       image: request.image,
+215 |       owner: daemonContainerOwner(this.deps.daemonPid),
+216 |       resourceArgv: [...request.resourceArgv, ...deviceArgv],
+                              ^
+TypeError: Spread syntax requires ...iterable not be null or undefined
+      at containerSpec (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:216:25)
+      at launch (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:173:23)
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:291:19)
+(fail) la autorización de cada lanzamiento > la vida se confirma con la inspección de la unidad materializada [0.09ms]
+211 |   private containerSpec(request: WorkerLaunchRequest, deviceArgv: readonly string[]): WorkerContainerSpec {
+212 |     return {
+213 |       workerId: request.workerId,
+214 |       image: request.image,
+215 |       owner: daemonContainerOwner(this.deps.daemonPid),
+216 |       resourceArgv: [...request.resourceArgv, ...deviceArgv],
+                              ^
+TypeError: Spread syntax requires ...iterable not be null or undefined
+      at containerSpec (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:216:25)
+      at launch (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:173:23)
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:300:19)
+(fail) retire / retireAll / reconcileOrphans > retire detiene y borra el contenedor y olvida el worker [0.18ms]
+211 |   private containerSpec(request: WorkerLaunchRequest, deviceArgv: readonly string[]): WorkerContainerSpec {
+212 |     return {
+213 |       workerId: request.workerId,
+214 |       image: request.image,
+215 |       owner: daemonContainerOwner(this.deps.daemonPid),
+216 |       resourceArgv: [...request.resourceArgv, ...deviceArgv],
+                              ^
+TypeError: Spread syntax requires ...iterable not be null or undefined
+      at containerSpec (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:216:25)
+      at launch (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:173:23)
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:310:19)
+(fail) retire / retireAll / reconcileOrphans > retireAll retira cada worker gestionado [0.31ms]
+(pass) retire / retireAll / reconcileOrphans > reconcileOrphans retira los contenedores cuyo daemon murió [1.38ms]
+(pass) parseHardwareVerdict > lee la línea verdict de hardware-inventory [0.13ms]
+(pass) parseHardwareVerdict > sin veredicto reconocible lanza: no poder medir no es «none» [0.06ms]
+(pass) createPodmanExecutor > lanza el binario declarado en THYROX_TOOLCHAIN_PODMAN_BIN y devuelve su salida [6.61ms]
+(pass) readHardwareVerdict — contrato de salida de hardware-inventory > exit 0 con verdict nvidia-usable es un veredicto medido [8.54ms]
+(pass) readHardwareVerdict — contrato de salida de hardware-inventory > exit 1 con verdict none es un veredicto medido, no un error [6.61ms]
+(pass) readHardwareVerdict — contrato de salida de hardware-inventory > exit 3 con verdict partial es un veredicto medido [6.08ms]
+(pass) readHardwareVerdict — contrato de salida de hardware-inventory > exit 2 lanza con su stderr: no poder medir no es «none» [7.36ms]
+(pass) readHardwareVerdict — contrato de salida de hardware-inventory > una línea verdict que contradice su código de salida lanza [6.22ms]
+
+ 9 pass
+ 17 fail
+ 21 expect() calls
+Ran 26 tests across 1 file. [344.00ms]
+exit=1

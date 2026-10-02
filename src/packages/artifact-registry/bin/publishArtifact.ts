@@ -22,6 +22,7 @@ import { parseArgs } from 'node:util'
 
 import { productionDeclarations, thyroxRoot } from '@thyrox/paths/reach.ts'
 import { createPodmanExecutor, type PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
+import { inspectImage, inspectVolume } from '@thyrox/podman-execution/podmanObservation.ts'
 import { MissingRegistryCredentialError, PUBLISHER_ENV, resolvePublisherCredential } from '@thyrox/registry-credentials/registryCredential.ts'
 
 import { createDiskAdmission } from '../diskAdmission.js'
@@ -63,15 +64,20 @@ const declarations = productionDeclarations()
 const declared = (name: string): string | undefined => declarations.declared(name) ?? undefined
 const podman: PodmanExecutor = createPodmanExecutor()
 
-async function podmanValue(args: readonly string[], what: string): Promise<string> {
-  const result = await podman.run(args)
-  const value = result.stdout.trim()
-  if (result.exitCode !== 0 || !value) refuse(`no se pudo resolver ${what}: ${result.stderr.trim() || `exit ${result.exitCode}`}`)
-  return value
+/** Lo que el dueño de Podman observó, o el rechazo que nombra qué no se resolvió (P3). */
+async function observed(value: Promise<string | undefined>, what: string): Promise<string> {
+  let resolved: string | undefined
+  try {
+    resolved = await value
+  } catch (error) {
+    refuse(`no se pudo resolver ${what}: ${(error as Error).message}`)
+  }
+  if (!resolved) refuse(`no se pudo resolver ${what}`)
+  return resolved
 }
 
 const sourceDir = values.volume
-  ? await podmanValue(['volume', 'inspect', values.volume, '--format', '{{.Mountpoint}}'], `el volumen ${values.volume}`)
+  ? await observed(inspectVolume(podman, values.volume).then(volume => volume?.mountpoint), `el volumen ${values.volume}`)
   : (values['source-dir'] as string)
 
 let credential
@@ -99,7 +105,7 @@ const egress = (() => {
 })()
 
 const verifierImageRef = declared(VERIFIER_IMAGE_ENV) || DEFAULT_VERIFIER_IMAGE
-const verifierImage = await podmanValue(['image', 'inspect', verifierImageRef, '--format', '{{.Id}}'], `la imagen del verificador ${verifierImageRef} (no se descarga implícitamente)`)
+const verifierImage = await observed(inspectImage(podman, verifierImageRef).then(image => image?.id), `la imagen del verificador ${verifierImageRef} (no se descarga implícitamente)`)
 
 const root = thyroxRoot()
 

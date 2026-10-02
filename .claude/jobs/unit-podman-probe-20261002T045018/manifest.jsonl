@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts run --task TASK-THYROX-0743 --kind probe -- bash -c command -v podman || echo \"podman: ausente en PATH\"; ls -la /run/podman/podman.sock /run/user/0/podman/podman.sock 2>&1 | head -2; podman ps 2>&1 | head -2; echo probe-exit=$?", "started_at": "2026-10-02T04:50:18+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-02T04:50:21+00:00", "duration_seconds": 3.389019}

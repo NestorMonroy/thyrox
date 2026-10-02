@@ -1,0 +1,34 @@
+{
+  "utc": "2026-10-02T04:45:37",
+  "run": "s1-wave1",
+  "status": "stopped-intermediate",
+  "architecturallyAcceptable": false,
+  "acceptedItems": [],
+  "attempts": [
+    {
+      "item": "s1-0765",
+      "attempt": 1,
+      "model": "qwen3.8-flash",
+      "outcome": "provider_transient",
+      "verifyExit": 1
+    },
+    {
+      "item": "s1-0765",
+      "attempt": 2,
+      "model": "qwen3.8-flash",
+      "outcome": "terminated-by-operator"
+    }
+  ],
+  "reason": "La ejecución usó task_continuation + delegate.sh en el checkout compartido en lugar de headless-pool --isolation worktree + pool_integrate: sin lifecycle del pool (generaciones, <n>.closed, snapshots, drain, recovery) y con un verificador sin scope/diff, RED ni anulación. Ningún accepted de esta ejecución constituye aceptación bajo el contrato final.",
+  "stop": {
+    "procedure": "probes/stop_wave.sh",
+    "log": "outputs/stop-s1-wave1.log",
+    "recheck": "outputs/stop-s1-wave1-recheck.log",
+    "processesLeft": 0,
+    "taskUnitsLeft": 0,
+    "liveWriters": 0,
+    "jobStatus": "unknown (sin marcador: terminado por señal)"
+  },
+  "evidencePreserved": true,
+  "rerun": "S1 se vuelve a ejecutar tras TASK-THYROX-0743 P3 y el despacho controller -> headless-pool"
+}

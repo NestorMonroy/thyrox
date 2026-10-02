@@ -340,6 +340,16 @@ export async function removeWorkerContainer(
   return deps.podman.run(removeWorkerContainerArgv(name))
 }
 
+/** Desenlace de retirar un contenedor por nombre: hecho, ya no estaba, o falló. */
+export type ContainerRemoval = 'destroyed' | 'absent' | 'failed'
+
+/** Retira el contenedor `name`; distingue «no existía» de un fallo de Podman. */
+export async function removeExecutionContainer(podman: PodmanExecutor, name: string): Promise<ContainerRemoval> {
+  const result = await podman.run(removeWorkerContainerArgv(name))
+  if (result.exitCode === 0) return 'destroyed'
+  return /no such container/i.test(result.stderr) ? 'absent' : 'failed'
+}
+
 export type WorkerContainerRetirement = {
   name: string
   stopped: boolean

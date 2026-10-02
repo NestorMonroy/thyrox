@@ -1,0 +1,9 @@
+daemon exit=0
+ 34 pass
+ 0 fail
+quantizationLab exit=0
+ 5 pass
+ 0 fail
+src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts(49,32): error TS2538: Type 'undefined' cannot be used as an index type.
+tsc-done
+execution thyrox-worker-test-muqf1saq-18689 kind=test task=TASK-THYROX-0758 exit=0
