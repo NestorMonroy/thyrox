@@ -1,0 +1,8 @@
+taskSuite:  7 pass  0 fail 
+qualifyModel:  11 pass  0 fail 
+qualifyCommand:  6 pass  0 fail 
+qualificationStore:  5 pass  0 fail 
+local-models:  219 pass  5 fail 
+green_exit=1
+execution thyrox-worker-test-muqnna3u-2026 kind=test task=TASK-THYROX-0780 exit=0
+__BG_EXIT__=0

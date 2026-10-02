@@ -1,0 +1,14 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/qualifyModel.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../taskSuite.js' from '/home/user/thyrox/src/packages/local-models/__tests__/qualifyModel.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [175.00ms]

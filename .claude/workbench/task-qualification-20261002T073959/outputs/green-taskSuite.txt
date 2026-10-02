@@ -1,0 +1,15 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/taskSuite.test.ts:
+(pass) loadTaskSuite > lee el id, la clase y los casos con sus comprobaciones [2.64ms]
+(pass) loadTaskSuite > una clase que no es de thyrox se rehúsa [1.08ms]
+(pass) loadTaskSuite > una comprobación desconocida se rehúsa nombrando su campo [1.20ms]
+(pass) loadTaskSuite > un patrón que no compila se rehúsa al leer, no al puntuar [0.99ms]
+(pass) loadTaskSuite > un caso sin comprobaciones se rehúsa: aprobaría cualquier respuesta [0.68ms]
+(pass) scoreTaskReply > aprueba sólo si se cumplen todas las comprobaciones [1.08ms]
+(pass) scoreTaskReply > nombra cada comprobación que falla [1.28ms]
+
+ 7 pass
+ 0 fail
+ 10 expect() calls
+Ran 7 tests across 1 file. [242.00ms]

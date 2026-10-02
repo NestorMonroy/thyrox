@@ -1,0 +1,13 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/qualificationStore.test.ts:
+(pass) qualificationStore > un archivo ausente es una lista vacía [0.57ms]
+(pass) qualificationStore > añadir conserva las anteriores y crea el directorio [9.46ms]
+(pass) qualificationStore > un archivo inválido se rehúsa con la ruta, nunca como lista vacía [0.83ms]
+(pass) qualificationStore > un archivo que no es JSON se rehúsa con la ruta [0.35ms]
+(pass) qualificationStore > añadir sobre un archivo inválido no lo pisa [0.47ms]
+
+ 5 pass
+ 0 fail
+ 8 expect() calls
+Ran 5 tests across 1 file. [183.00ms]
