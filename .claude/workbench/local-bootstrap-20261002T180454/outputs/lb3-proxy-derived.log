@@ -1,0 +1,5 @@
+ 12 pass
+ 0 fail
+src/proxy/__tests__/localModelProxy.test.ts(71,7): error TS2740: Type '{ unitId: string; grantId: string; artifact: ResolvedModelArtifact; residencyKey: string; generation: number; runtime: "ollama"; endpoint: string; containerId: string; devices: never[]; }' is missing the following properties from type 'ModelExecutionUnit': kind, reference, owner, containerName, and 2 more.
+tsc-own-files-errors-end
+EXIT=0

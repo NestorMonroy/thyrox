@@ -1,0 +1,20 @@
+bun test v1.3.11 (af24e281)
+
+src/proxy/__tests__/localModelProxy.test.ts:
+119 |   for await (const chunk of child.stdout) {
+120 |     seen += decoder.decode(chunk, { stream: true })
+121 |     const announced = SOCKET_ANNOUNCEMENT.exec(seen)
+122 |     if (announced) return announced[1] as string
+123 |   }
+124 |   throw new Error(`localProxy no anunció su socket: ${await new Response(child.stderr).text()}`)
+                  ^
+error: localProxy no anunció su socket: localProxy: THYROX_OPENAI_COMPAT_API_KEY está retirada: un modelo local se sirve con --local-model <nombre-contractual>, por admisión del coordinador. NO se escucha.
+
+      at listeningProxy (/home/user/thyrox/src/packages/provider/src/proxy/__tests__/localModelProxy.test.ts:124:13)
+      at async <anonymous> (/home/user/thyrox/src/packages/provider/src/proxy/__tests__/localModelProxy.test.ts:205:26)
+(fail) localProxy con modelos locales admitidos > una credencial de la familia retirada no es una declaración: el proxy local escucha igual [257.46ms]
+
+ 7 pass
+ 1 fail
+ 21 expect() calls
+Ran 8 tests across 1 file. [3.87s]

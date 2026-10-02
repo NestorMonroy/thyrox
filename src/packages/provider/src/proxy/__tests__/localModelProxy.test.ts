@@ -108,8 +108,8 @@ function launch(args: string[], env: Record<string, string> = {}) {
   })
 }
 
-async function listeningProxy(args: string[]): Promise<string> {
-  const child = launch(args)
+async function listeningProxy(args: string[], env: Record<string, string> = {}): Promise<string> {
+  const child = launch(args, env)
   cleanups.push(async () => {
     child.kill('SIGTERM')
     await child.exited
@@ -192,6 +192,19 @@ describe('localProxy con modelos locales admitidos', () => {
     const stderr = await new Response(child.stderr).text()
     expect(stderr).toContain(RETIRED_DECLARATION)
     expect(stderr).toContain('--local-model')
+  })
+
+  test('la declaración retirada por THYROX_OPENAI_COMPAT_MODEL también rehúsa con exit 2', async () => {
+    const child = launch(['--local-model', LOCAL_MODEL], { THYROX_OPENAI_COMPAT_MODEL: 'some-model' })
+    expect(await child.exited).toBe(REFUSAL_EXIT_CODE)
+    expect(await new Response(child.stderr).text()).toContain('THYROX_OPENAI_COMPAT_MODEL')
+  })
+
+  test('una credencial de la familia retirada no es una declaración: el proxy local escucha igual', async () => {
+    const coordinator = new FakeCoordinator(fakeRuntime().baseUrl)
+    const socket = await listeningProxy(['--local-model', LOCAL_MODEL, '--coordinator-socket', await servedCoordinator(coordinator)],
+      { THYROX_OPENAI_COMPAT_API_KEY: 'placeholder-not-a-secret' })
+    expect(socket.length).toBeGreaterThan(0)
   })
 
   test('sin modelo local ni claude rehúsa con exit 2 nombrando --cli', async () => {

@@ -54,8 +54,13 @@ const LOOPBACK_HOST = '127.0.0.1'
 const ANY_FREE_PORT = 0
 const REFUSAL_EXIT_CODE = 2
 const INVALID_REQUEST_STATUS = 400
-/** La familia de la declaración por entorno retirada: un modelo y una base URL, sin admisión (M8). */
-const RETIRED_DECLARATION_PREFIX = 'THYROX_OPENAI_COMPAT_'
+/**
+ * La declaración por entorno retirada: un modelo y una base URL, sin admisión (M8). Son los
+ * nombres que construían un upstream (`check_model_execution_grant.py`); una credencial de la
+ * misma familia no declara nada (`env_sensitivity.tsv` la clasifica `credential`) y su
+ * presencia no puede impedir que el proxy sirva modelos locales.
+ */
+const RETIRED_DECLARATION_NAMES = ['THYROX_OPENAI_COMPAT_BASE_URL', 'THYROX_OPENAI_COMPAT_MODEL'] as const
 
 function argument(name: string): string | undefined {
   const index = process.argv.indexOf(name)
@@ -72,7 +77,7 @@ function refuse(message: string): never {
 }
 
 function refuseRetiredDeclaration(): void {
-  const declared = Object.keys(process.env).find(name => name.startsWith(RETIRED_DECLARATION_PREFIX) && (process.env[name] ?? '') !== '')
+  const declared = RETIRED_DECLARATION_NAMES.find(name => (process.env[name] ?? '') !== '')
   if (declared) refuse(`${declared} está retirada: un modelo local se sirve con --local-model <nombre-contractual>, por admisión del coordinador`)
 }
 

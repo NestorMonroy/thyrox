@@ -1,0 +1,3 @@
+(fail) localProxy con modelos locales admitidos > la declaración retirada por THYROX_OPENAI_COMPAT_MODEL también rehúsa con exit 2 [5002.97ms]
+ 7 pass
+ 1 fail
