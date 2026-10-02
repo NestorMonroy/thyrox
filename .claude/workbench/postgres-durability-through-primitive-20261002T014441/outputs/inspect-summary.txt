@@ -1,0 +1,5 @@
+# podman inspect thyrox-postgres, leído sin imprimir valores (2026-10-02)
+ocurrencias del valor de THYROX_INFRA_POSTGRES_PASSWORD en inspect: 0
+variables POSTGRES*: ['POSTGRES_DB', 'POSTGRES_PASSWORD_FILE', 'POSTGRES_USER']
+dueño: infrastructure infrastructure-bootstrap | tipo: infrastructure
+montajes: [('volume', 'thyrox-postgres-data', '/var/lib/postgresql/data')]
