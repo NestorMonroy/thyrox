@@ -1,0 +1,17 @@
+{
+  "name": "@thyrox/execution-records",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Registro durable de cada ejecución gestionada (ADR-007 1.17.0): identidad, unidad, imagen y artefacto, tiempos, medidas, veredicto y procedencia, sobre las migraciones de @thyrox/store. Una unidad es reclamable sólo cuando su registro requerido es durable.",
+  "exports": {
+    "./*.ts": {
+      "@thyrox/source": "./*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./*.ts"
+    }
+  },
+  "dependencies": {
+    "@thyrox/store": "0.1.0"
+  }
+}
