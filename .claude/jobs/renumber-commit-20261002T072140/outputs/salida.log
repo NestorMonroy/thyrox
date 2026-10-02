@@ -1,0 +1,6 @@
+OK: finding H-THYROX-316 indexado en /home/user/thyrox/agent-results/agent_store.sqlite3
+0d9f9d556 Renumber this session's citations off the shared range
+  tampoco se bloquea, porque es secundaria (README D4-A, §8).
+pushed
+execution thyrox-worker-test-muqmx6u7-14278 kind=test task=TASK-THYROX-0779 exit=0
+__BG_EXIT__=0
