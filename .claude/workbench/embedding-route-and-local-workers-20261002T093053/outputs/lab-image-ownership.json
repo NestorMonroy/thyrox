@@ -1,0 +1,16 @@
+{
+  "image": "localhost/thyrox-model-quantizer:dev",
+  "imageIdFile": "lab-image-inspect.txt",
+  "owner": {"kind": "task", "id": "TASK-THYROX-0747"},
+  "declaredBy": "TASK-THYROX-0904 (embedding-route-and-local-workers)",
+  "labelsOnImage": "none — built before build-image wrote io.thyrox.image.lifecycle and thyrox.task; podman cannot relabel an image without rebuilding it",
+  "state": "owned+required",
+  "stateMachine": {
+    "owned+required": "the only usable lab image; never reclaimed",
+    "owned+reproducible+reclaimable": "a clean successor built from a committed Containerfile, its history verified by assertImageFreeOf and, if published, pulled back by digest",
+    "unowned": "no declaration: neither protected forever nor deleted blindly — ownership is declared first"
+  },
+  "publishable": false,
+  "publishableReason": "its RUN history records HTTPS_PROXY/https_proxy values and PIP_CERT; assertImageFreeOf refuses it",
+  "transitionRequires": ["clean build succeeds", "image history passes assertImageFreeOf", "successor carries thyrox.task=TASK-THYROX-0747 and lifecycle permanent"]
+}
