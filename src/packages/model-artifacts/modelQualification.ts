@@ -172,8 +172,8 @@ function latestFor(qualifications: readonly ModelQualification[], model: string,
     .reduce<ModelQualification | undefined>((latest, q) => (!latest || q.measuredAt > latest.measuredAt ? q : latest), undefined)
 }
 
-export interface QualifiedLocalModel {
-  readonly entry: ModelCatalogEntry
+export interface QualifiedLocalModel<Entry extends { readonly name: string } = ModelCatalogEntry> {
+  readonly entry: Entry
   /** La cualificación de tarea de la clase: la que da el contexto y la velocidad. */
   readonly qualification: ModelQualification
   readonly protocol: ModelQualification
@@ -184,7 +184,7 @@ function passed(qualification: ModelQualification | undefined): qualification is
 }
 
 /** Primero las medidas aisladas, de la más rápida a la más lenta; las contendidas después, sin ordenar por velocidad. */
-function bySpeedWhenIsolated(left: QualifiedLocalModel, right: QualifiedLocalModel): number {
+function bySpeedWhenIsolated<Entry extends { readonly name: string }>(left: QualifiedLocalModel<Entry>, right: QualifiedLocalModel<Entry>): number {
   const leftIsolated = left.qualification.measurementCondition === 'isolated'
   const rightIsolated = right.qualification.measurementCondition === 'isolated'
   if (leftIsolated !== rightIsolated) return leftIsolated ? -1 : 1
@@ -200,19 +200,19 @@ function bySpeedWhenIsolated(left: QualifiedLocalModel, right: QualifiedLocalMod
  * cuenta: el nombre lleva la revisión, así que otra revisión es otro modelo.
  * Elegible no es autorizado: decide el scheduler y autoriza el grant.
  */
-export function qualifiedModels(
-  entries: readonly ModelCatalogEntry[],
+export function qualifiedModels<Entry extends { readonly name: string } = ModelCatalogEntry>(
+  entries: readonly Entry[],
   qualifications: readonly ModelQualification[],
   taskClass: LocalTaskClass,
   minContextTokens: number,
-): QualifiedLocalModel[] {
+): QualifiedLocalModel<Entry>[] {
   return entries
     .map((entry) => ({
       entry,
       qualification: latestFor(qualifications, entry.name, `task:${taskClass}`),
       protocol: latestFor(qualifications, entry.name, 'protocol'),
     }))
-    .filter((candidate): candidate is QualifiedLocalModel =>
+    .filter((candidate): candidate is QualifiedLocalModel<Entry> =>
       passed(candidate.protocol) && passed(candidate.qualification)
       && candidate.qualification.contextTokens >= minContextTokens)
     .sort(bySpeedWhenIsolated)
