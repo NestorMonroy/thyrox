@@ -10,9 +10,10 @@ import sys
 from pathlib import Path
 
 out = Path(sys.argv[1])
+# Una fila por fase, pedida a `podman-execution observe` (probes/identity.sh).
 rows = [json.loads(line) for line in (out / "T003-identities.jsonl").read_text().splitlines() if line.strip()]
-containers = {r["phase"]: r for r in rows if "containerId" in r}
-volumes = {r["phase"]: {k: r[k] for k in ("volume", "createdAt", "mountpoint")} for r in rows if "volume" in r}
+containers = {r["phase"]: r for r in rows}
+volumes = {r["phase"]: {k: r[k] for k in ("volume", "volumeCreatedAt", "mountpoint", "mountedVolume")} for r in rows}
 snapshots = {p: json.loads((out / f"T003-snapshot-{p}.json").read_text()) for p in ("before", "mid", "after")}
 retrieval = {p: json.loads((out / f"T003-retrieval-{p}.json").read_text()) for p in ("mid", "after")}
 checks = {}

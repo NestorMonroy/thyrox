@@ -10,8 +10,13 @@ import os
 import sys
 from pathlib import Path
 
-container = json.loads(Path(sys.argv[1]).read_text())[0]
-volume = json.loads(Path(sys.argv[2]).read_text())[0]
+def first(document):
+    """El documento de `podman-execution observe` es un objeto; el de una inspección directa, una lista."""
+    return document[0] if isinstance(document, list) else document
+
+
+container = first(json.loads(Path(sys.argv[1]).read_text()))
+volume = first(json.loads(Path(sys.argv[2]).read_text()))
 labels = container["Config"].get("Labels") or {}
 mounts = container.get("Mounts") or []
 data_mount = next((m for m in mounts if m.get("Type") == "volume"), {})
@@ -30,7 +35,7 @@ print(json.dumps({
     "containerId": container["Id"], "image": container.get("ImageName") or container["Config"].get("Image"),
     "ownerKind": labels.get("thyrox.owner-kind"), "ownerId": labels.get("thyrox.owner-id"),
     "volume": data_mount.get("Name"), "mountDestination": data_mount.get("Destination"),
-    "volumeMountpoint": volume.get("Mountpoint"), "volumeLabels": volume.get("Labels"),
+    "volumeMountpoint": volume.get("Mountpoint") or volume.get("mountpoint"), "volumeLabels": volume.get("Labels", volume.get("labels")),
     "ports": container["HostConfig"].get("PortBindings"), "health": (container["State"].get("Health") or {}).get("Status"),
     "secret_THYROX_INFRA_POSTGRES_PASSWORD": "present" if password else "absent",
     "checks": checks, "passed": all(checks.values()),

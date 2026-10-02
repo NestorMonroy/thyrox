@@ -13,7 +13,9 @@ import { bootstrapInfrastructure, parseInfrastructureDeclarations } from '../../
 
 const [desiredFile, containerFile, secretDigest, mode] = process.argv.slice(2)
 const [desired] = parseInfrastructureDeclarations(`[${readFileSync(desiredFile, 'utf8')}]`) as unknown as DesiredResource[]
-const containerJson = readFileSync(containerFile, 'utf8')
+// `podman-execution observe container --raw` da un objeto; la inspección que el bootstrap lee es una lista.
+const observedDocument: unknown = JSON.parse(readFileSync(containerFile, 'utf8'))
+const containerJson = JSON.stringify(Array.isArray(observedDocument) ? observedDocument : [observedDocument])
 const [observed] = JSON.parse(containerJson) as { State: { Running: boolean }; Mounts: { Type: string; Name: string }[] }[]
 const existingVolumes = new Set(observed.Mounts.filter(m => m.Type === 'volume').map(m => m.Name))
 const declared: DesiredResource = mode === 'wrong-volume'

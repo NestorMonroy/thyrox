@@ -1,0 +1,13 @@
+
+ 200 pass
+ 16 skip
+ 0 fail
+ 475 expect() calls
+Ran 216 tests across 16 files. [326.00ms]
+BUN_EXIT=0
+  ok    y lo dice
+
+10 ok, 0 fallos
+check_podman_access_ownership: 0 acceso(s) a Podman fuera de src/packages/podman-execution/, 0 pendiente(s) vencido(s), 6 pendiente(s) vigente(s) (alcance medido: 4164 archivo(s))
+GATE_EXIT=0
+execution thyrox-worker-test-muqekr05-9444 kind=test task=TASK-THYROX-0758 exit=0

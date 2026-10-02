@@ -49,9 +49,11 @@ for image in observed["images"]:
     else:
         key = "image:intermediate"
     decision = decisions[key]
+    # Lo que borrar la imagen libera es su tamaño PROPIO (contabilidad de Podman), no su tamaño total.
+    unique = image.get("uniqueBytes")
     rows.append({"resource": f"image:{(tags or image['digests'] or [image['id'][:12]])[0]}", "id": image["id"], "bytes": image["bytes"],
-                 "class": decision["class"], "reason": decision["reason"], "safe_to_delete": decision["safe"],
-                 "expected_reclaim_bytes": image["bytes"] if decision["safe"] else 0, "references": image["users"]})
+                 "uniqueBytes": unique, "class": decision["class"], "reason": decision["reason"], "safe_to_delete": decision["safe"],
+                 "expected_reclaim_bytes": (unique if unique is not None else image["bytes"]) if decision["safe"] else 0, "references": image["users"]})
     if decision["safe"] and (image["users"] or key == "image:in-use"):
         problems.append(f"{key}: seguro con contenedores que la usan")
 for key, decision in decisions.items():

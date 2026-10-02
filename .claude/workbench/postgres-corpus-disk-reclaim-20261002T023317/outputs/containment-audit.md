@@ -121,3 +121,29 @@ y **se descartó**: un FAIL por la causa equivocada no discrimina.
   del guion de recuperación. Ahora declara `thyrox-ollama-bench-models`;
   `infrastructure_ensure thyrox-ollama` → `kept`
   (`outputs/T005-ollama-ensure-declared.txt`). El `.env` no se versiona.
+
+## Propiedad de Podman (P1–P4)
+
+- Toda observación de Podman de este lote pasa por el dueño:
+  `bin/podman-execution-execute observe container|volume|secret-labels|containers|volumes|images|storage|snapshot`
+  (`src/packages/podman-execution/podmanObservation.ts`), sólo verbos de
+  lectura. El borrado de una imagen, por `remove-image --task`, que rehúsa si
+  algún contenedor la usa.
+- Ninguna unidad monta el socket ni el almacén de Podman.
+- `check_podman_access_ownership` (PodmanAccessOwnershipGate), en el
+  pre-commit: RED con el `podman volume inspect` directo de T005
+  (`outputs/T005-ownership-red.txt`), GREEN tras migrar
+  (`T005-ownership-green.txt`), anulación por subproceso → sólo cae el gate de
+  propiedad, datos idénticos (`T005-ownership-annulment.json`). Lista cerrada
+  `src/verify/podman_access_pending.txt`: 6 entradas vigentes, migración en
+  TASK-THYROX-0759.
+- Regresión conservada: el `podman run --rm` directo del anfitrión de este
+  lote es un caso de la suite del gate.
+- T001 y T003 re-verificados y T005 reclasificado sobre la observación del
+  dueño; misma conclusión, contención PASS en los 14 pasos canónicos.
+- Pruebas en unidad: podman-execution 200 pass / 16 skip / 0 fail; gate de
+  propiedad 10/10. Typecheck acotado al paquete: 3 errores, todos en tests no
+  tocados y anteriores a este lote (`containerRun.test.ts:26`,
+  `workerContainerLifecycle.test.ts:46`, `executionCommand.test.ts:138`,
+  introducido en `07593694f`). El typecheck del repo entero muere por memoria
+  dentro de la unidad.

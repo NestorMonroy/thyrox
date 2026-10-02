@@ -14,9 +14,10 @@
 import { appendFileSync } from 'node:fs'
 import { parseArgs } from 'node:util'
 
-import { runExecution, InvalidExecutionAuthorizationError, type ExecutionAuthorization, type ExecutionKind, type ExecutionSecret } from './executionAuthorization.js'
+import { runExecution, InvalidExecutionAuthorizationError, TASK_CITATION_PATTERN, type ExecutionAuthorization, type ExecutionKind, type ExecutionSecret } from './executionAuthorization.js'
 import { ensureSecretValue } from './resourceMaterialization.js'
-import { buildImage } from './imageStore.js'
+import { buildImage, removeImage } from './imageStore.js'
+import { inspectContainer, inspectContainerDocument, inspectVolume, listAllImages, listContainers, listVolumes, secretLabels, snapshot, storageInfo } from './podmanObservation.js'
 import { retireOrphanedWorkerContainers } from './workerContainerLifecycle.js'
 import type { PodmanExecutor } from './podmanExecutor.js'
 import type { WorkerMountMode, WorkerNetworkMode, WorkerResourceMount } from './workerResourceProfile.js'
@@ -59,6 +60,8 @@ const USAGE = [
   '                    [--cpus N] [--memory-mib N] [--pids N] [--output RUTA]... [--secret-from-env NOMBRE]...',
   '                    (--script-stdin | -- ARGV...)',
   '     podman-execution-execute reconcile-orphans',
+  '     podman-execution-execute observe container NOMBRE [--raw] | volume NOMBRE | secret-labels NOMBRE | containers | volumes | images | storage | snapshot',
+  '     podman-execution-execute remove-image --task TASK-<CAPA>-NNNN --id ID',
   '     podman-execution-execute build-image --task TASK-<CAPA>-NNNN --context DIR --tag TAG [--containerfile F] [--network host] [--lifecycle cache|permanent]',
 ].join('\n')
 
@@ -280,6 +283,50 @@ async function reconcileOrphansCommand(deps: ExecutionCommandDeps): Promise<numb
   return retired.every(retirement => retirement.removed) ? 0 : EXIT_FAILED
 }
 
+/**
+ * Observación de sólo lectura del estado de Podman (P3): el consumidor la pide
+ * aquí y nunca emite el verbo de Podman. Imprime JSON; un recurso nombrado que
+ * no existe imprime `null` y sale 1.
+ */
+async function observeCommand(args: string[], deps: ExecutionCommandDeps): Promise<number> {
+  const [what, name] = args
+  const named = (label: string) => requireValue(name, label)
+  const observations: Record<string, () => Promise<unknown>> = {
+    container: () => (args.includes('--raw') ? inspectContainerDocument : inspectContainer)(deps.podman, named('container NOMBRE')),
+    volume: () => inspectVolume(deps.podman, named('volume NOMBRE')),
+    'secret-labels': () => secretLabels(deps.podman, named('secret-labels NOMBRE')),
+    containers: () => listContainers(deps.podman),
+    volumes: () => listVolumes(deps.podman),
+    images: () => listAllImages(deps.podman),
+    storage: () => storageInfo(deps.podman),
+    snapshot: () => snapshot(deps.podman),
+  }
+  const observe = what === undefined ? undefined : observations[what]
+  if (!observe) throw new UsageError(`observe: qué observar (${Object.keys(observations).join(', ')})`)
+  const observed = await observe()
+  deps.output.stdout(`${JSON.stringify(observed, null, 1)}\n`)
+  return observed === null ? EXIT_FAILED : 0
+}
+
+/**
+ * Retira una imagen por id, a nombre de una tarea. Rehúsa si algún contenedor,
+ * vivo o detenido, la usa: borrarla no es la forma de retirar un contenedor.
+ */
+async function removeImageCommand(args: string[], deps: ExecutionCommandDeps): Promise<number> {
+  const { values } = parseArgs({ args, options: { task: { type: 'string' }, id: { type: 'string' } }, strict: true })
+  const task = requireValue(values.task, 'task')
+  if (!TASK_CITATION_PATTERN.test(task)) throw new UsageError(`la tarea se cita como TASK-<CAPA>-NNNN, recibido: ${task}`)
+  const id = requireValue(values.id, 'id').replace(/^sha256:/, '')
+  const users = (await listContainers(deps.podman)).filter(container => container.imageId.replace(/^sha256:/, '').startsWith(id))
+  if (users.length > 0) {
+    deps.output.stderr(`podman-execution-execute: la imagen ${id} la usan ${users.map(c => c.name).join(', ')}; no se retira\n`)
+    return EXIT_USAGE
+  }
+  await removeImage(deps.podman, id)
+  deps.output.stdout(`retirada ${id}\n`)
+  return 0
+}
+
 /** Despacha la orden; devuelve el código de salida. 2 es uso inválido o autorización rehusada. */
 export async function runExecutionCommand(argv: string[], deps: ExecutionCommandDeps): Promise<number> {
   const [subcommand, ...rest] = argv
@@ -287,6 +334,8 @@ export async function runExecutionCommand(argv: string[], deps: ExecutionCommand
     if (subcommand === 'run') return await runCommand(rest, deps)
     if (subcommand === 'build-image') return await buildImageCommand(rest, deps)
     if (subcommand === 'reconcile-orphans') return await reconcileOrphansCommand(deps)
+    if (subcommand === 'observe') return await observeCommand(rest, deps)
+    if (subcommand === 'remove-image') return await removeImageCommand(rest, deps)
     throw new UsageError(`orden desconocida: ${subcommand ?? '(ninguna)'}`)
   } catch (error) {
     if (error instanceof UsageError) {

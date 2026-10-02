@@ -264,6 +264,15 @@ python3 "$GATES/check_product_word.py" --repo "$ROOT" --strict || CODE=1
 # no migró vale mientras su tarea siga abierta en el store.
 python3 "$GATES/check_podman_materialization.py" --root "$ROOT" --strict || CODE=1
 
+# Y sólo él HABLA con Podman, también para observar (P3/P4): un consumidor
+# pide a `podman-execution observe`, nunca emite `podman inspect`/`ps`/`volume`.
+# Mide src/ y los guiones de banco que el commit trae.
+ownership_includes=()
+for f in "${STAGED[@]}"; do
+    [[ "$f" == "$ROOT"/.claude/workbench/*/probes/* ]] && ownership_includes+=(--include "$f")
+done
+python3 "$GATES/check_podman_access_ownership.py" --root "$ROOT" --strict "${ownership_includes[@]}" || CODE=1
+
 # Cada enlace relativo de las skills y las reglas apunta a un archivo que
 # existe: una mudanza de directorio los rompe sin que nada falle.
 python3 "$GATES/check_md_relative_links.py" "$ROOT/.claude/skills" "$ROOT/.claude/rules" || CODE=1

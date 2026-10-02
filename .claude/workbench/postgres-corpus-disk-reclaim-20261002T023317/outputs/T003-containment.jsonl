@@ -6,3 +6,9 @@
 {"gate": "ManagedExecutionContainmentGate", "step": "T003-verdict", "passed": true, "executions": 1, "reasons": []}
 {"gate": "ManagedExecutionContainmentGate", "step": "T003-annulment-no-volume", "passed": true, "executions": 1, "reasons": []}
 {"gate": "ManagedExecutionContainmentGate", "step": "T003-annulment-compare", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T003c-snapshot-before", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T003c-snapshot-mid", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T003c-snapshot-after", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T003c-retrieval-mid", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T003c-retrieval-after", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T003c-verdict", "passed": true, "executions": 1, "reasons": []}
