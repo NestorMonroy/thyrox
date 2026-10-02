@@ -1,0 +1,2 @@
+execution thyrox-worker-maintenance-mur0aatc-20408 kind=maintenance task=TASK-THYROX-0908 exit=1
+__BG_EXIT__=1

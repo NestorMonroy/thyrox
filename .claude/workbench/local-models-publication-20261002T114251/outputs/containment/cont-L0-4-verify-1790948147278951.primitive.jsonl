@@ -1,0 +1,1 @@
+{"materializer":"podman-execution-primitive","executionId":"maintenance-mur0ntp3-23775","task":"TASK-THYROX-0908","reference":"task:TASK-THYROX-0908","kind":"maintenance","containerName":"thyrox-worker-maintenance-mur0ntp3-23775","containerId":"96fe118769d2f5cc7b3f35a106dc4e4c2470ac799bc0e60ee42bf2fc9098031a","exitCode":1,"utc":"2026-10-02T13:47:05.590Z"}

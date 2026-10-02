@@ -1,0 +1,10 @@
+FALLA typecheck del proveedor
+FALLA no usa getDefaultMaxRetries
+FALLA no usa getRetryDelay
+FALLA falta outputs/L0-red.log
+FALLA falta outputs/L0-green.log
+FALLA falta outputs/L0-annulment.log
+scope: L0-0908 dentro de su alcance (alcance medido: 0 ruta(s) cambiada(s))
+FALLA L0 no añadió ninguna prueba
+execution thyrox-worker-maintenance-mur0ntp3-23775 kind=maintenance task=TASK-THYROX-0908 exit=1
+__BG_EXIT__=1
