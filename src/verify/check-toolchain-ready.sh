@@ -133,6 +133,9 @@ PROBES=(
   # ningun gate de commit corre, y el preflight de las herramientas publicaria
   # verde sobre un clon que no verifica nada al commitear (H-THYROX-161).
   "githooks|error|thyrox_toolchain_require_githooks"
+  # La IDENTIDAD del commit, tercera: con los hooks activos, el siguiente
+  # hueco de un clon nuevo es que el agente firme el commit (`git.md`).
+  "commit-identity|error|thyrox_toolchain_require_commit_identity"
   "awk|error|thyrox_toolchain_require_gawk"
   "parallel|aviso|thyrox_toolchain_require_parallel"
   "python-proveedor|error|thyrox_toolchain_provider_python"

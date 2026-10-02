@@ -49,9 +49,17 @@ bad() { thyrox_fail "$*" || true; }
 # dependeria del clon de quien corre la suite. Se fija con `GIT_CONFIG_*`, que
 # git lee del entorno sin escribir ningun archivo; un caso que necesite otro
 # valor lo pasa despues y `env` se queda con el ultimo.
+#
+# Y con una identidad de commit humana: `~/.gitconfig` del entorno remoto
+# declara al agente, y sin fijarla aqui la sonda de identidad saldria en rojo
+# en todos los casos segun la maquina de quien corre la suite.
+HUMAN_NAME="Fixture Human"
+HUMAN_EMAIL="fixture.human@example.com"
 run_subject() {
   env -i PATH="$PATH" HOME="$HOME" \
     GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hooksPath GIT_CONFIG_VALUE_0=.githooks \
+    GIT_AUTHOR_NAME="$HUMAN_NAME" GIT_AUTHOR_EMAIL="$HUMAN_EMAIL" \
+    GIT_COMMITTER_NAME="$HUMAN_NAME" GIT_COMMITTER_EMAIL="$HUMAN_EMAIL" \
     "$@" bash "$SUBJECT" 2>&1
 }
 
@@ -191,6 +199,31 @@ if grep -qE '^ok +· +githooks' <<<"$set_hooks"; then
   ok "con core.hooksPath=.githooks, la sonda githooks sale ok"
 else
   bad "esperaba 'ok · githooks' con los hooks activos; salida: $set_hooks"
+fi
+
+# Caso 10 — la IDENTIDAD del proximo commit. Un clon recien bajado bajo el
+# entorno remoto tiene al agente como committer en `~/.gitconfig` y ningun
+# `.env` que declare otra: el preflight publicaba verde y el primer commit
+# salia con la identidad que `git.md` prohibe. Es clase `error`.
+#
+# Que lo haria fallar: una sonda que leyera `git config` en vez de la
+# identidad que git USA (`git var`), o que exigiera la declaracion para medir.
+agent_committer="$(run_subject GIT_COMMITTER_NAME=Claude GIT_COMMITTER_EMAIL=noreply@anthropic.com)"
+rc_agent=$?
+if grep -qE '^error +· +commit-identity' <<<"$agent_committer" && [[ $rc_agent -eq 1 ]]; then
+  ok "con el agente como committer, la sonda sale error y el preflight exit 1"
+else
+  bad "esperaba 'error · commit-identity' y exit 1 (rc=$rc_agent); salida: $agent_committer"
+fi
+if grep -q 'THYROX_COMMIT_COMMITTER' <<<"$agent_committer"; then
+  ok "el rechazo nombra la declaracion que lo arregla"
+else
+  bad "el rechazo no nombra THYROX_COMMIT_COMMITTER: $agent_committer"
+fi
+if grep -qE '^ok +· +commit-identity' <<<"$set_hooks"; then
+  ok "con una identidad humana, la sonda commit-identity sale ok"
+else
+  bad "esperaba 'ok · commit-identity' con identidad humana; salida: $set_hooks"
 fi
 
 thyrox_summary

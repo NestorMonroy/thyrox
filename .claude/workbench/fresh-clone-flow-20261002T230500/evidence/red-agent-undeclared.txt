@@ -1,0 +1,17 @@
+test_commit_identity:
+  ok    parse separa nombre y correo
+  ok    parse rechaza una identidad sin correo
+  ok    la identidad declarada pasa
+  ok    un author inyectado distinto se detecta
+  ok    el agente como committer se detecta
+  ok    declarar al agente no lo autoriza
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_commit_identity.py", line 116, in <module>
+    found = mod.check_identities(repo, source=FakeDeclarations(), env=git_env(AUTHOR, agent))
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/verify/commit_identity.py", line 113, in check_identities
+    declared = declared_identities(source, start=Path(repo))
+               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/verify/commit_identity.py", line 97, in declared_identities
+    raise IdentityUndeclared(f"{var} no está declarada: no hay identidad contra la que medir")
+verify.commit_identity.IdentityUndeclared: THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir

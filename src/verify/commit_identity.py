@@ -107,19 +107,45 @@ def effective_identity(repo: Path, role: str, env: dict[str, str] | None = None)
     return parse_identity(completed.stdout)
 
 
+def agent_roles(identities: dict[str, Identity]) -> list[str]:
+    """Los roles cuya identidad es la del agente, en el orden recibido."""
+    return [role for role, identity in identities.items() if identity.email in AGENT_EMAILS]
+
+
+def check_agent_invariant(repo: Path, env: dict[str, str] | None = None) -> list[str]:
+    """Los roles del próximo commit en `repo` que el agente ocupa.
+
+    No lee ninguna declaración: es el invariante del proveedor, y lo consume
+    el preflight de un clon recién bajado, donde todavía no hay `.env`."""
+    return agent_roles({role: effective_identity(Path(repo), role, env)
+                        for role in ("author", "committer")})
+
+
 def check_identities(repo: Path, source: ForReadingDeclarations | None = None,
                      env: dict[str, str] | None = None) -> list[Violation]:
-    """Las violaciones de identidad del próximo commit en `repo`."""
-    declared = declared_identities(source, start=Path(repo))
+    """Las violaciones de identidad del próximo commit en `repo`.
+
+    El invariante del agente se mide ANTES que la declaración, porque no
+    depende de ella: un clon recién bajado no tiene `.env`, y bajo el entorno
+    remoto su committer efectivo es el agente. Rehusar ahí con «sin medir»
+    dejaba pasar el commit. Sin declaración, `IdentityUndeclared` sólo se
+    propaga cuando el invariante se cumple."""
+    actual = {role: effective_identity(Path(repo), role, env) for role in ("author", "committer")}
+    try:
+        declared = declared_identities(source, start=Path(repo))
+    except IdentityUndeclared:
+        if agent_roles(actual):
+            declared = None
+        else:
+            raise
     violations = []
-    for role in ("author", "committer"):
-        actual = effective_identity(Path(repo), role, env)
-        expected = declared[role]
-        if actual.email in AGENT_EMAILS:
-            violations.append(Violation(role, str(expected), str(actual),
+    for role, identity in actual.items():
+        expected = str(declared[role]) if declared else "(sin declarar)"
+        if identity.email in AGENT_EMAILS:
+            violations.append(Violation(role, expected, str(identity),
                                         "el agente nunca figura en la identidad del commit"))
-        elif (actual.name, actual.email) != (expected.name, expected.email):
-            violations.append(Violation(role, str(expected), str(actual),
+        elif declared and (identity.name, identity.email) != tuple(declared[role]):
+            violations.append(Violation(role, expected, str(identity),
                                         "difiere de la identidad declarada"))
     return violations
 
@@ -158,6 +184,8 @@ def main(argv: list[str] | None = None) -> int:
     check.add_argument("--repo", type=Path, default=Path.cwd())
     trailers = sub.add_parser("trailers", help="los remolques de un mensaje (commit-msg)")
     trailers.add_argument("message_file", type=Path)
+    agent = sub.add_parser("agent", help="sólo el invariante del agente, sin declaración (preflight)")
+    agent.add_argument("--repo", type=Path, default=Path.cwd())
     env = sub.add_parser("env", help="las líneas export de la identidad declarada")
     env.add_argument("--repo", type=Path, default=Path.cwd())
     args = parser.parse_args(argv)
@@ -166,6 +194,12 @@ def main(argv: list[str] | None = None) -> int:
         if args.command == "env":
             print("\n".join(export_lines(start=args.repo)))
             return 0
+        if args.command == "agent":
+            roles = check_agent_invariant(args.repo, env=dict(os.environ))
+            for role in roles:
+                print(f"commit_identity: el agente figura como {role} del próximo commit",
+                      file=sys.stderr)
+            return 1 if roles else 0
         if args.command == "trailers":
             found = agent_trailers(args.message_file)
             for line in found:
@@ -181,7 +215,11 @@ def main(argv: list[str] | None = None) -> int:
     for v in violations:
         print(f"commit_identity: {v.role} {v.reason}\n  declarado: {v.expected}\n"
               f"  efectivo:  {v.actual}", file=sys.stderr)
-    if violations:
+    if any(v.expected == "(sin declarar)" for v in violations):
+        print(f"  corrección: declarar {AUTHOR_VAR} y {COMMITTER_VAR} en el .env del clon"
+              " (valores en .claude/rules/git.md) y después"
+              ' eval "$(bash bin/commit_identity env)"', file=sys.stderr)
+    elif violations:
         print('  corrección: eval "$(bash bin/commit_identity env)"', file=sys.stderr)
     return 1 if violations else 0
 

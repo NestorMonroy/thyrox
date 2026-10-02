@@ -109,6 +109,30 @@ with tempfile.TemporaryDirectory() as tmp:
     assert_equal("declarar al agente no lo autoriza", ["committer"],
                  [v.role for v in found])
 
+    # agent-undeclared: el invariante del agente no depende de la
+    # declaracion. Es el estado de todo clon recien bajado bajo el entorno
+    # remoto: sin `.env` que declare, y con el agente como committer en
+    # `~/.gitconfig`. Rehusar ahi con «sin medir» dejaba pasar el commit.
+    def undeclared_roles(author: str, committer: str):
+        """Los roles en violación sin declaración, o el rehúse si lo hubo."""
+        try:
+            found = mod.check_identities(repo, source=FakeDeclarations(),
+                                         env=git_env(author, committer))
+        except mod.IdentityUndeclared:
+            return "IdentityUndeclared"
+        return [v.role for v in found]
+
+    assert_equal("sin declaracion, el agente como committer se detecta", ["committer"],
+                 undeclared_roles(AUTHOR, agent))
+    assert_equal("sin declaracion, el agente como author y committer se detecta",
+                 ["author", "committer"], undeclared_roles(agent, agent))
+
+    # El invariante solo, como lo consume el preflight de un clon nuevo.
+    assert_equal("check_agent_invariant nombra al agente committer", ["committer"],
+                 mod.check_agent_invariant(repo, env=git_env(AUTHOR, agent)))
+    assert_equal("check_agent_invariant no objeta una identidad humana", [],
+                 mod.check_agent_invariant(repo, env=git_env(AUTHOR, COMMITTER)))
+
     # Sin declaracion no hay veredicto: se rehusa, no se aprueba.
     try:
         mod.check_identities(repo, source=FakeDeclarations(), env=git_env(AUTHOR, COMMITTER))
