@@ -41,22 +41,22 @@ Capability = artifact identity + qualification suite + qualification version.
 | G5 | runtimes compatibles separados de la fuente | implícito en `source`; la política sólo admite `runtime: 'ollama'` | EXTEND | `catalogEntry.ts:39`, `executionPolicy.ts:32,43` |
 | G6 | identidad de la cualificación = artefacto + suite + versión | `latestFor` agrupa por `(model, scope)` y toma la más reciente por `measuredAt`; la versión de la suite no entra en la clave | EXTEND | `modelQualification.ts:149,168` |
 | G7 | capacidades (`translation`, `code`, `summarization`, `tool-calling`…) | `LOCAL_TASK_CLASSES` son clases de **esfuerzo**: `mecanica`, `analisis`, `adversarial`, `frontera` | **DECISIÓN** | `modelQualification.ts:23` |
-| G8 | un FAIL de una capacidad no invalida otra | `qualifiedModels` exige `passed(protocol) && passed(task)`: un `tool-calling@1` FAIL impide cualquier tarea | **DECISIÓN** | `modelQualification.ts:202,215`; ADR-007 1.10.0 (`eligible = tool_protocol_compatible ∧ task_suite_passed`) |
+| G8 | un FAIL de una capacidad no invalida otra | `qualifiedModels` exige `passed(protocol) && passed(task)`: un `tool-calling@1` FAIL impide cualquier tarea | **EXTEND — decidido** (abajo) | `modelQualification.ts:202,215`; ADR-007 1.10.0 (`eligible = tool_protocol_compatible ∧ task_suite_passed`) |
 | G9 | política por fuente | `executionPolicy` con selector `source` (`hf`/`ollama`) | REUSE | `executionPolicy.ts` |
 | G10 | historial de cualificaciones | `qualificationStore` (solo-añadir, reemplazo atómico) | REUSE; no se diseña otro store | `local-models/qualificationStore.ts` |
 
-**G7 y G8 no se resuelven por omisión.** ADR-007 1.16.0 propone:
+**G8 — decidido por el ejecutor (2026-10-02): el protocolo se hace siempre, no
+es requisito.** La cualificación de protocolo (`tool-calling@N`) se ejecuta y
+se registra para todo artefacto, como una capacidad más, y **no es
+prerrequisito de ninguna otra**. Una ruta que usa herramientas la exige porque
+`tool-calling` es su capacidad. La regla queda
+`eligible(ruta) = la capacidad que la ruta necesita pasó, en su versión`
+(ADR-007 1.16.0).
 
-- G7: un eje de **capacidad** distinto del eje de esfuerzo; una cualificación
-  de tarea declara la capacidad que mide (`translation`, `code`, …) y su suite
-  versionada. El eje de esfuerzo sigue sirviendo a `recommend(tipo, perfil)`.
-- G8: la cualificación de protocolo es requisito **sólo de las rutas de
-  ejecución que usan herramientas** (`thyrox -p`, pool agéntico). Una ruta sin
-  herramientas (p. ej. traducción directa) exige sólo la cualificación de su
-  capacidad.
-
-Hasta que el ejecutor acepte la propuesta en la ADR, A5 queda bloqueada y nada
-cambia en `qualifiedModels`.
+**G7 — pendiente de decisión.** Propuesta: un eje de **capacidad** distinto del
+de esfuerzo; una cualificación de tarea declara la capacidad que mide
+(`translation`, `code`, …) y su suite versionada. El eje de esfuerzo sigue
+sirviendo a `recommend(tipo, perfil)`. A7 queda bloqueada hasta que conste.
 
 ## 3. Tareas (TDD; rojo persistido contra la base, anulación por guarda)
 
@@ -66,7 +66,8 @@ cambia en `qualifiedModels`.
 | A2 | campo opcional `provenanceNotes: string[]` en la entrada; `local-models-catalog declare --provenance-note <texto>` (repetible); **ningún** código de política, elegibilidad, scheduling o admisión lo lee | `catalogEntry.ts`, `catalogCommand.ts`, `declareInstalledModel.ts`, sus pruebas | A1 |
 | A3 | campo `compatibleRuntimes: string[]` separado de `source`; la declaración desde Ollama escribe `['ollama']`; un runtime más se añade sólo con su cualificación o verificación registrada | `catalogEntry.ts`, `declareInstalledModel.ts`, `executionPolicy.ts`, sus pruebas | A1 |
 | A4 | la clave de la cualificación incluye la suite (`id@versión`); `latestFor` no deja que una versión pise a otra; prueba explícita: con `translation@1` PASS y `tool-calling@1` FAIL, la primera sigue PASS y el artefacto sigue aceptado | `model-artifacts/modelQualification.ts`, su prueba | — |
-| A5 | eje de capacidad (G7) y protocolo por ruta (G8) | `modelQualification.ts`, `provider/src/cost/policy.ts`, sus pruebas | **decisión del ejecutor en ADR-007 1.16.0** |
+| A5 | G8: `qualifiedModels` deja de exigir `passed(protocol)` para toda tarea; la elegibilidad pide la capacidad de la ruta. Pruebas: `tool-calling` FAIL + capacidad de tarea PASS → elegible para la ruta sin herramientas y no elegible para la ruta con herramientas; la cualificación de protocolo sigue ejecutándose y registrándose | `model-artifacts/modelQualification.ts`, `provider/src/cost/policy.ts`, sus pruebas | A4 |
+| A7 | G7: eje de capacidad | `modelQualification.ts`, `provider/src/cost/policy.ts`, sus pruebas | **decisión del ejecutor pendiente** |
 | A6 | registrar el Qwen real: declarar el blob exacto, licencia leída del GGUF, `compatibleRuntimes: ['ollama']`, la nota de §4, y la entrada de política con `source: 'ollama'` | catálogo y política de la sesión propietaria (datos, no código) | A1, A2, A3 |
 
 Las cualificaciones del Qwen por capacidad vienen después de A6, por la suite

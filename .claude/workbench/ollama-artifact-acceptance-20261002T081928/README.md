@@ -56,7 +56,8 @@ y no estaba en el encargo:
   `adversarial`, `frontera`), no de **capacidad** (`translation`, `code`…);
 - la elegibilidad exige la cualificación de **protocolo** para cualquier tarea:
   un `tool-calling@1` FAIL impide traducir. Esas dos últimas son decisiones de
-  arquitectura y quedan como tales (G5, G6), no se resuelven por omisión.
+  arquitectura (G7, G8). G8 ya está decidida: el protocolo se hace siempre y no
+  es requisito. G7 sigue pendiente.
 
 ## Las piezas
 
