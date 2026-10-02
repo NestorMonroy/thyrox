@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "sessionId": "<owning session id>",
+  "clone": "<absolute path of the clone that runs the batch>",
+  "ownsArtifactSha256": "<sha256 of the Qwen blob, 64 hex>",
+  "ownsVolume": "thyrox-ollama-models",
+  "catalogPath": "<absolute path of the model catalog, as localModelHome resolves it>",
+  "qualificationStorePath": "<absolute path of the qualification store>",
+  "declaredAt": "<date -u +%Y-%m-%dT%H:%M:%SZ>"
+}

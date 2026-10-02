@@ -1523,3 +1523,25 @@ ownership vivo = no. Sólo entonces `safe_to_delete = true`.
 Se enmienda a 1.7.0 en `kaupamex-docs`: universo de corpus de §22.1 con
 «estar en el árbol ≠ ser corpus», clases de T005b, ingesta sólo de las clases
 que declare la corpus policy, D5 de 23.1. Cierra la divergencia de §22.8.
+
+---
+
+# 24. Enmienda 2026-10-02T08:50:49 — forma de la evidencia que consume P0 del lote A1–A7
+
+Directiva del ejecutor 2026-10-02: «copiado» no equivale a «reemplazable». El
+lote A1–A7 (`ollama-artifact-acceptance-20261002T081928`, §8) sólo arranca si
+este banco termina y su evidencia tiene esta forma; el verify de cada ítem
+sigue siendo el suyo.
+
+- `T009-deletion-proofs.jsonl`: una fila por `source_path` con
+  `document_present`, `content_hash_match`, `chunks_persisted`,
+  `embeddings_present`, `retrieval_ok`, `retrieval_ok_with_source_absent`
+  (booleanos) y `safe_to_delete`, que sólo vale `true` si todos lo son y la
+  ruta no es fuente canónica ni evidencia raw que deba conservarse.
+- `T006-reclaim.json`: `freeBytesBefore` y `freeBytesAfter` **medidos** con
+  el mismo instrumento, `reclaimedBytesObserved = after − before`, y
+  `deleted`: lista de `{path, bytes, replacedBy}`, con `replacedBy` la
+  autoridad PostgreSQL (documento y versión) y `path` presente en T009 con
+  `safe_to_delete`. Se borra **sólo** lo que figura ahí.
+- `T007-verify.json`: `postgresReady`, `vectorExtension`, `schemaPresent`,
+  `countsMatch`, `retrievalPass`, todos medidos después del borrado.

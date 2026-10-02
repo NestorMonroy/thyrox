@@ -141,3 +141,56 @@ Sin condición de cierre. No es hallazgo, ni blocker, ni cualificación pendient
 Reserva por sesión en H-THYROX-318 (`kaupamex-docs@da5438b04`): esta sesión
 acuña `TASK-THYROX-0900+` y `H-THYROX-400+`; la propietaria conserva su
 secuencia y no renumera trabajo vivo.
+
+## 8. P0 — lote preparado ≠ lote admitido (enmienda 2026-10-02T08:50:49)
+
+Directiva del ejecutor 2026-10-02: A7 queda aceptado como está en ADR-007
+1.16.1; A1–A7 se implementan por lote, pero el lote **no se ejecuta** hasta que
+P0 pase. P0 no tiene candidato: si su verify falla, el controlador lo deja en
+`hard_block` y A1, A4 y A6 —las raíces— quedan `dependency_blocked`.
+
+```text
+P0  durable_corpus_accepted ─┐
+    local_reclaim_completed  ├─> A1 … A7
+    disk_admission           │
+    ownership_available     ─┘
+```
+
+| Compuerta | PASS sólo si | Fuente |
+|---|---|---|
+| `durable_corpus_accepted` | en reclaim, T001–T004e, T008 y T009 constan `accepted` y su verify vuelve a pasar **ahora**; `T009-deletion-proofs.jsonl` tiene filas y ninguna marca `safe_to_delete` sin cada eslabón del invariante (documento, `content_hash`, chunks, embeddings, retrieval, retrieval con la fuente ausente) | `probes/p0_preconditions.py` |
+| `local_reclaim_completed` | T006 y T007 `accepted` y re-verificados; cada entrada borrada de `T006-reclaim.json` tiene ruta, bytes, autoridad PostgreSQL que la sustituye y fila de T009 que lo prueba; `reclaimedBytesObserved = freeBytesAfter − freeBytesBefore`, medidos, no teóricos; `T007-verify.json` confirma PostgreSQL, `vector`, schema, conteos y retrieval tras el borrado | ídem |
+| `disk_admission` | `availableBytes ≥ requiredBytes + safetyMarginBytes`, con el libre **observado** y `requiredBytes` = suma de componentes medidos (abajo) | `p0/disk-requirements.json` |
+| `ownership_available` | `p0/ownership.json` declarado por la sesión propietaria; el lote corre en su clon; existen el catálogo y el store de cualificaciones, sin escritor vivo; el catálogo declara el sha256 del blob | ídem |
+
+**`requiredBytes`, por componente** (medidos al correr el preflight, no
+declarados): worktrees (bytes versionados en `HEAD` × ítems con worktree: un
+ítem fallido conserva el suyo, `task_continuation.py` `integrate_worktree`),
+dependencias por worktree (`node_modules` × ítems), evidencia por intento
+(medida en el banco de mechanism-registry × techo de intentos × ítems), salidas
+de cualificación (medidas en `task-qualification-*` × capacidades a cualificar),
+salidas del banco, y escrituras de catálogo y store (×2). El artefacto del modelo
+y las capas de imagen cuentan **0** sólo porque ya están presentes: si el
+catálogo no declara el blob o no hay imagen `thyrox-task-runner`, la compuerta
+rehúsa en vez de admitir un pull de tamaño desconocido. Margen:
+`max(2 GiB, 10 % de requiredBytes)`.
+
+Primera medición (`outputs/P0-admission.json`, 2026-10-02T08:50:49): libre **580 104 192 B**,
+requerido **17 079 912 498 B**, margen **2 147 483 648 B**; dominan los seis
+worktrees (12.5 GB) y sus dependencias (4.5 GB). Las cuatro compuertas, FAIL.
+
+**El verify corre en la unidad, que no ve Podman ni el host.** Por eso el
+preflight (`tasks/P0.md`) mide en el host y escribe el informe; `verify/P0.sh`
+exige las cuatro en PASS, un informe de menos de 30 minutos, y vuelve a medir
+el libre contra lo requerido + margen. Controlado: pasa con un informe en PASS,
+falla con un requerido mayor que el libre y con un informe viejo.
+
+**`mechanism-registry-run3` no es dependencia de A7.** Terminó (`T001`
+`hard_block`, `T002` `dependency_blocked`) y su único pendiente es la unión de
+`agent-results/agent_store.sqlite3`; medido, ni los archivos de A1–A7 ni el
+controlador lo leen o escriben (`git grep agent_store` → 0 en
+`model-artifacts`, `local-models`, `provider/src/cost`). No entra en P0.
+
+**Fuera de P0 y de A7:** borrar modelos, runtimes, caches o datos que el
+reclaim no haya probado sustituidos. Cualquier otra liberación se identifica y
+se autoriza aparte.
