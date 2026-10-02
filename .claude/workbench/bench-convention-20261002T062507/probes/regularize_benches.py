@@ -35,6 +35,15 @@ def git(repo: Path, *args: str) -> str:
                           capture_output=True, text=True).stdout
 
 
+def grep_files(repo: Path, text: str) -> list[str]:
+    # git grep sale 1 cuando no hay coincidencias: eso es una lista vacia, no un fallo.
+    found = subprocess.run(["git", "-C", str(repo), "grep", "-l", "-F", text, "--",
+                            str(WORKBENCH)], capture_output=True, text=True)
+    if found.returncode not in (0, 1):
+        raise SystemExit(f"git grep fallo: {found.stderr.strip()}")
+    return found.stdout.split()
+
+
 def first_commit_moment(repo: Path, bench: str) -> datetime:
     stamps = git(repo, "log", "--diff-filter=A", "--format=%cI", "--",
                  str(WORKBENCH / bench)).split()
@@ -132,7 +141,7 @@ def rewrite_references(repo: Path, renames: dict[str, str]) -> list[str]:
         if old == new:
             continue
         pattern = re.compile(re.escape(old) + r"(?!T\d)")
-        hits = git(repo, "grep", "-l", "-F", old, "--", str(WORKBENCH)).split()
+        hits = grep_files(repo, old)
         for name in hits:
             path = repo / name
             if path.suffix == ".jsonl" and "transcript" in name:
