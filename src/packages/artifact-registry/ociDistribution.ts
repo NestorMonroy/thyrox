@@ -109,8 +109,10 @@ export class OciDistributionClient {
     return finished.ok ? { status: 'success', value: undefined } : failure(finished)
   }
 
-  async getBlob(repository: string, digest: string): Promise<RegistryResult<Response>> {
-    const response = await this.#request(repository, 'pull', 'GET', `blobs/${digest}`)
+  /** Pide el blob entero, o sólo los bytes `range.start..range.end` (ambos incluidos). */
+  async getBlob(repository: string, digest: string, range?: { readonly start: number; readonly end: number }): Promise<RegistryResult<Response>> {
+    const headers: Record<string, string> = range === undefined ? {} : { range: `bytes=${range.start}-${range.end}` }
+    const response = await this.#request(repository, 'pull', 'GET', `blobs/${digest}`, headers)
     return response.ok ? { status: 'success', value: response } : failure(response)
   }
 

@@ -17,6 +17,7 @@
   "dependencies": {
     "@thyrox/paths": "0.1.0",
     "@thyrox/podman-execution": "0.1.0",
-    "@thyrox/registry-credentials": "0.1.0"
+    "@thyrox/registry-credentials": "0.1.0",
+    "@thyrox/bounded-download": "0.1.0"
   }
 }

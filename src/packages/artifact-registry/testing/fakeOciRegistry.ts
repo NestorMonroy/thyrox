@@ -14,6 +14,8 @@ export interface FakeRequest {
   readonly method: string
   readonly path: string
   readonly authorization: string | null
+  /** La cabecera `Range` pedida, o `null`. */
+  readonly range: string | null
 }
 
 export interface FakeRateLimit {
@@ -57,7 +59,7 @@ export function startFakeOciRegistry(options: { publicRead?: boolean } = {}): Fa
     port: 0,
     async fetch(request) {
       const url = new URL(request.url)
-      requests.push({ method: request.method, path: url.pathname + url.search, authorization: request.headers.get('authorization') })
+      requests.push({ method: request.method, path: url.pathname + url.search, authorization: request.headers.get('authorization'), range: request.headers.get('range') })
       if (url.pathname === '/token') return issueToken(request, url)
       if (state.rateLimit && state.rateLimit.remainingResponses > 0) {
         state.rateLimit = { ...state.rateLimit, remainingResponses: state.rateLimit.remainingResponses - 1 }
@@ -121,7 +123,13 @@ export function startFakeOciRegistry(options: { publicRead?: boolean } = {}): Fa
     if (!bytes) return new Response('blob unknown', { status: 404 })
     const served = corrupted.has(digest) ? Uint8Array.from(bytes, (byte, index) => (index === 0 ? byte ^ 0xff : byte)) : bytes
     const headers = { 'content-length': String(bytes.length), 'docker-content-digest': digest }
-    return new Response(request.method === 'HEAD' ? null : new Uint8Array(served), { status: 200, headers })
+    if (request.method === 'HEAD') return new Response(null, { status: 200, headers })
+    const range = /^bytes=(\d+)-(\d+)$/.exec(request.headers.get('range') ?? '')
+    if (!range) return new Response(new Uint8Array(served), { status: 200, headers })
+    // Como el CDN de un registry real: un tramo pedido se responde con 206 y su Content-Range.
+    const start = Number(range[1])
+    const end = Math.min(Number(range[2]), served.length - 1)
+    return new Response(served.slice(start, end + 1), { status: 206, headers: { 'content-range': `bytes ${start}-${end}/${served.length}`, 'docker-content-digest': digest } })
   }
 
   async function handleManifest(request: Request, reference: string): Promise<Response> {

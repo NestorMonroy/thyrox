@@ -1,0 +1,3 @@
+# `bun test` lee sólo el bunfig del cwd: los preloads son los de la raíz, en el mismo orden.
+[test]
+preload = ["../../../tests/preload/tmpdir.ts", "../../../tests/preload/store.ts"]

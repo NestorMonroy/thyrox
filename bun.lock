@@ -146,6 +146,7 @@
       "name": "@thyrox/artifact-registry",
       "version": "0.1.0",
       "dependencies": {
+        "@thyrox/bounded-download": "0.1.0",
         "@thyrox/paths": "0.1.0",
         "@thyrox/podman-execution": "0.1.0",
         "@thyrox/registry-credentials": "0.1.0",
@@ -157,6 +158,10 @@
     },
     "src/packages/binary": {
       "name": "@thyrox/binary",
+      "version": "0.1.0",
+    },
+    "src/packages/bounded-download": {
+      "name": "@thyrox/bounded-download",
       "version": "0.1.0",
     },
     "src/packages/bridge": {
@@ -1313,6 +1318,8 @@
     "@thyrox/audio-capture-napi": ["@thyrox/audio-capture-napi@workspace:src/packages/audio-capture-napi"],
 
     "@thyrox/binary": ["@thyrox/binary@workspace:src/packages/binary"],
+
+    "@thyrox/bounded-download": ["@thyrox/bounded-download@workspace:src/packages/bounded-download"],
 
     "@thyrox/bridge": ["@thyrox/bridge@workspace:src/packages/bridge"],
 

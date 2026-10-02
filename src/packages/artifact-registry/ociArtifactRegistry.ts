@@ -11,14 +11,10 @@
  * sola capa del manifest verificado.
  */
 import { createHash } from 'node:crypto'
-import { createWriteStream } from 'node:fs'
 import { existsSync } from 'node:fs'
 import { mkdir, mkdtemp, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { dirname, join } from 'node:path'
-import { Readable } from 'node:stream'
-import { pipeline } from 'node:stream/promises'
-import type { ReadableStream as WebReadableStream } from 'node:stream/web'
 
 import {
   OCI_MANIFEST_MEDIA_TYPE,
@@ -33,23 +29,29 @@ import {
   type PinnedArtifact,
   type PullOptions,
 } from './artifactRegistry.js'
+import { DEFAULT_CHUNK_BYTES, downloadToFile, type DownloadedFile, type RangeReader } from '@thyrox/bounded-download/boundedDownload.ts'
+
 import { sha256OfPath } from './artifactFiles.js'
 import { OciDistributionClient, type OciDistributionOptions } from './ociDistribution.js'
+import type { RegistryResult } from './registryResult.js'
 
 export interface OciArtifactRegistryOptions extends OciDistributionOptions {
   /** Si el provider admite DELETE de manifests; sin declarar, sí. */
   readonly supportsDelete?: boolean
+  /** Tamaño del tramo con que se baja cada blob; acota la memoria del proceso. Sin declarar, `DEFAULT_CHUNK_BYTES`. */
+  readonly blobChunkBytes?: number
 }
 
 export function createOciArtifactRegistry(options: OciArtifactRegistryOptions): ArtifactRegistry {
   const client = new OciDistributionClient(options)
+  const chunkBytes = options.blobChunkBytes ?? DEFAULT_CHUNK_BYTES
   const registry: ArtifactRegistry = {
     capabilities: { delete: options.supportsDelete ?? true },
     pushArtifact: (artifact, destination) => pushArtifact(client, artifact, destination),
     resolveArtifact: location => resolveArtifact(client, location),
     inspectArtifact: pinned => inspectArtifact(client, pinned),
-    pullArtifact: (pinned, targetDir, pullOptions) => pullArtifact(client, pinned, targetDir, pullOptions ?? {}),
-    pullLayer: (pinned, layerDigest, destination) => pullLayer(client, pinned, layerDigest, destination),
+    pullArtifact: (pinned, targetDir, pullOptions) => pullArtifact(client, pinned, targetDir, pullOptions ?? {}, chunkBytes),
+    pullLayer: (pinned, layerDigest, destination) => pullLayer(client, pinned, layerDigest, destination, chunkBytes),
   }
   if (options.supportsDelete ?? true) {
     registry.deleteArtifact = pinned => client.deleteManifest(pinned.repository, pinned.digest)
@@ -158,7 +160,7 @@ async function presentLocally(path: string, layer: ArtifactLayer): Promise<boole
   return `sha256:${await sha256OfPath(path)}` === layer.digest
 }
 
-async function pullArtifact(client: OciDistributionClient, pinned: PinnedArtifact, targetDir: string, options: PullOptions): Promise<ArtifactResult<readonly MaterializedFile[]>> {
+async function pullArtifact(client: OciDistributionClient, pinned: PinnedArtifact, targetDir: string, options: PullOptions, chunkBytes: number): Promise<ArtifactResult<readonly MaterializedFile[]>> {
   await mkdir(targetDir, { recursive: true })
   const manifest = await manifestFor(client, pinned, targetDir)
   if (manifest.status !== 'success') return manifest
@@ -171,7 +173,7 @@ async function pullArtifact(client: OciDistributionClient, pinned: PinnedArtifac
       materialized.push(file)
       continue
     }
-    const downloaded = await downloadVerifiedLayer(client, pinned.repository, layer, finalPath)
+    const downloaded = await downloadVerifiedLayer(client, pinned.repository, layer, finalPath, chunkBytes)
     if (downloaded.status !== 'success') return downloaded
     const file: MaterializedFile = { title: layer.title, digest: layer.digest, size: layer.size, path: options.discardAfterVerify ? undefined : finalPath }
     await options.onVerified?.({ ...file, verifiedPath: finalPath })
@@ -186,16 +188,18 @@ async function pullArtifact(client: OciDistributionClient, pinned: PinnedArtifac
  * sha256 en flujo, y lo renombra a `finalPath` sólo si digest y tamaño son
  * los del manifest; si no, borra el temporal.
  */
-async function downloadVerifiedLayer(client: OciDistributionClient, repository: string, layer: ArtifactLayer, finalPath: string): Promise<ArtifactResult<void>> {
-  const blob = await client.getBlob(repository, layer.digest)
-  if (blob.status !== 'success') return blob
+async function downloadVerifiedLayer(client: OciDistributionClient, repository: string, layer: ArtifactLayer, finalPath: string, chunkBytes: number): Promise<ArtifactResult<void>> {
   const partialPath = `${finalPath}.partial`
-  const hash = createHash('sha256')
-  let size = 0
-  const body = Readable.fromWeb(blob.value.body as unknown as WebReadableStream<Uint8Array>)
-  body.on('data', (chunk: Buffer) => { hash.update(chunk); size += chunk.length })
-  await pipeline(body, createWriteStream(partialPath))
-  const digest = `sha256:${hash.digest('hex')}`
+  let downloaded: DownloadedFile
+  try {
+    downloaded = await downloadToFile(rangeReaderOf(client, repository, layer.digest), layer.size, partialPath, chunkBytes)
+  } catch (error) {
+    await rm(partialPath, { force: true })
+    if (error instanceof BlobRequestFailure) return error.result
+    throw error
+  }
+  const digest = `sha256:${downloaded.sha256}`
+  const size = downloaded.size
   if (digest !== layer.digest || size !== layer.size) {
     await rm(partialPath, { force: true })
     return { status: 'integrity_error', detail: `${layer.title}: se leyó ${digest} (${size} bytes), el manifest declara ${layer.digest} (${layer.size} bytes)` }
@@ -204,13 +208,30 @@ async function downloadVerifiedLayer(client: OciDistributionClient, repository: 
   return { status: 'success', value: undefined }
 }
 
-async function pullLayer(client: OciDistributionClient, pinned: PinnedArtifact, layerDigest: string, destination: string): Promise<ArtifactResult<MaterializedFile>> {
+/** Un fallo de transporte del registry al pedir un tramo: viaja como excepción a través de `downloadToFile` y vuelve a ser resultado. */
+class BlobRequestFailure extends Error {
+  constructor(readonly result: Exclude<RegistryResult<Response>, { status: 'success' }>) {
+    super(`el registry respondió ${result.status}`)
+    this.name = 'BlobRequestFailure'
+  }
+}
+
+/** Cada tramo se pide con el token del registry; un fallo de transporte conserva su resultado tipado. */
+function rangeReaderOf(client: OciDistributionClient, repository: string, digest: string): RangeReader {
+  return async (start, end) => {
+    const blob = await client.getBlob(repository, digest, { start, end })
+    if (blob.status !== 'success') throw new BlobRequestFailure(blob)
+    return blob.value
+  }
+}
+
+async function pullLayer(client: OciDistributionClient, pinned: PinnedArtifact, layerDigest: string, destination: string, chunkBytes: number): Promise<ArtifactResult<MaterializedFile>> {
   const manifest = await inspectArtifact(client, pinned)
   if (manifest.status !== 'success') return manifest
   const layer = manifest.value.layers.find(candidate => candidate.digest === layerDigest)
   if (!layer) return { status: 'not_found', detail: `la capa ${layerDigest} no pertenece al manifest ${pinned.digest}` }
   await mkdir(dirname(destination), { recursive: true })
-  const downloaded = await downloadVerifiedLayer(client, pinned.repository, layer, destination)
+  const downloaded = await downloadVerifiedLayer(client, pinned.repository, layer, destination, chunkBytes)
   if (downloaded.status !== 'success') return downloaded
   return { status: 'success', value: { title: layer.title, digest: layer.digest, size: layer.size, path: destination } }
 }

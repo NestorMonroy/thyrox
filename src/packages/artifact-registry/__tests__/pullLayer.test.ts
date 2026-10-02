@@ -72,6 +72,18 @@ describe('pullLayer', () => {
     expect(blobGets().slice(before)).toEqual([`/v2/${REPOSITORY}/blobs/${model}`])
   })
 
+  test('baja la capa por tramos del tamaño declarado: la memoria queda acotada al tramo, no al blob', async () => {
+    const { pinned, model } = await publishModelWithLog()
+    const before = registry.requests.length
+    const chunked = createOciArtifactRegistry({ baseUrl: registry.baseUrl, credential: { kind: 'anonymous' }, retry: { maxAttempts: 1, maxWaitSeconds: 0 }, blobChunkBytes: 8 })
+    const destination = join(workdir, 'out', 'model.gguf')
+    const result = await chunked.pullLayer(pinned, model, destination)
+    expect(result.status).toBe('success')
+    expect(readFileSync(destination, 'utf8')).toBe(MODEL_CONTENT)
+    const ranges = registry.requests.slice(before).filter(request => request.method === 'GET' && request.path.endsWith(model)).map(request => request.range)
+    expect(ranges).toEqual(['bytes=0-7', 'bytes=8-15', 'bytes=16-20'])
+  })
+
   test('una capa ajena al manifest se rehúsa sin pedir ningún blob', async () => {
     const { pinned } = await publishModelWithLog()
     const before = blobGets().length
