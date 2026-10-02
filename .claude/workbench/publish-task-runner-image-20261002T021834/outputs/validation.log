@@ -1,0 +1,15 @@
+bash ok
+git ok
+gawk ok
+jq ok
+python3 ok
+sqlite3 ok
+rg ok
+parallel ok
+bun ok
+uv ok
+curl ok
+1.3.11
+uv 0.8.17
+Python 3.12.3
+execution thyrox-worker-test-muqc7dou-1625 kind=test task=TASK-THYROX-0724 exit=0

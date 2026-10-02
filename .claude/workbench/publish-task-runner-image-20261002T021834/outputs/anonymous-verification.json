@@ -1,0 +1,8 @@
+{
+  "tag": "ubuntu24.04-bun1.3.11-uv0.8.17",
+  "expected": "sha256:1cced65c16b40c7ac5fc73a6908ce0353ec450618251cac1893ef8c82ad25ba5",
+  "served": "sha256:1cced65c16b40c7ac5fc73a6908ce0353ec450618251cac1893ef8c82ad25ba5",
+  "mediaType": "application/vnd.oci.image.manifest.v1+json",
+  "pulledByDigest": "docker.io/th3rox/thyrox-task-runner@sha256:1cced65c16b40c7ac5fc73a6908ce0353ec450618251cac1893ef8c82ad25ba5",
+  "sameDigest": true
+}

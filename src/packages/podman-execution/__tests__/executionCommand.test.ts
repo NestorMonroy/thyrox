@@ -213,3 +213,37 @@ describe('reconcile-orphans: un contenedor cuyo dueño de tarea murió se retira
     expect(h.stdout.join('')).toContain('0 huérfano(s) retirado(s)')
   })
 })
+
+describe('thyrox-exec build-image', () => {
+  function buildArgv(h: Harness): string {
+    return (h.calls.find(call => call[0] === 'build') ?? []).join(' ')
+  }
+
+  test('con egreso, el proxy NO es argumento de build: quedaría grabado en la historia de la imagen', async () => {
+    const h = harness({ HTTPS_PROXY: 'http://127.0.0.1:9', https_proxy: 'http://127.0.0.1:9', GIT_SSL_CAINFO: '/ca.crt' })
+    await runExecutionCommand(['build-image', '--task', 'TASK-THYROX-0724', '--context', '/ctx', '--tag', 'localhost/t:1', '--network', 'host'], h.deps)
+    const argv = buildArgv(h)
+    expect(argv).not.toContain('HTTPS_PROXY=')
+    expect(argv).not.toContain('https_proxy=')
+    expect(argv).toContain('--build-arg PROXY_CA=/etc/ssl/certs/proxy-ca.crt')
+    expect(argv).toContain('-v /ca.crt:/etc/ssl/certs/proxy-ca.crt:ro')
+  })
+
+  test('el ciclo de vida por defecto es cache', async () => {
+    const h = harness()
+    await runExecutionCommand(['build-image', '--task', 'TASK-THYROX-0724', '--context', '/ctx', '--tag', 'localhost/t:1'], h.deps)
+    expect(buildArgv(h)).toContain('--label io.thyrox.image.lifecycle=cache')
+  })
+
+  test('--lifecycle permanent declara la candidata que la promoción acepta', async () => {
+    const h = harness()
+    await runExecutionCommand(['build-image', '--task', 'TASK-THYROX-0724', '--context', '/ctx', '--tag', 'localhost/t:1', '--lifecycle', 'permanent'], h.deps)
+    expect(buildArgv(h)).toContain('--label io.thyrox.image.lifecycle=permanent')
+  })
+
+  test('un ciclo de vida desconocido rehúsa con 2 y no invoca Podman', async () => {
+    const h = harness()
+    expect(await runExecutionCommand(['build-image', '--task', 'TASK-THYROX-0724', '--context', '/ctx', '--tag', 'localhost/t:1', '--lifecycle', 'forever'], h.deps)).toBe(2)
+    expect(h.calls).toEqual([])
+  })
+})

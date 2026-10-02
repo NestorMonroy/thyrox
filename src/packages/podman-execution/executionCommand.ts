@@ -58,7 +58,7 @@ const USAGE = [
   '                    [--cpus N] [--memory-mib N] [--pids N] [--output RUTA]... [--secret-from-env NOMBRE]...',
   '                    (--script-stdin | -- ARGV...)',
   '     podman-execution-execute reconcile-orphans',
-  '     podman-execution-execute build-image --task TASK-<CAPA>-NNNN --context DIR --tag TAG [--containerfile F] [--network host]',
+  '     podman-execution-execute build-image --task TASK-<CAPA>-NNNN --context DIR --tag TAG [--containerfile F] [--network host] [--lifecycle cache|permanent]',
 ].join('\n')
 
 class UsageError extends Error {}
@@ -197,6 +197,16 @@ async function runCommand(argv: string[], deps: ExecutionCommandDeps): Promise<n
   return result.exitCode
 }
 
+const BUILD_LIFECYCLES = ['cache', 'permanent'] as const
+
+/** El ciclo de vida que declara una construcción: `cache` por defecto; `permanent` sólo para una candidata a publicar. */
+function parseLifecycle(value: string | undefined): (typeof BUILD_LIFECYCLES)[number] {
+  if (value === undefined) return 'cache'
+  const known = BUILD_LIFECYCLES.find(lifecycle => lifecycle === value)
+  if (known === undefined) throw new InvalidExecutionAuthorizationError('lifecycle', `ciclo de vida desconocido: ${value} (${BUILD_LIFECYCLES.join(', ')})`)
+  return known
+}
+
 async function buildImageCommand(argv: string[], deps: ExecutionCommandDeps): Promise<number> {
   const { values } = parseArgs({
     args: argv,
@@ -207,19 +217,24 @@ async function buildImageCommand(argv: string[], deps: ExecutionCommandDeps): Pr
       containerfile: { type: 'string' },
       tag: { type: 'string' },
       network: { type: 'string' },
+      lifecycle: { type: 'string' },
     },
   })
   const task = requireValue(values.task, 'task')
   const network = parseNetwork(values.network)
+  const lifecycle = parseLifecycle(values.lifecycle)
   const ca = deps.env[PROXY_CA_KEY]
   const egress = network === 'host'
   const id = await buildImage(deps.podman, {
     context: requireValue(values.context, 'context'),
     containerfile: values.containerfile,
     tag: requireValue(values.tag, 'tag'),
-    labels: { 'thyrox.task': task, [IMAGE_LIFECYCLE_LABEL]: 'cache' },
+    labels: { 'thyrox.task': task, [IMAGE_LIFECYCLE_LABEL]: lifecycle },
     network: egress ? 'host' : undefined,
-    buildArgs: egress ? { ...forwardedEnvironment(deps.env, ['HTTPS_PROXY', 'https_proxy']), ...(ca ? { PROXY_CA: PROXY_CA_BUILD_PATH } : {}) } : undefined,
+    // El proxy no va como argumento de build: Podman lo grabaría con su valor en
+    // la historia de cada RUN. `podman build` reenvía por defecto (--http-proxy)
+    // las variables de proxy de su propio entorno a cada RUN sin grabarlas.
+    buildArgs: egress && ca ? { PROXY_CA: PROXY_CA_BUILD_PATH } : undefined,
     readOnlyMounts: egress && ca ? [{ source: ca, destination: PROXY_CA_BUILD_PATH }] : undefined,
   })
   deps.output.stdout(`${id}\n`)
