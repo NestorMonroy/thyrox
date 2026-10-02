@@ -1,0 +1,116 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/modelCatalog.test.ts:
+(pass) validateCatalogEntry — entrada válida > devuelve la entrada intacta [0.83ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > repository ← (entry) => {
+      entry.repository = "";
+    } [0.27ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > source ← (entry) => {
+      entry.source = "civitai";
+    } [0.03ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > revision ← (entry) => {
+      entry.revision = REVISION.slice(0, 12);
+    } [0.03ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > quantization ← (entry) => {
+      entry.quantization = "q9_9";
+    } [0.12ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > quantization ← (entry) => {
+      entry.quantization = "Q4_K_M";
+    } [0.03ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > name ← (entry) => {
+      entry.name = "thyrox-otro--nombre:q4_k_m-hf-9217f5db79a2";
+    } [0.05ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > artifact ← (entry) => {
+      entry.artifact = "gguf";
+    } [0.08ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > artifact.format ← (entry) => {
+      entry.artifact.format = "safetensors";
+    } [0.08ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > artifact.sha256 ← (entry) => {
+      entry.artifact.sha256 = "A".repeat(64);
+    } [0.05ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > artifact.sha256 ← (entry) => {
+      entry.artifact.sha256 = "a".repeat(63);
+    } [0.03ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > artifact.bytes ← (entry) => {
+      entry.artifact.bytes = 0;
+    } [0.05ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > artifact.bytes ← (entry) => {
+      entry.artifact.bytes = 1.5;
+    } [0.10ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > architecture ← (entry) => {
+      entry.architecture = "";
+    } [0.04ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > attention ← (entry) => {
+      delete entry.attention;
+    } [0.03ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > attention.blockCount ← (entry) => {
+      entry.attention.blockCount = -1;
+    } [0.03ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > attention.kvHeadCount ← (entry) => {
+      entry.attention.kvHeadCount = "2";
+    } [0.02ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > attention.headDimension ← (entry) => {
+      entry.attention.headDimension = 0;
+    } [0.70ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > maxContextLength ← (entry) => {
+      entry.maxContextLength = 0;
+    } [0.17ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > defaultKvCacheType ← (entry) => {
+      entry.defaultKvCacheType = "bf16";
+    } [0.14ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > defaultKvCacheType ← (entry) => {
+      entry.defaultKvCacheType = "toString";
+    } [0.05ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > capabilities ← (entry) => {
+      entry.capabilities = [];
+    } [0.04ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > capabilities ← (entry) => {
+      entry.capabilities = ["tools", "tools"];
+    } [0.05ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > capabilities[1] ← (entry) => {
+      entry.capabilities = ["tools", "vision"];
+    } [0.04ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > declaredAt ← (entry) => {
+      entry.declaredAt = "2026-09-30 12:00:00";
+    } [0.04ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > declaredAt ← (entry) => {
+      entry.declaredAt = "2026-09-30T12:00:00+02:00";
+    } [0.03ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > declaredAt ← (entry) => {
+      entry.declaredAt = "2026-02-30T12:00:00Z";
+    } [0.04ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > un campo ausente se nombra como ausente [0.25ms]
+(pass) validateCatalogEntry — cada campo inválido nombra su ruta > un valor que no es objeto se rehúsa en la raíz [0.05ms]
+(pass) validateCatalogEntry — el nombre se deriva de sus partes > un nombre de otra cuantización no pasa aunque sea un nombre thyrox- válido [0.09ms]
+(pass) validateCatalogEntry — el nombre se deriva de sus partes > una revisión que no es completa (prefijo de 12) se rehúsa aunque derive el mismo nombre [0.04ms]
+(pass) validateCatalogEntry — el nombre se deriva de sus partes > una revisión de ollama es el digest de 64 hex [0.16ms]
+(pass) ModelCatalog > dos variantes del mismo repositorio conviven con nombres distintos [0.50ms]
+(pass) ModelCatalog > variantsOf ordena por declaredAt y después por nombre, sea cual sea el orden de alta [0.82ms]
+(pass) ModelCatalog > variantsOf compara instantes, no texto: la fracción de segundo no reordena [0.24ms]
+(pass) ModelCatalog > with devuelve un catálogo nuevo y no altera el anterior [0.09ms]
+(pass) ModelCatalog > with es idempotente para una entrada idéntica [0.42ms]
+(pass) ModelCatalog > with rehúsa un nombre repetido con otro contenido [0.34ms]
+(pass) ModelCatalog > with valida la entrada [0.21ms]
+(pass) loadModelCatalog / saveModelCatalog > ida y vuelta por disco byte a byte, con claves ordenadas [6.24ms]
+(pass) loadModelCatalog / saveModelCatalog > el orden de alta no cambia los bytes [1.87ms]
+(pass) loadModelCatalog / saveModelCatalog > la escritura no deja temporales al lado [0.95ms]
+(pass) loadModelCatalog / saveModelCatalog > archivo ausente → catálogo vacío [0.40ms]
+(pass) loadModelCatalog / saveModelCatalog > archivo corrupto → error con la ruta, nunca vacío [0.45ms]
+(pass) loadModelCatalog / saveModelCatalog > archivo con una entrada inválida → error con la ruta del archivo y del campo [0.74ms]
+(pass) loadModelCatalog / saveModelCatalog > archivo sin lista de entradas → error [0.45ms]
+(pass) loadModelCatalog / saveModelCatalog > archivo con dos entradas del mismo nombre y distinto contenido → error [0.71ms]
+(pass) loadModelCatalog / saveModelCatalog > una ruta que es un directorio no se lee como vacío [0.60ms]
+(pass) catalogEntryFromGguf > GGUF sintético → entrada válida con arquitectura, atención, contexto y bytes del archivo [4.28ms]
+(pass) catalogEntryFromGguf > clave ausente general.architecture se rehúsa con su nombre [2.72ms]
+(pass) catalogEntryFromGguf > clave ausente qwen2.block_count se rehúsa con su nombre [0.97ms]
+(pass) catalogEntryFromGguf > clave ausente qwen2.context_length se rehúsa con su nombre [0.93ms]
+(pass) catalogEntryFromGguf > clave ausente qwen2.embedding_length se rehúsa con su nombre [0.99ms]
+(pass) catalogEntryFromGguf > clave ausente qwen2.attention.head_count se rehúsa con su nombre [1.05ms]
+(pass) catalogEntryFromGguf > sin attention.head_count_kv la entrada toma las cabezas de atención [1.50ms]
+(pass) catalogEntryFromGguf > un context_length no entero se rehúsa con el campo [1.45ms]
+
+ 56 pass
+ 0 fail
+ 77 expect() calls
+Ran 56 tests across 1 file. [251.00ms]

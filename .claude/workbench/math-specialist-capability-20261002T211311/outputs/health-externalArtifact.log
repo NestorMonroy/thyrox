@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/externalArtifact.test.ts:
+(pass) external artifact import > validates and registers with external provenance [32.94ms]
+(pass) external artifact import > validates the declared quantization against the file type the GGUF declares [19.89ms]
+(pass) external artifact import > builds the validation corpus from the corpus files the source publishes [10.53ms]
+(pass) external artifact import > refuses before downloading when the source publishes no corpus file [4.81ms]
+(pass) external artifact import > refuses before downloading when the published sha256 differs from the pinned one [1.32ms]
+(pass) external artifact import > a rerun neither downloads nor validates again [11.71ms]
+(pass) external artifact import > a rerun asks only for the bytes still missing from the scratch [12.72ms]
+(pass) external artifact import > another lab image revalidates without downloading again [10.35ms]
+(pass) external artifact import > an admission refusal stops before downloading [2.73ms]
+(pass) external artifact import from official shards > merges the shards in the lab and registers the merged GGUF with each official shard in its provenance [7.97ms]
+(pass) external artifact import from official shards > refuses before downloading when any shard is published with another sha256 [1.48ms]
+(pass) external artifact import from official shards > refuses before downloading a shard set that is not the complete split [1.06ms]
+(pass) external artifact import from official shards > a merge that still declares a split fails instead of registering [3.80ms]
+(pass) external artifact import from official shards > a rerun neither downloads, merges nor validates again [43.22ms]
+
+ 14 pass
+ 0 fail
+ 37 expect() calls
+Ran 14 tests across 1 file. [371.00ms]

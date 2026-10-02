@@ -1,0 +1,11 @@
+model-artifacts/__tests__/modelQualification.test.ts rc=0  26 pass  0 fail 
+model-artifacts/__tests__/modelResolver.test.ts rc=0  20 pass  0 fail 
+model-artifacts/__tests__/modelCatalog.test.ts rc=0  56 pass  0 fail 
+local-models/__tests__/qualifyCommand.test.ts rc=0  8 pass  0 fail 
+local-models/__tests__/qualificationStore.test.ts rc=0  5 pass  0 fail 
+local-models/__tests__/externalArtifact.test.ts rc=0  14 pass  0 fail 
+local-models/__tests__/ensureModel.test.ts rc=0  13 pass  0 fail 
+artifact-registry/__tests__/diskAdmission.test.ts rc=0  2 pass  0 fail 
+provider/__tests__/recommendExecution.test.ts rc=0  21 pass  0 fail 
+execution thyrox-worker-test-murgy7mc-31034 kind=test task=TASK-THYROX-0911 exit=0
+__BG_EXIT__=0

@@ -30,3 +30,21 @@ proponía añadir el valor a `ModelCapability`; la autoridad lo impide.
 
 Los pasos 1, 2 y 4 son código: los hace un worker local gestionado cuando rija
 `managed-only`. El paso 3 es operación sobre autoridades existentes.
+
+## current health (medido 2026-10-02T21:22Z, job `math-authority-health`, unidad gestionada)
+
+| authority | suite | resultado |
+|---|---|---|
+| `modelQualification.ts` | `modelQualification.test.ts` | 26 pass, 0 fail |
+| `modelResolver.ts` | `modelResolver.test.ts` | 20 pass, 0 fail |
+| `modelCatalog.ts` | `modelCatalog.test.ts` | 56 pass, 0 fail |
+| `qualifyCommand.ts` | `qualifyCommand.test.ts` | 8 pass, 0 fail |
+| `qualificationStore.ts` | `qualificationStore.test.ts` | 5 pass, 0 fail |
+| `externalArtifact.ts` | `externalArtifact.test.ts` | 14 pass, 0 fail |
+| `ensureModel.ts` | `ensureModel.test.ts` | 13 pass, 0 fail |
+| `diskAdmission.ts` | `diskAdmission.test.ts` | 2 pass, 0 fail |
+| `recommendExecution` (`policy.ts`) | `recommendExecution.test.ts` | 21 pass, 0 fail |
+
+Las nueve autoridades que la feature reutiliza o extiende están sanas: ningún
+EXTEND parte de un rojo heredado. Corrió en paralelo con la cualificación de
+qwen3-4b; mide verde/rojo, no tiempos.

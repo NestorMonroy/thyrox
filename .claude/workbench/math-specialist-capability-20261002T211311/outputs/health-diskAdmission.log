@@ -1,0 +1,11 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/diskAdmission.test.ts:
+(pass) createDiskAdmission > lo que cabe bajo el techo menos el piso se admite y queda reservado a nombre del PID [225.93ms]
+resource_admission disk-admit: no cabe la necesidad 9437184 bytes; techo 10485760 bytes, piso 2097152 bytes, reservado por otros 0 bytes
+(pass) createDiskAdmission > lo que no cabe con el piso se rehúsa en el acto, sin reducir el margen [117.77ms]
+
+ 2 pass
+ 0 fail
+ 3 expect() calls
+Ran 2 tests across 1 file. [558.00ms]

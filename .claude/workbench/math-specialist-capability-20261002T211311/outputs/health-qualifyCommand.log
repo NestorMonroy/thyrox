@@ -1,0 +1,16 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/qualifyCommand.test.ts:
+(pass) runQualifyCommand por admisión > cualifica contra la unidad del ticket, suelta la admisión y no asegura thyrox-ollama [36.22ms]
+(pass) runQualifyCommand por admisión > --context viaja en la petición de admisión [11.68ms]
+(pass) runQualifyCommand por admisión > una admisión rehusada rehúsa con su etapa y causa, sin tocar el runtime [5.67ms]
+(pass) runQualifyCommand por admisión > sin coordinador rehúsa nombrando su socket [5.81ms]
+(pass) runQualifyCommand --suite: la cualificación de tarea de un consumidor (TASK-THYROX-0780) > corre los casos de la suite y escribe una cualificación de tarea de su clase [9.97ms]
+(pass) runQualifyCommand --suite: la cualificación de tarea de un consumidor (TASK-THYROX-0780) > una suite ilegible se rehúsa antes de pedir admisión [4.78ms]
+(pass) runQualifyCommand --embedding-suite: la cualificación de embeddings > embebe cada caso por la unidad del ticket y escribe una cualificación de embeddings [9.51ms]
+(pass) runQualifyCommand --embedding-suite: la cualificación de embeddings > --suite y --embedding-suite juntas se rehúsan antes de pedir admisión [5.20ms]
+
+ 8 pass
+ 0 fail
+ 34 expect() calls
+Ran 8 tests across 1 file. [293.00ms]
