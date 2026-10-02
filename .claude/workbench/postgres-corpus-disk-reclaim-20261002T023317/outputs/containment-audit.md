@@ -74,3 +74,16 @@ tarea. Se declara por operación en cada commit, no como excepción general.
 | controller-gate-green-3 | ídem tras corregir ruff/pyright del test | 62/62 | PASS |
 | controller-gate-annulment | ídem con `passed = True` forzado | 60/62: caen exactamente las 2 del sustituto del anfitrión | PASS |
 | bg-attest-forwarding | `test-bg-managed-execution.sh` | 14/14 | PASS |
+
+## T001–T003 por la ruta gestionada (estado al detenerse)
+
+| task | verdict | evidencia |
+|---|---|---|
+| T001 | accepted, gate PASS en sus 5 pasos | `outputs/T001-*`, `T001-containment.jsonl` |
+| T002 | accepted (criterio de cierre: recuperable desde PostgreSQL + reingesta idempotente), gate PASS en sus 10 pasos; **hueco declarado**: no hay productor de embeddings ni modelo decidido (ADR-008 D5) | `outputs/T002-*`, `T002-containment.jsonl` |
+| T003 | **detenida**: la recreación declarada de `thyrox-postgres` (`THYROX_INFRA_POSTGRES_PORT=55433 bin/infrastructure_ensure`, y vuelta) fue denegada por el control de permisos de la sesión; espera la decisión del ejecutor | `outputs/T003-snapshot-before.json`, `T003-identity-before.jsonl` |
+
+Corrección del instrumento descubierta en T003: `src/session/unit_attest.sh`
+usa `gawk` y `jq`, que una imagen ajena (pgvector) no trae; ahí el payload no
+llega a correr. La anulación «PostgreSQL sin volumen» salió FAIL por esa causa
+y **se descartó**: un FAIL por la causa equivocada no discrimina.
