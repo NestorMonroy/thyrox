@@ -1545,3 +1545,83 @@ sigue siendo el suyo.
   `safe_to_delete`. Se borra **sólo** lo que figura ahí.
 - `T007-verify.json`: `postgresReady`, `vectorExtension`, `schemaPresent`,
   `countsMatch`, `retrievalPass`, todos medidos después del borrado.
+
+---
+
+# 25. Enmienda 2026-10-02T09:20:14 — embedding como capacidad, rutas comparadas y alcance
+
+Directiva del ejecutor 2026-10-02. **Sustituye la D5 de §23.1 en lo que fija el
+productor**; conserva la representación (halfvec durable + ANN binario +
+rerank exacto) y el invariante de T009.
+
+## 25.1 Regla
+
+`semantic search must not depend on a single embedding provider`, y
+`embeddings may be produced by a qualified local model or by a qualified API
+provider`. Desaparece `semantic search must not depend on Ollama`: no había
+razón medida que la sostuviera.
+
+- La capacidad es `embedding`; ya existe como capacidad declarada del
+  artefacto (`model-artifacts/catalogEntry.ts:25`, `'embeddings'`). Un modelo
+  de generación (los Qwen instalados) no es candidato.
+- La selección pasa por thyrox (catálogo, calificación, política de ejecución,
+  adaptadores de runtime), no por el worker. El store ya es neutral: el
+  productor llama `chunksWithoutEmbedding` y `putEmbeddings`
+  (`semantic-search/store.ts:99-100`); hoy nadie produce vectores.
+- La dimensión es del **perfil**, no de semantic search. El perfil es el
+  `embedding_spaces` existente, extendido (EXTEND) con proveedor/runtime,
+  identidad exacta del modelo, normalización, distancia y versión de la
+  calificación. Otra dimensión = otro espacio (`building` → `active`), o un
+  re-embedding explícito; `EmbeddingDimensionError` ya prohíbe mezclar. Nunca
+  coerción ni truncado.
+- Política explícita: `local-only` · `api-only` · `local-preferred` ·
+  `api-preferred`. Ningún fallback silencioso a un candidato sin calificar.
+  Una ejecución vía API registra lo necesario para reproducir el perfil.
+
+Implementación: **TASK-THYROX-0904**.
+
+## 25.2 Rutas medidas (`outputs/T005c-route-comparison.json`)
+
+| Ruta | Alcance | Dim. | Requerido | Cabe en el libre de hoy |
+|---|---|---|---|---|
+| A ONNX local | semantic_content | 768 | 2 616 229 066 | sí |
+| B Ollama local | semantic_content | 768 | 1 893 736 304 | sí |
+| C API | semantic_content | 768 / 1536 | 1 345 131 404 / 1 448 329 292 | sí |
+| A / B / C | + durable_evidence | — | 5.51 / 4.79 / 4.24–5.80 GB | no |
+
+Libre medido: 2 903 658 496 B, tras retirar el worktree retenido de run3
+(`mechanism-registry-…/outputs/T001-worktree-reclaim.json`, 2 356 350 976 B
+recuperados). C no exige disco de modelo, pero PostgreSQL, HNSW, WAL, texto y
+lotes se presupuestan igual. B depende de `thyrox-ollama` y del volumen
+`thyrox-ollama-models`, que hoy administra la otra sesión. C depende del
+upstream OpenAI-compatible; no consta que sirva `/v1/embeddings`. **Ninguna
+ruta está calificada**: `embedding@1` no existe. No se instala el runtime de A
+ni se descarga ningún modelo hasta que T008 califique y elija.
+
+## 25.3 Alcance del corpus
+
+`durable_evidence` (≈600 MB) ya es durable en git; ingerirlo no libera disco
+local y no hay consulta medida que lo necesite. **El corpus de semantic search
+es `semantic_content`**; la evidencia se queda en su autoridad. Entra
+evidencia sólo cuando una consulta real la pida, y por selección, no entera.
+
+## 25.4 Tres clases de dato (directiva del ejecutor)
+
+1. **Registro de ejecución** → PostgreSQL, estructurado, sin embeddings
+   (identidad, tiempos, CPU/RAM/VRAM, salida, atestación, procedencia).
+2. **Evidencia semántica seleccionada** → PostgreSQL + pgvector (hallazgos,
+   errores, resúmenes, logs que valga la pena buscar por similitud).
+3. **Residuo** (contenedor, worktree, descargas, cachés) → efímero.
+
+`residue may be deleted only after 1 and the required parts of 2 are durable`.
+`execution finished ≠ container can be deleted`. Ciclo y barrido recuperable:
+**TASK-THYROX-0905**. `telemetry ≠ reward`.
+
+## 25.5 DAG vigente
+
+T008 pasa a ser **calificar candidatos de `embedding` y elegir ruta**: define
+`embedding@1`, califica B y A (y C si el sondeo del upstream lo permite),
+aplica la política y la admisión de disco, y deja el espacio en `building`.
+Después, T002/T004 y las ramas T004a–e ingieren **sólo `semantic_content`**;
+T009, T006 y T007 sin cambios. El P0 del lote A1–A7 sigue exigiendo T008
+aceptada, y con ella la ruta elegida.
