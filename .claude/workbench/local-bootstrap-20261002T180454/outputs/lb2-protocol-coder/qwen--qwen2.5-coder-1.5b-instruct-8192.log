@@ -1,0 +1,7 @@
+FALLA single_tool	{"content":"```json\n{\n  \"name\": \"get_weather\",\n  \"arguments\": {\n    \"city\": \"Madrid\"\n  }\n}\n```","toolCa
+FALLA integer_arguments	{"content":"```json\n{\n  \"name\": \"add\",\n  \"arguments\": {\n    \"a\": 17,\n    \"b\": 25\n  }\n}\n```","toolCalls
+FALLA choose_between_tools	{"content":"```json\n{\n  \"name\": \"read_file\",\n  \"arguments\": {\n    \"path\": \"/etc/hostname\"\n  }\n}\n```","t
+FALLA enum_argument	{"content":"```json\n{\n  \"name\": \"set_mode\",\n  \"arguments\": {\n    \"mode\": \"safe\"\n  }\n}\n```","toolCalls":
+ok   no_tool_needed	{"content":"hello","toolCalls":[]}
+FALLA continuation_after_tool	{"content":"```json\n{\n  \"name\": \"add\",\n  \"arguments\": {\n    \"a\": 17,\n    \"b\": 25\n  }\n}\n```","toolCalls
+suspendida: thyrox-qwen--qwen2.5-coder-1.5b-instruct:q4_k_m-hf-2e1fd397ee46 protocolo tool-calling@1 1/6, 8.8 tokens/s (isolated), ctx 8192 → /home/user/thyrox/.thyrox/models/qualifications.json
