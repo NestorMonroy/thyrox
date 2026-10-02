@@ -1,0 +1,97 @@
+B=.claude/workbench/bench-convention-20261002T062507
+import-multishard-20261001T235432 -> import-multishard-20261001T235432
+consumer-work-reference-20261002 -> consumer-work-reference-20261002T002538
+pool-execution-unit-20261002 -> pool-execution-unit-20261002T003523
+execution-policy-20261002 -> execution-policy-20261002T004256
+unit-to-coordinator-20261002 -> unit-to-coordinator-20261002T004819
+consumer-execution-image-20261002 -> consumer-execution-image-20261002T014349
+registry-local-search-20261002 -> registry-local-search-20261002T020540
+transformers-runtime-20261002 -> transformers-runtime-20261002T061518
+unit-execution-helpers-20261002 -> unit-execution-helpers-20261002T061655
+es-mx-consumer-drafts-20261002 -> es-mx-consumer-drafts-20261002T061655
+referencias: .claude/jobs/identity-annul-20261002T020457/README.md
+referencias: .claude/jobs/identity-annul-20261002T020457/manifest.jsonl
+referencias: .claude/jobs/identity-annul-20261002T020457/outputs/salida.log
+referencias: .claude/jobs/identity-commit-20261002T020514/README.md
+referencias: .claude/jobs/identity-commit-20261002T020514/manifest.jsonl
+referencias: .claude/jobs/move-scratch-20261002T061637/README.md
+referencias: .claude/jobs/move-scratch-20261002T061637/manifest.jsonl
+referencias: .claude/jobs/move-scratch-20261002T061637/outputs/salida.log
+referencias: .claude/jobs/p1b-annul-20261002T002423/README.md
+referencias: .claude/jobs/p1b-annul-20261002T002423/manifest.jsonl
+referencias: .claude/jobs/p1b-bg-20261002T002453/README.md
+referencias: .claude/jobs/p1b-bg-20261002T002453/manifest.jsonl
+referencias: .claude/jobs/p1b-red-20261002T002329/README.md
+referencias: .claude/jobs/p1b-red-20261002T002329/manifest.jsonl
+referencias: .claude/jobs/p2-baseline-20261002T003209/outputs/salida.log
+referencias: .claude/jobs/p2-green2-20261002T002833/README.md
+referencias: .claude/jobs/p2-green2-20261002T002833/manifest.jsonl
+referencias: .claude/jobs/p2-red-20261002T002650/README.md
+referencias: .claude/jobs/p2-red-20261002T002650/manifest.jsonl
+referencias: .claude/jobs/p2-regress-20261002T002907/README.md
+referencias: .claude/jobs/p2-regress-20261002T002907/manifest.jsonl
+referencias: .claude/jobs/p2-worktree-alone-20261002T003441/README.md
+referencias: .claude/jobs/p2-worktree-alone-20261002T003441/manifest.jsonl
+referencias: .claude/jobs/p3-annul-20261002T003833/README.md
+referencias: .claude/jobs/p3-annul-20261002T003833/manifest.jsonl
+referencias: .claude/jobs/p3-annul2-20261002T004036/README.md
+referencias: .claude/jobs/p3-annul2-20261002T004036/manifest.jsonl
+referencias: .claude/jobs/p3-annul3-20261002T004049/README.md
+referencias: .claude/jobs/p3-annul3-20261002T004049/manifest.jsonl
+referencias: .claude/jobs/p3-pool-green-20261002T004157/README.md
+referencias: .claude/jobs/p3-pool-green-20261002T004157/manifest.jsonl
+referencias: .claude/jobs/p3-pool-red-20261002T004129/README.md
+referencias: .claude/jobs/p3-pool-red-20261002T004129/manifest.jsonl
+referencias: .claude/jobs/p3-red-20261002T003540/README.md
+referencias: .claude/jobs/p3-red-20261002T003540/manifest.jsonl
+referencias: .claude/jobs/p4-annul-20261002T004627/README.md
+referencias: .claude/jobs/p4-annul-20261002T004627/manifest.jsonl
+referencias: .claude/jobs/p4-pool-20261002T004602/README.md
+referencias: .claude/jobs/p4-pool-20261002T004602/manifest.jsonl
+referencias: .claude/jobs/p4-red-20261002T004508/README.md
+referencias: .claude/jobs/p4-red-20261002T004508/manifest.jsonl
+referencias: .claude/jobs/p5-annul-20261002T004740/README.md
+referencias: .claude/jobs/p5-annul-20261002T004740/manifest.jsonl
+referencias: .claude/jobs/p5-e2e-20261002T004725/README.md
+referencias: .claude/jobs/p5-e2e-20261002T004725/manifest.jsonl
+referencias: .claude/jobs/p5a-annul-fix-20261002T014407/README.md
+referencias: .claude/jobs/p5a-annul-fix-20261002T014407/manifest.jsonl
+referencias: .claude/jobs/p5a-red-green-20261002T014313/README.md
+referencias: .claude/jobs/p5a-red-green-20261002T014313/manifest.jsonl
+referencias: .claude/jobs/p5b-unit-base-20261002T020040/README.md
+referencias: .claude/jobs/p5b-unit-base-20261002T020040/manifest.jsonl
+referencias: .claude/jobs/p5b-unit-final-20261002T015649/README.md
+referencias: .claude/jobs/p5b-unit-final-20261002T015649/manifest.jsonl
+referencias: .claude/jobs/p5b-unit-suite-20261002T014721/README.md
+referencias: .claude/jobs/p5b-unit-suite-20261002T014721/manifest.jsonl
+referencias: .claude/jobs/p5c-record-20261002T020539/README.md
+referencias: .claude/jobs/p5c-record-20261002T020539/manifest.jsonl
+referencias: .claude/jobs/p7-annul-fix-20261002T010407/README.md
+referencias: .claude/jobs/p7-annul-fix-20261002T010407/manifest.jsonl
+referencias: .claude/jobs/p7-attrib-20261002T005400/README.md
+referencias: .claude/jobs/p7-attrib-20261002T005400/manifest.jsonl
+referencias: .claude/jobs/p7-red-20261002T004925/README.md
+referencias: .claude/jobs/p7-red-20261002T004925/manifest.jsonl
+referencias: .claude/jobs/tf-red1-20261002T025655/README.md
+referencias: .claude/jobs/tf-red1-20261002T025655/manifest.jsonl
+referencias: .claude/jobs/tf-red2-20261002T025901/README.md
+referencias: .claude/jobs/tf-red2-20261002T025901/manifest.jsonl
+referencias: .claude/jobs/tf-red3-20261002T030119/README.md
+referencias: .claude/jobs/tf-red3-20261002T030119/manifest.jsonl
+referencias: .claude/workbench/consumer-execution-image-20261002T014349/probes/p5a/finish.sh
+referencias: .claude/workbench/consumer-work-reference-20261002T002538/probes/p1b/finish.sh
+referencias: .claude/workbench/es-mx-consumer-drafts-20261002T061655/README.md
+referencias: .claude/workbench/es-mx-consumer-drafts-20261002T061655/probes/p5b/finish.sh
+referencias: .claude/workbench/es-mx-consumer-drafts-20261002T061655/probes/p7/baseline.sh
+referencias: .claude/workbench/es-mx-consumer-drafts-20261002T061655/probes/p7/finish.sh
+referencias: .claude/workbench/execution-policy-20261002T004256/probes/p3/finish.sh
+referencias: .claude/workbench/pool-execution-unit-20261002T003523/probes/p2/baseline.sh
+referencias: .claude/workbench/pool-execution-unit-20261002T003523/probes/p2/finish.sh
+referencias: .claude/workbench/transformers-runtime-20261002T061518/probes/tf/annul.sh
+referencias: .claude/workbench/transformers-runtime-20261002T061518/probes/tf/commit1.sh
+referencias: .claude/workbench/unit-to-coordinator-20261002T004819/probes/p5/finish.sh
+224
+bin/manifest: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+execution thyrox-worker-test-muqkwg25-11115 kind=test task=TASK-THYROX-0762 exit=0
+__BG_EXIT__=0

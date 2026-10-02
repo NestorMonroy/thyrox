@@ -1,0 +1,26 @@
+  ok   el coordinador doble escucha
+  ok   el pool sale 0
+  ok   el ítem termina bien
+  FALLA el ítem pidió su ejecución con la referencia del consumidor — esperado [1] obtenido []
+  ok   el coordinador recibió la admisión del modelo local
+  ok   el runtime recibió el modelo que concede el grant
+  ok   la respuesta del runtime llega al resultado del ítem
+  ok   nada invocó claude
+modelo: thyrox-qwen--qwen2.5-7b-instruct-gguf:q4_k_m-hf-bb5d59e06d95 (derivado de --task-class mecanica) runtime: ollama
+bin/pool_history: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+historial: sin ejecución previa de /home/user/thyrox/bin/cli en esta plantilla; ninguna con el modelo thyrox-qwen--qwen2.5-7b-instruct-gguf:q4_k_m-hf-bb5d59e06d95: nada que derivar
+credencial: inherit (por defecto; sin variable de credencial en el entorno del pool: cada ítem la resuelve solo, y thyrox -p entra al proxy local)
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+buzón: /tmp/tmp.oeLlaoO0XX/runtime/pool/e1a0ff38f295-20261002T004752-330/mailbox
+cache-ttl: 1h (constant)
+items=1 ok=1 fallidos=0
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)
+ready
+
+7 ok · 1 falla(s) (alcance medido: modelo local por el coordinador desde la unidad, con dobles)

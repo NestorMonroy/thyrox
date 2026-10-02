@@ -1,0 +1,7 @@
+OK: finding H-THYROX-318 indexado en /home/user/thyrox/agent-results/agent_store.sqlite3
+1
+77ed1c1da Let headless-pool declare its items' context
+  tampoco se bloquea, porque es secundaria (README D4-A, §8).
+pushed
+execution thyrox-worker-test-muqo8760-7903 kind=test task=TASK-THYROX-0781 exit=0
+__BG_EXIT__=0

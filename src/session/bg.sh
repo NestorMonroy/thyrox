@@ -326,11 +326,12 @@ cmd_start() {
         exit 2
     fi
     local grace="$_GRACE_DEFAULT" memfree_spec="" memfree_wait=1800 memfree=0
-    local task="" kind="" network="" workdir="" attest="" mounts=() environment=() secrets=() limits=()
+    local task="" work="" kind="" network="" workdir="" attest="" mounts=() environment=() secrets=() limits=()
     while [[ "${1:-}" == --* ]]; do
         case "$1" in
             --grace) grace="${2:-}"; shift 2 ;;
             --task) task="${2:-}"; shift 2 ;;
+            --work) work="${2:-}"; shift 2 ;;
             --kind) kind="${2:-}"; shift 2 ;;
             --network) network="${2:-}"; shift 2 ;;
             --workdir) workdir="${2:-}"; shift 2 ;;
@@ -355,9 +356,13 @@ cmd_start() {
     # comando se entrega como argv al runner y el anfitrión sólo lo supervisa.
     # Sin él, sólo una entrada declarada del plano de control.
     source "$_SRC_DIR/lib/managed_execution.sh"
-    if [[ -n "$task" ]]; then
-        [[ -n "$kind" ]] || { echo "bg.sh start: --task exige --kind (el tipo de ejecución de la autorización)." >&2; exit 2; }
-        local runner=() authorization=(run --task "$task" --kind "$kind") item
+    # --work cita el trabajo de un consumidor con su propia identidad; --task, una tarea de thyrox.
+    if [[ -n "$task" && -n "$work" ]]; then echo "bg.sh start: --task y --work van por separado." >&2; exit 2; fi
+    if [[ -n "$task" || -n "$work" ]]; then
+        [[ -n "$kind" ]] || { echo "bg.sh start: --task/--work exige --kind (el tipo de ejecución de la autorización)." >&2; exit 2; }
+        local runner=() authorization=(run) item
+        if [[ -n "$task" ]]; then authorization+=(--task "$task"); else authorization+=(--work "$work"); fi
+        authorization+=(--kind "$kind")
         mapfile -t runner < <(thyrox_managed_execution_runner_argv)
         [[ -n "$network" ]] && authorization+=(--network "$network")
         [[ -n "$workdir" ]] && authorization+=(--workdir "$workdir")

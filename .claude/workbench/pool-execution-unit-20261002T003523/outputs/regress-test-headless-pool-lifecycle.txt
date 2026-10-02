@@ -1,0 +1,87 @@
+OK   en curso, git status del banco no cambia
+OK   en curso, la salida no tiene artefactos del ítem
+OK   en curso, el stream vive en el runtime
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+OK   en curso, ningún consumidor ve el ítem
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+OK   en curso, reconcile no toca al ítem vivo
+OK   el pool termina bien
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+OK   el ítem quedó cerrado
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+OK   su manifiesto coincide con la salida
+OK   la ejecución dejó run.closed
+OK   el runtime de la ejecución se retiró
+OK   el resultado es el del ítem
+OK   control: con el runtime en el banco, git status cambia en curso
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+OK   pool_integrate no aplica un ítem sin cerrar
+OK   el árbol destino no cambió
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+OK   pool_integrate no aplica un ítem incoherente
+OK   control: la guarda se retiró
+OK   control: sin la guarda, el ítem sin cerrar se aplica
+OK   cancelado: la salida no tiene artefactos del ítem
+OK   cancelado: el runtime conserva el stream parcial
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+OK   reconcile declara el ítem recuperable
+OK   reconcile no borró el runtime
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+OK   la salida sigue sin el ítem
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+OK   tomar el ítem en curso le da la generación 2
+OK   el pool no termina bien
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+OK   el pool no publicó el ítem que ya no es suyo
+OK   el rechazo nombra la generación
+OK   el ítem sigue a nombre del nuevo dueño
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+OK   tomar el ítem con worktree le da la generación 2
+OK   el registro de foto del nuevo dueño sigue intacto
+OK   el pool desplazado no creó la ref de su generación
+OK   el pool declara que no toma la foto
+OK   en curso, el ítem ya tiene foto
+OK   la foto en curso trae el trabajo a mitad
+OK   la foto final existe
+OK   la foto final conserva el trabajo
+bin/snapshot_store: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+OK   el manifiesto de la foto describe la final
+OK   sin disco declarado, el ítem se rehúsa sin esperar
+OK   el rechazo nombra la admisión por disco
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+OK   el ítem rehusado quedó publicado
+OK   control: con espera de 6 s, el rechazo tarda al menos 6 s
+OK   la cabecera publica el buzón de la ejecución
+OK   con un mensaje, el pool termina bien
+OK   el ítem recibe el buzón y su dirección
+OK   el mensaje enviado antes de que el ítem leyera le aparece pendiente
+OK   el prompt empieza por el párrafo del buzón
+OK   el párrafo dice cómo leer, acusar y escribir al orquestador
+OK   la plantilla del usuario va después del párrafo y antes del ítem
+OK   el orquestador recibió begin, publish y close-run
+result: 48 of 48 assertions green

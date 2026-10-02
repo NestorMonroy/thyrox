@@ -1,0 +1,7 @@
+[p5b-unit-suite] done:0
+/usr/bin/hunspell
+/usr/bin/xelatex
+1 failed, 60 passed in 210.07s (0:03:30)
+EXIT=1
+execution thyrox-worker-test-muqaz9bb-12520 kind=test work=ai-course-notes:es-mx/execution-image exit=0
+__BG_EXIT__=0

@@ -1,0 +1,19 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/qualifyModel.test.ts:
+(pass) runQualification — tool-calling@1 contra /api/chat > seis aciertos aprueban, con la suite, el contexto servido y el instante [12.81ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > cinco de seis no aprueban, y el caso fallado dice lo que se observó [5.15ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > tokens/s es la suma de eval_count entre la suma de eval_duration [4.81ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > cada petición lleva el modelo, sus herramientas, stream falso y num_ctx [5.04ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > un error HTTP no es un caso fallado: se rehúsa sin cualificación [4.37ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > pedir más contexto que el concedido se rehúsa sin tocar el runtime [2.20ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > una respuesta sin eval_duration no mide velocidad y se rehúsa [4.01ms]
+(pass) runTaskQualification — la suite de tarea de un consumidor (TASK-THYROX-0780) > todos los casos cumplen: una cualificación de tarea de la clase de la suite [11.26ms]
+(pass) runTaskQualification — la suite de tarea de un consumidor (TASK-THYROX-0780) > un caso que falla suspende, y su resultado nombra la comprobación [4.65ms]
+(pass) runTaskQualification — la suite de tarea de un consumidor (TASK-THYROX-0780) > cada petición lleva los mensajes del caso, sin herramientas, stream falso y num_ctx [4.08ms]
+(pass) runTaskQualification — la suite de tarea de un consumidor (TASK-THYROX-0780) > pedir más contexto que el concedido se rehúsa sin tocar el runtime [2.27ms]
+
+ 11 pass
+ 0 fail
+ 26 expect() calls
+Ran 11 tests across 1 file. [290.00ms]

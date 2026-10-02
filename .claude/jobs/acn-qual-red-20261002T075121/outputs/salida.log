@@ -1,0 +1,6 @@
+exit=2
+ERROR tests/test_qualification_suite.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.15s
+execution thyrox-worker-test-muqnzcxt-27654 kind=test work=ai-course-notes:es-mx/qwen-qualification exit=0
+__BG_EXIT__=0

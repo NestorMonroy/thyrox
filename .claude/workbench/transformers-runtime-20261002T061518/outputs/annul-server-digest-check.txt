@@ -1,0 +1,13 @@
+.F......
+======================================================================
+FAIL: test_a_load_with_another_artifact_is_refused_and_loads_nothing (__main__.TransformersRuntimeServerTest.test_a_load_with_another_artifact_is_refused_and_loads_nothing)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/local_models/test_transformers_runtime_server.py", line 93, in test_a_load_with_another_artifact_is_refused_and_loads_nothing
+    self.assertEqual(status, 409)
+AssertionError: 200 != 409
+
+----------------------------------------------------------------------
+Ran 8 tests in 4.070s
+
+FAILED (failures=1)

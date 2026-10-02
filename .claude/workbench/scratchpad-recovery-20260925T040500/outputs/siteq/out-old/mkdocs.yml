@@ -1,0 +1,68 @@
+site_name: AI Course Notes
+site_url: https://hqhq1025.github.io/ai-course-notes/
+repo_url: https://github.com/hqhq1025/ai-course-notes
+repo_name: hqhq1025/ai-course-notes
+docs_dir: docs
+site_dir: site
+theme:
+  name: material
+  language: zh
+  palette:
+    - scheme: default
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/weather-night
+        name: 切换到深色模式
+    - scheme: slate
+      primary: teal
+      accent: amber
+      toggle:
+        icon: material/weather-sunny
+        name: 切换到浅色模式
+  features:
+    - navigation.tracking
+    - navigation.top
+    - search.highlight
+    - search.suggest
+plugins:
+  - search:
+      lang:
+        - zh
+        - en
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.arithmatex:
+      generic: true
+extra_css:
+  - assets/stylesheets/ai-notes.css
+extra_javascript:
+  - assets/javascripts/ai-notes.js
+  - assets/javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
+nav:
+  - 首页: index.md
+  - 课程:
+      - "技术文章笔记":
+          - 概览: "articles/index.md"
+          - "Harness Engineering：Agent-First 开发范式下的工程实践": "articles/openai-harness-engineering/index.md"
+      - "CS336 2026":
+          - 概览: "cs336-2026/index.md"
+          - "CS336 2026 Lecture 1：从零构建语言模型、课程版图与 Tokenization": "cs336-2026/lecture01/index.md"
+      - "WhynotTV":
+          - 概览: "interviews/whynot-tv/index.md"
+          - "访谈笔记：陈天奇 — 机器学习系统，长期主义与初心": "interviews/whynot-tv/chen-tianqi/index.md"
+          - "访谈笔记：胡渊鸣——Meshy AI、太极、MIT、清华姚班、图形学与创业哲学": "interviews/whynot-tv/hu-yuanming-meshy/index.md"
+          - "翁家翌：OpenAI，GPT，强化学习，Infra，后训练，天授，tuixue，开源，CMU，清华": "interviews/whynot-tv/weng-jiayi-openai/index.md"
+          - "访谈笔记：杨硕——妙动科技、特斯拉Optimus、人形机器人与人机共生": "interviews/whynot-tv/yang-shuo-robotics/index.md"
+      - "Lex Fridman Podcast":
+          - 概览: "talks/lex-fridman/index.md"
+          - "访谈笔记：Dario Amodei, Amanda Askell & Chris Olah": "talks/lex-fridman/dario-amodei-claude/index.md"
+          - "访谈笔记：DeepSeek、中国 AI 与半导体地缘政治": "talks/lex-fridman/deepseek-china-ai/index.md"
+          - "Jensen Huang：NVIDIA 的系统级 AI 战略与产业化路径": "talks/lex-fridman/jensen-huang-nvidia/index.md"
+          - "OpenClaw：Agentic Engineering 的产品、工程与社会实验": "talks/lex-fridman/openclaw-agent/index.md"
+          - "State of AI in 2026：LLM、Coding、Scaling Laws、China、Agents、GPU": "talks/lex-fridman/state-of-ai-2026/index.md"

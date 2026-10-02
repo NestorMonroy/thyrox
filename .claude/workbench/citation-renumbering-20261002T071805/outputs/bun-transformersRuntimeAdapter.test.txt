@@ -1,0 +1,15 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/transformersRuntimeAdapter.test.ts:
+(pass) TransformersRuntimeAdapter > la salud se pregunta al runtime de la unidad [85.71ms]
+(pass) TransformersRuntimeAdapter > preparar verifica que el snapshot montado es el concedido [67.38ms]
+(pass) TransformersRuntimeAdapter > una generación vieja no toca el runtime [62.54ms]
+(pass) TransformersRuntimeAdapter > cargar deja residente la identidad concedida, leída del runtime [89.29ms]
+(pass) TransformersRuntimeAdapter > una carga de otra identidad falla y no deja residencia [62.04ms]
+(pass) TransformersRuntimeAdapter > descargar deja la unidad sin residencia [66.80ms]
+(pass) admittedSeq2seq > genera sólo contra la unidad del ticket y con residencia [72.29ms]
+
+ 7 pass
+ 0 fail
+ 15 expect() calls
+Ran 7 tests across 1 file. [678.00ms]

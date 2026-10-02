@@ -1,0 +1,4 @@
+corrida 1:  171 pass  1 fail 
+corrida 2:  171 pass  1 fail 
+execution thyrox-worker-test-muqdbs64-3678 kind=test task=TASK-THYROX-0756 exit=0
+__BG_EXIT__=0

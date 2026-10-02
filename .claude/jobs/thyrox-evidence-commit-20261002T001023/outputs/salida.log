@@ -1,0 +1,6 @@
+cf104e47b Nestor Monroy / jcg-admin
+  la defensa secundaria NO MIDIO. No se afirma que el arbol esta sano;
+  tampoco se bloquea, porque es secundaria (README D4-A, §8).
+push=0
+execution thyrox-worker-maintenance-muq7ijy4-12285 kind=maintenance task=TASK-THYROX-0755 exit=0
+__BG_EXIT__=0

@@ -1,0 +1,11 @@
+4
+     Locking 153 packages to latest compatible versions
+      Adding tokenizers v0.22.2 (available: v0.23.2)
+  Downloaded thiserror-impl v2.0.21
+  Downloaded thiserror v2.0.21
+name = "candle-transformers"
+version = "0.11.0"
+name = "tokenizers"
+version = "0.22.2"
+execution thyrox-worker-test-muqmge7y-7304 kind=test task=TASK-THYROX-0764 exit=0
+__BG_EXIT__=0

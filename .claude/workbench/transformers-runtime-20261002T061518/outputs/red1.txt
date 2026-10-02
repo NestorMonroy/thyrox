@@ -1,0 +1,66 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/podmanModelUnitMaterializer.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+65 | 
+66 | /** Devuelve el nivel canónico (minúsculas, alias resuelto) o rehúsa nombrándolo. */
+67 | export function normalizeQuantizationLevel(level: string): QuantizationLevel {
+68 |   const lowered = level.toLowerCase()
+69 |   const canonical = LEVEL_ALIASES[lowered] ?? lowered
+70 |   if (!isQuantizationLevel(canonical)) throw new UnknownQuantizationLevelError(level)
+                                                                                         ^
+UnknownQuantizationLevelError: nivel de cuantización desconocido: «f32»
+      at normalizeQuantizationLevel (/home/user/thyrox/src/packages/model-artifacts/quantizationLevel.ts:70:85)
+      at thyroxModelName (/home/user/thyrox/src/packages/model-artifacts/modelName.ts:76:18)
+      at resolvedArtifact (/home/user/thyrox/src/packages/model-artifacts/testing/resolvedArtifactFixture.ts:33:14)
+      at <anonymous> (/home/user/thyrox/src/packages/model-scheduling/__tests__/podmanModelUnitMaterializer.test.ts:263:20)
+-------------------------------
+
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un grant caducado [0.77ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un grant de una generación que ya no es la vigente [0.17ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > con la coordinación no disponible [0.11ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un runtime sin perfil de contenedor [0.09ms]
+(pass) PodmanModelUnitMaterializer: materializar > crea, arranca e inspecciona; la unidad lleva su identidad completa [2.62ms]
+(pass) PodmanModelUnitMaterializer: materializar > el contenedor va en loopback, con el dispositivo concedido y las etiquetas de la unidad [3.11ms]
+(pass) PodmanModelUnitMaterializer: materializar > en CPU no pide dispositivos [0.66ms]
+(pass) PodmanModelUnitMaterializer: materializar > si create falla no quedó nada: partial false [0.97ms]
+(pass) PodmanModelUnitMaterializer: materializar > si start falla quedó un contenedor: partial true con su unitId [0.73ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > destroy distingue destruido, ausente y fallido [0.49ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > destroy retira sólo el contenedor de la unidad [0.12ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > units reconstruye cada unidad de sus etiquetas e ignora contenedores ajenos [0.97ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > nunca borra imágenes ni volúmenes [0.34ms]
+(pass) PodmanModelUnitMaterializer: identidad completa > una unidad cuya identidad etiquetada está incompleta no es una unidad de esta primitiva [0.22ms]
+
+ 14 pass
+ 0 fail
+ 1 error
+ 43 expect() calls
+Ran 14 tests across 1 file. [172.00ms]
+bun test v1.3.11 (af24e281)
+
+__tests__/hostCoordinatorComposition.test.ts:
+(pass) composeHostCoordinatorService > con la topología por defecto compone una coordinación local y el socket del hogar de runtime [0.95ms]
+(pass) composeHostCoordinatorService > el dueño compuesto pasa la validación de dueño de Podman (sin «@») [0.22ms]
+(pass) composeHostCoordinatorService > shared sin Redis rehúsa al componer [0.18ms]
+(pass) cpuPlacementOf > en CPU no reserva VRAM y usa el runtime de Ollama [0.43ms]
+(pass) cpuPlacementOf por formato del artefacto (TASK-THYROX-0761) > un GGUF va a Ollama [0.05ms]
+65 | 
+66 | /** Devuelve el nivel canónico (minúsculas, alias resuelto) o rehúsa nombrándolo. */
+67 | export function normalizeQuantizationLevel(level: string): QuantizationLevel {
+68 |   const lowered = level.toLowerCase()
+69 |   const canonical = LEVEL_ALIASES[lowered] ?? lowered
+70 |   if (!isQuantizationLevel(canonical)) throw new UnknownQuantizationLevelError(level)
+                                                                                         ^
+UnknownQuantizationLevelError: nivel de cuantización desconocido: «f32»
+      at normalizeQuantizationLevel (/home/user/thyrox/src/packages/model-artifacts/quantizationLevel.ts:70:85)
+      at thyroxModelName (/home/user/thyrox/src/packages/model-artifacts/modelName.ts:76:18)
+      at resolvedArtifact (/home/user/thyrox/src/packages/model-artifacts/testing/resolvedArtifactFixture.ts:33:14)
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/hostCoordinatorComposition.test.ts:51:27)
+(fail) cpuPlacementOf por formato del artefacto (TASK-THYROX-0761) > un snapshot de safetensors va a Transformers [0.21ms]
+
+ 5 pass
+ 1 fail
+ 7 expect() calls
+Ran 6 tests across 1 file. [212.00ms]

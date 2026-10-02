@@ -1,0 +1,12 @@
+ok
+ 2 fail
+ 34 pass
+(fail) composeHostCoordinatorService > con la topología por defecto compone una coordinación local y el socket del hogar de runtime [1.19ms]
+(fail) composeHostCoordinatorService > el dueño compuesto pasa la validación de dueño de Podman (sin «@») [0.17ms]
+ 3 pass
+ 0 fail
+tsc model-scheduling: 0 0
+tsc local-models: 2 1
+hostCoordinatorComposition.ts(109,25): error TS2304: Cannot find name 'TransformersRuntimeAdapter'.
+execution thyrox-worker-test-muqdo0zt-8645 kind=test task=TASK-THYROX-0761 exit=0
+__BG_EXIT__=0

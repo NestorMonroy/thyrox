@@ -1,0 +1,7 @@
+bash: line 8: warning: here-document at line 2 delimited by end-of-file (wanted `EOF')
+  File "<stdin>", line 6
+    helper = 
+             ^
+SyntaxError: invalid syntax
+execution thyrox-worker-test-muql1511-13128 kind=test work=ai-course-notes:workbench/bench-convention exit=1
+__BG_EXIT__=1

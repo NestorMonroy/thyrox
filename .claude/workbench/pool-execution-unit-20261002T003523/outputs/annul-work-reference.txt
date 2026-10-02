@@ -1,0 +1,12 @@
+  ok   caso 1: el pool sale 0
+  ok   caso 1: resumen
+  ok   caso 1: cada ítem pide su ejecución a la primitiva
+  ok   caso 1: con la referencia de trabajo del consumidor y dueño pool
+  ok   caso 1: el ejecutor corre dentro de la ejecución con el modelo local
+  ok   caso 1: cada ítem recibe su texto
+  ok   caso 1: ningún ítem ve la credencial del anfitrión
+  ok   caso 1: la autorización no pide secretos
+  ok   caso 2: si la primitiva no ejecuta, nada corre en el anfitrión
+  FALLA caso 3: --execution unit sin referencia de trabajo se rehúsa con 2 — esperado [2] obtenido [1]
+
+9 ok · 1 falla(s) (alcance medido: headless-pool --execution unit)

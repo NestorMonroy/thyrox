@@ -1,0 +1,25 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/podmanModelUnitMaterializer.test.ts:
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un grant caducado [0.79ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un grant de una generación que ya no es la vigente [0.16ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > con la coordinación no disponible [0.09ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un runtime sin perfil de contenedor [0.08ms]
+(pass) PodmanModelUnitMaterializer: materializar > crea, arranca e inspecciona; la unidad lleva su identidad completa [2.73ms]
+(pass) PodmanModelUnitMaterializer: materializar > el contenedor va en loopback, con el dispositivo concedido y las etiquetas de la unidad [2.44ms]
+(pass) PodmanModelUnitMaterializer: materializar > en CPU no pide dispositivos [0.35ms]
+(pass) PodmanModelUnitMaterializer: materializar > si create falla no quedó nada: partial false [0.50ms]
+(pass) PodmanModelUnitMaterializer: materializar > si start falla quedó un contenedor: partial true con su unitId [0.58ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > destroy distingue destruido, ausente y fallido [0.29ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > destroy retira sólo el contenedor de la unidad [0.12ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > units reconstruye cada unidad de sus etiquetas e ignora contenedores ajenos [0.93ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > nunca borra imágenes ni volúmenes [0.32ms]
+(pass) PodmanModelUnitMaterializer: identidad completa > una unidad cuya identidad etiquetada está incompleta no es una unidad de esta primitiva [0.24ms]
+(pass) una unidad de Transformers con el artefacto del grant montado (TASK-THYROX-0776) > expone el artefacto concedido de sólo lectura en la unidad [0.50ms]
+(pass) una unidad de Transformers con el artefacto del grant montado (TASK-THYROX-0776) > un perfil sin montaje declarado no monta nada, como el de Ollama [0.22ms]
+(pass) una unidad de Transformers con el artefacto del grant montado (TASK-THYROX-0776) > una unidad de Transformers se reconstruye desde sus etiquetas [0.88ms]
+
+ 17 pass
+ 0 fail
+ 49 expect() calls
+Ran 17 tests across 1 file. [186.00ms]

@@ -1,0 +1,10 @@
+ 2 fail
+ 20 pass
+(fail) build-image con la referencia de trabajo de un consumidor (TASK-THYROX-0760) > --task y --work juntos no construyen nada [0.24ms]
+(fail) build-image con la referencia de trabajo de un consumidor (TASK-THYROX-0760) > --work construye bajo la identidad del consumidor, sin citar una TASK de thyrox [1.73ms]
+ok
+ 50 pass
+ 0 fail
+tsc=0
+execution thyrox-worker-test-muqatxme-1112 kind=test task=TASK-THYROX-0760 exit=0
+__BG_EXIT__=0

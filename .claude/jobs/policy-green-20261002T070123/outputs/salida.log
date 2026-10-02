@@ -1,0 +1,13 @@
+ 16 pass
+ 0 fail
+ 31 expect() calls
+Ran 16 tests across 1 file. [288.00ms]
+tsc-done
+tests/session/test-headless-pool-model-policy.sh exit=0
+
+12 ok · 0 falla(s) (alcance medido: headless-pool --model-policy)
+tests/session/test-headless-pool-local-model-e2e.sh exit=0
+
+8 ok · 0 falla(s) (alcance medido: modelo local por el coordinador desde la unidad, con dobles)
+execution thyrox-worker-test-muqm73nn-2038 kind=test task=TASK-THYROX-0763 exit=0
+__BG_EXIT__=0

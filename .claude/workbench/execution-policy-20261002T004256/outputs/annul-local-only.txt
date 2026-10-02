@@ -1,0 +1,45 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/recommendExecution.test.ts:
+(pass) recommendExecution — local primero, claude-cli declarado como respaldo > un modelo local cualificado gana: runtime ollama con su cualificación [0.92ms]
+(pass) recommendExecution — local primero, claude-cli declarado como respaldo > catálogo vacío: cae a claude-cli y lo nombra [1.35ms]
+(pass) recommendExecution — local primero, claude-cli declarado como respaldo > sin cualificación aprobada de la clase: cae y nombra la clase [1.42ms]
+(pass) recommendExecution — local primero, claude-cli declarado como respaldo > contexto medido insuficiente: cae y nombra el contexto medido y el exigido [0.38ms]
+(pass) recommendExecution — local primero, claude-cli declarado como respaldo > el respaldo conserva la recomendación del catálogo del proveedor [0.18ms]
+(pass) recommendExecution con una política de ejecución declarada (TASK-THYROX-0758) > elige sólo entre los modelos que la política permite, aunque otro sea más rápido [0.40ms]
+(pass) recommendExecution con una política de ejecución declarada (TASK-THYROX-0758) > sin candidato permitido cualificado y sin respaldo: bloqueada con su causa, nunca claude-cli [0.08ms]
+(pass) recommendExecution con una política de ejecución declarada (TASK-THYROX-0758) > con el respaldo declarado, cae a claude-cli y lo nombra [0.19ms]
+(pass) recommendExecution con una política de ejecución declarada (TASK-THYROX-0758) > sin política, el comportamiento de hoy no cambia [0.11ms]
+(pass) parseExecutionPolicy > el respaldo no tiene valor por defecto: sin declararlo se rehúsa [0.12ms]
+149 |     expect(() => parseExecutionPolicy(JSON.stringify({ allowed: [] }))).toThrow(ExecutionPolicyError)
+150 |   })
+151 | 
+152 |   test('sólo se permiten modelos locales por su repositorio; un proveedor no se lista', () => {
+153 |     expect(() => parseExecutionPolicy(JSON.stringify({ allowed: [{ runtime: 'claude-cli', repository: 'anthropic/claude' }], fallback: { enabled: false } })))
+154 |       .toThrow(ExecutionPolicyError)
+             ^
+error: expect(received).toThrow(expected)
+
+Expected constructor: ExecutionPolicyError
+
+Received function did not throw
+Received value: {
+  allowed: [
+    {
+      runtime: "ollama",
+      repository: "anthropic/claude",
+    }
+  ],
+  fallback: {
+    enabled: false,
+  },
+}
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/recommendExecution.test.ts:154:8)
+(fail) parseExecutionPolicy > sólo se permiten modelos locales por su repositorio; un proveedor no se lista [0.25ms]
+(pass) parseExecutionPolicy > un JSON ilegible se rehúsa con su causa [0.14ms]
+
+ 11 pass
+ 1 fail
+ 25 expect() calls
+Ran 12 tests across 1 file. [196.00ms]

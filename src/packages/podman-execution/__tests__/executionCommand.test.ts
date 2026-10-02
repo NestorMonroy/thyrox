@@ -217,6 +217,60 @@ describe('reconcile-orphans: un contenedor cuyo dueño de tarea murió se retira
   })
 })
 
+describe('run con la referencia de trabajo de un consumidor', () => {
+  test('--work autoriza con la identidad del consumidor y --owner declara el dueño del pool', async () => {
+    const h = harness()
+    const code = await runExecutionCommand(['run', '--work', 'ai-course-notes:cs224r/n/001', '--owner', 'pool:cs224r-001',
+      '--kind', 'test', '--', 'true'], h.deps)
+    const argv = createArgv(h)
+    expect(code).toBe(0)
+    expect(argv).toContain('thyrox.execution-reference=work:ai-course-notes:cs224r/n/001')
+    expect(argv).toContain('thyrox.owner-kind=pool')
+    expect(argv).toContain('thyrox.owner-id=cs224r-001')
+    expect(h.stderr.join('')).toContain('kind=test work=ai-course-notes:cs224r/n/001 exit=0')
+  })
+
+  test('--task y --work juntos no son una autorización', async () => {
+    const h = harness()
+    const code = await runExecutionCommand(['run', '--task', 'TASK-THYROX-0001', '--work', 'a:b', '--kind', 'test', '--', 'true'], h.deps)
+    expect(code).toBe(2)
+    expect(h.calls).toHaveLength(0)
+  })
+
+  test('un dueño que no es de pool no se declara por línea de orden', async () => {
+    const h = harness()
+    const code = await runExecutionCommand(['run', '--work', 'a:b', '--owner', 'model-coordinator:x', '--kind', 'test', '--', 'true'], h.deps)
+    expect(code).toBe(2)
+    expect(h.calls).toHaveLength(0)
+  })
+})
+
+describe('build-image con la referencia de trabajo de un consumidor (TASK-THYROX-0775)', () => {
+  test('--work construye bajo la identidad del consumidor, sin citar una TASK de thyrox', async () => {
+    const h = harness()
+    const code = await runExecutionCommand(['build-image', '--work', 'ai-course-notes:es-mx/execution-image',
+      '--context', '/srv/ctx', '--tag', 'localhost/ai-course-notes-runner:dev'], h.deps)
+    const build = h.calls.find(call => call[0] === 'build') ?? []
+    expect(code).toBe(0)
+    expect(build).toContain('thyrox.execution-reference=work:ai-course-notes:es-mx/execution-image')
+    expect(build.some(arg => arg.startsWith('thyrox.task='))).toBe(false)
+  })
+
+  test('una tarea de thyrox conserva su etiqueta de hoy', async () => {
+    const h = harness()
+    await runExecutionCommand(['build-image', '--task', 'TASK-THYROX-0001', '--context', '/srv/ctx', '--tag', 'localhost/x:dev'], h.deps)
+    expect(h.calls.find(call => call[0] === 'build')).toContain('thyrox.task=TASK-THYROX-0001')
+  })
+
+  test('--task y --work juntos no construyen nada', async () => {
+    const h = harness()
+    const code = await runExecutionCommand(['build-image', '--task', 'TASK-THYROX-0001', '--work', 'a:b',
+      '--context', '/srv/ctx', '--tag', 'localhost/x:dev'], h.deps)
+    expect(code).toBe(2)
+    expect(h.calls).toHaveLength(0)
+  })
+})
+
 describe('thyrox-exec build-image', () => {
   function buildArgv(h: Harness): string {
     return (h.calls.find(call => call[0] === 'build') ?? []).join(' ')

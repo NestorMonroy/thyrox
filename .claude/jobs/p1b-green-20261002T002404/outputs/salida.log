@@ -1,0 +1,6 @@
+ok
+ 47 pass
+ 0 fail
+tsc=0
+execution thyrox-worker-test-muq805cp-15573 kind=test task=TASK-THYROX-0756 exit=0
+__BG_EXIT__=0

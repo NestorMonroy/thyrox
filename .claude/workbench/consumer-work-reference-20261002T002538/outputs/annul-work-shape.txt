@@ -1,0 +1,73 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/executionAuthorization.test.ts:
+(pass) ExecutionAuthorization > una autorización de tarea completa se acepta [0.89ms]
+(pass) ExecutionAuthorization > una autorización de modelo, sin comando ni directorio, se acepta [0.13ms]
+(pass) ExecutionAuthorization > la tarea se cita con su forma durable, no con el ordinal del board [3.58ms]
+(pass) ExecutionAuthorization > un runtime de modelo se autoriza por un grant, no por una tarea [0.12ms]
+(pass) ExecutionAuthorization > un trabajo de tarea no se autoriza por un grant [0.04ms]
+(pass) ExecutionAuthorization > el tipo de ejecución es uno de los declarados [0.04ms]
+(pass) ExecutionAuthorization > un comando declarado no puede estar vacío [0.04ms]
+(pass) ExecutionAuthorization > un directorio de trabajo declarado vive dentro de un montaje [0.05ms]
+(pass) ExecutionAuthorization > una salida declarada vive bajo un montaje de escritura [0.15ms]
+(pass) ExecutionAuthorization > una autorización vencida se rehúsa [0.05ms]
+(pass) ExecutionAuthorization > el dueño se valida [0.10ms]
+(pass) ExecutionAuthorization > una etiqueta propia no reescribe las de la ejecución [0.07ms]
+(pass) ExecutionAuthorization > una variable que nombra una credencial se rehúsa: su valor quedaría en podman inspect [0.64ms]
+(pass) el contenedor que materializa una autorización > lleva tipo, referencia e id en sus etiquetas, su directorio de trabajo, su montaje y su red [3.67ms]
+(pass) el contenedor que materializa una autorización > el de un modelo publica su puerto en loopback, concede sus dispositivos y lleva sus etiquetas [0.36ms]
+(pass) el contenedor que materializa una autorización > un secreto se monta como archivo, nunca como variable [0.23ms]
+(pass) el contenedor que materializa una autorización > un raíz de sólo lectura declarado se traduce a --read-only en el argv de create [0.13ms]
+(pass) el contenedor que materializa una autorización > sin declarar el raíz, la materialización conserva el comportamiento de hoy: escribible [0.15ms]
+(pass) el contenedor que materializa una autorización > runExecution corre el contenedor hasta que termina y lo retira [1.38ms]
+(pass) el contenedor que materializa una autorización > materializeExecution crea, arranca e inspecciona: devuelve la ExecutionUnit canónica y no espera ni retira [0.74ms]
+(pass) el contenedor que materializa una autorización > un contenedor sin proceso ni cgroup informado da una unidad sin PIDs ni cgroup [0.23ms]
+(pass) el contenedor que materializa una autorización > si la inspección falla, nombra la etapa inspect y deja el contenedor a su dueño [0.34ms]
+(pass) el contenedor que materializa una autorización > una inspección ilegible también es la etapa inspect, no un éxito sin identidad [0.78ms]
+(pass) el contenedor que materializa una autorización > si el arranque falla, materializeExecution nombra la etapa y deja el contenedor a su dueño [0.26ms]
+(pass) el contenedor que materializa una autorización > una autorización inválida no llega a Podman [0.22ms]
+(pass) la referencia de trabajo de un consumidor > autoriza un trabajo de tarea con la identidad del consumidor, sin convertirla en TASK [0.15ms]
+243 |     const argv = createWorkerContainerArgv(executionContainerSpec(authorization({ reference: work })))
+244 |     expect(argv).toContain(`${EXECUTION_REFERENCE_LABEL_KEY}=work:ai-course-notes:${work.workId}`)
+245 |   })
+246 | 
+247 |   test('un consumidor o un id fuera de su forma se rehúsan', () => {
+248 |     expect(refusedField(authorization({ reference: { ...work, consumer: 'AI Notes' } }))).toBe('reference')
+                                                                                                ^
+error: expect(received).toBe(expected)
+
+Expected: "reference"
+Received: "accepted"
+
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/executionAuthorization.test.ts:248:91)
+(fail) la referencia de trabajo de un consumidor > un consumidor o un id fuera de su forma se rehúsan [0.42ms]
+(pass) la referencia de trabajo de un consumidor > un runtime de modelo no se autoriza por una referencia de trabajo [0.05ms]
+
+__tests__/executionCommand.test.ts:
+(pass) parseMount > sin destino ni modo: la misma ruta, sólo lectura [0.14ms]
+(pass) parseMount > con modo y sin destino [0.07ms]
+(pass) parseMount > con destino y modo [0.02ms]
+(pass) thyrox-exec run > el payload corre en la unidad, con el repositorio montado de escritura en su propia ruta [1.71ms]
+(pass) thyrox-exec run > THYROX_EXEC_IMAGE elige la imagen [0.31ms]
+(pass) thyrox-exec run > --script-stdin entrega el guion a bash dentro de la unidad [0.25ms]
+(pass) thyrox-exec run > la red host lleva el proxy y monta su CA de sólo lectura [0.37ms]
+(pass) thyrox-exec run > sin red, el proxy no viaja [0.46ms]
+(pass) thyrox-exec run > sin payload rehúsa con 2 y no invoca Podman [0.24ms]
+(pass) thyrox-exec run > una cita de tarea inválida rehúsa con 2 nombrando el campo [0.16ms]
+(pass) thyrox-exec run > el veredicto de la unidad es el de la orden [0.32ms]
+(pass) --secret-from-env: la credencial llega a la unidad como secreto montado > materializa el secreto por stdin y lo monta; el valor no aparece en ningún argv ni salida [0.99ms]
+(pass) --secret-from-env: la credencial llega a la unidad como secreto montado > un secreto con el mismo valor no se recrea [0.47ms]
+(pass) --secret-from-env: la credencial llega a la unidad como secreto montado > credencial ausente: sale 2, lo nombra y no toca Podman [0.15ms]
+(pass) reconcile-orphans: un contenedor cuyo dueño de tarea murió se retira sin intervención > retira sólo el de dueño de tarea con PID muerto; deja vivos y ajenos [1.16ms]
+(pass) reconcile-orphans: un contenedor cuyo dueño de tarea murió se retira sin intervención > sin huérfanos, sale 0 y lo dice [0.14ms]
+(pass) run con la referencia de trabajo de un consumidor > --work autoriza con la identidad del consumidor y --owner declara el dueño del pool [0.30ms]
+(pass) run con la referencia de trabajo de un consumidor > --task y --work juntos no son una autorización [0.19ms]
+(pass) run con la referencia de trabajo de un consumidor > un dueño que no es de pool no se declara por línea de orden [0.12ms]
+
+1 tests failed:
+(fail) la referencia de trabajo de un consumidor > un consumidor o un id fuera de su forma se rehúsan [0.42ms]
+
+ 46 pass
+ 1 fail
+ 102 expect() calls
+Ran 47 tests across 2 files. [233.00ms]

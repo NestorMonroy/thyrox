@@ -1,0 +1,19 @@
+tsc provider: 12 errores, propios: 0
+tsc agent: 12 errores, propios: 0
+tsc provider en HEAD: 12
+== policy-filter: 3 caen
+    (fail) recommendExecution con una política de ejecución declarada (TASK-THYROX-0758) > elige sólo entre los modelos que la política permite, aunque ot
+    (fail) recommendExecution con una política de ejecución declarada (TASK-THYROX-0758) > sin candidato permitido cualificado y sin respaldo: bloqueada c
+    (fail) recommendExecution con una política de ejecución declarada (TASK-THYROX-0758) > con el respaldo declarado, cae a claude-cli y lo nombra [0.21ms
+Traceback (most recent call last):
+  File "/scratch/annul.py", line 10, in <module>
+    assert original.count(old) == 1, (name, old)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('no-fallback', "  if (policy !== undefined && !policy.fallback.enabled) {\\n    return { runtime: 'blocked'")
+Traceback (most recent call last):
+  File "/scratch/annul.py", line 10, in <module>
+    assert original.count(old) == 1, (name, old)
+           ^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: ('cli-runtime-guard', '    if (policy !== undefined && !policy.fallback.enabled) {\\n      throw new RefusalError')
+execution thyrox-worker-test-muq8irnu-11761 kind=test task=TASK-THYROX-0758 exit=1
+__BG_EXIT__=1

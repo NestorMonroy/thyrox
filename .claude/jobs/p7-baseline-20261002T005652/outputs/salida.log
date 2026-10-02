@@ -1,0 +1,9 @@
+línea base: 29 fallos · con P7: 30
+sólo con P7:
+tests/test_translation_loop.py::test_a_wave_stops_launching_batches_once_one_hits_the_session_limit
+sólo en la línea base:
+     10 ERROR — falta hunspell
+      2 falta el
+ 3 files changed, 110 insertions(+), 65 deletions(-)
+execution thyrox-worker-test-muq96bqf-27623 kind=test work=ai-course-notes:es-mx/executor-qwen exit=0
+__BG_EXIT__=0

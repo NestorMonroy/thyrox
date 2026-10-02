@@ -1,0 +1,12 @@
+test ok
+  FALLA caso 4: la unidad monta el directorio del socket de sólo lectura — esperado [1] obtenido [0]
+  FALLA caso 4: y nombra el socket del coordinador — esperado [1] obtenido [0]
+  ok   caso 4: no monta el runtime entero
+11 ok · 2 falla(s) (alcance medido: headless-pool --execution unit)
+pool ok
+13 ok · 0 falla(s) (alcance medido: headless-pool --execution unit)
+12 ok · 0 falla(s) (alcance medido: headless-pool --model-policy)
+10 ok, 0 fallas (alcance medido: 1 archivo, 7 términos prohibidos, 3 congelados)
+python3: can't open file '/tmp/annul-sh.py': [Errno 2] No such file or directory
+execution thyrox-worker-test-muq8se5k-20152 kind=test task=TASK-THYROX-0759 exit=0
+__BG_EXIT__=0

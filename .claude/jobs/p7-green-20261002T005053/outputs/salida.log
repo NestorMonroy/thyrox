@@ -1,0 +1,10 @@
+ok
+24:from="" to="" jobs=3 model="" compile=""
+34:if [[ -z "$from" || -z "$to" || -z "$model" ]]; then
+53:# marca `limite`, y los que aún no arrancan salen con 5 sin llamar al modelo:
+66:export LOOP WAVE model width compile
+FAILED tests/test_translation_loop.py::test_a_wave_stops_launching_batches_once_one_hits_the_session_limit
+FAILED tests/test_translation_loop.py::test_retranslate_leaves_each_chunk_a_correction_naming_what_failed
+30 failed, 31 passed in 155.15s (0:02:35)
+execution thyrox-worker-test-muq8ymwi-25498 kind=test work=ai-course-notes:es-mx/executor-qwen exit=0
+__BG_EXIT__=0

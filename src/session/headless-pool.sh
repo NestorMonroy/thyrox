@@ -21,6 +21,26 @@
 #     (`model-selection-subagents.md`);
 #   - deja su salida en disco, por item, antes de que nadie la resuma.
 #
+# `--execution unit` (TASK-THYROX-0772) hace que cada ítem pida su ejecución a
+# la primitiva por el runner gestionado (`src/lib/managed_execution.sh`, el de
+# `thyrox-bg`) en vez de lanzar su ejecutor en el anfitrión. El ítem se
+# autoriza por la identidad de trabajo del consumidor —`--work-reference
+# CONSUMIDOR:ÁMBITO`, y el ítem n es `ÁMBITO/n`— con dueño `pool`, y no recibe
+# ninguna credencial del pool. El pool sigue siendo el distribuidor: cómo se
+# materializa la unidad lo decide la primitiva. Por defecto, `host`.
+#
+# `--model-policy ARCHIVO` (TASK-THYROX-0773) es la política de ejecución del
+# consumidor (`@thyrox/provider: executionPolicy.ts`): viaja al recomendador, y
+# si no permite el respaldo, el pool rehúsa en vez de caer a `claude-cli` —por
+# una recomendación bloqueada, por un Ollama que no arranca o por un runtime
+# de proveedor que llegue igual—. Sin política, el comportamiento de hoy.
+#
+# `--context-tokens N` (TASK-THYROX-0781) es el contexto que cada ítem necesita
+# por turno, y viaja al recomendador como `--context N`. Sin declararlo, el
+# recomendador exige su piso de subagente (126 029 tokens), que ningún modelo
+# local de 32k alcanza aunque esté cualificado; un ítem de traducción midió
+# p90 13 406 tokens por turno en 400 ítems de olas anteriores.
+#
 # El modelo de los ítems no se declara: se deriva de `--task-class` con
 # `bin/agent-recommend` (`recommend(tipo, perfil)` de @thyrox/agent), que
 # fija rango mínimo y compara los registros del catálogo. Un identificador
@@ -37,6 +57,8 @@
 #                    [--credential-proxy | --store-credential-proxy]
 #                    [--credential-source inherit|proxy-env|proxy-store|proxy-store-url]
 #                    [--isolation worktree [--verify CMD]]
+#                    [--execution host|unit [--work-reference CONSUMIDOR:ÁMBITO]]
+#                    [--model-policy ARCHIVO] [--context-tokens N]
 #                    < items (uno por linea)
 #
 # Sin `--max-turns` el ítem no tiene tope de turnos, igual que `claude -p`:
@@ -197,6 +219,7 @@ RUNNER_KIND=thyrox
 PROMPT=""; OUT=""; MODEL=""; TASK_CLASS=""
 WIDTH="$(nproc 2>/dev/null || echo 4)"
 TIMEOUT=600; TOOLS="Read"; TOOLS_SET=""; ISOLATION=""; VERIFY=""; MAX_TURNS=""; WORKDIR="$PWD"; MEMFREE_SPEC=""; CACHE_TTL=""; CREDENTIAL_PROXY=""; STORE_CREDENTIAL_PROXY=""; CREDENTIAL_SOURCE=""
+EXECUTION=host; WORK_REFERENCE=""; MODEL_POLICY=""; POLICY_FALLBACK=""; CONTEXT_TOKENS=""
 
 rehusa() { echo "headless-pool: REHUSA — $*" >&2; exit 2; }
 
@@ -219,10 +242,35 @@ while [[ $# -gt 0 ]]; do
         --store-credential-proxy) STORE_CREDENTIAL_PROXY=1; shift ;;
         --credential-source) CREDENTIAL_SOURCE="${2:-}"; shift 2 ;;
         --runner) RUNNER_KIND="${2:-}"; shift 2 ;;
+        --execution) EXECUTION="${2:-}"; shift 2 ;;
+        --work-reference) WORK_REFERENCE="${2:-}"; shift 2 ;;
+        --model-policy) MODEL_POLICY="${2:-}"; shift 2 ;;
+        --context-tokens) CONTEXT_TOKENS="${2:-}"; shift 2 ;;
         -h|--help) sed -n '2,69p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) rehusa "opcion desconocida: $1" ;;
     esac
 done
+# Dónde corre cada ítem. En la unidad el ítem no hereda el entorno del pool, así
+# que una fuente de credencial del pool no le llegaría: se rehúsa en vez de
+# aceptarla y no entregarla.
+case "$EXECUTION" in
+    host) [[ -z "$WORK_REFERENCE" ]] || rehusa "--work-reference sólo aplica con --execution unit" ;;
+    unit)
+        [[ "$WORK_REFERENCE" =~ ^[a-z0-9][a-z0-9-]*:[A-Za-z0-9][A-Za-z0-9_.:/-]*$ ]] \
+            || rehusa "--execution unit exige --work-reference CONSUMIDOR:ÁMBITO, la identidad de trabajo del consumidor; no: ${WORK_REFERENCE:-(vacía)}"
+        [[ -z "$ISOLATION" ]] || rehusa "--execution unit no va todavía con --isolation worktree"
+        [[ -z "$CREDENTIAL_PROXY$STORE_CREDENTIAL_PROXY$CREDENTIAL_SOURCE" ]] \
+            || rehusa "--execution unit no entrega credenciales del pool al ítem: no va con --credential-*" ;;
+    *) rehusa "--execution va host o unit, no: $EXECUTION" ;;
+esac
+# El respaldo de la política se lee aquí sólo para defender la frontera; la
+# política la interpreta el recomendador. Sin `fallback.enabled` no hay default.
+if [[ -n "$MODEL_POLICY" ]]; then
+    [[ -r "$MODEL_POLICY" ]] || rehusa "--model-policy no se puede leer: $MODEL_POLICY"
+    POLICY_FALLBACK="$(jq -r '.fallback.enabled | if type == "boolean" then tostring else "" end' "$MODEL_POLICY" 2>/dev/null)"
+    [[ "$POLICY_FALLBACK" == true || "$POLICY_FALLBACK" == false ]] \
+        || rehusa "--model-policy declara fallback.enabled (true o false); el respaldo no tiene valor por defecto: $MODEL_POLICY"
+fi
 
 command -v "$PARALLEL_BIN" >/dev/null 2>&1 \
     || rehusa "falta GNU parallel ($PARALLEL_BIN). Se instala con THYROX_INSTALL_PARALLEL=1 via src/lib/toolchain.sh."
@@ -239,6 +287,8 @@ case "$TASK_CLASS" in
     mecanica|analisis|adversarial|frontera) ;;
     *) rehusa "--task-class va mecanica, analisis, adversarial o frontera, no: ${TASK_CLASS:-(vacio)}" ;;
 esac
+[[ -z "$CONTEXT_TOKENS" || "$CONTEXT_TOKENS" =~ ^[1-9][0-9]*$ ]] \
+    || rehusa "--context-tokens exige un entero positivo de tokens, no: $CONTEXT_TOKENS"
 # >>> runtime-routing
 RECOMMEND_BIN="${HEADLESS_POOL_RECOMMEND:-$THYROX_ROOT/bin/agent-recommend}"
 INFRASTRUCTURE_ENSURE_BIN="${HEADLESS_POOL_INFRASTRUCTURE_ENSURE:-$THYROX_ROOT/bin/infrastructure_ensure}"
@@ -250,14 +300,20 @@ readonly LOCAL_RUNTIME=ollama PROVIDER_RUNTIME=claude-cli MANAGED_OLLAMA_SERVICE
 # proveedor—, rehúsa sin lanzar nada: un modelo por defecto aquí volvería a
 # escribirlo a mano.
 derive_recommendation() {
-    local reply
-    reply="$(bash "$RECOMMEND_BIN" "$TASK_CLASS" "$@" --json 2>/dev/null)" || reply=""
+    local reply rc=0
+    reply="$(bash "$RECOMMEND_BIN" "$TASK_CLASS" "$@" ${MODEL_POLICY:+--policy "$MODEL_POLICY"} \
+        ${CONTEXT_TOKENS:+--context "$CONTEXT_TOKENS"} --json 2>/dev/null)" || rc=$?
+    # 3: la política bloqueó la clase; su causa viene en el JSON.
+    [[ "$rc" -ne 3 ]] || rehusa "la política de modelo bloquea --task-class $TASK_CLASS: $(jq -r '.blockedReason // "sin causa"' <<< "$reply" 2>/dev/null)"
+    [[ "$rc" -eq 0 ]] || reply=""
     IFS=$'\t' read -r RUNTIME MODEL FALLBACK_REASON < <(printf '%s' "$reply" \
         | jq -r --arg default "$PROVIDER_RUNTIME" '[.runtime // $default, .model // "", .fallbackReason // ""] | @tsv' 2>/dev/null)
     case "$RUNTIME:$MODEL" in
         "$LOCAL_RUNTIME":thyrox-*|"$PROVIDER_RUNTIME":claude-*) ;;
         *) rehusa "no se pudo derivar el modelo de --task-class $TASK_CLASS con $RECOMMEND_BIN: runtime ${RUNTIME:-(sin respuesta)}, modelo ${MODEL:-(sin respuesta)}" ;;
     esac
+    [[ "$POLICY_FALLBACK" != false || "$RUNTIME" == "$LOCAL_RUNTIME" ]] \
+        || rehusa "la política de modelo no permite el proveedor y el selector devolvió $RUNTIME ($MODEL)"
 }
 derive_recommendation
 # El modelo local exige el Ollama gestionado en marcha. Si no arranca, el pool
@@ -267,6 +323,8 @@ ensure_local_runtime() {
     local ensure_exit=0
     bash "$INFRASTRUCTURE_ENSURE_BIN" "$MANAGED_OLLAMA_SERVICE" >&2 || ensure_exit=$?
     [[ "$ensure_exit" -ne 0 ]] || return 0
+    [[ "$POLICY_FALLBACK" != false ]] \
+        || rehusa "$MANAGED_OLLAMA_SERVICE no arrancó (infrastructure_ensure salió $ensure_exit) y la política de modelo no permite respaldo"
     derive_recommendation --runtime "$PROVIDER_RUNTIME"
     FALLBACK_REASON="$MANAGED_OLLAMA_SERVICE no arrancó (infrastructure_ensure salió $ensure_exit)"
 }
@@ -393,6 +451,15 @@ if [[ "$RUNTIME" == "$LOCAL_RUNTIME" ]]; then
     ensure_local_runtime
 fi
 announce_model
+# Con el modelo local en la unidad, el `thyrox -p` del ítem pide admisión al
+# coordinador de ESTE anfitrión: la unidad recibe su socket —el directorio de
+# sólo lectura y la ruta nombrada—, no el runtime entero (TASK-THYROX-0774).
+HP_COORDINATOR_SOCKET=""
+if [[ "$EXECUTION" == unit && "$RUNTIME" == "$LOCAL_RUNTIME" ]]; then
+    HP_COORDINATOR_SOCKET="${THYROX_MODEL_COORDINATOR_SOCKET:-$(bash "$THYROX_ROOT/bin/model-scheduling-socket-path" 2>/dev/null)}"
+    [[ "$HP_COORDINATOR_SOCKET" == /* ]] || rehusa "no se resolvió el socket del coordinador para el modelo local $MODEL"
+fi
+export HP_COORDINATOR_SOCKET
 # Con el modelo local el ítem no recibe ningún upstream: su `thyrox -p` pasa el
 # nombre contractual a su proxy, que pide la admisión al coordinador del
 # anfitrión y sólo alcanza la unidad del ticket (ADR-007 1.14.0, M8).
@@ -748,12 +815,38 @@ _headless_item_run() {
          # `setsid` hace del ítem el líder de una sesión propia: su pid es el id
          # de la sesión, y todo lo que lance —también lo que `timeout` pone en
          # otro grupo de procesos— queda dentro, donde el drenaje lo encuentra.
-         exec setsid ${HP_TIME:+"$HP_TIME" -q -f "%M %e %U %S" -o "$HP_LIVE/$n.time"} \
-         timeout "$HP_TIMEOUT" "$HP_RUNNER" -p \
+         item_argv=("$HP_RUNNER" -p \
             --model "$HP_MODEL" --setting-sources project \
             --tools "$HP_TOOLS" --allowedTools "$HP_TOOLS" \
             ${HP_MAX_TURNS:+--max-turns "$HP_MAX_TURNS"} --no-session-persistence "${session_args[@]}" \
-            --output-format stream-json --verbose) \
+            --output-format stream-json --verbose)
+         if [[ "$HP_EXECUTION" == unit ]]; then
+             # La unidad no recibe la entrada estándar del pool: el texto del
+             # ítem va a un archivo de su salida, que la unidad monta. Recibe
+             # sólo las variables que el pool le nombra, ninguna credencial.
+             cat > "$HP_LIVE/$n.prompt"
+             mapfile -t execute_argv <<< "$HP_EXECUTE_RUNNER_ARGV"
+             unit_args=(--work "$HP_WORK_CONSUMER:$HP_WORK_SCOPE/$n" --owner "pool:${HP_WORK_SCOPE//[^A-Za-z0-9_.-]/-}-$n"
+                        --kind maintenance --network host --workdir "$workdir")
+             mounted=("$HP_THYROX_ROOT")
+             for path in "$workdir" "$HP_LIVE"; do
+                 covered=""
+                 for parent in "${mounted[@]}"; do [[ "$path/" == "$parent/"* ]] && covered=1; done
+                 [[ -n "$covered" ]] || { unit_args+=(--mount "$path:$path:rw"); mounted+=("$path"); }
+             done
+             if [[ -n "$HP_COORDINATOR_SOCKET" ]]; then
+                 export THYROX_MODEL_COORDINATOR_SOCKET="$HP_COORDINATOR_SOCKET"
+                 unit_args+=(--mount "${HP_COORDINATOR_SOCKET%/*}:${HP_COORDINATOR_SOCKET%/*}:ro" --env THYROX_MODEL_COORDINATOR_SOCKET)
+             fi
+             for name in THYROX_CODE_PROMPT_CACHE_TTL THYROX_POOL_DOCUMENT_INTENT THYROX_POOL_RUN_ID THYROX_POOL_ITEM \
+                         THYROX_POOL_ITEM_GENERATION THYROX_MAILBOX_DIR THYROX_POOL_ITEM_ADDRESS; do
+                 [[ -z "${!name:-}" ]] || unit_args+=(--env "$name")
+             done
+             exec setsid timeout "$HP_TIMEOUT" "${execute_argv[@]}" run "${unit_args[@]}" \
+                -- bash -c 'prompt="$1"; shift; exec "$@" < "$prompt"' item "$HP_LIVE/$n.prompt" "${item_argv[@]}"
+         fi
+         exec setsid ${HP_TIME:+"$HP_TIME" -q -f "%M %e %U %S" -o "$HP_LIVE/$n.time"} \
+         timeout "$HP_TIMEOUT" "${item_argv[@]}") \
       > "$HP_LIVE/$n.stream.jsonl" 2> "$HP_LIVE/$n.err" &
     local pid=$! monitor=""
     # La sesión del ítem y el shell que la publica, para que el pool los drene
@@ -882,6 +975,12 @@ export HP_PROMPT HP_OUT HP_RUNNER
 export HP_WORKDIR="$WORKDIR" HP_TIMEOUT="$TIMEOUT" HP_MODEL="$MODEL"
 export HP_TOOLS="$TOOLS" HP_MAX_TURNS="$MAX_TURNS" HP_CACHE_TTL="$CACHE_TTL"
 export HP_ISOLATION="$ISOLATION" HP_VERIFY="$VERIFY" HP_RUNNER_KIND="$RUNNER_KIND"
+# El runner gestionado, el mismo que usa `thyrox-bg --task`: el pool sólo pide la
+# ejecución; qué la materializa no vive en este guion.
+# shellcheck source=../lib/managed_execution.sh
+source "$THYROX_ROOT/src/lib/managed_execution.sh"
+export HP_EXECUTION="$EXECUTION" HP_WORK_CONSUMER="${WORK_REFERENCE%%:*}" HP_WORK_SCOPE="${WORK_REFERENCE#*:}"
+export HP_THYROX_ROOT="$THYROX_ROOT" HP_EXECUTE_RUNNER_ARGV="$(thyrox_managed_execution_runner_argv)"
 export HP_ITEM_WORKTREE="${HEADLESS_POOL_ITEM_WORKTREE:-$HP_HERE/item_worktree.sh}"
 # Cuánto se espera a que un hijo del ítem salga solo después de que salió el
 # principal, antes de terminarlo (`process_ownership drain`).
@@ -920,6 +1019,12 @@ fi
 HP_TIME="$(THYROX_TOOLCHAIN_TIME_BIN="${HEADLESS_POOL_TIME:-${THYROX_TOOLCHAIN_TIME_BIN:-}}"
            source "$HP_HERE/../lib/toolchain.sh"
            thyrox_toolchain_require_gnu_time 2>/dev/null && thyrox_toolchain_gnu_time_bin)" || HP_TIME=""
+# En la unidad, GNU Time mediría al cliente que espera la ejecución, no al ítem:
+# sus filas contaminarían el historial de memoria. La unidad acota memoria y CPU.
+if [[ "$EXECUTION" == unit && -n "$HP_TIME" ]]; then
+    HP_TIME=""
+    echo "medida: --execution unit no mide el ítem con GNU Time; lo acota la unidad"
+fi
 export HP_TIME
 
 MEMFREE_ARGS=()

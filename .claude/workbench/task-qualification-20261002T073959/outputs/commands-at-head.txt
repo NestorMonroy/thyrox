@@ -1,0 +1,96 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/commands.test.ts:
+(pass) local-models-catalog > declare inspecciona el volumen declarado y guarda bajo .thyrox/models de la raíz [21.80ms]
+(pass) local-models-catalog > THYROX_MODEL_CATALOG gana a la ruta por defecto [8.81ms]
+(pass) local-models-catalog > un modelo no instalado sale 2 con la causa [5.09ms]
+(pass) local-models-catalog > list sobre un catálogo inválido sale 2 con la ruta, no una lista vacía [2.45ms]
+(pass) local-models-catalog > declare <nombre-hf> --revision <commit> conserva la identidad hf y no copia [8.40ms]
+(pass) local-models-catalog > declare <nombre-hf> sin --revision sale 2 nombrando la opción [5.94ms]
+(pass) local-models-catalog > --revision sin valor o con argumentos de más sale 2 con el uso [2.26ms]
+(pass) local-models-catalog > sin subcomando conocido sale 2 con el uso [1.60ms]
+173 |   }
+174 | 
+175 |   test('seis aciertos: sale 0 y escribe la cualificación con el contexto acotado al máximo del modelo', async () => {
+176 |     const install = await declaredInstallation(correct)
+177 |     const result = await run(runQualifyCommand, [CONTRACT_NAME], install)
+178 |     expect(result.code).toBe(0)
+                              ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 2
+
+      at <anonymous> (/home/user/thyrox/.thyrox/runtime/baseline-commands-1/src/packages/local-models/__tests__/commands.test.ts:178:25)
+(fail) local-models-qualify > seis aciertos: sale 0 y escribe la cualificación con el contexto acotado al máximo del modelo [26.11ms]
+182 |     expect(stored?.taskClass).toBeUndefined()
+183 |   })
+184 | 
+185 |   test('--context declarado viaja como num_ctx', async () => {
+186 |     const install = await declaredInstallation(correct)
+187 |     expect((await run(runQualifyCommand, [CONTRACT_NAME, '--context', '2048'], install)).code).toBe(0)
+                                                                                                     ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 2
+
+      at <anonymous> (/home/user/thyrox/.thyrox/runtime/baseline-commands-1/src/packages/local-models/__tests__/commands.test.ts:187:96)
+(fail) local-models-qualify > --context declarado viaja como num_ctx [11.11ms]
+191 |   })
+192 | 
+193 |   test('suspendida: sale 1 y también se escribe', async () => {
+194 |     const install = await declaredInstallation(() => ({ content: 'no' }))
+195 |     const result = await run(runQualifyCommand, [CONTRACT_NAME], install)
+196 |     expect(result.code).toBe(1)
+                              ^
+error: expect(received).toBe(expected)
+
+Expected: 1
+Received: 2
+
+      at <anonymous> (/home/user/thyrox/.thyrox/runtime/baseline-commands-1/src/packages/local-models/__tests__/commands.test.ts:196:25)
+(fail) local-models-qualify > suspendida: sale 1 y también se escribe [12.78ms]
+199 | 
+200 |   test('un modelo fuera del catálogo sale 2 sin medir', async () => {
+201 |     const install = installation(correct)
+202 |     const result = await run(runQualifyCommand, [CONTRACT_NAME], install)
+203 |     expect(result.code).toBe(2)
+204 |     expect(result.stderr.join('\n')).toContain('no está en el catálogo')
+                                           ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "no está en el catálogo"
+Received: "local-models-qualify: no hay coordinador de model scheduling en /root/.thyrox/model-scheduling/coordinator.sock: connect ENOENT /root/.thyrox/model-scheduling/coordinator.sock"
+
+      at <anonymous> (/home/user/thyrox/.thyrox/runtime/baseline-commands-1/src/packages/local-models/__tests__/commands.test.ts:204:38)
+(fail) local-models-qualify > un modelo fuera del catálogo sale 2 sin medir [2.28ms]
+(pass) local-models-qualify > --context por encima del máximo del modelo sale 2 sin medir [7.74ms]
+212 |     expect(server?.requests.some(r => r.path === '/api/chat')).toBe(false)
+213 |   })
+214 | 
+215 |   test('--isolated declara la medición aislada; sin él queda contended', async () => {
+216 |     const install = await declaredInstallation(correct)
+217 |     expect((await run(runQualifyCommand, [CONTRACT_NAME, '--isolated'], install)).code).toBe(0)
+                                                                                              ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 2
+
+      at <anonymous> (/home/user/thyrox/.thyrox/runtime/baseline-commands-1/src/packages/local-models/__tests__/commands.test.ts:217:89)
+(fail) local-models-qualify > --isolated declara la medición aislada; sin él queda contended [8.67ms]
+(pass) local-models-qualify > una clase sobrante, un --context no entero o sin modelo salen 2 con el uso [5.17ms]
+(pass) entradas bin/*.ts > bin/catalog.ts corre la orden con el entorno del proceso y propaga su código [89.10ms]
+(pass) local-models-catalog locate > una publicación verificada añade una ubicación por cada .gguf, y sólo por ellos [4.67ms]
+(pass) local-models-catalog locate > repetirla no duplica la entrada [2.49ms]
+(pass) local-models-catalog locate > THYROX_MODEL_ARTIFACT_LOCATIONS gana a la ruta por defecto [1.38ms]
+(pass) local-models-catalog locate > una publicación no verificada sale 2 y no escribe el índice [0.57ms]
+(pass) local-models-catalog locate > una publicación sin ningún .gguf sale 2 y no escribe el índice [0.58ms]
+(pass) local-models-catalog locate > una referencia sin registry/repositorio@digest sale 2 nombrándola [0.46ms]
+(pass) local-models-catalog locate > sin --publication o con argumentos de más sale 2 con el uso [0.52ms]
+
+ 18 pass
+ 5 fail
+ 72 expect() calls
+Ran 23 tests across 1 file. [515.00ms]

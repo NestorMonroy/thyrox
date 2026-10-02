@@ -1,0 +1,6 @@
+tests/session/test-headless-pool-execution-unit.sh: 10 ok · 0 falla(s) (alcance medido: headless-pool --execution unit)
+tests/session/test-headless-pool-thyrox-p.sh: 12 ok · 0 falla(s) (alcance medido: headless-pool con thyrox -p)
+81f61d669 Nestor Monroy / jcg-admin Let a consumer forbid the provider fallback
+push=0
+execution thyrox-worker-test-muq8o67m-17243 kind=test task=TASK-THYROX-0758 exit=0
+__BG_EXIT__=0

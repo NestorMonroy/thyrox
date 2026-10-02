@@ -1,0 +1,8 @@
+ok
+ 4 pass
+ 0 fail
+    ^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'paths'
+ModuleNotFoundError: No module named 'paths'
+execution thyrox-worker-test-muq8rks6-19562 kind=test task=TASK-THYROX-0759 exit=0
+__BG_EXIT__=0

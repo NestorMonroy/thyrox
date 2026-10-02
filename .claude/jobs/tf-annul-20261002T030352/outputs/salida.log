@@ -1,0 +1,28 @@
+== artifact-mount
+(fail) una unidad de Transformers con el artefacto del grant montado (TASK-THYROX-0761) > expone el artefacto concedido de sólo l
+== runtime-by-format
+(fail) cpuPlacementOf por formato del artefacto (TASK-THYROX-0761) > un snapshot de safetensors va a Transformers [0.51ms]
+== known-runtime
+(fail) una unidad de Transformers con el artefacto del grant montado (TASK-THYROX-0761) > una unidad de Transformers se reconstruy
+== server-digest-check
+FAIL: test_a_load_with_another_artifact_is_refused_and_loads_nothing (__main__.TransformersRuntimeServerTest.test_a_load_with_anot
+== server-needs-residency
+ERROR: test_generation_needs_a_residency (__main__.TransformersRuntimeServerTest.test_generation_needs_a_residency)
+ERROR: test_unload_leaves_nothing_to_generate_with (__main__.TransformersRuntimeServerTest.test_unload_leaves_nothing_to_generate_
+== adapter-generation
+(fail) TransformersRuntimeAdapter > una generación vieja no toca el runtime [74.04ms]
+== adapter-prepare-match
+(fail) TransformersRuntimeAdapter > preparar verifica que el snapshot montado es el concedido [90.87ms]
+== router-no-fallback
+(fail) RuntimeAdapterRouter > un runtime sin adapter falla y no cae a ningún otro [0.33ms]
+ M agent-results/agent_store.sqlite3
+ M src/packages/local-models/__tests__/hostCoordinatorComposition.test.ts
+ M src/packages/local-models/hostCoordinatorComposition.ts
+ M src/packages/local-models/ollamaRuntimeAdapter.ts
+ M src/packages/model-artifacts/catalogEntry.ts
+ M src/packages/model-artifacts/executionGrant.ts
+ M src/packages/model-artifacts/quantizationLevel.ts
+ M src/packages/model-scheduling/__tests__/podmanModelUnitMaterializer.test.ts
+ M src/packages/model-scheduling/podmanModelUnitMaterializer.ts
+execution thyrox-worker-test-muqdpndo-13089 kind=test task=TASK-THYROX-0761 exit=0
+__BG_EXIT__=0

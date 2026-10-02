@@ -1,0 +1,16 @@
+# acn-context
+
+## Qué se lanzó
+
+```
+bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts run --work ai-course-notes:es-mx/qwen-qualification --kind test --network host --mount /home/user/ai-course-notes:/home/user/ai-course-notes:rw --mount /tmp/claude-0/-home-user/81a17524-87b5-5e9d-997b-0732e892d302/scratchpad:/scratch:ro -- bash -c cd /home/user/ai-course-notes && git config --global --add safe.directory /home/user/ai-course-notes >/dev/null 2>&1; python3 /home/user/ai-course-notes/.claude/workbench/qwen-qualification-20261002T074824/probes/context_red.py && uv run --quiet pytest -q tests/test_translation_loop.py -k 'executor_is_thyrox or execution_unit or policy' > /home/user/ai-course-notes/.claude/workbench/qwen-qualification-20261002T074824/outputs/context-red.txt 2>&1; echo red_exit=$? $(tail -1 /home/user/ai-course-notes/.claude/workbench/qwen-qualification-20261002T074824/outputs/context-red.txt); python3 /home/user/ai-course-notes/.claude/workbench/qwen-qualification-20261002T074824/probes/context_impl.py && uv run --quiet pytest -q tests/test_translation_loop.py tests/test_qualification_suite.py > /home/user/ai-course-notes/.claude/workbench/qwen-qualification-20261002T074824/outputs/context-green.txt 2>&1; echo green_exit=$? $(tail -1 /home/user/ai-course-notes/.claude/workbench/qwen-qualification-20261002T074824/outputs/context-green.txt)
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

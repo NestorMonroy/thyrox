@@ -1,0 +1,7 @@
+e575147f2 Regularize this session's benches to the scaffold
+  la defensa secundaria NO MIDIO. No se afirma que el arbol esta sano;
+  tampoco se bloquea, porque es secundaria (README D4-A, §8).
+ M agent-results/agent_store.sqlite3
+?? .claude/jobs/bench-regularize-commit-20261002T062629/
+execution thyrox-worker-test-muqky7xc-12239 kind=test task=TASK-THYROX-0762 exit=0
+__BG_EXIT__=0

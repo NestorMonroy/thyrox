@@ -1,0 +1,6 @@
+podman-execution-execute: falló la etapa create sobre thyrox-worker-maintenance-muq7c9gn-4387: Trying to pull localhost/thyrox-task-runner:dev...
+time="2026-10-02T00:05:30Z" level=warning msg="Failed, retrying in 1s ... (1/3). Error: initializing source docker://localhost/thyrox-task-runner:dev: pinging container registry localhost: Get \"https://localhost/v2/\": dial tcp 127.0.0.1:443: connect: connection refused"
+time="2026-10-02T00:05:31Z" level=warning msg="Failed, retrying in 1s ... (2/3). Error: initializing source docker://localhost/thyrox-task-runner:dev: pinging container registry localhost: Get \"https://localhost/v2/\": dial tcp 127.0.0.1:443: connect: connection refused"
+time="2026-10-02T00:05:32Z" level=warning msg="Failed, retrying in 1s ... (3/3). Error: initializing source docker://localhost/thyrox-task-runner:dev: pinging container registry localhost: Get \"https://localhost/v2/\": dial tcp 127.0.0.1:443: connect: connection refused"
+Error: initializing source docker://localhost/thyrox-task-runner:dev: pinging container registry localhost: Get "https://localhost/v2/": dial tcp 127.0.0.1:443: connect: connection refused
+__BG_EXIT__=1

@@ -1,0 +1,23 @@
+executor-qwen-20261002 -> executor-qwen-20261002T010314
+execution-image-equivalence-20261002 -> execution-image-equivalence-20261002T020353
+301625b Regularize the executor and image benches
+301625baf2fda041aba4d5e713e8ec97c611a03e	refs/heads/feature/es-mx-translation
+301625baf2fda041aba4d5e713e8ec97c611a03e
+Traceback (most recent call last):
+  File "/home/user/thyrox/.claude/workbench/bench-convention-20261002T062507/probes/regularize_benches.py", line 168, in <module>
+    sys.exit(main())
+             ^^^^^^
+  File "/home/user/thyrox/.claude/workbench/bench-convention-20261002T062507/probes/regularize_benches.py", line 162, in main
+    for name in rewrite_references(repo, renames):
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.claude/workbench/bench-convention-20261002T062507/probes/regularize_benches.py", line 135, in rewrite_references
+    hits = git(repo, "grep", "-l", "-F", old, "--", str(WORKBENCH)).split()
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.claude/workbench/bench-convention-20261002T062507/probes/regularize_benches.py", line 34, in git
+    return subprocess.run(["git", "-C", str(repo), *args], check=True,
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/subprocess.py", line 571, in run
+    raise CalledProcessError(retcode, process.args,
+subprocess.CalledProcessError: Command '['git', '-C', '/home/user/ai-course-notes', 'grep', '-l', '-F', 'consumer-work-reference-20261002', '--', '.claude/workbench']' returned non-zero exit status 1.
+execution thyrox-worker-test-muqkypuv-12701 kind=test work=ai-course-notes:workbench/bench-convention exit=0
+__BG_EXIT__=0

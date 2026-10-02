@@ -1,0 +1,8 @@
+error: Cannot find module '../admittedSeq2seq.ts' from '/home/user/thyrox/src/packages/local-models/__tests__/transformersRuntimeAdapter.test.ts'
+ 0 pass
+ 1 fail
+error: Cannot find module '../runtimeAdapterRouter.ts' from '/home/user/thyrox/src/packages/model-scheduling/__tests__/runtimeAdapterRouter.test.ts'
+ 0 pass
+ 1 fail
+execution thyrox-worker-test-muqdmdmr-8312 kind=test task=TASK-THYROX-0761 exit=0
+__BG_EXIT__=0

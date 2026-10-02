@@ -1,0 +1,5 @@
+ERROR — no se encontro finding_id_unique_baseline.txt.
+  Buscado: $FINDING_ID_UNIQUE_BASELINE · /home/user/thyrox/src/verify · <consumidor>/.claude/baselines/
+  Ultimo candidato: /home/user/thyrox/src/verify/finding_id_unique_baseline.txt
+  NO se emite un conteo: sin baseline, la deuda heredada se publicaria
+  entera como nueva. NO se emite conteo.

@@ -1,0 +1,282 @@
+:root {
+  --ai-notes-card-border: rgba(28, 86, 87, 0.18);
+  --ai-notes-page-gutter: clamp(0.8rem, 2vw, 2rem);
+  --ai-notes-rule-color: color-mix(in srgb, var(--md-default-fg-color), transparent 86%);
+  --ai-notes-sidebar-toggle-size: 1.55rem;
+}
+
+@media screen and (min-width: 76.25em) {
+  .md-grid {
+    max-width: min(96rem, calc(100vw - 2 * var(--ai-notes-page-gutter)));
+  }
+
+  .md-main__inner {
+    width: 100%;
+  }
+
+  .ai-notes-sidebar-toggle {
+    align-items: center;
+    background: color-mix(in srgb, var(--md-default-bg-color), var(--md-primary-fg-color) 6%);
+    border: 1px solid var(--md-default-fg-color--lightest);
+    border-radius: 999px;
+    color: var(--md-default-fg-color--light);
+    cursor: pointer;
+    display: flex;
+    height: var(--ai-notes-sidebar-toggle-size);
+    justify-content: center;
+    position: sticky;
+    top: 3.4rem;
+    transition: background-color 140ms ease, color 140ms ease, transform 140ms ease;
+    width: var(--ai-notes-sidebar-toggle-size);
+    z-index: 3;
+  }
+
+  .ai-notes-sidebar-toggle:hover {
+    background: var(--md-accent-fg-color--transparent);
+    color: var(--md-accent-fg-color);
+  }
+
+  .ai-notes-sidebar-toggle svg {
+    height: 0.95rem;
+    width: 0.95rem;
+  }
+
+  .ai-notes-sidebar-toggle--primary {
+    float: right;
+    margin: 0.15rem 0.2rem 0.45rem 0;
+  }
+
+  .ai-notes-sidebar-toggle--secondary {
+    float: left;
+    margin: 0.15rem 0 0.45rem 0.2rem;
+  }
+
+  body.ai-notes-nav-collapsed .md-sidebar--primary {
+    display: none;
+  }
+
+  body.ai-notes-toc-collapsed .md-sidebar--secondary {
+    display: none;
+  }
+
+  .ai-notes-sidebar-restore {
+    background: var(--md-default-bg-color);
+    border: 1px solid var(--md-default-fg-color--lightest);
+    border-radius: 999px;
+    box-shadow: var(--md-shadow-z1);
+    color: var(--md-default-fg-color--light);
+    cursor: pointer;
+    display: none;
+    height: 1.8rem;
+    justify-content: center;
+    position: fixed;
+    top: 4.4rem;
+    width: 1.8rem;
+    z-index: 5;
+  }
+
+  .ai-notes-sidebar-restore:hover {
+    color: var(--md-accent-fg-color);
+  }
+
+  .ai-notes-sidebar-restore svg {
+    height: 1rem;
+    width: 1rem;
+  }
+
+  .ai-notes-sidebar-restore--primary {
+    left: max(0.55rem, var(--ai-notes-page-gutter));
+  }
+
+  .ai-notes-sidebar-restore--secondary {
+    right: max(0.55rem, var(--ai-notes-page-gutter));
+  }
+
+  body.ai-notes-nav-collapsed .ai-notes-sidebar-restore--primary,
+  body.ai-notes-toc-collapsed .ai-notes-sidebar-restore--secondary {
+    display: flex;
+  }
+}
+
+@media screen and (max-width: 76.234em) {
+  .ai-notes-sidebar-toggle,
+  .ai-notes-sidebar-restore {
+    display: none;
+  }
+}
+
+.md-typeset .course-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
+  gap: 0.75rem;
+  margin: 0.75rem 0 1.5rem;
+}
+
+.md-typeset .course-grid > ul {
+  display: contents;
+}
+
+.md-typeset .course-grid li {
+  list-style: none;
+  border: 1px solid var(--ai-notes-card-border);
+  border-radius: 0.35rem;
+  padding: 0.8rem 0.9rem;
+  margin: 0;
+  background: color-mix(in srgb, var(--md-default-bg-color), var(--md-primary-fg-color) 4%);
+}
+
+.md-typeset .course-grid small {
+  color: var(--md-default-fg-color--light);
+}
+
+.md-typeset h1 {
+  color: var(--md-default-fg-color);
+  font-size: 2.05rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  line-height: 1.18;
+  margin-bottom: 1.15rem;
+}
+
+.md-typeset h2 {
+  border-top: 1px solid var(--ai-notes-rule-color);
+  color: var(--md-default-fg-color);
+  font-size: 1.45rem;
+  font-weight: 680;
+  letter-spacing: 0;
+  line-height: 1.28;
+  margin-top: 2.4rem;
+  padding-top: 1.05rem;
+}
+
+.md-typeset h3 {
+  color: var(--md-default-fg-color);
+  font-size: 1.08rem;
+  font-weight: 680;
+  letter-spacing: 0;
+  line-height: 1.38;
+  margin-top: 1.7rem;
+}
+
+.md-typeset h4 {
+  color: var(--md-default-fg-color--light);
+  font-size: 0.92rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  margin-top: 1.25rem;
+  text-transform: none;
+}
+
+.md-typeset p,
+.md-typeset li {
+  line-height: 1.78;
+}
+
+.md-typeset code {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.22rem;
+  font-size: 0.86em;
+  padding: 0.04rem 0.24rem;
+}
+
+.md-typeset .highlight {
+  margin: 1rem 0 1.35rem;
+}
+
+.md-typeset .highlight pre {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.4rem;
+}
+
+.md-typeset .arithmatex {
+  overflow-x: auto;
+}
+
+.md-typeset > .arithmatex,
+.md-typeset .admonition > .arithmatex {
+  background: color-mix(in srgb, var(--md-default-bg-color), var(--md-primary-fg-color) 3%);
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.42rem;
+  margin: 1.1rem 0 1.25rem;
+  padding: 0.7rem 0.9rem;
+}
+
+.md-typeset .admonition {
+  border-radius: 0.45rem;
+  box-shadow: none;
+  margin: 1rem 0 1.3rem;
+}
+
+.md-typeset .admonition-title {
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.md-typeset table:not([class]) {
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 0.38rem;
+  display: table;
+  font-size: 0.88rem;
+  line-height: 1.55;
+  margin: 1rem 0 1.1rem;
+  overflow: hidden;
+  width: 100%;
+}
+
+.md-typeset table:not([class]) th {
+  background: color-mix(in srgb, var(--md-default-bg-color), var(--md-primary-fg-color) 6%);
+  font-weight: 700;
+}
+
+.md-typeset table:not([class]) th,
+.md-typeset table:not([class]) td {
+  padding: 0.62rem 0.75rem;
+  vertical-align: top;
+}
+
+.md-typeset blockquote {
+  border-left: 0.18rem solid var(--md-accent-fg-color);
+  color: var(--md-default-fg-color--light);
+}
+
+.md-typeset img {
+  border-radius: 0.25rem;
+}
+
+.md-typeset .ai-notes-figure {
+  margin: 1.2rem auto 1.45rem;
+  text-align: center;
+}
+
+.md-typeset .ai-notes-figure__preview {
+  display: inline-block;
+  cursor: zoom-in;
+}
+
+.md-typeset .ai-notes-figure__preview img {
+  display: block;
+  height: auto;
+  margin: 0 auto;
+  max-width: 100%;
+}
+
+.md-typeset .ai-notes-figure figcaption {
+  color: var(--md-default-fg-color--light);
+  font-size: 0.78rem;
+  line-height: 1.55;
+  margin-top: 0.45rem;
+}
+
+.md-typeset .ai-notes-figure__original {
+  font-size: 0.72rem;
+  margin-left: 0.35rem;
+  white-space: nowrap;
+}
+
+.md-typeset .ai-notes-table-caption {
+  margin: -0.55rem 0 1.25rem;
+  color: var(--md-default-fg-color--light);
+  font-size: 0.78rem;
+  line-height: 1.55;
+  text-align: center;
+}

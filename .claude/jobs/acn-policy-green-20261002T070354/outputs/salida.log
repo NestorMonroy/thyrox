@@ -1,0 +1,6 @@
+FAILED tests/test_translation_loop.py::test_retranslate_leaves_each_chunk_a_correction_naming_what_failed
+29 failed, 32 passed in 143.66s (0:02:23)
+recommend: bloqueada — la política no permite respaldo y ningún modelo permitido cumple: sin cualificación aprobada vigente de la clase analisis entre los 1 modelo(s) del catálogo local
+exit=3
+execution thyrox-worker-test-muqmach4-4670 kind=test work=ai-course-notes:es-mx/qwen-library-policy exit=0
+__BG_EXIT__=0

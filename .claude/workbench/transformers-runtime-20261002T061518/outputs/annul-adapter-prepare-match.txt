@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/transformersRuntimeAdapter.test.ts:
+(pass) TransformersRuntimeAdapter > la salud se pregunta al runtime de la unidad [69.48ms]
+91 |   })
+92 | 
+93 |   test('preparar verifica que el snapshot montado es el concedido', async () => {
+94 |     expect(await adapter.prepareRuntimeArtifact(binding(), grant())).toEqual({ status: 'done' })
+95 |     const other = await adapter.prepareRuntimeArtifact(binding(), grant({ ...ARTIFACT, artifactId: 'f'.repeat(64) }))
+96 |     expect(other.status).toBe('failed')
+                              ^
+error: expect(received).toBe(expected)
+
+Expected: "failed"
+Received: "done"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/transformersRuntimeAdapter.test.ts:96:26)
+(fail) TransformersRuntimeAdapter > preparar verifica que el snapshot montado es el concedido [90.87ms]
+(pass) TransformersRuntimeAdapter > una generación vieja no toca el runtime [99.95ms]
+(pass) TransformersRuntimeAdapter > cargar deja residente la identidad concedida, leída del runtime [62.46ms]
+(pass) TransformersRuntimeAdapter > una carga de otra identidad falla y no deja residencia [73.47ms]
+(pass) TransformersRuntimeAdapter > descargar deja la unidad sin residencia [65.59ms]
+(pass) admittedSeq2seq > genera sólo contra la unidad del ticket y con residencia [69.43ms]
+
+ 6 pass
+ 1 fail
+ 15 expect() calls
+Ran 7 tests across 1 file. [699.00ms]

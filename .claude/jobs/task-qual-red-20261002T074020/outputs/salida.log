@@ -1,0 +1,5 @@
+taskSuite: 0 fail · error: Cannot find module '../taskSuite.js' from '/home/user/thyrox/src/packages/local-models/__tests__/taskSuite.test.ts'  0 pass  1 fail 
+qualifyModel: 0 fail · error: Cannot find module '../taskSuite.js' from '/home/user/thyrox/src/packages/local-models/__tests__/qualifyModel.test.ts'  0 pass  1 fail 
+qualifyCommand: 1 fail · error: expect(received).toBe(expected)  5 pass  1 fail 
+execution thyrox-worker-test-muqnl6rz-1633 kind=test task=TASK-THYROX-0780 exit=0
+__BG_EXIT__=0

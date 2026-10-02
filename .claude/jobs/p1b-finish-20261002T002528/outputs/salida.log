@@ -1,0 +1,7 @@
+anulación bg:   FALLO caso 8: --task y --work juntos se rehúsan con 2
+tsc=0
+6dfa91e58 Nestor Monroy / jcg-admin Accept a consumer work reference in executions
+pre-push: corpus del consumidor no alcanzable —
+push=0
+execution thyrox-worker-test-muq81yac-17441 kind=test task=TASK-THYROX-0756 exit=0
+__BG_EXIT__=0

@@ -1,0 +1,12 @@
+import { OllamaRuntimeAdapter } from './ollamaRuntimeAdapter.ts'
+import { TransformersRuntimeAdapter } from './transformersRuntimeAdapter.ts'
+ 204 pass
+ 5 fail
+(fail) local-models-qualify > --context declarado viaja como num_ctx [7.75ms]
+(fail) local-models-qualify > --isolated declara la medición aislada; sin él queda contended [8.28ms]
+(fail) local-models-qualify > seis aciertos: sale 0 y escribe la cualificación con el contexto acotado al máximo del modelo [9.29ms]
+(fail) local-models-qualify > suspendida: sale 1 y también se escribe [8.50ms]
+(fail) local-models-qualify > un modelo fuera del catálogo sale 2 sin medir [3.54ms]
+tsc=0 0
+execution thyrox-worker-test-muqdoft8-9024 kind=test task=TASK-THYROX-0761 exit=0
+__BG_EXIT__=0

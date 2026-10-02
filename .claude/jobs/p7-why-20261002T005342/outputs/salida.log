@@ -1,0 +1,13 @@
+        assert loop(repo, "prepare", "--bench", str(bench), str(note)).returncode == 0
+        assert result.returncode == 0, result.stderr
+        assert loop(repo, "assemble", "--bench", str(bench)).returncode == 0
+        assert "\\section{Tokenización}" in text and "\\setdefaultlanguage[variant=mexican]{spanish}" in text
+>       assert verify.returncode == 0, verify.stdout + verify.stderr
+E       AssertionError: check_prose_vocabulary: ERROR — falta hunspell; corre `bash tools/setup.sh --install`.
+E         NO se emite un conteo: un 0 aqui no distinguiria «limpio» de «no pude medir».
+E         
+E       assert 2 == 0
+E        +  where 2 = CompletedProcess(args=['/home/user/ai-course-notes/.venv/bin/python', '/home/user/ai-course-notes/tools/scripts/transl...rre `bash tools/setup.sh --install`.\nNO se emite un conteo: un 0 aqui no distinguiria «limpio» de «no pude medir».\n').returncode
+tests/test_translation_loop.py:122: AssertionError
+execution thyrox-worker-test-muq929ng-26369 kind=test work=ai-course-notes:es-mx/executor-qwen exit=0
+__BG_EXIT__=0

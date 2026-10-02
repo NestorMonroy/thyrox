@@ -1,0 +1,34 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/transformersRuntimeAdapter.test.ts:
+(pass) TransformersRuntimeAdapter > la salud se pregunta al runtime de la unidad [68.92ms]
+(pass) TransformersRuntimeAdapter > preparar verifica que el snapshot montado es el concedido [69.29ms]
+ 96 |     expect(other.status).toBe('failed')
+ 97 |   })
+ 98 | 
+ 99 |   test('una generación vieja no toca el runtime', async () => {
+100 |     generation = GENERATION + 1
+101 |     expect(await adapter.loadResidency(binding(), grant())).toEqual({ status: 'stale_generation', currentGeneration: GENERATION + 1 })
+                                                                  ^
+error: expect(received).toEqual(expected)
+
+  {
+-   "currentGeneration": 3,
+-   "status": "stale_generation",
++   "status": "done",
+  }
+
+- Expected  - 2
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/transformersRuntimeAdapter.test.ts:101:61)
+(fail) TransformersRuntimeAdapter > una generación vieja no toca el runtime [74.04ms]
+(pass) TransformersRuntimeAdapter > cargar deja residente la identidad concedida, leída del runtime [114.86ms]
+(pass) TransformersRuntimeAdapter > una carga de otra identidad falla y no deja residencia [60.33ms]
+(pass) TransformersRuntimeAdapter > descargar deja la unidad sin residencia [65.77ms]
+(pass) admittedSeq2seq > genera sólo contra la unidad del ticket y con residencia [73.77ms]
+
+ 6 pass
+ 1 fail
+ 14 expect() calls
+Ran 7 tests across 1 file. [720.00ms]

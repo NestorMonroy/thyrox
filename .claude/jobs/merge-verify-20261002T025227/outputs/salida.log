@@ -1,0 +1,8 @@
+ 1 fail
+ 171 pass
+tsc=0
+tests/session/test-bg-managed-execution.sh: 16 casos: 16 ok, 0 fallos
+tests/session/test-headless-pool-execution-unit.sh: 14 ok · 0 falla(s) (alcance medido: headless-pool --execution unit)
+tests/session/test-headless-pool-model-policy.sh: 12 ok · 0 falla(s) (alcance medido: headless-pool --model-policy)
+execution thyrox-worker-test-muqdb00n-1236 kind=test task=TASK-THYROX-0756 exit=0
+__BG_EXIT__=0

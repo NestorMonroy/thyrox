@@ -1,0 +1,11 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/runtimeAdapterRouter.test.ts:
+(pass) RuntimeAdapterRouter > cada operación va al adapter del runtime de la unidad [0.62ms]
+(pass) RuntimeAdapterRouter > un runtime sin adapter falla y no cae a ningún otro [0.17ms]
+(pass) RuntimeAdapterRouter > las capacidades son las que TODOS los adapters cumplen [0.08ms]
+
+ 3 pass
+ 0 fail
+ 6 expect() calls
+Ran 3 tests across 1 file. [157.00ms]

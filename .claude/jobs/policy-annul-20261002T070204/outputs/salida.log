@@ -1,0 +1,11 @@
+source-match: 1 caen
+    un selector con fuente admite la entrada de esa fuente y no a su homónima de otra [0.28ms]
+exclusion-reason: 1 caen
+    si la política excluye todo el catálogo, la causa lo dice y no habla de un catálogo vacío [0.32ms]
+source-validation: 1 caen
+    una fuente desconocida se rehúsa al leer la política [0.32ms]
+ src/packages/provider/src/cost/executionPolicy.ts | 46 ++++++++++++++++++++---
+ src/packages/provider/src/cost/policy.ts          |  9 ++++-
+ 2 files changed, 48 insertions(+), 7 deletions(-)
+execution thyrox-worker-test-muqm7z5p-3078 kind=test task=TASK-THYROX-0763 exit=0
+__BG_EXIT__=0

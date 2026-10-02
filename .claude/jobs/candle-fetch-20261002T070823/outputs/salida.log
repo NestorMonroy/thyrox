@@ -1,0 +1,6 @@
+bash: line 1: cargo: command not found
+bash: line 1: cargo: command not found
+grep: Cargo.lock: No such file or directory
+grep: Cargo.lock: No such file or directory
+execution thyrox-worker-test-muqmg3lx-7020 kind=test task=TASK-THYROX-0764 exit=2
+__BG_EXIT__=2

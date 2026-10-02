@@ -1,0 +1,89 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/taskSuite.test.ts:
+(pass) loadTaskSuite > lee el id, la clase y los casos con sus comprobaciones [2.35ms]
+(pass) loadTaskSuite > una clase que no es de thyrox se rehúsa [1.13ms]
+(pass) loadTaskSuite > una comprobación desconocida se rehúsa nombrando su campo [1.54ms]
+(pass) loadTaskSuite > un patrón que no compila se rehúsa al leer, no al puntuar [0.80ms]
+(pass) loadTaskSuite > un caso sin comprobaciones se rehúsa: aprobaría cualquier respuesta [0.64ms]
+(pass) scoreTaskReply > aprueba sólo si se cumplen todas las comprobaciones [1.00ms]
+(pass) scoreTaskReply > nombra cada comprobación que falla [1.30ms]
+
+ 7 pass
+ 0 fail
+ 10 expect() calls
+Ran 7 tests across 1 file. [167.00ms]
+bun test v1.3.11 (af24e281)
+
+__tests__/qualifyModel.test.ts:
+(pass) runQualification — tool-calling@1 contra /api/chat > seis aciertos aprueban, con la suite, el contexto servido y el instante [8.86ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > cinco de seis no aprueban, y el caso fallado dice lo que se observó [4.72ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > tokens/s es la suma de eval_count entre la suma de eval_duration [3.62ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > cada petición lleva el modelo, sus herramientas, stream falso y num_ctx [4.22ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > un error HTTP no es un caso fallado: se rehúsa sin cualificación [2.90ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > pedir más contexto que el concedido se rehúsa sin tocar el runtime [2.31ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > una respuesta sin eval_duration no mide velocidad y se rehúsa [5.08ms]
+141 | 
+142 |   const translated = (prompt: string): FakeChatReply => ({ content: prompt === '一' ? 'uno' : 'dos' })
+143 | 
+144 |   test('todos los casos cumplen: una cualificación de tarea de la clase de la suite', async () => {
+145 |     const { qualification } = await qualifyTask(translated)
+146 |     expect(qualification).toEqual({
+                                ^
+error: expect(received).toEqual(expected)
+
+  {
+    "casesPassed": 2,
+    "casesTotal": 2,
+    "contextTokens": 8192,
+-   "kind": "task",
++   "kind": "protocol",
+    "measuredAt": "2026-10-01T05:00:00.000Z",
+    "measurementCondition": "isolated",
+    "model": "thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf",
+    "passed": true,
+    "suite": "es-mx-translation@1",
+-   "taskClass": "analisis",
+    "tokensPerSecond": 20,
+  }
+
+- Expected  - 2
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/qualifyModel.test.ts:146:27)
+(fail) runTaskQualification — la suite de tarea de un consumidor (TASK-THYROX-0780) > todos los casos cumplen: una cualificación de tarea de la clase de la suite [5.60ms]
+(pass) runTaskQualification — la suite de tarea de un consumidor (TASK-THYROX-0780) > un caso que falla suspende, y su resultado nombra la comprobación [9.30ms]
+(pass) runTaskQualification — la suite de tarea de un consumidor (TASK-THYROX-0780) > cada petición lleva los mensajes del caso, sin herramientas, stream falso y num_ctx [3.74ms]
+(pass) runTaskQualification — la suite de tarea de un consumidor (TASK-THYROX-0780) > pedir más contexto que el concedido se rehúsa sin tocar el runtime [2.19ms]
+
+ 10 pass
+ 1 fail
+ 26 expect() calls
+Ran 11 tests across 1 file. [200.00ms]
+bun test v1.3.11 (af24e281)
+
+__tests__/qualifyCommand.test.ts:
+(pass) runQualifyCommand por admisión > cualifica contra la unidad del ticket, suelta la admisión y no asegura thyrox-ollama [25.53ms]
+(pass) runQualifyCommand por admisión > --context viaja en la petición de admisión [9.52ms]
+(pass) runQualifyCommand por admisión > una admisión rehusada rehúsa con su etapa y causa, sin tocar el runtime [6.85ms]
+(pass) runQualifyCommand por admisión > sin coordinador rehúsa nombrando su socket [7.38ms]
+159 |     const coordinator = await coordinatorWith()
+160 |     expect(await runQualifyCommand([MODEL, '--suite', taskSuiteFile()], contextFor())).toBe(EXIT_OK)
+161 |     expect(chats()).toHaveLength(1)
+162 |     expect(coordinator.finished).toEqual(['admission-1'])
+163 |     const written = JSON.parse(readFileSync(join(directory, 'qualifications.json'), 'utf8'))
+164 |     expect(JSON.stringify(written)).toContain('"kind":"task"')
+                                          ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "\"kind\":\"task\""
+Received: "{\"qualifications\":[{\"model\":\"thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf\",\"kind\":\"protocol\",\"suite\":\"es-mx-translation@1\",\"casesPassed\":1,\"casesTotal\":1,\"passed\":true,\"contextTokens\":8192,\"tokensPerSecond\":20,\"measurementCondition\":\"contended\",\"measuredAt\":\"2026-10-01T05:00:00.000Z\"}]}"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/qualifyCommand.test.ts:164:37)
+(fail) runQualifyCommand --suite: la cualificación de tarea de un consumidor (TASK-THYROX-0780) > corre los casos de la suite y escribe una cualificación de tarea de su clase [9.77ms]
+(pass) runQualifyCommand --suite: la cualificación de tarea de un consumidor (TASK-THYROX-0780) > una suite ilegible se rehúsa antes de pedir admisión [4.53ms]
+
+ 5 pass
+ 1 fail
+ 24 expect() calls
+Ran 6 tests across 1 file. [251.00ms]

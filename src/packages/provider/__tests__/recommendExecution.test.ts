@@ -5,6 +5,7 @@ import { attentionShapeOf } from '@thyrox/model-artifacts/memoryEstimate.ts'
 import type { ModelQualification } from '@thyrox/model-artifacts/modelQualification.ts'
 import { thyroxModelName } from '@thyrox/model-artifacts/modelName.ts'
 import { recommend, recommendExecution } from '../src/cost/policy.ts'
+import { ExecutionPolicyError, parseExecutionPolicy } from '../src/cost/executionPolicy.ts'
 
 const CONTEXT_TOKENS = 32_000
 const ATTENTION = attentionShapeOf({
@@ -104,5 +105,97 @@ describe('recommendExecution — local primero, claude-cli declarado como respal
     const provider = recommend('adversarial', { contextTokens: CONTEXT_TOKENS })
     expect(result.runtime === 'claude-cli' ? result.excluded : []).toEqual(provider.excluded)
     expect(result.runtime === 'claude-cli' ? result.effort : undefined).toBe(provider.effort)
+  })
+})
+
+describe('recommendExecution con una política de ejecución declarada (TASK-THYROX-0773)', () => {
+  const QWEN = catalogEntry('Qwen/Qwen2.5-7B-Instruct-GGUF', '3')
+  const PROFILE = { contextTokens: CONTEXT_TOKENS }
+  const policyOf = (fallback: boolean) => parseExecutionPolicy(JSON.stringify({
+    allowed: [{ runtime: 'ollama', repository: 'Qwen/Qwen2.5-7B-Instruct-GGUF', quantization: 'q4_k_m' }],
+    fallback: { enabled: fallback },
+  }))
+  const both = {
+    entries: [QWEN, FAST],
+    qualifications: [protocol(QWEN.name), qualification(QWEN.name), protocol(FAST.name), qualification(FAST.name, { tokensPerSecond: 99 })],
+  }
+  const onlyOther = { entries: [FAST], qualifications: [protocol(FAST.name), qualification(FAST.name)] }
+
+  test('elige sólo entre los modelos que la política permite, aunque otro sea más rápido', () => {
+    const result = recommendExecution('mecanica', PROFILE, both, policyOf(false))
+    expect(result.runtime).toBe('ollama')
+    expect(result.runtime === 'ollama' ? result.model : '').toBe(QWEN.name)
+  })
+
+  test('sin candidato permitido cualificado y sin respaldo: bloqueada con su causa, nunca claude-cli', () => {
+    const result = recommendExecution('mecanica', PROFILE, onlyOther, policyOf(false))
+    expect(result.runtime).toBe('blocked')
+    expect(result.runtime === 'blocked' ? result.blockedReason : '').toMatch(/política/)
+  })
+
+  test('con el respaldo declarado, cae a claude-cli y lo nombra', () => {
+    const result = recommendExecution('mecanica', PROFILE, onlyOther, policyOf(true))
+    expect(result.runtime).toBe('claude-cli')
+  })
+
+  test('sin política, el comportamiento de hoy no cambia', () => {
+    expect(recommendExecution('mecanica', PROFILE, both).runtime).toBe('ollama')
+    expect(recommendExecution('mecanica', PROFILE, both).model).toBe(FAST.name)
+  })
+})
+
+describe('parseExecutionPolicy', () => {
+  test('el respaldo no tiene valor por defecto: sin declararlo se rehúsa', () => {
+    expect(() => parseExecutionPolicy(JSON.stringify({ allowed: [] }))).toThrow(ExecutionPolicyError)
+  })
+
+  test('sólo se permiten modelos locales por su repositorio; un proveedor no se lista', () => {
+    expect(() => parseExecutionPolicy(JSON.stringify({ allowed: [{ runtime: 'claude-cli', repository: 'anthropic/claude' }], fallback: { enabled: false } })))
+      .toThrow(ExecutionPolicyError)
+  })
+
+  test('un JSON ilegible se rehúsa con su causa', () => {
+    expect(() => parseExecutionPolicy('{ no es json')).toThrow(ExecutionPolicyError)
+  })
+})
+
+describe('la política nombra lo que excluye y distingue la fuente (TASK-THYROX-0778)', () => {
+  const PROFILE = { contextTokens: CONTEXT_TOKENS }
+  const LIBRARY_QWEN: ModelCatalogEntry = { ...catalogEntry('library/qwen2.5-7b-instruct', '4'), source: 'ollama' }
+  const HF_HOMONYM = catalogEntry('library/qwen2.5-7b-instruct', '5')
+  const policyFor = (selector: Record<string, unknown>) => parseExecutionPolicy(JSON.stringify({
+    allowed: [{ runtime: 'ollama', ...selector }],
+    fallback: { enabled: false },
+  }))
+  const qualified = (entry: ModelCatalogEntry) => [protocol(entry.name), qualification(entry.name)]
+
+  test('si la política excluye todo el catálogo, la causa lo dice y no habla de un catálogo vacío', () => {
+    const policy = policyFor({ repository: 'Qwen/Qwen2.5-7B-Instruct-GGUF' })
+    const result = recommendExecution('mecanica', PROFILE, { entries: [LIBRARY_QWEN], qualifications: qualified(LIBRARY_QWEN) }, policy)
+    const reason = result.runtime === 'blocked' ? result.blockedReason : ''
+    expect(reason).toMatch(/la política no permite ninguna de las 1 entrada\(s\) del catálogo local/)
+    expect(reason).not.toMatch(/catálogo local vacío/)
+  })
+
+  test('un selector con fuente admite la entrada de esa fuente y no a su homónima de otra', () => {
+    const policy = policyFor({ repository: 'library/qwen2.5-7b-instruct', source: 'ollama' })
+    const inventory = {
+      entries: [HF_HOMONYM, LIBRARY_QWEN],
+      qualifications: [...qualified(HF_HOMONYM), ...qualified(LIBRARY_QWEN)],
+    }
+    const result = recommendExecution('mecanica', PROFILE, inventory, policy)
+    expect(result.runtime === 'ollama' ? result.model : '').toBe(LIBRARY_QWEN.name)
+    const onlyHomonym = { entries: [HF_HOMONYM], qualifications: qualified(HF_HOMONYM) }
+    expect(recommendExecution('mecanica', PROFILE, onlyHomonym, policy).runtime).toBe('blocked')
+  })
+
+  test('un selector sin fuente sigue admitiendo cualquier fuente', () => {
+    const policy = policyFor({ repository: 'library/qwen2.5-7b-instruct' })
+    const result = recommendExecution('mecanica', PROFILE, { entries: [LIBRARY_QWEN], qualifications: qualified(LIBRARY_QWEN) }, policy)
+    expect(result.runtime).toBe('ollama')
+  })
+
+  test('una fuente desconocida se rehúsa al leer la política', () => {
+    expect(() => policyFor({ repository: 'library/qwen2.5-7b-instruct', source: 'docker' })).toThrow(ExecutionPolicyError)
   })
 })

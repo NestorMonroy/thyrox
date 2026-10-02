@@ -1,0 +1,5 @@
+.claude/workbench/candle-seq2seq-runtime-20261002T070810
+bin/manifest: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+execution thyrox-worker-test-muqmfteg-6722 kind=test task=TASK-THYROX-0764 exit=0
+__BG_EXIT__=0

@@ -1,0 +1,38 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/podmanModelUnitMaterializer.test.ts:
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un grant caducado [0.71ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un grant de una generación que ya no es la vigente [0.12ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > con la coordinación no disponible [0.07ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un runtime sin perfil de contenedor [0.08ms]
+(pass) PodmanModelUnitMaterializer: materializar > crea, arranca e inspecciona; la unidad lleva su identidad completa [2.64ms]
+(pass) PodmanModelUnitMaterializer: materializar > el contenedor va en loopback, con el dispositivo concedido y las etiquetas de la unidad [1.79ms]
+(pass) PodmanModelUnitMaterializer: materializar > en CPU no pide dispositivos [0.42ms]
+(pass) PodmanModelUnitMaterializer: materializar > si create falla no quedó nada: partial false [0.50ms]
+(pass) PodmanModelUnitMaterializer: materializar > si start falla quedó un contenedor: partial true con su unitId [0.71ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > destroy distingue destruido, ausente y fallido [0.24ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > destroy retira sólo el contenedor de la unidad [0.68ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > units reconstruye cada unidad de sus etiquetas e ignora contenedores ajenos [2.26ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > nunca borra imágenes ni volúmenes [0.29ms]
+(pass) PodmanModelUnitMaterializer: identidad completa > una unidad cuya identidad etiquetada está incompleta no es una unidad de esta primitiva [0.30ms]
+(pass) una unidad de Transformers con el artefacto del grant montado (TASK-THYROX-0761) > expone el artefacto concedido de sólo lectura en la unidad [0.51ms]
+(pass) una unidad de Transformers con el artefacto del grant montado (TASK-THYROX-0761) > un perfil sin montaje declarado no monta nada, como el de Ollama [0.32ms]
+301 |     await transformersPrimitive(podman).materialize(T5_GRANT)
+302 |     const create = podman.calls.find(call => call[0] === 'create')!
+303 |     const labels = Object.fromEntries(create.flatMap((arg, index) => arg === '--label' ? [create[index + 1]!.split(/=(.*)/s).slice(0, 2)] : []))
+304 |     const listed = JSON.stringify([{ Id: CONTAINER_ID, Names: [`${MODEL_UNIT_CONTAINER_PREFIX}${modelUnitId(T5_GRANT.grantId)}`], Labels: labels, Pid: 4242 }])
+305 |     const units = await transformersPrimitive(healthyPodman({ ps: ok(listed) })).units()
+306 |     expect(units).toHaveLength(1)
+                        ^
+error: expect(received).toHaveLength(expected)
+
+Expected length: 1
+Received length: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/model-scheduling/__tests__/podmanModelUnitMaterializer.test.ts:306:19)
+(fail) una unidad de Transformers con el artefacto del grant montado (TASK-THYROX-0761) > una unidad de Transformers se reconstruye desde sus etiquetas [1.17ms]
+
+ 16 pass
+ 1 fail
+ 48 expect() calls
+Ran 17 tests across 1 file. [176.00ms]

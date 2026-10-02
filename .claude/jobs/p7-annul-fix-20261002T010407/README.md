@@ -1,0 +1,16 @@
+# p7-annul-fix
+
+## Qué se lanzó
+
+```
+bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts run --work ai-course-notes:es-mx/executor-qwen --kind test --network host --mount /home/user/ai-course-notes:/home/user/ai-course-notes:rw --mount /tmp/claude-0/-home-user/81a17524-87b5-5e9d-997b-0732e892d302/scratchpad:/scratch:ro -- bash -c cd /home/user/ai-course-notes && git config --global --add safe.directory /home/user/ai-course-notes >/dev/null 2>&1; W=.claude/workbench/executor-qwen-20261002/outputs; cp tools/scripts/translation_loop.py /tmp/keep.py; sed -i "s/    if not Path(args.model_policy).is_file():/    if False:/" tools/scripts/translation_loop.py; python3 -c "import ast,sys; ast.parse(open(\"tools/scripts/translation_loop.py\").read()); print(\"sintaxis ok\")"; uv run --locked pytest -q tests/test_translation_loop.py -k "consumer_policy or readable_policy" > $W/annul-loop-policy-readable.txt 2>&1; cp /tmp/keep.py tools/scripts/translation_loop.py; grep -E "^FAILED|passed|failed" $W/annul-loop-policy-readable.txt; printf "\nNota: la primera corrida de esta anulación (guion annul-sh.py) partió el ancla en su «::» y dejó un error de sintaxis; ésta usa sed y comprueba la sintaxis antes de medir.\n" >> $W/annul-loop-policy-readable.txt; GIT_AUTHOR_NAME="Nestor Monroy" GIT_AUTHOR_EMAIL=46802445+NestorMonroy@users.noreply.github.com GIT_COMMITTER_NAME=jcg-admin GIT_COMMITTER_EMAIL=169318663+jcg-admin@users.noreply.github.com git commit -q -m "Redo the policy annulment of the executor change" -m "The first run split its anchor on the separator and measured a syntax error. Redone with sed after checking the syntax: only the readable-policy case falls." -- $W/annul-loop-policy-readable.txt && git push -q origin HEAD 2>&1 | tail -1; git log -1 --format=%h; git status --short | head -2
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

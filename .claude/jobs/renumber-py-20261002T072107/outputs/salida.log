@@ -1,0 +1,4 @@
+tests/agents/test_recommend_cli.py exit=5 NO TESTS RAN
+tests/local_models/test_transformers_runtime_server.py exit=0 OK
+execution thyrox-worker-test-muqmwh5t-13443 kind=test task=TASK-THYROX-0779 exit=0
+__BG_EXIT__=0

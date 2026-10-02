@@ -1,0 +1,6 @@
+# Unhandled error between tests
+ 0 pass
+ 1 fail
+ 1 error
+execution thyrox-worker-test-muq8r8sr-19279 kind=test task=TASK-THYROX-0759 exit=0
+__BG_EXIT__=0

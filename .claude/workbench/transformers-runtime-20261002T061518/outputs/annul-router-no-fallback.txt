@@ -1,0 +1,24 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/runtimeAdapterRouter.test.ts:
+(pass) RuntimeAdapterRouter > cada operación va al adapter del runtime de la unidad [0.82ms]
+38 |   })
+39 | 
+40 |   test('un runtime sin adapter falla y no cae a ningún otro', async () => {
+41 |     const calls: string[] = []
+42 |     const router = new RuntimeAdapterRouter({ ollama: recording('ollama', calls) })
+43 |     expect((await router.loadResidency(bindingOf('transformers'), grantOf('transformers'))).status).toBe('failed')
+                                                                                                         ^
+error: expect(received).toBe(expected)
+
+Expected: "failed"
+Received: "done"
+
+      at <anonymous> (/home/user/thyrox/src/packages/model-scheduling/__tests__/runtimeAdapterRouter.test.ts:43:101)
+(fail) RuntimeAdapterRouter > un runtime sin adapter falla y no cae a ningún otro [0.33ms]
+(pass) RuntimeAdapterRouter > las capacidades son las que TODOS los adapters cumplen [0.09ms]
+
+ 2 pass
+ 1 fail
+ 3 expect() calls
+Ran 3 tests across 1 file. [156.00ms]

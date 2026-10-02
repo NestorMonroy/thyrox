@@ -1,0 +1,5 @@
+dab81e1bb Nestor Monroy / jcg-admin Reach the host model coordinator from a pool unit
+push=0
+ M agent-results/agent_store.sqlite3
+execution thyrox-worker-test-muq8vbbe-24404 kind=test task=TASK-THYROX-0759 exit=0
+__BG_EXIT__=0

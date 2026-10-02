@@ -1,0 +1,16 @@
+# p3-annul
+
+## Qué se lanzó
+
+```
+bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts run --task TASK-THYROX-0758 --kind test --network host --mount /home/user/ai-course-notes:/home/user/ai-course-notes:rw --mount /tmp/claude-0/-home-user/81a17524-87b5-5e9d-997b-0732e892d302/scratchpad:/scratch:ro -- bash -c cd /home/user/thyrox && git config --global --add safe.directory /home/user/thyrox >/dev/null 2>&1; W=.claude/workbench/execution-policy-20261002/outputs; for pk in provider agent; do (cd src/packages/$pk && bunx tsc -p tsconfig.build.json --noEmit > /tmp/tsc-$pk.txt 2>&1); echo "tsc $pk: $(grep -c 'error TS' /tmp/tsc-$pk.txt) errores, propios: $(grep -cE 'cost/(policy|executionPolicy)|bin/recommend' /tmp/tsc-$pk.txt)"; done; git stash push -q -- src/packages/provider/src/cost/policy.ts src/packages/agent/bin/recommend.ts && (cd src/packages/provider && bunx tsc -p tsconfig.build.json --noEmit 2>&1 | grep -c 'error TS' | sed 's/^/tsc provider en HEAD: /'); git stash pop -q; python3 /scratch/annul.py $W src/packages/provider 'bun test __tests__/recommendExecution.test.ts 2>&1'  "policy-filter=src/packages/provider/src/cost/policy.ts::  const permitted = policy === undefined ? local : { ...local, entries: local.entries.filter(entry => allowsEntry(policy, entry)) }::  const permitted = local"  "no-fallback=src/packages/provider/src/cost/policy.ts::  if (policy !== undefined && !policy.fallback.enabled) {\n    return { runtime: 'blocked'::  if (false) {\n    return { runtime: 'blocked'"  "fallback-required=src/packages/provider/src/cost/executionPolicy.ts::  if (typeof enabled !== 'boolean') {::  if (false) {"  "local-only=src/packages/provider/src/cost/executionPolicy.ts::  if (selector.runtime !== LOCAL_RUNTIME) {::  if (false) {"; python3 /scratch/annul.py $W . 'python3 tests/agents/test_recommend_cli.py 2>&1 | sed "s/^  FAIL/(fail)/"'  "cli-runtime-guard=src/packages/agent/bin/recommend.ts::    if (policy !== undefined && !policy.fallback.enabled) {\n      throw new RefusalError::    if (false) {\n      throw new RefusalError"
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

@@ -1,0 +1,9 @@
+server: OK
+local-models:  36 pass  0 fail 
+model-scheduling:  20 pass  0 fail 
+tsc model-artifacts: 0
+tsc model-scheduling: 0
+tsc local-models: 0
+36f5d392e Add a Transformers seq2seq runtime behind the primitive
+execution thyrox-worker-test-muqkirun-652 kind=test task=TASK-THYROX-0761 exit=0
+__BG_EXIT__=0

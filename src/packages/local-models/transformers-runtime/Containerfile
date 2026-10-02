@@ -1,0 +1,30 @@
+# Runtime de Transformers de una ModelExecutionUnit (TASK-THYROX-0776, ADR-007):
+# `transformers_runtime_server.py` sobre torch CPU, transformers y sentencepiece,
+# que cargan un modelo encoder-decoder (T5, MADLAD-400) desde el snapshot que la
+# primitiva monta de sólo lectura en /model. La imagen no trae pesos ni descarga
+# nada al correr: el artefacto es el que el grant concede.
+#
+# Versiones: las mismas que el laboratorio de cuantización ya fija y midió
+# (`model-artifacts/quantizer-image/Containerfile`).
+ARG BASE_IMAGE=docker.io/library/ubuntu:24.04
+FROM ${BASE_IMAGE}
+ARG HTTPS_PROXY
+ARG https_proxy
+# La CA del proxy con el nombre del contrato de la primitiva; pip la lee de PIP_CERT.
+ARG PROXY_CA
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends python3 python3-venv libgomp1 ca-certificates \
+ && rm -rf /var/lib/apt/lists/*
+RUN if [ -n "$PROXY_CA" ]; then export PIP_CERT="$PROXY_CA"; fi \
+ && python3 -m venv /opt/venv \
+ && /opt/venv/bin/pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.11.0 \
+ && /opt/venv/bin/pip install --no-cache-dir numpy==2.2.6 sentencepiece==0.2.2 transformers==4.57.6 \
+      protobuf==4.25.9 safetensors==0.8.0 tokenizers==0.22.2 huggingface_hub==0.36.2 regex==2026.9.29 \
+      pyyaml==6.0.3 tqdm==4.70.1 requests==2.32.5
+COPY transformers_runtime_server.py /app/transformers_runtime_server.py
+ENV PATH=/opt/venv/bin:$PATH \
+    THYROX_TRANSFORMERS_MODEL_DIR=/model \
+    THYROX_TRANSFORMERS_PORT=8080 \
+    HF_HUB_OFFLINE=1
+EXPOSE 8080
+CMD ["python3", "/app/transformers_runtime_server.py"]

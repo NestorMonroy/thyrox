@@ -1,0 +1,5 @@
+THYROX_MODEL_QUALIFICATIONS=/home/user/ai-course-notes/.claude/models/qualifications.json
+aed4edb Write the es-MX qualification suite for thyrox
+pushed
+execution thyrox-worker-test-muqo9l69-8930 kind=test work=ai-course-notes:es-mx/qwen-qualification exit=0
+__BG_EXIT__=0

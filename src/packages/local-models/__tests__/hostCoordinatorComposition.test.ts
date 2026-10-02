@@ -11,6 +11,8 @@ import { resolvedArtifact } from '@thyrox/model-artifacts/testing/resolvedArtifa
 import { SharedCoordinationUnavailableError } from '@thyrox/model-scheduling/coordinationFactory.ts'
 import { modelCoordinatorSocketPath } from '@thyrox/model-scheduling/coordinatorProtocol.ts'
 
+import { requireValidOwner } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+
 import { composeHostCoordinatorService, cpuPlacementOf, MODEL_COORDINATOR_OWNER_KIND } from '../hostCoordinatorComposition.ts'
 
 const ROOT = '/nonexistent-thyrox-root'
@@ -23,6 +25,11 @@ describe('composeHostCoordinatorService', () => {
     expect(composed.owner.kind).toBe(MODEL_COORDINATOR_OWNER_KIND)
   })
 
+  test('el dueño compuesto pasa la validación de dueño de Podman (sin «@»)', () => {
+    const composed = composeHostCoordinatorService({ THYROX_RUNTIME_DIR: '/run/thyrox' }, ROOT)
+    expect(() => requireValidOwner(composed.owner)).not.toThrow()
+  })
+
   test('shared sin Redis rehúsa al componer', () => {
     expect(() => composeHostCoordinatorService({ THYROX_MODEL_SCHEDULING_COORDINATION: 'shared' }, ROOT)).toThrow(SharedCoordinationUnavailableError)
   })
@@ -32,5 +39,16 @@ describe('cpuPlacementOf', () => {
   test('en CPU no reserva VRAM y usa el runtime de Ollama', () => {
     const resolved = { artifact: resolvedArtifact() } as ResolvedModel
     expect(cpuPlacementOf(resolved)).toEqual({ runtime: 'ollama', placement: { kind: 'cpu' }, residencyVramMib: 0, requestVramMib: 0 })
+  })
+})
+
+describe('cpuPlacementOf por formato del artefacto (TASK-THYROX-0776)', () => {
+  test('un GGUF va a Ollama', () => {
+    expect(cpuPlacementOf({ artifact: resolvedArtifact() } as ResolvedModel).runtime).toBe('ollama')
+  })
+
+  test('un snapshot de safetensors va a Transformers', () => {
+    const artifact = { ...resolvedArtifact({ quantization: 'f32' }), format: 'safetensors' as const }
+    expect(cpuPlacementOf({ artifact } as ResolvedModel).runtime).toBe('transformers')
   })
 })

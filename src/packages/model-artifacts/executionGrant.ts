@@ -12,7 +12,7 @@ import type { ResolvedModelArtifact } from './resolvedModelArtifact.js'
 import type { KvCacheType } from './memoryEstimate.js'
 
 /** Runtimes subordinados que un grant puede nombrar. */
-export type ModelRuntime = 'ollama' | 'llama.cpp'
+export type ModelRuntime = 'ollama' | 'llama.cpp' | 'transformers'
 
 /** Dónde corre: en CPU, o en un conjunto identificado de dispositivos (M6). */
 export type ExecutionPlacement =

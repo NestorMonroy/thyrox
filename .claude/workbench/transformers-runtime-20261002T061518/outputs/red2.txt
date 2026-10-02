@@ -1,0 +1,19 @@
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/local_models/test_transformers_runtime_server.py", line 27, in <module>
+    from transformers_runtime_server import TransformersRuntime, serve, snapshot_manifest_digest  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'transformers_runtime_server'
+bun test v1.3.11 (af24e281)
+
+__tests__/snapshotManifest.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../snapshotManifest.ts' from '/home/user/thyrox/src/packages/model-artifacts/__tests__/snapshotManifest.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [167.00ms]

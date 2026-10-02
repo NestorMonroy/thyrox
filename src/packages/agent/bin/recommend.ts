@@ -18,7 +18,13 @@
  * Por qué el contexto es un parámetro y no una constante: el orden cambia con
  * él, y además decide si la medición de un modelo local alcanza.
  *
- * Salidas: 0 con recomendación · 2 si ningún modelo cumple el perfil, si un
+ * `--policy <archivo>` declara la política de ejecución del consumidor
+ * (TASK-THYROX-0773): sólo compiten los modelos locales que permite y, si no
+ * permite el respaldo, sin ninguno cualificado la recomendación es
+ * `blocked` —sale 3, sin modelo— en vez de caer a `claude-cli`; y
+ * `--runtime claude-cli` contra esa política se rehúsa.
+ *
+ * Salidas: 0 con recomendación · 3 bloqueada por la política · 2 si ningún modelo cumple el perfil, si un
  * argumento no se entiende o si el catálogo local o sus cualificaciones son
  * ilegibles — nunca una recomendación por defecto, que sería elegir sin medir.
  */
@@ -29,8 +35,11 @@ import { localModelHome, type LocalModelHome } from '@thyrox/model-artifacts/loc
 import { loadModelCatalog } from '@thyrox/model-artifacts/modelCatalog.ts'
 import { parseQualifications, type ModelQualification } from '@thyrox/model-artifacts/modelQualification.ts'
 import {
+  ExecutionPolicyError,
+  parseExecutionPolicy,
   providerExecution,
   recommendExecution,
+  type ExecutionPolicy,
   TASK_KINDS,
   type ExecutionRecommendation,
   type LocalExecution,
@@ -43,8 +52,9 @@ import {
 const SUBAGENT_FLOOR_TOKENS = 126_029
 const EXIT_OK = 0
 const EXIT_REFUSED = 2
+const EXIT_BLOCKED = 3
 const DECLARABLE_RUNTIME = 'claude-cli'
-const OPTIONS_WITH_VALUE = new Set(['--context', '--runtime'])
+const OPTIONS_WITH_VALUE = new Set(['--context', '--runtime', '--policy'])
 const FILE_NOT_FOUND_CODE = 'ENOENT'
 /** `src/packages/agent/bin` está cuatro niveles por debajo de la raíz de thyrox. */
 const ROOT_FROM_BIN = '../../../..'
@@ -54,6 +64,7 @@ type CliArguments = {
   kind?: string
   context?: string
   runtime?: string
+  policy?: string
   json: boolean
   help: boolean
 }
@@ -62,7 +73,7 @@ class RefusalError extends Error {}
 
 function usage(): string {
   return [
-    'uso: bun run bin/recommend.ts <clase> [--context N] [--runtime claude-cli] [--json]',
+    'uso: bun run bin/recommend.ts <clase> [--context N] [--runtime claude-cli] [--policy ARCHIVO] [--json]',
     '',
     `  clase     ${TASK_KINDS.join(' | ')}`,
     `  --context tokens releídos por turno (por defecto ${SUBAGENT_FLOOR_TOKENS},`,
@@ -79,6 +90,7 @@ function parseArguments(argv: readonly string[]): CliArguments {
     if (OPTIONS_WITH_VALUE.has(argument)) {
       const value = argv[index + 1] ?? ''
       if (argument === '--context') parsed.context = value
+      else if (argument === '--policy') parsed.policy = value
       else parsed.runtime = value
       index += 1
     } else if (argument === '--json') parsed.json = true
@@ -153,13 +165,27 @@ async function loadLocalInventory(home: LocalModelHome): Promise<LocalModelInven
   }
 }
 
-async function chooseExecution(kind: TaskKind, contextTokens: number, runtime: string | undefined): Promise<ExecutionRecommendation & { runtimeDeclared?: true }> {
+/** La política del consumidor; ilegible o inválida rehúsa con su ruta, nunca se ignora. */
+async function loadPolicy(path: string): Promise<ExecutionPolicy> {
+  try {
+    return parseExecutionPolicy(await readFile(path, 'utf8'))
+  } catch (error) {
+    const cause = error instanceof ExecutionPolicyError ? error.message : `ilegible: ${(error as Error).message}`
+    throw new RefusalError(`política de ejecución ${path}: ${cause}`)
+  }
+}
+
+async function chooseExecution(kind: TaskKind, contextTokens: number, runtime: string | undefined,
+  policy: ExecutionPolicy | undefined): Promise<ExecutionRecommendation & { runtimeDeclared?: true }> {
   if (runtime !== undefined) {
     requireDeclarableRuntime(runtime)
+    if (policy !== undefined && !policy.fallback.enabled) {
+      throw new RefusalError(`--runtime ${runtime} contra una política que no permite el proveedor: no se declara`)
+    }
     return { ...providerExecution(kind, { contextTokens }), runtimeDeclared: true }
   }
   const inventory = await loadLocalInventory(localModelHome(process.env, thyroxRoot()))
-  return recommendExecution(kind, { contextTokens }, inventory)
+  return recommendExecution(kind, { contextTokens }, inventory, policy)
 }
 
 function printLocal(execution: LocalExecution): void {
@@ -203,9 +229,15 @@ async function run(argv: readonly string[]): Promise<number> {
   }
   const kind = requireKind(options.kind)
   const contextTokens = requireContextTokens(options.context)
-  const execution = await chooseExecution(kind, contextTokens, options.runtime)
+  const policy = options.policy === undefined ? undefined : await loadPolicy(options.policy)
+  const execution = await chooseExecution(kind, contextTokens, options.runtime, policy)
   if (options.json) console.log(JSON.stringify(execution, null, 2))
-  else if (execution.runtime === 'ollama') printLocal(execution)
+  if (execution.runtime === 'blocked') {
+    console.error(`recommend: bloqueada — ${execution.blockedReason}`)
+    return EXIT_BLOCKED
+  }
+  if (options.json) return EXIT_OK
+  if (execution.runtime === 'ollama') printLocal(execution)
   else printProvider(execution, contextTokens, execution.runtimeDeclared === true)
   return EXIT_OK
 }
