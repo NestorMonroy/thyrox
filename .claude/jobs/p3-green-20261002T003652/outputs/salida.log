@@ -1,0 +1,14 @@
+ok
+ 12 pass
+ 0 fail
+56 aprobada(s) · 0 fallida(s) (alcance medido: recommend.ts)
+tsc-provider=2
+../../../node_modules/@anthropic/ink/src/components/Box.tsx(90,5): error TS2339: Property 'ink-box' does not exist on type 'JSX.IntrinsicElements'.
+../../../node_modules/@anthropic/ink/src/components/Box.tsx(114,5): error TS2339: Property 'ink-box' does not exist on type 'JSX.IntrinsicElements'.
+../../../node_modules/@anthropic/ink/src/components/Link.tsx(25,9): error TS2339: Property 'ink-link' does not exist on type 'JSX.IntrinsicElements'.
+tsc-agent=2
+../../../node_modules/@anthropic/ink/src/components/Box.tsx(90,5): error TS2339: Property 'ink-box' does not exist on type 'JSX.IntrinsicElements'.
+../../../node_modules/@anthropic/ink/src/components/Box.tsx(114,5): error TS2339: Property 'ink-box' does not exist on type 'JSX.IntrinsicElements'.
+../../../node_modules/@anthropic/ink/src/components/Link.tsx(25,9): error TS2339: Property 'ink-link' does not exist on type 'JSX.IntrinsicElements'.
+execution thyrox-worker-test-muq8gm3k-11202 kind=test task=TASK-THYROX-0758 exit=0
+__BG_EXIT__=0

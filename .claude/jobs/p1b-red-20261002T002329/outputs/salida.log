@@ -1,0 +1,12 @@
+(fail) la referencia de trabajo de un consumidor > autoriza un trabajo de tarea con la identidad del consumidor, sin convertirla en TASK [0.61ms]
+(fail) run con la referencia de trabajo de un consumidor > --work autoriza con la identidad del consumidor y --owner declara el dueño del pool [0.73ms]
+(fail) run con la referencia de trabajo de un consumidor > --task y --work juntos no son una autorización [0.33ms]
+(fail) run con la referencia de trabajo de un consumidor > un dueño que no es de pool no se declara por línea de orden [0.36ms]
+(fail) la referencia de trabajo de un consumidor > autoriza un trabajo de tarea con la identidad del consumidor, sin convertirla en TASK [0.61ms]
+(fail) run con la referencia de trabajo de un consumidor > --work autoriza con la identidad del consumidor y --owner declara el dueño del pool [0.73ms]
+(fail) run con la referencia de trabajo de un consumidor > --task y --work juntos no son una autorización [0.33ms]
+(fail) run con la referencia de trabajo de un consumidor > un dueño que no es de pool no se declara por línea de orden [0.36ms]
+ 43 pass
+ 4 fail
+execution thyrox-worker-test-muq7zek4-15254 kind=test task=TASK-THYROX-0756 exit=0
+__BG_EXIT__=0

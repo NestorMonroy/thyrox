@@ -1,0 +1,10 @@
+ok
+error: Cannot find module '../src/cost/executionPolicy.ts' from '/home/user/thyrox/src/packages/provider/__tests__/recommendExecution.test.ts'
+ 0 pass
+ 1 fail
+  FAIL sin candidato permitido sale 3 — 0 
+  FAIL y el JSON dice bloqueada, sin modelo — {
+  FAIL --runtime claude-cli contra una política sin respaldo rehúsa con 2 — 0
+  FAIL y no nombra ningún claude- como recomendación —   runtime claude-cli (declarado con --runtime claude-cli)
+execution thyrox-worker-test-muq8f2hu-10564 kind=test task=TASK-THYROX-0758 exit=0
+__BG_EXIT__=0

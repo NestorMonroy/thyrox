@@ -1,0 +1,13 @@
+tests/session/test-gnu-time-launchers.sh	exit=0
+tests/session/test-headless-pool-credential-source.sh	exit=0
+tests/session/test-headless-pool-exit-live-items.sh	exit=0
+tests/session/test-headless-pool-frozen-launcher.sh	exit=0
+tests/session/test-headless-pool-item-drain.sh	exit=0
+tests/session/test-headless-pool-lifecycle.sh	exit=0
+tests/session/test-headless-pool-runtime.sh	exit=0
+tests/session/test-headless-pool-thyrox-p.sh	exit=0
+tests/session/test-headless-pool-worktree.sh	exit=1
+tests/session/test-headless-pool.sh	exit=1
+tests/session/test-item-worktree-stash.sh	exit=0
+execution thyrox-worker-test-muq86ng0-22079 kind=test task=TASK-THYROX-0757 exit=0
+__BG_EXIT__=0

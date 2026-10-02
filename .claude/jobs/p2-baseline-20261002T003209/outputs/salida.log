@@ -1,0 +1,8 @@
+tests/session/test-headless-pool.sh	exit=1
+tests/session/test-headless-pool-worktree.sh	exit=1
+== .claude/workbench/pool-execution-unit-20261002/outputs/baseline-test-headless-pool.txt
+FALLA admision: la reserva ajena sigue en el registro — esperado '900', obtenido '{
+== .claude/workbench/pool-execution-unit-20261002/outputs/baseline-test-headless-pool-worktree.txt
+  FALLA el trabajo aparece bajo la salida del ítem: esperado «1», obtenido «0»
+execution thyrox-worker-test-muq8aje8-19168 kind=test task=TASK-THYROX-0757 exit=0
+__BG_EXIT__=0

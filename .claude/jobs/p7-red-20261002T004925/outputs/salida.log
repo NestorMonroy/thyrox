@@ -1,0 +1,9 @@
+model flags removed: 42
+FAILED tests/test_translation_loop.py::test_measure_records_the_net_effect_of_each_decision
+FAILED tests/test_translation_loop.py::test_a_session_limit_stops_the_batch_instead_of_retrying
+FAILED tests/test_translation_loop.py::test_retranslate_leaves_each_chunk_a_correction_naming_what_failed
+FAILED tests/test_translation_loop.py::test_usage_records_the_memory_gnu_time_measured_for_each_item
+FAILED tests/test_translation_loop.py::test_usage_reads_gnu_time_when_the_command_failed
+46 failed, 15 passed in 55.56s
+execution thyrox-worker-test-muq8wrdw-24989 kind=test work=ai-course-notes:es-mx/executor-qwen exit=0
+__BG_EXIT__=0

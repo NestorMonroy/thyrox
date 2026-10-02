@@ -1,0 +1,7 @@
+replace_literal: 1 reemplazo(s) en src/packages/provider/__tests__/recommendExecution.test.ts
+ 12 pass
+ 0 fail
+== local-only: 1 caen
+    (fail) parseExecutionPolicy > sólo se permiten modelos locales por su repositorio; un proveedor no se lista [0.25ms]
+execution thyrox-worker-test-muq8loxa-13106 kind=test task=TASK-THYROX-0758 exit=0
+__BG_EXIT__=0

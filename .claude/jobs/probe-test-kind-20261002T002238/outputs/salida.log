@@ -1,0 +1,6 @@
+/usr/local/bin/bun
+README.md
+annul
+annul.sh
+execution thyrox-worker-test-muq7yb6f-14856 kind=test task=TASK-THYROX-0756 exit=0
+__BG_EXIT__=0

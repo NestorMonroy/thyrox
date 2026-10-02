@@ -1,0 +1,4 @@
+  FALLA el trabajo aparece bajo la salida del ítem: esperado «1», obtenido «0»
+45
+execution thyrox-worker-test-muq8dsjz-6409 kind=test task=TASK-THYROX-0757 exit=0
+__BG_EXIT__=0

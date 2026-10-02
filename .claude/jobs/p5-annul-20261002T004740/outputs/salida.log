@@ -1,0 +1,10 @@
+== e2e-coordinator-socket:
+      FALLA el pool sale 0 — esperado [0] obtenido [1]
+      FALLA el ítem termina bien — esperado [items=1 ok=1 fallidos=0] obtenido [items=1 ok=0 fallidos=1]
+      FALLA el coordinador recibió la admisión del modelo local — esperado [thyrox-qwen--qwen2.5-7b-inst
+      FALLA el runtime recibió el modelo que concede el grant — esperado [qwen2.5-7b-instruct-q4_k_m] ob
+      FALLA la respuesta del runtime llega al resultado del ítem — esperado [traducción de prueba] obten
+== e2e-unit-branch:
+      FALLA el ítem pidió su ejecución con la referencia del consumidor — esperado [1] obtenido []
+execution thyrox-worker-test-muq8uhlk-23592 kind=test task=TASK-THYROX-0759 exit=0
+__BG_EXIT__=0

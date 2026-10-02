@@ -1,0 +1,13 @@
+== work-accepted: 4 caen
+    (fail) la referencia de trabajo de un consumidor > autoriza un trabajo de tarea con la identidad del consumidor, sin convertirla en TASK [0.25ms]
+    (fail) run con la referencia de trabajo de un consumidor > --work autoriza con la identidad del consumidor y --owner declara el dueño del pool [0.39ms
+== work-shape: 2 caen
+    (fail) la referencia de trabajo de un consumidor > un consumidor o un id fuera de su forma se rehúsan [0.42ms]
+== task-kinds-only: 2 caen
+    (fail) la referencia de trabajo de un consumidor > un runtime de modelo no se autoriza por una referencia de trabajo [0.37ms]
+== one-reference: 2 caen
+    (fail) run con la referencia de trabajo de un consumidor > --task y --work juntos no son una autorización [0.49ms]
+== pool-owner: 2 caen
+    (fail) run con la referencia de trabajo de un consumidor > un dueño que no es de pool no se declara por línea de orden [0.54ms]
+execution thyrox-worker-test-muq80kcs-15867 kind=test task=TASK-THYROX-0756 exit=0
+__BG_EXIT__=0
