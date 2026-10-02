@@ -23,8 +23,8 @@ import type { ModelCatalogEntry } from './catalogEntry.js'
 export const LOCAL_TASK_CLASSES = ['mecanica', 'analisis', 'adversarial', 'frontera'] as const
 export type LocalTaskClass = (typeof LOCAL_TASK_CLASSES)[number]
 
-/** Qué demuestra una cualificación: el formato del protocolo o la tarea de una clase. */
-export type QualificationKind = 'protocol' | 'task'
+/** Qué demuestra una cualificación: el formato del protocolo, la tarea de una clase o la recuperación por embeddings. */
+export type QualificationKind = 'protocol' | 'task' | 'embedding'
 
 /** Si la medición corrió sola o con otra carga que la desplazaba. */
 export type MeasurementCondition = 'isolated' | 'contended'
@@ -76,7 +76,8 @@ function requireNonNegativeInteger(record: Record<string, unknown>, key: string,
   return value
 }
 
-const QUALIFICATION_KINDS: readonly QualificationKind[] = ['protocol', 'task']
+const QUALIFICATION_KINDS: readonly QualificationKind[] = ['protocol', 'task', 'embedding']
+const KIND_LABELS: Readonly<Record<QualificationKind, string>> = { protocol: 'protocolo', task: 'tarea', embedding: 'embeddings' }
 const MEASUREMENT_CONDITIONS: readonly MeasurementCondition[] = ['isolated', 'contended']
 
 function requireOneOf<T extends string>(record: Record<string, unknown>, key: string, allowed: readonly T[], path: string): T {
@@ -87,11 +88,11 @@ function requireOneOf<T extends string>(record: Record<string, unknown>, key: st
   return value as T
 }
 
-/** La clase es obligatoria en una cualificación de tarea y no existe en una de protocolo. */
+/** La clase es obligatoria en una cualificación de tarea y no existe en las demás. */
 function taskClassFor(kind: QualificationKind, record: Record<string, unknown>, path: string): LocalTaskClass | undefined {
   if (kind === 'task') return requireTaskClass(record, path)
   if (record.taskClass !== undefined) {
-    throw new InvalidQualificationError(`${path}.taskClass`, 'una cualificación de protocolo no mide ninguna clase')
+    throw new InvalidQualificationError(`${path}.taskClass`, `una cualificación de ${KIND_LABELS[kind]} no mide ninguna clase`)
   }
   return undefined
 }
@@ -147,7 +148,7 @@ export function parseQualifications(text: string): ModelQualification[] {
 }
 
 function scopeOf(qualification: ModelQualification): string {
-  return qualification.kind === 'task' ? `task:${qualification.taskClass}` : 'protocol'
+  return qualification.kind === 'task' ? `task:${qualification.taskClass}` : qualification.kind
 }
 
 function byMeasurementKey(left: ModelQualification, right: ModelQualification): number {
@@ -215,4 +216,25 @@ export function qualifiedModels(
       passed(candidate.protocol) && passed(candidate.qualification)
       && candidate.qualification.contextTokens >= minContextTokens)
     .sort(bySpeedWhenIsolated)
+}
+
+export interface QualifiedEmbeddingModel {
+  readonly entry: ModelCatalogEntry
+  readonly qualification: ModelQualification
+}
+
+/**
+ * Los modelos del catálogo elegibles para producir embeddings: declaran la
+ * capacidad `embeddings` y su medición de embeddings vigente aprobó. La
+ * capacidad sale del GGUF, nunca del nombre; y la medición es la que prueba
+ * que recupera. Ninguna de las dos basta sola. Elegible no es autorizado.
+ */
+export function qualifiedEmbeddingModels(
+  entries: readonly ModelCatalogEntry[],
+  qualifications: readonly ModelQualification[],
+): QualifiedEmbeddingModel[] {
+  return entries
+    .filter((entry) => entry.capabilities.includes('embeddings'))
+    .map((entry) => ({ entry, qualification: latestFor(qualifications, entry.name, 'embedding') }))
+    .filter((candidate): candidate is QualifiedEmbeddingModel => passed(candidate.qualification))
 }

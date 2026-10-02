@@ -6,6 +6,7 @@ import { thyroxModelName } from '../modelName.js'
 import {
   InvalidQualificationError,
   parseQualifications,
+  qualifiedEmbeddingModels,
   qualifiedModels,
   serializeQualifications,
   validateQualification,
@@ -166,6 +167,36 @@ describe('forma de cada tipo de cualificación', () => {
   test('la condición de medición es isolated o contended', () => {
     expect(() => validateQualification({ ...measured(FAST.name), measurementCondition: 'quiet' }))
       .toThrow(/qualification\.measurementCondition/)
+  })
+})
+
+describe('cualificación de embeddings', () => {
+  const EMBEDDER: ModelCatalogEntry = { ...entry('nomic-ai/nomic-embed-text-v1.5-GGUF', 'd'.repeat(40)), capabilities: ['embeddings'] }
+  const embedding = (model: string, parts: Partial<ModelQualification> = {}): ModelQualification => {
+    const { taskClass: _omitted, ...base } = measured(model, { kind: 'embedding', suite: 'embedding@1', ...parts })
+    return base
+  }
+
+  test('una de embeddings no mide ninguna clase', () => {
+    expect(validateQualification(embedding(EMBEDDER.name))).toEqual(embedding(EMBEDDER.name))
+    expect(() => validateQualification({ ...embedding(EMBEDDER.name), taskClass: 'mecanica' })).toThrow(InvalidQualificationError)
+  })
+
+  test('elegible: capacidad embeddings declarada y su medición vigente aprobada', () => {
+    expect(qualifiedEmbeddingModels([EMBEDDER, FAST], [embedding(EMBEDDER.name)]).map(candidate => candidate.entry.name)).toEqual([EMBEDDER.name])
+  })
+
+  test('la medición más reciente gobierna: una que suspende retira la aprobación', () => {
+    const failed = embedding(EMBEDDER.name, { passed: false, casesPassed: 3, measuredAt: '2026-10-01T00:20:00Z' })
+    expect(qualifiedEmbeddingModels([EMBEDDER], [embedding(EMBEDDER.name), failed])).toEqual([])
+  })
+
+  test('sin la capacidad declarada no es elegible aunque aprobara: el nombre no la prueba', () => {
+    expect(qualifiedEmbeddingModels([FAST], [embedding(FAST.name)])).toEqual([])
+  })
+
+  test('una cualificación de tarea no hace elegible para embeddings', () => {
+    expect(qualifiedEmbeddingModels([EMBEDDER], [measured(EMBEDDER.name)])).toEqual([])
   })
 })
 
