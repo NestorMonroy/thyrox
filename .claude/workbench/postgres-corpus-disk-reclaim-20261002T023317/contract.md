@@ -1292,3 +1292,137 @@ junto con la evidencia determinista que sustenta el resultado.
 Hasta completar T007, continúa automáticamente.
 
 Esta instrucción sigue la estructura del documento: tarea declarada + contrato + autorización + evidencia, que el propio archivo define como la unidad fundamental de ejecución. :chatgpt-content-reference{index="2"} También mantuve el verifier separado del modelo, porque el documento especifica que el modelo implementa pero **no decide si su propio trabajo está aceptado**. :chatgpt-content-reference{index="3"}
+---
+
+# 22. Enmienda 2026-10-02T06:38:07 — preservar antes de liberar
+
+Directiva del ejecutor 2026-10-02. **Sustituye** el DAG de §5, amplía §10
+(T005) y restituye la dependencia de §11 (T006). El `dependencyOverride` de
+T006 en `plan.jsonl` («T006 exige sólo que los errors estén ingeridos») queda
+**retirado**: el corpus que T004 modelaba era demasiado pequeño, no la
+dependencia innecesaria.
+
+```text
+liberar disco ≠ borrar primero y vectorizar después
+primero preservar conocimiento, después liberar almacenamiento
+```
+
+## 22.1 Universo de corpus
+
+Además de findings y errors, son fuentes candidatas del corpus semántico:
+
+```text
+.claude/workbench/**
+.claude/build-logs/**
+.claude/cache/**
+.claude/logs/**
+.thyrox/**
+```
+
+Candidata no es «insertar todos los bytes». La retención se decide por
+**contenido y ownership**, nunca por el nombre del directorio.
+
+## 22.2 T005b — inventario de corpus (sólo medir)
+
+Recorre los cinco árboles y clasifica cada elemento en exactamente una clase:
+
+```text
+semantic_content | durable_evidence | execution_state | reconstructible_cache |
+secret_sensitive | binary_non_indexable | duplicate
+```
+
+Produce **dos inventarios relacionados** en `outputs/T005b-corpus-inventory.json`:
+A (corpus pendiente de preservación) y B (espacio potencialmente recuperable).
+Cada fila: `path, bytes, content_class, semantic_value, canonical_owner,
+ingested, document_id, content_hash, safe_to_delete, reason`.
+
+Reglas, comprobadas por el verificador sobre cada fila:
+
+```text
+semantic_value = true AND ingested != true  → safe_to_delete = false
+content_class = secret_sensitive            → nunca se lee su valor; se clasifica
+                                              por nombre/ownership vía
+                                              src/verify/env_sensitivity.tsv;
+                                              safe_to_delete = false
+content_class desconocido                   → safe_to_delete = false
+```
+
+El texto de un secreto nunca entra al inventario, al corpus ni a la evidencia.
+
+## 22.3 D5 — productor de embeddings (decisión del ejecutor)
+
+Antes de cualquier ingesta con embeddings se fijan: productor, modelo,
+dimensiones y representación (`vector`/`halfvec`/`bit`). T005c mide el
+**espacio mínimo** que exige materializar cada candidato declarado y lo
+publica en `outputs/T005c-embedding-requirement.json`. Sin D5 decidido,
+T008 rehúsa.
+
+## 22.4 T005a — headroom previo (no es T006)
+
+Sólo si `T005c` mide que el disco libre no alcanza. Elimina **únicamente**
+recursos que T005 y T005b demuestran a la vez reconstruibles y ajenos al
+corpus (hoy: imagen llama.cpp `9ace0117e8ff…` y `/root/.npm/_cacache`, si
+T005b no los reclasifica). Mismas reglas de registro que §11. Nunca toca los
+cinco árboles de 22.1.
+
+## 22.5 Ingesta
+
+```text
+T002  findings          T004  errors
+T004a workbench         T004b build-logs        T004c logs
+T004d .thyrox           T004e contenido semántico de cache
+```
+
+Cada rama ingiere sólo filas de T005b con `semantic_value = true` o
+`durable_evidence` recuperable, por el ingester existente
+(`bin/semantic-search-ingest`) con su reconocedor por dominio; un dominio sin
+reconocedor se **extiende** ahí, no se construye otro ingester. Las ramas
+independientes corren por `headless-pool`/GNU Parallel cuando T008 esté
+aceptada. El controlador no crea ramas: sólo las declaradas en `plan.jsonl`.
+
+Por documento se persiste: identidad, `source_ref` lógico, tipo de fuente,
+versión, `content_hash`, timestamps, texto y posición de cada chunk, metadata,
+espacio de embeddings y embedding. `source_ref ≠ dependencia de runtime`.
+
+## 22.6 T009 — invariante de borrado
+
+Para cada `source_path` candidato a borrar:
+
+```text
+existe document/version correspondiente
+→ content_hash coincide con el archivo
+→ chunks persistidos
+→ embeddings presentes en el espacio activo
+→ retrieval devuelve el texto esperado
+→ con el archivo ausente (renombrado fuera del árbol, no borrado), retrieval sigue devolviéndolo
+```
+
+Sólo entonces `safe_to_delete = true`, y además el elemento no es fuente
+canónica ni evidencia raw que deba conservarse. Salida:
+`outputs/T009-deletion-proofs.jsonl`, una fila por `source_path`.
+
+## 22.7 DAG vigente
+
+```text
+T001 PostgreSQL ready
+  ↓
+T005 inventario de disco (aceptada) → T005b inventario de corpus → T005c requisito del embedding producer
+  ↓
+T005a headroom seguro (sólo si T005c lo exige)
+  ↓
+T008 embedding producer disponible (exige D5 decidido)
+  ↓
+T002 · T004 · T004a · T004b · T004c · T004d · T004e   (independientes)
+  ↓
+T009 durabilidad + retrieval + pruebas de borrado
+  ↓
+T006 cleanup final (sólo filas con prueba T009)
+  ↓
+T007 verificación final
+```
+
+## 22.8 Fuera de esta enmienda
+
+ADR-008 1.6.0 fijó como corpus inicial findings y errors. Ampliar el universo
+exige su enmienda en `kaupamex-docs`; hasta entonces esta enmienda gobierna el
+batch y declara la divergencia.
