@@ -59,3 +59,13 @@ timed out.»: el `fetch` de Bun corta a los 300 s sin plazo declarado (sonda
 cualificador declara 30 min por caso. RED: los 2 casos que dependen del cambio;
 GREEN 4/4; anulaciones exactas; typecheck de `local-models` con los mismos 7
 errores previos en los mismos sitios que HEAD.
+
+## TASK-THYROX-0665 es el canario del bootstrap, y nada más (directiva 2026-10-02)
+
+No forma parte de la feature de mathematical reasoning ni la sustituye. Se usa
+UNA vez para probar la propiedad que falta: qwen3-4b como managed worker, en
+su ExecutionUnit y su worktree aislado, modifica el repositorio, pasa el
+verifier y `pool_integrate` lo integra. Criterio de cierre:
+`0665 accepted → first local managed code change → bootstrap canary complete`.
+Después no se consumen tareas de limpieza: el siguiente trabajo de
+implementación es el especialista de razonamiento (TASK-THYROX-0911).
