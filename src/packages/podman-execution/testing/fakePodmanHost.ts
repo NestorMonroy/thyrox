@@ -60,6 +60,8 @@ const CREATE_VALUE_FLAGS = new Set(['--name', '--label', '--mount', '--secret', 
 export class FakePodmanHost implements PodmanExecutor {
   readonly containers = new Map<string, FakeContainer>()
   readonly volumes = new Set<string>()
+  /** Etiquetas con que `volume create` creó cada volumen. */
+  readonly volumeLabels = new Map<string, Record<string, string>>()
   readonly secrets = new Map<string, FakeSecret>()
   readonly networks = new Set<string>()
   readonly calls: string[][] = []
@@ -85,7 +87,7 @@ export class FakePodmanHost implements PodmanExecutor {
     if (command === 'start') return this.start(args[1] ?? '')
     if (command === 'rm') return this.remove(args[args.length - 1] ?? '')
     if (command === 'exec') return this.healthyContainers.has(args[1] ?? '') ? OK : fail('unhealthy', 1)
-    if (command === 'volume') return this.volume(sub ?? '', args[2] ?? '')
+    if (command === 'volume') return this.volume(sub ?? '', args.slice(2))
     if (command === 'network') return this.network(sub ?? '', args[2] ?? '')
     if (command === 'secret') return this.secret(args.slice(1), options.stdin)
     return fail(`fake: comando no modelado: ${args.join(' ')}`, 1)
@@ -166,9 +168,20 @@ export class FakePodmanHost implements PodmanExecutor {
     return OK
   }
 
-  private volume(sub: string, name: string): PodmanCommandResult {
+  private volume(sub: string, rest: string[]): PodmanCommandResult {
+    const name = rest[rest.length - 1] ?? ''
     if (sub === 'exists') return this.volumes.has(name) ? OK : fail('', 1)
-    if (sub === 'create') { this.volumes.add(name); return OK }
+    if (sub === 'create') {
+      this.volumes.add(name)
+      const labels: Record<string, string> = {}
+      for (let index = 0; index < rest.length - 1; index++) {
+        if (rest[index] !== '--label') continue
+        const [key, ...value] = (rest[index + 1] ?? '').split('=')
+        labels[key ?? ''] = value.join('=')
+      }
+      this.volumeLabels.set(name, labels)
+      return OK
+    }
     return fail(`fake: volume ${sub} no modelado`, 1)
   }
 

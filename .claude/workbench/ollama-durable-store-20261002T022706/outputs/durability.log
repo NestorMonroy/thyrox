@@ -1,0 +1,53 @@
+
+== 1. bootstrap declara thyrox-ollama sobre el store (thyrox-ollama-bench-models)
+thyrox-ollama action=recreated drift=volume created=yes started=yes health=healthy volumes=thyrox-ollama-bench-models:preserved
+exit=0
+container=73abf5a9b6ca863ff7c991a0379c6714f05791f64f10b68c1553aec65d5bfd8a mount=thyrox-ollama-bench-models:/root/.ollama
+
+== 2. materializar un artefacto reconocible: thyrox-durability-probe:20261002t022736 (desde qwen3:4b, sin descargar nada)
+{"status":"success"}execution thyrox-worker-probe-muqcf1v8-10269 kind=probe task=TASK-THYROX-0757 exit=0
+
+jq: parse error: Invalid numeric literal at line 1, column 922
+probe_digest=a79806aa7e238f70ab84b943f57b1849ab459ed68e0dbf65a0ea77b58802d250
+7
+
+== 3. retirar SÓLO el contenedor; el volumen no se toca
+rm_exit=0
+volume_after_rm=present
+
+== 4. bootstrap otra vez
+infrastructure_ensure: locks de Podman desfasados (asignados 7, referenciados 8); no se materializa nada.
+                       Podman 4.9.3 · backend sqlite · 9 volumen(es) · vivos: thyrox-postgres,thyrox-redis,thyrox-worker-maintenance-muqc7qsl-2435
+                       Coincide con las precondiciones de H-THYROX-308: con backend sqlite, `podman system renumber` se detiene en el primer volumen.
+                       Detener antes los contenedores vivos (thyrox-postgres,thyrox-redis,thyrox-worker-maintenance-muqc7qsl-2435): la reparación los rehúsa.
+                       El ensure no repara el motor. Reparación explícita: bin/podman_lock_recovery (sin --confirm muestra el plan); después, volver a correr el ensure.
+exit=3
+container=absent mount=
+
+== 5. verificar
+jq: parse error: Invalid numeric literal at line 1, column 5
+PASS otro contenedor
+FAIL volumen 
+FAIL artefacto: antes=a79806aa7e238f70ab84b943f57b1849ab459ed68e0dbf65a0ea77b58802d250 despues=
+PASS blobs idénticos (nombre, tamaño, inodo, mtime)
+PASS sin descarga en el log del contenedor nuevo
+
+== 6. anulación: el mismo bootstrap sobre un volumen sin el store (thyrox-ollama-models)
+infrastructure_ensure: locks de Podman desfasados (asignados 7, referenciados 8); no se materializa nada.
+                       Podman 4.9.3 · backend sqlite · 9 volumen(es) · vivos: thyrox-postgres,thyrox-redis,thyrox-worker-maintenance-muqc7qsl-2435
+                       Coincide con las precondiciones de H-THYROX-308: con backend sqlite, `podman system renumber` se detiene en el primer volumen.
+                       Detener antes los contenedores vivos (thyrox-postgres,thyrox-redis,thyrox-worker-maintenance-muqc7qsl-2435): la reparación los rehúsa.
+                       El ensure no repara el motor. Reparación explícita: bin/podman_lock_recovery (sin --confirm muestra el plan); después, volver a correr el ensure.
+exit=3
+jq: parse error: Invalid numeric literal at line 1, column 5
+ANNULMENT-OK artefacto ausente sin su volumen (digest='')
+
+== 7. volver al store declarado
+infrastructure_ensure: locks de Podman desfasados (asignados 7, referenciados 8); no se materializa nada.
+                       Podman 4.9.3 · backend sqlite · 9 volumen(es) · vivos: thyrox-postgres,thyrox-redis,thyrox-worker-maintenance-muqc7qsl-2435
+                       Coincide con las precondiciones de H-THYROX-308: con backend sqlite, `podman system renumber` se detiene en el primer volumen.
+                       Detener antes los contenedores vivos (thyrox-postgres,thyrox-redis,thyrox-worker-maintenance-muqc7qsl-2435): la reparación los rehúsa.
+                       El ensure no repara el motor. Reparación explícita: bin/podman_lock_recovery (sin --confirm muestra el plan); después, volver a correr el ensure.
+exit=3
+jq: parse error: Invalid numeric literal at line 1, column 5
+FAIL restaurado

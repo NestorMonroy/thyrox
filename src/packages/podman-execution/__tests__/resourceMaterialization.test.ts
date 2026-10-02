@@ -3,12 +3,14 @@ import { beforeEach, describe, expect, test } from 'bun:test'
 import {
   InvalidDesiredResourceError,
   LEGACY_ROLE_DRIFT,
+  RESOURCE_KIND_LABEL_KEY,
+  RESOURCE_NAME_LABEL_KEY,
   SECRET_REDACTION,
   ensureResource,
   type DesiredResource,
   type ResourceMaterializationDeps,
 } from '../resourceMaterialization.js'
-import { OWNER_ID_LABEL_KEY, OWNER_KIND_LABEL_KEY, WORKER_CONTAINER_NAME_PREFIX } from '../workerContainerLifecycle.js'
+import { OWNER_ID_LABEL_KEY, OWNER_KIND_LABEL_KEY, OWNER_PID_LABEL_KEY, WORKER_CONTAINER_NAME_PREFIX } from '../workerContainerLifecycle.js'
 import { FakePodmanHost } from '../testing/fakePodmanHost.js'
 
 const PASSWORD = 'super-secret-value-4471'
@@ -73,6 +75,13 @@ describe('ensureResource — primera materialización', () => {
     expect(outcome.drift).toEqual([])
     expect(outcome.volumes).toEqual([{ volume: VOLUME, state: 'created' }])
     expect(host.volumes.has(VOLUME)).toBe(true)
+    // el volumen es de la infraestructura que lo declaró, no del proceso que lo creó
+    const volumeLabels = host.volumeLabels.get(VOLUME) ?? {}
+    expect(volumeLabels[OWNER_KIND_LABEL_KEY]).toBe('infrastructure')
+    expect(volumeLabels[OWNER_ID_LABEL_KEY]).toBe("infrastructure-bootstrap")
+    expect(volumeLabels[RESOURCE_KIND_LABEL_KEY]).toBe('infrastructure')
+    expect(volumeLabels[RESOURCE_NAME_LABEL_KEY]).toBe(NAME)
+    expect(Object.keys(volumeLabels)).not.toContain(OWNER_PID_LABEL_KEY)
     expect(host.secrets.get(SECRET)?.value).toBe(PASSWORD)
     const container = host.containers.get(NAME)
     expect(container?.labels[OWNER_KIND_LABEL_KEY]).toBe('infrastructure')

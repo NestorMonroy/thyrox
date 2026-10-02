@@ -125,6 +125,8 @@ export class InvalidDesiredResourceError extends Error {
 
 /** Etiqueta con el tipo de recurso: decide la política de nombre al leerlo de vuelta. */
 export const RESOURCE_KIND_LABEL_KEY = 'thyrox.resource-kind'
+/** El recurso que declaró un volumen: lo conserva al recrear su contenedor y nadie más lo administra. */
+export const RESOURCE_NAME_LABEL_KEY = 'thyrox.resource-name'
 /** Huella de la configuración declarada que no tiene medida directa en `inspect`. */
 export const CONFIG_DIGEST_LABEL_KEY = 'thyrox.resource-config-digest'
 /** Huella de la declaración de secretos (nombre y destino, nunca el valor). */
@@ -375,6 +377,20 @@ async function ensureNetwork(deps: ResourceMaterializationDeps, network: Resourc
   if (exists.exitCode !== 0) await step(deps, 'network', ['network', 'create', network.name])
 }
 
+/**
+ * Las etiquetas de un volumen que crea la primitiva: su dueño y el recurso que lo
+ * declaró, nunca el pid. El volumen sobrevive al proceso que lo creó y a cada
+ * contenedor que lo monta; un volumen que ya existía se conserva como está.
+ */
+function volumeLabelArgv(desired: DesiredResource): string[] {
+  return [
+    ...labelArgv(OWNER_KIND_LABEL_KEY, desired.owner.kind),
+    ...labelArgv(OWNER_ID_LABEL_KEY, desired.owner.id),
+    ...labelArgv(RESOURCE_KIND_LABEL_KEY, desired.kind),
+    ...labelArgv(RESOURCE_NAME_LABEL_KEY, desired.name),
+  ]
+}
+
 async function ensureVolumes(deps: ResourceMaterializationDeps, desired: DesiredResource): Promise<VolumeState[]> {
   const states: VolumeState[] = []
   for (const mount of desired.namedVolumes ?? []) {
@@ -383,7 +399,7 @@ async function ensureVolumes(deps: ResourceMaterializationDeps, desired: Desired
       states.push({ volume: mount.volume, state: 'preserved' })
       continue
     }
-    await step(deps, 'volume', ['volume', 'create', mount.volume])
+    await step(deps, 'volume', ['volume', 'create', ...volumeLabelArgv(desired), mount.volume])
     states.push({ volume: mount.volume, state: 'created' })
   }
   return states
