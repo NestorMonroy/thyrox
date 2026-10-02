@@ -1,0 +1,5 @@
+0
+ 20 pass
+ 5 fail
+execution thyrox-worker-test-muqqcmnc-3890 kind=test task=TASK-THYROX-0782 exit=0
+__BG_EXIT__=0

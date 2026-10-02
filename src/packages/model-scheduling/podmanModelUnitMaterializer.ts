@@ -15,7 +15,7 @@
  * publicado sólo en `127.0.0.1` y los dispositivos del grant en forma CDI.
  * Nunca red `host`: el runtime no escucha en la red del anfitrión.
  */
-import type { WorkerResourceMount } from '@thyrox/podman-execution/workerResourceProfile.ts'
+import type { WorkerMountMode, WorkerResourceMount } from '@thyrox/podman-execution/workerResourceProfile.ts'
 import type { ExecutionGrant, ModelRuntime } from '@thyrox/model-artifacts/executionGrant.ts'
 import type { ArtifactFormat } from '@thyrox/model-artifacts/catalogEntry.ts'
 import type { ModelSource } from '@thyrox/model-artifacts/modelName.ts'
@@ -88,10 +88,14 @@ export interface RuntimeContainerProfile {
   readonly artifactMount?: ArtifactMount
 }
 
-/** El artefacto del grant expuesto a la unidad: de dónde se lee y dónde lo ve el runtime. */
+/** El artefacto del grant expuesto a la unidad: de dónde se lee, dónde lo ve el runtime y con qué modo. */
 export interface ArtifactMount {
   hostDirectory(artifact: ResolvedModelArtifact): string
   readonly containerDirectory: string
+  /** `ro` si el runtime sólo lee el artefacto; `rw` si escribe junto a él (el manifiesto de Ollama). */
+  readonly mode: WorkerMountMode
+  /** Deja listo `hostDirectory` antes de crear la unidad (TASK-THYROX-0782); si falla, la unidad no se crea. */
+  stage?(artifact: ResolvedModelArtifact): Promise<void>
 }
 
 /** Límites de recursos de un contenedor de unidad. */
@@ -213,10 +217,20 @@ export function modelUnitAuthorization(spec: ModelUnitContainerSpec): ExecutionA
 }
 
 /** El artefacto concedido de sólo lectura, si el perfil lo declara; ningún otro montaje. */
+/** Prepara el montaje del artefacto; su fallo es el de la materialización, sin contenedor creado. */
+async function stagingFailure(profile: RuntimeContainerProfile, grant: ExecutionGrant): Promise<MaterializationOutcome | undefined> {
+  try {
+    await profile.artifactMount?.stage?.(grant.artifact)
+    return undefined
+  } catch (error) {
+    return { status: 'failed', reason: `no se preparó el artefacto de la unidad: ${(error as Error).message}`, partial: false }
+  }
+}
+
 function artifactMounts(spec: ModelUnitContainerSpec): WorkerResourceMount[] {
   const mount = spec.profile.artifactMount
   if (mount === undefined) return []
-  return [{ source: mount.hostDirectory(spec.grant.artifact), destination: mount.containerDirectory, mode: 'ro' }]
+  return [{ source: mount.hostDirectory(spec.grant.artifact), destination: mount.containerDirectory, mode: mount.mode }]
 }
 
 function pidsOf(pid: unknown): readonly number[] {
@@ -295,6 +309,8 @@ export class PodmanModelUnitMaterializer implements ModelUnitMaterializer {
     if (rejection) return rejection
     const profile = this.options.profiles[grant.runtime]
     if (!profile) return { status: 'failed', reason: `sin perfil de contenedor para el runtime ${grant.runtime}`, partial: false }
+    const unstaged = await stagingFailure(profile, grant)
+    if (unstaged) return unstaged
     return this.createUnit(grant, profile)
   }
 

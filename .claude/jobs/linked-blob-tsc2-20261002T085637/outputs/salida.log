@@ -1,0 +1,22 @@
+model-scheduling EmitResult(package='model-scheduling', emitted=True, errors=0, output='', escaping=(), own_errors=0, sibling_errors=0, escaped_errors=0, checked=False)
+local-models EmitResult(package='local-models', emitted=True, errors=1, output='catalogCommand.ts(136,108): error TS2339: Property \'path\' does not exist on type \'AdoptionOutcome\'.\n  Property \'path\' does not exist on type \'{ readonly status: "failed" | "rejected"; readonly reason: string; }\'.\n', escaping=(), own_errors=1, sibling_errors=0, escaped_errors=0, checked=False)
+tsconfig.build.json: 1 errores
+catalogCommand.ts(136,108): error TS2339: Property 'path' does not exist on type 'AdoptionOutcome'.
+tsconfig.test.json: 4 errores
+__tests__/qualifyCommand.test.ts(48,7): error TS2740: Type '{ unitId: string; grantId: string; artifact: ResolvedModelArtifact; residencyKey: string; generation: number; 
+__tests__/qualifyModel.test.ts(34,5): error TS2740: Type '{ unitId: string; grantId: string; artifact: ResolvedModelArtifact; residencyKey: string; generation: number; ru
+__tests__/quantizationRun.test.ts(46,25): error TS2345: Argument of type 'string | Uint8Array<ArrayBufferLike>' is not assignable to parameter of type 'BodyInit | null | 
+catalogCommand.ts(136,108): error TS2339: Property 'path' does not exist on type 'AdoptionOutcome'.
+ M agent-results/agent_store.sqlite3
+ M src/packages/local-models/__tests__/commands.test.ts
+ M src/packages/local-models/__tests__/modelArtifactCache.test.ts
+ M src/packages/local-models/catalogCommand.ts
+ M src/packages/local-models/hostCoordinatorComposition.ts
+ M src/packages/local-models/modelArtifactCache.ts
+ M src/packages/model-scheduling/__tests__/podmanModelUnitMaterializer.test.ts
+ M src/packages/model-scheduling/podmanModelUnitMaterializer.ts
+?? .claude/workbench/ollama-linked-blob-20261002T085315/
+?? src/packages/local-models/__tests__/ollamaModelsDirectory.test.ts
+?? src/packages/local-models/ollamaModelsDirectory.ts
+execution thyrox-worker-test-muqqban4-2900 kind=test task=TASK-THYROX-0782 exit=0
+__BG_EXIT__=0

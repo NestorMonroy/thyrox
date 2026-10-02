@@ -39,6 +39,7 @@ import type { ContainerOwner } from '@thyrox/podman-execution/workerContainerLif
 
 import { freeLoopbackPort } from './loopbackPort.ts'
 import type { Environment } from './managedOllama.ts'
+import { ollamaModelsMount } from './ollamaModelsDirectory.ts'
 import { OllamaRuntimeAdapter } from './ollamaRuntimeAdapter.ts'
 import { TransformersRuntimeAdapter } from './transformersRuntimeAdapter.ts'
 
@@ -87,12 +88,13 @@ export function composeHostCoordinatorService(env: Environment, thyroxRoot: stri
     podman: dependencies.podman ?? createPodmanExecutor(),
     currentGeneration,
     profiles: {
-      ollama: { image: OLLAMA_RUNTIME_IMAGE, containerPort: OLLAMA_CONTAINER_PORT, environment: { OLLAMA_HOST: `0.0.0.0:${OLLAMA_CONTAINER_PORT}` } },
+      // El GGUF concedido entra enlazado desde la caché, no subido: el adapter no copia lo que la unidad ya tiene.
+      ollama: { image: OLLAMA_RUNTIME_IMAGE, containerPort: OLLAMA_CONTAINER_PORT, environment: { OLLAMA_HOST: `0.0.0.0:${OLLAMA_CONTAINER_PORT}` }, artifactMount: ollamaModelsMount(artifactCache) },
       transformers: {
         image: TRANSFORMERS_RUNTIME_IMAGE,
         containerPort: TRANSFORMERS_CONTAINER_PORT,
         environment: { THYROX_TRANSFORMERS_MODEL_DIR: TRANSFORMERS_MODEL_DIRECTORY, THYROX_TRANSFORMERS_PORT: String(TRANSFORMERS_CONTAINER_PORT) },
-        artifactMount: { hostDirectory: artifact => snapshotDirectory(artifactCache, artifact.artifactId), containerDirectory: TRANSFORMERS_MODEL_DIRECTORY },
+        artifactMount: { hostDirectory: artifact => snapshotDirectory(artifactCache, artifact.artifactId), containerDirectory: TRANSFORMERS_MODEL_DIRECTORY, mode: 'ro' },
       },
     },
     owner,

@@ -1,0 +1,379 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/quantizationLab.test.ts:
+(pass) quantization lab > runs a step through the podman execution primitive, never podman run [2.37ms]
+(pass) quantization lab > declares the lab owner, no network, the memory limit and the scratch mount [0.23ms]
+(pass) la ejecución se autoriza por paso > compone la autorización de la clase quantization citando su tarea dueña [0.45ms]
+(pass) la ejecución se autoriza por paso > la cita de la tarea que autoriza es declarable por el llamador [0.17ms]
+(pass) mandatory execution path > no module of the package composes its own podman run [9.19ms]
+
+__tests__/qualifyCommand.test.ts:
+(pass) runQualifyCommand por admisión > cualifica contra la unidad del ticket, suelta la admisión y no asegura thyrox-ollama [46.69ms]
+(pass) runQualifyCommand por admisión > --context viaja en la petición de admisión [10.53ms]
+(pass) runQualifyCommand por admisión > una admisión rehusada rehúsa con su etapa y causa, sin tocar el runtime [12.38ms]
+(pass) runQualifyCommand por admisión > sin coordinador rehúsa nombrando su socket [12.50ms]
+(pass) runQualifyCommand --suite: la cualificación de tarea de un consumidor (TASK-THYROX-0780) > corre los casos de la suite y escribe una cualificación de tarea de su clase [11.66ms]
+(pass) runQualifyCommand --suite: la cualificación de tarea de un consumidor (TASK-THYROX-0780) > una suite ilegible se rehúsa antes de pedir admisión [5.63ms]
+
+__tests__/infrastructureReadiness.test.ts:
+(pass) requireInfrastructure > reconcilia los contenedores pedidos y sigue si quedan sanos [0.37ms]
+(pass) requireInfrastructure > si la reconciliación no deja la infraestructura sana, rehúsa con su causa [0.34ms]
+(pass) infrastructureEnsureCommand > corre bin/infrastructure_ensure del árbol con los contenedores como argumentos [6.86ms]
+
+__tests__/ensureModelHomes.test.ts:
+(pass) localArtifactHome > sin declarar, caen bajo .thyrox/models de la raíz [0.43ms]
+(pass) localArtifactHome > la declaración gana; una vacía cae al default [0.08ms]
+(pass) localArtifactHome > las claves son las del contrato [0.03ms]
+
+__tests__/externalArtifact.test.ts:
+(pass) external artifact import > validates and registers with external provenance [21.89ms]
+(pass) external artifact import > refuses before downloading when the published sha256 differs from the pinned one [1.51ms]
+(pass) external artifact import > a rerun neither downloads nor validates again [15.52ms]
+(pass) external artifact import > a rerun asks only for the bytes still missing from the scratch [12.85ms]
+(pass) external artifact import > another lab image revalidates without downloading again [14.12ms]
+(pass) external artifact import > an admission refusal stops before downloading [2.21ms]
+(pass) external artifact import from official shards > merges the shards in the lab and registers the merged GGUF with each official shard in its provenance [10.82ms]
+(pass) external artifact import from official shards > refuses before downloading when any shard is published with another sha256 [1.07ms]
+(pass) external artifact import from official shards > refuses before downloading a shard set that is not the complete split [1.05ms]
+(pass) external artifact import from official shards > a merge that still declares a split fails instead of registering [4.00ms]
+(pass) external artifact import from official shards > a rerun neither downloads, merges nor validates again [14.87ms]
+
+__tests__/transformersRuntimeAdapter.test.ts:
+(pass) TransformersRuntimeAdapter > la salud se pregunta al runtime de la unidad [89.04ms]
+(pass) TransformersRuntimeAdapter > preparar verifica que el snapshot montado es el concedido [76.59ms]
+(pass) TransformersRuntimeAdapter > una generación vieja no toca el runtime [78.51ms]
+(pass) TransformersRuntimeAdapter > cargar deja residente la identidad concedida, leída del runtime [81.96ms]
+(pass) TransformersRuntimeAdapter > una carga de otra identidad falla y no deja residencia [70.86ms]
+(pass) TransformersRuntimeAdapter > descargar deja la unidad sin residencia [62.05ms]
+(pass) admittedSeq2seq > genera sólo contra la unidad del ticket y con residencia [71.06ms]
+
+__tests__/toolCallingSuite.test.ts:
+(pass) loadSuite — el archivo de datos del paquete > tool-calling@1 trae los seis casos del benchmark, en su orden, con sus herramientas resueltas [0.57ms]
+(pass) loadSuite — el archivo de datos del paquete > un caso que nombra una herramienta no declarada se rehúsa nombrando el caso [0.57ms]
+(pass) loadSuite — el archivo de datos del paquete > una expectativa de clase desconocida se rehúsa [0.56ms]
+(pass) loadSuite — el archivo de datos del paquete > una suite sin casos no es una suite [0.33ms]
+(pass) scoreReply — la recompensa de cada caso > tool-call: nombre y argumentos exactos, sin importar el orden de claves [0.17ms]
+(pass) scoreReply — la recompensa de cada caso > tool-call: un argumento de otro tipo no acierta («17» no es 17) [0.06ms]
+(pass) scoreReply — la recompensa de cada caso > tool-call: un argumento de más no acierta [0.03ms]
+(pass) scoreReply — la recompensa de cada caso > tool-call: se juzga la primera llamada, y sin llamada no acierta [0.04ms]
+(pass) scoreReply — la recompensa de cada caso > no-tool-call: acierta sin llamadas y falla con una [0.03ms]
+(pass) scoreReply — la recompensa de cada caso > content-includes: el texto tiene que aparecer en el contenido [0.04ms]
+
+__tests__/commandInfrastructureReadiness.test.ts:
+(pass) un consumidor reconcilia su infraestructura antes de usarla > quantize: pide thyrox-redis y rehúsa con la causa si no queda sano [0.88ms]
+(pass) un consumidor reconcilia su infraestructura antes de usarla > import: pide thyrox-redis y rehúsa con la causa si no queda sano [0.61ms]
+(pass) un consumidor reconcilia su infraestructura antes de usarla > catalog declare: pide thyrox-ollama y rehúsa con la causa si no queda sano [1.72ms]
+
+__tests__/taskSuite.test.ts:
+(pass) loadTaskSuite > lee el id, la clase y los casos con sus comprobaciones [1.87ms]
+(pass) loadTaskSuite > una clase que no es de thyrox se rehúsa [3.55ms]
+(pass) loadTaskSuite > una comprobación desconocida se rehúsa nombrando su campo [1.30ms]
+(pass) loadTaskSuite > un patrón que no compila se rehúsa al leer, no al puntuar [0.99ms]
+(pass) loadTaskSuite > un caso sin comprobaciones se rehúsa: aprobaría cualquier respuesta [1.67ms]
+(pass) scoreTaskReply > aprueba sólo si se cumplen todas las comprobaciones [0.80ms]
+(pass) scoreTaskReply > nombra cada comprobación que falla [1.08ms]
+
+__tests__/ollamaModelInstaller.test.ts:
+ollamaModelInstaller: sin Podman o sin docker.io/library/ubuntu:24.04 local; el nivel real queda sin medir.
+(pass) la composición del trabajo > red host, bun y repositorio de sólo lectura, el GGUF de sólo lectura y el montaje de trabajo rw [4.58ms]
+(pass) la composición del trabajo > la URL de Ollama sale del entorno declarado [1.92ms]
+(pass) la composición del trabajo > el trabajo no recibe ningún secreto [3.13ms]
+(pass) la autorización del trabajo > corre como una ejecución autorizada: clase maintenance y la cita de su tarea [1.42ms]
+(pass) la autorización del trabajo > la cita de la tarea que autoriza es declarable por el llamador [1.53ms]
+(pass) OllamaModelInstaller.inspect > un nombre que el runtime no resuelve es undefined [3.93ms]
+(pass) OllamaModelInstaller.inspect > un nombre instalado devuelve el blob de su FROM [2.94ms]
+(pass) OllamaModelInstaller.inspect > un error de /api/show que no es 404 se propaga: no es «no instalado» [2.89ms]
+(pass) OllamaModelInstaller.install con el trabajo en proceso > installed cuando el runtime resuelve el contenido pedido [6.92ms]
+(pass) OllamaModelInstaller.install con el trabajo en proceso > failed si tras instalar el runtime resuelve otro contenido, aunque /api/create diera 200 [4.22ms]
+(pass) OllamaModelInstaller.install con el trabajo en proceso > failed si el reporte dice installed pero el runtime no resuelve el nombre [3.74ms]
+(pass) OllamaModelInstaller.install con el trabajo en proceso > un trabajo sin reporte es failed con su diagnóstico [3.97ms]
+(pass) OllamaModelInstaller.install con el trabajo en proceso > un reporte failed del trabajo se devuelve con su causa [3.13ms]
+(pass) OllamaModelInstaller.install con el trabajo en proceso > un reporte ilegible es failed, nunca installed [3.82ms]
+(skip) OllamaModelInstaller contra el Podman real > el trabajo sube el blob al Ollama del loopback y el runtime resuelve el contenido
+
+__tests__/qualificationStore.test.ts:
+(pass) qualificationStore > un archivo ausente es una lista vacía [0.28ms]
+(pass) qualificationStore > añadir conserva las anteriores y crea el directorio [9.61ms]
+(pass) qualificationStore > un archivo inválido se rehúsa con la ruta, nunca como lista vacía [0.58ms]
+(pass) qualificationStore > un archivo que no es JSON se rehúsa con la ruta [0.24ms]
+(pass) qualificationStore > añadir sobre un archivo inválido no lo pisa [0.25ms]
+
+__tests__/ollamaModelsDirectory.test.ts:
+(pass) ollamaModelsMount > monta un directorio propio del artefacto, de lectura y escritura, en el de modelos de Ollama [0.56ms]
+(pass) ollamaModelsMount > stage enlaza el GGUF de la caché como blob: mismo inodo, sin copia [1.73ms]
+(pass) ollamaModelsMount > stage dos veces deja el mismo enlace [1.34ms]
+(pass) ollamaModelsMount > sin el artefacto en la caché, stage rehúsa nombrándolo [0.39ms]
+
+__tests__/importArguments.test.ts:
+(pass) parseImportArguments > one file keeps its pinned sha256 [0.11ms]
+(pass) parseImportArguments > comma lists pair each shard with its sha256 in order [0.06ms]
+(pass) parseImportArguments > a different number of files and digests is not an import [0.06ms]
+(pass) parseImportArguments > a malformed digest in the list is not an import [0.04ms]
+
+__tests__/hostCoordinatorComposition.test.ts:
+(pass) composeHostCoordinatorService > con la topología por defecto compone una coordinación local y el socket del hogar de runtime [0.85ms]
+(pass) composeHostCoordinatorService > el dueño compuesto pasa la validación de dueño de Podman (sin «@») [0.10ms]
+(pass) composeHostCoordinatorService > shared sin Redis rehúsa al componer [0.18ms]
+(pass) cpuPlacementOf > en CPU no reserva VRAM y usa el runtime de Ollama [0.09ms]
+(pass) cpuPlacementOf por formato del artefacto (TASK-THYROX-0776) > un GGUF va a Ollama [0.03ms]
+(pass) cpuPlacementOf por formato del artefacto (TASK-THYROX-0776) > un snapshot de safetensors va a Transformers [0.06ms]
+
+__tests__/modelArtifactCache.test.ts:
+(pass) materializeArtifact > una caché vacía descarga una vez, verifica y publica en la ruta por digest [2.34ms]
+(pass) materializeArtifact > el sha256 devuelto es el medido sobre el archivo publicado, en los dos caminos [1.89ms]
+(pass) materializeArtifact > una caché correcta no descarga [0.83ms]
+(pass) materializeArtifact > una caché con otro contenido no se usa: se reconstruye desde el artefacto [1.63ms]
+(pass) materializeArtifact > una descarga con otro contenido se rechaza y no deja caché válida [1.54ms]
+(pass) materializeArtifact > una descarga que falla no deja ni caché válida ni parciales [0.76ms]
+(pass) materializeArtifact > un artefacto fijado a otro blob que el del catálogo no se descarga [0.37ms]
+(pass) adoptLocalArtifact: un blob local verificado entra a la caché por enlace duro (TASK-THYROX-0782) > el archivo de la caché es el mismo inodo que el blob: no se copió ni un byte [3.23ms]
+(pass) adoptLocalArtifact: un blob local verificado entra a la caché por enlace duro (TASK-THYROX-0782) > adoptar dos veces no vuelve a enlazar: la segunda está en caché [1.60ms]
+(pass) adoptLocalArtifact: un blob local verificado entra a la caché por enlace duro (TASK-THYROX-0782) > un blob con otro contenido se rechaza y no deja nada en la caché [1.38ms]
+(pass) adoptLocalArtifact: un blob local verificado entra a la caché por enlace duro (TASK-THYROX-0782) > un blob ausente falla nombrando su ruta, sin crear nada [0.93ms]
+
+__tests__/ollamaName.test.ts:
+(pass) repositoryOfOllamaName — `<namespace>/<modelo>-<etiqueta>` del registro > sin namespace es library, y la etiqueta se pega al modelo [0.19ms]
+(pass) repositoryOfOllamaName — `<namespace>/<modelo>-<etiqueta>` del registro > sin etiqueta es latest [0.03ms]
+(pass) repositoryOfOllamaName — `<namespace>/<modelo>-<etiqueta>` del registro > con namespace se conserva [0.02ms]
+(pass) repositoryOfOllamaName — `<namespace>/<modelo>-<etiqueta>` del registro > con host del registro se descarta el host [0.03ms]
+(pass) repositoryOfOllamaName — `<namespace>/<modelo>-<etiqueta>` del registro > un nombre vacío o con más de tres segmentos se rehúsa [0.14ms]
+
+__tests__/residencyLifecycle.real.test.ts:
+residencyLifecycle.real: sin medir — THYROX_E2E_MODEL_RESIDENCY no es 1
+(skip) residencia real: Podman + Ollama > la cadena entera, de la identidad exacta al desalojo
+
+__tests__/ensureModel.test.ts:
+(pass) ensureModel > un nombre fuera del catálogo es not_declared, sin resolver ni descargar [0.95ms]
+(pass) ensureModel > 1. sin distribución es not_materializable, sin descargar ni instalar [0.61ms]
+(pass) ensureModel > 2. caché vacía: una descarga, verifica, instala desde la caché y queda READY [2.91ms]
+(pass) ensureModel > 3. caché correcta: cero descargas [1.11ms]
+(pass) ensureModel > 4. caché con otro contenido: no se usa, se reconstruye [1.45ms]
+(pass) ensureModel > 5. runtime vacío: instala [1.12ms]
+(pass) ensureModel > 6. runtime con el contenido correcto: cero instalaciones [1.17ms]
+(pass) ensureModel > 7. el mismo nombre con otro contenido no cuenta como READY: se reinstala [1.06ms]
+(pass) ensureModel > 8. un fallo de descarga es failed en materialize y no deja caché parcial válida [0.68ms]
+(pass) ensureModel > 8b. una descarga con otro contenido es failed en materialize, nunca READY [1.14ms]
+(pass) ensureModel > 9. un fallo de instalación es failed en install, nunca READY [1.10ms]
+(pass) ensureModel > un instalador que dice installed pero sirve otro contenido no deja READY [1.11ms]
+(pass) ensureModel > 10. la segunda llamada: cero descargas, cero instalaciones, READY con la misma evidencia [1.62ms]
+
+__tests__/snapshotManifest.test.ts:
+(pass) snapshotManifestDigest > coincide con el vector compartido con el servidor de Python [2.97ms]
+(pass) snapshotManifestDigest > un byte distinto en cualquier archivo cambia la identidad [2.00ms]
+(pass) snapshotManifestDigest > un archivo de más también la cambia [2.07ms]
+
+__tests__/declareInstalledModel.test.ts:
+(pass) declareInstalledModel — del Ollama gestionado al catálogo > construye la entrada con revisión, cuantización, digest y bytes medidos, la copia al nombre contractual y la guarda [7.74ms]
+(pass) declareInstalledModel — del Ollama gestionado al catálogo > sin etiqueta se busca como :latest [4.70ms]
+(pass) declareInstalledModel — del Ollama gestionado al catálogo > un modelo que /api/tags no lista se rehúsa sin copiar ni escribir [2.91ms]
+(pass) declareInstalledModel — del Ollama gestionado al catálogo > un blob cuyo sha256 no coincide con su nombre se rehúsa sin copiar [4.02ms]
+(pass) declareInstalledModel — del Ollama gestionado al catálogo > un modelo sin ninguna capacidad del catálogo se rehúsa [3.83ms]
+(pass) declareInstalledModel — del Ollama gestionado al catálogo > un nombre que el catálogo ya declara con otro contenido se rehúsa antes de copiar [9.35ms]
+(pass) declareInstalledModel — del Ollama gestionado al catálogo > declarar dos veces lo mismo deja el catálogo igual [8.51ms]
+(pass) declareInstalledModel — del Ollama gestionado al catálogo > redeclarar más tarde conserva el instante de la primera declaración [8.41ms]
+(pass) declareInstalledModel — del Ollama gestionado al catálogo > si /api/copy falla, el catálogo no se escribe [5.11ms]
+(pass) declareInstalledModel — un nombre que ya es contractual conserva su identidad > hf con --revision correcta: repositorio, fuente, cuantización y commit del nombre, sin copia [5.85ms]
+(pass) declareInstalledModel — un nombre que ya es contractual conserva su identidad > hf sin --revision se rehúsa diciendo que hace falta, sin copiar ni escribir [3.15ms]
+(pass) declareInstalledModel — un nombre que ya es contractual conserva su identidad > hf con un commit de otro prefijo se rehúsa nombrando los dos [2.77ms]
+(pass) declareInstalledModel — un nombre que ya es contractual conserva su identidad > hf con una --revision que no son 40 hex se rehúsa [2.97ms]
+(pass) declareInstalledModel — un nombre que ya es contractual conserva su identidad > ollama contractual: la revisión es el digest completo del manifiesto, sin copia [5.65ms]
+(pass) declareInstalledModel — un nombre que ya es contractual conserva su identidad > ollama contractual con un manifiesto de otro digest se rehúsa nombrando los dos [2.92ms]
+(pass) declareInstalledModel — un nombre que ya es contractual conserva su identidad > --revision fuera de un nombre contractual hf se rehúsa en vez de ignorarse [2.60ms]
+(pass) declareInstalledModel — un nombre que ya es contractual conserva su identidad > un nombre que parece del contrato pero no lo reconstruye sigue el camino de biblioteca, con copia [4.18ms]
+
+__tests__/commands.test.ts:
+(pass) local-models-catalog > declare inspecciona el volumen declarado y guarda bajo .thyrox/models de la raíz [9.90ms]
+(pass) local-models-catalog > THYROX_MODEL_CATALOG gana a la ruta por defecto [9.48ms]
+(pass) local-models-catalog > un modelo no instalado sale 2 con la causa [5.06ms]
+(pass) local-models-catalog > list sobre un catálogo inválido sale 2 con la ruta, no una lista vacía [2.62ms]
+(pass) local-models-catalog > declare <nombre-hf> --revision <commit> conserva la identidad hf y no copia [7.12ms]
+(pass) local-models-catalog > declare <nombre-hf> sin --revision sale 2 nombrando la opción [6.04ms]
+(pass) local-models-catalog > --revision sin valor o con argumentos de más sale 2 con el uso [1.77ms]
+(pass) local-models-catalog > sin subcomando conocido sale 2 con el uso [1.82ms]
+173 |   }
+174 | 
+175 |   test('seis aciertos: sale 0 y escribe la cualificación con el contexto acotado al máximo del modelo', async () => {
+176 |     const install = await declaredInstallation(correct)
+177 |     const result = await run(runQualifyCommand, [CONTRACT_NAME], install)
+178 |     expect(result.code).toBe(0)
+                              ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/commands.test.ts:178:25)
+(fail) local-models-qualify > seis aciertos: sale 0 y escribe la cualificación con el contexto acotado al máximo del modelo [10.82ms]
+182 |     expect(stored?.taskClass).toBeUndefined()
+183 |   })
+184 | 
+185 |   test('--context declarado viaja como num_ctx', async () => {
+186 |     const install = await declaredInstallation(correct)
+187 |     expect((await run(runQualifyCommand, [CONTRACT_NAME, '--context', '2048'], install)).code).toBe(0)
+                                                                                                     ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/commands.test.ts:187:96)
+(fail) local-models-qualify > --context declarado viaja como num_ctx [8.44ms]
+191 |   })
+192 | 
+193 |   test('suspendida: sale 1 y también se escribe', async () => {
+194 |     const install = await declaredInstallation(() => ({ content: 'no' }))
+195 |     const result = await run(runQualifyCommand, [CONTRACT_NAME], install)
+196 |     expect(result.code).toBe(1)
+                              ^
+error: expect(received).toBe(expected)
+
+Expected: 1
+Received: 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/commands.test.ts:196:25)
+(fail) local-models-qualify > suspendida: sale 1 y también se escribe [8.22ms]
+199 | 
+200 |   test('un modelo fuera del catálogo sale 2 sin medir', async () => {
+201 |     const install = installation(correct)
+202 |     const result = await run(runQualifyCommand, [CONTRACT_NAME], install)
+203 |     expect(result.code).toBe(2)
+204 |     expect(result.stderr.join('\n')).toContain('no está en el catálogo')
+                                           ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "no está en el catálogo"
+Received: "local-models-qualify: no hay coordinador de model scheduling en /root/.thyrox/model-scheduling/coordinator.sock: connect ENOENT /root/.thyrox/model-scheduling/coordinator.sock"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/commands.test.ts:204:38)
+(fail) local-models-qualify > un modelo fuera del catálogo sale 2 sin medir [2.94ms]
+(pass) local-models-qualify > --context por encima del máximo del modelo sale 2 sin medir [7.27ms]
+212 |     expect(server?.requests.some(r => r.path === '/api/chat')).toBe(false)
+213 |   })
+214 | 
+215 |   test('--isolated declara la medición aislada; sin él queda contended', async () => {
+216 |     const install = await declaredInstallation(correct)
+217 |     expect((await run(runQualifyCommand, [CONTRACT_NAME, '--isolated'], install)).code).toBe(0)
+                                                                                              ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/commands.test.ts:217:89)
+(fail) local-models-qualify > --isolated declara la medición aislada; sin él queda contended [7.98ms]
+(pass) local-models-qualify > una clase sobrante, un --context no entero o sin modelo salen 2 con el uso [2.76ms]
+(pass) entradas bin/*.ts > bin/catalog.ts corre la orden con el entorno del proceso y propaga su código [124.95ms]
+(pass) local-models-catalog locate > una publicación verificada añade una ubicación por cada .gguf, y sólo por ellos [5.62ms]
+(pass) local-models-catalog locate > repetirla no duplica la entrada [2.34ms]
+(pass) local-models-catalog locate > THYROX_MODEL_ARTIFACT_LOCATIONS gana a la ruta por defecto [1.26ms]
+(pass) local-models-catalog locate > una publicación no verificada sale 2 y no escribe el índice [0.78ms]
+(pass) local-models-catalog locate > una publicación sin ningún .gguf sale 2 y no escribe el índice [0.63ms]
+(pass) local-models-catalog locate > una referencia sin registry/repositorio@digest sale 2 nombrándola [0.64ms]
+(pass) local-models-catalog locate > sin --publication o con argumentos de más sale 2 con el uso [0.66ms]
+(pass) local-models-catalog adopt (TASK-THYROX-0782) > adopta en la caché, por enlace duro, el blob del volumen de una entrada del catálogo [15.50ms]
+(pass) local-models-catalog adopt (TASK-THYROX-0782) > un nombre fuera del catálogo sale 2 nombrándolo, sin tocar la caché [3.47ms]
+
+__tests__/qualifyModel.test.ts:
+(pass) runQualification — tool-calling@1 contra /api/chat > seis aciertos aprueban, con la suite, el contexto servido y el instante [4.98ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > cinco de seis no aprueban, y el caso fallado dice lo que se observó [3.39ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > tokens/s es la suma de eval_count entre la suma de eval_duration [3.64ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > cada petición lleva el modelo, sus herramientas, stream falso y num_ctx [3.54ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > un error HTTP no es un caso fallado: se rehúsa sin cualificación [3.19ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > pedir más contexto que el concedido se rehúsa sin tocar el runtime [2.11ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > una respuesta sin eval_duration no mide velocidad y se rehúsa [3.46ms]
+(pass) runTaskQualification — la suite de tarea de un consumidor (TASK-THYROX-0780) > todos los casos cumplen: una cualificación de tarea de la clase de la suite [3.86ms]
+(pass) runTaskQualification — la suite de tarea de un consumidor (TASK-THYROX-0780) > un caso que falla suspende, y su resultado nombra la comprobación [2.93ms]
+(pass) runTaskQualification — la suite de tarea de un consumidor (TASK-THYROX-0780) > cada petición lleva los mensajes del caso, sin herramientas, stream falso y num_ctx [5.57ms]
+(pass) runTaskQualification — la suite de tarea de un consumidor (TASK-THYROX-0780) > pedir más contexto que el concedido se rehúsa sin tocar el runtime [3.19ms]
+
+__tests__/podmanArtifactFetcher.test.ts:
+podmanArtifactFetcher: sin Podman o sin docker.io/library/ubuntu:24.04 local; el nivel real queda sin medir.
+(pass) createPodmanArtifactFetcher: el trabajo que compone > monta bun y el repositorio ro, el directorio del destino rw, y pide la capa fijada [6.61ms]
+(pass) createPodmanArtifactFetcher: el trabajo que compone > el trabajo no recibe secreto ni el almacenamiento de Podman [2.30ms]
+(pass) createPodmanArtifactFetcher: el trabajo que compone > con proxy declarado: red host, HTTPS_PROXY y el CA montado de sólo lectura [3.27ms]
+(pass) createPodmanArtifactFetcher: el trabajo que compone > sin proxy: red bridge, sin HTTPS_PROXY ni CA [2.05ms]
+(pass) createPodmanArtifactFetcher: la autorización del trabajo > corre como una ejecución autorizada: clase registry-operation y la cita de su tarea [2.01ms]
+(pass) createPodmanArtifactFetcher: la autorización del trabajo > la cita de la tarea que autoriza es declarable por el llamador [3.23ms]
+(pass) createPodmanArtifactFetcher: cómo lee el reporte > un reporte de éxito es fetched [2.10ms]
+(pass) createPodmanArtifactFetcher: cómo lee el reporte > un trabajo que no deja reporte es failed con su diagnóstico [2.56ms]
+(pass) createPodmanArtifactFetcher: cómo lee el reporte > un límite del provider es failed con su causa, nunca contenido [3.88ms]
+(pass) createPodmanArtifactFetcher: cómo lee el reporte > un fallo de Podman al crear el contenedor es failed con la etapa, no una excepción [1.88ms]
+(pass) createPodmanArtifactFetcher: cómo lee el reporte > no deja el directorio del reporte en el anfitrión [1.99ms]
+(skip) createPodmanArtifactFetcher contra el Podman real > el trabajo baja sólo la capa GGUF al directorio del destino, sin credencial
+
+__tests__/volumeBlobs.test.ts:
+(pass) volumeMountpoint — `podman volume inspect` > devuelve el Mountpoint del volumen pedido [2.37ms]
+(pass) volumeMountpoint — `podman volume inspect` > podman que sale distinto de 0 se rehúsa con su stderr [1.87ms]
+(pass) volumeMountpoint — `podman volume inspect` > una salida vacía no es un punto de montaje [1.54ms]
+(pass) volumeMountpoint — `podman volume inspect` > un binario que no existe se rehúsa nombrándolo [0.66ms]
+(pass) modelBlobOfModelfile — la capa GGUF que declara /api/show > lee la línea FROM con el blob [0.06ms]
+(pass) modelBlobOfModelfile — la capa GGUF que declara /api/show > un FROM que no es un blob sha256 se rehúsa [0.04ms]
+(pass) modelBlobOfModelfile — la capa GGUF que declara /api/show > sin FROM se rehúsa [0.03ms]
+(pass) hostBlobPath — del contenedor al volumen en el anfitrión > el prefijo /root/.ollama se cambia por el punto de montaje [0.03ms]
+(pass) hostBlobPath — del contenedor al volumen en el anfitrión > una ruta fuera del directorio de modelos montado se rehúsa [0.03ms]
+
+__tests__/ollamaApiInstall.test.ts:
+(pass) OllamaApi.hasBlob > HEAD 200 es presente y 404 es ausente [8.70ms]
+(pass) OllamaApi.hasBlob > cualquier otro estado es error, no ausencia [2.92ms]
+(pass) OllamaApi.pushBlob > sube el archivo entero con su longitud declarada, no en flujo [2.36ms]
+(pass) OllamaApi.pushBlob > un rechazo de Ollama es error con la ruta [2.66ms]
+(pass) OllamaApi.createModel > crea el modelo desde el blob, sin flujo [2.05ms]
+(pass) OllamaApi.findModelDetails > un 404 de /api/show es «no instalado» [2.59ms]
+(pass) OllamaApi.findModelDetails > un 500 de /api/show es error, no ausencia [3.20ms]
+(pass) OllamaApi.findModelDetails > un modelo presente devuelve su Modelfile [3.47ms]
+(pass) installModelIntoOllama > sube el blob ausente y crea el modelo con el nombre contractual [4.53ms]
+(pass) installModelIntoOllama > no resube un blob que Ollama ya tiene [2.70ms]
+(pass) installModelIntoOllama > un digest que no es 64 hex se rehúsa sin hablar con Ollama [0.76ms]
+(pass) installModelIntoOllama > un rechazo de Ollama es failed con su causa, no una excepción [5.02ms]
+
+__tests__/quantizationRun.test.ts:
+(pass) quantization run > a full run records every step and releases source and intermediate [25.23ms]
+(pass) quantization run > a rerun after a failed quantize does not download or convert again [23.34ms]
+(pass) quantization run > another lab image redoes conversion from a re-downloaded source [34.53ms]
+(pass) quantization run > an admission refusal stops before downloading and writes the figures [1.99ms]
+(pass) quantization run > a declared minimum above the free scratch refuses without downloading [1.89ms]
+(pass) quantization run > a corrupted download fails the download step [3.51ms]
+(pass) quantization run > a different request on a used run directory is refused [17.19ms]
+(pass) run lease > refuses a second owner and frees on release [1.27ms]
+(pass) container measure > reads the peak of a measured container and nothing else [0.90ms]
+
+__tests__/ollamaRuntimeAdapter.test.ts:
+(pass) OllamaRuntimeAdapter: salud > una sola consulta, sana [5.82ms]
+(pass) OllamaRuntimeAdapter: salud > un runtime que no responde es unhealthy, no una excepción [2.72ms]
+(pass) OllamaRuntimeAdapter: preparar el artefacto > sube el blob ausente y crea el modelo desde él [4.01ms]
+(pass) OllamaRuntimeAdapter: preparar el artefacto > no vuelve a subir un blob que la unidad ya tiene [4.82ms]
+(pass) OllamaRuntimeAdapter: preparar el artefacto > un blob rechazado por contenido es failed, no done [3.33ms]
+(pass) OllamaRuntimeAdapter: preparar el artefacto > con generación vieja no toca el runtime [1.65ms]
+(pass) OllamaRuntimeAdapter: preparar el artefacto > con la coordinación no disponible tampoco [1.99ms]
+(pass) OllamaRuntimeAdapter: identidad > el blob del FROM coincide con el del grant [4.75ms]
+(pass) OllamaRuntimeAdapter: identidad > el mismo nombre con otro blob es mismatch [3.76ms]
+(pass) OllamaRuntimeAdapter: identidad > el mismo blob servido con otra cuantización es mismatch: la cuantización se compara [4.24ms]
+(pass) OllamaRuntimeAdapter: identidad > un formato distinto del concedido es mismatch [4.11ms]
+(pass) OllamaRuntimeAdapter: identidad > otro modelo con la misma cuantización no satisface el grant [3.64ms]
+(pass) OllamaRuntimeAdapter: identidad > un modelo que la unidad no tiene es mismatch sin observado [3.83ms]
+(pass) OllamaRuntimeAdapter: residencia > cargar deja el modelo residente con keep_alive -1, y observar lo confirma [5.51ms]
+(pass) OllamaRuntimeAdapter: residencia > cargar con generación vieja no toca el runtime [5.13ms]
+(pass) OllamaRuntimeAdapter: residencia > una carga que responde bien sin dejar residencia se observa absent [4.51ms]
+(pass) OllamaRuntimeAdapter: residencia > residente con otro blob bajo el nombre esperado es mismatch [3.89ms]
+(pass) OllamaRuntimeAdapter: residencia > un runtime que falla al observar es error, no una excepción [3.40ms]
+(pass) OllamaRuntimeAdapter: residencia > descargar usa keep_alive 0 y deja la residencia absent [4.78ms]
+(pass) OllamaRuntimeAdapter: residencia > descargar con generación vieja no toca el runtime [2.40ms]
+
+3 tests skipped:
+(skip) OllamaModelInstaller contra el Podman real > el trabajo sube el blob al Ollama del loopback y el runtime resuelve el contenido
+(skip) residencia real: Podman + Ollama > la cadena entera, de la identidad exacta al desalojo
+(skip) createPodmanArtifactFetcher contra el Podman real > el trabajo baja sólo la capa GGUF al directorio del destino, sin credencial
+
+
+5 tests failed:
+(fail) local-models-qualify > seis aciertos: sale 0 y escribe la cualificación con el contexto acotado al máximo del modelo [10.82ms]
+(fail) local-models-qualify > --context declarado viaja como num_ctx [8.44ms]
+(fail) local-models-qualify > suspendida: sale 1 y también se escribe [8.22ms]
+(fail) local-models-qualify > un modelo fuera del catálogo sale 2 sin medir [2.94ms]
+(fail) local-models-qualify > --isolated declara la medición aislada; sin él queda contended [7.98ms]
+
+ 229 pass
+ 3 skip
+ 5 fail
+ 542 expect() calls
+Ran 237 tests across 27 files. [1.82s]

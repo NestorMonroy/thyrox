@@ -1,0 +1,6 @@
+__tests__/modelArtifactCache.test.ts: 0 fail ·  0 pass  1 fail 
+__tests__/commands.test.ts: 7 fail · error: expect(received).toBe(expected) error: expect(received).toBe(expected) error: expect(received).toBe(expected) 
+__tests__/ollamaModelsDirectory.test.ts: 0 fail · error: Cannot find module '../ollamaModelsDirectory.js' from '/home/user/thyrox/src/packages/local-models/__tests__/ollamaModelsDirectory.test.ts'  0 pass  1 fail 
+__tests__/podmanModelUnitMaterializer.test.ts: 2 fail · error: expect(received).toContain(expected) error: expect(received).toBe(expected)  17 pass 
+execution thyrox-worker-test-muqq7i3g-1328 kind=test task=TASK-THYROX-0782 exit=0
+__BG_EXIT__=0

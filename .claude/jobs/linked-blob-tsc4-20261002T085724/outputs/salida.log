@@ -1,0 +1,3 @@
+catalogCommand.ts(136,100): error TS2339: Property 'reason' does not exist on type 'AdoptionOutcome'.
+execution thyrox-worker-test-muqqcah0-3614 kind=test task=TASK-THYROX-0782 exit=0
+__BG_EXIT__=0

@@ -1,0 +1,19 @@
+adopt-links: 2 caen
+    adopta en la caché, por enlace duro, el blob del volumen de una entrada del catálogo
+    el archivo de la caché es el mismo inodo que el blob: no se copió ni un byte
+verify-content: 2 caen
+    un blob con otro contenido se rechaza y no deja nada en la caché
+    una descarga con otro contenido se rechaza y no deja caché válida
+stage-links: 2 caen
+    stage dos veces deja el mismo enlace
+    stage enlaza el GGUF de la caché como blob: mismo inodo, sin copia
+stage-needs-cache: 1 caen
+    sin el artefacto en la caché, stage rehúsa nombrándolo
+mount-mode: 1 caen
+    un montaje rw llega a la unidad como rw, preparado antes del create
+stage-before-create: 2 caen
+    un montaje rw llega a la unidad como rw, preparado antes del create
+    un staging que falla no crea la unidad y lo dice
+ 7 files changed, 206 insertions(+), 17 deletions(-)
+execution thyrox-worker-test-muqqd8o3-4216 kind=test task=TASK-THYROX-0782 exit=0
+__BG_EXIT__=0

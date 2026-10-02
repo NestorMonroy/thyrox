@@ -1,0 +1,9 @@
+cache:  11 pass  0 fail  
+models-directory:  4 pass  0 fail  
+commands:  20 pass  5 fail  (fail) local-models-qualify > --context declarado viaja como num_ctx [10.06ms]|(fail) local-models-qualify > --isolated declara la medición aislada; sin él queda conte|(fail) local-models-qualify > seis aciertos: sale 0 y escribe la cualificación con el con|(fail) local-models-qualify > suspendida: sale 1 y también se escribe [8.74ms]|(fail) local-models-qualify > un modelo fuera del catálogo sale 2 sin medir [3.55ms]|
+materializer:  19 pass  0 fail  
+local-models:  229 pass  5 fail  (fail) local-models-qualify > --context declarado viaja como num_ctx [8.44ms]|(fail) local-models-qualify > --isolated declara la medición aislada; sin él queda conte|(fail) local-models-qualify > seis aciertos: sale 0 y escribe la cualificación con el con|(fail) local-models-qualify > suspendida: sale 1 y también se escribe [8.22ms]|(fail) local-models-qualify > un modelo fuera del catálogo sale 2 sin medir [2.94ms]|
+model-scheduling:  120 pass  1 fail  
+typecheck exit=0   local-models: 4 propio(s) · 0 de hermano · 0 fuera (total 4)  <- sin baseline   model-scheduling: 0 propio(s) · 0 de hermano · 0 fuera (total 0)  <- sin baseline 
+execution thyrox-worker-test-muqq9lcl-1825 kind=test task=TASK-THYROX-0782 exit=0
+__BG_EXIT__=0

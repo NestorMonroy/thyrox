@@ -1,0 +1,53 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/podmanModelUnitMaterializer.test.ts:
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un grant caducado [0.78ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un grant de una generación que ya no es la vigente [0.18ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > con la coordinación no disponible [0.15ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un runtime sin perfil de contenedor [0.12ms]
+(pass) PodmanModelUnitMaterializer: materializar > crea, arranca e inspecciona; la unidad lleva su identidad completa [4.21ms]
+(pass) PodmanModelUnitMaterializer: materializar > el contenedor va en loopback, con el dispositivo concedido y las etiquetas de la unidad [2.83ms]
+(pass) PodmanModelUnitMaterializer: materializar > en CPU no pide dispositivos [0.53ms]
+(pass) PodmanModelUnitMaterializer: materializar > si create falla no quedó nada: partial false [0.76ms]
+(pass) PodmanModelUnitMaterializer: materializar > si start falla quedó un contenedor: partial true con su unitId [1.00ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > destroy distingue destruido, ausente y fallido [0.44ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > destroy retira sólo el contenedor de la unidad [0.15ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > units reconstruye cada unidad de sus etiquetas e ignora contenedores ajenos [1.53ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > nunca borra imágenes ni volúmenes [0.85ms]
+(pass) PodmanModelUnitMaterializer: identidad completa > una unidad cuya identidad etiquetada está incompleta no es una unidad de esta primitiva [0.35ms]
+(pass) una unidad de Transformers con el artefacto del grant montado (TASK-THYROX-0776) > expone el artefacto concedido de sólo lectura en la unidad [0.71ms]
+(pass) una unidad de Transformers con el artefacto del grant montado (TASK-THYROX-0776) > un perfil sin montaje declarado no monta nada, como el de Ollama [0.40ms]
+(pass) una unidad de Transformers con el artefacto del grant montado (TASK-THYROX-0776) > una unidad de Transformers se reconstruye desde sus etiquetas [1.53ms]
+328 |       hostDirectory: artifact => `/srv/models-${artifact.artifactId}`, containerDirectory: '/root/.ollama/models', mode: 'rw',
+329 |       stage: async artifact => { staged.push(`${artifact.artifactId}@${podman.calls.length}`) },
+330 |     }
+331 |     expect((await primitiveWithMount(podman, mount).materialize(GRANT)).status).toBe('materialized')
+332 |     const create = podman.calls.find(call => call[0] === 'create')!.join(' ')
+333 |     expect(create).toContain(`-v /srv/models-${GRANT.artifact.artifactId}:/root/.ollama/models:rw`)
+                         ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "-v /srv/models-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb:/root/.ollama/models:rw"
+Received: "create --name thyrox-worker-unit-grant-request-1 --label thyrox.owner-kind=model-coordinator --label thyrox.owner-id=host-coordinator --label thyrox.owner-pid=4321 --label thyrox.worker-id=unit-grant-request-1 --label thyrox.execution-id=unit-grant-request-1 --label thyrox.execution-kind=model-runtime --label thyrox.execution-reference=grant:grant-request-1 --label thyrox.model.bytes=397807712 --label thyrox.model.created-at=2026-10-01T00:30:00.000Z --label thyrox.model.devices=GPU-6a9c1d2e-0000-0000-0000-000000000000 --label thyrox.model.format=gguf --label thyrox.model.generation=3 --label thyrox.model.grant=grant-request-1 --label thyrox.model.name=thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf --label thyrox.model.port=61234 --label thyrox.model.quantization=q4_k_m --label thyrox.model.repository=Qwen/Qwen2.5-0.5B-Instruct --label thyrox.model.residency=residency/qwen/gpu0 --label thyrox.model.revision=7ae557604adf67be50417f59c2c2f167def9a775 --label thyrox.model.runtime=ollama --label thyrox.model.sha256=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb --label thyrox.model.source=hf --label thyrox.model.unit=unit-grant-request-1 --cpus 2 --memory 4096m --pids-limit 256 --network bridge -v /srv/models-bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb:/root/.ollama/models:ro -p 127.0.0.1:61234:11434 --device nvidia.com/gpu=GPU-6a9c1d2e-0000-0000-0000-000000000000 docker.io/ollama/ollama:0.35.0"
+
+      at <anonymous> (/home/user/thyrox/src/packages/model-scheduling/__tests__/podmanModelUnitMaterializer.test.ts:333:20)
+(fail) el montaje declara su modo y se prepara antes de crear la unidad (TASK-THYROX-0782) > un montaje rw llega a la unidad como rw, preparado antes del create [1.14ms]
+340 |     const mount: ArtifactMount = {
+341 |       hostDirectory: () => '/srv/x', containerDirectory: '/root/.ollama/models', mode: 'rw',
+342 |       stage: async () => { throw new Error('falta el artefacto en la caché') },
+343 |     }
+344 |     const outcome = await primitiveWithMount(podman, mount).materialize(GRANT)
+345 |     expect(outcome.status).toBe('failed')
+                                 ^
+error: expect(received).toBe(expected)
+
+Expected: "failed"
+Received: "materialized"
+
+      at <anonymous> (/home/user/thyrox/src/packages/model-scheduling/__tests__/podmanModelUnitMaterializer.test.ts:345:28)
+(fail) el montaje declara su modo y se prepara antes de crear la unidad (TASK-THYROX-0782) > un staging que falla no crea la unidad y lo dice [0.81ms]
+
+ 17 pass
+ 2 fail
+ 52 expect() calls
+Ran 19 tests across 1 file. [228.00ms]

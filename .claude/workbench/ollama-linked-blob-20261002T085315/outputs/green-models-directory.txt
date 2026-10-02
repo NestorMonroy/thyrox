@@ -1,0 +1,12 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/ollamaModelsDirectory.test.ts:
+(pass) ollamaModelsMount > monta un directorio propio del artefacto, de lectura y escritura, en el de modelos de Ollama [0.78ms]
+(pass) ollamaModelsMount > stage enlaza el GGUF de la caché como blob: mismo inodo, sin copia [2.29ms]
+(pass) ollamaModelsMount > stage dos veces deja el mismo enlace [1.42ms]
+(pass) ollamaModelsMount > sin el artefacto en la caché, stage rehúsa nombrándolo [0.44ms]
+
+ 4 pass
+ 0 fail
+ 6 expect() calls
+Ran 4 tests across 1 file. [182.00ms]

@@ -20,17 +20,19 @@ import { localArtifactHome, localModelHome } from '@thyrox/model-artifacts/local
 import { loadArtifactLocationIndex, saveArtifactLocationIndex, type ArtifactLocation } from '@thyrox/model-artifacts/modelArtifactResolver.ts'
 import { loadModelCatalog } from '@thyrox/model-artifacts/modelCatalog.ts'
 
-import { EXIT_OK, EXIT_REFUSED, type CommandOutput } from './commandOutput.js'
+import { EXIT_NOT_APPROVED, EXIT_OK, EXIT_REFUSED, type CommandOutput } from './commandOutput.js'
 import { declareInstalledModel, type DeclarationOptions } from './declareInstalledModel.js'
 import { managedOllama, type Environment } from './managedOllama.js'
 import { OllamaApi } from './ollamaApi.js'
 import { infrastructureEnsureCommand, OLLAMA_CONTAINER, requireInfrastructure, type InfrastructureEnsure } from './infrastructureReadiness.js'
-import { volumeMountpoint } from './volumeBlobs.js'
+import { adoptLocalArtifact } from './modelArtifactCache.js'
+import { CONTAINER_MODELS_DIR, hostBlobPath, volumeMountpoint } from './volumeBlobs.js'
 
 export const CATALOG_USAGE = [
   'uso: local-models-catalog declare <nombre-ollama> [--revision <commit>]',
   '     local-models-catalog list [--json]',
   '     local-models-catalog locate --publication <publication.json>',
+  '     local-models-catalog adopt <nombre-contractual>',
 ].join('\n')
 
 export interface CommandContext {
@@ -81,6 +83,8 @@ export async function runCatalogCommand(argv: readonly string[], context: Comman
     if (subcommand === 'list') return await list(rest.includes('--json'), context)
     const publicationPath = subcommand === 'locate' ? parseLocateArguments(rest) : undefined
     if (publicationPath !== undefined) return await locate(publicationPath, context)
+    const adoptedName = subcommand === 'adopt' && rest.length === 1 ? rest[0] : undefined
+    if (adoptedName !== undefined) return await adopt(adoptedName, context)
   } catch (error) {
     context.output.stderr(`local-models-catalog: ${(error as Error).message}`)
     return EXIT_REFUSED
@@ -109,6 +113,28 @@ async function declare(declaration: DeclareArguments, context: CommandContext): 
   }, declaration.options)
   context.output.stdout(`declarado: ${entry.name} (${entry.artifact.bytes} bytes, sha256 ${entry.artifact.sha256})`)
   return EXIT_OK
+}
+
+/**
+ * Adopta en la caché de artefactos, por enlace duro y tras verificar su sha256,
+ * el blob que el volumen del Ollama gestionado ya tiene para una entrada del
+ * catálogo (TASK-THYROX-0782): la unidad lo recibe sin descarga ni copia.
+ */
+async function adopt(name: string, context: CommandContext): Promise<number> {
+  const entry = (await loadModelCatalog(catalogPath(context))).entries().find(candidate => candidate.name === name)
+  if (entry === undefined) throw new Error(`«${name}» no está en el catálogo`)
+  if (entry.artifact.format !== 'gguf') throw new Error(`«${name}» es ${entry.artifact.format}: sólo un GGUF vive en el volumen de Ollama`)
+  const ollama = managedOllama(context.env)
+  const mountpoint = await volumeMountpoint(ollama.podmanBin, ollama.volume)
+  const sourcePath = hostBlobPath(`${CONTAINER_MODELS_DIR}/models/blobs/sha256-${entry.artifact.sha256}`, mountpoint)
+  const cacheDir = localArtifactHome(context.env, context.thyroxRoot).artifactCache
+  const outcome = await adoptLocalArtifact({ artifact: entry.artifact, sourcePath, cacheDir })
+  if ('path' in outcome) {
+    context.output.stdout(`${outcome.status === 'adopted' ? 'adoptado' : 'ya en caché'}: ${name} → ${outcome.path}`)
+    return EXIT_OK
+  }
+  context.output.stderr(`local-models-catalog: ${name} no se adoptó (${outcome.status}): ${outcome.reason}`)
+  return EXIT_NOT_APPROVED
 }
 
 async function list(asJson: boolean, context: CommandContext): Promise<number> {

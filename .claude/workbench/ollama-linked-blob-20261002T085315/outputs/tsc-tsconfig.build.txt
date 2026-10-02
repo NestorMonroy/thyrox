@@ -1,0 +1,2 @@
+catalogCommand.ts(136,108): error TS2339: Property 'path' does not exist on type 'AdoptionOutcome'.
+  Property 'path' does not exist on type '{ readonly status: "failed" | "rejected"; readonly reason: string; }'.

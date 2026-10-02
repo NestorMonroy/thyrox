@@ -1,0 +1,19 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/modelArtifactCache.test.ts:
+(pass) materializeArtifact > una caché vacía descarga una vez, verifica y publica en la ruta por digest [6.39ms]
+(pass) materializeArtifact > el sha256 devuelto es el medido sobre el archivo publicado, en los dos caminos [2.89ms]
+(pass) materializeArtifact > una caché correcta no descarga [1.28ms]
+(pass) materializeArtifact > una caché con otro contenido no se usa: se reconstruye desde el artefacto [2.61ms]
+(pass) materializeArtifact > una descarga con otro contenido se rechaza y no deja caché válida [1.29ms]
+(pass) materializeArtifact > una descarga que falla no deja ni caché válida ni parciales [2.05ms]
+(pass) materializeArtifact > un artefacto fijado a otro blob que el del catálogo no se descarga [0.47ms]
+(pass) adoptLocalArtifact: un blob local verificado entra a la caché por enlace duro (TASK-THYROX-0782) > el archivo de la caché es el mismo inodo que el blob: no se copió ni un byte [2.12ms]
+(pass) adoptLocalArtifact: un blob local verificado entra a la caché por enlace duro (TASK-THYROX-0782) > adoptar dos veces no vuelve a enlazar: la segunda está en caché [1.82ms]
+(pass) adoptLocalArtifact: un blob local verificado entra a la caché por enlace duro (TASK-THYROX-0782) > un blob con otro contenido se rechaza y no deja nada en la caché [1.58ms]
+(pass) adoptLocalArtifact: un blob local verificado entra a la caché por enlace duro (TASK-THYROX-0782) > un blob ausente falla nombrando su ruta, sin crear nada [1.00ms]
+
+ 11 pass
+ 0 fail
+ 25 expect() calls
+Ran 11 tests across 1 file. [189.00ms]

@@ -1,0 +1,182 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/modelArtifactCache.test.ts:
+(pass) materializeArtifact > una caché vacía descarga una vez, verifica y publica en la ruta por digest [7.58ms]
+(pass) materializeArtifact > el sha256 devuelto es el medido sobre el archivo publicado, en los dos caminos [2.96ms]
+(pass) materializeArtifact > una caché correcta no descarga [1.53ms]
+(pass) materializeArtifact > una caché con otro contenido no se usa: se reconstruye desde el artefacto [3.80ms]
+(pass) materializeArtifact > una descarga con otro contenido se rechaza y no deja caché válida [2.15ms]
+(pass) materializeArtifact > una descarga que falla no deja ni caché válida ni parciales [1.19ms]
+(pass) materializeArtifact > un artefacto fijado a otro blob que el del catálogo no se descarga [0.62ms]
+(pass) adoptLocalArtifact: un blob local verificado entra a la caché por enlace duro (TASK-THYROX-0782) > el archivo de la caché es el mismo inodo que el blob: no se copió ni un byte [2.49ms]
+(pass) adoptLocalArtifact: un blob local verificado entra a la caché por enlace duro (TASK-THYROX-0782) > adoptar dos veces no vuelve a enlazar: la segunda está en caché [2.35ms]
+(pass) adoptLocalArtifact: un blob local verificado entra a la caché por enlace duro (TASK-THYROX-0782) > un blob con otro contenido se rechaza y no deja nada en la caché [1.87ms]
+(pass) adoptLocalArtifact: un blob local verificado entra a la caché por enlace duro (TASK-THYROX-0782) > un blob ausente falla nombrando su ruta, sin crear nada [1.17ms]
+
+ 11 pass
+ 0 fail
+ 25 expect() calls
+Ran 11 tests across 1 file. [173.00ms]
+bun test v1.3.11 (af24e281)
+
+__tests__/ollamaModelsDirectory.test.ts:
+(pass) ollamaModelsMount > monta un directorio propio del artefacto, de lectura y escritura, en el de modelos de Ollama [1.06ms]
+35 |   test('stage enlaza el GGUF de la caché como blob: mismo inodo, sin copia', async () => {
+36 |     writeFileSync(cachedArtifactPath(cacheDir, SHA), 'GGUF')
+37 |     const mount = ollamaModelsMount(cacheDir)
+38 |     await mount.stage!(ARTIFACT)
+39 |     const blob = join(mount.hostDirectory(ARTIFACT), 'blobs', `sha256-${SHA}`)
+40 |     expect(statSync(blob).ino).toBe(statSync(cachedArtifactPath(cacheDir, SHA)).ino)
+                                    ^
+error: expect(received).toBe(expected)
+
+Expected: 2329241
+Received: 2329244
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/ollamaModelsDirectory.test.ts:40:32)
+(fail) ollamaModelsMount > stage enlaza el GGUF de la caché como blob: mismo inodo, sin copia [3.35ms]
+43 |   test('stage dos veces deja el mismo enlace', async () => {
+44 |     writeFileSync(cachedArtifactPath(cacheDir, SHA), 'GGUF')
+45 |     const mount = ollamaModelsMount(cacheDir)
+46 |     await mount.stage!(ARTIFACT)
+47 |     await mount.stage!(ARTIFACT)
+48 |     expect(statSync(join(mount.hostDirectory(ARTIFACT), 'blobs', `sha256-${SHA}`)).nlink).toBe(2)
+                                                                                               ^
+error: expect(received).toBe(expected)
+
+Expected: 2
+Received: 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/ollamaModelsDirectory.test.ts:48:91)
+(fail) ollamaModelsMount > stage dos veces deja el mismo enlace [3.32ms]
+(pass) ollamaModelsMount > sin el artefacto en la caché, stage rehúsa nombrándolo [0.68ms]
+
+ 2 pass
+ 2 fail
+ 6 expect() calls
+Ran 4 tests across 1 file. [199.00ms]
+bun test v1.3.11 (af24e281)
+
+__tests__/commands.test.ts:
+(pass) local-models-catalog > declare inspecciona el volumen declarado y guarda bajo .thyrox/models de la raíz [34.95ms]
+(pass) local-models-catalog > THYROX_MODEL_CATALOG gana a la ruta por defecto [9.32ms]
+(pass) local-models-catalog > un modelo no instalado sale 2 con la causa [5.87ms]
+(pass) local-models-catalog > list sobre un catálogo inválido sale 2 con la ruta, no una lista vacía [2.99ms]
+(pass) local-models-catalog > declare <nombre-hf> --revision <commit> conserva la identidad hf y no copia [7.84ms]
+(pass) local-models-catalog > declare <nombre-hf> sin --revision sale 2 nombrando la opción [4.75ms]
+(pass) local-models-catalog > --revision sin valor o con argumentos de más sale 2 con el uso [2.21ms]
+(pass) local-models-catalog > sin subcomando conocido sale 2 con el uso [2.37ms]
+173 |   }
+174 | 
+175 |   test('seis aciertos: sale 0 y escribe la cualificación con el contexto acotado al máximo del modelo', async () => {
+176 |     const install = await declaredInstallation(correct)
+177 |     const result = await run(runQualifyCommand, [CONTRACT_NAME], install)
+178 |     expect(result.code).toBe(0)
+                              ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/commands.test.ts:178:25)
+(fail) local-models-qualify > seis aciertos: sale 0 y escribe la cualificación con el contexto acotado al máximo del modelo [21.28ms]
+182 |     expect(stored?.taskClass).toBeUndefined()
+183 |   })
+184 | 
+185 |   test('--context declarado viaja como num_ctx', async () => {
+186 |     const install = await declaredInstallation(correct)
+187 |     expect((await run(runQualifyCommand, [CONTRACT_NAME, '--context', '2048'], install)).code).toBe(0)
+                                                                                                     ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/commands.test.ts:187:96)
+(fail) local-models-qualify > --context declarado viaja como num_ctx [11.15ms]
+191 |   })
+192 | 
+193 |   test('suspendida: sale 1 y también se escribe', async () => {
+194 |     const install = await declaredInstallation(() => ({ content: 'no' }))
+195 |     const result = await run(runQualifyCommand, [CONTRACT_NAME], install)
+196 |     expect(result.code).toBe(1)
+                              ^
+error: expect(received).toBe(expected)
+
+Expected: 1
+Received: 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/commands.test.ts:196:25)
+(fail) local-models-qualify > suspendida: sale 1 y también se escribe [9.35ms]
+199 | 
+200 |   test('un modelo fuera del catálogo sale 2 sin medir', async () => {
+201 |     const install = installation(correct)
+202 |     const result = await run(runQualifyCommand, [CONTRACT_NAME], install)
+203 |     expect(result.code).toBe(2)
+204 |     expect(result.stderr.join('\n')).toContain('no está en el catálogo')
+                                           ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "no está en el catálogo"
+Received: "local-models-qualify: no hay coordinador de model scheduling en /root/.thyrox/model-scheduling/coordinator.sock: connect ENOENT /root/.thyrox/model-scheduling/coordinator.sock"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/commands.test.ts:204:38)
+(fail) local-models-qualify > un modelo fuera del catálogo sale 2 sin medir [3.65ms]
+(pass) local-models-qualify > --context por encima del máximo del modelo sale 2 sin medir [8.93ms]
+212 |     expect(server?.requests.some(r => r.path === '/api/chat')).toBe(false)
+213 |   })
+214 | 
+215 |   test('--isolated declara la medición aislada; sin él queda contended', async () => {
+216 |     const install = await declaredInstallation(correct)
+217 |     expect((await run(runQualifyCommand, [CONTRACT_NAME, '--isolated'], install)).code).toBe(0)
+                                                                                              ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/commands.test.ts:217:89)
+(fail) local-models-qualify > --isolated declara la medición aislada; sin él queda contended [9.72ms]
+(pass) local-models-qualify > una clase sobrante, un --context no entero o sin modelo salen 2 con el uso [3.32ms]
+(pass) entradas bin/*.ts > bin/catalog.ts corre la orden con el entorno del proceso y propaga su código [80.14ms]
+(pass) local-models-catalog locate > una publicación verificada añade una ubicación por cada .gguf, y sólo por ellos [4.66ms]
+(pass) local-models-catalog locate > repetirla no duplica la entrada [2.06ms]
+(pass) local-models-catalog locate > THYROX_MODEL_ARTIFACT_LOCATIONS gana a la ruta por defecto [1.58ms]
+(pass) local-models-catalog locate > una publicación no verificada sale 2 y no escribe el índice [0.65ms]
+(pass) local-models-catalog locate > una publicación sin ningún .gguf sale 2 y no escribe el índice [0.52ms]
+(pass) local-models-catalog locate > una referencia sin registry/repositorio@digest sale 2 nombrándola [0.54ms]
+(pass) local-models-catalog locate > sin --publication o con argumentos de más sale 2 con el uso [0.48ms]
+(pass) local-models-catalog adopt (TASK-THYROX-0782) > adopta en la caché, por enlace duro, el blob del volumen de una entrada del catálogo [15.02ms]
+(pass) local-models-catalog adopt (TASK-THYROX-0782) > un nombre fuera del catálogo sale 2 nombrándolo, sin tocar la caché [3.55ms]
+
+ 20 pass
+ 5 fail
+ 78 expect() calls
+Ran 25 tests across 1 file. [434.00ms]
+bun test v1.3.11 (af24e281)
+
+__tests__/podmanModelUnitMaterializer.test.ts:
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un grant caducado [2.62ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un grant de una generación que ya no es la vigente [0.16ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > con la coordinación no disponible [0.08ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un runtime sin perfil de contenedor [0.07ms]
+(pass) PodmanModelUnitMaterializer: materializar > crea, arranca e inspecciona; la unidad lleva su identidad completa [4.46ms]
+(pass) PodmanModelUnitMaterializer: materializar > el contenedor va en loopback, con el dispositivo concedido y las etiquetas de la unidad [2.22ms]
+(pass) PodmanModelUnitMaterializer: materializar > en CPU no pide dispositivos [0.42ms]
+(pass) PodmanModelUnitMaterializer: materializar > si create falla no quedó nada: partial false [0.67ms]
+(pass) PodmanModelUnitMaterializer: materializar > si start falla quedó un contenedor: partial true con su unitId [0.45ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > destroy distingue destruido, ausente y fallido [0.32ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > destroy retira sólo el contenedor de la unidad [0.11ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > units reconstruye cada unidad de sus etiquetas e ignora contenedores ajenos [1.24ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > nunca borra imágenes ni volúmenes [0.39ms]
+(pass) PodmanModelUnitMaterializer: identidad completa > una unidad cuya identidad etiquetada está incompleta no es una unidad de esta primitiva [0.30ms]
+(pass) una unidad de Transformers con el artefacto del grant montado (TASK-THYROX-0776) > expone el artefacto concedido de sólo lectura en la unidad [2.67ms]
+(pass) una unidad de Transformers con el artefacto del grant montado (TASK-THYROX-0776) > un perfil sin montaje declarado no monta nada, como el de Ollama [0.28ms]
+(pass) una unidad de Transformers con el artefacto del grant montado (TASK-THYROX-0776) > una unidad de Transformers se reconstruye desde sus etiquetas [0.95ms]
+(pass) el montaje declara su modo y se prepara antes de crear la unidad (TASK-THYROX-0782) > un montaje rw llega a la unidad como rw, preparado antes del create [2.74ms]
+(pass) el montaje declara su modo y se prepara antes de crear la unidad (TASK-THYROX-0782) > un staging que falla no crea la unidad y lo dice [0.23ms]
+
+ 19 pass
+ 0 fail
+ 56 expect() calls
+Ran 19 tests across 1 file. [184.00ms]

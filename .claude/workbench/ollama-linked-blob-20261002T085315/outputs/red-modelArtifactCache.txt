@@ -1,0 +1,18 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/modelArtifactCache.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+1 | })
+2 | {
+    ^
+SyntaxError: Export named 'adoptLocalArtifact' not found in module '/home/user/thyrox/src/packages/local-models/modelArtifactCache.ts'.
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [605.00ms]

@@ -12,8 +12,13 @@
  * consumidores: una descarga cortada o con otro contenido nunca parece un
  * GGUF materializado. Quién descarga es un `ArtifactFetcher`: en producción,
  * un trabajo de la primitiva de Podman sin credencial.
+ *
+ * Un blob que ya está en este anfitrión, verificado —el del volumen del Ollama
+ * gestionado—, entra por `adoptLocalArtifact` con un enlace duro en vez de una
+ * descarga (TASK-THYROX-0782): misma verificación y mismo `rename`, cero bytes
+ * copiados. Si el enlace no se puede hacer, falla; nunca copia.
  */
-import { mkdir, rename, rm, stat } from 'node:fs/promises'
+import { link, mkdir, rename, rm, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 
 import type { CatalogArtifact } from '@thyrox/model-artifacts/catalogEntry.ts'
@@ -32,6 +37,24 @@ export interface ArtifactFetcher {
 
 export type MaterializationOutcome =
   | { readonly status: 'cached' | 'fetched'; readonly path: string; readonly sha256: string }
+  | { readonly status: 'rejected' | 'failed'; readonly reason: string }
+
+export type AdoptionOutcome =
+  | { readonly status: 'cached' | 'adopted'; readonly path: string; readonly sha256: string }
+  | { readonly status: 'rejected' | 'failed'; readonly reason: string }
+
+export interface AdoptionRequest {
+  readonly artifact: CatalogArtifact
+  /** El blob local que se adopta; tiene que estar en el mismo sistema de archivos que la caché. */
+  readonly sourcePath: string
+  readonly cacheDir: string
+}
+
+/** Escribe el contenido en el temporal `partial`; quien publica lo verifica y lo renombra. */
+type PartialWriter = (partial: string) => Promise<FetchOutcome>
+
+type Published<Written extends string> =
+  | { readonly status: 'cached' | Written; readonly path: string; readonly sha256: string }
   | { readonly status: 'rejected' | 'failed'; readonly reason: string }
 
 export interface MaterializationRequest {
@@ -61,6 +84,27 @@ export async function materializeArtifact(request: MaterializationRequest): Prom
   if (pinned.blobDigest !== `sha256:${artifact.sha256}`) {
     return { status: 'rejected', reason: `el artefacto fijado apunta a ${pinned.blobDigest}, no al contenido sha256:${artifact.sha256} del catálogo` }
   }
+  return publishVerified(cacheDir, artifact, 'fetched', partial => request.fetcher.fetch(pinned, partial))
+}
+
+/** Adopta un blob local verificado por enlace duro: misma verificación que una descarga, sin copiar. */
+export async function adoptLocalArtifact(request: AdoptionRequest): Promise<AdoptionOutcome> {
+  return publishVerified(request.cacheDir, request.artifact, 'adopted', partial => linkInto(request.sourcePath, partial))
+}
+
+async function linkInto(source: string, partial: string): Promise<FetchOutcome> {
+  try {
+    await link(source, partial)
+    return { status: 'fetched' }
+  } catch (error) {
+    return { status: 'failed', reason: `no se pudo enlazar ${source}: ${(error as Error).message}` }
+  }
+}
+
+/** Escribe en un temporal, mide su sha256 y sólo si es el del catálogo lo publica con un `rename` atómico. */
+async function publishVerified<Written extends string>(
+  cacheDir: string, artifact: CatalogArtifact, written: Written, write: PartialWriter,
+): Promise<Published<Written>> {
   const path = cachedArtifactPath(cacheDir, artifact.sha256)
   // El sha256 que se devuelve es el MEDIDO sobre el archivo, no el declarado:
   // es la segunda igualdad de READY y no puede ser una copia del catálogo.
@@ -71,12 +115,12 @@ export async function materializeArtifact(request: MaterializationRequest): Prom
   await rm(path, { force: true })
   const partial = join(cacheDir, `.partial-${artifact.sha256}-${process.pid}-${Date.now()}`)
   try {
-    const fetched = await request.fetcher.fetch(pinned, partial)
-    if (fetched.status !== 'fetched') return { status: 'failed', reason: fetched.reason }
+    const outcome = await write(partial)
+    if (outcome.status !== 'fetched') return { status: 'failed', reason: outcome.reason }
     const actual = await sha256OfFile(partial)
-    if (actual !== artifact.sha256) return { status: 'rejected', reason: `se descargó sha256:${actual}, el catálogo declara sha256:${artifact.sha256}` }
+    if (actual !== artifact.sha256) return { status: 'rejected', reason: `el contenido escrito es sha256:${actual}, el catálogo declara sha256:${artifact.sha256}` }
     await rename(partial, path)
-    return { status: 'fetched', path, sha256: actual }
+    return { status: written, path, sha256: actual }
   } finally {
     await rm(partial, { force: true })
   }
