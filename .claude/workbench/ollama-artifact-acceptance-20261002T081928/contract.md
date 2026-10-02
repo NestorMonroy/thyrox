@@ -138,7 +138,7 @@ Sin condición de cierre. No es hallazgo, ni blocker, ni cualificación pendient
 
 ## 7. Ids
 
-Reserva por sesión en H-THYROX-318 (`kaupamex-docs@da5438b04`): esta sesión
+Reserva por sesión en H-THYROX-401 (antes H-THYROX-318, `kaupamex-docs@da5438b04`; renumerado por la tercera colisión): esta sesión
 acuña `TASK-THYROX-0900+` y `H-THYROX-400+`; la propietaria conserva su
 secuencia y no renumera trabajo vivo.
 
