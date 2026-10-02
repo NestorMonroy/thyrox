@@ -1,0 +1,58 @@
+## antes: unidades
+thyrox-worker-unit-bd89f467-863d-419c-bf5c-f9b76a10f1eb
+## start
+PID=6934
+LOG=/home/user/thyrox/.claude/jobs/model-coordinator-20261002T194115/outputs/salida.log
+LIVE=/home/user/thyrox/.thyrox/runtime/jobs/model-coordinator-20261002T194115/salida.log
+RUN=/home/user/thyrox/.claude/jobs/model-coordinator-20261002T194115
+/root/.claude/model-scheduling/coordinator.sock
+
+real	0m3.421s
+user	0m1.582s
+sys	0m0.450s
+exit=0
+## socket canónico
+/root/.claude/model-scheduling/coordinator.sock
+## segundo start
+model_coordinator: ya corre
+/root/.claude/model-scheduling/coordinator.sock
+exit=0
+## status
+bg daemon: running (uptime 2645ms)
+  (no workers)
+exit=0
+## daemon procesos
+1
+## ledger
+running
+## unidades tras start
+0
+
+## === apagado terminal (2026-10-02T20:03:06Z) ===
+## unidades antes
+thyrox-worker-unit-57ccfba6-6193-41a4-a082-501ce01a5048
+## status (protocolo)
+model_coordinator: sano socket=/root/.claude/model-scheduling/coordinator.sock tickets=0
+exit=0
+## stop
+bg daemon: shutdown signal accepted
+exit=0
+## unidades después
+1
+## socket
+retirado
+## status tras stop
+model_coordinator: sin coordinador sano en /root/.claude/model-scheduling/coordinator.sock (no responde su protocolo)
+exit=1
+## log del daemon (cola)
+[2026-10-02T19:41:18.916Z] [podman] huérfanos retirados al arrancar: 1 (thyrox-worker-unit-bd89f467-863d-419c-bf5c-f9b76a10f1eb)
+[2026-10-02T19:41:19.003Z] [model-coordinator] escuchando en /root/.claude/model-scheduling/coordinator.sock; unidades anteriores destruidas: 0
+## ledger
+running
+## tras esperar al daemon (thyrox-bg wait, 20:03:17)
+ledger: done:0
+unidades: 0
+[2026-10-02T19:41:19.003Z] [model-coordinator] escuchando en /root/.claude/model-scheduling/coordinator.sock; unidades anteriores destruidas: 0
+[2026-10-02T20:03:13.225Z] [model-coordinator] detenido
+[2026-10-02T20:03:13.226Z] [podman] workers retirados al apagar: 0
+__BG_EXIT__=0

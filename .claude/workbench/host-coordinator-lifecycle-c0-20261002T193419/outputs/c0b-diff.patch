@@ -1,0 +1,248 @@
+diff --git a/src/session/model_coordinator.sh b/src/session/model_coordinator.sh
+index 208423c73..8ee19f176 100755
+--- a/src/session/model_coordinator.sh
++++ b/src/session/model_coordinator.sh
+@@ -5,17 +5,24 @@
+ # =============================================================================
+ #
+ #   model_coordinator start    lo lanza si no corre; imprime el socket canónico
+-#   model_coordinator status   sale 0 si el coordinador corre
+-#   model_coordinator stop     lo detiene por el RPC del daemon
++#   model_coordinator status   sale 0 si el coordinador responde su protocolo
++#   model_coordinator stop     lo detiene si no queda trabajo que lo necesite
+ #   model_coordinator run      el daemon en primer plano (lo que `start` lanza)
+ #
+ # El coordinador vive dentro del daemon de thyrox, que es único por anfitrión
+ # (`daemonLock`). Esta entrada no añade un supervisor: `start` entrega `run` a
+-# `thyrox-bg`, que le da log, ledger y barrera, y `status`/`stop` hablan con el
+-# daemon por su RPC (`daemon bg status|stop`). El origen es `service`: un
++# `thyrox-bg`, que le da log, ledger y barrera. El origen es `service`: un
+ # coordinador declarado no sale por inactividad entre dos clientes; lo detiene
+ # quien lo declaró.
+ #
++# `status` mide la salud del COORDINADOR, no la del daemon: pide `list` por su
++# protocolo (JSON por línea, `coordinatorProtocol.ts`) y publica sus tickets
++# vivos. Un socket que acepta conexiones pero no responde el protocolo no está
++# sano. `stop` detiene el daemon que lo aloja por su RPC (`daemon bg stop`), y
++# por eso rehúsa —exit 4, sin detener nada— mientras el daemon aloje trabajos
++# o el coordinador tenga tickets vivos: detenerlo los cortaría. Al detenerse,
++# el coordinador retira sus unidades (`hostCoordinatorService.ts`).
++#
+ # El socket es el de `model-scheduling-socket-path`, el mismo que los
+ # consumidores montan en una unidad (`headless-pool.sh`). `start` lo da por
+ # arrancado cuando acepta conexiones, no cuando el archivo existe: un socket
+@@ -24,8 +31,8 @@
+ # `THYROX_MODEL_COORDINATOR_DAEMON` sólo declara un doble que habla el
+ # contrato `bg run|status|stop`, como `THYROX_MANAGED_EXECUTION_RUNNER`.
+ #
+-# Salidas: 0 hecho · 1 `status` sin coordinador · 2 uso · 3 el socket no
+-# apareció a tiempo.
++# Salidas: 0 hecho · 1 sin coordinador sano · 2 uso · 3 el socket no apareció
++# o no desapareció a tiempo · 4 `stop` rehusado por trabajo vivo.
+ # =============================================================================
+ set -uo pipefail
+ 
+@@ -55,6 +62,71 @@ accepts_connections() {
+   python3 -c 'import socket, sys; s = socket.socket(socket.AF_UNIX); s.connect(sys.argv[1])' "$1" 2>/dev/null
+ }
+ 
++# @description Los tickets vivos del coordinador, por su protocolo.
++# @stdout el número de tickets.
++# @exitcode 1 el socket no responde el protocolo.
++coordinator_tickets() {
++  python3 - "$1" <<'PY' 2>/dev/null
++import json, socket, sys
++client = socket.socket(socket.AF_UNIX)
++client.settimeout(10)
++client.connect(sys.argv[1])
++client.sendall(b'{"proto":1,"op":"list"}\n')
++reply = json.loads(client.makefile().readline())
++if reply.get("ok") is not True or reply.get("op") != "list":
++    sys.exit(1)
++print(len(reply.get("tickets", [])))
++PY
++}
++
++# @description Los trabajos que aloja el daemon, por su RPC.
++daemon_jobs() {
++  daemon status --json 2>/dev/null | python3 -c 'import json, sys; print(len(json.load(sys.stdin).get("jobs", [])))'
++}
++
++status() {
++  local socket tickets
++  socket="$(socket_path)" || return 2
++  if ! tickets="$(coordinator_tickets "$socket")"; then
++    echo "model_coordinator: sin coordinador sano en $socket (no responde su protocolo)" >&2
++    return 1
++  fi
++  echo "model_coordinator: sano socket=$socket tickets=$tickets"
++}
++
++stop() {
++  local socket tickets jobs
++  socket="$(socket_path)" || return 2
++  if ! tickets="$(coordinator_tickets "$socket")"; then
++    echo "model_coordinator: sin coordinador sano en $socket; nada que detener" >&2
++    return 1
++  fi
++  if (( tickets > 0 )); then
++    echo "model_coordinator: REHUSA — $tickets ticket(s) vivo(s): detenerlo cortaría su trabajo" >&2
++    return 4
++  fi
++  jobs="$(daemon_jobs)" || jobs=""
++  if [[ "$jobs" != 0 ]]; then
++    echo "model_coordinator: REHUSA — el daemon que lo aloja tiene ${jobs:-un número ilegible de} trabajo(s); detenerlo los cortaría" >&2
++    return 4
++  fi
++  daemon stop || return $?
++  local waited=0
++  while [[ -S "$socket" ]]; do
++    (( waited >= 300 )) && { echo "model_coordinator: el socket $socket sigue tras 30 s" >&2; return 3; }
++    sleep 0.1
++    waited=$((waited + 1))
++  done
++  # El coordinador retira sus unidades DESPUÉS de cerrar el socket: detenido es
++  # cuando el trabajo del daemon terminó, no cuando el socket desapareció.
++  waited=0
++  while [[ "$(bash "$ROOT/bin/thyrox-bg" status "$JOB_NAME" 2>/dev/null)" == running ]]; do
++    (( waited >= 1200 )) && { echo "model_coordinator: el daemon sigue tras 120 s; log: bash bin/thyrox-bg log $JOB_NAME" >&2; return 3; }
++    sleep 0.1
++    waited=$((waited + 1))
++  done
++}
++
+ daemon() {
+   local argv
+   mapfile -t argv < <(daemon_argv) || return 1
+@@ -89,8 +161,8 @@ start() {
+ 
+ case "${1:-}" in
+   start) start ;;
+-  status) daemon status ;;
+-  stop) daemon stop ;;
++  status) status ;;
++  stop) stop ;;
+   run) shift; daemon run --origin service "$@" ;;
+   *) echo "uso: model_coordinator start|status|stop|run" >&2; exit 2 ;;
+ esac
+diff --git a/tests/session/doubles/model-coordinator-daemon b/tests/session/doubles/model-coordinator-daemon
+index 5e40c713c..2c7c06f2d 100755
+--- a/tests/session/doubles/model-coordinator-daemon
++++ b/tests/session/doubles/model-coordinator-daemon
+@@ -1,8 +1,11 @@
+ #!/usr/bin/env bash
+ # Doble del daemon que aloja el coordinador de modelos: habla el contrato que
+-# `model_coordinator.sh` usa (`bg run --origin <o>`, `bg status`, `bg stop`).
+-# `run` abre el socket declarado y atiende hasta SIGTERM; cada llamada queda en
+-# `$MODEL_COORDINATOR_DOUBLE_DIR/calls`.
++# `model_coordinator.sh` usa (`bg run --origin <o>`, `bg status [--json]`,
++# `bg stop`). `run` abre el socket declarado y responde la petición `list` del
++# protocolo del coordinador hasta SIGTERM. Cada llamada queda en
++# `$MODEL_COORDINATOR_DOUBLE_DIR/calls`; en ese directorio, `tickets.json` son
++# los tickets vivos que `list` devuelve, `jobs.json` los trabajos que el daemon
++# aloja, y un archivo `mute` hace que responda algo que no es el protocolo.
+ set -uo pipefail
+ dir="${MODEL_COORDINATOR_DOUBLE_DIR:?}"
+ socket="${THYROX_MODEL_COORDINATOR_SOCKET:?}"
+@@ -11,23 +14,39 @@ verb="${1:-}"; shift || true
+ echo "$verb $*" >> "$dir/calls"
+ case "$verb" in
+   run)
+-    exec python3 - "$socket" "$dir/daemon.pid" <<'PY'
+-import os, signal, socket, sys
+-path, pid_file = sys.argv[1], sys.argv[2]
++    exec python3 - "$socket" "$dir" <<'PY'
++import json, os, signal, socket, sys, time
++path, home = sys.argv[1], sys.argv[2]
+ server = socket.socket(socket.AF_UNIX)
+ server.bind(path)
+ server.listen(8)
+-open(pid_file, "w").write(str(os.getpid()))
++open(os.path.join(home, "daemon.pid"), "w").write(str(os.getpid()))
+ def stop(*_):
++    # Como el coordinador real: cierra el socket y después retira sus unidades.
+     os.unlink(path)
++    time.sleep(1)
+     sys.exit(0)
+ signal.signal(signal.SIGTERM, stop)
+ while True:
+     connection, _ = server.accept()
++    line = connection.makefile().readline()
++    if os.path.exists(os.path.join(home, "mute")):
++        reply = "no es el protocolo\n"
++    else:
++        tickets_file = os.path.join(home, "tickets.json")
++        tickets = json.load(open(tickets_file)) if os.path.exists(tickets_file) else []
++        reply = json.dumps({"ok": True, "op": "list", "tickets": tickets}) + "\n" if '"list"' in line else "{}\n"
++    try:
++        connection.sendall(reply.encode())
++    except OSError:
++        pass  # el cliente que sólo comprueba la conexión ya cerró
+     connection.close()
+ PY
+     ;;
+-  status) kill -0 "$(cat "$dir/daemon.pid" 2>/dev/null)" 2>/dev/null ;;
++  status)
++    jobs="$(cat "$dir/jobs.json" 2>/dev/null || echo '[]')"
++    kill -0 "$(cat "$dir/daemon.pid" 2>/dev/null)" 2>/dev/null || { [[ "${1:-}" == --json ]] && echo '{"ok":true,"running":false,"jobs":[]}'; exit 0; }
++    [[ "${1:-}" == --json ]] && echo "{\"ok\":true,\"running\":true,\"jobs\":$jobs}" ;;
+   stop) kill -TERM "$(cat "$dir/daemon.pid")" ;;
+   *) exit 2 ;;
+ esac
+diff --git a/tests/session/test-model-coordinator-entry.sh b/tests/session/test-model-coordinator-entry.sh
+index da0813bad..989922c6e 100755
+--- a/tests/session/test-model-coordinator-entry.sh
++++ b/tests/session/test-model-coordinator-entry.sh
+@@ -9,9 +9,17 @@
+ #      con origen `service`, y espera el socket canónico de
+ #      `model-scheduling-socket-path`;
+ #   3. un segundo `start` con el coordinador vivo no lanza otro daemon;
+-#   4. `status` sale 0 con el coordinador vivo;
+-#   5. `stop` lo detiene: el socket desaparece y `status` deja de salir 0.
+-# Control de anulación: sin la comprobación de vida en `start`, cae el caso 3.
++#   4. `status` mide la salud por el protocolo del coordinador (`list`): sale 0
++#      con el coordinador sano y publica sus tickets; un socket que acepta pero
++#      no habla el protocolo sale 1;
++#   5. `stop` no detiene nada si el daemon aloja trabajos o el coordinador
++#      tiene tickets vivos: rehúsa con 4 y los nombra;
++#   6. `stop` sin trabajos ni tickets lo detiene y no vuelve hasta que el
++#      daemon terminó —el coordinador retira sus unidades después de cerrar el
++#      socket—: el socket desaparece y `status` deja de salir 0.
++# Controles de anulación: sin la comprobación de vida en `start` cae el caso
++# 3; con `status` midiendo sólo que el socket acepta, cae el caso 4 de un
++# socket mudo; sin las guardas de `stop`, caen los dos rechazos del caso 5.
+ # =============================================================================
+ set -uo pipefail
+ cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 1
+@@ -43,12 +51,27 @@ bash "$ROOT/bin/model_coordinator" start >/dev/null 2>&1; rc=$?
+ check "3 un segundo start sale 0" "$rc" "0"
+ check "3 no lanza un segundo daemon" "$(grep -c '^run ' "$MODEL_COORDINATOR_DOUBLE_DIR/calls")" "1"
+ 
+-bash "$ROOT/bin/model_coordinator" status >/dev/null 2>&1; check "4 status vivo sale 0" "$?" "0"
++output="$(bash "$ROOT/bin/model_coordinator" status 2>&1)"; rc=$?
++check "4 status sano sale 0" "$rc" "0"
++check "4 publica los tickets del protocolo" "$(grep -c "tickets=0" <<<"$output")" "1"
++touch "$MODEL_COORDINATOR_DOUBLE_DIR/mute"
++bash "$ROOT/bin/model_coordinator" status >/dev/null 2>&1; check "4 un socket que no habla el protocolo sale 1" "$?" "1"
++rm -f "$MODEL_COORDINATOR_DOUBLE_DIR/mute"
+ 
+-bash "$ROOT/bin/model_coordinator" stop >/dev/null 2>&1; check "5 stop sale 0" "$?" "0"
++echo '[{"short":"job-a"}]' > "$MODEL_COORDINATOR_DOUBLE_DIR/jobs.json"
++output="$(bash "$ROOT/bin/model_coordinator" stop 2>&1)"; rc=$?
++check "5 con trabajos en el daemon stop rehúsa con 4" "$rc" "4"
++check "5 y el coordinador sigue sano" "$(bash "$ROOT/bin/model_coordinator" status >/dev/null 2>&1; echo $?)" "0"
++rm -f "$MODEL_COORDINATOR_DOUBLE_DIR/jobs.json"
++echo '[{"admissionId":"a-1"}]' > "$MODEL_COORDINATOR_DOUBLE_DIR/tickets.json"
++bash "$ROOT/bin/model_coordinator" stop >/dev/null 2>&1; check "5 con tickets vivos stop rehúsa con 4" "$?" "4"
++rm -f "$MODEL_COORDINATOR_DOUBLE_DIR/tickets.json"
++
++bash "$ROOT/bin/model_coordinator" stop >/dev/null 2>&1; check "6 stop sale 0" "$?" "0"
++check "6 al volver stop, el daemon ya terminó (su barrido incluido)" "$(bash "$ROOT/bin/thyrox-bg" status model-coordinator 2>/dev/null)" "done:0"
+ for _ in $(seq 50); do [[ -S "$canonical" ]] || break; sleep 0.1; done
+-check "5 el socket desaparece" "$([[ -S "$canonical" ]] && echo sigue || echo retirado)" "retirado"
+-bash "$ROOT/bin/model_coordinator" status >/dev/null 2>&1; check "5 status detenido no sale 0" "$([[ $? -ne 0 ]] && echo detenido || echo vivo)" "detenido"
++check "6 el socket desaparece" "$([[ -S "$canonical" ]] && echo sigue || echo retirado)" "retirado"
++bash "$ROOT/bin/model_coordinator" status >/dev/null 2>&1; check "6 status detenido no sale 0" "$([[ $? -ne 0 ]] && echo detenido || echo vivo)" "detenido"
+ bash "$ROOT/bin/thyrox-bg" wait model-coordinator >/dev/null 2>&1
+ 
+ echo "model_coordinator: $ok ok, $failures fallas"

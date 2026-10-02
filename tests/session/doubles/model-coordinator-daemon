@@ -1,8 +1,11 @@
 #!/usr/bin/env bash
 # Doble del daemon que aloja el coordinador de modelos: habla el contrato que
-# `model_coordinator.sh` usa (`bg run --origin <o>`, `bg status`, `bg stop`).
-# `run` abre el socket declarado y atiende hasta SIGTERM; cada llamada queda en
-# `$MODEL_COORDINATOR_DOUBLE_DIR/calls`.
+# `model_coordinator.sh` usa (`bg run --origin <o>`, `bg status [--json]`,
+# `bg stop`). `run` abre el socket declarado y responde la petición `list` del
+# protocolo del coordinador hasta SIGTERM. Cada llamada queda en
+# `$MODEL_COORDINATOR_DOUBLE_DIR/calls`; en ese directorio, `tickets.json` son
+# los tickets vivos que `list` devuelve, `jobs.json` los trabajos que el daemon
+# aloja, y un archivo `mute` hace que responda algo que no es el protocolo.
 set -uo pipefail
 dir="${MODEL_COORDINATOR_DOUBLE_DIR:?}"
 socket="${THYROX_MODEL_COORDINATOR_SOCKET:?}"
@@ -11,23 +14,39 @@ verb="${1:-}"; shift || true
 echo "$verb $*" >> "$dir/calls"
 case "$verb" in
   run)
-    exec python3 - "$socket" "$dir/daemon.pid" <<'PY'
-import os, signal, socket, sys
-path, pid_file = sys.argv[1], sys.argv[2]
+    exec python3 - "$socket" "$dir" <<'PY'
+import json, os, signal, socket, sys, time
+path, home = sys.argv[1], sys.argv[2]
 server = socket.socket(socket.AF_UNIX)
 server.bind(path)
 server.listen(8)
-open(pid_file, "w").write(str(os.getpid()))
+open(os.path.join(home, "daemon.pid"), "w").write(str(os.getpid()))
 def stop(*_):
+    # Como el coordinador real: cierra el socket y después retira sus unidades.
     os.unlink(path)
+    time.sleep(1)
     sys.exit(0)
 signal.signal(signal.SIGTERM, stop)
 while True:
     connection, _ = server.accept()
+    line = connection.makefile().readline()
+    if os.path.exists(os.path.join(home, "mute")):
+        reply = "no es el protocolo\n"
+    else:
+        tickets_file = os.path.join(home, "tickets.json")
+        tickets = json.load(open(tickets_file)) if os.path.exists(tickets_file) else []
+        reply = json.dumps({"ok": True, "op": "list", "tickets": tickets}) + "\n" if '"list"' in line else "{}\n"
+    try:
+        connection.sendall(reply.encode())
+    except OSError:
+        pass  # el cliente que sólo comprueba la conexión ya cerró
     connection.close()
 PY
     ;;
-  status) kill -0 "$(cat "$dir/daemon.pid" 2>/dev/null)" 2>/dev/null ;;
+  status)
+    jobs="$(cat "$dir/jobs.json" 2>/dev/null || echo '[]')"
+    kill -0 "$(cat "$dir/daemon.pid" 2>/dev/null)" 2>/dev/null || { [[ "${1:-}" == --json ]] && echo '{"ok":true,"running":false,"jobs":[]}'; exit 0; }
+    [[ "${1:-}" == --json ]] && echo "{\"ok\":true,\"running\":true,\"jobs\":$jobs}" ;;
   stop) kill -TERM "$(cat "$dir/daemon.pid")" ;;
   *) exit 2 ;;
 esac

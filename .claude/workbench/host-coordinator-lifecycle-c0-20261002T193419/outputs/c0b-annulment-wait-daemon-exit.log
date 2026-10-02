@@ -1,0 +1,3 @@
+## wait-daemon-exit
+  FALLA 6 al volver stop, el daemon ya terminó (su barrido incluido) — esperado [done:0] obtenido [running]
+model_coordinator: 17 ok, 1 fallas

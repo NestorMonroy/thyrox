@@ -1,0 +1,3 @@
+## health-by-accept
+  FALLA 4 un socket que no habla el protocolo sale 1 — esperado [1] obtenido [0]
+model_coordinator: 16 ok, 1 fallas

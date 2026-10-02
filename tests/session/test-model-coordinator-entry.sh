@@ -9,9 +9,17 @@
 #      con origen `service`, y espera el socket canónico de
 #      `model-scheduling-socket-path`;
 #   3. un segundo `start` con el coordinador vivo no lanza otro daemon;
-#   4. `status` sale 0 con el coordinador vivo;
-#   5. `stop` lo detiene: el socket desaparece y `status` deja de salir 0.
-# Control de anulación: sin la comprobación de vida en `start`, cae el caso 3.
+#   4. `status` mide la salud por el protocolo del coordinador (`list`): sale 0
+#      con el coordinador sano y publica sus tickets; un socket que acepta pero
+#      no habla el protocolo sale 1;
+#   5. `stop` no detiene nada si el daemon aloja trabajos o el coordinador
+#      tiene tickets vivos: rehúsa con 4 y los nombra;
+#   6. `stop` sin trabajos ni tickets lo detiene y no vuelve hasta que el
+#      daemon terminó —el coordinador retira sus unidades después de cerrar el
+#      socket—: el socket desaparece y `status` deja de salir 0.
+# Controles de anulación: sin la comprobación de vida en `start` cae el caso
+# 3; con `status` midiendo sólo que el socket acepta, cae el caso 4 de un
+# socket mudo; sin las guardas de `stop`, caen los dos rechazos del caso 5.
 # =============================================================================
 set -uo pipefail
 cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 1
@@ -43,12 +51,27 @@ bash "$ROOT/bin/model_coordinator" start >/dev/null 2>&1; rc=$?
 check "3 un segundo start sale 0" "$rc" "0"
 check "3 no lanza un segundo daemon" "$(grep -c '^run ' "$MODEL_COORDINATOR_DOUBLE_DIR/calls")" "1"
 
-bash "$ROOT/bin/model_coordinator" status >/dev/null 2>&1; check "4 status vivo sale 0" "$?" "0"
+output="$(bash "$ROOT/bin/model_coordinator" status 2>&1)"; rc=$?
+check "4 status sano sale 0" "$rc" "0"
+check "4 publica los tickets del protocolo" "$(grep -c "tickets=0" <<<"$output")" "1"
+touch "$MODEL_COORDINATOR_DOUBLE_DIR/mute"
+bash "$ROOT/bin/model_coordinator" status >/dev/null 2>&1; check "4 un socket que no habla el protocolo sale 1" "$?" "1"
+rm -f "$MODEL_COORDINATOR_DOUBLE_DIR/mute"
 
-bash "$ROOT/bin/model_coordinator" stop >/dev/null 2>&1; check "5 stop sale 0" "$?" "0"
+echo '[{"short":"job-a"}]' > "$MODEL_COORDINATOR_DOUBLE_DIR/jobs.json"
+output="$(bash "$ROOT/bin/model_coordinator" stop 2>&1)"; rc=$?
+check "5 con trabajos en el daemon stop rehúsa con 4" "$rc" "4"
+check "5 y el coordinador sigue sano" "$(bash "$ROOT/bin/model_coordinator" status >/dev/null 2>&1; echo $?)" "0"
+rm -f "$MODEL_COORDINATOR_DOUBLE_DIR/jobs.json"
+echo '[{"admissionId":"a-1"}]' > "$MODEL_COORDINATOR_DOUBLE_DIR/tickets.json"
+bash "$ROOT/bin/model_coordinator" stop >/dev/null 2>&1; check "5 con tickets vivos stop rehúsa con 4" "$?" "4"
+rm -f "$MODEL_COORDINATOR_DOUBLE_DIR/tickets.json"
+
+bash "$ROOT/bin/model_coordinator" stop >/dev/null 2>&1; check "6 stop sale 0" "$?" "0"
+check "6 al volver stop, el daemon ya terminó (su barrido incluido)" "$(bash "$ROOT/bin/thyrox-bg" status model-coordinator 2>/dev/null)" "done:0"
 for _ in $(seq 50); do [[ -S "$canonical" ]] || break; sleep 0.1; done
-check "5 el socket desaparece" "$([[ -S "$canonical" ]] && echo sigue || echo retirado)" "retirado"
-bash "$ROOT/bin/model_coordinator" status >/dev/null 2>&1; check "5 status detenido no sale 0" "$([[ $? -ne 0 ]] && echo detenido || echo vivo)" "detenido"
+check "6 el socket desaparece" "$([[ -S "$canonical" ]] && echo sigue || echo retirado)" "retirado"
+bash "$ROOT/bin/model_coordinator" status >/dev/null 2>&1; check "6 status detenido no sale 0" "$([[ $? -ne 0 ]] && echo detenido || echo vivo)" "detenido"
 bash "$ROOT/bin/thyrox-bg" wait model-coordinator >/dev/null 2>&1
 
 echo "model_coordinator: $ok ok, $failures fallas"
