@@ -1,0 +1,5 @@
+135:        hits = git(repo, "grep", "-l", "-F", old, "--", str(WORKBENCH)).split()
+?? .claude/jobs/bench-regularize-20261002T062506/
+?? .claude/jobs/bench-regularize-fix-20261002T062610/
+execution thyrox-worker-test-muqkxt5s-11835 kind=test task=TASK-THYROX-0762 exit=0
+__BG_EXIT__=0
