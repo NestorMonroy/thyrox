@@ -52,3 +52,19 @@ El controlador de continuación ya aceptado (`src/session/task_continuation.py`,
   el árbol corre por `headless-pool --isolation worktree` + `pool_integrate` (paso 5 del orden
   del ejecutor), incluidos P4, P5 y la repetición de S1.
 - Ningún banco nuevo puede citar esta excepción.
+
+## Medido al preparar la excepción: una unidad no alcanza Podman
+
+`outputs/unit-podman-reachability.log`: dentro de una unidad no hay `podman` en el PATH ni socket
+(`/run/podman/podman.sock`, `/run/user/0/podman/podman.sock`). Ni el trabajador ni la verificación
+del controlador pueden materializar unidades. Por eso las demostraciones con unidades reales de p2d
+(`probes/p2d_control_plane.sh`) y de p3 (invariantes del contrato) son fases de plano de control: el
+anfitrión lanza por la entrada canónica y observa, el payload corre en unidades. Un ítem cuya
+segunda fase no ha pasado no está aceptado, aunque el controlador lo haya commiteado.
+
+## Filas aplazadas
+
+`p4a`, `p4b`, `p4c`, `p5a` y `p5b` salieron de `plan.jsonl` a `plan-after-p3.jsonl`: bajo esta
+excepción no pueden correr, y en un plan secuencial el controlador las despacharía en cuanto p3
+fuese aceptado. Vuelven al plan cuando la prueba de plano de control de p3 pase, para correr por el
+pool (paso 5 del orden del ejecutor).

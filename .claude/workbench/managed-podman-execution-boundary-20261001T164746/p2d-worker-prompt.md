@@ -16,10 +16,11 @@ Tramo D — sólo los pasos 1 a 4 de la sección «Secuencia» de p2:
    src/lib/managed_execution.sh exporta a la unidad (añádela ahí: valor "thyrox-bg"); sin variable,
    "entry":"bootstrap-cli". Prueba RED/GREEN en tests/session/test-bg-managed-execution.sh y en
    .claude/workbench/managed-podman-execution-boundary-20261001T164746/tests/test_manifest_identity.py.
-3-4) Demuéstralo: lanza por la entrada canónica una unidad de cada clase que usarán p3, p4 y p5
-   (maintenance, test, probe) con payload `bash .claude/workbench/managed-podman-execution-boundary-20261001T164746/probes/unit_identity.sh .claude/workbench/managed-podman-execution-boundary-20261001T164746 p2d <clase>` y
-   comprueba que sus líneas de manifest llevan "entry":"thyrox-bg" y contenedores distintos.
-   Guárdalo en outputs/p2d-entry-units.log.
+3-4) NO lances unidades: dentro de tu unidad no hay `podman` ni su socket (medido:
+   outputs/unit-podman-reachability.log). La demostración —una unidad de cada clase que usarán
+   p3, p4 y p5 por la entrada canónica, con "entry":"thyrox-bg" y contenedores distintos— la
+   ejecuta el plano de control con probes/p2d_control_plane.sh después de tu aceptación
+   (bootstrap.md). Tu entrega son los pasos 1-2 con sus pruebas.
 
 Archivos que te pertenecen: src/lib/managed_execution.sh, src/session/bg.sh,
 tests/session/test-bg-managed-execution.sh, .claude/workbench/managed-podman-execution-boundary-20261001T164746/probes/unit_identity.sh,
