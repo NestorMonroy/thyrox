@@ -61,7 +61,7 @@
  * «banco» describe el corpus de `api` y es deuda heredada: se barre con los
  * identificadores en espanol, no en un pase aparte.
  */
-import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { appendFileSync, existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { basename, join } from 'node:path'
 
 /** Las cinco claves obligatorias. El orden es el del reporte. */
@@ -433,4 +433,26 @@ export function scaffoldWorkbench(baseDir: string, slug: string, now: Date = new
     '*Métrica:*', '*Ciega a:*', '',
   ].join('\n'))
   return dir
+}
+
+/** Lo que sólo quien diseña el banco sabe; `destination` se deriva del run si no se declara. */
+export interface WorkbenchDeclaration {
+  readonly question: string
+  readonly instrument: string
+  readonly metric: string
+  readonly blind_to: string
+  readonly destination?: string
+}
+
+/**
+ * Añade al manifiesto del run el registro `declaration` con las cinco claves,
+ * como `declare_workbench` del gemelo en Python. Un valor vacío se rehúsa
+ * nombrando su clave: se declara el valor real o no se declara.
+ */
+export function declareWorkbench(runDir: string, declaration: WorkbenchDeclaration): void {
+  const { destination, ...declared } = declaration
+  const empty = Object.entries(declared).filter(([, value]) => value.trim() === '').map(([key]) => key)
+  if (empty.length > 0) throw new Error(`declaración vacía en ${empty.join(', ')}: se declara el valor real o no se declara`)
+  const payload = { ...declared, destination: destination ?? join(runDir, 'outputs') }
+  appendFileSync(join(runDir, MANIFEST_FILE_NAME), `${manifestLine('declaration', payload)}\n`)
 }

@@ -316,6 +316,46 @@ def scaffold_workbench(
     return run_dir
 
 
+#: Las cuatro claves que sólo quien diseña el banco sabe; `destination` tiene
+#: un valor derivable (el `outputs/` del run) y por eso no se exige al declarar.
+DECLARED_KEYS: tuple[str, ...] = ("question", "instrument", "metric", "blind_to")
+
+
+def declare_workbench(run_dir: str | Path, *, question: str, instrument: str, metric: str,
+                      blind_to: str, destination: str | None = None) -> None:
+    """Añade al manifiesto del run el registro ``declaration`` con las cinco claves.
+
+    Escribe valores reales, nunca un placeholder: un valor vacío se rehúsa
+    nombrando su clave, igual que el gate nombra una clave ausente. El registro
+    se añade al final; si ya había una declaración, la posterior gana.
+    """
+    run = Path(run_dir)
+    declared = {"question": question, "instrument": instrument, "metric": metric, "blind_to": blind_to}
+    empty = [key for key, value in declared.items() if not value.strip()]
+    if empty:
+        raise ValueError(f"declaración vacía en {', '.join(empty)}: se declara el valor real o no se declara")
+    payload = {**declared, "destination": destination or str(run / "outputs")}
+    with (run / MANIFEST_FILE_NAME).open("a", encoding="utf-8") as handle:
+        handle.write(manifest_line("declaration", payload) + "\n")
+
+
+def _add_declaration_flags(parser: argparse.ArgumentParser) -> None:
+    for key in DECLARED_KEYS:
+        parser.add_argument(f"--{key.replace('_', '-')}", dest=key, default=None)
+    parser.add_argument("--destination", default=None)
+
+
+def _declared_values(args: argparse.Namespace) -> dict[str, str] | None:
+    """Las cuatro claves si llegaron todas; ``None`` si no llegó ninguna; error si llegaron a medias."""
+    given = {key: getattr(args, key) for key in DECLARED_KEYS if getattr(args, key) is not None}
+    if not given:
+        return None
+    missing = [key for key in DECLARED_KEYS if key not in given]
+    if missing:
+        raise ValueError(f"declaración parcial: faltan {', '.join(missing)}; se declaran las cuatro o ninguna")
+    return given
+
+
 def _base_dir(declared: str | None) -> Path:
     """El hogar: el declarado en la linea de comandos, o el que el gobernador
     resuelve. Este modulo NO compone hogares — solo los consume."""
@@ -334,12 +374,31 @@ def main(argv: list[str] | None = None) -> int:
         ("run-id", "acuna el identificador de un run sin crearlo"),
         ("runs", "lista los runs de un slug, del mas reciente al mas antiguo"),
         ("latest", "imprime el run mas reciente de un slug"),
-        ("scaffold", "crea el run y devuelve su ruta"),
+        ("scaffold", "crea el run y devuelve su ruta; con las cuatro banderas, nace declarado"),
     ):
         child = sub.add_parser(name, help=help_text)
         child.add_argument("slug")
+        if name == "scaffold":
+            _add_declaration_flags(child)
+    declare = sub.add_parser("declare", help="declara pregunta, instrumento, métrica y ceguera de un run existente")
+    declare.add_argument("run_dir")
+    _add_declaration_flags(declare)
 
     args = parser.parse_args(argv)
+
+    declared: dict[str, str] | None = None
+    if args.command in ("scaffold", "declare"):
+        try:
+            declared = _declared_values(args)
+        except ValueError as error:
+            print(f"manifest {args.command}: {error}", file=sys.stderr)
+            return 2
+        if args.command == "declare":
+            if declared is None:
+                print("manifest declare: faltan las cuatro claves", file=sys.stderr)
+                return 2
+            declare_workbench(args.run_dir, destination=args.destination, **declared)
+            return 0
 
     if args.command == "run-id":
         print(run_id_for(args.slug))
@@ -361,7 +420,10 @@ def main(argv: list[str] | None = None) -> int:
         print(found)
         return 0
 
-    print(scaffold_workbench(base, args.slug))
+    run = scaffold_workbench(base, args.slug)
+    if declared is not None:
+        declare_workbench(run, destination=args.destination, **declared)
+    print(run)
     return 0
 
 

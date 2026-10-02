@@ -133,5 +133,34 @@ check("el nombre del manifiesto", "manifest.jsonl", manifest.MANIFEST_FILE_NAME)
 check("y el heredado, que el lector sigue aceptando",
       "manifest.json", manifest.LEGACY_MANIFEST_FILE_NAME)
 
+print("== 9. declarar: el valor real, al andamiar o después, nunca un placeholder ==")
+DECLARED = {"question": "¿mide?", "instrument": "un guion", "metric": "casos", "blind_to": "lo no medido"}
+with tempfile.TemporaryDirectory() as base:
+    run = manifest.scaffold_workbench(base, "declarado", MOMENTO)
+    manifest.declare_workbench(run, **DECLARED)
+    loaded = manifest.read_manifest_file(run / manifest.MANIFEST_FILE_NAME)
+    check("las cuatro claves declaradas se leen de vuelta", DECLARED,
+          {key: loaded.get(key) for key in DECLARED})
+    check("sin destino declarado, el destino es outputs/ del run",
+          str(run / "outputs"), loaded.get("destination"))
+    rejected = None
+    try:
+        manifest.declare_workbench(run, **{**DECLARED, "metric": "  "})
+    except ValueError as error:
+        rejected = str(error)
+    check("un valor vacío se rehúsa nombrando la clave", True, rejected is not None and "metric" in rejected)
+
+with tempfile.TemporaryDirectory() as base:
+    flags = ["--question", "¿q?", "--instrument", "i", "--metric", "m", "--blind-to", "b"]
+    check("scaffold con las cuatro banderas sale 0", 0, manifest.main(["--base", base, "scaffold", "conflags", *flags]))
+    [run] = manifest.runs_for(base, "conflags")
+    check("y nace declarado", "¿q?", manifest.read_manifest_file(run / manifest.MANIFEST_FILE_NAME).get("question"))
+    check("scaffold con declaración parcial sale 2", 2, manifest.main(["--base", base, "scaffold", "parcial", "--question", "¿q?"]))
+    check("y no crea el run", [], manifest.runs_for(base, "parcial"))
+    check("scaffold sin banderas sigue creando el run sin declarar", 0, manifest.main(["--base", base, "scaffold", "sinflags"]))
+    [bare] = manifest.runs_for(base, "sinflags")
+    check("declare sobre un run existente sale 0", 0, manifest.main(["declare", str(bare), *flags]))
+    check("y deja la declaración", "m", manifest.read_manifest_file(bare / manifest.MANIFEST_FILE_NAME).get("metric"))
+
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)
