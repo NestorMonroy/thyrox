@@ -1,0 +1,4 @@
+/home/user/thyrox/.venv/bin/python3 3.12.3
+probe-exit=0
+execution thyrox-worker-probe-muqkogjg-20253 kind=probe task=TASK-THYROX-0769 exit=0
+__BG_EXIT__=0
