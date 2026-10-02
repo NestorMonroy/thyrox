@@ -1,5 +1,8 @@
 /**
- * La ingesta de findings al corpus semántico (ADR-008 D5, TASK-THYROX-0684).
+ * La ingesta por dominio al corpus semántico (ADR-008 D5, TASK-THYROX-0684):
+ * `finding` y `error`, cada uno reconocido por su nombre de archivo en una
+ * tabla. Un error es `error-ERR-NNN-*.rst` y su identidad `error / ERR-NNN`;
+ * lo demás de abajo vale igual para los dos.
  *
  * Un finding se reconoce por su nombre, `hallazgo-H-<PREFIJO>-NNN-*.rst`, que
  * es el contrato de `kaupamex-docs`; su identidad es `finding / H-…`, única en
@@ -20,6 +23,7 @@ import { parseRstDocument } from './rstDocument.ts'
 import type { SemanticSearchStore } from './store.ts'
 
 export const FINDING_DOMAIN = 'finding'
+export const ERROR_DOMAIN = 'error'
 
 /** De dónde viene lo que se ingiere: el nombre del repositorio y su commit, si es un árbol de git. */
 export type IngestionSource = { label: string; revision: string | null }
@@ -30,18 +34,38 @@ export type Recognition = { recognized: RecognizedDocument[]; unrecognized: stri
 
 export type IngestionSummary = { created: number; newVersion: number; unchanged: number }
 
-const FINDING_FILE = /^hallazgo-(H-[A-Z]+-\d+)-.*\.rst$/
+/** El nombre de archivo que identifica un documento de cada dominio; el grupo 1 es su identidad. */
+const DOCUMENT_FILES: Readonly<Record<string, RegExp>> = {
+  [FINDING_DOMAIN]: /^hallazgo-(H-[A-Z]+-\d+)-.*\.rst$/,
+  [ERROR_DOMAIN]: /^error-(ERR-\d+)-.*\.rst$/,
+}
 const EXCLUDED_DIRECTORIES = new Set(['.git', 'node_modules', 'dist', 'build'])
 
-export function recognizeFindings(root: string, source: IngestionSource): Recognition {
+/** Los dominios que tienen reconocedor, en orden de declaración. */
+export function recognizedDomains(): string[] {
+  return Object.keys(DOCUMENT_FILES)
+}
+
+/** Reconoce los documentos de un dominio bajo una raíz; un dominio sin reconocedor se rehúsa. */
+export function recognizeDocuments(domain: string, root: string, source: IngestionSource): Recognition {
+  const pattern = DOCUMENT_FILES[domain]
+  if (pattern === undefined) throw new Error(`el dominio «${domain}» no tiene reconocedor; hoy: ${recognizedDomains().join(', ')}`)
   const recognition: Recognition = { recognized: [], unrecognized: [] }
-  for (const path of findingFilesUnder(root)) {
+  for (const path of documentFilesUnder(root, pattern)) {
     const relativePath = relative(root, path).split(sep).join('/')
-    const document = findingDocument(relativePath, readFileSync(path, 'utf8'), source)
+    const document = domainDocument(domain, pattern, relativePath, readFileSync(path, 'utf8'), source)
     if (document) recognition.recognized.push({ relativePath, document })
     else recognition.unrecognized.push(relativePath)
   }
   return recognition
+}
+
+export function recognizeFindings(root: string, source: IngestionSource): Recognition {
+  return recognizeDocuments(FINDING_DOMAIN, root, source)
+}
+
+export function recognizeErrors(root: string, source: IngestionSource): Recognition {
+  return recognizeDocuments(ERROR_DOMAIN, root, source)
 }
 
 export async function ingestFindings(store: SemanticSearchStore, recognized: readonly RecognizedDocument[]): Promise<IngestionSummary> {
@@ -50,15 +74,15 @@ export async function ingestFindings(store: SemanticSearchStore, recognized: rea
   return { created: counts.created, newVersion: counts['new-version'], unchanged: counts.unchanged }
 }
 
-function findingDocument(relativePath: string, text: string, source: IngestionSource): DocumentInput | undefined {
-  const findingId = FINDING_FILE.exec(relativePath.split('/').at(-1) ?? '')?.[1]
-  if (findingId === undefined) return undefined
+function domainDocument(domain: string, pattern: RegExp, relativePath: string, text: string, source: IngestionSource): DocumentInput | undefined {
+  const domainId = pattern.exec(relativePath.split('/').at(-1) ?? '')?.[1]
+  if (domainId === undefined) return undefined
   const { metadata, chunks } = parseRstDocument(text)
   if (chunks.length === 0) return undefined
   return {
-    domain: FINDING_DOMAIN,
+    domain,
     scope: DOMAIN_WIDE_SCOPE,
-    domainId: findingId,
+    domainId,
     sourceRef: `${source.label}:${relativePath}`,
     sourceRevision: source.revision,
     metadata,
@@ -66,14 +90,14 @@ function findingDocument(relativePath: string, text: string, source: IngestionSo
   }
 }
 
-function findingFilesUnder(root: string): string[] {
+function documentFilesUnder(root: string, pattern: RegExp): string[] {
   const files: string[] = []
   const pending = [root]
   while (pending.length > 0) {
     const directory = pending.pop() as string
     for (const entry of readdirSync(directory, { withFileTypes: true })) {
       if (entry.isDirectory() && !EXCLUDED_DIRECTORIES.has(entry.name)) pending.push(join(directory, entry.name))
-      else if (entry.isFile() && FINDING_FILE.test(entry.name)) files.push(join(directory, entry.name))
+      else if (entry.isFile() && pattern.test(entry.name)) files.push(join(directory, entry.name))
     }
   }
   return files.sort()
