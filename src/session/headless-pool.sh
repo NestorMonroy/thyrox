@@ -29,6 +29,12 @@
 # ninguna credencial del pool. El pool sigue siendo el distribuidor: cómo se
 # materializa la unidad lo decide la primitiva. Por defecto, `host`.
 #
+# `--model-policy ARCHIVO` (TASK-THYROX-0758) es la política de ejecución del
+# consumidor (`@thyrox/provider: executionPolicy.ts`): viaja al recomendador, y
+# si no permite el respaldo, el pool rehúsa en vez de caer a `claude-cli` —por
+# una recomendación bloqueada, por un Ollama que no arranca o por un runtime
+# de proveedor que llegue igual—. Sin política, el comportamiento de hoy.
+#
 # El modelo de los ítems no se declara: se deriva de `--task-class` con
 # `bin/agent-recommend` (`recommend(tipo, perfil)` de @thyrox/agent), que
 # fija rango mínimo y compara los registros del catálogo. Un identificador
@@ -46,6 +52,7 @@
 #                    [--credential-source inherit|proxy-env|proxy-store|proxy-store-url]
 #                    [--isolation worktree [--verify CMD]]
 #                    [--execution host|unit [--work-reference CONSUMIDOR:ÁMBITO]]
+#                    [--model-policy ARCHIVO]
 #                    < items (uno por linea)
 #
 # Sin `--max-turns` el ítem no tiene tope de turnos, igual que `claude -p`:
@@ -206,7 +213,7 @@ RUNNER_KIND=thyrox
 PROMPT=""; OUT=""; MODEL=""; TASK_CLASS=""
 WIDTH="$(nproc 2>/dev/null || echo 4)"
 TIMEOUT=600; TOOLS="Read"; TOOLS_SET=""; ISOLATION=""; VERIFY=""; MAX_TURNS=""; WORKDIR="$PWD"; MEMFREE_SPEC=""; CACHE_TTL=""; CREDENTIAL_PROXY=""; STORE_CREDENTIAL_PROXY=""; CREDENTIAL_SOURCE=""
-EXECUTION=host; WORK_REFERENCE=""
+EXECUTION=host; WORK_REFERENCE=""; MODEL_POLICY=""; POLICY_FALLBACK=""
 
 rehusa() { echo "headless-pool: REHUSA — $*" >&2; exit 2; }
 
@@ -231,6 +238,7 @@ while [[ $# -gt 0 ]]; do
         --runner) RUNNER_KIND="${2:-}"; shift 2 ;;
         --execution) EXECUTION="${2:-}"; shift 2 ;;
         --work-reference) WORK_REFERENCE="${2:-}"; shift 2 ;;
+        --model-policy) MODEL_POLICY="${2:-}"; shift 2 ;;
         -h|--help) sed -n '2,69p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) rehusa "opcion desconocida: $1" ;;
     esac
@@ -248,6 +256,14 @@ case "$EXECUTION" in
             || rehusa "--execution unit no entrega credenciales del pool al ítem: no va con --credential-*" ;;
     *) rehusa "--execution va host o unit, no: $EXECUTION" ;;
 esac
+# El respaldo de la política se lee aquí sólo para defender la frontera; la
+# política la interpreta el recomendador. Sin `fallback.enabled` no hay default.
+if [[ -n "$MODEL_POLICY" ]]; then
+    [[ -r "$MODEL_POLICY" ]] || rehusa "--model-policy no se puede leer: $MODEL_POLICY"
+    POLICY_FALLBACK="$(jq -r '.fallback.enabled | if type == "boolean" then tostring else "" end' "$MODEL_POLICY" 2>/dev/null)"
+    [[ "$POLICY_FALLBACK" == true || "$POLICY_FALLBACK" == false ]] \
+        || rehusa "--model-policy declara fallback.enabled (true o false); el respaldo no tiene valor por defecto: $MODEL_POLICY"
+fi
 
 command -v "$PARALLEL_BIN" >/dev/null 2>&1 \
     || rehusa "falta GNU parallel ($PARALLEL_BIN). Se instala con THYROX_INSTALL_PARALLEL=1 via src/lib/toolchain.sh."
@@ -275,14 +291,19 @@ readonly LOCAL_RUNTIME=ollama PROVIDER_RUNTIME=claude-cli MANAGED_OLLAMA_SERVICE
 # proveedor—, rehúsa sin lanzar nada: un modelo por defecto aquí volvería a
 # escribirlo a mano.
 derive_recommendation() {
-    local reply
-    reply="$(bash "$RECOMMEND_BIN" "$TASK_CLASS" "$@" --json 2>/dev/null)" || reply=""
+    local reply rc=0
+    reply="$(bash "$RECOMMEND_BIN" "$TASK_CLASS" "$@" ${MODEL_POLICY:+--policy "$MODEL_POLICY"} --json 2>/dev/null)" || rc=$?
+    # 3: la política bloqueó la clase; su causa viene en el JSON.
+    [[ "$rc" -ne 3 ]] || rehusa "la política de modelo bloquea --task-class $TASK_CLASS: $(jq -r '.blockedReason // "sin causa"' <<< "$reply" 2>/dev/null)"
+    [[ "$rc" -eq 0 ]] || reply=""
     IFS=$'\t' read -r RUNTIME MODEL FALLBACK_REASON < <(printf '%s' "$reply" \
         | jq -r --arg default "$PROVIDER_RUNTIME" '[.runtime // $default, .model // "", .fallbackReason // ""] | @tsv' 2>/dev/null)
     case "$RUNTIME:$MODEL" in
         "$LOCAL_RUNTIME":thyrox-*|"$PROVIDER_RUNTIME":claude-*) ;;
         *) rehusa "no se pudo derivar el modelo de --task-class $TASK_CLASS con $RECOMMEND_BIN: runtime ${RUNTIME:-(sin respuesta)}, modelo ${MODEL:-(sin respuesta)}" ;;
     esac
+    [[ "$POLICY_FALLBACK" != false || "$RUNTIME" == "$LOCAL_RUNTIME" ]] \
+        || rehusa "la política de modelo no permite el proveedor y el selector devolvió $RUNTIME ($MODEL)"
 }
 derive_recommendation
 # El modelo local exige el Ollama gestionado en marcha. Si no arranca, el pool
@@ -292,6 +313,8 @@ ensure_local_runtime() {
     local ensure_exit=0
     bash "$INFRASTRUCTURE_ENSURE_BIN" "$MANAGED_OLLAMA_SERVICE" >&2 || ensure_exit=$?
     [[ "$ensure_exit" -ne 0 ]] || return 0
+    [[ "$POLICY_FALLBACK" != false ]] \
+        || rehusa "$MANAGED_OLLAMA_SERVICE no arrancó (infrastructure_ensure salió $ensure_exit) y la política de modelo no permite respaldo"
     derive_recommendation --runtime "$PROVIDER_RUNTIME"
     FALLBACK_REASON="$MANAGED_OLLAMA_SERVICE no arrancó (infrastructure_ensure salió $ensure_exit)"
 }

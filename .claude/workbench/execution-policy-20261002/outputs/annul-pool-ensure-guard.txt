@@ -1,0 +1,14 @@
+  ok   caso 1: con la política y un Qwen permitido, el pool sale 0
+  ok   caso 1: la política llega al recomendador
+  ok   caso 2: una recomendación bloqueada rehúsa con 2
+  ok   caso 2: y nombra la causa de la política
+  ok   caso 2: ningún ítem se lanza
+  ok   caso 3: Ollama caído y política sin respaldo rehúsa con 2
+  FALLA caso 3: no pide claude-cli al recomendador — esperado [0] obtenido [1]
+  ok   caso 3: ningún ítem se lanza
+  ok   caso 4: sin política, el respaldo de hoy no cambia (pide claude-cli)
+  ok   caso 5: un proveedor devuelto contra una política sin respaldo rehúsa con 2
+  ok   caso 5: ningún ítem se lanza
+  ok   caso 6: una política sin fallback.enabled declarado rehúsa con 2
+
+11 ok · 1 falla(s) (alcance medido: headless-pool --model-policy)

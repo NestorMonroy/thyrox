@@ -22,6 +22,9 @@ import type { AgentDefinition, CacheTtl } from '@thyrox/agent/types'
 import type { ModelCatalogEntry } from '@thyrox/model-artifacts/catalogEntry.ts'
 import { qualifiedModels, type ModelQualification } from '@thyrox/model-artifacts/modelQualification.ts'
 import { promptCacheKey } from './cacheBreak.ts'
+import { allowsEntry, type ExecutionPolicy } from './executionPolicy.ts'
+
+export { ExecutionPolicyError, parseExecutionPolicy, type ExecutionPolicy } from './executionPolicy.ts'
 
 function pricingOf(modelId: string): PricingTier {
   const p = MODELS[modelId]?.pricing
@@ -369,7 +372,18 @@ export type ProviderExecution = Recommendation & {
   fallbackReason?: string
 }
 
-export type ExecutionRecommendation = LocalExecution | ProviderExecution
+/**
+ * Ningún modelo que la política permite cumple, y la política no permite el
+ * respaldo: no hay ejecución que recomendar. No lleva modelo a propósito.
+ */
+export type BlockedExecution = {
+  runtime: 'blocked'
+  taskClass: TaskKind
+  contextTokens: number
+  blockedReason: string
+}
+
+export type ExecutionRecommendation = LocalExecution | ProviderExecution | BlockedExecution
 
 /** El catálogo del proveedor, sin pasar por los modelos locales. */
 export function providerExecution(kind: TaskKind, profile: TurnProfile): ProviderExecution {
@@ -401,8 +415,11 @@ export function recommendExecution(
   kind: TaskKind,
   profile: TurnProfile,
   local: LocalModelInventory,
+  policy?: ExecutionPolicy,
 ): ExecutionRecommendation {
-  const [fastest] = qualifiedModels(local.entries, local.qualifications, kind, profile.contextTokens)
+  // Con política, sólo compiten los modelos que permite; sin ella, todos (el comportamiento previo).
+  const permitted = policy === undefined ? local : { ...local, entries: local.entries.filter(entry => allowsEntry(policy, entry)) }
+  const [fastest] = qualifiedModels(permitted.entries, permitted.qualifications, kind, profile.contextTokens)
   if (fastest) {
     return {
       runtime: 'ollama',
@@ -412,7 +429,12 @@ export function recommendExecution(
       qualification: fastest.qualification,
     }
   }
-  return { ...providerExecution(kind, profile), fallbackReason: localFallbackReason(kind, profile, local) }
+  const reason = localFallbackReason(kind, profile, permitted)
+  if (policy !== undefined && !policy.fallback.enabled) {
+    return { runtime: 'blocked', taskClass: kind, contextTokens: profile.contextTokens,
+      blockedReason: `la política no permite respaldo y ningún modelo permitido cumple: ${reason}` }
+  }
+  return { ...providerExecution(kind, profile), fallbackReason: reason }
 }
 
 // ---------------------------------------------------------------------------
