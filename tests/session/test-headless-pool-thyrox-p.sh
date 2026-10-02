@@ -9,6 +9,10 @@
 # stream— sale de él. El modelo es un proveedor grabado: este contenedor no
 # tiene credencial, y lo que se prueba es el contrato, no el servicio.
 set -uo pipefail
+# Esta suite mide la mecánica del pool, no la política de ejecución: la declara
+# sin restricción (sin ella regiría la versionada del árbol, que no admite respaldo).
+THYROX_EXECUTION_POLICY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../fixtures" && pwd)/execution_policy_unrestricted.json"
+export THYROX_EXECUTION_POLICY
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 POOL="$ROOT/bin/headless-pool"
 F="$(mktemp -d)"; trap 'rm -rf "$F"' EXIT

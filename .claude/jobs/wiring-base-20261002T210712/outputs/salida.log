@@ -1,0 +1,9 @@
+rc=1
+  FALLO exit 2
+  FALLO nombra la variable con que declararlo
+  FALLO 14.1 sin deriva lo dice, no calla
+  FALLO 14.2 con deriva nombra el evento
+  FALLO 14.4 y sigue publicando el conteo de rotos
+119 ok, 5 fallos
+execution thyrox-worker-test-murgeu0t-23627 kind=test task=TASK-THYROX-0773 exit=0
+__BG_EXIT__=0

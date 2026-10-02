@@ -33,6 +33,12 @@ assert _spec is not None and _spec.loader is not None
 gate: Any = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(gate)
 
+#: Esta suite mide el AVISO, que sólo existe cuando la política de ejecución no
+#: restringe al controlador: lo fija aquí, en el proceso de prueba, porque un
+#: override no puede abrir la política del repositorio. La negación la mide
+#: `test_execution_policy_enforcement.py`.
+setattr(gate, "unmanaged_payloads_allowed", lambda env=None: True)
+
 #: Dos llamadas de la sesión, verbatim salvo el recorte de su cola.
 EPISODE_POOL = ("cd /home/user/thyrox; bash bin/run-task-pool --width 2 --memfree 2G "
                 "--timeout 900 --dir $W/logs --prefix derivadas $W/comandos.txt > $W/pool.txt 2>&1")

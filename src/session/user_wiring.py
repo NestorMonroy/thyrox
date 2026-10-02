@@ -279,7 +279,7 @@ def declared_wiring(root: Path | None = None,
             # sesion. El matcher nombra las herramientas que algun detector
             # mide; el preflight descarta en proceso lo que no le toca.
             "PreToolUse": [{
-                "matcher": "Bash|Agent|Write|Edit|MultiEdit|Read",
+                "matcher": "Bash|Agent|Monitor|Write|Edit|MultiEdit|Read",
                 # El envoltorio de `bin/` resuelve el `PYTHONPATH`: el hook
                 # corre desde el cwd de la sesion y sin el entorno del
                 # corredor, y sin el cuatro de los diecisiete detectores no

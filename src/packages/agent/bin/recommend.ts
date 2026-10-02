@@ -28,6 +28,7 @@
  * argumento no se entiende o si el catálogo local o sus cualificaciones son
  * ilegibles — nunca una recomendación por defecto, que sería elegir sin medir.
  */
+import { existsSync } from 'node:fs'
 import { readFile } from 'node:fs/promises'
 import { resolve } from 'node:path'
 
@@ -54,6 +55,9 @@ const EXIT_OK = 0
 const EXIT_REFUSED = 2
 const EXIT_BLOCKED = 3
 const DECLARABLE_RUNTIME = 'claude-cli'
+/** La clave que sustituye la política versionada del árbol, la misma que leen los detectores de preflight. */
+const POLICY_KEY = 'THYROX_EXECUTION_POLICY'
+const VERSIONED_POLICY = 'src/session/execution_policy.json'
 const OPTIONS_WITH_VALUE = new Set(['--context', '--runtime', '--policy'])
 const FILE_NOT_FOUND_CODE = 'ENOENT'
 /** `src/packages/agent/bin` está cuatro niveles por debajo de la raíz de thyrox. */
@@ -165,6 +169,19 @@ async function loadLocalInventory(home: LocalModelHome): Promise<LocalModelInven
   }
 }
 
+/**
+ * La política que rige: la de `--policy`, la de la clave declarada, o la
+ * versionada del árbol (`src/session/execution_policy.json`). Así una sesión
+ * nueva o compactada no depende de recordar la bandera.
+ */
+function declaredPolicyPath(explicit: string | undefined): string | undefined {
+  if (explicit !== undefined) return explicit
+  const declared = process.env[POLICY_KEY]?.trim()
+  if (declared) return declared
+  const versioned = resolve(thyroxRoot(), VERSIONED_POLICY)
+  return existsSync(versioned) ? versioned : undefined
+}
+
 /** La política del consumidor; ilegible o inválida rehúsa con su ruta, nunca se ignora. */
 async function loadPolicy(path: string): Promise<ExecutionPolicy> {
   try {
@@ -229,7 +246,8 @@ async function run(argv: readonly string[]): Promise<number> {
   }
   const kind = requireKind(options.kind)
   const contextTokens = requireContextTokens(options.context)
-  const policy = options.policy === undefined ? undefined : await loadPolicy(options.policy)
+  const policyPath = declaredPolicyPath(options.policy)
+  const policy = policyPath === undefined ? undefined : await loadPolicy(policyPath)
   const execution = await chooseExecution(kind, contextTokens, options.runtime, policy)
   if (options.json) console.log(JSON.stringify(execution, null, 2))
   if (execution.runtime === 'blocked') {

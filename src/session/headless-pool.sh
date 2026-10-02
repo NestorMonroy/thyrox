@@ -263,6 +263,13 @@ case "$EXECUTION" in
             || rehusa "--execution unit no entrega credenciales del pool al ítem: no va con --credential-*" ;;
     *) rehusa "--execution va host o unit, no: $EXECUTION" ;;
 esac
+# Sin `--model-policy` rige la política declarada: la de `THYROX_EXECUTION_POLICY`
+# o la versionada del árbol, la misma que leen `agent-recommend` y el preflight.
+if [[ -z "$MODEL_POLICY" ]]; then
+    if [[ -n "${THYROX_EXECUTION_POLICY:-}" ]]; then MODEL_POLICY="$THYROX_EXECUTION_POLICY"
+    elif [[ -f "$THYROX_ROOT/src/session/execution_policy.json" ]]; then MODEL_POLICY="$THYROX_ROOT/src/session/execution_policy.json"
+    fi
+fi
 # El respaldo de la política se lee aquí sólo para defender la frontera; la
 # política la interpreta el recomendador. Sin `fallback.enabled` no hay default.
 if [[ -n "$MODEL_POLICY" ]]; then
@@ -980,7 +987,8 @@ export HP_ISOLATION="$ISOLATION" HP_VERIFY="$VERIFY" HP_RUNNER_KIND="$RUNNER_KIN
 # shellcheck source=../lib/managed_execution.sh
 source "$THYROX_ROOT/src/lib/managed_execution.sh"
 export HP_EXECUTION="$EXECUTION" HP_WORK_CONSUMER="${WORK_REFERENCE%%:*}" HP_WORK_SCOPE="${WORK_REFERENCE#*:}"
-export HP_THYROX_ROOT="$THYROX_ROOT" HP_EXECUTE_RUNNER_ARGV="$(thyrox_managed_execution_runner_argv)"
+HP_EXECUTE_RUNNER_ARGV="$(thyrox_managed_execution_runner_argv)"
+export HP_THYROX_ROOT="$THYROX_ROOT" HP_EXECUTE_RUNNER_ARGV
 export HP_ITEM_WORKTREE="${HEADLESS_POOL_ITEM_WORKTREE:-$HP_HERE/item_worktree.sh}"
 # Cuánto se espera a que un hijo del ítem salga solo después de que salió el
 # principal, antes de terminarlo (`process_ownership drain`).

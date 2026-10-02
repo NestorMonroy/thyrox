@@ -10,6 +10,10 @@
 # HEADLESS_POOL_INFRASTRUCTURE_ENSURE, y el ejecutor del ítem uno que publica
 # el modelo y el entorno que recibió.
 set -uo pipefail
+# Esta suite mide la mecánica del pool, no la política de ejecución: la declara
+# sin restricción (sin ella regiría la versionada del árbol, que no admite respaldo).
+THYROX_EXECUTION_POLICY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../fixtures" && pwd)/execution_policy_unrestricted.json"
+export THYROX_EXECUTION_POLICY
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 POOL="$ROOT/src/session/headless-pool.sh"
 failures=0; total=0

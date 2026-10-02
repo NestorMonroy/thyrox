@@ -35,12 +35,28 @@ export interface LocalModelSelector {
   readonly source?: ModelSource
 }
 
+/** Si el controlador implementa (excepción bootstrap) o sólo orquesta workers gestionados. */
+export type ControllerImplementation = 'bootstrap-exception' | 'managed-only'
+
+/**
+ * Los permisos del controlador que lee el preflight (`src/session/execution_policy.py`):
+ * despachar subagentes, ejecutar payloads fuera de la ejecución gestionada y
+ * escribir el producto. Independientes de `fallback`, que gobierna la selección.
+ */
+export interface ControllerPolicy {
+  readonly subagents: boolean
+  readonly unmanagedPayloads: boolean
+  readonly implementation: ControllerImplementation
+}
+
 export interface ExecutionPolicy {
   readonly allowed: readonly LocalModelSelector[]
   readonly fallback: { readonly enabled: boolean }
+  readonly controller?: ControllerPolicy
 }
 
 const LOCAL_RUNTIME = 'ollama'
+const CONTROLLER_IMPLEMENTATIONS: readonly ControllerImplementation[] = ['bootstrap-exception', 'managed-only']
 const MODEL_SOURCES: readonly ModelSource[] = ['hf', 'ollama']
 
 export function parseExecutionPolicy(text: string): ExecutionPolicy {
@@ -51,13 +67,26 @@ export function parseExecutionPolicy(text: string): ExecutionPolicy {
     throw new ExecutionPolicyError(`política ilegible: ${(error as Error).message}`)
   }
   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) throw new ExecutionPolicyError('la política es un objeto JSON')
-  const { allowed, fallback } = raw as Record<string, unknown>
+  const { allowed, fallback, controller } = raw as Record<string, unknown>
   if (!Array.isArray(allowed)) throw new ExecutionPolicyError('`allowed` es la lista de modelos locales permitidos')
   const enabled = (fallback as { enabled?: unknown } | null | undefined)?.enabled
   if (typeof enabled !== 'boolean') {
     throw new ExecutionPolicyError('`fallback.enabled` se declara (true o false): el respaldo al proveedor no tiene valor por defecto')
   }
-  return { allowed: allowed.map(selectorOf), fallback: { enabled } }
+  const parsed = { allowed: allowed.map(selectorOf), fallback: { enabled } }
+  return controller === undefined ? parsed : { ...parsed, controller: controllerOf(controller) }
+}
+
+/** Una sección `controller` declara sus tres campos: uno que falta no se presume abierto. */
+function controllerOf(value: unknown): ControllerPolicy {
+  if (typeof value !== 'object' || value === null || Array.isArray(value)) throw new ExecutionPolicyError('`controller` es un objeto')
+  const { subagents, unmanagedPayloads, implementation } = value as Record<string, unknown>
+  if (typeof subagents !== 'boolean') throw new ExecutionPolicyError('`controller.subagents` se declara (true o false)')
+  if (typeof unmanagedPayloads !== 'boolean') throw new ExecutionPolicyError('`controller.unmanagedPayloads` se declara (true o false)')
+  if (!CONTROLLER_IMPLEMENTATIONS.includes(implementation as ControllerImplementation)) {
+    throw new ExecutionPolicyError(`\`controller.implementation\` es una de ${CONTROLLER_IMPLEMENTATIONS.join(', ')}`)
+  }
+  return { subagents, unmanagedPayloads, implementation: implementation as ControllerImplementation }
 }
 
 function selectorOf(value: unknown, index: number): LocalModelSelector {

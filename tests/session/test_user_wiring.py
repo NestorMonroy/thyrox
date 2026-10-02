@@ -83,6 +83,8 @@ _pre = d["hooks"].get("PreToolUse", [{}])[0]
 _matcher = set(_pre.get("matcher", "").split("|"))
 check("el matcher cubre Bash y Agent, los dos despachos que se miden",
       True, {"Bash", "Agent"} <= _matcher)
+check("el matcher cubre Monitor, que corre su comando en segundo plano (política de ejecución)",
+      True, "Monitor" in _matcher)
 check("el matcher cubre la escritura y la lectura de archivos",
       True, {"Write", "Edit", "Read"} <= _matcher)
 check("el comando es el preflight del proveedor, por su envoltorio de bin/",
@@ -240,9 +242,14 @@ import os as _os2  # noqa: E402
 _source = _tmp / "fuente.json"
 _source.write_text('{"marca": "contenido-original"}')
 _target = _tmp / "respaldos" / "fuente.json.SELLO"
+(_tmp / "isolated.env").write_text("")
+_os2.environ["THYROX_ENV_FILE"] = str(_tmp / "isolated.env")
 _os2.environ["THYROX_JOBS_DIR"] = str(_tmp / "ledger")
 _os2.environ["THYROX_SESSION_LEDGER_DIR"] = str(_tmp / "ledger")
 w.BackgroundBackup(timeout=30).backup(_source, _target)
+# El aislamiento del `.env` vale sólo para este respaldo: lo que sigue deriva el
+# consumidor de las raíces que ese archivo declara.
+del _os2.environ["THYROX_ENV_FILE"]
 check("el respaldo aterrizo", True, _target.exists())
 check("con el contenido de la fuente", _source.read_text(), _target.read_text())
 
@@ -740,6 +747,7 @@ _env18 = {
     "AGENT_STORE_CLAUDE_DIR": str(_agent_results18),
     "THYROX_AGENT_STORE": str(_store18),
     "THYROX_JOBS_DIR": str(_jobs18),
+    "THYROX_ENV_FILE": str(_tmp / "isolated.env"),
     "THYROX_SESSION_LEDGER_DIR": str(_ledger18),
     "THYROX_POOL_WORKTREES_DIR": str(_pool_worktrees18),
 }

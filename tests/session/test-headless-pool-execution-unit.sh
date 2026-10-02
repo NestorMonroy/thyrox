@@ -10,6 +10,10 @@
 # - que el ítem recibiera una credencial del entorno del pool;
 # - que --execution unit se aceptara sin referencia de trabajo.
 set -uo pipefail
+# Esta suite mide la mecánica del pool, no la política de ejecución: la declara
+# sin restricción (sin ella regiría la versionada del árbol, que no admite respaldo).
+THYROX_EXECUTION_POLICY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../fixtures" && pwd)/execution_policy_unrestricted.json"
+export THYROX_EXECUTION_POLICY
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 POOL="$ROOT/bin/headless-pool"
 F="$(mktemp -d)"; trap 'rm -rf "$F"' EXIT
@@ -49,9 +53,9 @@ pool() {
   bash "$POOL" --prompt "$F/prompt.md" --task-class analisis --width 2 "$@"
 }
 
-SALIDA="$(printf 'alfa\nbeta\n' | pool --out "$F/out" --execution unit --work-reference ai-course-notes:cs224r 2>&1)"; CODE=$?
+OUTPUT="$(printf 'alfa\nbeta\n' | pool --out "$F/out" --execution unit --work-reference ai-course-notes:cs224r 2>&1)"; CODE=$?
 check "caso 1: el pool sale 0" "$CODE" "0"
-check "caso 1: resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=2 ok=2 fallidos=0"
+check "caso 1: resumen" "$(printf '%s' "$OUTPUT" | gawk '/^items=/{print}')" "items=2 ok=2 fallidos=0"
 check "caso 1: cada ítem pide su ejecución a la primitiva" "$(wc -l < "$F/execute.log" 2>/dev/null | tr -d ' ')" "2"
 check "caso 1: con la referencia de trabajo del consumidor y dueño pool" \
   "$(gawk '{for(i=1;i<=NF;i++) if($i=="--work"||$i=="--owner") printf "%s %s;", $i, $(i+1); print ""}' "$F/execute.log" 2>/dev/null | sort | tr '\n' '|')" \

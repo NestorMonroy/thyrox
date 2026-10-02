@@ -83,6 +83,12 @@ class LocalHome:
         self.root = pathlib.Path(tempfile.mkdtemp(prefix="recommend-cli-"))
         self.catalog = self.root / "catalog.json"
         self.qualifications = self.root / "qualifications.json"
+        # La política declarada de esta suite: permite el modelo de su catálogo y
+        # admite el respaldo, así que mide la recomendación sin restringirla. Sin
+        # ella regiría la versionada del árbol (src/session/execution_policy.json).
+        self.policy = self.root / "execution-policy.json"
+        self.policy.write_text(json.dumps({"allowed": [{"runtime": "ollama", "repository": CATALOG_ENTRY["repository"]}],
+                                           "fallback": {"enabled": True}}))
 
     def write_qualified_model(self) -> None:
         self.catalog.write_text(json.dumps({"entries": [CATALOG_ENTRY]}))
@@ -91,7 +97,8 @@ class LocalHome:
     def env(self) -> dict[str, str]:
         return {**os.environ,
                 "THYROX_MODEL_CATALOG": str(self.catalog),
-                "THYROX_MODEL_QUALIFICATIONS": str(self.qualifications)}
+                "THYROX_MODEL_QUALIFICATIONS": str(self.qualifications),
+                "THYROX_EXECUTION_POLICY": str(self.policy)}
 
     def remove(self) -> None:
         shutil.rmtree(self.root, ignore_errors=True)
@@ -221,9 +228,20 @@ def check_policy(home: LocalHome) -> None:
     check("y no nombra ningún claude- como recomendación", "→ claude-" not in r.stdout, r.stdout[:120])
 
 
+def check_declared_policy(home: LocalHome) -> None:
+    """Sin --policy rige la declarada (THYROX_EXECUTION_POLICY): una sesión no tiene que recordar la bandera."""
+    home.write_qualified_model()
+    home.policy.write_text(json.dumps({"allowed": [{"runtime": "ollama", "repository": "Qwen/Qwen2.5-7B-Instruct-GGUF"}],
+                                       "fallback": {"enabled": False}}))
+    r = run(home, "mecanica", "--json")
+    check("la política declarada sin respaldo bloquea sin --policy (sale 3)", r.returncode == 3,
+          f"{r.returncode} {r.stdout[:120]} {r.stderr[:120]}")
+    check("y no nombra ningún claude-", "claude-" not in r.stdout + r.stderr, r.stdout[:120])
+
+
 def main() -> int:
     for scenario in (check_provider_catalog, check_refusals, check_fallback_json,
-                     check_local_choice, check_unreadable_files, check_policy):
+                     check_local_choice, check_unreadable_files, check_policy, check_declared_policy):
         home = LocalHome()
         try:
             scenario(home)

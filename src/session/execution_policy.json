@@ -1,0 +1,7 @@
+{
+  "allowed": [
+    { "runtime": "ollama", "repository": "library/qwen3-4b", "quantization": "q4_k_m", "source": "ollama" }
+  ],
+  "fallback": { "enabled": false },
+  "controller": { "subagents": false, "unmanagedPayloads": false, "implementation": "bootstrap-exception" }
+}

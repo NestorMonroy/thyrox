@@ -1,4 +1,6 @@
 import { describe, expect, test } from 'bun:test'
+import { readFileSync } from 'node:fs'
+import { resolve } from 'node:path'
 
 import type { ModelCatalogEntry } from '@thyrox/model-artifacts/catalogEntry.ts'
 import { attentionShapeOf } from '@thyrox/model-artifacts/memoryEstimate.ts'
@@ -156,6 +158,35 @@ describe('parseExecutionPolicy', () => {
 
   test('un JSON ilegible se rehúsa con su causa', () => {
     expect(() => parseExecutionPolicy('{ no es json')).toThrow(ExecutionPolicyError)
+  })
+
+  const BASE = { allowed: [], fallback: { enabled: false } }
+
+  test('la sección controller se valida y se conserva: es el mismo esquema que lee el preflight', () => {
+    const policy = parseExecutionPolicy(JSON.stringify({ ...BASE, controller: { subagents: false, unmanagedPayloads: true, implementation: 'managed-only' } }))
+    expect(policy.controller).toEqual({ subagents: false, unmanagedPayloads: true, implementation: 'managed-only' })
+  })
+
+  test('sin sección controller la política sólo gobierna la selección', () => {
+    expect(parseExecutionPolicy(JSON.stringify(BASE)).controller).toBeUndefined()
+  })
+
+  test('un permiso del controlador que no es booleano, o que falta, se rehúsa', () => {
+    expect(() => parseExecutionPolicy(JSON.stringify({ ...BASE, controller: { subagents: 'no', unmanagedPayloads: false, implementation: 'managed-only' } })))
+      .toThrow(ExecutionPolicyError)
+    expect(() => parseExecutionPolicy(JSON.stringify({ ...BASE, controller: { subagents: false, implementation: 'managed-only' } })))
+      .toThrow(ExecutionPolicyError)
+  })
+
+  test('una implementación que no es bootstrap-exception ni managed-only se rehúsa', () => {
+    expect(() => parseExecutionPolicy(JSON.stringify({ ...BASE, controller: { subagents: false, unmanagedPayloads: false, implementation: 'cualquiera' } })))
+      .toThrow(ExecutionPolicyError)
+  })
+
+  test('la política versionada del árbol se lee igual que en el preflight (test_execution_policy_enforcement, caso 13)', () => {
+    const policy = parseExecutionPolicy(readFileSync(resolve(import.meta.dir, '../../../session/execution_policy.json'), 'utf8'))
+    expect([policy.fallback.enabled, policy.controller?.subagents, policy.controller?.unmanagedPayloads, policy.controller?.implementation])
+      .toEqual([false, false, false, 'bootstrap-exception'])
   })
 })
 

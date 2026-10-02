@@ -1,0 +1,29 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/recommendExecution.test.ts:
+(pass) recommendExecution — local primero, claude-cli declarado como respaldo > un modelo local cualificado gana: runtime ollama con su cualificación [0.59ms]
+(pass) recommendExecution — local primero, claude-cli declarado como respaldo > catálogo vacío: cae a claude-cli y lo nombra [1.44ms]
+(pass) recommendExecution — local primero, claude-cli declarado como respaldo > sin cualificación aprobada de la clase: cae y nombra la clase [1.06ms]
+(pass) recommendExecution — local primero, claude-cli declarado como respaldo > contexto medido insuficiente: cae y nombra el contexto medido y el exigido [0.59ms]
+(pass) recommendExecution — local primero, claude-cli declarado como respaldo > el respaldo conserva la recomendación del catálogo del proveedor [0.25ms]
+(pass) recommendExecution con una política de ejecución declarada (TASK-THYROX-0773) > elige sólo entre los modelos que la política permite, aunque otro sea más rápido [0.60ms]
+(pass) recommendExecution con una política de ejecución declarada (TASK-THYROX-0773) > sin candidato permitido cualificado y sin respaldo: bloqueada con su causa, nunca claude-cli [0.13ms]
+(pass) recommendExecution con una política de ejecución declarada (TASK-THYROX-0773) > con el respaldo declarado, cae a claude-cli y lo nombra [0.21ms]
+(pass) recommendExecution con una política de ejecución declarada (TASK-THYROX-0773) > sin política, el comportamiento de hoy no cambia [0.12ms]
+(pass) parseExecutionPolicy > el respaldo no tiene valor por defecto: sin declararlo se rehúsa [0.23ms]
+(pass) parseExecutionPolicy > sólo se permiten modelos locales por su repositorio; un proveedor no se lista [0.10ms]
+(pass) parseExecutionPolicy > un JSON ilegible se rehúsa con su causa [0.11ms]
+(pass) parseExecutionPolicy > la sección controller se valida y se conserva: es el mismo esquema que lee el preflight [0.17ms]
+(pass) parseExecutionPolicy > sin sección controller la política sólo gobierna la selección [0.05ms]
+(pass) parseExecutionPolicy > un permiso del controlador que no es booleano, o que falta, se rehúsa [0.24ms]
+(pass) parseExecutionPolicy > una implementación que no es bootstrap-exception ni managed-only se rehúsa [0.07ms]
+(pass) parseExecutionPolicy > la política versionada del árbol se lee igual que en el preflight (test_execution_policy_enforcement, caso 13) [0.18ms]
+(pass) la política nombra lo que excluye y distingue la fuente (TASK-THYROX-0778) > si la política excluye todo el catálogo, la causa lo dice y no habla de un catálogo vacío [0.20ms]
+(pass) la política nombra lo que excluye y distingue la fuente (TASK-THYROX-0778) > un selector con fuente admite la entrada de esa fuente y no a su homónima de otra [0.20ms]
+(pass) la política nombra lo que excluye y distingue la fuente (TASK-THYROX-0778) > un selector sin fuente sigue admitiendo cualquier fuente [0.08ms]
+(pass) la política nombra lo que excluye y distingue la fuente (TASK-THYROX-0778) > una fuente desconocida se rehúsa al leer la política [0.11ms]
+
+ 21 pass
+ 0 fail
+ 37 expect() calls
+Ran 21 tests across 1 file. [53.00ms]

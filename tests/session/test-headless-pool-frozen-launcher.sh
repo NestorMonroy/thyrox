@@ -18,6 +18,10 @@
 # congelado retirado de la copia: la reescritura tiene que llegar entonces al
 # pool vivo, lo que prueba que el caso ve el defecto contra el que protege.
 set -uo pipefail
+# Esta suite mide la mecánica del pool, no la política de ejecución: la declara
+# sin restricción (sin ella regiría la versionada del árbol, que no admite respaldo).
+THYROX_EXECUTION_POLICY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../fixtures" && pwd)/execution_policy_unrestricted.json"
+export THYROX_EXECUTION_POLICY
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 failures=0; total=0
 check() { total=$((total+1)); if [[ "$2" == "$3" ]]; then echo "OK   $1"; else echo "FAIL $1 — expected '$3', got '$2'"; failures=$((failures+1)); fi; }

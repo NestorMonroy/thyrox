@@ -9,6 +9,10 @@
 # Lo que se mide es el mecanismo —reparto, salida por item, veredicto,
 # rechazos—, no al modelo.
 set -uo pipefail
+# Esta suite mide la mecánica del pool, no la política de ejecución: la declara
+# sin restricción (sin ella regiría la versionada del árbol, que no admite respaldo).
+THYROX_EXECUTION_POLICY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../fixtures" && pwd)/execution_policy_unrestricted.json"
+export THYROX_EXECUTION_POLICY
 RAIZ="$(cd "$(dirname "$0")/../.." && pwd)"
 POOL="$RAIZ/src/session/headless-pool.sh"
 fallos=0; total=0

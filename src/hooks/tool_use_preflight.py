@@ -72,6 +72,7 @@ DETECTOR_NAMES: tuple[str, ...] = (
     "detect_temp_home_write",
     "detect_bare_awk",
     "detect_client_background",
+    "detect_controller_mutation",
     "detect_irreversible_operation",
     "detect_unguarded_removal",
     "detect_edit_loop",

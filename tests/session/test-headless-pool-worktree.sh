@@ -4,6 +4,10 @@
 # veredicto, y la integración aplica al árbol principal sólo lo verificado y
 # disjunto, declarando cada conflicto.
 set -uo pipefail
+# Esta suite mide la mecánica del pool, no la política de ejecución: la declara
+# sin restricción (sin ella regiría la versionada del árbol, que no admite respaldo).
+THYROX_EXECUTION_POLICY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../fixtures" && pwd)/execution_policy_unrestricted.json"
+export THYROX_EXECUTION_POLICY
 RAIZ="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 POOL="${HEADLESS_POOL_MODULE:-$RAIZ/src/session/headless-pool.sh}"
 INTEGRATE="${POOL_INTEGRATE_MODULE:-$RAIZ/src/session/pool_integrate.sh}"
@@ -19,6 +23,10 @@ check() {
 
 F="$RAIZ/.claude/cache/test-headless-pool-worktree/$$"
 mkdir -p "$F"
+# Ningún `.env` del árbol gobierna los hogares que la suite exporta: su clave
+# por clon le ganaría a la global (src/lib/test_homes.sh).
+: > "$F/isolated.env"
+export THYROX_ENV_FILE="$F/isolated.env"
 # Los worktrees no pueden colgar de `.claude/`: el runner trataría la ruta
 # como sensible. La suite les da una raíz propia en la caché del usuario.
 mkdir -p "$HOME/.cache"

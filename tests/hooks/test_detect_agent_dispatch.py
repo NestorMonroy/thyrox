@@ -32,6 +32,12 @@ assert _spec is not None and _spec.loader is not None
 gate = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(gate)
 
+#: Esta suite mide el AVISO, que sólo existe cuando la política de ejecución no
+#: restringe al controlador: lo fija aquí, en el proceso de prueba, porque un
+#: override no puede abrir la política del repositorio. La negación la mide
+#: `test_execution_policy_enforcement.py`.
+setattr(gate, "subagents_allowed", lambda env=None: True)
+
 
 def _detect(prompt, description=""):
     return gate.detect({"tool_name": "Agent",

@@ -43,44 +43,54 @@ pool() {
     bash "$POOL" --prompt "$F/prompt.md" --task-class analisis --width 1 --out "$F/out-$RANDOM" "$@" 2>&1
 }
 
-SALIDA="$(pool --model-policy "$F/policy.json")"; CODE=$?
+OUTPUT="$(pool --model-policy "$F/policy.json")"; CODE=$?
 check "caso 1: con la política y un Qwen permitido, el pool sale 0" "$CODE" "0"
 check "caso 1: la política llega al recomendador" "$(grep -c -- "--policy $F/policy.json" "$F/recommend.log")" "1"
 
-SALIDA="$(RECOMMEND_MODE=blocked pool --model-policy "$F/policy.json")"; CODE=$?
+OUTPUT="$(RECOMMEND_MODE=blocked pool --model-policy "$F/policy.json")"; CODE=$?
 check "caso 2: una recomendación bloqueada rehúsa con 2" "$CODE" "2"
-check "caso 2: y nombra la causa de la política" "$([[ "$SALIDA" == *"ningún modelo permitido cumple"* ]] && echo si)" "si"
+check "caso 2: y nombra la causa de la política" "$([[ "$OUTPUT" == *"ningún modelo permitido cumple"* ]] && echo si)" "si"
 check "caso 2: ningún ítem se lanza" "$(wc -l < "$F/runner.log" | tr -d ' ')" "0"
 
-SALIDA="$(ENSURE_EXIT=1 pool --model-policy "$F/policy.json")"; CODE=$?
+OUTPUT="$(ENSURE_EXIT=1 pool --model-policy "$F/policy.json")"; CODE=$?
 check "caso 3: Ollama caído y política sin respaldo rehúsa con 2" "$CODE" "2"
 check "caso 3: no pide claude-cli al recomendador" "$(grep -c -- '--runtime claude-cli' "$F/recommend.log")" "0"
 check "caso 3: ningún ítem se lanza" "$(wc -l < "$F/runner.log" | tr -d ' ')" "0"
 
-SALIDA="$(ENSURE_EXIT=1 pool)"; CODE=$?
-check "caso 4: sin política, el respaldo de hoy no cambia (pide claude-cli)" "$(grep -c -- '--runtime claude-cli' "$F/recommend.log")" "1"
+# Una política que admite el respaldo: el de hoy no cambia. Sin ninguna declarada
+# regiría la versionada del árbol, que no lo admite (caso 10).
+printf '{"allowed":[{"runtime":"ollama","repository":"Qwen/Qwen2.5-7B-Instruct-GGUF"}],"fallback":{"enabled":true}}\n' > "$F/con-respaldo.json"
+OUTPUT="$(THYROX_EXECUTION_POLICY="$F/con-respaldo.json" ENSURE_EXIT=1 pool)"; CODE=$?
+check "caso 4: con respaldo admitido, el respaldo de hoy no cambia (pide claude-cli)" "$(grep -c -- '--runtime claude-cli' "$F/recommend.log")" "1"
 
-SALIDA="$(RECOMMEND_MODE=provider pool --model-policy "$F/policy.json")"; CODE=$?
+OUTPUT="$(RECOMMEND_MODE=provider pool --model-policy "$F/policy.json")"; CODE=$?
 check "caso 5: un proveedor devuelto contra una política sin respaldo rehúsa con 2" "$CODE" "2"
 check "caso 5: ningún ítem se lanza" "$(wc -l < "$F/runner.log" | tr -d ' ')" "0"
 
 printf '{"allowed":[]}\n' > "$F/sin-respaldo.json"
-SALIDA="$(pool --model-policy "$F/sin-respaldo.json")"; CODE=$?
+OUTPUT="$(pool --model-policy "$F/sin-respaldo.json")"; CODE=$?
 check "caso 6: una política sin fallback.enabled declarado rehúsa con 2" "$CODE" "2"
 
 # --context-tokens (TASK-THYROX-0781): el contexto que el ítem necesita viaja al
 # recomendador. Sin declararlo, el recomendador usa su piso de 126 029 tokens.
-SALIDA="$(pool --model-policy "$F/policy.json" --context-tokens 32768)"; CODE=$?
+OUTPUT="$(pool --model-policy "$F/policy.json" --context-tokens 32768)"; CODE=$?
 check "caso 7: con --context-tokens el pool sale 0" "$CODE" "0"
 check "caso 7: el recomendador recibe --context 32768" "$(grep -c -- '--context 32768' "$F/recommend.log")" "1"
 
-SALIDA="$(pool --model-policy "$F/policy.json")"; CODE=$?
+OUTPUT="$(pool --model-policy "$F/policy.json")"; CODE=$?
 check "caso 8: sin --context-tokens el recomendador no recibe --context" "$(grep -c -- '--context' "$F/recommend.log")" "0"
 
-SALIDA="$(pool --model-policy "$F/policy.json" --context-tokens mucho)"; CODE=$?
+OUTPUT="$(pool --model-policy "$F/policy.json" --context-tokens mucho)"; CODE=$?
 check "caso 9: un --context-tokens que no es entero positivo rehúsa con 2" "$CODE" "2"
-check "caso 9: y dice que exige un entero positivo" "$([[ "$SALIDA" == *"--context-tokens exige un entero positivo"* ]] && echo si)" "si"
+check "caso 9: y dice que exige un entero positivo" "$([[ "$OUTPUT" == *"--context-tokens exige un entero positivo"* ]] && echo si)" "si"
 check "caso 9: sin preguntar al recomendador" "$(wc -l < "$F/recommend.log" | tr -d ' ')" "0"
+
+# Sin --model-policy rige la declarada (THYROX_EXECUTION_POLICY, o la versionada
+# del árbol): el pool la entrega al recomendador y defiende su frontera igual.
+OUTPUT="$(THYROX_EXECUTION_POLICY="$F/policy.json" RECOMMEND_MODE=provider pool)"; CODE=$?
+check "caso 10: la política declarada sin --model-policy rechaza un proveedor con 2" "$CODE" "2"
+OUTPUT="$(THYROX_EXECUTION_POLICY="$F/policy.json" pool)"; CODE=$?
+check "caso 10: y el recomendador recibe esa política" "$(grep -c -- "--policy $F/policy.json" "$F/recommend.log")" "1"
 
 echo; echo "$PASS ok · $FAIL falla(s) (alcance medido: headless-pool --model-policy)"
 [[ $FAIL -eq 0 ]]

@@ -13,6 +13,10 @@
 # - que algo invocara `claude` (hay uno falso en el PATH que se anota);
 # - que el modelo pedido al runtime no fuera el que concede el grant.
 set -uo pipefail
+# Esta suite mide la mecánica del pool, no la política de ejecución: la declara
+# sin restricción (sin ella regiría la versionada del árbol, que no admite respaldo).
+THYROX_EXECUTION_POLICY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../fixtures" && pwd)/execution_policy_unrestricted.json"
+export THYROX_EXECUTION_POLICY
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 POOL="$ROOT/bin/headless-pool"
 F="$(mktemp -d)"; COORD_PID=""
@@ -44,19 +48,19 @@ exec env -i PATH="\$PATH" HOME="\$HOME" "\${keep[@]}" "\$@"
 R
 chmod +x "$F/recommend" "$F/ensure" "$F/bin/claude" "$F/execute"
 
-SALIDA="$(printf 'alfa\n' | PATH="$F/bin:$PATH" HEADLESS_POOL_RECOMMEND="$F/recommend" HEADLESS_POOL_INFRASTRUCTURE_ENSURE="$F/ensure" \
+OUTPUT="$(printf 'alfa\n' | PATH="$F/bin:$PATH" HEADLESS_POOL_RECOMMEND="$F/recommend" HEADLESS_POOL_INFRASTRUCTURE_ENSURE="$F/ensure" \
   THYROX_MANAGED_EXECUTION_RUNNER="$F/execute" THYROX_MODEL_COORDINATOR_SOCKET="$F/coord/coordinator.sock" \
   HEADLESS_POOL_TIME="$F/no-existe" HEADLESS_POOL_HISTORY_DIR="$F/hist" \
   bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --task-class mecanica --width 1 --timeout 180 \
     --execution unit --work-reference ai-course-notes:e2e --model-policy "$F/policy.json" 2>&1)"; CODE=$?
 check "el pool sale 0" "$CODE" "0"
-check "el ítem termina bien" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=1 ok=1 fallidos=0"
+check "el ítem termina bien" "$(printf '%s' "$OUTPUT" | gawk '/^items=/{print}')" "items=1 ok=1 fallidos=0"
 check "el ítem pidió su ejecución con la referencia del consumidor" "$(grep -c -- '--work ai-course-notes:e2e/1' "$F/execute.log" 2>/dev/null)" "1"
 check "el coordinador recibió la admisión del modelo local" "$(jq -r 'select(.kind=="admit") | .model' "$F/coord.log" 2>/dev/null | sort -u)" "$MODEL"
 check "el runtime recibió el modelo que concede el grant" "$(jq -r 'select(.kind=="chat") | .model' "$F/coord.log" 2>/dev/null | sort -u)" "$GRANTED"
 check "la respuesta del runtime llega al resultado del ítem" "$(jq -r '.result // empty' "$F/out/1.json" 2>/dev/null)" "traducción de prueba"
 check "nada invocó claude" "$(cat "$F/claude.log" 2>/dev/null | wc -l | tr -d ' ')" "0"
-[[ $FAIL -eq 0 ]] || { printf '%s\n' "$SALIDA" | tail -15; tail -20 "$F/out"/*.err 2>/dev/null; cat "$F/coord.out"; }
+[[ $FAIL -eq 0 ]] || { printf '%s\n' "$OUTPUT" | tail -15; tail -20 "$F/out"/*.err 2>/dev/null; cat "$F/coord.out"; }
 
 echo; echo "$PASS ok · $FAIL falla(s) (alcance medido: modelo local por el coordinador desde la unidad, con dobles)"
 [[ $FAIL -eq 0 ]]
