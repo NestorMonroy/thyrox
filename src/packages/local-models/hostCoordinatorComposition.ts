@@ -87,7 +87,13 @@ export function composeHostCoordinatorService(env: Environment, thyroxRoot: stri
     podman: dependencies.podman ?? createPodmanExecutor(),
     currentGeneration,
     profiles: {
-      ollama: { image: OLLAMA_RUNTIME_IMAGE, containerPort: OLLAMA_CONTAINER_PORT, environment: { OLLAMA_HOST: `0.0.0.0:${OLLAMA_CONTAINER_PORT}` } },
+      ollama: {
+        image: OLLAMA_RUNTIME_IMAGE,
+        containerPort: OLLAMA_CONTAINER_PORT,
+        environment: { OLLAMA_HOST: `0.0.0.0:${OLLAMA_CONTAINER_PORT}` },
+        // Ollama sirve /v1 con su contexto por defecto si el servidor no recibe el del grant.
+        grantEnvironment: grant => ({ OLLAMA_CONTEXT_LENGTH: String(grant.contextLength) }),
+      },
       transformers: {
         image: TRANSFORMERS_RUNTIME_IMAGE,
         containerPort: TRANSFORMERS_CONTAINER_PORT,

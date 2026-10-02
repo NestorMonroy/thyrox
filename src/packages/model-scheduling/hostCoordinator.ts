@@ -96,9 +96,13 @@ function placementSegment(placement: ExecutionPlacement): string {
   return `gpu:${[...placement.devices].sort().join(',')}`
 }
 
-/** La clave de residencia de una identidad en una colocación. */
-export function residencyKeyOf(artifact: ResolvedModelArtifact, placement: ExecutionPlacement): string {
-  return `residency/${artifact.modelId}@${artifact.artifactId}/${placementSegment(placement)}`
+/**
+ * La clave de residencia de una identidad en una colocación y un contexto. El
+ * contexto entra porque un runtime cargado a un contexto no sirve una petición
+ * que pide otro (H-THYROX-418): son residencias distintas.
+ */
+export function residencyKeyOf(artifact: ResolvedModelArtifact, placement: ExecutionPlacement, contextLength: number): string {
+  return `residency/${artifact.modelId}@${artifact.artifactId}/${placementSegment(placement)}/ctx${contextLength}`
 }
 
 export class ModelSchedulingCoordinator {
@@ -151,7 +155,7 @@ export class ModelSchedulingCoordinator {
     return {
       requestId: request.requestId,
       owner: this.dependencies.owner,
-      residencyKey: residencyKeyOf(resolved.artifact, decision.placement),
+      residencyKey: residencyKeyOf(resolved.artifact, decision.placement, resolved.contextLength),
       artifact: resolved.artifact,
       runtime: decision.runtime,
       placement: decision.placement,

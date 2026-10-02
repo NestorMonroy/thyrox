@@ -81,6 +81,12 @@ export interface RuntimeContainerProfile {
   /** Entorno del runtime; sólo valores públicos (la primitiva neutral rehúsa nombres de credencial). */
   readonly environment: Readonly<Record<string, string>>
   /**
+   * El entorno que depende del grant concedido, como el contexto con el que el
+   * runtime carga el modelo; se suma al entorno fijo del perfil. Un runtime
+   * que lo ignorara serviría con su valor por defecto, no con el del grant.
+   */
+  readonly grantEnvironment?: (grant: ExecutionGrant) => Readonly<Record<string, string>>
+  /**
    * Cómo ve la unidad el artefacto concedido, si el runtime lo lee del disco
    * en vez de recibirlo por su API (TASK-THYROX-0776): el directorio del
    * anfitrión que lo contiene, verificado, se monta de sólo lectura.
@@ -204,7 +210,7 @@ export function modelUnitAuthorization(spec: ModelUnitContainerSpec): ExecutionA
     mounts: artifactMounts(spec),
     resources: spec.limits,
     network: 'bridge',
-    environment: spec.profile.environment,
+    environment: { ...spec.profile.environment, ...spec.profile.grantEnvironment?.(spec.grant) },
     publishedPorts: [{ hostAddress: LOOPBACK_HOST, hostPort: spec.port, containerPort: spec.profile.containerPort }],
     devices: cdiDevices(spec.grant),
     labels: unitLabelArguments(spec),

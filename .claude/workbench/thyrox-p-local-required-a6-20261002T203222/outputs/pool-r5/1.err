@@ -1,0 +1,3 @@
+thyrox -p: 400 {"type":"error","request_id":"aad70ddf-8fe4-4172-9e87-8298c33c8f70","error":{"type":"invalid_request_error","message":"upstream \"local-admitted\" (http://127.0.0.1:38339/v1/chat/completions) respondió 400: {\"error\":{\"message\":\"{\\\"error\\\":{\\\"code\\\":400,\\\"message\\\":\\\"request (24663 tokens) exceeds the available context size (4096 tokens), try increasing it\\\",\\\"type\\\":\\\"exceed_context_size_error\\\",\\\"n_prompt_tokens\\\":24663,\\\"n_ctx\\\":4096}}\",\"type\":\"invalid_request_error\",\"param\":null,\"code\":null}}\n"}}
+execution thyrox-worker-maintenance-murhuwe6-14797 kind=maintenance work=thyrox:a6/1 exit=1
+drenaje: la sesión quedó vacía sola

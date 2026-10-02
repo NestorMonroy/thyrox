@@ -1,0 +1,5 @@
+build rc=0
+local-models errors=7
+0
+execution thyrox-worker-test-muri2i6w-20021 kind=test task=TASK-THYROX-0706 exit=1
+__BG_EXIT__=1

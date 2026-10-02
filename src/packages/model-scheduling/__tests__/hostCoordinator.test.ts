@@ -65,7 +65,7 @@ describe('ModelSchedulingCoordinator: admitir', () => {
     const ticket = await admitted(QWEN_Q4.name, 'request-1')
     expect(ticket).toMatchObject({ admissionId: 'admission-1', requestId: 'request-1', client: 'proxy-a' })
     expect(ticket.grant.artifact).toEqual(resolvedArtifact())
-    expect(ticket.grant.residency.instance).toBe(residencyKeyOf(resolvedArtifact(), { kind: 'cpu' }))
+    expect(ticket.grant.residency.instance).toBe(residencyKeyOf(resolvedArtifact(), { kind: 'cpu' }, ticket.grant.contextLength))
     expect(ticket.unit.artifact).toEqual(resolvedArtifact())
     expect(ticket.unit.grantId).toBe(ticket.grant.grantId)
   })
@@ -127,12 +127,14 @@ describe('ModelSchedulingCoordinator: terminar', () => {
 })
 
 describe('residencyKeyOf', () => {
-  test('deriva de la identidad entera y de la colocación, nunca de la cuantización sola', () => {
+  test('deriva de la identidad entera, la colocación y el contexto, nunca de la cuantización sola', () => {
     const qwen = resolvedArtifact()
-    const key = residencyKeyOf(qwen, { kind: 'cpu' })
-    expect(residencyKeyOf(qwen, { kind: 'cpu' })).toBe(key)
-    expect(residencyKeyOf({ ...qwen, artifactId: 'e'.repeat(64) }, { kind: 'cpu' })).not.toBe(key)
-    expect(residencyKeyOf(qwen, { kind: 'gpu', devices: ['GPU-0'] })).not.toBe(key)
-    expect(residencyKeyOf(resolvedArtifact({ repository: DEEPSEEK_REPOSITORY, revision: DEEPSEEK_REVISION }), { kind: 'cpu' })).not.toBe(key)
+    const key = residencyKeyOf(qwen, { kind: 'cpu' }, 8_192)
+    expect(residencyKeyOf(qwen, { kind: 'cpu' }, 8_192)).toBe(key)
+    expect(residencyKeyOf({ ...qwen, artifactId: 'e'.repeat(64) }, { kind: 'cpu' }, 8_192)).not.toBe(key)
+    // Un runtime cargado a un contexto no sirve una petición de otro: son residencias distintas.
+    expect(residencyKeyOf(qwen, { kind: 'cpu' }, 16_384)).not.toBe(key)
+    expect(residencyKeyOf(qwen, { kind: 'gpu', devices: ['GPU-0'] }, 8_192)).not.toBe(key)
+    expect(residencyKeyOf(resolvedArtifact({ repository: DEEPSEEK_REPOSITORY, revision: DEEPSEEK_REVISION }), { kind: 'cpu' }, 8_192)).not.toBe(key)
   })
 })

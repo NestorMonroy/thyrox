@@ -192,6 +192,31 @@ describe('PodmanModelUnitMaterializer: materializar', () => {
 /** Las etiquetas de dueño que la primitiva escribe en todo contenedor; sin ellas no hay unidad que reconstruir. */
 const OWNER_LABELS = { [OWNER_KIND_LABEL_KEY]: 'model-coordinator', [OWNER_ID_LABEL_KEY]: 'coordinator', [OWNER_PID_LABEL_KEY]: '7' }
 
+describe('PodmanModelUnitMaterializer: entorno derivado del grant', () => {
+  test('el contexto concedido llega al runtime como entorno del contenedor', async () => {
+    const podman = healthyPodman()
+    const primitive = new PodmanModelUnitMaterializer({
+      podman,
+      currentGeneration: async () => generation,
+      profiles: {
+        ollama: {
+          image: 'docker.io/ollama/ollama:0.35.0', containerPort: 11_434, environment: { OLLAMA_HOST: '0.0.0.0:11434' },
+          grantEnvironment: grant => ({ OLLAMA_CONTEXT_LENGTH: String(grant.contextLength) }),
+        },
+      },
+      owner: { kind: 'model-coordinator', id: 'host-coordinator', pid: 4321 },
+      limits: { cpus: 2, memoryMib: 4_096, pidsLimit: 256 },
+      allocatePort: async () => PORT,
+      now: () => NOW,
+    })
+    const outcome = await primitive.materialize(GRANT)
+    if (outcome.status !== 'materialized') throw new Error(JSON.stringify(outcome))
+    const create = podman.calls[0]!.join(' ')
+    expect(create).toContain(`OLLAMA_CONTEXT_LENGTH=${GRANT.contextLength}`)
+    expect(create).toContain('OLLAMA_HOST=0.0.0.0:11434')
+  })
+})
+
 describe('PodmanModelUnitMaterializer: destruir y listar', () => {
   test('destroy distingue destruido, ausente y fallido', async () => {
     expect(await primitiveWith(healthyPodman()).destroy('unit-a')).toBe('destroyed')
