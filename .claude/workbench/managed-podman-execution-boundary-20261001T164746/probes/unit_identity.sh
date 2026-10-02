@@ -3,11 +3,6 @@
 # ejecuta, MIENTRAS se ejecuta: contenedor, PID y cgroup vistos desde dentro.
 # `recordedBy` es siempre la unidad que escribe la línea.
 #
-# El campo `entry` nombra la entrada por la que corrió esa unidad: la lee de
-# THYROX_EXECUTION_ENTRY (la exporta src/lib/managed_execution.sh y el
-# orquestador la pide como --env al runner). Sin la variable, la unidad no
-# llegó por la entrada canónica —deuda de arranque— y declara `bootstrap-cli`.
-#
 #   bash probes/unit_identity.sh <banco> <item> <paso>
 #       el paso lo ejecuta esta misma unidad: containerId = recordedBy.
 #   bash probes/unit_identity.sh <banco> <item> <paso> --source <archivo>
@@ -20,7 +15,6 @@ workbench="$1" item="$2" step="$3" source="${5:-}"
 own_cgroup="$(gawk -F: '$1 == "0" || $2 == "pids" { print $3; exit }' /proc/self/cgroup)"
 container_of() { printf '%s' "$1" | gawk 'match($0, /libpod-[0-9a-f]+/) { print substr($0, RSTART + 7, RLENGTH - 7); exit }'; }
 recorded_by="$(container_of "$own_cgroup")"
-entry="${THYROX_EXECUTION_ENTRY:-bootstrap-cli}"
 container_id="$recorded_by" cgroup="$own_cgroup" pid="$$" hostname="$(hostname)" utc="$(date -u +%Y-%m-%dT%H:%M:%S)"
 if [[ -n "$source" ]]; then
   [[ -f "$workbench/$source" ]] || { echo "unit_identity: no existe la fuente $source" >&2; exit 2; }
@@ -30,8 +24,8 @@ if [[ -n "$source" ]]; then
   cgroup="$(value_of cgroup | gawk '{ print $NF }' | gawk -F: '{ print $NF }')"
   pid="$(value_of pid)" hostname="$(value_of hostname)" utc="$(value_of utc)"
 fi
-jq -cn --arg item "$item" --arg step "$step" --arg utc "$utc" --arg entry "$entry" --arg hostname "$hostname" --arg pid "$pid" \
+jq -cn --arg item "$item" --arg step "$step" --arg utc "$utc" --arg hostname "$hostname" --arg pid "$pid" \
   --arg cgroup "$cgroup" --arg container "$container_id" --arg recordedBy "$recorded_by" --arg source "$source" \
-  '{item: $item, step: $step, entry: $entry, utc: $utc, hostname: $hostname, pid: ($pid | tonumber), cgroup: $cgroup,
+  '{item: $item, step: $step, utc: $utc, hostname: $hostname, pid: ($pid | tonumber), cgroup: $cgroup,
     containerId: $container, recordedBy: $recordedBy, inUnit: ($container != "")}
    + (if $source == "" then {} else {source: $source} end)' >> "$workbench/manifest.jsonl"
