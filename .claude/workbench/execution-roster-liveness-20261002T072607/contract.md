@@ -1,4 +1,4 @@
-# Contrato — TASK-THYROX-0770: un veredicto de vivacidad y progreso para los trabajos del controlador
+# Contrato — TASK-THYROX-0781: un veredicto de vivacidad y progreso para los trabajos del controlador
 
 Rige el encargo verbatim del README. Regla de diseño: **EXTEND** de
 `src/roster/process_liveness.py` y `src/roster/production.py`; ningún
