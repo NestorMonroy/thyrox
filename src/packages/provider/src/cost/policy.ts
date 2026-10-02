@@ -405,6 +405,11 @@ function localFallbackReason(kind: TaskKind, profile: TurnProfile, local: LocalM
   return `contexto medido insuficiente: el mayor aprobado para ${kind} midió ${widest} tokens < ${profile.contextTokens} exigidos`
 }
 
+/** La política dejó fuera un catálogo que sí tiene entradas: la causa es la política, no el catálogo. */
+function excludesWholeCatalog(local: LocalModelInventory, permitted: LocalModelInventory): boolean {
+  return local.entries.length > 0 && permitted.entries.length === 0
+}
+
 /**
  * Elige dónde se ejecuta una clase de tarea: el modelo local más rápido de los
  * que una medición aprobó para la clase con contexto suficiente; si no hay
@@ -429,7 +434,9 @@ export function recommendExecution(
       qualification: fastest.qualification,
     }
   }
-  const reason = localFallbackReason(kind, profile, permitted)
+  const reason = excludesWholeCatalog(local, permitted)
+    ? `la política no permite ninguna de las ${local.entries.length} entrada(s) del catálogo local`
+    : localFallbackReason(kind, profile, permitted)
   if (policy !== undefined && !policy.fallback.enabled) {
     return { runtime: 'blocked', taskClass: kind, contextTokens: profile.contextTokens,
       blockedReason: `la política no permite respaldo y ningún modelo permitido cumple: ${reason}` }

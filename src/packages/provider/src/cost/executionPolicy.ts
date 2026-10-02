@@ -9,13 +9,17 @@
  *
  * Un modelo local se permite por su repositorio de origen (y su cuantización,
  * si se declara), no por su nombre contractual: el nombre lleva la revisión y
- * la fuente, y la política no tiene que reescribirse al reimportar. El
+ * la fuente, y la política no tiene que reescribirse al reimportar. La fuente
+ * (`hf` u `ollama`) se declara cuando el repositorio solo no basta: el
+ * `library/…` de la biblioteca de Ollama podría ser también una organización
+ * de Hugging Face (TASK-THYROX-0763). Sin declararla, cualquier fuente cumple. El
  * proveedor no se lista como permitido: se alcanza sólo por el respaldo, y el
  * respaldo no tiene valor por defecto. Una política que no lo declara se
  * rehúsa, porque un default decidiría por el consumidor justo lo que la
  * política existe para decidir.
  */
 import type { ModelCatalogEntry } from '@thyrox/model-artifacts/catalogEntry.ts'
+import type { ModelSource } from '@thyrox/model-artifacts/modelName.ts'
 
 export class ExecutionPolicyError extends Error {
   constructor(message: string) {
@@ -28,6 +32,7 @@ export interface LocalModelSelector {
   readonly runtime: 'ollama'
   readonly repository: string
   readonly quantization?: string
+  readonly source?: ModelSource
 }
 
 export interface ExecutionPolicy {
@@ -36,6 +41,7 @@ export interface ExecutionPolicy {
 }
 
 const LOCAL_RUNTIME = 'ollama'
+const MODEL_SOURCES: readonly ModelSource[] = ['hf', 'ollama']
 
 export function parseExecutionPolicy(text: string): ExecutionPolicy {
   let raw: unknown
@@ -63,13 +69,41 @@ function selectorOf(value: unknown, index: number): LocalModelSelector {
   if (typeof selector.repository !== 'string' || selector.repository === '') {
     throw new ExecutionPolicyError(`allowed[${index}]: falta el repositorio de origen del modelo`)
   }
-  if (selector.quantization === undefined) return { runtime: LOCAL_RUNTIME, repository: selector.repository }
-  if (typeof selector.quantization !== 'string') throw new ExecutionPolicyError(`allowed[${index}]: la cuantización es un texto`)
-  return { runtime: LOCAL_RUNTIME, repository: selector.repository, quantization: selector.quantization }
+  const quantization = quantizationOf(selector.quantization, index)
+  const source = sourceOf(selector.source, index)
+  return {
+    runtime: LOCAL_RUNTIME,
+    repository: selector.repository,
+    ...(quantization === undefined ? {} : { quantization }),
+    ...(source === undefined ? {} : { source }),
+  }
+}
+
+function quantizationOf(value: unknown, index: number): string | undefined {
+  if (value === undefined) return undefined
+  if (typeof value !== 'string') throw new ExecutionPolicyError(`allowed[${index}]: la cuantización es un texto`)
+  return value
+}
+
+function sourceOf(value: unknown, index: number): ModelSource | undefined {
+  if (value === undefined) return undefined
+  if (!MODEL_SOURCES.includes(value as ModelSource)) {
+    throw new ExecutionPolicyError(`allowed[${index}]: la fuente es una de ${MODEL_SOURCES.join(', ')}`)
+  }
+  return value as ModelSource
 }
 
 /** ¿La política permite esta entrada del catálogo? Repositorio y cuantización sin distinguir mayúsculas. */
 export function allowsEntry(policy: ExecutionPolicy, entry: ModelCatalogEntry): boolean {
-  return policy.allowed.some(selector => selector.repository.toLowerCase() === entry.repository.toLowerCase()
-    && (selector.quantization === undefined || selector.quantization.toLowerCase() === entry.quantization.toLowerCase()))
+  return policy.allowed.some(selector => selectorMatches(selector, entry))
+}
+
+function selectorMatches(selector: LocalModelSelector, entry: ModelCatalogEntry): boolean {
+  return sameText(selector.repository, entry.repository)
+    && (selector.quantization === undefined || sameText(selector.quantization, entry.quantization))
+    && (selector.source === undefined || selector.source === entry.source)
+}
+
+function sameText(left: string, right: string): boolean {
+  return left.toLowerCase() === right.toLowerCase()
 }
