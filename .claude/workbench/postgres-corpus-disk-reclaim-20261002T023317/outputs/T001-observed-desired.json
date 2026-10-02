@@ -1,0 +1,68 @@
+{
+  "name": "thyrox-postgres",
+  "restartPolicy": "on-failure",
+  "publishedPorts": [
+    {
+      "hostAddress": "127.0.0.1",
+      "hostPort": 55432,
+      "containerPort": 5432
+    }
+  ],
+  "namedVolumes": [
+    {
+      "volume": "thyrox-postgres-data",
+      "destination": "/var/lib/postgresql/data"
+    }
+  ],
+  "bindMounts": [],
+  "environment": {
+    "POSTGRES_USER": "thyrox",
+    "POSTGRES_DB": "thyrox",
+    "POSTGRES_PASSWORD_FILE": "/run/secrets/postgres-password"
+  },
+  "secrets": [
+    {
+      "secret": "thyrox-postgres-password",
+      "target": "postgres-password",
+      "valueFrom": "THYROX_INFRA_POSTGRES_PASSWORD"
+    }
+  ],
+  "command": [],
+  "labels": {
+    "io.thyrox.role": "infrastructure",
+    "io.thyrox.service": "postgres"
+  },
+  "legacyRoleLabel": {
+    "key": "io.thyrox.role",
+    "value": "infrastructure"
+  },
+  "health": {
+    "command": [
+      "pg_isready",
+      "-U",
+      "thyrox",
+      "-d",
+      "thyrox"
+    ],
+    "timeoutSeconds": 60,
+    "intervalSeconds": 2
+  },
+  "image": "docker.io/pgvector/pgvector:0.8.0-pg16",
+  "network": {
+    "mode": "named",
+    "name": "thyrox-infra"
+  },
+  "provision": [
+    [
+      "psql",
+      "-v",
+      "ON_ERROR_STOP=1",
+      "-U",
+      "thyrox",
+      "-d",
+      "thyrox",
+      "-c",
+      "CREATE EXTENSION IF NOT EXISTS vector"
+    ]
+  ]
+}

@@ -87,3 +87,21 @@ Corrección del instrumento descubierta en T003: `src/session/unit_attest.sh`
 usa `gawk` y `jq`, que una imagen ajena (pgvector) no trae; ahí el payload no
 llega a correr. La anulación «PostgreSQL sin volumen» salió FAIL por esa causa
 y **se descartó**: un FAIL por la causa equivocada no discrimina.
+
+| — | `podman run --rm --entrypoint sh pgvector … command -v …` (sondeo de herramientas de la imagen) | — | — | ninguno | **true** | **architecture_invalid** (Regla 4: contenedor creado fuera de la primitiva); salida vacía, no se usa como evidencia; repetido por la primitiva |
+
+## Reanudación y propiedad de rutas (después de la compactación)
+
+- La reanudación se expresa con lo que ya existía: `plan.jsonl` +
+  `outputs/continuation.jsonl` (`task_continuation next` deriva la frontera),
+  el `verify` de cada ítem re-comprueba su evidencia y el ledger de
+  `wait-jobs` es la autoridad de los trabajos (sin pids).
+- Nuevo, porque no existía: `check_durable_path_ownership` (PathOwnershipGate).
+- Promovidos al banco: las entradas del verificador de T001
+  (`outputs/T001-observed-*.json`); al banco de Ollama, su log de recuperación.
+  `secret-digest` NO se promueve: es el sha256 de la contraseña y se vuelve a
+  leer de la etiqueta del secreto de Podman al verificar.
+- `unit_attest.sh` pasa a POSIX sh con sólo órdenes internas y `/proc`:
+  probado con una imagen sin gawk ni jq (e2e 8/8).
+- T002 queda **blocked** (criterio obligatorio de embedding sin cumplir);
+  T003 sigue por decisión del ejecutor, declarada en `plan.jsonl`.

@@ -459,7 +459,7 @@ def containment_files(evidence_dir: Path, name: str) -> tuple[Path, Path]:
 def attested_argv(evidence_dir: Path, task: str, name: str, argv: list[str]) -> list[str]:
     """``argv`` precedido de la identidad que el payload escribe desde dentro."""
     _, unit_file = containment_files(evidence_dir, name)
-    return ["bash", str(UNIT_ATTEST), str(unit_file), task, name, "--", *argv]
+    return ["sh", str(UNIT_ATTEST), str(unit_file), task, name, "--", *argv]
 
 
 def step_containment(evidence_dir: Path, name: str) -> ContainmentVerdict:

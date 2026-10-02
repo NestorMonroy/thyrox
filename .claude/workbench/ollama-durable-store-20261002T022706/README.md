@@ -43,3 +43,22 @@
 Los PASS/FAIL de los pasos 5-7 de esa pasada NO valen: corrieron sin
 contenedor. `probes/recover_and_resume.sh` espera una ventana sin unidades de
 tarea vivas, corre la recuperación EXPLÍCITA de locks y retoma desde el paso 4.
+
+## Segunda pasada: recuperación y prueba (2026-10-02T02:49Z)
+
+Evidencia: `outputs/recover-and-resume.log`, promovida desde el log de
+runtime donde la escribió `probes/recover_and_resume.sh` mientras corría. Es
+la ÚNICA fuente de este veredicto; el log de runtime ya no se consulta.
+
+- ventana sin unidades vivas, recuperación explícita de locks, bootstrap de
+  postgres, redis y ollama: exit 0 los tres;
+- PASS mismo volumen · PASS artefacto con la misma identidad · PASS blobs
+  idénticos (nombre, tamaño, inodo, mtime) · PASS sin descarga en el log del
+  contenedor nuevo;
+- anulación: el mismo bootstrap sobre un volumen sin el store
+  (`thyrox-ollama-models`) → artefacto ausente (ANNULMENT-OK);
+- vuelta al store declarado: PASS restaurado.
+
+Las líneas `jq: parse error` del log vienen de una lectura auxiliar del sondeo
+sobre una salida que no era JSON; ningún PASS depende de ellas (cada PASS se
+compara por su propio campo). Veredicto: durabilidad PASS.
