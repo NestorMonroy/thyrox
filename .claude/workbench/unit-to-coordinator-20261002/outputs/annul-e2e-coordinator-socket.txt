@@ -1,0 +1,26 @@
+  ok   el coordinador doble escucha
+  FALLA el pool sale 0 — esperado [0] obtenido [1]
+  FALLA el ítem termina bien — esperado [items=1 ok=1 fallidos=0] obtenido [items=1 ok=0 fallidos=1]
+  ok   el ítem pidió su ejecución con la referencia del consumidor
+  FALLA el coordinador recibió la admisión del modelo local — esperado [thyrox-qwen--qwen2.5-7b-instruct-gguf:q4_k_m-hf-bb5d59e06d95] obtenido []
+  FALLA el runtime recibió el modelo que concede el grant — esperado [qwen2.5-7b-instruct-q4_k_m] obtenido []
+  FALLA la respuesta del runtime llega al resultado del ítem — esperado [traducción de prueba] obtenido []
+  ok   nada invocó claude
+bin/pool_history: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+historial: sin ejecución previa de /home/user/thyrox/bin/cli en esta plantilla; ninguna con el modelo thyrox-qwen--qwen2.5-7b-instruct-gguf:q4_k_m-hf-bb5d59e06d95: nada que derivar
+credencial: inherit (por defecto; sin variable de credencial en el entorno del pool: cada ítem la resuelve solo, y thyrox -p entra al proxy local)
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+buzón: /tmp/tmp.rBjHebzp5Q/runtime/pool/836bb36dd189-20261002T004741-44/mailbox
+cache-ttl: 1h (constant)
+-- FALLIDO alfa
+items=1 ok=0 fallidos=1
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)
+ready
+
+3 ok · 5 falla(s) (alcance medido: modelo local por el coordinador desde la unidad, con dobles)

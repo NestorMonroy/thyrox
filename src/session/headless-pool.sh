@@ -441,6 +441,15 @@ if [[ "$RUNTIME" == "$LOCAL_RUNTIME" ]]; then
     ensure_local_runtime
 fi
 announce_model
+# Con el modelo local en la unidad, el `thyrox -p` del ítem pide admisión al
+# coordinador de ESTE anfitrión: la unidad recibe su socket —el directorio de
+# sólo lectura y la ruta nombrada—, no el runtime entero (TASK-THYROX-0759).
+HP_COORDINATOR_SOCKET=""
+if [[ "$EXECUTION" == unit && "$RUNTIME" == "$LOCAL_RUNTIME" ]]; then
+    HP_COORDINATOR_SOCKET="${THYROX_MODEL_COORDINATOR_SOCKET:-$(bash "$THYROX_ROOT/bin/model-scheduling-socket-path" 2>/dev/null)}"
+    [[ "$HP_COORDINATOR_SOCKET" == /* ]] || rehusa "no se resolvió el socket del coordinador para el modelo local $MODEL"
+fi
+export HP_COORDINATOR_SOCKET
 # Con el modelo local el ítem no recibe ningún upstream: su `thyrox -p` pasa el
 # nombre contractual a su proxy, que pide la admisión al coordinador del
 # anfitrión y sólo alcanza la unidad del ticket (ADR-007 1.14.0, M8).
@@ -815,6 +824,10 @@ _headless_item_run() {
                  for parent in "${mounted[@]}"; do [[ "$path/" == "$parent/"* ]] && covered=1; done
                  [[ -n "$covered" ]] || { unit_args+=(--mount "$path:$path:rw"); mounted+=("$path"); }
              done
+             if [[ -n "$HP_COORDINATOR_SOCKET" ]]; then
+                 export THYROX_MODEL_COORDINATOR_SOCKET="$HP_COORDINATOR_SOCKET"
+                 unit_args+=(--mount "${HP_COORDINATOR_SOCKET%/*}:${HP_COORDINATOR_SOCKET%/*}:ro" --env THYROX_MODEL_COORDINATOR_SOCKET)
+             fi
              for name in THYROX_CODE_PROMPT_CACHE_TTL THYROX_POOL_DOCUMENT_INTENT THYROX_POOL_RUN_ID THYROX_POOL_ITEM \
                          THYROX_POOL_ITEM_GENERATION THYROX_MAILBOX_DIR THYROX_POOL_ITEM_ADDRESS; do
                  [[ -z "${!name:-}" ]] || unit_args+=(--env "$name")

@@ -13,6 +13,11 @@ import type { AdmissionRequest, AdmissionTicket, CoordinatorAdmission } from './
 export const MODEL_COORDINATOR_PROTO = 1
 /** Variable del hogar de runtime donde vive el socket del coordinador. */
 export const MODEL_COORDINATOR_RUNTIME_ENV = 'THYROX_RUNTIME_DIR'
+/**
+ * El socket declarado gana a la ruta derivada (TASK-THYROX-0759): una unidad lo
+ * recibe montado sin redefinir el runtime entero, que gobierna otros estados.
+ */
+export const MODEL_COORDINATOR_SOCKET_ENV = 'THYROX_MODEL_COORDINATOR_SOCKET'
 const MODEL_COORDINATOR_SUBDIR = 'model-scheduling'
 const MODEL_COORDINATOR_SOCKET = 'coordinator.sock'
 
@@ -29,6 +34,8 @@ export type CoordinatorResponse =
 
 /** El socket del coordinador de este anfitrión, bajo el hogar de runtime de thyrox. */
 export function modelCoordinatorSocketPath(env: Record<string, string | undefined> = process.env): string {
+  const declared = env[MODEL_COORDINATOR_SOCKET_ENV]?.trim()
+  if (declared) return declared
   return `${resolveDataDir(MODEL_COORDINATOR_RUNTIME_ENV, MODEL_COORDINATOR_SUBDIR, env)}/${MODEL_COORDINATOR_SOCKET}`
 }
 
