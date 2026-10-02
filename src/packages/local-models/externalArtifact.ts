@@ -33,6 +33,7 @@ import {
   evalCorpusPath,
   labPathOf,
   lastLines,
+  declaredCapabilitiesOf,
   validateGgufArtifact,
   type GgufValidation,
 } from './ggufValidation.js'
@@ -305,7 +306,7 @@ async function register(request: ExternalArtifactRequest, subset: SourceSpec, pa
   const checked = state.checked!
   const acquiredAt = state.acquiredAt!
   const entry = await catalogEntryFromGguf({ path, repository: request.repository, source: 'hf', revision: request.revision,
-    quantization: request.quantization, sha256: checked.sha256, capabilities: ['completion'],
+    quantization: request.quantization, sha256: checked.sha256, capabilities: await declaredCapabilitiesOf(path),
     declaredAt: acquiredAt.replace(/\.\d+Z$/, 'Z'), defaultKvCacheType: 'f16' })
   await saveModelCatalog(deps.catalogPath, (await loadModelCatalog(deps.catalogPath)).with(entry))
   const provenance: ExternalProvenance = {

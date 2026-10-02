@@ -1,0 +1,23 @@
+__tests__/hostCoordinatorComposition.test.ts(51,46): error TS2322: Type '"f32"' is not assignable to type 'QuantizationLevel | undefined'.
+__tests__/hostCoordinatorComposition.test.ts(52,27): error TS2352: Conversion of type '{ artifact: { format: "safetensors"; modelId: string; repository: string; source: ModelSource; revision: string; artifactId: string; quantization: QuantizationLevel; bytes: number; }; }' to type 'ResolvedModel' may be a mistake because neither type sufficiently overlaps with the other. If this was intentional, convert the expression to 'unknown' first.
+  Type '{ artifact: { format: "safetensors"; modelId: string; repository: string; source: ModelSource; revision: string; artifactId: string; quantization: QuantizationLevel; bytes: number; }; }' is missing the following properties from type 'ResolvedModel': entry, contextLength, kvCacheType, memoryProfile
+__tests__/hostCoordinatorComposition.test.ts(52,72): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(expected: ModelRuntime): void', gave the following error.
+    Argument of type '"transformers"' is not assignable to parameter of type 'ModelRuntime'.
+  Overload 2 of 2, '(expected: ModelRuntime): void', gave the following error.
+    Argument of type '"transformers"' is not assignable to parameter of type 'ModelRuntime'.
+__tests__/qualifyCommand.test.ts(48,7): error TS2740: Type '{ unitId: string; grantId: string; artifact: ResolvedModelArtifact; residencyKey: string; generation: number; runtime: "ollama"; endpoint: string; containerId: string; devices: never[]; }' is missing the following properties from type 'ModelExecutionUnit': kind, reference, owner, containerName, and 2 more.
+__tests__/qualifyModel.test.ts(34,5): error TS2740: Type '{ unitId: string; grantId: string; artifact: ResolvedModelArtifact; residencyKey: string; generation: number; runtime: "ollama"; endpoint: string; containerId: string; devices: never[]; }' is missing the following properties from type 'ModelExecutionUnit': kind, reference, owner, containerName, and 2 more.
+__tests__/quantizationRun.test.ts(46,25): error TS2345: Argument of type 'string | Uint8Array<ArrayBufferLike>' is not assignable to parameter of type 'BodyInit | null | undefined'.
+  Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'BodyInit | null | undefined'.
+    Type 'Uint8Array<ArrayBufferLike>' is missing the following properties from type 'URLSearchParams': size, append, delete, get, and 3 more.
+__tests__/transformersRuntimeAdapter.test.ts(26,93): error TS2322: Type '"f32"' is not assignable to type 'QuantizationLevel | undefined'.
+__tests__/transformersRuntimeAdapter.test.ts(26,117): error TS2322: Type '"safetensors"' is not assignable to type 'ArtifactFormat'.
+__tests__/transformersRuntimeAdapter.test.ts(37,61): error TS2322: Type '"transformers"' is not assignable to type 'ModelRuntime'.
+__tests__/transformersRuntimeAdapter.test.ts(48,95): error TS2322: Type '"transformers"' is not assignable to type 'ModelRuntime'.
+hostCoordinatorComposition.ts(72,3): error TS2353: Object literal may only specify known properties, and 'safetensors' does not exist in type 'Readonly<Record<ArtifactFormat, ModelRuntime>>'.
+hostCoordinatorComposition.ts(91,7): error TS2353: Object literal may only specify known properties, and 'transformers' does not exist in type 'Partial<Record<ModelRuntime, RuntimeContainerProfile>>'.
+hostCoordinatorComposition.ts(95,41): error TS7006: Parameter 'artifact' implicitly has an 'any' type.
+hostCoordinatorComposition.ts(110,7): error TS2353: Object literal may only specify known properties, and 'transformers' does not exist in type 'Readonly<Partial<Record<ModelRuntime, RuntimeAdapter>>>'.
+execution thyrox-worker-test-muqrmzip-8809 kind=test task=TASK-THYROX-0904 exit=2
+__BG_EXIT__=2

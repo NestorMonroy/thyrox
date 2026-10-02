@@ -1,0 +1,6 @@
+{
+  "route": "C_api",
+  "configured": false,
+  "evidence": "podman-execution-execute run --secret-from-env THYROX_OPENAI_COMPAT_BASE_URL -> credencial ausente",
+  "note": "sin URL declarada no hay upstream que sondear; la ruta queda no disponible en este entorno, no descartada"
+}

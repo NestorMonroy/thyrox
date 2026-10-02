@@ -9,6 +9,7 @@
 import { mkdir, readFile, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 
+import type { ModelCapability } from '@thyrox/model-artifacts/catalogEntry.ts'
 import { readGgufMetadata, type GgufHeader } from '@thyrox/model-artifacts/ggufMetadata.ts'
 
 import { LAB_SCRATCH_MOUNT, type LabStep, type LabStepResult } from './quantizationLab.js'
@@ -75,6 +76,18 @@ export async function readGgufFacts(path: string, expectedFileType: number): Pro
   const header = await readGgufMetadata(path)
   requireFileType(header, expectedFileType)
   return requireArchitecture(header)
+}
+
+/**
+ * La capacidad que el propio GGUF declara: `<arquitectura>.pooling_type` ≥ 1
+ * sólo aparece en un modelo de embeddings (lo escribe `convert_hf_to_gguf`);
+ * sin él, o en 0 (ninguno), el modelo es de generación. Es la capacidad
+ * DECLARADA del artefacto; que la cumpla lo mide una calificación aparte.
+ */
+export async function declaredCapabilitiesOf(path: string): Promise<readonly ModelCapability[]> {
+  const header = await readGgufMetadata(path)
+  const pooling = Number(header.metadata[`${requireArchitecture(header)}.pooling_type`] ?? 0)
+  return pooling >= 1 ? ['embeddings'] : ['completion']
 }
 
 export async function validateGgufArtifact(input: GgufValidationInput): Promise<GgufValidation> {
