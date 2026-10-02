@@ -218,8 +218,14 @@ export function qualifiedModels(
     .sort(bySpeedWhenIsolated)
 }
 
-export interface QualifiedEmbeddingModel {
-  readonly entry: ModelCatalogEntry
+/** Lo mínimo que un candidato declara para competir: su nombre y sus capacidades, sea local o de API. */
+export interface CapabilityDeclaringModel {
+  readonly name: string
+  readonly capabilities: readonly ModelCatalogEntry['capabilities'][number][]
+}
+
+export interface QualifiedEmbeddingModel<Entry extends CapabilityDeclaringModel = CapabilityDeclaringModel> {
+  readonly entry: Entry
   readonly qualification: ModelQualification
 }
 
@@ -229,12 +235,12 @@ export interface QualifiedEmbeddingModel {
  * capacidad sale del GGUF, nunca del nombre; y la medición es la que prueba
  * que recupera. Ninguna de las dos basta sola. Elegible no es autorizado.
  */
-export function qualifiedEmbeddingModels(
-  entries: readonly ModelCatalogEntry[],
+export function qualifiedEmbeddingModels<Entry extends CapabilityDeclaringModel>(
+  entries: readonly Entry[],
   qualifications: readonly ModelQualification[],
-): QualifiedEmbeddingModel[] {
+): QualifiedEmbeddingModel<Entry>[] {
   return entries
     .filter((entry) => entry.capabilities.includes('embeddings'))
     .map((entry) => ({ entry, qualification: latestFor(qualifications, entry.name, 'embedding') }))
-    .filter((candidate): candidate is QualifiedEmbeddingModel => passed(candidate.qualification))
+    .filter((candidate): candidate is QualifiedEmbeddingModel<Entry> => passed(candidate.qualification))
 }

@@ -195,6 +195,13 @@ describe('cualificación de embeddings', () => {
     expect(qualifiedEmbeddingModels([FAST], [embedding(FAST.name)])).toEqual([])
   })
 
+  test('un modelo de API compite con el mismo criterio que uno local: capacidad declarada y medición aprobada', () => {
+    const api = { name: 'api:openai-compat:text-embedding-3-small', route: 'api', capabilities: ['embeddings'] } as const
+    const selected = qualifiedEmbeddingModels([EMBEDDER, api], [embedding(EMBEDDER.name), embedding(api.name)])
+    expect(selected.map(candidate => candidate.entry.name)).toEqual([EMBEDDER.name, api.name])
+    expect(qualifiedEmbeddingModels([api], [])).toEqual([])
+  })
+
   test('una cualificación de tarea no hace elegible para embeddings', () => {
     expect(qualifiedEmbeddingModels([EMBEDDER], [measured(EMBEDDER.name)])).toEqual([])
   })
