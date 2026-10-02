@@ -1,0 +1,2 @@
+{"summary": "El controlador exige probes/delegate.sh y probes/unit_identity.sh en cada banco y no lo declara en ningún sitio: un banco sin ellos muere con exit 127 en cada intento", "sourceRef": "src/session/task_continuation.py:763"}
+{"summary": "Un exit 127 (script del banco ausente) se clasifica task_failure y excluye a todos los candidatos; es infrastructure_failure: el modelo nunca corrió", "sourceRef": "src/session/task_continuation.py:classify"}
