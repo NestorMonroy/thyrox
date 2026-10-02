@@ -149,57 +149,6 @@ thyrox_infrastructure_container_names() {
 }
 export -f thyrox_infrastructure_container_names
 
-# _thyrox_infrastructure_create_argv_postgres — compone el argv de
-# `podman create` para thyrox-postgres. La credencial NUNCA vive en el
-# codigo: se lee de THYROX_INFRA_POSTGRES_PASSWORD, y si falta esta funcion
-# rehusa con exit 2 nombrandola, SIN emitir ningun argumento — un argv a
-# medias con la contraseña vacia seria un contenedor sin auth valida creado
-# en silencio.
-_thyrox_infrastructure_create_argv_postgres() {
-  local password
-  password="$(thyrox_infrastructure_setting THYROX_INFRA_POSTGRES_PASSWORD '')"
-  if [[ -z "$password" ]]; then
-    printf 'thyrox_infrastructure: falta THYROX_INFRA_POSTGRES_PASSWORD (credencial de PostgreSQL); no se emite argv\n' >&2
-    return 2
-  fi
-  printf '%s\n' \
-    create \
-    --name "$_INFRASTRUCTURE_POSTGRES_NAME" \
-    --network "$_INFRASTRUCTURE_NETWORK" \
-    --label "$_INFRASTRUCTURE_ROLE_LABEL" \
-    --label "${_INFRASTRUCTURE_SERVICE_LABEL_KEY}=postgres" \
-    --restart=on-failure \
-    -p "127.0.0.1:${THYROX_INFRA_POSTGRES_PORT}:5432" \
-    -v "${_INFRASTRUCTURE_POSTGRES_VOLUME}:${_INFRASTRUCTURE_POSTGRES_DATA_DIR}" \
-    -e "POSTGRES_PASSWORD=${password}" \
-    -e "POSTGRES_USER=${THYROX_INFRA_POSTGRES_USER}" \
-    -e "POSTGRES_DB=${THYROX_INFRA_POSTGRES_DB}" \
-    "$THYROX_INFRA_POSTGRES_IMAGE"
-}
-
-# _thyrox_infrastructure_create_argv_redis — compone el argv de
-# `podman create` para thyrox-redis. SIN volumen: Redis aqui es estado
-# compartido EFIMERO, no fuente de verdad, y la persistencia queda
-# desactivada en el propio comando del servidor (`--save ''`,
-# `--appendonly no`) para que un `podman restart` no reviva un RDB/AOF
-# viejo desde un disco que este contenedor no monta.
-_thyrox_infrastructure_create_argv_redis() {
-  printf '%s\n' \
-    create \
-    --name "$_INFRASTRUCTURE_REDIS_NAME" \
-    --network "$_INFRASTRUCTURE_NETWORK" \
-    --label "$_INFRASTRUCTURE_ROLE_LABEL" \
-    --label "${_INFRASTRUCTURE_SERVICE_LABEL_KEY}=redis" \
-    --restart=on-failure \
-    -p "127.0.0.1:${THYROX_INFRA_REDIS_PORT}:6379" \
-    "$THYROX_INFRA_REDIS_IMAGE" \
-    redis-server \
-    --save \
-    '' \
-    --appendonly \
-    no
-}
-
 # _thyrox_infrastructure_outbound_proxy_declared — ¿el entorno declara un
 # proxy de salida? Se lee al componer, no al sourcear.
 _thyrox_infrastructure_outbound_proxy_declared() {
@@ -220,60 +169,6 @@ _thyrox_infrastructure_proxy_ca_readable() {
   bundle="$(_thyrox_infrastructure_proxy_ca_bundle)"
   [[ -n "$bundle" && -f "$bundle" && -r "$bundle" ]]
 }
-
-# _thyrox_infrastructure_proxy_argv — las palabras del proxy de salida para
-# un contenedor que descarga: las tres variables del proxy si el entorno lo
-# declara, y ademas el montaje de su CA con SSL_CERT_FILE si esta es legible.
-# Sin proxy no imprime nada.
-_thyrox_infrastructure_proxy_argv() {
-  _thyrox_infrastructure_outbound_proxy_declared || return 0
-  printf '%s\n' \
-    -e "HTTPS_PROXY=${HTTPS_PROXY}" \
-    -e "https_proxy=${HTTPS_PROXY}" \
-    -e "NO_PROXY=${_INFRASTRUCTURE_PROXY_NO_PROXY}"
-  _thyrox_infrastructure_proxy_ca_readable || return 0
-  printf '%s\n' \
-    -v "$(_thyrox_infrastructure_proxy_ca_bundle):${_INFRASTRUCTURE_PROXY_CA_TARGET}:ro" \
-    -e "SSL_CERT_FILE=${_INFRASTRUCTURE_PROXY_CA_TARGET}"
-}
-
-# _thyrox_infrastructure_create_argv_ollama — compone el argv de
-# `podman create` para thyrox-ollama: red del anfitrion, API en loopback,
-# volumen de modelos y, si lo hay, el proxy de salida con el que baja modelos.
-_thyrox_infrastructure_create_argv_ollama() {
-  printf '%s\n' \
-    create \
-    --name "$_INFRASTRUCTURE_OLLAMA_NAME" \
-    --network "$_INFRASTRUCTURE_HOST_NETWORK" \
-    --label "$_INFRASTRUCTURE_ROLE_LABEL" \
-    --label "${_INFRASTRUCTURE_SERVICE_LABEL_KEY}=ollama" \
-    --restart=on-failure \
-    -v "${THYROX_INFRA_OLLAMA_VOLUME}:${_INFRASTRUCTURE_OLLAMA_MODELS_DIR}" \
-    -e "OLLAMA_HOST=${_INFRASTRUCTURE_LOOPBACK}:${THYROX_INFRA_OLLAMA_PORT}"
-  _thyrox_infrastructure_proxy_argv
-  printf '%s\n' "$THYROX_INFRA_OLLAMA_IMAGE"
-}
-
-# @description Imprime el argv COMPLETO de `podman create` para un nombre de
-# contenedor conocido, una palabra por linea, SIN ejecutarlo — el bootstrap
-# (TASK-THYROX-0606) es quien decide cuando correrlo.
-# @arg $1 string `thyrox-postgres`, `thyrox-redis` o `thyrox-ollama`.
-# @stdout el argv, una palabra por linea.
-# @exitcode 0 argv compuesto.
-# @exitcode 2 nombre desconocido, o (solo postgres) falta la credencial.
-thyrox_infrastructure_create_argv() {
-  local name="${1:-}"
-  case "$name" in
-    "$_INFRASTRUCTURE_POSTGRES_NAME") _thyrox_infrastructure_create_argv_postgres ;;
-    "$_INFRASTRUCTURE_REDIS_NAME") _thyrox_infrastructure_create_argv_redis ;;
-    "$_INFRASTRUCTURE_OLLAMA_NAME") _thyrox_infrastructure_create_argv_ollama ;;
-    *)
-      printf 'thyrox_infrastructure: contenedor desconocido: %s\n' "$name" >&2
-      return 2
-      ;;
-  esac
-}
-export -f thyrox_infrastructure_create_argv
 
 # --- estado deseado para la primitiva Podman (ADR-007 1.15.0, TASK-THYROX-0740) ---
 #

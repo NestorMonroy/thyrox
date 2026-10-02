@@ -68,6 +68,9 @@ expect_jq "redis: sin volumen ni secretos" "$redis" '(.namedVolumes == []) and (
 expect_jq "redis: persistencia desactivada en el comando" "$redis" '.command == ["redis-server", "--save", "", "--appendonly", "no"]'
 expect_jq "redis: puerto en loopback" "$redis" '.publishedPorts == [{hostAddress: "127.0.0.1", hostPort: 56379, containerPort: 6379}]'
 expect_jq "redis: salud redis-cli ping" "$redis" '.health.command == ["redis-cli", "ping"]'
+redis_over="$(desired thyrox-redis THYROX_INFRA_REDIS_IMAGE=docker.io/library/redis:7.5 THYROX_INFRA_REDIS_PORT=56999)"
+expect_jq "redis: imagen y puerto sobreescribibles" "$redis_over" \
+  '.image == "docker.io/library/redis:7.5" and .publishedPorts[0].hostPort == 56999'
 
 # --- ollama ---
 ollama="$(desired thyrox-ollama)"; rc=$?
@@ -87,6 +90,31 @@ expect_jq "ollama: con proxy, sus tres variables" "$ollama_proxy" \
   '.environment.HTTPS_PROXY == "http://127.0.0.1:3128" and .environment.https_proxy == "http://127.0.0.1:3128" and .environment.NO_PROXY == "localhost,127.0.0.1"'
 expect_jq "ollama: con CA legible, montaje de sólo lectura y SSL_CERT_FILE" "$ollama_proxy" \
   "(.bindMounts == [{source: \"$ISOLATED_HOMES/ca.crt\", destination: \"/etc/ssl/certs/proxy-ca.crt\", readOnly: true}]) and (.environment.SSL_CERT_FILE == \"/etc/ssl/certs/proxy-ca.crt\")"
+
+# Lo que antes medía el argv de `podman create` (tests/lib/test-infrastructure.sh),
+# ahora sobre la declaración que entrega el bootstrap.
+expect_jq "redis: etiquetas de rol y servicio" "$redis" '.labels == {"io.thyrox.role": "infrastructure", "io.thyrox.service": "redis"}'
+expect_jq "ollama: etiquetas de rol y servicio" "$ollama" '.labels == {"io.thyrox.role": "infrastructure", "io.thyrox.service": "ollama"}'
+expect_jq "ollama: sin proxy, ni variables de proxy ni CA" "$ollama" \
+  '(.environment | (has("https_proxy") or has("NO_PROXY") or has("SSL_CERT_FILE")) | not) and (.bindMounts == [])'
+for ca in "$ISOLATED_HOMES/absent.crt" "$ISOLATED_HOMES"; do
+  unreadable="$(desired thyrox-ollama HTTPS_PROXY=http://127.0.0.1:3128 THYROX_INFRA_PROXY_CA_BUNDLE="$ca")"
+  expect_jq "ollama: con CA no legible ($ca), proxy sí, montaje y SSL_CERT_FILE no" "$unreadable" \
+    '(.environment.HTTPS_PROXY == "http://127.0.0.1:3128") and (.bindMounts == []) and (.environment | has("SSL_CERT_FILE") | not)'
+done
+ca_only="$(desired thyrox-ollama THYROX_INFRA_PROXY_CA_BUNDLE="$ISOLATED_HOMES/ca.crt")"
+expect_jq "ollama: CA legible sin HTTPS_PROXY no se monta" "$ca_only" '(.bindMounts == []) and (.environment | has("SSL_CERT_FILE") | not)'
+ollama_over="$(desired thyrox-ollama THYROX_INFRA_OLLAMA_PORT=41434 THYROX_INFRA_OLLAMA_IMAGE=docker.io/ollama/ollama:0.36.0)"
+expect_jq "ollama: puerto e imagen sobreescribibles" "$ollama_over" \
+  '.environment.OLLAMA_HOST == "127.0.0.1:41434" and .image == "docker.io/ollama/ollama:0.36.0"'
+
+# --- una sola vía: la biblioteca declara, no compone órdenes de Podman ---
+# ADR-007 1.15.0: la decisión de crear, arrancar y recrear vive en la primitiva.
+# Un compositor de `podman create` en la biblioteca es una segunda vía, y el de
+# PostgreSQL publicaba la contraseña en el entorno (`-e POSTGRES_PASSWORD=`).
+defined="$(bash -c "source '$SUBJECT'; declare -F | awk '{print \$3}' | grep -c create_argv")"
+thyrox_check "la biblioteca no define compositores de podman create" "0" "$defined"
+thyrox_check "la biblioteca no pasa la contraseña por el entorno" "0" "$(grep -c "POSTGRES_PASSWORD=" "$SUBJECT")"
 
 # --- nombre desconocido ---
 out="$(desired thyrox-mongo 2>/dev/null)"; rc=$?
