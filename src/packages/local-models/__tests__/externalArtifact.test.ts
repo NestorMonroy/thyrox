@@ -38,13 +38,14 @@ const CORPUS_SIBLINGS = {
 }
 
 /** `corpusFiles` declara qué archivos del corpus publica la fuente; por defecto, los dos. */
-function fakeHub(publishedSha256 = GGUF_SHA256, corpusFiles: readonly (keyof typeof CORPUS_SIBLINGS)[] = ['README.md', 'LICENSE']) {
+function fakeHub(publishedSha256 = GGUF_SHA256, corpusFiles: readonly (keyof typeof CORPUS_SIBLINGS)[] = ['README.md', 'LICENSE'],
+  gguf: Uint8Array = GGUF) {
   const downloads: string[] = []
-  const files: Record<string, Uint8Array | string> = { [FILE]: GGUF, 'README.md': README, LICENSE }
+  const files: Record<string, Uint8Array | string> = { [FILE]: gguf, 'README.md': README, LICENSE }
   const fetcher = async (url: string): Promise<Response> => {
     if (url.includes('/api/models/')) {
       return Response.json({ sha: REVISION, cardData: { license: 'apache-2.0' }, siblings: [
-        { rfilename: FILE, size: GGUF.length, lfs: { sha256: publishedSha256 } },
+        { rfilename: FILE, size: gguf.length, lfs: { sha256: publishedSha256 } },
         ...corpusFiles.map(name => CORPUS_SIBLINGS[name]),
         { rfilename: 'other-q8_0.gguf', size: 999, lfs: { sha256: 'd'.repeat(64) } },
       ] })
@@ -103,7 +104,26 @@ describe('external artifact import', () => {
       validation: { loaded: true, tokensPerSecond: 4.5, perplexity: 2.75 },
     })
     expect(hub.downloads.sort()).toEqual([FILE, 'LICENSE', 'README.md'].sort())
+    expect(provenance.missingCorpusFiles).toBeUndefined()
     expect(JSON.parse(readFileSync(request.runDir.replace(/run$/, 'catalog.json'), 'utf8')).entries).toHaveLength(1)
+  })
+
+  test('validates the declared quantization against the file type the GGUF declares', async () => {
+    const f16 = syntheticGgufBytes({ tensorCount: 1n, entries: [
+      ['general.architecture', { type: 'string', value: 'qwen2' }],
+      ['general.file_type', { type: 'uint32', value: 1 }],
+      ['qwen2.block_count', { type: 'uint32', value: 24 }],
+      ['qwen2.context_length', { type: 'uint32', value: 32_768 }],
+      ['qwen2.embedding_length', { type: 'uint32', value: 896 }],
+      ['qwen2.attention.head_count', { type: 'uint32', value: 14 }],
+      ['qwen2.attention.head_count_kv', { type: 'uint32', value: 2 }],
+    ] })
+    const f16Sha256 = createHash('sha256').update(f16).digest('hex')
+    const hub = fakeHub(f16Sha256, ['README.md', 'LICENSE'], f16)
+    const f16Request: ExternalArtifactRequest = { ...request, parts: [{ file: FILE, sha256: f16Sha256 }], quantization: 'F16' }
+    const outcome = await importExternalArtifact(f16Request, deps({ fetcher: hub.fetcher, runInLab: fakeLab(() => request.scratchDir).runInLab }))
+    expect(outcome.kind).toBe('completed')
+    expect(JSON.parse(readFileSync(join(request.runDir, 'provenance.json'), 'utf8')).quantization).toBe('F16')
   })
 
   test('builds the validation corpus from the corpus files the source publishes', async () => {
@@ -111,6 +131,8 @@ describe('external artifact import', () => {
     const outcome = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: fakeLab(() => request.scratchDir).runInLab }))
     expect(outcome.kind).toBe('completed')
     expect(hub.downloads.sort()).toEqual([FILE, 'README.md'].sort())
+    const provenance = JSON.parse(readFileSync(join(request.runDir, 'provenance.json'), 'utf8'))
+    expect(provenance.missingCorpusFiles).toEqual(['LICENSE'])
   })
 
   test('refuses before downloading when the source publishes no corpus file', async () => {

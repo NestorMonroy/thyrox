@@ -21,17 +21,19 @@ import { infrastructureEnsureOf, type CommandContext } from './catalogCommand.js
 import { infrastructureReady, REDIS_CONTAINER } from './infrastructureReadiness.js'
 import { EXIT_NOT_APPROVED, EXIT_OK, EXIT_REFUSED } from './commandOutput.js'
 import { importExternalArtifact, importIdOf, type ExternalArtifactRequest } from './externalArtifact.js'
+import { isGgufQuantization } from './ggufValidation.js'
 import { QuantizationLab, containerMeasureProbe, resolveLabImage } from './quantizationLab.js'
 import { DEFAULT_LAB_IMAGE, EXIT_LEASE_BUSY, LAB_IMAGE_ENV, optionsOf } from './labCommandOptions.js'
 import { ResourceAdmissionCli } from './resourceAdmission.js'
 import { RunLeaseBusyError, RunLeaseUnavailableError, acquireRunLease, globalLeaseStore } from './runLease.js'
 
 export const IMPORT_USAGE = 'uso: local-models-import run --repository R --revision SHA --file F[,F…] --sha256 HEX[,HEX…] '
-  + '--scratch-dir DIR --run-dir DIR [--memory-limit-bytes N] [--cpus N]'
+  + '--scratch-dir DIR --run-dir DIR [--quantization F16|Q8_0|Q4_K_M] [--memory-limit-bytes N] [--cpus N]'
 
 /** Un 7B en Q4_K_M sirve con unos 5 GB; 8 GiB deja sitio a la caché KV de la validación. */
 const DEFAULT_MEMORY_LIMIT_BYTES = 8 * 1024 ** 3
 const DEFAULT_CPUS = 4
+const DEFAULT_QUANTIZATION = 'Q4_K_M'
 const SHA256_PATTERN = /^[0-9a-f]{64}$/
 const LIST_SEPARATOR = ','
 
@@ -102,8 +104,10 @@ export function parseImportArguments(argv: readonly string[]): ImportArguments |
   if (!repository || !revision || !file || !sha256 || !scratchDir || !runDir) return undefined
   const [files, digests] = [file.split(LIST_SEPARATOR), sha256.split(LIST_SEPARATOR)]
   if (files.length !== digests.length || files.some(name => !name) || !digests.every(digest => SHA256_PATTERN.test(digest))) return undefined
+  const quantization = options.quantization ?? DEFAULT_QUANTIZATION
+  if (!isGgufQuantization(quantization)) return undefined
   return {
-    request: { repository, revision, parts: files.map((name, index) => ({ file: name, sha256: digests[index]! })), quantization: 'Q4_K_M', scratchDir: resolve(scratchDir), runDir: resolve(runDir),
+    request: { repository, revision, parts: files.map((name, index) => ({ file: name, sha256: digests[index]! })), quantization, scratchDir: resolve(scratchDir), runDir: resolve(runDir),
       memoryLimitBytes: Number(options['memory-limit-bytes'] ?? DEFAULT_MEMORY_LIMIT_BYTES) },
     cpus: Number(options.cpus ?? DEFAULT_CPUS),
   }

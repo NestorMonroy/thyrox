@@ -24,6 +24,15 @@ describe('parseImportArguments', () => {
     expect(parseImportArguments([...BASE, '--file', 'm-00001-of-00002.gguf,m-00002-of-00002.gguf', '--sha256', A])).toBeUndefined()
   })
 
+  test('the quantization defaults to Q4_K_M and is declared with --quantization', () => {
+    expect(parseImportArguments([...BASE, '--file', 'm.gguf', '--sha256', A])?.request.quantization).toBe('Q4_K_M')
+    expect(parseImportArguments([...BASE, '--file', 'm.gguf', '--sha256', A, '--quantization', 'F16'])?.request.quantization).toBe('F16')
+  })
+
+  test('an unknown quantization is not an import', () => {
+    expect(parseImportArguments([...BASE, '--file', 'm.gguf', '--sha256', A, '--quantization', 'Q9_X'])).toBeUndefined()
+  })
+
   test('a malformed digest in the list is not an import', () => {
     expect(parseImportArguments([...BASE, '--file', 'x.gguf,y.gguf', '--sha256', `${A},nope`])).toBeUndefined()
   })

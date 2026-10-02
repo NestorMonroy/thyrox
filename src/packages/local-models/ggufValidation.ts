@@ -20,6 +20,11 @@ const GGUF_FILE_TYPE_KEY = 'general.file_type'
 
 /** `llama_ftype` de llama.cpp: el tipo que declara un GGUF en `general.file_type`. */
 export const GGUF_FILE_TYPE = { F16: 1, Q8_0: 7, Q4_K_M: 15 } as const
+export type GgufQuantization = keyof typeof GGUF_FILE_TYPE
+
+export function isGgufQuantization(value: string): value is GgufQuantization {
+  return Object.hasOwn(GGUF_FILE_TYPE, value)
+}
 
 /** Corpus de perplejidad del banco: README y LICENSE de la fuente, contexto 128, 4 hilos. */
 export const EVAL_CORPUS_FILES = ['README.md', 'LICENSE'] as const

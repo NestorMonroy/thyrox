@@ -29,6 +29,7 @@ import { workerContainerName } from '@thyrox/podman-execution/workerContainerLif
 import {
   EVAL_CORPUS_FILES,
   GGUF_FILE_TYPE,
+  type GgufQuantization,
   GgufValidationError,
   evalCorpusPath,
   labPathOf,
@@ -63,7 +64,7 @@ export interface ExternalArtifactRequest {
   readonly revision: string
   /** Un archivo, o la partición completa en shards, en orden. */
   readonly parts: readonly ArtifactPart[]
-  readonly quantization: 'Q4_K_M'
+  readonly quantization: GgufQuantization
   readonly scratchDir: string
   readonly runDir: string
   readonly memoryLimitBytes: number
@@ -93,6 +94,8 @@ export interface ExternalProvenance {
   readonly validation: GgufValidation['validation']
   readonly evaluationIdentity: EvaluationIdentity
   readonly modelName: string
+  /** Sólo si a la fuente le falta algún archivo del corpus: se usa igual y la ausencia queda declarada. */
+  readonly missingCorpusFiles?: readonly string[]
   /** Sólo si el autor lo publicó en shards: cada uno tal como se descargó y verificó. */
   readonly shards?: readonly ShardProvenance[]
   readonly assembly?: { readonly tool: string; readonly labImageDigest: string }
@@ -236,7 +239,7 @@ async function acquire(request: ExternalArtifactRequest, subset: SourceSpec, dep
   const identity = await evaluationIdentityOf(request, deps)
   if (!(await isValidated(state, identity, path, subset, request))) {
     state.checked = await validateGgufArtifact({ path, scratchDir: request.scratchDir, corpusPath: evalCorpusPath(request.scratchDir),
-      workerId: importIdOf(request), expectedFileType: GGUF_FILE_TYPE.Q4_K_M, runInLab: deps.runInLab })
+      workerId: importIdOf(request), expectedFileType: GGUF_FILE_TYPE[request.quantization], runInLab: deps.runInLab })
     state.evaluationIdentity = identity
     await writeJson(join(request.runDir, STATE_FILE), state)
   }
@@ -309,6 +312,12 @@ function publishedCorpusFiles(subset: SourceSpec): string[] {
   return EVAL_CORPUS_FILES.filter(name => published.has(name))
 }
 
+function missingCorpusFilesOf(subset: SourceSpec): Pick<ExternalProvenance, 'missingCorpusFiles'> {
+  const published = publishedCorpusFiles(subset)
+  const missing = EVAL_CORPUS_FILES.filter(name => !published.includes(name))
+  return missing.length === 0 ? {} : { missingCorpusFiles: missing }
+}
+
 async function writeCorpus(scratchDir: string, corpusFiles: readonly string[]): Promise<void> {
   const parts = await Promise.all(corpusFiles.map(name => readFile(join(scratchDir, name), 'utf8')))
   await writeFile(evalCorpusPath(scratchDir), parts.join('\n'))
@@ -327,6 +336,7 @@ async function register(request: ExternalArtifactRequest, subset: SourceSpec, pa
     sha256: checked.sha256, bytes: checked.bytes, quantization: request.quantization,
     license: subset.license ?? UNDECLARED_LICENSE, acquiredAt, validation: checked.validation,
     evaluationIdentity: state.evaluationIdentity!, modelName: entry.name,
+    ...missingCorpusFilesOf(subset),
     ...(isSharded(request.parts) ? {
       shards: shardsOf(request, subset),
       assembly: { tool: MERGE_DESCRIPTION, labImageDigest: state.assembled!.labImageDigest },
