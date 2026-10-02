@@ -5,23 +5,138 @@
   "baseCommit": "1c9b8d12316ffe187cab572cc108c87c61fd0d98",
   "remoteCommitAtStart": "1c9b8d12316ffe187cab572cc108c87c61fd0d98",
   "branch": "feature/complete-orm-root",
-  "allowedActors": ["qwen3.8-flash", "deepseek-v4.1-flash"],
-  "forbiddenActors": ["claude-*"],
+  "allowedActors": [
+    "qwen3.8-flash",
+    "deepseek-v4.1-flash"
+  ],
+  "forbiddenActors": [
+    "claude-*"
+  ],
   "tasks": [
-    {"id": "T001", "dependsOn": []},
-    {"id": "T002", "dependsOn": ["T001"]},
-    {"id": "T003", "dependsOn": ["T002"]},
-    {"id": "T004", "dependsOn": ["T003"]},
-    {"id": "T005", "dependsOn": ["T003"]},
-    {"id": "T006", "dependsOn": ["T004", "T005"]},
-    {"id": "T007", "dependsOn": ["T006"]},
-    {"id": "T008", "dependsOn": ["T001"]},
-    {"id": "T009", "dependsOn": ["T001"]},
-    {"id": "T010", "dependsOn": ["T001"]},
-    {"id": "T011", "dependsOn": ["T001"]},
-    {"id": "T012", "dependsOn": ["T002", "T003", "T004", "T005", "T006", "T007"]},
-    {"id": "T013", "dependsOn": ["T012"]},
-    {"id": "T014", "dependsOn": ["T003", "T004", "T008", "T009", "T012"]},
-    {"id": "T015", "dependsOn": ["T007", "T010", "T011", "T012", "T013", "T014"]}
+    {
+      "id": "T001",
+      "dependsOn": []
+    },
+    {
+      "id": "T002",
+      "dependsOn": [
+        "T001"
+      ]
+    },
+    {
+      "id": "T003",
+      "dependsOn": [
+        "T002"
+      ]
+    },
+    {
+      "id": "T004",
+      "dependsOn": [
+        "T003"
+      ]
+    },
+    {
+      "id": "T005",
+      "dependsOn": [
+        "T003"
+      ]
+    },
+    {
+      "id": "T006",
+      "dependsOn": [
+        "T004",
+        "T005"
+      ]
+    },
+    {
+      "id": "T007",
+      "dependsOn": [
+        "T006"
+      ]
+    },
+    {
+      "id": "T008",
+      "dependsOn": [
+        "T001"
+      ]
+    },
+    {
+      "id": "T009",
+      "dependsOn": [
+        "T001"
+      ]
+    },
+    {
+      "id": "T010",
+      "dependsOn": [
+        "T001"
+      ]
+    },
+    {
+      "id": "T011",
+      "dependsOn": [
+        "T001"
+      ]
+    },
+    {
+      "id": "T012",
+      "dependsOn": [
+        "T002",
+        "T003",
+        "T004",
+        "T005",
+        "T006",
+        "T007"
+      ]
+    },
+    {
+      "id": "T013",
+      "dependsOn": [
+        "T012"
+      ]
+    },
+    {
+      "id": "T014",
+      "dependsOn": [
+        "T003",
+        "T004",
+        "T008",
+        "T009",
+        "T012"
+      ]
+    },
+    {
+      "id": "T015",
+      "dependsOn": [
+        "T007",
+        "T010",
+        "T011",
+        "T012",
+        "T013",
+        "T014"
+      ]
+    }
+  ],
+  "status": "paused",
+  "pausedAt": "2026-10-02",
+  "pausedBy": "executor: priority switched to the PostgreSQL corpus and disk reclaim batch",
+  "accepted": [
+    "T001",
+    "T002",
+    "T003",
+    "T004"
+  ],
+  "notStarted": [
+    "T005",
+    "T006",
+    "T007",
+    "T008",
+    "T009",
+    "T010",
+    "T011",
+    "T012",
+    "T013",
+    "T014",
+    "T015"
   ]
 }

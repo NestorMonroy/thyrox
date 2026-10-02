@@ -20,7 +20,11 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
-from learning.token_usage import attempt_usage, usage_from_stream, usage_from_transcripts  # noqa: E402
+from learning.token_usage import (
+    attempt_usage,
+    usage_from_stream,
+    usage_from_transcripts,
+)
 
 OK = FAILED = 0
 
@@ -94,7 +98,7 @@ with tempfile.TemporaryDirectory() as raw:
     check("result antes que transcript", usage.usage_source == "result" and usage.input_tokens == 100)
 
 print("== 6. la fila del intento: identidad del delegado, uso y veredicto ==")
-from session.task_continuation import PlanItem, attempt_telemetry  # noqa: E402
+from session.task_continuation import PlanItem, attempt_telemetry
 
 with tempfile.TemporaryDirectory() as raw:
     workbench = Path(raw)
