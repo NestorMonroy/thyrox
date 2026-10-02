@@ -206,7 +206,7 @@ def check_unreadable_files(home: LocalHome) -> None:
 
 
 def check_policy(home: LocalHome) -> None:
-    """Con --policy y sin respaldo: sin candidato permitido se bloquea, nunca claude-cli (TASK-THYROX-0758)."""
+    """Con --policy y sin respaldo: sin candidato permitido se bloquea, nunca claude-cli (TASK-THYROX-0773)."""
     home.write_qualified_model()
     policy = home.root / "policy.json"
     policy.write_text(json.dumps({"allowed": [{"runtime": "ollama", "repository": "Qwen/Qwen2.5-7B-Instruct-GGUF"}],

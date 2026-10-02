@@ -1,6 +1,6 @@
 /**
  * Lo que todo adapter de runtime comparte (ADR-007 1.13.0), extraído del de
- * Ollama al añadir el de Transformers (TASK-THYROX-0761): una mutación sólo con
+ * Ollama al añadir el de Transformers (TASK-THYROX-0776): una mutación sólo con
  * la generación vigente de la residencia, y la comparación exacta de la
  * identidad que el runtime informa contra la concedida.
  */

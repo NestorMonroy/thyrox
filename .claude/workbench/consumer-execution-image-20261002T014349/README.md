@@ -1,4 +1,4 @@
-# Imagen de ejecución de un consumidor (TASK-THYROX-0760)
+# Imagen de ejecución de un consumidor (TASK-THYROX-0775)
 
 ## El encargo
 

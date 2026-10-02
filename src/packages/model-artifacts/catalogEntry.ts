@@ -16,7 +16,7 @@ export type { AttentionShape }
 
 /**
  * Dónde vive el artefacto: un GGUF propio, un modelo del registro de Ollama o
- * un snapshot de safetensors que carga Transformers (TASK-THYROX-0761); el
+ * un snapshot de safetensors que carga Transformers (TASK-THYROX-0776); el
  * `artifactId` de un snapshot es el sha256 de su manifiesto.
  */
 export type ArtifactFormat = 'gguf' | 'ollama-registry' | 'safetensors'

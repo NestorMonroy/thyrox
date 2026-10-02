@@ -22,7 +22,7 @@ Los guiones estaban sueltos en la raíz del banco; se movieron a probes/.
 ## Los resultados
 
 Los usó esta sesión para escribir, probar, anular y commitear SIN ejecutar el
-payload en el anfitrión (TASK-THYROX-0756…0761 y el trabajo del consumidor
+payload en el anfitrión (TASK-THYROX-0771…0761 y el trabajo del consumidor
 ai-course-notes). Estaban en el scratchpad de la sesión; se versionan aquí.
 
 - unit.sh <TASK> <nombre> <cola> <cmd>: thyrox-bg start --task … --kind test, espera y muestra la cola.

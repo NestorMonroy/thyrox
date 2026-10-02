@@ -1,5 +1,5 @@
 /**
- * Dónde está el socket del coordinador (TASK-THYROX-0759). Qué haría fallar a
+ * Dónde está el socket del coordinador (TASK-THYROX-0774). Qué haría fallar a
  * esta suite: que una unidad sólo pudiera alcanzarlo redefiniendo el runtime
  * entero, o que el lanzador tuviera que derivar la ruta por su cuenta.
  */

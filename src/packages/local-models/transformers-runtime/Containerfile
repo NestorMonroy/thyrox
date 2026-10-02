@@ -1,4 +1,4 @@
-# Runtime de Transformers de una ModelExecutionUnit (TASK-THYROX-0761, ADR-007):
+# Runtime de Transformers de una ModelExecutionUnit (TASK-THYROX-0776, ADR-007):
 # `transformers_runtime_server.py` sobre torch CPU, transformers y sentencepiece,
 # que cargan un modelo encoder-decoder (T5, MADLAD-400) desde el snapshot que la
 # primitiva monta de sólo lectura en /model. La imagen no trae pesos ni descarga

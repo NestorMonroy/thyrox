@@ -1,7 +1,7 @@
 #!/usr/bin/env bun
 /**
  * Doble del coordinador de model scheduling de un anfitrión, para la prueba de
- * extremo a extremo del modelo local en una unidad (TASK-THYROX-0759).
+ * extremo a extremo del modelo local en una unidad (TASK-THYROX-0774).
  *
  *   fake-model-coordinator.ts <socket> <registro.jsonl> <modelId del grant>
  *

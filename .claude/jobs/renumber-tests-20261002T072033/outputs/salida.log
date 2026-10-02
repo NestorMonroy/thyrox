@@ -1,0 +1,16 @@
+src/packages/local-models/__tests__/hostCoordinatorComposition.test.ts exit=0  6 pass  0 fail 
+src/packages/local-models/__tests__/snapshotManifest.test.ts exit=0  3 pass  0 fail 
+src/packages/local-models/__tests__/transformersRuntimeAdapter.test.ts exit=0  7 pass  0 fail 
+src/packages/model-scheduling/__tests__/coordinatorSocketPath.test.ts exit=0  4 pass  0 fail 
+src/packages/model-scheduling/__tests__/podmanModelUnitMaterializer.test.ts exit=0  17 pass  0 fail 
+src/packages/model-scheduling/__tests__/runtimeAdapterRouter.test.ts exit=0  3 pass  0 fail 
+src/packages/podman-execution/__tests__/executionCommand.test.ts exit=0  28 pass  0 fail 
+src/packages/provider/__tests__/recommendExecution.test.ts exit=0  16 pass  0 fail 
+tests/agents/test_recommend_cli.py exit=1 /home/user/thyrox/.venv/bin/python: No module named pytest
+tests/local_models/test_transformers_runtime_server.py exit=1 /home/user/thyrox/.venv/bin/python3: No module named pytest
+tests/session/test-headless-pool-execution-unit.sh exit=0 14 ok · 0 falla(s) (alcance medido: headless-pool --execution unit)
+tests/session/test-headless-pool-local-model-e2e.sh exit=0 8 ok · 0 falla(s) (alcance medido: modelo local por el coordinador desde la unidad, con dobles)
+tests/session/test-headless-pool-model-policy.sh exit=0 12 ok · 0 falla(s) (alcance medido: headless-pool --model-policy)
+derived_exit=1
+execution thyrox-worker-test-muqmvqrp-11354 kind=test task=TASK-THYROX-0779 exit=0
+__BG_EXIT__=0

@@ -1,6 +1,6 @@
 /**
  * El adapter de runtime que el controlador de residencias ve cuando el anfitrión
- * sirve más de un runtime (TASK-THYROX-0761): cada operación va al adapter del
+ * sirve más de un runtime (TASK-THYROX-0776): cada operación va al adapter del
  * runtime de la unidad o del grant. Un runtime sin adapter falla con su causa;
  * nunca cae a otro, porque cambiar de runtime es cambiar el plan (M5).
  *

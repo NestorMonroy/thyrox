@@ -108,7 +108,7 @@ describe('recommendExecution — local primero, claude-cli declarado como respal
   })
 })
 
-describe('recommendExecution con una política de ejecución declarada (TASK-THYROX-0758)', () => {
+describe('recommendExecution con una política de ejecución declarada (TASK-THYROX-0773)', () => {
   const QWEN = catalogEntry('Qwen/Qwen2.5-7B-Instruct-GGUF', '3')
   const PROFILE = { contextTokens: CONTEXT_TOKENS }
   const policyOf = (fallback: boolean) => parseExecutionPolicy(JSON.stringify({
@@ -159,7 +159,7 @@ describe('parseExecutionPolicy', () => {
   })
 })
 
-describe('la política nombra lo que excluye y distingue la fuente (TASK-THYROX-0763)', () => {
+describe('la política nombra lo que excluye y distingue la fuente (TASK-THYROX-0778)', () => {
   const PROFILE = { contextTokens: CONTEXT_TOKENS }
   const LIBRARY_QWEN: ModelCatalogEntry = { ...catalogEntry('library/qwen2.5-7b-instruct', '4'), source: 'ollama' }
   const HF_HOMONYM = catalogEntry('library/qwen2.5-7b-instruct', '5')

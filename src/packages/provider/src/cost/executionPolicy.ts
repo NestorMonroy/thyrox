@@ -1,5 +1,5 @@
 /**
- * La política de ejecución que declara un consumidor (TASK-THYROX-0758): qué
+ * La política de ejecución que declara un consumidor (TASK-THYROX-0773): qué
  * modelos locales puede usar su trabajo y si, sin ninguno cualificado, cae al
  * proveedor.
  *
@@ -12,7 +12,7 @@
  * la fuente, y la política no tiene que reescribirse al reimportar. La fuente
  * (`hf` u `ollama`) se declara cuando el repositorio solo no basta: el
  * `library/…` de la biblioteca de Ollama podría ser también una organización
- * de Hugging Face (TASK-THYROX-0763). Sin declararla, cualquier fuente cumple. El
+ * de Hugging Face (TASK-THYROX-0778). Sin declararla, cualquier fuente cumple. El
  * proveedor no se lista como permitido: se alcanza sólo por el respaldo, y el
  * respaldo no tiene valor por defecto. Una política que no lo declara se
  * rehúsa, porque un default decidiría por el consumidor justo lo que la

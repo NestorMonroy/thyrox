@@ -19,7 +19,7 @@
  * él, y además decide si la medición de un modelo local alcanza.
  *
  * `--policy <archivo>` declara la política de ejecución del consumidor
- * (TASK-THYROX-0758): sólo compiten los modelos locales que permite y, si no
+ * (TASK-THYROX-0773): sólo compiten los modelos locales que permite y, si no
  * permite el respaldo, sin ninguno cualificado la recomendación es
  * `blocked` —sale 3, sin modelo— en vez de caer a `claude-cli`; y
  * `--runtime claude-cli` contra esa política se rehúsa.

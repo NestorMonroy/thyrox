@@ -22,12 +22,12 @@ un runtime de candle.
 |---|---|
 | `probes/candle-worker/Cargo.toml` | el worker: candle 0.11.0 fijado, tokenizers 0.22 |
 | `probes/candle-worker/Cargo.lock` | resuelto en una unidad con `cargo generate-lockfile` |
-| `probes/unit-cargo.sh` | una ExecutionUnit de TASK-THYROX-0764 con el toolchain de Rust del anfitrión montado |
+| `probes/unit-cargo.sh` | una ExecutionUnit de TASK-THYROX-0779 con el toolchain de Rust del anfitrión montado |
 
 ## Los resultados
 
 **En curso.** Pausado por la integración de `feature/complete-orm-root`, que
-destapó la colisión de citas TASK-THYROX-0754…0764 y H-THYROX-311/312 entre las
+destapó la colisión de citas TASK-THYROX-0769…0764 y H-THYROX-314/312 entre las
 dos ramas; la renumeración espera la decisión del ejecutor.
 
 *Metrica:* pendiente.

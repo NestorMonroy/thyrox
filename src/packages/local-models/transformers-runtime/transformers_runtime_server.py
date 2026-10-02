@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""El runtime de Transformers dentro de una ModelExecutionUnit (TASK-THYROX-0761, ADR-007).
+"""El runtime de Transformers dentro de una ModelExecutionUnit (TASK-THYROX-0776, ADR-007).
 
 Corre detrás de PodmanExecutionPrimitive: la unidad monta de sólo lectura el snapshot
 que el grant concede (`THYROX_TRANSFORMERS_MODEL_DIR`) y publica este servidor sólo en

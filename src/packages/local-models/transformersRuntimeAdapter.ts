@@ -1,6 +1,6 @@
 /**
  * `TransformersRuntimeAdapter`: el `RuntimeAdapter` de una `ModelExecutionUnit`
- * de Transformers (TASK-THYROX-0761, ADR-007 1.13.0). Sólo habla con el endpoint
+ * de Transformers (TASK-THYROX-0776, ADR-007 1.13.0). Sólo habla con el endpoint
  * de la unidad. El snapshot concedido no viaja por la API: la primitiva lo monta
  * de sólo lectura al materializar la unidad, y el adapter comprueba que el
  * montado es el concedido antes de cargarlo.

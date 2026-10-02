@@ -21,7 +21,7 @@
 #     (`model-selection-subagents.md`);
 #   - deja su salida en disco, por item, antes de que nadie la resuma.
 #
-# `--execution unit` (TASK-THYROX-0757) hace que cada ítem pida su ejecución a
+# `--execution unit` (TASK-THYROX-0772) hace que cada ítem pida su ejecución a
 # la primitiva por el runner gestionado (`src/lib/managed_execution.sh`, el de
 # `thyrox-bg`) en vez de lanzar su ejecutor en el anfitrión. El ítem se
 # autoriza por la identidad de trabajo del consumidor —`--work-reference
@@ -29,7 +29,7 @@
 # ninguna credencial del pool. El pool sigue siendo el distribuidor: cómo se
 # materializa la unidad lo decide la primitiva. Por defecto, `host`.
 #
-# `--model-policy ARCHIVO` (TASK-THYROX-0758) es la política de ejecución del
+# `--model-policy ARCHIVO` (TASK-THYROX-0773) es la política de ejecución del
 # consumidor (`@thyrox/provider: executionPolicy.ts`): viaja al recomendador, y
 # si no permite el respaldo, el pool rehúsa en vez de caer a `claude-cli` —por
 # una recomendación bloqueada, por un Ollama que no arranca o por un runtime
@@ -443,7 +443,7 @@ fi
 announce_model
 # Con el modelo local en la unidad, el `thyrox -p` del ítem pide admisión al
 # coordinador de ESTE anfitrión: la unidad recibe su socket —el directorio de
-# sólo lectura y la ruta nombrada—, no el runtime entero (TASK-THYROX-0759).
+# sólo lectura y la ruta nombrada—, no el runtime entero (TASK-THYROX-0774).
 HP_COORDINATOR_SOCKET=""
 if [[ "$EXECUTION" == unit && "$RUNTIME" == "$LOCAL_RUNTIME" ]]; then
     HP_COORDINATOR_SOCKET="${THYROX_MODEL_COORDINATOR_SOCKET:-$(bash "$THYROX_ROOT/bin/model-scheduling-socket-path" 2>/dev/null)}"

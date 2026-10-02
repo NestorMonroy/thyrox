@@ -42,7 +42,7 @@ describe('cpuPlacementOf', () => {
   })
 })
 
-describe('cpuPlacementOf por formato del artefacto (TASK-THYROX-0761)', () => {
+describe('cpuPlacementOf por formato del artefacto (TASK-THYROX-0776)', () => {
   test('un GGUF va a Ollama', () => {
     expect(cpuPlacementOf({ artifact: resolvedArtifact() } as ResolvedModel).runtime).toBe('ollama')
   })

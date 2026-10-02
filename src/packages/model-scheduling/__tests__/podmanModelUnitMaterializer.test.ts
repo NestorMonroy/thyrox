@@ -257,7 +257,7 @@ function labelOf(argv: string, key: string): string | undefined {
   return new RegExp(`--label ${key.replace(/\./g, '\\.')}=(\\S+)`).exec(argv)?.[1]
 }
 
-describe('una unidad de Transformers con el artefacto del grant montado (TASK-THYROX-0761)', () => {
+describe('una unidad de Transformers con el artefacto del grant montado (TASK-THYROX-0776)', () => {
   const T5_GRANT: ExecutionGrant = {
     ...GRANT, runtime: 'transformers', placement: { kind: 'cpu' },
     artifact: { ...resolvedArtifact({ artifactId: SHA, quantization: 'f32' }), format: 'safetensors' },

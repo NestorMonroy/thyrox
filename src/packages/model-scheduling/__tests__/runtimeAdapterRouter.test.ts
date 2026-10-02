@@ -1,5 +1,5 @@
 /**
- * El router de adapters por runtime (TASK-THYROX-0761): cada unidad va al adapter
+ * El router de adapters por runtime (TASK-THYROX-0776): cada unidad va al adapter
  * de SU runtime, y un runtime sin adapter falla en vez de caer a otro.
  */
 import { describe, expect, test } from 'bun:test'

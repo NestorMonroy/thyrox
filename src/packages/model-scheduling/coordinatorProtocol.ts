@@ -14,7 +14,7 @@ export const MODEL_COORDINATOR_PROTO = 1
 /** Variable del hogar de runtime donde vive el socket del coordinador. */
 export const MODEL_COORDINATOR_RUNTIME_ENV = 'THYROX_RUNTIME_DIR'
 /**
- * El socket declarado gana a la ruta derivada (TASK-THYROX-0759): una unidad lo
+ * El socket declarado gana a la ruta derivada (TASK-THYROX-0774): una unidad lo
  * recibe montado sin redefinir el runtime entero, que gobierna otros estados.
  */
 export const MODEL_COORDINATOR_SOCKET_ENV = 'THYROX_MODEL_COORDINATOR_SOCKET'

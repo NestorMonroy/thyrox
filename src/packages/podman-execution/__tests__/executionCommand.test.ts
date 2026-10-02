@@ -245,7 +245,7 @@ describe('run con la referencia de trabajo de un consumidor', () => {
   })
 })
 
-describe('build-image con la referencia de trabajo de un consumidor (TASK-THYROX-0760)', () => {
+describe('build-image con la referencia de trabajo de un consumidor (TASK-THYROX-0775)', () => {
   test('--work construye bajo la identidad del consumidor, sin citar una TASK de thyrox', async () => {
     const h = harness()
     const code = await runExecutionCommand(['build-image', '--work', 'ai-course-notes:es-mx/execution-image',

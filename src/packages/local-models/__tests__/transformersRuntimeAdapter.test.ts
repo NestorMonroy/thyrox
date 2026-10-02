@@ -1,5 +1,5 @@
 /**
- * El adapter del runtime de Transformers (TASK-THYROX-0761) contra el servidor REAL
+ * El adapter del runtime de Transformers (TASK-THYROX-0776) contra el servidor REAL
  * del runtime, con sólo el modelo sustituido por un eco
  * (`testing/fake_transformers_runtime.py`). Qué haría fallar a esta suite: que el
  * adapter mutara el runtime con una generación vieja; que diera por buena otra

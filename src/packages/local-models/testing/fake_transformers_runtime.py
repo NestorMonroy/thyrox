@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Doble del runtime de Transformers para las pruebas del adapter (TASK-THYROX-0761).
+"""Doble del runtime de Transformers para las pruebas del adapter (TASK-THYROX-0776).
 
     fake_transformers_runtime.py <snapshot>
 

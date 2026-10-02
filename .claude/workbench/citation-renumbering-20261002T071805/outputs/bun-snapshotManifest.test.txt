@@ -1,0 +1,11 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/snapshotManifest.test.ts:
+(pass) snapshotManifestDigest > coincide con el vector compartido con el servidor de Python [7.97ms]
+(pass) snapshotManifestDigest > un byte distinto en cualquier archivo cambia la identidad [3.54ms]
+(pass) snapshotManifestDigest > un archivo de más también la cambia [7.36ms]
+
+ 3 pass
+ 0 fail
+ 3 expect() calls
+Ran 3 tests across 1 file. [198.00ms]

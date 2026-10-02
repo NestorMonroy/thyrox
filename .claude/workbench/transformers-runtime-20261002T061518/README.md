@@ -1,4 +1,4 @@
-# Runtime de Transformers detrás de la primitiva de Podman (TASK-THYROX-0761)
+# Runtime de Transformers detrás de la primitiva de Podman (TASK-THYROX-0776)
 
 ## El encargo
 
@@ -15,12 +15,12 @@ Ninguna: el encargo se ejecutó tal como se pidió.
 | archivo | que hace |
 |---|---|
 | `probes/manifest-vector.txt` | borrador del cambio, tal como se aplicó |
-| `probes/tf/Containerfile` | Runtime de Transformers de una ModelExecutionUnit (TASK-THYROX-0761, ADR-007): |
+| `probes/tf/Containerfile` | Runtime de Transformers de una ModelExecutionUnit (TASK-THYROX-0776, ADR-007): |
 | `probes/tf/admittedSeq2seq.ts` | borrador del cambio, tal como se aplicó |
 | `probes/tf/annul.sh` | borrador del cambio, tal como se aplicó |
 | `probes/tf/apply-red1.py` | borrador del cambio, tal como se aplicó |
 | `probes/tf/commit1.sh` | borrador del cambio, tal como se aplicó |
-| `probes/tf/fake_transformers_runtime.py` | Doble del runtime de Transformers para las pruebas del adapter (TASK-THYROX-0761). |
+| `probes/tf/fake_transformers_runtime.py` | Doble del runtime de Transformers para las pruebas del adapter (TASK-THYROX-0776). |
 | `probes/tf/impl1.py` | borrador del cambio, tal como se aplicó |
 | `probes/tf/impl3.py` | borrador del cambio, tal como se aplicó |
 | `probes/tf/materializer-tests.ts` | borrador del cambio, tal como se aplicó |
@@ -30,11 +30,11 @@ Ninguna: el encargo se ejecutó tal como se pidió.
 | `probes/tf/runtimeMutation.ts` | borrador del cambio, tal como se aplicó |
 | `probes/tf/snapshotManifest.test.ts` | borrador del cambio, tal como se aplicó |
 | `probes/tf/snapshotManifest.ts` | borrador del cambio, tal como se aplicó |
-| `probes/tf/test_transformers_runtime_server.py` | El servidor del runtime de Transformers de una ModelExecutionUnit (TASK-THYROX-0761). |
+| `probes/tf/test_transformers_runtime_server.py` | El servidor del runtime de Transformers de una ModelExecutionUnit (TASK-THYROX-0776). |
 | `probes/tf/transformersRuntimeAdapter.test.ts` | borrador del cambio, tal como se aplicó |
 | `probes/tf/transformersRuntimeAdapter.ts` | borrador del cambio, tal como se aplicó |
 | `probes/tf/transformersRuntimeApi.ts` | borrador del cambio, tal como se aplicó |
-| `probes/tf/transformers_runtime_server.py` | El runtime de Transformers dentro de una ModelExecutionUnit (TASK-THYROX-0761, ADR-007). |
+| `probes/tf/transformers_runtime_server.py` | El runtime de Transformers dentro de una ModelExecutionUnit (TASK-THYROX-0776, ADR-007). |
 | `outputs/` | 11 salidas: rojos, verdes y anulaciones |
 
 ## Los resultados

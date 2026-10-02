@@ -1,4 +1,4 @@
-# ¿Hay un registry OCI local gestionado? (P5c, TASK-THYROX-0754)
+# ¿Hay un registry OCI local gestionado? (P5c, TASK-THYROX-0769)
 
 ## El encargo
 
@@ -54,7 +54,7 @@ Ninguna: el encargo se ejecutó tal como se pidió.
 
 | archivo | que hace |
 |---|---|
-| `probes/p5c/README.md` | ¿Hay un registry OCI local gestionado? (P5c, TASK-THYROX-0754) |
+| `probes/p5c/README.md` | ¿Hay un registry OCI local gestionado? (P5c, TASK-THYROX-0769) |
 
 ## Los resultados
 

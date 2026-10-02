@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# De extremo a extremo con dobles (TASK-THYROX-0759): un ítem del pool con
+# De extremo a extremo con dobles (TASK-THYROX-0774): un ítem del pool con
 # --execution unit y una política sin respaldo llega, por la primitiva (doble:
 # entorno vacío salvo lo nombrado), al `thyrox -p` REAL, cuyo proxy local REAL
 # pide la admisión al transporte REAL del coordinador y alcanza sólo el

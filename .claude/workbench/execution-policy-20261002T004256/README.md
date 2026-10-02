@@ -1,4 +1,4 @@
-# Política de ejecución sin respaldo al proveedor (TASK-THYROX-0758)
+# Política de ejecución sin respaldo al proveedor (TASK-THYROX-0773)
 
 ## El encargo
 
@@ -50,13 +50,13 @@ Ninguna: el encargo se ejecutó tal como se pidió.
 | `probes/p3/impl.py` | borrador del cambio, tal como se aplicó |
 | `probes/p3/pool-impl.py` | borrador del cambio, tal como se aplicó |
 | `probes/p3/test-cli.py` | borrador del cambio, tal como se aplicó |
-| `probes/p3/test-headless-pool-model-policy.sh` | headless-pool con --model-policy (TASK-THYROX-0758): la política del |
+| `probes/p3/test-headless-pool-model-policy.sh` | headless-pool con --model-policy (TASK-THYROX-0773): la política del |
 | `probes/p3/tests-recommend.ts` | borrador del cambio, tal como se aplicó |
 | `outputs/` | 14 salidas: rojos, verdes y anulaciones |
 
 ## Los resultados
 
-Medido antes (H-THYROX-311): el recomendador devolvía `claude-opus-5-5` y
+Medido antes (H-THYROX-314): el recomendador devolvía `claude-opus-5-5` y
 `claude-haiku-4-5` por no haber un Qwen cualificado, y `headless-pool` caía a
 `claude-cli` también si Ollama no arrancaba; ninguna opción lo prohibía.
 

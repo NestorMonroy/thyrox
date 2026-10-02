@@ -1,4 +1,4 @@
-# De una ExecutionUnit al coordinador del modelo local (TASK-THYROX-0759)
+# De una ExecutionUnit al coordinador del modelo local (TASK-THYROX-0774)
 
 ## El encargo
 
@@ -34,13 +34,13 @@ Ninguna: el encargo se ejecutó tal como se pidió.
 |---|---|
 | `probes/p4/coordinatorSocketPath.test.ts` | borrador del cambio, tal como se aplicó |
 | `probes/p4/impl.py` | borrador del cambio, tal como se aplicó |
-| `probes/p4/pool-case.sh` | Caso 4 (TASK-THYROX-0759): con el modelo local, la unidad recibe el socket del |
+| `probes/p4/pool-case.sh` | Caso 4 (TASK-THYROX-0774): con el modelo local, la unidad recibe el socket del |
 | `probes/p4/pool-impl.py` | borrador del cambio, tal como se aplicó |
 | `probes/p4/pool-impl2.py` | borrador del cambio, tal como se aplicó |
 | `probes/p4/socketPath.ts` | borrador del cambio, tal como se aplicó |
 | `probes/p5/fake-model-coordinator.ts` | borrador del cambio, tal como se aplicó |
 | `probes/p5/finish.sh` | borrador del cambio, tal como se aplicó |
-| `probes/p5/test-headless-pool-local-model-e2e.sh` | De extremo a extremo con dobles (TASK-THYROX-0759): un ítem del pool con |
+| `probes/p5/test-headless-pool-local-model-e2e.sh` | De extremo a extremo con dobles (TASK-THYROX-0774): un ítem del pool con |
 | `outputs/` | 6 salidas: rojos, verdes y anulaciones |
 
 ## Los resultados

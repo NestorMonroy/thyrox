@@ -1,5 +1,5 @@
 /**
- * La identidad de un snapshot de safetensors (TASK-THYROX-0761): el sha256 de su
+ * La identidad de un snapshot de safetensors (TASK-THYROX-0776): el sha256 de su
  * manifiesto. El vector es el mismo que fija la prueba del servidor de Python;
  * si una de las dos implementaciones cambia la definición, una de las dos cae.
  */

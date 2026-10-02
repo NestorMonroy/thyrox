@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""El servidor del runtime de Transformers de una ModelExecutionUnit (TASK-THYROX-0761).
+"""El servidor del runtime de Transformers de una ModelExecutionUnit (TASK-THYROX-0776).
 
 Qué haría fallar a esta suite:
 - que el digest del snapshot dejara de coincidir con el de TypeScript (mismo vector);

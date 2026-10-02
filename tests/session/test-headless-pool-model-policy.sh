@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# headless-pool con --model-policy (TASK-THYROX-0758): la política del
+# headless-pool con --model-policy (TASK-THYROX-0773): la política del
 # consumidor viaja al recomendador, y sin respaldo permitido el pool rehúsa
 # en vez de caer a claude-cli —por el recomendador, por el Ollama que no
 # arranca, o por un recomendador que devuelva igual un proveedor—.

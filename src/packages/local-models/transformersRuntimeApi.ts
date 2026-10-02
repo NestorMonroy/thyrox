@@ -1,6 +1,6 @@
 /**
  * El cliente HTTP del servidor del runtime de Transformers de una unidad
- * (`transformers-runtime/transformers_runtime_server.py`, TASK-THYROX-0761). Sólo
+ * (`transformers-runtime/transformers_runtime_server.py`, TASK-THYROX-0776). Sólo
  * traduce rutas y estados; quién puede llamar qué lo deciden el adapter (residencia)
  * y `admittedSeq2seq` (generación con ticket).
  */

@@ -81,7 +81,7 @@ export interface RuntimeContainerProfile {
   readonly environment: Readonly<Record<string, string>>
   /**
    * Cómo ve la unidad el artefacto concedido, si el runtime lo lee del disco
-   * en vez de recibirlo por su API (TASK-THYROX-0761): el directorio del
+   * en vez de recibirlo por su API (TASK-THYROX-0776): el directorio del
    * anfitrión que lo contiene, verificado, se monta de sólo lectura.
    */
   readonly artifactMount?: ArtifactMount

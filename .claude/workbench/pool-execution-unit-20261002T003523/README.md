@@ -1,4 +1,4 @@
-# Ítems de headless-pool dentro de ExecutionUnits (TASK-THYROX-0757)
+# Ítems de headless-pool dentro de ExecutionUnits (TASK-THYROX-0772)
 
 ## El encargo
 
@@ -54,7 +54,7 @@ Ninguna: el encargo se ejecutó tal como se pidió.
 | `probes/p2/finish.sh` | borrador del cambio, tal como se aplicó |
 | `probes/p2/fix-test.py` | borrador del cambio, tal como se aplicó |
 | `probes/p2/impl.py` | borrador del cambio, tal como se aplicó |
-| `probes/p2/test-headless-pool-execution-unit.sh` | headless-pool con --execution unit (TASK-THYROX-0757): cada ítem pide una |
+| `probes/p2/test-headless-pool-execution-unit.sh` | headless-pool con --execution unit (TASK-THYROX-0772): cada ítem pide una |
 | `outputs/` | 20 salidas: rojos, verdes y anulaciones |
 
 ## Los resultados
@@ -65,7 +65,7 @@ Antes: cada ítem lanzaba su `thyrox -p` en el anfitrión
 `--execution unit --work-reference CONSUMIDOR:ÁMBITO`: el ítem n pide su
 ejecución por el runner gestionado de `src/lib/managed_execution.sh` (el de
 `thyrox-bg`), autorizada por `--work CONSUMIDOR:ÁMBITO/n` y dueño
-`pool:ÁMBITO-n` (TASK-THYROX-0756). El texto del ítem va a `<n>.prompt`; la
+`pool:ÁMBITO-n` (TASK-THYROX-0771). El texto del ítem va a `<n>.prompt`; la
 unidad recibe sólo las variables nombradas con `--env`, ninguna credencial.
 Rehúsa con `--isolation worktree` y con `--credential-*`. GNU Time no mide el
 ítem en este modo (mediría al cliente que espera). Por defecto sigue `host`.

@@ -1,5 +1,5 @@
 /**
- * La identidad de un snapshot de safetensors (TASK-THYROX-0761): el sha256 de su
+ * La identidad de un snapshot de safetensors (TASK-THYROX-0776): el sha256 de su
  * manifiesto, una línea `ruta<TAB>sha256<TAB>bytes` por archivo, ordenadas por
  * ruta. Es el `artifactId` con que el catálogo y el grant citan el snapshot, y la
  * misma definición que aplica el runtime de Transformers dentro de la unidad

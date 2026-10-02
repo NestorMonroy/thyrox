@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# headless-pool con --execution unit (TASK-THYROX-0757): cada ítem pide una
+# headless-pool con --execution unit (TASK-THYROX-0772): cada ítem pide una
 # ejecución a la primitiva por el runner gestionado y no lanza su `thyrox -p`
 # en el anfitrión. Dobles: el recomendador (modelo local), el ensure de
 # Ollama, el ejecutor de ítems y el runner de la primitiva.
@@ -75,7 +75,7 @@ check "caso 2: si la primitiva no ejecuta, nada corre en el anfitrión" "$(wc -l
 printf 'alfa\n' | pool --out "$F/out-sin-ref" --execution unit >/dev/null 2>&1; CODE=$?
 check "caso 3: --execution unit sin referencia de trabajo se rehúsa con 2" "$CODE" "2"
 
-# Caso 4 (TASK-THYROX-0759): con el modelo local, la unidad recibe el socket del
+# Caso 4 (TASK-THYROX-0774): con el modelo local, la unidad recibe el socket del
 # coordinador del anfitrión —su directorio montado de sólo lectura y su ruta
 # nombrada—, y nada más del runtime.
 cat > "$F/execute" <<R
