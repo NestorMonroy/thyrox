@@ -1,0 +1,3 @@
+# RED/GREEN medidos por el verificador; base 691ef3126, 2026-10-02T14:14:56
+src/packages/provider/__tests__/anthropicHttpRetry.test.ts: base exit=1 · cambio exit=0
+exit=0

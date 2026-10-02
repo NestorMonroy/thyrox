@@ -1,0 +1,16 @@
+== A1: default retries back to 3 (opts.maxRetries ?? 3)
+replace_literal: 1 reemplazo(s) en src/anthropicHttp.ts
+(fail) AnthropicHttpProvider con la autoridad de reintentos > sin maxRetries declarado, THYROX_CODE_MAX_RETRIES=6 hace exactamente 7 peticiones ante un 502 persistente [3.93ms]
+(fail) AnthropicHttpProvider con la autoridad de reintentos > sin maxRetries ni la variable se usan los 10 reintentos de la autoridad: 11 peticiones [0.39ms]
+(fail) AnthropicHttpProvider con la autoridad de reintentos > un 502 que dura más que los ~7 s del presupuesto anterior se recupera: 5 fallos y luego 200 [0.36ms]
+(fail) AnthropicHttpProvider con la autoridad de reintentos > la espera crece en exponencial y nunca pasa del tope de la autoridad (32 s más 25 % de jitter) [0.49ms]
+ 3 pass
+ 4 fail
+== A2: retry-after ignored (getRetryDelay(attempt, null))
+replace_literal: 1 reemplazo(s) en src/anthropicHttp.ts
+(fail) AnthropicHttpProvider con la autoridad de reintentos > retry-after: 2 pide una espera de 2000 ms [0.56ms]
+ 6 pass
+ 1 fail
+== restored
+ 7 pass
+ 0 fail

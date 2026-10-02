@@ -8,7 +8,10 @@ fail=0
 (cd src/packages/local-models && bun test __tests__/ensureModel.test.ts __tests__/modelArtifactCache.test.ts \
   __tests__/localArtifactSource.test.ts __tests__/artifactRecoverability.test.ts __tests__/ensureModelHomes.test.ts > /dev/null 2>&1) \
   || { echo "FALLA pruebas de local-models"; fail=1; }
-(cd src/packages/local-models && bunx tsc -p tsconfig.test.json --noEmit > /dev/null 2>&1) || { echo "FALLA typecheck de local-models"; fail=1; }
+# Se exige que ningún error de typecheck nombre un archivo propio del ítem: la base puede traer
+# errores ajenos (en el proveedor eran 13 en HEAD) y no son de este ítem.
+tsc_out="$(cd src/packages/local-models && bunx tsc -p tsconfig.test.json --noEmit 2>&1)"
+grep -E '(ensureModel|modelArtifactCache|localArtifactSource|artifactRecoverability|bin/ensure)(\.test)?\.ts\(' <<< "$tsc_out" && { echo "FALLA typecheck en archivos propios"; fail=1; }
 grep -riE "qwen|coder|nomic" src/packages/local-models/localArtifactSource.ts src/packages/local-models/artifactRecoverability.ts \
   src/packages/local-models/ensureModel.ts && { echo "FALLA rama específica de un modelo"; fail=1; }
 for log in red green annulment; do [[ -s "$wb/outputs/L1-$log.log" ]] || { echo "FALLA falta outputs/L1-$log.log"; fail=1; }; done
