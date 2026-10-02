@@ -1,0 +1,35 @@
+OK   A: en curso, el ítem tiene su worktree
+OK   A: en curso, el runner vive
+OK   A: el pool no termina bien
+OK   A: ningún runner sobrevive al pool
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+OK   A: la salida no tiene el ítem
+OK   A: el worktree del ítem no cerrado se conserva
+OK   A: el trabajo a mitad sigue en el worktree
+OK   A: el runtime se conserva
+OK   A: el pool declara el runtime conservado
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+OK   A: reconcile declara el ítem recuperable
+bin/process_ownership: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+OK   B: GNU Parallel corre bajo el pool
+OK   B: el pool no termina bien
+OK   B: el joblog quedó sólo con cabecera
+OK   B: ningún runner sobrevive al pool
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+OK   B: el ítem quedó cerrado por su propio shell
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+OK   B: su manifiesto coincide con la salida
+OK   B: el veredicto es fallido (el runner murió)
+OK   B: la foto conserva el trabajo a mitad
+OK   B: el worktree se barrió sólo después de cerrar
+OK   B: el pool nombra el ítem sin veredicto de Parallel
+OK   control Ac: el bloque se retiró
+OK   control Ac: sin drenaje, el runner sobrevive al pool
+OK   control Bc: la guarda se retiró
+OK   control Bc: sin la guarda, el worktree del ítem no cerrado se barrió
+24/24 aserciones

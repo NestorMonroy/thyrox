@@ -1,0 +1,25 @@
+  | bin/pool_history: sin entorno del proveedor; corre con /usr/bin/python3.
+  |               Generalo con: cd "/home/user/thyrox" && uv sync
+  | gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+  | modelo: claude-opus-5-5 (derivado de --task-class analisis) runtime: claude-cli — respaldo: sin cualificación aprobada vigente de la clase analisis entre los 1 modelo(s) del catálogo local
+  | bin/pool_history: sin entorno del proveedor; corre con /usr/bin/python3.
+  |               Generalo con: cd "/home/user/thyrox" && uv sync
+  | historial: sin ejecución previa de /tmp/tmp.TcGv3gkZYP/runner en esta plantilla; ninguna con el modelo claude-opus-5-5: nada que derivar
+  | credencial: inherit (por defecto; sin variable de credencial en el entorno del pool: cada ítem la resuelve solo, y thyrox -p entra al proxy local)
+  | bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+  |               Generalo con: cd "/home/user/thyrox" && uv sync
+  | bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+  |               Generalo con: cd "/home/user/thyrox" && uv sync
+  | buzón: /tmp/tmp.TcGv3gkZYP/frozen.runtime/pool/e213d2c7ac03-20261002T002909-154/mailbox
+  | cache-ttl: 1h (constant)
+  | items=1 ok=1 fallidos=0
+  | bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+  |               Generalo con: cd "/home/user/thyrox" && uv sync
+  | memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)
+OK   the live pool keeps the summary of the copy it started with
+OK   the rewritten source does not reach the live pool
+OK   a frozen copy of the launcher exists while the item runs
+OK   the frozen copy is removed when the pool exits
+OK   control: the freeze block was removed from the unfrozen copy
+OK   control: without the freeze, the rewrite reaches the live pool
+result: 6 of 6 assertions green

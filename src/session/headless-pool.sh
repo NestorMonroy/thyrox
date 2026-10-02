@@ -21,6 +21,14 @@
 #     (`model-selection-subagents.md`);
 #   - deja su salida en disco, por item, antes de que nadie la resuma.
 #
+# `--execution unit` (TASK-THYROX-0757) hace que cada ítem pida su ejecución a
+# la primitiva por el runner gestionado (`src/lib/managed_execution.sh`, el de
+# `thyrox-bg`) en vez de lanzar su ejecutor en el anfitrión. El ítem se
+# autoriza por la identidad de trabajo del consumidor —`--work-reference
+# CONSUMIDOR:ÁMBITO`, y el ítem n es `ÁMBITO/n`— con dueño `pool`, y no recibe
+# ninguna credencial del pool. El pool sigue siendo el distribuidor: cómo se
+# materializa la unidad lo decide la primitiva. Por defecto, `host`.
+#
 # El modelo de los ítems no se declara: se deriva de `--task-class` con
 # `bin/agent-recommend` (`recommend(tipo, perfil)` de @thyrox/agent), que
 # fija rango mínimo y compara los registros del catálogo. Un identificador
@@ -37,6 +45,7 @@
 #                    [--credential-proxy | --store-credential-proxy]
 #                    [--credential-source inherit|proxy-env|proxy-store|proxy-store-url]
 #                    [--isolation worktree [--verify CMD]]
+#                    [--execution host|unit [--work-reference CONSUMIDOR:ÁMBITO]]
 #                    < items (uno por linea)
 #
 # Sin `--max-turns` el ítem no tiene tope de turnos, igual que `claude -p`:
@@ -197,6 +206,7 @@ RUNNER_KIND=thyrox
 PROMPT=""; OUT=""; MODEL=""; TASK_CLASS=""
 WIDTH="$(nproc 2>/dev/null || echo 4)"
 TIMEOUT=600; TOOLS="Read"; TOOLS_SET=""; ISOLATION=""; VERIFY=""; MAX_TURNS=""; WORKDIR="$PWD"; MEMFREE_SPEC=""; CACHE_TTL=""; CREDENTIAL_PROXY=""; STORE_CREDENTIAL_PROXY=""; CREDENTIAL_SOURCE=""
+EXECUTION=host; WORK_REFERENCE=""
 
 rehusa() { echo "headless-pool: REHUSA — $*" >&2; exit 2; }
 
@@ -219,10 +229,25 @@ while [[ $# -gt 0 ]]; do
         --store-credential-proxy) STORE_CREDENTIAL_PROXY=1; shift ;;
         --credential-source) CREDENTIAL_SOURCE="${2:-}"; shift 2 ;;
         --runner) RUNNER_KIND="${2:-}"; shift 2 ;;
+        --execution) EXECUTION="${2:-}"; shift 2 ;;
+        --work-reference) WORK_REFERENCE="${2:-}"; shift 2 ;;
         -h|--help) sed -n '2,69p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) rehusa "opcion desconocida: $1" ;;
     esac
 done
+# Dónde corre cada ítem. En la unidad el ítem no hereda el entorno del pool, así
+# que una fuente de credencial del pool no le llegaría: se rehúsa en vez de
+# aceptarla y no entregarla.
+case "$EXECUTION" in
+    host) [[ -z "$WORK_REFERENCE" ]] || rehusa "--work-reference sólo aplica con --execution unit" ;;
+    unit)
+        [[ "$WORK_REFERENCE" =~ ^[a-z0-9][a-z0-9-]*:[A-Za-z0-9][A-Za-z0-9_.:/-]*$ ]] \
+            || rehusa "--execution unit exige --work-reference CONSUMIDOR:ÁMBITO, la identidad de trabajo del consumidor; no: ${WORK_REFERENCE:-(vacía)}"
+        [[ -z "$ISOLATION" ]] || rehusa "--execution unit no va todavía con --isolation worktree"
+        [[ -z "$CREDENTIAL_PROXY$STORE_CREDENTIAL_PROXY$CREDENTIAL_SOURCE" ]] \
+            || rehusa "--execution unit no entrega credenciales del pool al ítem: no va con --credential-*" ;;
+    *) rehusa "--execution va host o unit, no: $EXECUTION" ;;
+esac
 
 command -v "$PARALLEL_BIN" >/dev/null 2>&1 \
     || rehusa "falta GNU parallel ($PARALLEL_BIN). Se instala con THYROX_INSTALL_PARALLEL=1 via src/lib/toolchain.sh."
@@ -748,12 +773,34 @@ _headless_item_run() {
          # `setsid` hace del ítem el líder de una sesión propia: su pid es el id
          # de la sesión, y todo lo que lance —también lo que `timeout` pone en
          # otro grupo de procesos— queda dentro, donde el drenaje lo encuentra.
-         exec setsid ${HP_TIME:+"$HP_TIME" -q -f "%M %e %U %S" -o "$HP_LIVE/$n.time"} \
-         timeout "$HP_TIMEOUT" "$HP_RUNNER" -p \
+         item_argv=("$HP_RUNNER" -p \
             --model "$HP_MODEL" --setting-sources project \
             --tools "$HP_TOOLS" --allowedTools "$HP_TOOLS" \
             ${HP_MAX_TURNS:+--max-turns "$HP_MAX_TURNS"} --no-session-persistence "${session_args[@]}" \
-            --output-format stream-json --verbose) \
+            --output-format stream-json --verbose)
+         if [[ "$HP_EXECUTION" == unit ]]; then
+             # La unidad no recibe la entrada estándar del pool: el texto del
+             # ítem va a un archivo de su salida, que la unidad monta. Recibe
+             # sólo las variables que el pool le nombra, ninguna credencial.
+             cat > "$HP_LIVE/$n.prompt"
+             mapfile -t execute_argv <<< "$HP_EXECUTE_RUNNER_ARGV"
+             unit_args=(--work "$HP_WORK_CONSUMER:$HP_WORK_SCOPE/$n" --owner "pool:${HP_WORK_SCOPE//[^A-Za-z0-9_.-]/-}-$n"
+                        --kind maintenance --network host --workdir "$workdir")
+             mounted=("$HP_THYROX_ROOT")
+             for path in "$workdir" "$HP_LIVE"; do
+                 covered=""
+                 for parent in "${mounted[@]}"; do [[ "$path/" == "$parent/"* ]] && covered=1; done
+                 [[ -n "$covered" ]] || { unit_args+=(--mount "$path:$path:rw"); mounted+=("$path"); }
+             done
+             for name in THYROX_CODE_PROMPT_CACHE_TTL THYROX_POOL_DOCUMENT_INTENT THYROX_POOL_RUN_ID THYROX_POOL_ITEM \
+                         THYROX_POOL_ITEM_GENERATION THYROX_MAILBOX_DIR THYROX_POOL_ITEM_ADDRESS; do
+                 [[ -z "${!name:-}" ]] || unit_args+=(--env "$name")
+             done
+             exec setsid timeout "$HP_TIMEOUT" "${execute_argv[@]}" run "${unit_args[@]}" \
+                -- bash -c 'prompt="$1"; shift; exec "$@" < "$prompt"' item "$HP_LIVE/$n.prompt" "${item_argv[@]}"
+         fi
+         exec setsid ${HP_TIME:+"$HP_TIME" -q -f "%M %e %U %S" -o "$HP_LIVE/$n.time"} \
+         timeout "$HP_TIMEOUT" "${item_argv[@]}") \
       > "$HP_LIVE/$n.stream.jsonl" 2> "$HP_LIVE/$n.err" &
     local pid=$! monitor=""
     # La sesión del ítem y el shell que la publica, para que el pool los drene
@@ -882,6 +929,12 @@ export HP_PROMPT HP_OUT HP_RUNNER
 export HP_WORKDIR="$WORKDIR" HP_TIMEOUT="$TIMEOUT" HP_MODEL="$MODEL"
 export HP_TOOLS="$TOOLS" HP_MAX_TURNS="$MAX_TURNS" HP_CACHE_TTL="$CACHE_TTL"
 export HP_ISOLATION="$ISOLATION" HP_VERIFY="$VERIFY" HP_RUNNER_KIND="$RUNNER_KIND"
+# El runner gestionado, el mismo que usa `thyrox-bg --task`: el pool sólo pide la
+# ejecución; qué la materializa no vive en este guion.
+# shellcheck source=../lib/managed_execution.sh
+source "$THYROX_ROOT/src/lib/managed_execution.sh"
+export HP_EXECUTION="$EXECUTION" HP_WORK_CONSUMER="${WORK_REFERENCE%%:*}" HP_WORK_SCOPE="${WORK_REFERENCE#*:}"
+export HP_THYROX_ROOT="$THYROX_ROOT" HP_EXECUTE_RUNNER_ARGV="$(thyrox_managed_execution_runner_argv)"
 export HP_ITEM_WORKTREE="${HEADLESS_POOL_ITEM_WORKTREE:-$HP_HERE/item_worktree.sh}"
 # Cuánto se espera a que un hijo del ítem salga solo después de que salió el
 # principal, antes de terminarlo (`process_ownership drain`).
@@ -920,6 +973,12 @@ fi
 HP_TIME="$(THYROX_TOOLCHAIN_TIME_BIN="${HEADLESS_POOL_TIME:-${THYROX_TOOLCHAIN_TIME_BIN:-}}"
            source "$HP_HERE/../lib/toolchain.sh"
            thyrox_toolchain_require_gnu_time 2>/dev/null && thyrox_toolchain_gnu_time_bin)" || HP_TIME=""
+# En la unidad, GNU Time mediría al cliente que espera la ejecución, no al ítem:
+# sus filas contaminarían el historial de memoria. La unidad acota memoria y CPU.
+if [[ "$EXECUTION" == unit && -n "$HP_TIME" ]]; then
+    HP_TIME=""
+    echo "medida: --execution unit no mide el ítem con GNU Time; lo acota la unidad"
+fi
 export HP_TIME
 
 MEMFREE_ARGS=()

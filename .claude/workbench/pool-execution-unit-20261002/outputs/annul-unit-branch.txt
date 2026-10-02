@@ -1,0 +1,13 @@
+  ok   caso 1: el pool sale 0
+  ok   caso 1: resumen
+tests/session/test-headless-pool-execution-unit.sh: line 55: /tmp/tmp.1YpyUQT1bF/execute.log: No such file or directory
+  FALLA caso 1: cada ítem pide su ejecución a la primitiva — esperado [2] obtenido []
+  FALLA caso 1: con la referencia de trabajo del consumidor y dueño pool — esperado [--work ai-course-notes:cs224r/1;--owner pool:cs224r-1;|--work ai-course-notes:cs224r/2;--owner pool:cs224r-2;|] obtenido []
+  ok   caso 1: el ejecutor corre dentro de la ejecución con el modelo local
+  ok   caso 1: cada ítem recibe su texto
+  FALLA caso 1: ningún ítem ve la credencial del anfitrión — esperado [] obtenido [credencial]
+  FALLA caso 1: la autorización no pide secretos — esperado [0] obtenido []
+  FALLA caso 2: si la primitiva no ejecuta, nada corre en el anfitrión — esperado [0] obtenido [1]
+  ok   caso 3: --execution unit sin referencia de trabajo se rehúsa con 2
+
+5 ok · 5 falla(s) (alcance medido: headless-pool --execution unit)
