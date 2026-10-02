@@ -1,0 +1,56 @@
+uv_env: /home/user/thyrox/.thyrox/runtime/continuation/worktrees/mechanism-registry-20261002T061646/T001-1790922496623420 corre con /home/user/thyrox/.venv
+FALLA tests/verify/test_search_existing_mechanisms.py
+FALLA tests/verify/test_check_mechanism_registry.py
+FALLA tests/verify/test_runner.py
+FALLA el registro real no pasa su verificador
+bash: bin/check_mechanism_registry: No such file or directory
+FALLA falta la fila execution-authorization
+FALLA falta la fila managed-execution
+FALLA falta la fila podman-executor
+FALLA falta la fila worker-resource-profile
+FALLA falta la fila headless-pool-runner
+FALLA falta la fila item-worktree
+FALLA falta la fila pool-lifecycle
+FALLA falta la fila pool-integrate
+FALLA falta la fila process-ownership
+FALLA falta la fila writer-inspector
+FALLA falta la fila resource-admission
+FALLA falta la fila assert-no-writes
+FALLA falta la fila agent-recommend
+FALLA falta la fila tsc-thompson-sampling
+FALLA el verificador no detecta authority
+FALLA el verificador no detecta symbol
+FALLA el verificador no detecta entry
+FALLA el verificador no detecta tests
+FALLA «process drain» no da FOUND process-ownership
+bash: bin/search_existing_mechanisms: No such file or directory
+FALLA una consulta sin coincidencias no da NONE con exit 1 (exit 127)
+FALLA un registro ilegible no sale 2 sin NONE (exit 127)
+FALLA --bench no deja la evidencia de la búsqueda
+FALLA falta outputs/T001-red.log
+FALLA falta outputs/T001-green.log
+FALLA falta outputs/T001-annulment.log
+scope: T001-0769 cambió 1 ruta(s) fuera de su alcance:
+  .entry-plan.txt
+FALLA T001 no añadió ninguna prueba
+gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+execution thyrox-worker-maintenance-muqo7f3n-5133 kind=maintenance task=TASK-THYROX-0769 exit=1
+__BG_EXIT__=1

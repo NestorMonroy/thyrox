@@ -1,0 +1,2 @@
+execution thyrox-worker-maintenance-muqocoy2-6379 kind=maintenance task=TASK-THYROX-0769 exit=1
+__BG_EXIT__=1

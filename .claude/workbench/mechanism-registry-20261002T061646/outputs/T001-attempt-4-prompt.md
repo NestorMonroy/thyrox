@@ -50,3 +50,39 @@ Tarea: T001
   execution thyrox-worker-maintenance-muqlbqp0-30982 kind=maintenance task=TASK-THYROX-0769 exit=1
   __BG_EXIT__=1
   ```
+- deepseek-v4.1-flash: provider_transient (exit 1, verificación 1)
+  ```
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  execution thyrox-worker-maintenance-muqlkyg9-1505 kind=maintenance task=TASK-THYROX-0769 exit=1
+  __BG_EXIT__=1
+  ```
+- deepseek-v4.1-flash: secret_exposure_detected (exit 1, verificación 1)
+  ```
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  gawk: fatal: cannot open file `src/verify/mechanisms.tsv' for reading: No such file or directory
+  execution thyrox-worker-maintenance-muqm6bnt-13123 kind=maintenance task=TASK-THYROX-0769 exit=1
+  __BG_EXIT__=1
+  ```

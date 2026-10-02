@@ -1,0 +1,2 @@
+execution thyrox-worker-maintenance-muqlnmyx-2324 kind=maintenance task=TASK-THYROX-0769 exit=1
+__BG_EXIT__=1
