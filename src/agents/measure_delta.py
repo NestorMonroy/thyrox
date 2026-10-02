@@ -35,11 +35,31 @@ def resolve_log(results_dir) -> Path | None:
     del proveedor — el mismo defecto que ``register_session`` cerró para el
     store.
     """
+    base = consumer_results_dir(results_dir)
+    if base is None:
+        return None
+    base.mkdir(parents=True, exist_ok=True)
+    return base / 'delta-de-agentes.md'
+
+
+def consumer_results_dir(results_dir) -> Path | None:
+    """El destino, o ``None`` si su consumidor no está en disco.
+
+    El consumidor es opcional para thyrox: su estado se recupera del store
+    SQLite, y un clon retirado para liberar disco no se recrea. El destino
+    tiene la forma ``<raíz>/.claude/agent-results``; se crean como mucho esos
+    dos niveles, nunca la raíz. Antes ``mkdir(parents=True)`` la recreaba
+    vacía, y su sola existencia hacía que ``reach.root('docs')`` resolviera
+    un corpus sin ``source/`` (H-THYROX-402).
+    """
     if not results_dir:
         return None
     base = Path(results_dir)
-    base.mkdir(parents=True, exist_ok=True)
-    return base / 'delta-de-agentes.md'
+    if not base.parent.parent.is_dir():
+        print(f'measure_delta: el consumidor de {base} no está en disco; '
+              'no se registra el delta', file=sys.stderr)
+        return None
+    return base
 
 
 def diff_symbols(before: set, after: set) -> tuple[set, set]:
@@ -106,6 +126,8 @@ def arrancar(payload, repos, results_dir):
     ``repos`` y ``results_dir`` son parámetros del consumidor (DEC-04):
     thyrox no sabe qué árbol vigila un kaupamex-* ni dónde guarda su log.
     """
+    if consumer_results_dir(results_dir) is None:
+        return
     os.makedirs(results_dir, exist_ok=True)
     base = {r: estado(ruta) for r, ruta in repos.items() if os.path.isdir(ruta)}
     destino = os.path.join(results_dir, f".base-{payload.get('agent_id', 'sin-id')}.json")

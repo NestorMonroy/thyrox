@@ -70,5 +70,17 @@ with tempfile.TemporaryDirectory() as tmp:
           "delta-de-agentes.md", ruta.name)
     check("y crea el directorio si falta", True, ruta.parent.is_dir())
 
+print("== D. El consumidor es opcional: un clon retirado no se recrea ==")
+with tempfile.TemporaryDirectory() as tmp:
+    consumer_root = Path(tmp) / "retired-consumer"
+    destino = consumer_root / ".claude" / "agent-results"
+    check("sin la raíz del consumidor, no hay log", None, measure_delta.resolve_log(destino))
+    measure_delta.arrancar({"agent_id": "x"}, {}, str(destino))
+    check("y ni resolve_log ni arrancar recrean la raíz", False, consumer_root.exists())
+    consumer_root.mkdir(exist_ok=True)
+    ruta = measure_delta.resolve_log(destino)
+    check("con la raíz presente crea .claude/agent-results", True,
+          ruta is not None and ruta.parent.is_dir())
+
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

@@ -236,6 +236,23 @@ check("y la minuscula tambien, como antes", "H-THYROX-01",
 _refused_odd, _ = _refuses("API-2")
 check("un prefijo con no-letras se rehusa", True, _refused_odd)
 
+print("\n== 11. el consumidor es opcional: ausente no es malformado ==")
+_real_root = hallazgo_ids.reach.root
+try:
+    hallazgo_ids.reach.root = lambda _name: TMP / "retired-consumer"
+    check("sin el clon, docs_root devuelve None", None, hallazgo_ids.docs_root())
+    check("y el árbol ausente no aporta números", [],
+          hallazgo_ids.used_numbers(None, "THYROX"))
+    (TMP / "retired-consumer").mkdir()
+    _malformed = False
+    try:
+        hallazgo_ids.docs_root()
+    except SystemExit:
+        _malformed = True
+    check("una raíz presente sin source/ sigue rehusando", True, _malformed)
+finally:
+    hallazgo_ids.reach.root = _real_root
+
 # ANULACION: retirando `validated_prefix` de `next_id`, caen exactamente las
 # cuatro aserciones de rehuso (H-THYROX x3 y API-2) y NINGUNA de las dos de
 # control positivo — medido al escribirlas.
