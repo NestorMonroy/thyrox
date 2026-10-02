@@ -69,3 +69,15 @@ verifier y `pool_integrate` lo integra. Criterio de cierre:
 `0665 accepted → first local managed code change → bootstrap canary complete`.
 Después no se consumen tareas de limpieza: el siguiente trabajo de
 implementación es el especialista de razonamiento (TASK-THYROX-0911).
+
+## Segundo intento (`a6-local-required-r2`): rechazo por contexto medido
+
+Con `task:mecanica` aprobada a 8192, el pool volvió a rehusar con exit 2, sin
+respaldo: «contexto medido insuficiente: el mayor aprobado para mecanica midió
+8192 tokens < 126029 exigidos». Sin `--context-tokens`, el recomendador exige el
+piso de subagente (126 029, H-DOCS-99). La autoridad para declararlo ya existe
+(`headless-pool --context-tokens`, TASK-THYROX-0781); la medición vigente de un
+ítem de `thyrox -p` es p90 13 406 tokens por turno (400 ítems). Declarar 8192
+sería inventar un requisito menor, así que la transición es cualificar
+`task:mecanica` a 16384 (`task-mecanica-16k`) y relanzar A6 con
+`--context-tokens 13406`.
