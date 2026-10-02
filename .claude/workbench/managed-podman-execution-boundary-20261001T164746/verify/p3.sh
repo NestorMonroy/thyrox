@@ -4,7 +4,7 @@
 # La fase de plano de control (unidades reales con dueño pool) la prueba
 # probes/p3_control_plane.sh desde el anfitrión: sin ella P3 no está aceptado (bootstrap.md).
 set -uo pipefail
-wb="$(cd "$(dirname "$0")/.." && pwd)"; cd /home/user/thyrox; fail=0
+wb="$(cd "$(dirname "$0")/.." && pwd)"; cd "$(git -C "$wb" rev-parse --show-toplevel)" || exit 2; fail=0
 owned=$(jq -r 'select(.id=="p3")|.owned|join(" ")' "$wb/plan.jsonl")
 for suite in tests/session/test-headless-pool*.sh; do
   bash "$suite" > /dev/null 2>&1 || { echo "FALLA $suite"; fail=1; }
@@ -16,7 +16,7 @@ done
 failed="$(cd src/packages/podman-execution && bun test 2>&1 | gawk '/^ *[0-9]+ fail$/ { print $1 }' | tail -1)"
 [[ "$failed" == 0 ]] || { echo "FALLA suite podman-execution: ${failed:-?}"; fail=1; }
 for gate in check_podman_materialization check_podman_access_ownership check_execution_authorization; do
-  uv run --frozen --no-sync python "src/verify/$gate.py" --root /home/user/thyrox --strict > /dev/null 2>&1 || { echo "FALLA $gate"; fail=1; }
+  uv run --frozen --no-sync python "src/verify/$gate.py" --root "$PWD" --strict > /dev/null 2>&1 || { echo "FALLA $gate"; fail=1; }
 done
 # Sin política nueva en el orquestador: headless-pool.sh no gana menciones de Podman, nvidia-smi ni
 # cgroups respecto de la base. Las de nvidia-smi que ya tiene son deuda de TASK-THYROX-0691 (ítem B),

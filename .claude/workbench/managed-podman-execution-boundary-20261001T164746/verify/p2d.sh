@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # p2d: la entrada canónica deja "entry":"thyrox-bg" y una unidad por clase usada por p3-p5.
 set -uo pipefail
-wb="$(cd "$(dirname "$0")/.." && pwd)"; cd /home/user/thyrox; fail=0
+wb="$(cd "$(dirname "$0")/.." && pwd)"; cd "$(git -C "$wb" rev-parse --show-toplevel)" || exit 2; fail=0
 # Las unidades por clase las demuestra el plano de control (probes/p2d_control_plane.sh):
 # una unidad no alcanza Podman (outputs/unit-podman-reachability.log).
 bash tests/session/test-bg-managed-execution.sh >/dev/null 2>&1 || { echo "FALLA test-bg-managed-execution"; fail=1; }

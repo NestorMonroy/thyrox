@@ -3,7 +3,7 @@
 # Uso: slice_evidence.sh <tramo> [--require <archivo-de-outputs>]... -- <orden>...
 set -uo pipefail
 wb="$(cd "$(dirname "$0")/.." && pwd)" slice="$1"; shift
-cd /home/user/thyrox; fail=0; required=(red green annulment)
+cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel)" || exit 2; fail=0; required=(red green annulment)
 while [[ $# -gt 0 && "$1" != -- ]]; do [[ "$1" == --require ]] && required+=("$2"); shift 2; done
 shift
 for name in "${required[@]}"; do

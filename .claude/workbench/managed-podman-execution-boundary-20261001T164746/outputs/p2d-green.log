@@ -1,0 +1,20 @@
+== tests/session/test-bg-managed-execution.sh
+  ok    caso 4: una entrada declarada del plano de control corre
+  ok    caso 4: su salida llega al log
+  ok    caso 5: un envoltorio que no apunta a su módulo declarado se rehúsa
+  ok    caso 5: no corrió nada
+  ok    caso 6: --secret-from-env llega al runner por nombre
+  ok    caso 6: el valor no aparece en el argv
+  ok    caso 7: --work se acepta en lugar de --task
+  ok    caso 7: el runner recibe la referencia de trabajo del consumidor, no una TASK
+  ok    caso 8: --task y --work juntos se rehúsan con 2
+  ok    caso 9: --attest llega al runner
+  ok    caso 10: el payload corre y vuelve su código
+  ok    caso 10: el payload ve la entrada por la que se materializó
+  ok    caso 10: la autorización pide el envío de la entrada a la unidad
+
+20 casos: 20 ok, 0 fallos
+exit=0
+== test_manifest_identity.py
+0 violación(es) (alcance medido: 63 línea(s) de manifest.jsonl)
+exit=0

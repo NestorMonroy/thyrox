@@ -368,6 +368,9 @@ cmd_start() {
         [[ -n "$workdir" ]] && authorization+=(--workdir "$workdir")
         [[ -n "$attest" ]] && authorization+=(--attest "$attest")
         for item in "${mounts[@]}"; do authorization+=(--mount "$item"); done
+        # La identidad de la entrada viaja como un --env más: la unidad la hereda
+        # del runner y su payload la firma en cada línea del manifiesto.
+        environment+=("THYROX_EXECUTION_ENTRY")
         for item in "${environment[@]}"; do authorization+=(--env "$item"); done
         # Una credencial se pasa por su nombre: el runner la monta como secreto.
         for item in "${secrets[@]}"; do authorization+=(--secret-from-env "$item"); done

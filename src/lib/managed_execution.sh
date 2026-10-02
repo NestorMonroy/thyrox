@@ -26,6 +26,15 @@ if type thyrox_managed_execution_runner_argv &>/dev/null; then return 0 2>/dev/n
 _MANAGED_EXECUTION_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 readonly _MANAGED_EXECUTION_RUNNER_SOURCE="src/packages/podman-execution/bin/execute.ts"
 
+# Identidad de la entrada: el payload de la unidad la escribe como campo `entry`
+# en cada línea del manifiesto (`probes/unit_identity.sh`). La hereda del
+# anfitrión porque el orquestador la pide como `--env` al runner (bg.sh), y sólo
+# así llega a la unidad. Una unidad materializada sin ella —la deuda de
+# arranque, `bin/podman-execution-execute`— se declara `bootstrap-cli`. Un
+# orquestador que materialice con otro nombre lo deja puesto antes de cargar
+# esta biblioteca.
+export THYROX_EXECUTION_ENTRY="${THYROX_EXECUTION_ENTRY:-thyrox-bg}"
+
 # @description El argv del runner de la primitiva, un elemento por línea.
 # @stdout el argv.
 thyrox_managed_execution_runner_argv() {

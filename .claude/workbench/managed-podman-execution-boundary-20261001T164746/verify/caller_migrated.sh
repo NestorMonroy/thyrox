@@ -5,7 +5,7 @@
 # paquete tiene más fallas que su línea base, o si falta la evidencia del tramo.
 set -uo pipefail
 wb="$(cd "$(dirname "$0")/.." && pwd)" slice="$1" package="$2"; shift 2
-cd /home/user/thyrox
+cd "$(git -C "$(dirname "$0")" rev-parse --show-toplevel)" || exit 2
 fail=0
 for file in "$@"; do
   if grep -nE 'runJobWithOutput|materializeContainer|WorkerContainerSpec' "$file"; then
