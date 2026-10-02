@@ -1,0 +1,188 @@
+== tareas: stdin
+#78  completed    [thyrox]  stdin_probe/wait-jobs: flujos sobre thyrox -p e identificadores en inglés
+#122  pending      [thyrox]  Empaquetado P3 — nativos .node incrustados por plataforma, decisión por nativo
+#133  pending      [thyrox]  Compose the roster into one liveness and progress verdict for controller jobs
+#147  completed    [thyrox]  MITM F7j-3 — `thyrox mitm` privilegiado: start/stop/restart, trust-cert, dns, reset, repair, diagnose, upstream-ca, tproxy
+#183  completed    [thyrox]  #106f-1 — Abrir el store de conexiones, resolver un selector y `thyrox providers list|remove`
+#185  completed    [thyrox]  #106f-3 — `thyrox providers add|import|edit`
+#187  completed    [thyrox]  #106f-4a — Corredor de inicio de sesión: callback, device code e import token sobre OAuthFlows
+#278  completed    [thyrox]  Daemon D9 — workers: pinned, IPC supervisor↔worker, folder reporting y retiro escalonado (Qe Dt Ze At Ar Ue Oe)
+#579  completed    [docs]  Un solo lector de tareas, con el sustrato en el llamador (H-DOCS-205)
+#959  completed    [docs]  RESUELTA — 18 claves delimitadas en 2.1.250, no 15 (H-DOCS-503)
+#1292  pending      [thyrox]  Izar las dependencias a la raíz del workspace, como la referencia
+#1379  pending      [thyrox]  Traer a thyrox los 5 paquetes @ant/ (228 modulos), conservando su alcance
+#1425  in_progress  [thyrox]  Triar por clase las 90 dependencias sin declarar de los otros 19 paquetes
+Total: 13 (alcance medido: 2416 tarea(s) de 8 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: stdin
+H-THYROX-190  [thyrox/resolve-all-thyrox-errors]  finding/ALTA  Sin archivo, un filtro lee el stdin de la herramienta, que es un socket abierto: se cuelga también en primer plano  (thyrox@7cd92e92, thyrox@5be11d03)
+H-THYROX-243  [thyrox/actualizar-agentic-ai-thyrox]  finding/ALTA  Medir la RAM al lanzar no la reserva: --memfree de GNU Parallel deja la misma carrera de comprobar-y-usar que la VRAM, y el tipo de stdin no predice el EOF  (src/session/parallel_map.sh; src/session/resource_admission.py; .claude/workbench/parallel-map-20260929T013858/annulment-memory.txt)
+H-THYROX-173  [thyrox/actualizar-agentic-ai-thyrox]  finding/ALTA  The plugin execFileNoThrowWithCwd binding passed cwd positionally, so marketplace git calls ran without cwd, timeout, stdin or env  (src/packages/app-host/src/runtime/installPluginBindings.ts)
+H-THYROX-419  [thyrox/local-bootstrap]  finding/ALTA  Search Existing acotado a src/packages y excepción bootstrap ampliada por el controlador ante cada bloqueo  (.claude/workbench/math-specialist-capability-20261002T211311/outputs/search-existing-matrix.md; 65a0e2b60; e18759949)
+H-THYROX-294  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/ALTA  En Podman el proceso del ítem cuelga de conmon→init, no del wrapper: GNU Time, gpu_monitor y la admisión de RAM medirían el cliente podman y darían un historial calibrado con 0  (src/session/headless-pool.sh:605-640,938; .claude/workbench/podman-execution-primitive-20260930T215755/probes/container_process_tree.sh)
+Total: 5 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: items
+#4  pending      [thyrox]  Run headless-pool items inside ExecutionUnits
+#8  pending      [thyrox]  Keep pool_integrate's record across reruns
+#10  pending      [thyrox]  Declare a retention policy for pool snapshot refs
+#13  pending      [thyrox]  Let headless-pool declare the context its items need
+#21  pending      [thyrox]  Retire superseded abandoned pool runs from the runtime
+#27  pending      [thyrox]  Run pool items in Podman on a neutral execution primitive the pool owns
+#33  completed    [thyrox]  Connect the pool lifecycle to the durable peer mailbox
+#54  pending      [thyrox]  Publish parallel_map item closure so its history records again
+#66  pending      [thyrox]  Stop pool verify from rejecting items when provider rebuilds fail under contention
+#68  pending      [thyrox]  Route pool items and thyrox -p to the managed Ollama by default
+#71  pending      [thyrox]  Admit lab containers and image builds against RAM and disk before they start
+#76  pending      [thyrox]  Derive required context from one authority measured per template
+#88  pending      [thyrox]  Wire image resolution, disk admission and lifecycle cleanup into the worker launch
+#95  completed    [thyrox]  Amend ADR-007 1.14.0: one model scheduling coordinator per host, close H-THYROX-306
+#117  completed    [thyrox]  Run the continuation controller over a runnable DAG frontier with GNU Parallel
+== hallazgos: items
+H-THYROX-297  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/MEDIA  El verify del pool rechazó 3 de 4 ítems de paridad del daemon con sus pruebas en verde: la reconstrucción de providers no emitió en el worktree y el motivo se descartaba  (src/verify/check_package_typecheck.py:refresh_providers)
+H-THYROX-192  [thyrox/resolve-all-thyrox-errors]  finding/MEDIA  Un pico de VRAM 0 en el historial apagó la admisión entre dos pools  (kaupamex-docs: source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-192-un-pico-de-vram-cero-apago-la-admision.rst)
+H-API-727  [api/alinear-addon-website-referencia]  finding/MEDIA  Un test de base afirmaba, sin saberlo, que ningún addon extiende  (source/gestion/pm/api/iniciativas/alinear-addon-website-referencia/hallazgos/hallazgo-H-API-727-un-test-de-base-afirmaba-la-ausencia-de-extensiones.rst)
+H-THYROX-283  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/ALTA  Los pools 7 y 8 salieron a la vez con ítems vivos y retiraron sus worktrees debajo de ellos  (thyrox: src/session/headless-pool.sh; .claude/workbench/pool-group8-20260930T034543/outputs/joblog.tsv; .thyrox/runtime/pool/f080fe07b4ff-20260930T034559-32386/)
+H-THYROX-243  [thyrox/actualizar-agentic-ai-thyrox]  finding/ALTA  Medir la RAM al lanzar no la reserva: --memfree de GNU Parallel deja la misma carrera de comprobar-y-usar que la VRAM, y el tipo de stdin no predice el EOF  (src/session/parallel_map.sh; src/session/resource_admission.py; .claude/workbench/parallel-map-20260929T013858/annulment-memory.txt)
+H-THYROX-291  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/MEDIA  El pool no necesita credencial propia: sin opción de credencial rige inherit y cada ítem entra al proxy local  (thyrox: src/session/headless-pool.sh:55-75)
+H-THYROX-285  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/MEDIA  Ni TERM al pool ni disco lleno reproducen el rastro de H-THYROX-283; sólo la muerte de GNU Parallel solo  (thyrox: .claude/workbench/pool-exit-live-items-20260930T060212/README.md)
+H-THYROX-295  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/MEDIA  parallel_map nunca graba historial desde el cierre por <n>.closed: su ejecución siguiente no deriva reserva de RAM, en silencio  (src/session/pool_history.py:153)
+H-THYROX-242  [thyrox/actualizar-agentic-ai-thyrox]  finding/ALTA  Editar headless-pool.sh mientras un pool lo ejecuta mató el pool en su resumen final: bash lee el guion por partes  (.claude/jobs/pending-six-20260929T005935/outputs/salida.log)
+H-THYROX-311  [thyrox/actualizar-agentic-ai-thyrox]  finding/MEDIA  Recortar la frontera a un ítem no serializa el controlador: la concurrencia surge de recalcular la frontera, no de su tamaño  (tests/session/test-continuation-frontier-e2e.sh; .claude/workbench/continuation-dag-frontier-20261002T003236/README.md)
+H-THYROX-294  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/ALTA  En Podman el proceso del ítem cuelga de conmon→init, no del wrapper: GNU Time, gpu_monitor y la admisión de RAM medirían el cliente podman y darían un historial calibrado con 0  (src/session/headless-pool.sh:605-640,938; .claude/workbench/podman-execution-primitive-20260930T215755/probes/container_process_tree.sh)
+H-THYROX-287  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/MEDIA  El verify de un ítem aislado rechazó tres ítems sanos por el entorno del worktree, no por su código  (src/session/item_worktree.sh)
+H-THYROX-298  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/ALTA  Los laboratorios saltan la admisión de recursos y tumban al pool: un OOM con el benchmark y un disco lleno con la imagen de RLVR  (src/session/resource_admission.py)
+Total: 13 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: math
+#22  completed    [api]  Portar los cuatro niveles de contexto al harness: hoy no tiene parada dura
+#22  completed    [thyrox]  Portar los cuatro niveles de contexto al harness: hoy no tiene parada dura
+#23  completed    [api]  Resolver si la compactación está activa — Qp() y sus dos variables de entorno
+#23  completed    [thyrox]  Resolver si la compactación está activa — Qp() y sus dos variables de entorno
+#37  completed    [gen]  SemanticSearchStore sobre PostgreSQL + pgvector (TASK-THYROX-0562)
+#151  pending      [thyrox]  Select a local math specialist by measured capability, not by name
+#940  completed    [api]  Corregir la fórmula del cap de parallel() en las 2 reglas de api
+#944  pending      [docs]  DESCONOCIDO: patrones para agent_width y spawn_depth sin falso positivo (H-DOCS-496)
+Total: 8 (alcance medido: 2416 tarea(s) de 8 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: math
+H-THYROX-67  [thyrox/construir-harness-propio]  finding/MEDIA  el piso que gobierna el underflow es el SUBNORMAL, no el normalizado  (source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-67-el-piso-del-underflow-es-el-subnormal.rst)
+H-THYROX-169  [thyrox/resolve-all-thyrox-errors]  finding/MEDIA  La estimacion de tokens conservaba un ajuste CJK de 1.5 que los estimadores de tokens del binario 2.1.275 no tienen  (_references/claude-code-bin/2.1.275/bunfs-root/chunk-8f0aeskw.js)
+Total: 2 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: reasoning
+#105  completed    [thyrox]  MITM F2 — handlers: base + claudeCode, codex, copilot, cursor, kiro, openCode, zed, antigravity, trae
+#114  completed    [thyrox]  MITM F2b — handler antigravity (Gemini→OpenAI y catálogo dinámico)
+#143  pending      [gen]  Distillation experiment on a sample of an external reasoning-trace dataset, only if retrieval leaves a gap
+#150  completed    [thyrox]  MITM F2b-2 — /v1/antigravity en el proxy local: traductor antigravity→openai (petición) y openai→antigravity (respuesta)
+#151  pending      [thyrox]  Select a local math specialist by measured capability, not by name
+Total: 5 (alcance medido: 2416 tarea(s) de 8 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: reasoning
+H-THYROX-403  [provider/provider-selection-migration]  finding/MEDIA  El traductor Messages→OpenAI reenvía reasoning_content del historial; Qwen pide no hacerlo  (src/packages/provider/src/proxy/translators/requestMessagesToOpenAI.ts:436)
+Total: 1 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: qualification
+#12  pending      [thyrox]  Qualify a local model for a task class with a consumer suite
+#67  completed    [thyrox]  Recommend a qualified local model first and fall back to claude-cli declared
+#69  in_progress  [thyrox]  Declare installed Ollama models in the catalog and qualify them by suite
+#70  in_progress  [thyrox]  Fine-tune local models by RLVR with the qualification suite as reward
+#72  pending      [thyrox]  Qualify a task class by doing its work, not only by tool-call format
+#77  completed    [thyrox]  Split protocol qualification from task qualification and mark contended measurements
+#78  pending      [thyrox]  Separate durable model specifications from local model observations
+#82  completed    [thyrox]  Declare a published Qwen2.5-Coder-7B Q4_K_M GGUF with exact revision and digest
+#111  pending      [thyrox]  Qualify API candidates without assuming Ollama, keeping protocol and task suites separate
+#114  pending      [thyrox]  Run the same task qualification suite on DeepSeek Flash, the Qwen candidate, a local model and Claude as baseline
+#116  pending      [gen]  Route candidates with the existing Thompson-sampling bandit: state=task class, action=candidate, reward=verified outcome
+#135  pending      [thyrox]  Accept Ollama artifacts by digest and qualify each capability independently
+#136  pending      [thyrox]  Resolve semantic-search embeddings through a qualified local or API provider
+#138  pending      [thyrox]  Measure how much of A1-A7 the local Qwen models can execute
+#143  pending      [gen]  Distillation experiment on a sample of an external reasoning-trace dataset, only if retrieval leaves a gap
+== hallazgos: qualification
+H-THYROX-415  [thyrox/local-bootstrap]  finding/MEDIA  QualificationStore sólo agrega: la corrección de una medición se hizo fuera de su autoridad  (src/packages/local-models/qualificationStore.ts)
+H-THYROX-404  [thyrox/provider-selection]  finding/ALTA  Model decisions ignore our own measured history: Thompson priors are per plan, execution_records has no writer  (src/session/task_continuation.py:290-314; src/packages/execution-records/executionRecordSql.ts:14-45; src/packages/model-artifacts/localModelHome.ts:45; .claude/jobs/mechanism-registry-run2-20261002T062448/outputs/salida.log)
+H-THYROX-413  [thyrox/local-bootstrap]  finding/ALTA  Tras la compactación, el controlador rompió tres invariantes que sólo vivían en la conversación: subagente Explore, payload fuera del ledger, dependencia del DAG sin medir  (src/hooks/tool_use_preflight.py)
+H-THYROX-419  [thyrox/local-bootstrap]  finding/ALTA  Search Existing acotado a src/packages y excepción bootstrap ampliada por el controlador ante cada bloqueo  (.claude/workbench/math-specialist-capability-20261002T211311/outputs/search-existing-matrix.md; 65a0e2b60; e18759949)
+H-THYROX-410  [thyrox/local-bootstrap]  finding/ALTA  L1 nunca pudo correr local: plan con candidatos API escritos a mano, delegate.sh que fuerza Token Plan, ninguna cualificación local suficiente y thyrox-ollama 'running' con el proceso muerto  (thyrox: src/session/task_continuation.py)
+DEC-THYROX-007-1-17-0  [thyrox/embedding-route-and-local-workers]  decision/-  ADR-007 1.17.0: a managed execution is reclaimable only after its required execution record is durable  (src/packages/podman-execution/executionCommand.ts)
+Total: 6 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: capability
+#53  completed    [thyrox]  Make the GPU an optional capability behind a memory backend port
+#61  pending      [thyrox]  Schedule model execution and issue ExecutionGrants
+#104  pending      [thyrox]  Gate any Podman materialization outside podman-execution-primitive
+#108  pending      [thyrox]  Run the Podman capability probes through the primitive instead of raw podman run
+#118  pending      [api]  Cablear el gate de capacidad a la superficie de service.db
+#126  pending      [thyrox]  S3: SemanticSearchStore boundary for exposure evidence (raw/search/retrieval + fingerprint)
+#135  pending      [thyrox]  Accept Ollama artifacts by digest and qualify each capability independently
+#136  pending      [thyrox]  Resolve semantic-search embeddings through a qualified local or API provider
+#138  pending      [thyrox]  Measure how much of A1-A7 the local Qwen models can execute
+#140  pending      [gen]  Qualify the capability batch implementation items actually require
+#144  pending      [gen]  Import qwen3:4b from the official Hugging Face GGUF with pinned revision and sha256
+#151  pending      [thyrox]  Select a local math specialist by measured capability, not by name
+#322  pending      [api]  Romper el ciclo base ↔ authz que atrapa 89 de 91 addons
+#428  completed    [api]  Portar el dispatcher /json/2 de addons/rpc (H-API-638)
+#429  pending      [api]  Barrer los stubs que racionalizan su ausencia (H-API-638)
+== hallazgos: capability
+H-DOCS-19  [docs/automatizar-gestion-y-control-de-documentos]  finding/MEDIA  El análisis de julio no calla sobre roles de BD: no podía preguntarlo  (source/gestion/pm/docs/iniciativas/automatizar-gestion-y-control-de-documentos/hallazgos/hallazgo-H-DOCS-19-analisis-de-julio-medido-bajo-el-motor-viejo.rst)
+Total: 1 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: context length
+Total: 0 (alcance medido: 2416 tarea(s) de 8 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: context length
+Total: 0 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: residency
+#1  pending      [thyrox]  Enable qwen2.5:7b-instruct as an eligible Thyrox execution model
+#61  pending      [thyrox]  Schedule model execution and issue ExecutionGrants
+#63  pending      [thyrox]  Constrain Ollama as an execution adapter under thyrox's plan
+#64  pending      [thyrox]  Extend the Podman primitive to materialize a granted model execution unit
+#65  pending      [thyrox]  Materialize model runtimes through the primitive so M2 holds
+#91  in_progress  [thyrox]  Install a PermanentArtifact into the managed Ollama and expose it under its catalog identity
+#93  completed    [thyrox]  Carry a ResolvedModelArtifact through grant, unit and adapter identity
+#94  completed    [thyrox]  Run the real Podman + Ollama E2E of a residency lifecycle
+#98  pending      [thyrox]  Place model residencies on GPU through the GpuMemoryBackend
+#147  pending      [gen]  Model execution targets with capabilities; scope the VRAM ledger by target and device
+#150  in_progress  [thyrox]  Run the host model coordinator under a declared Linux lifecycle
+Total: 11 (alcance medido: 2416 tarea(s) de 8 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: residency
+H-THYROX-306  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/ALTA  Una residencia no tiene camino para las peticiones de otro coordinador  (thyrox: src/packages/model-scheduling/residencyController.ts)
+H-THYROX-418  [thyrox/local-bootstrap]  finding/MEDIA  Una residencia caliente se reutiliza con menos contexto del pedido: la clave de residencia no incluye el contexto  (.claude/jobs/task-mecanica-16k-20261002T212740/outputs/salida.log; src/packages/model-scheduling/hostCoordinator.ts:153)
+H-THYROX-419  [thyrox/local-bootstrap]  finding/ALTA  Search Existing acotado a src/packages y excepción bootstrap ampliada por el controlador ante cada bloqueo  (.claude/workbench/math-specialist-capability-20261002T211311/outputs/search-existing-matrix.md; 65a0e2b60; e18759949)
+Total: 3 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: kv cache
+#56  pending      [thyrox]  Build a model-agnostic quantization pipeline: source → GGUF → quantize → validate → register
+Total: 1 (alcance medido: 2416 tarea(s) de 8 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: kv cache
+Total: 0 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: fingerprint
+#18  pending      [docs]  Clasificar vendor contra aplicación en el payload — hoy sin señal medible
+#18  pending      [api]  Clasificar vendor contra aplicación en el payload — hoy sin señal medible
+#78  pending      [thyrox]  Separate durable model specifications from local model observations
+#110  completed    [thyrox]  MITM F5 — certificados: rootCa, generate, activeCert, install, migration
+#126  pending      [thyrox]  S3: SemanticSearchStore boundary for exposure evidence (raw/search/retrieval + fingerprint)
+Total: 5 (alcance medido: 2416 tarea(s) de 8 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: fingerprint
+Total: 0 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: runtime
+#3  completed    [thyrox]  Fix incomplete per-package exports maps (9 packages, 33 files)
+#8  pending      [thyrox]  Add a Transformers seq2seq runtime behind the Podman primitive
+#10  pending      [thyrox]  Declare a retention policy for pool snapshot refs
+#11  pending      [thyrox]  Add a candle seq2seq runtime for the official MADLAD GGUF
+#12  pending      [thyrox]  Decide whether pool snapshots must survive the container
+#21  pending      [thyrox]  Retire superseded abandoned pool runs from the runtime
+#28  completed    [thyrox]  Estado compartido R5 — modo declarado, wiring de openSharedStateStore en el proxy, ciclo de vida y fallo por modo (multi rehúsa lo global)
+#33  completed    [thyrox]  Connect the pool lifecycle to the durable peer mailbox
+#34  completed    [thyrox]  Make cross-session SendMessage work from thyrox -p, with its two-process test
+#36  completed    [thyrox]  Empaquetado P11 — install crea y registra los hogares de un clon nuevo
+#40  completed    [thyrox]  Portar los 17 símbolos ausentes de compaction/compact.ts
+#42  pending      [thyrox]  Measure which entry points reach each operational dependency
+#43  pending      [thyrox]  Build the packaging matrix per entry point and activation condition
+#46  pending      [thyrox]  Ingest pool and agent-worktree evidence into the durable corpus
+#56  pending      [thyrox]  Build a model-agnostic quantization pipeline: source → GGUF → quantize → validate → register
+== hallazgos: runtime
+H-DOCS-1232  [docs/actualizar-agentic-ai-thyrox]  finding/MEDIA  trece de cuarentaiocho módulos de mcp-runtime bloqueados por un solo paquete ausente  (source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-DOCS-1232-trece-de-cuarentaiocho-modulos-bloqueados-por-un-solo-paquete-ausente.rst)
+H-THYROX-314  [local-models/ai-course-notes-es-mx]  finding/ALTA  headless-pool cae a claude-cli sin que el consumidor pueda prohibirlo  (src/session/headless-pool.sh)
+H-DOCS-1230  [docs/actualizar-agentic-ai-thyrox]  finding/ALTA  un import estático sin resolver crashea el módulo entero, no sólo el símbolo  (source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-DOCS-1230-un-import-estatico-sin-resolver-crashea-el-modulo-entero.rst)
+H-THYROX-290  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/ALTA  Las fotos del pool no salen del contenedor: 53 refs locales, 0 en origin, y su manifiesto vive en el runtime ignorado  (src/session/snapshot_store.py)
+H-THYROX-156  [thyrox/resolve-all-thyrox-errors]  finding/ALTA  Una fachada aceptada por aristas y tipos puede ser circular en runtime a traves de los bindings del host  (thyrox: src/packages/agent/agentHostBindings.ts:169; src/packages/agent/internal/headlessRuntime.ts:80)
+H-API-300  [api/integrar-familia-account-completa]  finding/ALTA  ``ResUsers`` no porta ``tz``; ``resource`` lo leía sin guard  (source/gestion/pm/api/iniciativas/integrar-familia-account-completa/hallazgos/hallazgo-H-API-300-tz-ausente-en-resusers.rst)
+H-THYROX-15  [thyrox/reducir-el-costo-en-historia-del-store]  finding/ALTA  los dos hogares de runtime de thyrox no están ignorados  (source/gestion/pm/thyrox/iniciativas/reducir-el-costo-en-historia-del-store/hallazgos/hallazgo-H-THYROX-15-los-dos-hogares-de-runtime-de-thyrox-no-estan-ignorados.rst)
+H-THYROX-132  [thyrox/completar-packages-desde-la-referencia]  finding/MEDIA  app-host viola su propio invariante declarado, y un catch se traga el fallo  (source/gestion/pm/thyrox/iniciativas/completar-packages-desde-la-referencia/hallazgos/hallazgo-H-THYROX-132-app-host-viola-su-propio-invariante-declarado.rst)
+H-DOCS-246  [docs/integrar-referencia-how-claude-code-works]  finding/MEDIA  el runtime de tree-sitter se fue; la gramática se quedó  (source/gestion/pm/docs/iniciativas/integrar-referencia-how-claude-code-works/hallazgos/hallazgo-H-DOCS-246-el-runtime-de-tree-sitter-se-fue-y-la-gramatica-se-quedo.rst)
+H-DOCS-1265  [docs/actualizar-agentic-ai-thyrox]  finding/MEDIA  el conteo original de exports incompletos (9/33) no se re-midió antes de cerrar  (source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-DOCS-1265-el-conteo-original-de-exports-incompletos-no-se-remidio-antes-de-cerrar.rst)
+H-DOCS-1160  [docs/actualizar-agentic-ai-thyrox]  finding/MEDIA  el filtro de dos pasos necesita el símbolo, no sólo el subpath  (source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-DOCS-1160-el-filtro-de-dos-pasos-necesita-el-simbolo-no-solo-el-subpath.rst)
+H-DOCS-1231  [docs/actualizar-agentic-ai-thyrox]  finding/MEDIA  un literal de cierre de comentario en la PROSA de un docstring corta el archivo en dos  (source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-DOCS-1231-un-literal-en-la-prosa-de-un-docstring-cierra-el-comentario.rst)
+H-API-302  [api/integrar-familia-account-completa]  finding/MEDIA  El envío del digest se declaró "gap de alcance"; tres de sus cinco piezas ya existían  (source/gestion/pm/api/iniciativas/integrar-familia-account-completa/hallazgos/hallazgo-H-API-302-envio-digest-declarado-gap.rst)
+H-THYROX-176  [thyrox/resolve-all-thyrox-errors]  finding/MEDIA  Una copia local del contrato local-jsx con índice abierto ocultaba errores reales y causaba 23 diagnósticos  (src/packages/command-runtime/src/types.ts; commit 200b7ed8)
+H-THYROX-244  [thyrox/actualizar-agentic-ai-thyrox]  finding/MEDIA  Cortar sessionStores -> repl/onChangeAppState no quita ningún módulo del bootstrap y dejaba el store de sesión sin su oyente  (src/packages/agent/sessionStores.ts; .claude/workbench/session-store-onchange-20260929T020417/measure.txt)

@@ -1,0 +1,174 @@
+== background -> src/session/background.py
+"""El segundo plano, ensamblado — N comandos con anchura acotada y SIN agentes.
+
+== adopt_background -> src/session/adopt_background.py
+#!/usr/bin/env python3
+"""Adopta en el ledger un trabajo que OTRO corredor mando a segundo plano.
+**ruta de salida**. Con esos dos el trabajo ya es registrable, y a partir de ahi
+
+== thyrox-bg -> src/session/bg.sh
+#!/bin/bash
+# =============================================================================
+# bg.sh — lanzar un comando largo en background y esperarlo con timeout
+# =============================================================================
+#
+# Encapsula los tres patrones que `long-running-commands.md` describe como
+# PROSA y que hasta ahora se copiaban a mano en cada invocación: R-1 (`nohup …
+# & disown`), R-2.0 (esperar por condición con marcador `EXIT=`) y R-2.1
+# (`tail -f --pid`).
+#
+# Por qué existe
+# --------------
+
+== headless-pool -> src/session/headless-pool.sh
+#!/usr/bin/env bash
+# =============================================================================
+# headless-pool.sh — la TERCERA forma de despacho: N lecturas con juicio, una
+# conversacion `thyrox -p` por item, repartidas con GNU Parallel
+# =============================================================================
+#
+# Por que existe
+# --------------
+# `trabajo-en-segundo-plano.md` tenia dos formas: el PROCESO (determinista,
+# cero tokens: `bg.sh`, `run-task-pool.sh`) y el SUBAGENTE (una conversacion
+# con juicio). Entre las dos faltaba la que el ejecutor pidio en H-THYROX-168:
+# N items independientes que SI exigen juicio —leer una nota y extraer sus
+
+== run-task-pool -> src/session/run-task-pool.sh
+#!/bin/bash
+# =============================================================================
+# run-task-pool.sh — N trabajos en segundo plano con anchura acotada, SIN agentes
+# =============================================================================
+#
+# Por qué existe
+# --------------
+# `bg.sh` lanza **uno**; `wait-jobs.sh` es la **barrera** de N. Entre los
+# dos faltaba la pieza que el ejecutor pidió: lanzar N comandos a la vez sin
+# despachar un agente por cada uno, con la anchura acotada a lo que la máquina
+# de verdad aprovecha.
+#
+
+== run-task-pool-job -> src/session/run-task-pool-job.sh
+#!/bin/bash
+# =============================================================================
+# run-task-pool-job.sh — un trabajo de `run-task-pool`, lanzado por GNU Parallel
+# =============================================================================
+#
+# GNU Parallel decide CUANDO corre cada trabajo; este envoltorio pone lo que
+# Parallel no trae y la barrera de thyrox necesita:
+#
+#   - el marcador `EXIT=<codigo>` al final del log, escrito por un shell
+#     EXTERIOR al comando: un `exit 7` dentro del comando termina su propio
+#     shell y el exterior sigue escribiendo el marcador;
+#   - el proceso del trabajo como lider de su grupo (`setsid`), registrado en
+
+== pool_pipeline -> src/verify/pool_pipeline.py
+#!/usr/bin/env python3
+"""Mide las propuestas del pool por lotes MIENTRAS el pool sigue.
+"""
+
+== parallel -> src/session/parallel.py
+#!/usr/bin/env python3
+"""parallel.py — el `parallel()` del cliente, con SU semántica, en Python.
+
+== parallel_map -> src/session/parallel_map.sh
+#!/usr/bin/env bash
+# Reparte un comando sobre N ítems con GNU Parallel, en primer plano.
+#
+# Es la forma que `detect_parallel_opportunity` sugiere para un `for` o un
+# `while read` con iteraciones independientes. Escrita a mano, `parallel -j N
+# -k` deja tres decisiones a quien la teclea, y las tres ya salieron mal:
+#
+# - la anchura: se elegía de memoria (-j5, -j7 en una máquina cuyo tope medido
+#   es 2). Aquí sale de `session.parallel.width_cap`, la fórmula del
+#   ejecutable; `--width N` la declara explícitamente;
+# - la identidad: `moreutils` instala otro `parallel` sin `--jobs`. Se resuelve
+#   con `thyrox_toolchain_require_parallel`, que lo rechaza;
+
+== inbox -> src/peer_mailbox/inbox.py
+#!/usr/bin/env python3
+"""El medio durable con que N agentes se hablan: un archivo de entrada por par.
+
+== runner -> src/verify/runner.py
+#!/usr/bin/env python3
+"""El corredor de gates de thyrox — un registro declarativo, no bloques a mano.
+"""
+
+== command-runtime -> src/packages/command-runtime/bin/command.ts
+#!/usr/bin/env bun
+/**
+ * La puerta al runtime de comandos: slash commands, sustitución de
+ * argumentos, y el descubrimiento de skills.
+ *
+ * El defecto que cierra. `command-runtime` decide qué se ejecuta cuando
+ * alguien escribe un slash-command o carga un directorio de skills — y sus
+ * 14 módulos de producto tenían CERO puertas: probados, y sólo alcanzables
+ * escribiendo código nuevo. Medido con
+ * `.claude/eventos/puertas-cli-faltantes-20260907T020525/probes/census_cli_doors.py`:
+ * `command-runtime  0  0  14  14` — cero puertas alcanzan cero de catorce.
+ *
+
+== source_copy_step -> src/verify/source_copy_step.py
+#!/usr/bin/env python3
+"""Un paso de copia desde la fuente vendorizada: sobrescribir archivos del
+"""
+
+== stdin_probe -> src/roster/stdin_probe.py
+"""La entrada estándar de un proceso, una línea por PID.
+"""
+
+== task_continuation -> src/session/task_continuation.py
+#!/usr/bin/env python3
+"""Controlador de continuación: consume el plan declarado de un banco como un DAG.
+
+== marker_wait -> src/session/marker_wait.py
+"""La espera de un marcador terminal — y el ABORTO con el error real.
+**el error real**, no un timeout.
+
+== batch_verification -> src/verify/batch_verification.py
+#!/usr/bin/env python3
+"""Verificar N arreglos de `TS2305` con UNA pasada de `tsc`, y juzgar cada uno.
+"""
+
+== rejection_sampling -> src/measurement/rejection_sampling.py
+#!/usr/bin/env python3
+"""Muestrear de ``q`` teniendo un borrador barato que muestrea de ``p``.
+**exactamente** ``q``, sin que el borrador la sesgue.
+**Primero: el residuo NO se calcula al construir.** Cuando ``p == q`` la suma
+**Segundo: pedir el residuo cuando no hay exceso REHUSA.** Devolver un vector
+
+== bie_series -> src/corpus/bie_series.py
+#!/usr/bin/env python3
+"""La nota de una serie del Banco de Informacion Economica se LEE, no se
+**Dos series del mismo organismo, del mismo dia y del mismo banco no
+
+== measure_delta -> src/agents/measure_delta.py
+#!/usr/bin/env python3
+"""measure_delta — qué símbolos ganó o perdió el disco durante un subagente.
+"""
+    """Dónde se apenda el delta. Es PARÁMETRO del consumidor.
+    """
+
+== step_report -> src/verify/step_report.py
+#!/usr/bin/env python3
+"""El informe de un paso del lazo, por capas separadas.
+"""
+#: La etiqueta de una salida que no declara su modelo.
+
+== manifest -> <sin fuente declarada>
+
+== podman-execution-execute -> src/packages/podman-execution/bin/execute.ts
+#!/usr/bin/env bun
+/** Entrada de `bin/podman-execution-execute`; la orden vive en `executionCommand.ts`. */
+
+== managed_execution_containment -> src/verify/managed_execution_containment.py
+"""ManagedExecutionContainmentGate: una tarea gestionada sólo se acepta si cada
+"""
+
+== check_execution_authorization -> src/verify/check_execution_authorization.py
+#!/usr/bin/env python3
+"""check_execution_authorization.py — ninguna unidad se materializa sin ExecutionAuthorization.
+*Métrica:* líneas de código productivo fuera de ``src/packages/podman-execution/``
+*Ciega a:* un trabajo que no usa Podman en absoluto —un proceso del anfitrión,
+"""
+

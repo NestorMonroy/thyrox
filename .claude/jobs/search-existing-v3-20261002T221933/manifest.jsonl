@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts run --task TASK-THYROX-0911 --kind probe --env THYROX_EXECUTION_ENTRY -- bash .claude/workbench/math-specialist-capability-20261002T211311/probes/search_existing_repo_wide.sh .claude/workbench/math-specialist-capability-20261002T211311/outputs/search-existing-v3", "started_at": "2026-10-02T22:19:33+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-02T22:20:07+00:00", "duration_seconds": 34.626068}

@@ -1,0 +1,12 @@
+   120 .claude/workbench/math-specialist-capability-20261002T211311/outputs/search-existing-v3/A-candidates.tsv
+  4690 .claude/workbench/math-specialist-capability-20261002T211311/outputs/search-existing-v3/A-hits.tsv
+   145 .claude/workbench/math-specialist-capability-20261002T211311/outputs/search-existing-v3/A-surfaces.tsv
+   739 .claude/workbench/math-specialist-capability-20261002T211311/outputs/search-existing-v3/B-definitions.tsv
+   117 .claude/workbench/math-specialist-capability-20261002T211311/outputs/search-existing-v3/C-consumers.tsv
+   188 .claude/workbench/math-specialist-capability-20261002T211311/outputs/search-existing-v3/D-stores.txt
+    27 .claude/workbench/math-specialist-capability-20261002T211311/outputs/search-existing-v3/D-workbenches.txt
+   125 .claude/workbench/math-specialist-capability-20261002T211311/outputs/search-existing-v3/named-candidates.txt
+    18 .claude/workbench/math-specialist-capability-20261002T211311/outputs/search-existing-v3/named-directories.txt
+  6169 total
+execution thyrox-worker-probe-murizvon-26178 kind=probe task=TASK-THYROX-0911 exit=0
+__BG_EXIT__=0

@@ -1,0 +1,125 @@
+== background -> src/session/generate_bin.py
+#!/usr/bin/env python3
+"""Genera ``bin/`` — nombre corto para los entrypoints de session/verify/agents.
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+
+== adopt_background -> src/session/generate_bin.py
+#!/usr/bin/env python3
+"""Genera ``bin/`` — nombre corto para los entrypoints de session/verify/agents.
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+
+== thyrox-bg -> src/session/generate_bin.py
+#!/usr/bin/env python3
+"""Genera ``bin/`` — nombre corto para los entrypoints de session/verify/agents.
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+
+== headless-pool -> src/session/generate_bin.py
+#!/usr/bin/env python3
+"""Genera ``bin/`` — nombre corto para los entrypoints de session/verify/agents.
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+
+== run-task-pool -> src/session/generate_bin.py
+#!/usr/bin/env python3
+"""Genera ``bin/`` — nombre corto para los entrypoints de session/verify/agents.
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+
+== run-task-pool-job -> src/session/generate_bin.py
+#!/usr/bin/env python3
+"""Genera ``bin/`` — nombre corto para los entrypoints de session/verify/agents.
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+
+== pool_pipeline -> src/session/generate_bin.py
+#!/usr/bin/env python3
+"""Genera ``bin/`` — nombre corto para los entrypoints de session/verify/agents.
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+
+== parallel -> src/session/generate_bin.py
+#!/usr/bin/env python3
+"""Genera ``bin/`` — nombre corto para los entrypoints de session/verify/agents.
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+
+== parallel_map -> src/session/generate_bin.py
+#!/usr/bin/env python3
+"""Genera ``bin/`` — nombre corto para los entrypoints de session/verify/agents.
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+
+== inbox -> src/session/generate_bin.py
+#!/usr/bin/env python3
+"""Genera ``bin/`` — nombre corto para los entrypoints de session/verify/agents.
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+
+== runner -> src/session/generate_bin.py
+#!/usr/bin/env python3
+"""Genera ``bin/`` — nombre corto para los entrypoints de session/verify/agents.
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+
+== command-runtime -> src/session/generate_bin.py
+#!/usr/bin/env python3
+"""Genera ``bin/`` — nombre corto para los entrypoints de session/verify/agents.
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+
+== source_copy_step -> src/session/generate_bin.py
+#!/usr/bin/env python3
+"""Genera ``bin/`` — nombre corto para los entrypoints de session/verify/agents.
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+
+== stdin_probe -> src/session/generate_bin.py
+#!/usr/bin/env python3
+"""Genera ``bin/`` — nombre corto para los entrypoints de session/verify/agents.
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+
+== task_continuation -> src/session/generate_bin.py
+#!/usr/bin/env python3
+"""Genera ``bin/`` — nombre corto para los entrypoints de session/verify/agents.
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+
+== marker_wait -> src/session/generate_bin.py
+#!/usr/bin/env python3
+"""Genera ``bin/`` — nombre corto para los entrypoints de session/verify/agents.
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+
+== batch_verification -> src/session/generate_bin.py
+#!/usr/bin/env python3
+"""Genera ``bin/`` — nombre corto para los entrypoints de session/verify/agents.
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+
+== rejection_sampling -> src/session/generate_bin.py
+#!/usr/bin/env python3
+"""Genera ``bin/`` — nombre corto para los entrypoints de session/verify/agents.
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+
+== bie_series -> src/session/generate_bin.py
+#!/usr/bin/env python3
+"""Genera ``bin/`` — nombre corto para los entrypoints de session/verify/agents.
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+
+== measure_delta -> src/session/generate_bin.py
+#!/usr/bin/env python3
+"""Genera ``bin/`` — nombre corto para los entrypoints de session/verify/agents.
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+
+== step_report -> src/session/generate_bin.py
+#!/usr/bin/env python3
+"""Genera ``bin/`` — nombre corto para los entrypoints de session/verify/agents.
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+
+== manifest -> src/session/generate_bin.py
+#!/usr/bin/env python3
+"""Genera ``bin/`` — nombre corto para los entrypoints de session/verify/agents.
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+
+== podman-execution-execute -> src/session/generate_bin.py
+#!/usr/bin/env python3
+"""Genera ``bin/`` — nombre corto para los entrypoints de session/verify/agents.
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+
+== managed_execution_containment -> src/session/generate_bin.py
+#!/usr/bin/env python3
+"""Genera ``bin/`` — nombre corto para los entrypoints de session/verify/agents.
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+
+== check_execution_authorization -> src/session/generate_bin.py
+#!/usr/bin/env python3
+"""Genera ``bin/`` — nombre corto para los entrypoints de session/verify/agents.
+**Lo que ese control deja a la vista, y no es cómodo:** los módulos de
+
