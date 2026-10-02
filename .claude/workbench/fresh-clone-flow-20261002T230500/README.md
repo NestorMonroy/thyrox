@@ -90,7 +90,7 @@ humana declarada sea la de quien escribió el cambio.
    periodo de alias. Medido con:
    `ls bin | grep -E "(^|[_-])(agrupar|tareas|…)([_-]|$)"` (léxico a mano: ciego
    a palabras fuera de esa lista).
-2. **`gawk` no tiene instalador opt-in** como `parallel` o `rsync`; la sonda
+2. **[FALSO, ver `outputs/install-provisioning.md`] `gawk` no tiene instalador opt-in** como `parallel` o `rsync`; la sonda
    sólo nombra `THYROX_TOOLCHAIN_AWK_BIN=gawk`, que no sirve si el binario no
    existe, y `bin/replace_literal` —la forma prescrita para reemplazar texto—
    rehúsa.
