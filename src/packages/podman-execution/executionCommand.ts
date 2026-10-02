@@ -13,10 +13,10 @@
 
 import { parseArgs } from 'node:util'
 
-import { runExecution, InvalidExecutionAuthorizationError, type ExecutionAuthorization, type ExecutionKind, type ExecutionSecret } from './executionAuthorization.js'
+import { runExecution, InvalidExecutionAuthorizationError, type ExecutionAuthorization, type ExecutionKind, type ExecutionReference, type ExecutionSecret } from './executionAuthorization.js'
 import { ensureSecretValue } from './resourceMaterialization.js'
 import { buildImage } from './imageStore.js'
-import { retireOrphanedWorkerContainers } from './workerContainerLifecycle.js'
+import { retireOrphanedWorkerContainers, type ContainerOwner } from './workerContainerLifecycle.js'
 import type { PodmanExecutor } from './podmanExecutor.js'
 import type { WorkerMountMode, WorkerNetworkMode, WorkerResourceMount } from './workerResourceProfile.js'
 
@@ -26,6 +26,7 @@ const EXECUTION_SECRET_PREFIX = 'thyrox-exec-'
 export const PROXY_CA_BUILD_PATH = '/etc/ssl/certs/proxy-ca.crt'
 const EXECUTION_IMAGE_KEY = 'THYROX_EXEC_IMAGE'
 const PROXY_CA_KEY = 'GIT_SSL_CAINFO'
+const POOL_OWNER_KIND = 'pool'
 const PROXY_KEYS = ['HTTPS_PROXY', 'https_proxy', 'HTTP_PROXY', 'http_proxy', 'NO_PROXY', 'no_proxy']
 const GIT_IDENTITY_KEYS = ['GIT_AUTHOR_NAME', 'GIT_AUTHOR_EMAIL', 'GIT_TERMINAL_PROMPT', 'GIT_EDITOR']
 const IMAGE_LIFECYCLE_LABEL = 'io.thyrox.image.lifecycle'
@@ -53,7 +54,7 @@ export type ExecutionCommandDeps = {
 }
 
 const USAGE = [
-  'uso: podman-execution-execute run --task TASK-<CAPA>-NNNN --kind <tipo> [--image REF] [--network none|host]',
+  'uso: podman-execution-execute run (--task TASK-<CAPA>-NNNN | --work CONSUMIDOR:ID) [--owner pool:ID] --kind <tipo> [--image REF] [--network none|host]',
   '                    [--mount ORIGEN[:DESTINO][:ro|rw]]... [--workdir DIR] [--env NOMBRE]...',
   '                    [--cpus N] [--memory-mib N] [--pids N] [--output RUTA]... [--secret-from-env NOMBRE]...',
   '                    (--script-stdin | -- ARGV...)',
@@ -148,6 +149,8 @@ async function runCommand(argv: string[], deps: ExecutionCommandDeps): Promise<n
     strict: true,
     options: {
       task: { type: 'string' },
+      work: { type: 'string' },
+      owner: { type: 'string' },
       kind: { type: 'string' },
       image: { type: 'string' },
       network: { type: 'string' },
@@ -162,7 +165,7 @@ async function runCommand(argv: string[], deps: ExecutionCommandDeps): Promise<n
       'secret-from-env': { type: 'string', multiple: true },
     },
   })
-  const task = requireValue(values.task, 'task')
+  const reference = referenceOf(values.task, values.work)
   const kind = requireValue(values.kind, 'kind') as ExecutionKind
   const secretNames = values['secret-from-env'] ?? []
   const missing = secretNames.filter(name => !deps.env[name])
@@ -173,8 +176,8 @@ async function runCommand(argv: string[], deps: ExecutionCommandDeps): Promise<n
   const egress = network === 'host' ? proxyEgress(deps.env) : { environment: {}, mounts: [] }
   const authorization: ExecutionAuthorization = {
     executionId: `${kind}-${deps.now().toString(36)}-${deps.pid}`,
-    reference: { kind: 'task', citation: task },
-    owner: { kind: 'task', id: task.toLowerCase(), pid: deps.pid },
+    reference,
+    owner: ownerOf(values.owner, reference, deps.pid),
     kind,
     image: values.image ?? deps.env[EXECUTION_IMAGE_KEY] ?? DEFAULT_EXECUTION_IMAGE,
     command,
@@ -193,8 +196,33 @@ async function runCommand(argv: string[], deps: ExecutionCommandDeps): Promise<n
   const result = await runExecution(deps.podman, authorization)
   deps.output.stdout(result.stdout)
   deps.output.stderr(result.stderr)
-  deps.output.stderr(`execution ${result.containerName} kind=${kind} task=${task} exit=${result.exitCode}\n`)
+  deps.output.stderr(`execution ${result.containerName} kind=${kind} ${referenceText(reference)} exit=${result.exitCode}\n`)
   return result.exitCode
+}
+
+/** `--task` o `--work CONSUMIDOR:ID`, uno solo: el consumidor cita su trabajo sin volverlo una TASK de thyrox. */
+function referenceOf(task: string | undefined, work: string | undefined): ExecutionReference {
+  if ((task === undefined) === (work === undefined)) throw new UsageError('declara --task o --work, uno solo')
+  if (task !== undefined) return { kind: 'task', citation: task }
+  const separator = work!.indexOf(':')
+  if (separator <= 0) throw new UsageError(`--work va CONSUMIDOR:ID, recibido: ${work}`)
+  return { kind: 'work', consumer: work!.slice(0, separator), workId: work!.slice(separator + 1) }
+}
+
+/** El dueño por defecto es la propia referencia; por línea de orden sólo se declara un dueño `pool`. */
+function ownerOf(declared: string | undefined, reference: ExecutionReference, pid: number): ContainerOwner {
+  if (declared !== undefined) {
+    const [kind, id] = [declared.slice(0, declared.indexOf(':')), declared.slice(declared.indexOf(':') + 1)]
+    if (kind !== POOL_OWNER_KIND || !id) throw new UsageError(`--owner va pool:ID, recibido: ${declared}`)
+    return { kind: POOL_OWNER_KIND, id, pid }
+  }
+  if (reference.kind === 'task') return { kind: 'task', id: reference.citation.toLowerCase(), pid }
+  if (reference.kind === 'work') return { kind: 'task', id: `${reference.consumer}.${reference.workId}`.replace(/[^A-Za-z0-9_.-]/g, '-'), pid }
+  throw new UsageError(`una ejecución por línea de orden no se autoriza por ${reference.kind}`)
+}
+
+function referenceText(reference: ExecutionReference): string {
+  return reference.kind === 'task' ? `task=${reference.citation}` : reference.kind === 'work' ? `work=${reference.consumer}:${reference.workId}` : reference.kind
 }
 
 async function buildImageCommand(argv: string[], deps: ExecutionCommandDeps): Promise<number> {

@@ -53,12 +53,22 @@ const EXECUTION_LABEL_KEYS = [EXECUTION_KIND_LABEL_KEY, EXECUTION_REFERENCE_LABE
 export const TASK_CITATION_PATTERN = /^TASK-[A-Z]+-\d{4}$/
 const EXECUTION_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_.-]{0,62}$/
 const REFERENCE_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_.:-]*$/
+/** El consumidor que cita su propio trabajo: un nombre corto en minúsculas. */
+export const WORK_CONSUMER_PATTERN = /^[a-z0-9][a-z0-9-]{0,62}$/
+/** El id de trabajo del consumidor, tal como él lo versiona; admite `/` para rutas de su ledger. */
+export const WORK_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_.:\/-]{0,199}$/
 const SECRET_NAME_PATTERN = /^[a-z0-9][a-z0-9_.-]*$/
 const SECRET_TARGET_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_.-]*$/
 
-/** Lo que autoriza la ejecución: la tarea, el grant de modelo o el recurso de infraestructura. */
+/**
+ * Lo que autoriza la ejecución: la tarea, el trabajo de un consumidor, el
+ * grant de modelo o el recurso de infraestructura. `work` es la identidad
+ * durable que un consumidor versiona en su propio ledger (un lote, una unidad
+ * de traducción): thyrox la cita sin convertirla en una TASK suya.
+ */
 export type ExecutionReference =
   | { kind: 'task'; citation: string }
+  | { kind: 'work'; consumer: string; workId: string }
   | { kind: 'grant'; grantId: string }
   | { kind: 'infrastructure'; resource: string }
 
@@ -141,18 +151,29 @@ function expectedReferenceKind(kind: ExecutionKind): ExecutionReference['kind'] 
 
 function referenceLabel(reference: ExecutionReference): string {
   if (reference.kind === 'task') return `task:${reference.citation}`
+  if (reference.kind === 'work') return `work:${reference.consumer}:${reference.workId}`
   if (reference.kind === 'grant') return `grant:${reference.grantId}`
   return `infrastructure:${reference.resource}`
 }
 
 function requireReference(kind: ExecutionKind, reference: ExecutionReference): void {
   const expected = expectedReferenceKind(kind)
-  if (reference.kind !== expected) refuse('reference', `una ejecución ${kind} se autoriza por ${expected}, recibido: ${reference.kind}`)
+  const accepted = expected === 'task' && reference.kind === 'work'
+  if (reference.kind !== expected && !accepted) refuse('reference', `una ejecución ${kind} se autoriza por ${expected}, recibido: ${reference.kind}`)
+  if (reference.kind === 'work') return requireWorkReference(reference)
   if (reference.kind === 'task' && !TASK_CITATION_PATTERN.test(reference.citation)) {
     refuse('reference', `la tarea se cita como TASK-<CAPA>-NNNN, recibido: ${reference.citation}`)
   }
   const identifier = referenceLabel(reference).slice(reference.kind.length + 1)
   if (!REFERENCE_ID_PATTERN.test(identifier)) refuse('reference', `identificador de referencia inválido: ${identifier}`)
+}
+
+/** El consumidor y su id, cada uno en su forma; un segmento `..` no es un id de trabajo. */
+function requireWorkReference(reference: { consumer: string; workId: string }): void {
+  if (!WORK_CONSUMER_PATTERN.test(reference.consumer)) refuse('reference', `consumidor inválido: ${reference.consumer}`)
+  if (!WORK_ID_PATTERN.test(reference.workId) || reference.workId.split('/').includes('..')) {
+    refuse('reference', `id de trabajo inválido: ${reference.workId}`)
+  }
 }
 
 function requireOwner(owner: ContainerOwner): void {
