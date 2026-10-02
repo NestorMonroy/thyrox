@@ -22,7 +22,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "src"))
 
 from session.task_continuation import (  # noqa: E402
     Evidence, PlanItem, attempt_prompt, candidate_counts, choose_candidate, classify,
-    classify_deterministic, load_plan, next_item, transition,
+    classify_deterministic, load_plan, transition,
 )
 
 OK = FAILED = 0
@@ -40,11 +40,7 @@ def check(name, expected, actual):
 ITEM = PlanItem(id="p2a", prompt="p2a.md", verify="true", candidates=("qwen3.8-flash", "deepseek-v4.1-flash"))
 PLAN = [ITEM, PlanItem(id="p2b", prompt="p2b.md", verify="true", candidates=("qwen3.8-flash",))]
 
-# el plan manda el orden
-check("primer ítem sin aceptar", "p2a", next_item(PLAN, []).id)
-check("tras aceptar p2a, p2b", "p2b", next_item(PLAN, [{"kind": "accepted", "item": "p2a"}]).id)
-check("un intento no acepta", "p2a", next_item(PLAN, [{"kind": "attempt", "item": "p2a", "outcome": "success"}]).id)
-check("todo aceptado", None, next_item(PLAN, [{"kind": "accepted", "item": "p2a"}, {"kind": "accepted", "item": "p2b"}]))
+# qué se despacha lo decide la frontera del DAG: tests/session/test_continuation_frontier.py
 
 # reglas deterministas
 E = lambda **kw: Evidence(item="p2a", model="qwen3.8-flash", **{"exit": 1, **kw})  # noqa: E731
@@ -116,7 +112,7 @@ check("la máscara va antes del payload", True, argv.index("--mount") < argv.ind
 # el despacho del trabajador pasa la máscara; la verificación, no (no lleva juicio ni proveedor)
 import session.task_continuation as controller  # noqa: E402
 calls = []
-def fake_unit(name, task, argv, network=None, secrets=(), mounts=()):
+def fake_unit(name, task, argv, network=None, secrets=(), mounts=(), **unit):
     calls.append({"name": name, "mounts": mounts})
     return (1, "") if "preverify" in name else (0, "")
 with tempfile.TemporaryDirectory() as tmp:
@@ -178,9 +174,11 @@ with tempfile.TemporaryDirectory() as tmp:
         controller.run_in_unit, controller.reconcile_orphans, controller.commit_item = saved
     check("el ítem que necesita la expuesta queda bloqueado", "blocked", blocked)
     check("y no se despacha ninguna unidad", [], calls)
-    check("un ítem bloqueado no detiene al siguiente", "k",
-          next_item([PlanItem(id="j", prompt="p", verify="v", candidates=("m",)), PlanItem(id="k", prompt="p", verify="v", candidates=("m",))],
-                    [{"kind": "blocked", "item": "j"}]).id)
+    from session.continuation_frontier import item_states, runnable_items
+    check("un ítem bloqueado no detiene a uno independiente", ["k"],
+          [e.id for e in runnable_items([PlanItem(id="j", prompt="p", verify="v", candidates=("m",)),
+                                         PlanItem(id="k", prompt="p", verify="v", candidates=("m",))],
+                                        item_states([{"kind": "start"}, {"kind": "blocked", "item": "j"}]))])
 
 # un registro de trabajo vivo no viaja en el commit: se mide por su PID
 import os  # noqa: E402
@@ -194,7 +192,7 @@ with tempfile.TemporaryDirectory() as tmp:
 
 # los fallos de proveedor tienen su presupuesto: cinco 502 seguidos no bloquean el ítem
 dispatches = []
-def flaky_unit(name, task, argv, network=None, secrets=(), mounts=()):
+def flaky_unit(name, task, argv, network=None, secrets=(), mounts=(), **unit):
     if "preverify" in name:
         return (1, "")
     if name.endswith(tuple("0123456789")) and "-verify-" not in name:
