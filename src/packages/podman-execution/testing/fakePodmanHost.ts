@@ -70,6 +70,8 @@ export class FakePodmanHost implements PodmanExecutor {
   readonly healthyContainers = new Set<string>()
   /** Si se fija, el siguiente `create` falla con este resultado. */
   failNextCreate: PodmanCommandResult | null = null
+  /** Resultados con que fallan los siguientes `start`, en orden. */
+  readonly failNextStarts: PodmanCommandResult[] = []
   private nextPid = FIRST_PID
 
   isProcessAlive = (pid: number): boolean => this.alivePids.has(pid)
@@ -148,6 +150,8 @@ export class FakePodmanHost implements PodmanExecutor {
   private start(name: string): PodmanCommandResult {
     const container = this.containers.get(name)
     if (!container) return fail(`Error: no such container ${name}`)
+    const failure = this.failNextStarts.shift()
+    if (failure) return failure
     const pid = this.nextPid++
     container.status = 'running'
     container.pid = pid

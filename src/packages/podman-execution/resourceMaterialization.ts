@@ -76,6 +76,7 @@ export type DriftReason =
   | 'secret-declaration'
   | 'secret-value'
   | 'stale-process'
+  | 'stale-runtime-state'
   | 'health-failure'
   | 'ownership-collision'
   | 'legacy-owner-labels'
@@ -449,6 +450,34 @@ function planFor(existing: InspectedResource | null, ownership: Ownership, desir
 }
 
 /**
+ * Lo que runc dice cuando conserva el directorio de estado de un contenedor
+ * cuyo proceso ya no existe —tras reiniciar la VM, `/run/runc` sobrevive— y
+ * rehúsa crear otro con el mismo ID (medido el 2026-10-02 con thyrox-postgres).
+ */
+const STALE_RUNTIME_STATE_LITERAL = 'container with given ID already exists'
+
+/**
+ * Arranca el contenedor. Si runc rehúsa por estado stale de un contenedor que
+ * la primitiva no acaba de crear, lo recrea UNA vez —un ID nuevo no choca con
+ * el directorio huérfano— y vuelve a arrancar; los volúmenes no se tocan. Devuelve
+ * si hubo que recrear. Cualquier otro fallo, o el mismo tras recrear, se propaga.
+ */
+async function startOrRecreateStale(deps: ResourceMaterializationDeps, desired: DesiredResource, plan: Plan): Promise<boolean> {
+  try {
+    await step(deps, 'start', ['start', desired.name])
+    return false
+  } catch (error) {
+    const stale = error instanceof MaterializationStepError && !plan.create
+      && `${error.result.stderr}${error.result.stdout}`.includes(STALE_RUNTIME_STATE_LITERAL)
+    if (!stale) throw error
+  }
+  await step(deps, 'remove', ['rm', '--force', desired.name])
+  await step(deps, 'create', createResourceArgv(desired))
+  await step(deps, 'start', ['start', desired.name])
+  return true
+}
+
+/**
  * Converge un recurso hacia su declaración. Valida antes de tocar Podman
  * (rehúsa con `InvalidDesiredResourceError`); el resto de fallos vuelven como
  * `failed` con su etapa y un mensaje sin valores secretos.
@@ -475,10 +504,18 @@ export async function ensureResource(
       outcome.created = true
     }
     if (plan.start) {
-      await step(deps, 'start', ['start', desired.name])
+      const recreatedForStaleRuntime = await startOrRecreateStale(deps, desired, plan)
+      if (recreatedForStaleRuntime) {
+        outcome.drift = [...plan.drift, 'stale-runtime-state']
+        outcome.created = true
+        outcome.action = 'recreated'
+      } else {
+        outcome.action = plan.action
+      }
       outcome.started = true
+    } else {
+      outcome.action = plan.action
     }
-    outcome.action = plan.action
   } catch (error) {
     if (error instanceof MaterializationStepError) return { ...outcome, action: 'failed', failure: failureOf(error.stage, error.result, secrets) }
     throw error

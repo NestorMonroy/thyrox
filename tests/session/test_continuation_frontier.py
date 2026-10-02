@@ -71,6 +71,13 @@ check("T3 queda condenada por T1", [("T3", "dependencia sin aceptar: T1")],
       [(entry.id, why) for entry, why in doomed_items(DAG, item_states(failed))])
 check("una ejecución nueva reintenta lo fallido", ["T1", "T2", "T4"],
       ids(runnable_items(DAG, item_states(failed + [START]))))
+# proceso muerto sin resultado aceptado: el ítem no avanza la frontera y se
+# reintenta desde el mismo ítem en la ejecución siguiente (continuation6 y 7)
+died = [START, {"kind": "dispatched", "item": "T1"}]
+check("despachado sin asiento sigue en curso en su ejecución", [], ids(runnable_items(DAG[:1], item_states(died))))
+check("tras un start nuevo, el mismo ítem vuelve a la frontera", ["T1", "T2", "T4"],
+      ids(runnable_items(DAG, item_states(died + [START]))))
+check("y su dependiente sigue esperando", "T3" not in ids(runnable_items(DAG, item_states(died + [START]))), True)
 check("una aceptación vale entre ejecuciones", ["T2", "T3", "T4"],
       ids(runnable_items(DAG, item_states([START, {"kind": "accepted", "item": "T1"}, START]))))
 

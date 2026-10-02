@@ -63,7 +63,16 @@ recrea (`kept`): la salud se comprueba, no es propiedad del contenedor, y
 
 *Metrica:* acción y volúmenes que reporta la primitiva, fila leída desde otra
 unidad, ocurrencias del valor en `inspect`.
-*Ciega a:* un reinicio de la microVM (lo que se probó es la recreación del
-contenedor, no el arranque en frío de la VM), y a la deriva de `thyrox-redis`
-y `thyrox-ollama`, que siguen como contenedores del camino anterior sin
-etiqueta de dueño y no se tocaron aquí.
+*Ciega a:* nada de lo que esta tabla afirma; ver el reinicio abajo.
+
+## Tras reiniciar la microVM (2026-10-02T01:51:27)
+
+La VM se reinició durante el trabajo. El ensure posterior rehusó con exit 3
+(locks 0 de 7, precondiciones de H-THYROX-308) sin reparar nada; tras
+`bin/podman_lock_recovery --confirm` (7 de 7), un primer ensure falló en el
+`start` de PostgreSQL con `runc create failed: container with given ID already
+exists` —runc conservaba el directorio de estado del contenedor muerto—. La
+primitiva aprendió a recrearlo una vez en ese caso (`stale-runtime-state`); el
+ensure siguiente lo dejó `started`, `healthy`, volumen `preserved`, sin pasar
+por esa rama (el `start` ya no falló). La fila marcadora sigue ahí:
+`outputs/after-vm-restart.log`.

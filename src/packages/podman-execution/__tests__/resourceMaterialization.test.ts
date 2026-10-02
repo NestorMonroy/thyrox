@@ -178,6 +178,48 @@ describe('ensureResource — convergencia', () => {
     expectNoVolumeRemoved()
   })
 
+  // Tras reiniciar la VM, runc conserva el directorio de estado de un contenedor
+  // cuyo proceso ya no existe, y rehúsa crear otro con el mismo ID (medido el
+  // 2026-10-02 con thyrox-postgres). El recurso es de thyrox: lo converge la
+  // primitiva recreándolo con un ID nuevo, una sola vez y sin tocar el volumen.
+  const RUNC_STALE = { exitCode: 125, stdout: '', stderr: 'Error: OCI runtime error: unable to start container "abc": runc: runc create failed: container with given ID already exists' }
+
+  function stopWithoutProcess(): void {
+    const container = host.containers.get(NAME)
+    if (container) { host.alivePids.delete(container.pid); container.status = 'created'; container.pid = 0 }
+  }
+
+  test('start rehusado por estado stale de runc: recreated una vez, volumen intacto', async () => {
+    await ensureHealthy()
+    stopWithoutProcess()
+    host.failNextStarts.push(RUNC_STALE)
+    const outcome = await ensureHealthy()
+    expect(outcome).toMatchObject({ action: 'recreated', drift: ['stale-runtime-state'], created: true, started: true, health: 'healthy' })
+    expect(outcome.volumes).toEqual([{ volume: VOLUME, state: 'preserved' }])
+    expectNoVolumeRemoved()
+  })
+
+  test('start que falla por otra causa: failed, sin recrear', async () => {
+    await ensureHealthy()
+    stopWithoutProcess()
+    host.calls.length = 0
+    host.failNextStarts.push({ exitCode: 125, stdout: '', stderr: 'Error: some other start failure' })
+    const outcome = await ensureHealthy()
+    expect(outcome.action).toBe('failed')
+    expect(outcome.failure?.stage).toBe('start')
+    expect(host.calls.some(argv => argv[0] === 'rm' || argv[0] === 'create')).toBe(false)
+  })
+
+  test('el estado stale persiste tras recrear: failed, sin bucle', async () => {
+    await ensureHealthy()
+    stopWithoutProcess()
+    host.calls.length = 0
+    host.failNextStarts.push(RUNC_STALE, RUNC_STALE)
+    const outcome = await ensureHealthy()
+    expect(outcome.action).toBe('failed')
+    expect(host.calls.filter(argv => argv[0] === 'create').length).toBe(1)
+  })
+
   test('detenido sin deriva: started, sin recrear', async () => {
     await ensureHealthy()
     const container = host.containers.get(NAME)
