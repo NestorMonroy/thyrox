@@ -103,6 +103,10 @@ humana declarada sea la de quien escribió el cambio.
 
 ## Search Existing — antes de dar por buenas las piezas nuevas
 
+La matriz completa, con la forma `capability | authority | file | signature |
+consumers | tests | decision | next action` y la columna de salud medida, está
+en `outputs/search-existing-matrix.md`. Esta sección queda como resumen.
+
 Instrumento: `probes/search_existing_repo_wide.sh` (cuatro pasadas, sólo
 lectura, adaptado de
 `math-specialist-capability-20261002T211311/probes/search_existing_repo_wide.sh`),
@@ -127,15 +131,19 @@ este cambio extiende ese invariante, no revierte una decisión.
 
 ### Lo que la búsqueda destapó y no se corrige aquí
 
-6. **`reconcile_user_hooks.py` no tiene invocador.** Existe para retirar del
-   stop hook del anfitrión (`~/.claude/stop-hook-git-check.sh`) el consejo
-   `git config user.name Claude` + `--reset-author`, que `git.md` prohíbe. En
-   esta sesión `bin/reconcile_user_hooks --check` publica
-   `PENDIENTE stop-hook-signature-only`, y ni `install.sh`, ni
-   `install-hooks.sh`, ni el preflight lo corren (`git grep reconcile_user_hooks`
-   fuera de su módulo y su suite: sólo baselines y un log). Con el gate de
-   identidad corregido, seguir ese consejo ahora se bloquea en el pre-commit;
-   el consejo sigue apareciendo.
+6. **`reconcile_user_hooks.py` sí tiene invocador, pero un clon nuevo no lo
+   cablea.** *Corrección de una versión anterior de este punto, que decía «sin
+   invocador»: el `git grep` iba con `| head` y las diez primeras líneas eran
+   baselines, así que `src/session/session-start.sh:63` quedó fuera de la
+   salida.* El módulo retira del stop hook del anfitrión
+   (`~/.claude/stop-hook-git-check.sh`) el consejo `git config user.name
+   Claude` + `--reset-author`, que `git.md` prohíbe. Lo corre el SessionStart,
+   que vive en `.claude/settings.local.json`; ese archivo lo escribe
+   `clone_bootstrap.py`, e `install.sh` lo invoca con `--solo-mostrar`
+   (decisión declarada en `install.sh:575-577`). Resultado medido: sin
+   `settings.local.json`, y `bin/reconcile_user_hooks --check` publica
+   `PENDIENTE stop-hook-signature-only`. Con el gate de identidad corregido,
+   seguir ese consejo ahora se bloquea en el pre-commit.
 7. **`branchIntegration.ts:35-37` es una segunda fuente del committer.** Si la
    declaración `THYROX_COMMIT_COMMITTER` cambia, el merge de integración sigue
    exigiendo `jcg-admin`.
