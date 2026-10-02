@@ -1,0 +1,19 @@
+[package]
+name = "candle-seq2seq-worker"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Seq2seq worker of a candle ModelExecutionUnit (TASK-THYROX-0764)"
+
+[dependencies]
+anyhow = "1"
+candle-core = "=0.11.0"
+candle-nn = "=0.11.0"
+candle-transformers = "=0.11.0"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokenizers = { version = "0.22", default-features = false, features = ["onig"] }
+
+[profile.release]
+codegen-units = 1
+lto = "thin"
