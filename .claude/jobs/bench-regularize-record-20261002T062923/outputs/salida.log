@@ -1,0 +1,6 @@
+dcf1b5a7a Treat an empty git grep as no references
+  tampoco se bloquea, porque es secundaria (README D4-A, §8).
+dcf1b5a7a4df770449c8d9ba5f2cf69e66a67329	refs/heads/feature/ai-course-notes-l1
+dcf1b5a7a4df770449c8d9ba5f2cf69e66a67329
+execution thyrox-worker-test-muql1y9c-13917 kind=test task=TASK-THYROX-0762 exit=0
+__BG_EXIT__=0

@@ -1,0 +1,4 @@
+COPY --from=llama /app/llama-simple /app/
+# Fusión de un GGUF que su autor publica en shards (`local-models-import`):
+# el artefacto que entra al catálogo es el fusionado, con su sha256 medido.
+COPY --from=llama /app/llama-gguf-split /app/
