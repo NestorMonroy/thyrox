@@ -1,0 +1,16 @@
+{
+  "measuredAt": "2026-10-02T09:23:53",
+  "removed": "/home/user/kaupamex-docs",
+  "decision": "ejecutor 2026-10-02: quitar el clon local para trabajar con holgura; la información de hallazgos queda en agent_store.sqlite3 hasta que vuelva el clon",
+  "preconditions": {
+    "headEqualsOrigin": "3f26f9746ee93bc2425b9c4ae57adb6e4e527ff2 = origin/feature/complete-orm-root",
+    "uncommittedFiles": 0,
+    "stashes": 0,
+    "unpushedCommitsAnyBranch": 0,
+    "liveProcessesInside": 0
+  },
+  "restore": "git clone https://github.com/jcg-admin/kaupamex-docs.git /home/user/kaupamex-docs && git -C /home/user/kaupamex-docs checkout feature/complete-orm-root",
+  "freeBytesBefore": 2894835712,
+  "freeBytesAfter": 4350959616,
+  "reclaimedBytesObserved": 1456123904
+}

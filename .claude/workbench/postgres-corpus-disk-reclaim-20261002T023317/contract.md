@@ -1625,3 +1625,16 @@ aplica la política y la admisión de disco, y deja el espacio en `building`.
 Después, T002/T004 y las ramas T004a–e ingieren **sólo `semantic_content`**;
 T009, T006 y T007 sin cambios. El P0 del lote A1–A7 sigue exigiendo T008
 aceptada, y con ella la ruta elegida.
+
+## 26. Excepción declarada — sin clon local de kaupamex-docs (2026-10-02T09:23:53)
+
+Por decisión del ejecutor, el clon `/home/user/kaupamex-docs` se retiró tras
+comprobar HEAD = origin (`3f26f9746`), árbol limpio, sin stash, sin commits sin
+publicar en ninguna rama y sin procesos dentro. Se recuperaron 1 456 123 904 B
+medidos (`outputs/docs-clone-reclaim.json`). Es una excepción a «nunca borrar
+repos canónicos», no un cambio de la regla: el repositorio sigue íntegro en
+origin y se restaura con un `git clone`.
+
+Mientras falte: los hallazgos se registran **sólo** en `agent_store.sqlite3`
+(fila con cuerpo completo); su `.rst` se escribe cuando el clon vuelva. Las
+enmiendas de ADR quedan pendientes de la misma forma.
