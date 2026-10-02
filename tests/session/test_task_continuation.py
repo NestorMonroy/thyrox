@@ -12,6 +12,7 @@ Qué tiene que garantizar:
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import random
 import sys
@@ -169,6 +170,33 @@ with tempfile.TemporaryDirectory() as tmp:
     check("la salida queda redactada en su sitio", set(), exposed_secret_names(leaked_file.read_text(), NAMES))
     quarantined = list((wb / "quarantine").rglob("t.jsonl"))
     check("el original va a la cuarentena con modo 0600", (1, 0o600), (len(quarantined), quarantined[0].stat().st_mode & 0o777 if quarantined else None))
+    # S2: conservar el original es otra decisión que montarlo. El custodio guarda los bytes
+    # exactos fuera de la vista de la unidad y deja en el banco sólo su huella.
+    check("el original se conserva byte a byte", hashlib.sha256(LEAK.encode()).hexdigest(),
+          hashlib.sha256(quarantined[0].read_bytes()).hexdigest() if quarantined else None)
+    check("el directorio de la evidencia es 0700", 0o700, quarantined[0].parent.stat().st_mode & 0o777 if quarantined else None)
+    evidence_rows = controller.read_rows(wb / "outputs" / "exposure-evidence.jsonl")
+    check("el banco registra la huella del original", [hashlib.sha256(LEAK.encode()).hexdigest()],
+          [row.get("sha256") for row in evidence_rows])
+    check("el registro del banco no lleva ningún valor", set(),
+          exposed_secret_names(((wb / "outputs" / "exposure-evidence.jsonl").read_text()
+                                if (wb / "outputs" / "exposure-evidence.jsonl").exists() else ""), NAMES))
+    check("ni otro archivo del banco lo lleva", [],
+          [str(p) for p in wb.rglob("*") if p.is_file() and "quarantine" not in p.parts
+           and ("abc123xyz" in p.read_text(errors="replace") or "s3cr3tvalue" in p.read_text(errors="replace"))])
+    # la evidencia nunca vive donde una unidad la ve: la raíz del repositorio se monta entera
+    with tempfile.TemporaryDirectory() as tmp:
+        root = Path(tmp) / "repo"; root.mkdir()
+        check("un hogar de evidencia fuera de la raíz se acepta", Path(tmp) / "evidence",
+              controller.exposure_evidence_home(root, str(Path(tmp) / "evidence")))
+        try:
+            controller.exposure_evidence_home(root, str(root / ".thyrox" / "runtime" / "quarantine"))
+            inside = "aceptado"
+        except controller.EvidenceInsideWorkerViewError:
+            inside = "rehusado"
+        check("un hogar de evidencia dentro de la raíz se rehúsa", "rehusado", inside)
+    check("el hogar por defecto queda fuera del repositorio", False,
+          controller.exposure_evidence_home(controller.ROOT, None).is_relative_to(controller.ROOT))
     mark_exposed(wb, found, "i")
     check("la credencial pasa a expuesta", {"THYROX_FAKE_TOKEN", "THYROX_FAKE_DB_PASSWORD"}, exposed_credentials(wb))
     # un ítem que necesita una credencial expuesta queda bloqueado SOLO, sin despachar nada

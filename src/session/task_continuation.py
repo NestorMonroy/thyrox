@@ -61,6 +61,7 @@ import argparse
 import calendar
 import contextlib
 import fcntl
+import hashlib
 import json
 import os
 import random
@@ -378,7 +379,39 @@ def unit_start_argv(name: str, task: str, argv: list[str], network: str | None =
 #: `.env.example` que lo cumplen: se trabaja por NOMBRE, nunca con sus valores.
 SECRET_NAME_PATTERN = re.compile(r"(TOKEN|KEY|PASSWORD|SECRET|_PAT|CREDENTIAL)")
 REDACTED = "[REDACTADO]"
-QUARANTINE_DIR = ROOT / ".thyrox" / "runtime" / "quarantine"
+#: La evidencia original de una exposición: se conserva entera (es analítica de lo que no
+#: debe ocurrir), pero conservar no es montar. Una unidad monta la raíz del repositorio
+#: completa, así que el custodio la guarda FUERA de ella. Sobrescribible en pruebas.
+QUARANTINE_DIR: Path | None = None
+EVIDENCE_HOME_VAR = "THYROX_EXPOSURE_EVIDENCE_DIR"
+DEFAULT_EVIDENCE_HOME = Path.home() / ".local" / "state" / "thyrox" / "exposure-evidence"
+EVIDENCE_LEDGER = "exposure-evidence.jsonl"
+
+
+class EvidenceInsideWorkerViewError(RuntimeError):
+    """El hogar de la evidencia cae dentro de lo que una unidad monta."""
+
+
+def exposure_evidence_home(root: Path, declared: str | None) -> Path:
+    """El hogar de la evidencia original, rehusado si una unidad podría verlo."""
+    home = Path(declared).expanduser() if declared else DEFAULT_EVIDENCE_HOME
+    if home.resolve().is_relative_to(root.resolve()):
+        raise EvidenceInsideWorkerViewError(
+            f"{EVIDENCE_HOME_VAR}={home} queda dentro de {root}, que toda unidad monta; declara un hogar fuera del clon")
+    return home
+
+
+def evidence_dir() -> Path:
+    if QUARANTINE_DIR is not None:
+        return QUARANTINE_DIR
+    declared = os.environ.get(EVIDENCE_HOME_VAR)
+    if declared is None:
+        try:
+            from paths.reach import production_declarations
+            declared = production_declarations().declared(EVIDENCE_HOME_VAR)
+        except (ImportError, OSError):
+            declared = None
+    return exposure_evidence_home(ROOT, declared)
 
 
 def declared_secret_names(example: Path | None = None) -> tuple[str, ...]:
@@ -441,10 +474,17 @@ def contain_secret_exposure(workbench: Path, item: str, model: str, names: tuple
         if not hit:
             continue
         found |= hit
-        target = QUARANTINE_DIR / f"{item}-{model}-{job_suffix()}" / path.name
+        target = evidence_dir() / f"{item}-{model}-{job_suffix()}" / path.name
         target.parent.mkdir(parents=True, exist_ok=True)
-        target.write_text(text)
+        target.parent.chmod(0o700)
+        original = path.read_bytes()
+        target.write_bytes(original)
         target.chmod(0o600)
+        append_jsonl(outputs / EVIDENCE_LEDGER, {
+            "utc": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()), "item": item, "model": model,
+            "source": str(path.relative_to(workbench)), "sha256": hashlib.sha256(original).hexdigest(),
+            "bytes": len(original), "names": sorted(hit), "custodian": "task_continuation",
+            "evidence": str(target)})
         path.write_text(redact_secret_assignments(text, names))
         if exposed_secret_names(path.read_text(errors="replace"), names):
             raise RuntimeError(f"la redacción no dejó limpio {path}")
