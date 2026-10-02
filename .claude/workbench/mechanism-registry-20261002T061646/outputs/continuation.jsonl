@@ -8,3 +8,10 @@
 {"utc": "2026-10-02T06:24:03Z", "epoch": 1790922243.315, "kind": "hard_block", "item": "T001", "reason": "sin candidato permitido", "judgedAttempts": 2, "providerFailures": 0}
 {"utc": "2026-10-02T06:24:04Z", "epoch": 1790922244.386, "kind": "dependency_blocked", "item": "T002", "reason": "dependencia sin aceptar: T001"}
 {"utc": "2026-10-02T06:24:04Z", "epoch": 1790922244.509, "kind": "end", "accepted": [], "blocked": [], "failed": ["T001", "T002"]}
+{"utc": "2026-10-02T06:24:48Z", "epoch": 1790922288.847, "kind": "start", "orphans": "0 huérfano(s) retirado(s)"}
+{"utc": "2026-10-02T06:24:52Z", "epoch": 1790922292.668, "kind": "secret_inheritance_gate", "exit": 0, "sources": "shell_startup\t0\nmounted_credential_files\t0\nprovider_config\t0\ngit_credential_helper\t0\nregistry_auth\t0\nruntime_env\t0\ninventory\t43\tauthorized\t1\nexecution thyrox-worker-maintenance-muqkw2b9-25305 kind=maintenance task=TASK-THYROX-0769 exit=0\n__BG_EXIT__=0"}
+{"utc": "2026-10-02T06:24:52Z", "epoch": 1790922292.669, "kind": "dispatcher", "command": ["bash", "/home/user/thyrox/bin/parallel_map", "--width", "1", "bash", "/home/user/thyrox/bin/task_continuation", "run-one", "/home/user/thyrox/.claude/workbench/mechanism-registry-20261002T061646", "{}", "--target", "/home/user/thyrox", "--task", "TASK-THYROX-0769", "::::", "-"], "width": 1, "joblog": "/home/user/thyrox/.thyrox/runtime/continuation/mechanism-registry-20261002T061646-1790922292668535.joblog"}
+{"utc": "2026-10-02T06:24:52Z", "epoch": 1790922292.67, "kind": "dispatched", "item": "T001", "taskId": "TASK-THYROX-0769"}
+{"utc": "2026-10-02T06:25:02Z", "epoch": 1790922302.197, "kind": "hard_block", "item": "T001", "reason": "no se pudo preparar el worktree", "tail": "execution thyrox-worker-maintenance-muqkw5ud-25731 kind=maintenance task=TASK-THYROX-0769 exit=128\n__BG_EXIT__=128"}
+{"utc": "2026-10-02T06:25:02Z", "epoch": 1790922302.677, "kind": "dependency_blocked", "item": "T002", "reason": "dependencia sin aceptar: T001"}
+{"utc": "2026-10-02T06:25:02Z", "epoch": 1790922302.813, "kind": "end", "accepted": [], "blocked": [], "failed": ["T001", "T002"]}

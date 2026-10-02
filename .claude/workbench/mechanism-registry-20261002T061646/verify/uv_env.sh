@@ -13,6 +13,11 @@ if [[ ! -e "$tree/.venv" ]]; then
   [[ -x "$main/.venv/bin/python" ]] || { echo "uv_env: el clon principal no tiene .venv de uv (uv sync)" >&2; exit 2; }
   ln -s "$main/.venv" "$tree/.venv"
 fi
+# El .gitignore versionado dice `.venv/`, que sólo casa un DIRECTORIO: el enlace saldría como no
+# seguido y el gate de alcance lo contaría. Se excluye en el exclude común a todos los worktrees,
+# que no se versiona (como hace el pool con /.thyrox/pool-worktrees/).
+exclude="$(git -C "$tree" rev-parse --path-format=absolute --git-common-dir)/info/exclude"
+grep -qx '/.venv' "$exclude" 2>/dev/null || printf '%s\n' '/.venv' >> "$exclude"
 interpreter="$(cd "$tree" && uv run --frozen --no-sync python -c 'import sys; print(sys.prefix)')" \
   || { echo "uv_env: uv run no resolvió un intérprete en $tree" >&2; exit 2; }
 [[ "$(readlink -f "$interpreter")" == "$(readlink -f "$main/.venv")" ]] \
