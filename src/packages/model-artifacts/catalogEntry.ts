@@ -14,8 +14,12 @@ import type { QuantizationLevel } from './quantizationLevel.js'
 
 export type { AttentionShape }
 
-/** Dónde vive el artefacto: un GGUF propio o un modelo del registro de Ollama. */
-export type ArtifactFormat = 'gguf' | 'ollama-registry'
+/**
+ * Dónde vive el artefacto: un GGUF propio, un modelo del registro de Ollama o
+ * un snapshot de safetensors que carga Transformers (TASK-THYROX-0761); el
+ * `artifactId` de un snapshot es el sha256 de su manifiesto.
+ */
+export type ArtifactFormat = 'gguf' | 'ollama-registry' | 'safetensors'
 
 /** Capacidades que una petición puede exigir al modelo. */
 export type ModelCapability = 'completion' | 'tools' | 'embeddings'

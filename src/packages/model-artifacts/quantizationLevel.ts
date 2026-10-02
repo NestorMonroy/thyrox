@@ -28,7 +28,7 @@ const LLAMA_QUANTIZE_LEVELS = [
 
 const OLLAMA_CREATE_LEVELS = ['int4', 'int8', 'nvfp4', 'mxfp4', 'mxfp8'] as const
 
-const CONVERT_LEVELS = ['f16', 'bf16'] as const
+const CONVERT_LEVELS = ['f32', 'f16', 'bf16'] as const
 
 export type QuantizationLevel =
   | typeof LLAMA_QUANTIZE_LEVELS[number]

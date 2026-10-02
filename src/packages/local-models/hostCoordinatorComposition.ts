@@ -15,6 +15,9 @@
  * lo sube al runtime desde ahí y, si falta, la admisión falla en la etapa
  * `prepare` nombrando la ruta.
  */
+import { RuntimeAdapterRouter } from '@thyrox/model-scheduling/runtimeAdapterRouter.ts'
+import type { ArtifactFormat } from '@thyrox/model-artifacts/catalogEntry.ts'
+import type { ModelRuntime } from '@thyrox/model-artifacts/executionGrant.ts'
 import { randomUUID } from 'node:crypto'
 import { hostname } from 'node:os'
 import { join } from 'node:path'
@@ -37,10 +40,16 @@ import type { ContainerOwner } from '@thyrox/podman-execution/workerContainerLif
 import { freeLoopbackPort } from './loopbackPort.ts'
 import type { Environment } from './managedOllama.ts'
 import { OllamaRuntimeAdapter } from './ollamaRuntimeAdapter.ts'
+import { TransformersRuntimeAdapter } from './transformersRuntimeAdapter.ts'
 
 export const MODEL_COORDINATOR_OWNER_KIND = 'model-coordinator'
 /** La imagen del runtime de cada unidad de Ollama: la versión cuya API pública usa el adapter. */
 export const OLLAMA_RUNTIME_IMAGE = 'docker.io/ollama/ollama:0.35.0'
+/** La imagen del runtime de Transformers (`transformers-runtime/Containerfile`), construida por la primitiva. */
+export const TRANSFORMERS_RUNTIME_IMAGE = 'localhost/thyrox-transformers-runtime:dev'
+const TRANSFORMERS_CONTAINER_PORT = 8_080
+/** Dónde ve la unidad el snapshot concedido, montado de sólo lectura. */
+const TRANSFORMERS_MODEL_DIRECTORY = '/model'
 const OLLAMA_CONTAINER_PORT = 11_434
 /** Límites de una unidad: RAM holgada para un modelo de hasta ~7B en Q4 sobre CPU. */
 const UNIT_LIMITS = { cpus: 2, memoryMib: 8_192, pidsLimit: 256 }
@@ -56,10 +65,16 @@ export type ComposedHostCoordinator = {
 
 export type CompositionDependencies = { podman?: PodmanExecutor }
 
-/** En CPU una residencia no reserva VRAM; el runtime es Ollama. */
+/** El runtime que sirve cada formato de artefacto: el runtime sale del artefacto, no del llamador. */
+const RUNTIME_BY_FORMAT: Readonly<Record<ArtifactFormat, ModelRuntime>> = {
+  gguf: 'ollama',
+  'ollama-registry': 'ollama',
+  safetensors: 'transformers',
+}
+
+/** En CPU una residencia no reserva VRAM; el runtime es el del formato del artefacto. */
 export function cpuPlacementOf(resolved: ResolvedModel): PlacementDecision {
-  void resolved
-  return { runtime: 'ollama', placement: { kind: 'cpu' }, residencyVramMib: 0, requestVramMib: 0 }
+  return { runtime: RUNTIME_BY_FORMAT[resolved.artifact.format], placement: { kind: 'cpu' }, residencyVramMib: 0, requestVramMib: 0 }
 }
 
 export function composeHostCoordinatorService(env: Environment, thyroxRoot: string, dependencies: CompositionDependencies = {}): ComposedHostCoordinator {
@@ -71,7 +86,15 @@ export function composeHostCoordinatorService(env: Environment, thyroxRoot: stri
   const primitive = new PodmanModelUnitMaterializer({
     podman: dependencies.podman ?? createPodmanExecutor(),
     currentGeneration,
-    profiles: { ollama: { image: OLLAMA_RUNTIME_IMAGE, containerPort: OLLAMA_CONTAINER_PORT, environment: { OLLAMA_HOST: `0.0.0.0:${OLLAMA_CONTAINER_PORT}` } } },
+    profiles: {
+      ollama: { image: OLLAMA_RUNTIME_IMAGE, containerPort: OLLAMA_CONTAINER_PORT, environment: { OLLAMA_HOST: `0.0.0.0:${OLLAMA_CONTAINER_PORT}` } },
+      transformers: {
+        image: TRANSFORMERS_RUNTIME_IMAGE,
+        containerPort: TRANSFORMERS_CONTAINER_PORT,
+        environment: { THYROX_TRANSFORMERS_MODEL_DIR: TRANSFORMERS_MODEL_DIRECTORY, THYROX_TRANSFORMERS_PORT: String(TRANSFORMERS_CONTAINER_PORT) },
+        artifactMount: { hostDirectory: artifact => snapshotDirectory(artifactCache, artifact.artifactId), containerDirectory: TRANSFORMERS_MODEL_DIRECTORY },
+      },
+    },
     owner,
     limits: UNIT_LIMITS,
     allocatePort: freeLoopbackPort,
@@ -82,7 +105,10 @@ export function composeHostCoordinatorService(env: Environment, thyroxRoot: stri
     ledger: createMemoryResidencyVramLedger({ capacityMib: {} }),
     issuer: new MemoryGrantIssuer({ ttlMs: GRANT_TTL_MS, now: () => new Date(), newGrantId: randomUUID }),
     primitive,
-    runtime: new OllamaRuntimeAdapter({ artifactPath: sha256 => join(artifactCache, `sha256-${sha256}.gguf`), currentGeneration }),
+    runtime: new RuntimeAdapterRouter({
+      ollama: new OllamaRuntimeAdapter({ artifactPath: sha256 => join(artifactCache, `sha256-${sha256}.gguf`), currentGeneration }),
+      transformers: new TransformersRuntimeAdapter({ currentGeneration }),
+    }),
     registry: new ResidencyRegistry(),
     leaseTtlMs: LEASE_TTL_MS,
     health: HEALTH,
@@ -96,4 +122,9 @@ export function composeHostCoordinatorService(env: Environment, thyroxRoot: stri
     newAdmissionId: randomUUID,
   })
   return { owner, options: { socketPath: modelCoordinatorSocketPath(env), primitive, coordinator, coordination } }
+}
+
+/** El directorio verificado de un snapshot de safetensors en la caché de artefactos, por su digest de manifiesto. */
+export function snapshotDirectory(artifactCache: string, artifactId: string): string {
+  return join(artifactCache, `snapshot-${artifactId}`)
 }

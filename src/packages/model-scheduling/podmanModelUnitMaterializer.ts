@@ -15,6 +15,7 @@
  * publicado sólo en `127.0.0.1` y los dispositivos del grant en forma CDI.
  * Nunca red `host`: el runtime no escucha en la red del anfitrión.
  */
+import type { WorkerResourceMount } from '@thyrox/podman-execution/workerResourceProfile.ts'
 import type { ExecutionGrant, ModelRuntime } from '@thyrox/model-artifacts/executionGrant.ts'
 import type { ArtifactFormat } from '@thyrox/model-artifacts/catalogEntry.ts'
 import type { ModelSource } from '@thyrox/model-artifacts/modelName.ts'
@@ -78,6 +79,18 @@ export interface RuntimeContainerProfile {
   readonly containerPort: number
   /** Entorno del runtime; sólo valores públicos (la primitiva neutral rehúsa nombres de credencial). */
   readonly environment: Readonly<Record<string, string>>
+  /**
+   * Cómo ve la unidad el artefacto concedido, si el runtime lo lee del disco
+   * en vez de recibirlo por su API (TASK-THYROX-0761): el directorio del
+   * anfitrión que lo contiene, verificado, se monta de sólo lectura.
+   */
+  readonly artifactMount?: ArtifactMount
+}
+
+/** El artefacto del grant expuesto a la unidad: de dónde se lee y dónde lo ve el runtime. */
+export interface ArtifactMount {
+  hostDirectory(artifact: ResolvedModelArtifact): string
+  readonly containerDirectory: string
 }
 
 /** Límites de recursos de un contenedor de unidad. */
@@ -109,7 +122,7 @@ const NO_SUCH_CONTAINER = /no such container/i
 /** Pid que Podman informa para un contenedor que no corre. */
 const NOT_RUNNING_PID = 0
 const DECIMAL_INTEGER = /^-?\d+$/
-const KNOWN_RUNTIMES: readonly ModelRuntime[] = ['ollama', 'llama.cpp']
+const KNOWN_RUNTIMES: readonly ModelRuntime[] = ['ollama', 'llama.cpp', 'transformers']
 
 /** La unidad de un grant: una por grant, así que su identidad deriva de él. */
 export function modelUnitId(grantId: string): string {
@@ -197,7 +210,7 @@ export function modelUnitAuthorization(spec: ModelUnitContainerSpec): ExecutionA
     owner: spec.owner,
     kind: 'model-runtime',
     image: spec.profile.image,
-    mounts: [],
+    mounts: artifactMounts(spec),
     resources: spec.limits,
     network: 'bridge',
     environment: spec.profile.environment,
@@ -206,6 +219,13 @@ export function modelUnitAuthorization(spec: ModelUnitContainerSpec): ExecutionA
     labels: unitLabelArguments(spec),
     expiresAt: Date.parse(spec.grant.expiresAt),
   }
+}
+
+/** El artefacto concedido de sólo lectura, si el perfil lo declara; ningún otro montaje. */
+function artifactMounts(spec: ModelUnitContainerSpec): WorkerResourceMount[] {
+  const mount = spec.profile.artifactMount
+  if (mount === undefined) return []
+  return [{ source: mount.hostDirectory(spec.grant.artifact), destination: mount.containerDirectory, mode: 'ro' }]
 }
 
 function pidsOf(pid: unknown): readonly number[] {
@@ -356,7 +376,7 @@ function partialFailure(unitId: string, reason: string): MaterializationOutcome 
 }
 
 const MODEL_SOURCES: readonly string[] = ['hf', 'ollama'] satisfies readonly ModelSource[]
-const ARTIFACT_FORMATS: readonly string[] = ['gguf', 'ollama-registry'] satisfies readonly ArtifactFormat[]
+const ARTIFACT_FORMATS: readonly string[] = ['gguf', 'ollama-registry', 'safetensors'] satisfies readonly ArtifactFormat[]
 
 /** La identidad resuelta que las etiquetas declaran; incompleta o ilegible es `undefined`. */
 function artifactFromLabels(label: (key: ModelUnitLabelKey) => string): ResolvedModelArtifact | undefined {

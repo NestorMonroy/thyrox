@@ -26,6 +26,7 @@ import type {
 } from '@thyrox/model-scheduling/modelUnitMaterializer.ts'
 
 import { OllamaApi, OllamaRequestError } from './ollamaApi.ts'
+import { artifactIdentityMatches, mutateAtCurrentGeneration, reasonOf } from './runtimeMutation.ts'
 
 /** Ollama no deja gobernar varias residencias dentro de una unidad (topología A). */
 export const OLLAMA_RUNTIME_CAPABILITIES: RuntimeCapabilities = {
@@ -40,7 +41,6 @@ const GENERATE_PATH = '/api/generate'
 /** El `FROM` del modelfile que `/api/show` devuelve nombra el blob como `.../blobs/sha256-<hex>`. */
 const FROM_BLOB_DIGEST = /^FROM\s+\S*sha256-([0-9a-f]{64})\s*$/m
 
-const DONE: RuntimeMutationOutcome = { status: 'done' }
 
 export interface OllamaRuntimeAdapterOptions {
   /** Ruta local del artefacto que `ensureModel` dejó verificado en la caché. */
@@ -75,7 +75,7 @@ export class OllamaRuntimeAdapter implements RuntimeAdapter {
     const expected = grant.artifact
     try {
       const observed = await observeIdentity(apiOf(unit), expected.modelId)
-      if (observed && identityMatches(expected, observed)) return { status: 'matches', observed }
+      if (observed && artifactIdentityMatches(expected, observed)) return { status: 'matches', observed }
       return { status: 'mismatch', expected, observed }
     } catch (error) {
       return { status: 'failed', reason: reasonOf(error) }
@@ -92,7 +92,7 @@ export class OllamaRuntimeAdapter implements RuntimeAdapter {
       if (!(await api.residentModelNames()).includes(expected.artifact.modelId)) return { status: 'absent' }
       const observed = await observeIdentity(api, expected.artifact.modelId)
       if (!observed) return { status: 'absent' }
-      if (!identityMatches(expected.artifact, observed)) return { status: 'mismatch', observed }
+      if (!artifactIdentityMatches(expected.artifact, observed)) return { status: 'mismatch', observed }
       return { status: 'resident', observed }
     } catch (error) {
       return { status: 'error', reason: reasonOf(error) }
@@ -103,25 +103,8 @@ export class OllamaRuntimeAdapter implements RuntimeAdapter {
     return this.mutate(binding, () => setKeepAlive(binding.unit, binding.unit.artifact.modelId, KEEP_ALIVE_UNLOAD))
   }
 
-  /** Corre `change` sólo si la generación del binding es la vigente; un error del runtime es `failed`. */
-  private async mutate(binding: ResidencyBinding, change: (api: OllamaApi) => Promise<void>): Promise<RuntimeMutationOutcome> {
-    const current = await this.generationOf(binding.residencyKey)
-    if (current !== binding.generation) return { status: 'stale_generation', currentGeneration: current }
-    try {
-      await change(apiOf(binding.unit))
-      return DONE
-    } catch (error) {
-      return { status: 'failed', reason: reasonOf(error) }
-    }
-  }
-
-  /** Una coordinación que no responde equivale a no saber la generación: `unavailable`. */
-  private async generationOf(residencyKey: string): Promise<number | 'unavailable'> {
-    try {
-      return await this.options.currentGeneration(residencyKey)
-    } catch {
-      return 'unavailable'
-    }
+  private mutate(binding: ResidencyBinding, change: (api: OllamaApi) => Promise<void>): Promise<RuntimeMutationOutcome> {
+    return mutateAtCurrentGeneration(this.options.currentGeneration, binding, () => change(apiOf(binding.unit)))
   }
 }
 
@@ -141,17 +124,6 @@ async function observeIdentity(api: OllamaApi, model: string): Promise<ObservedA
   }
 }
 
-/**
- * El runtime sirve exactamente la identidad concedida: el mismo nombre, el
- * mismo blob, el mismo formato y la misma cuantización. La revisión no es
- * observable en Ollama; la ata el blob, que el catálogo resolvió para ella.
- */
-function identityMatches(expected: ResolvedModelArtifact, observed: ObservedArtifactIdentity): boolean {
-  return observed.modelId === expected.modelId
-    && observed.artifactId === expected.artifactId
-    && observed.format === expected.format
-    && observed.quantization === expected.quantization
-}
 
 /** La forma canónica de una cuantización; vacía o desconocida es `undefined` y no coincide con ninguna. */
 function canonicalQuantization(level: string): string | undefined {
@@ -163,9 +135,6 @@ function canonicalQuantization(level: string): string | undefined {
   }
 }
 
-function reasonOf(error: unknown): string {
-  return error instanceof Error ? error.message : String(error)
-}
 
 /**
  * `POST /api/generate` sin `prompt`: sólo fija la residencia del modelo en la

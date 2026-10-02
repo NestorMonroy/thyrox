@@ -1,0 +1,38 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/podmanModelUnitMaterializer.test.ts:
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un grant caducado [0.67ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un grant de una generación que ya no es la vigente [0.52ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > con la coordinación no disponible [0.12ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un runtime sin perfil de contenedor [0.08ms]
+(pass) PodmanModelUnitMaterializer: materializar > crea, arranca e inspecciona; la unidad lleva su identidad completa [3.08ms]
+(pass) PodmanModelUnitMaterializer: materializar > el contenedor va en loopback, con el dispositivo concedido y las etiquetas de la unidad [2.70ms]
+(pass) PodmanModelUnitMaterializer: materializar > en CPU no pide dispositivos [0.59ms]
+(pass) PodmanModelUnitMaterializer: materializar > si create falla no quedó nada: partial false [0.75ms]
+(pass) PodmanModelUnitMaterializer: materializar > si start falla quedó un contenedor: partial true con su unitId [0.57ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > destroy distingue destruido, ausente y fallido [0.26ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > destroy retira sólo el contenedor de la unidad [0.12ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > units reconstruye cada unidad de sus etiquetas e ignora contenedores ajenos [0.95ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > nunca borra imágenes ni volúmenes [0.61ms]
+(pass) PodmanModelUnitMaterializer: identidad completa > una unidad cuya identidad etiquetada está incompleta no es una unidad de esta primitiva [0.40ms]
+284 |   test('expone el artefacto concedido de sólo lectura en la unidad', async () => {
+285 |     const podman = healthyPodman()
+286 |     const outcome = await transformersPrimitive(podman).materialize(T5_GRANT)
+287 |     expect(outcome.status).toBe('materialized')
+288 |     const create = podman.calls.find(call => call[0] === 'create')!.join(' ')
+289 |     expect(create).toContain(`-v /srv/artifacts/${SHA}:/model:ro`)
+                         ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "-v /srv/artifacts/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb:/model:ro"
+Received: "create --name thyrox-worker-unit-grant-request-1 --label thyrox.owner-kind=model-coordinator --label thyrox.owner-id=host-coordinator --label thyrox.owner-pid=4321 --label thyrox.worker-id=unit-grant-request-1 --label thyrox.execution-id=unit-grant-request-1 --label thyrox.execution-kind=model-runtime --label thyrox.execution-reference=grant:grant-request-1 --label thyrox.model.bytes=397807712 --label thyrox.model.created-at=2026-10-01T00:30:00.000Z --label thyrox.model.devices= --label thyrox.model.format=safetensors --label thyrox.model.generation=3 --label thyrox.model.grant=grant-request-1 --label thyrox.model.name=thyrox-qwen--qwen2.5-0.5b-instruct:f32-hf-7ae557604adf --label thyrox.model.port=61234 --label thyrox.model.quantization=f32 --label thyrox.model.repository=Qwen/Qwen2.5-0.5B-Instruct --label thyrox.model.residency=residency/qwen/gpu0 --label thyrox.model.revision=7ae557604adf67be50417f59c2c2f167def9a775 --label thyrox.model.runtime=transformers --label thyrox.model.sha256=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb --label thyrox.model.source=hf --label thyrox.model.unit=unit-grant-request-1 --cpus 2 --memory 4096m --pids-limit 256 --network bridge -p 127.0.0.1:61234:8080 localhost/thyrox-transformers-runtime:dev"
+
+      at <anonymous> (/home/user/thyrox/src/packages/model-scheduling/__tests__/podmanModelUnitMaterializer.test.ts:289:20)
+(fail) una unidad de Transformers con el artefacto del grant montado (TASK-THYROX-0761) > expone el artefacto concedido de sólo lectura en la unidad [0.96ms]
+(pass) una unidad de Transformers con el artefacto del grant montado (TASK-THYROX-0761) > un perfil sin montaje declarado no monta nada, como el de Ollama [0.48ms]
+(pass) una unidad de Transformers con el artefacto del grant montado (TASK-THYROX-0761) > una unidad de Transformers se reconstruye desde sus etiquetas [1.15ms]
+
+ 16 pass
+ 1 fail
+ 48 expect() calls
+Ran 17 tests across 1 file. [179.00ms]

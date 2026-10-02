@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/hostCoordinatorComposition.test.ts:
+(pass) composeHostCoordinatorService > con la topología por defecto compone una coordinación local y el socket del hogar de runtime [1.09ms]
+(pass) composeHostCoordinatorService > el dueño compuesto pasa la validación de dueño de Podman (sin «@») [0.37ms]
+(pass) composeHostCoordinatorService > shared sin Redis rehúsa al componer [0.13ms]
+(pass) cpuPlacementOf > en CPU no reserva VRAM y usa el runtime de Ollama [0.50ms]
+(pass) cpuPlacementOf por formato del artefacto (TASK-THYROX-0761) > un GGUF va a Ollama [0.05ms]
+47 |     expect(cpuPlacementOf({ artifact: resolvedArtifact() } as ResolvedModel).runtime).toBe('ollama')
+48 |   })
+49 | 
+50 |   test('un snapshot de safetensors va a Transformers', () => {
+51 |     const artifact = { ...resolvedArtifact({ quantization: 'f32' }), format: 'safetensors' as const }
+52 |     expect(cpuPlacementOf({ artifact } as ResolvedModel).runtime).toBe('transformers')
+                                                                       ^
+error: expect(received).toBe(expected)
+
+Expected: "transformers"
+Received: "ollama"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/hostCoordinatorComposition.test.ts:52:67)
+(fail) cpuPlacementOf por formato del artefacto (TASK-THYROX-0761) > un snapshot de safetensors va a Transformers [0.51ms]
+
+ 5 pass
+ 1 fail
+ 8 expect() calls
+Ran 6 tests across 1 file. [193.00ms]
