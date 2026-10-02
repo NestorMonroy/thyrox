@@ -272,6 +272,8 @@ for f in "${STAGED[@]}"; do
     [[ "$f" == "$ROOT"/.claude/workbench/*/probes/* ]] && ownership_includes+=(--include "$f")
 done
 python3 "$GATES/check_podman_access_ownership.py" --root "$ROOT" --strict "${ownership_includes[@]}" || CODE=1
+# Por la primitiva, pero sin ExecutionAuthorization: la segunda ruta (TASK-THYROX-0743).
+python3 "$GATES/check_execution_authorization.py" --root "$ROOT" --strict || CODE=1
 
 # Cada enlace relativo de las skills y las reglas apunta a un archivo que
 # existe: una mudanza de directorio los rompe sin que nada falle.
