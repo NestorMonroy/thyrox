@@ -1,0 +1,31 @@
+## utc 2026-10-02T10:17:16
+## uptime 3818.73
+## podman ps
+thyrox-redis Up 7 hours running
+thyrox-ollama Up 7 hours running
+thyrox-postgres Up 7 hours running
+## inspect pid liveness
+thyrox-ollama pid=7731 dead
+thyrox-postgres pid=7944 dead
+thyrox-redis pid=6126 dead
+## exec probe
+Error: OCI runtime error: runc: exec failed: cannot exec in a stopped container
+## lock diagnostic
+podman 4.9.3 · backend sqlite · locks asignados 0, referenciados 14 · marcador /run/libpod/alive
+plan: retirar /run/libpod/alive y dejar que Podman refresque la asignación de locks. Ejecutar con --confirm.
+## volumes
+thyrox-ollama-probe-models
+thyrox-quantization-lab-models
+thyrox-quantization-lab-artifacts
+thyrox-ollama-bench-models
+6cec042378060862a2531f5ec607d295e4ec4acabb69250e755ceffd7900b284
+thyrox-ollama-models
+167c474564b3b6588aaa1110f12541fd3576ad4a35e4dd34328931428bb9ff54
+thyrox-postgres-data
+a3af5ac1864dc136daeb19d2531b1d8082a821e7d3c17dc5512dea05f4fb9a4d
+0365981757d0bb26035a1c2c9fc3808e91b9bb54e3156c7088cc49b9dc398d75
+76dcb8e6032a4d7b93cc4a51b5a98fc471d40ed6e9e3517d178205ed18167e54
+97058b2e05e5058bfd9496da2b8f413cc9336f806ed98b95b7e45545a02fd347
+36a11794a762acb39462f3eb8bf6ae66f1697f0f3bfb3b5f24c6daf5ba65575f
+bd0cde8174d938a18c6f575eef48db7f24b7475f818923b229298d308eff26a9
+050d75c5cb46135dad7fa82e8d27c0f23e60cab7e37036d7d0e5016339802bc3

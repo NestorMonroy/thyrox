@@ -1,0 +1,17 @@
+{
+  "qualifications": [
+    {
+      "model": "thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf",
+      "kind": "task",
+      "taskClass": "mecanica",
+      "suite": "batch-worker-mecanica@1",
+      "casesPassed": 4,
+      "casesTotal": 4,
+      "passed": true,
+      "contextTokens": 8192,
+      "tokensPerSecond": 16.68764912160872,
+      "measurementCondition": "contended",
+      "measuredAt": "2026-10-02T10:20:41.989Z"
+    }
+  ]
+}

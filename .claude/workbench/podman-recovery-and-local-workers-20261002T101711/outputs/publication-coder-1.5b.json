@@ -1,0 +1,16 @@
+{
+  "status": "unverified",
+  "publishedAt": "2026-10-02T10:34:12.770Z",
+  "outcome": {
+    "status": "unverified",
+    "pinned": {
+      "repository": "th3rox/thyrox-quantization-lab-artifacts",
+      "digest": "sha256:b6c1720d9f839979c4ce0003796b341c1eeaab8719feea15aad724d2c6d84caf"
+    },
+    "result": {
+      "status": "job_failed",
+      "exitCode": 137,
+      "detail": "thyrox-worker-artifact-publish-15701 no dejó veredicto: "
+    }
+  }
+}

@@ -1,0 +1,4 @@
+[2026-10-02T10:20:22.389Z] [podman] huérfanos retirados al arrancar: 0
+[2026-10-02T10:20:22.463Z] [model-coordinator] escuchando en /root/.claude/model-scheduling/coordinator.sock; unidades anteriores destruidas: 0
+[2026-10-02T10:21:14.372Z] [model-coordinator] detenido
+[2026-10-02T10:21:14.372Z] [podman] workers retirados al apagar: 0

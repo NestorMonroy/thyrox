@@ -1,0 +1,21 @@
+{
+  "schema": "thyrox.permanent-artifact-record.v1",
+  "model": "Qwen/Qwen2.5-Coder-1.5B-Instruct",
+  "source": {
+    "provider": "huggingface",
+    "repository": "Qwen/Qwen2.5-Coder-1.5B-Instruct",
+    "revision": "2e1fd397ee46e1388853d2af2c993145b0f1098a",
+    "evidence": "catalog entry thyrox-qwen--qwen2.5-coder-1.5b-instruct:q4_k_m-hf-2e1fd397ee46 (declaredAt 2026-10-01T02:37:22Z)"
+  },
+  "quantization": {
+    "method": "BF16 -> F16 -> Q4_K_M directo, en exclusión",
+    "type": "Q4_K_M",
+    "file": "model-Q4_K_M.gguf",
+    "evidence": "eval.txt"
+  },
+  "tools": { "llama.cpp": "0.5.0-dev (build 11277, commit eae11d221)" },
+  "provenance": {
+    "task": "TASK-THYROX-0747",
+    "source": "/home/user/.thyrox-lab/quantize-scratch (única copia hasta esta publicación)"
+  }
+}

@@ -1,0 +1,2 @@
+local-models-import: falló: general.file_type 1, se esperaba 15
+EXIT=1
