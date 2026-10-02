@@ -1,0 +1,224 @@
+== [gate:check_premise_drift] src/verify/check_premise_drift.py
+-- responsabilidad:
+"""Corre la cadena de premisas y reporta los veredictos que CAMBIARON.
+"""
+#: JSONL: un registro por ficha. La forma la fija TASK-THYROX-0066, y aqui
+#: encaja por contenido y no solo por directiva — el baseline ES una coleccion
+#: de registros (una ficha, un veredicto), asi que el diff de un cambio es una
+#: linea en vez de todas las llaves del documento.
+-- entradas:
+41:def load_detector():
+58:def verdicts(detector, tasks_dir: str) -> dict[str, str]:
+90:def main() -> int:
+92:    p.add_argument('--tasks-dir', default=None, help="directorio de fichas, o '-' para stdin")
+93:    p.add_argument('--baseline', default=str(DEFAULT_BASELINE))
+94:    p.add_argument('--strict', action='store_true', help='exit 1 si algún veredicto cambió')
+95:    p.add_argument('--write-baseline', action='store_true')
+96:    p.add_argument('--quiet', action='store_true', help='sólo el conteo de cambios')
+-- salidas/persistencia:
+-- consumidores: 5 · pruebas: 2
+   consumer: bin/check_premise_drift
+   consumer: src/conformance/checklist.ts
+   consumer: src/conformance/maintenance.ts
+   consumer: src/verify/registry.py
+
+== [gate:check_consumer_anchor] src/verify/check_consumer_anchor.py
+-- responsabilidad:
+"""Gate — aritmética de ruta que sale de thyrox y aterriza en un árbol ajeno.
+"""
+#: La raíz propia. Se deriva del marcador, no de `parents[N]` — un gate que
+#: cometiera el defecto que mide no podría publicar un veredicto creíble.
+#: Sólo el árbol de producto. `tests/` tiene su propia aritmética y `_archived`
+#: es el THYROX anterior, que no se lee como vigente.
+-- entradas:
+44:def anchors(tree: ast.AST) -> list[tuple[int, int]]:
+62:def escapes(path: pathlib.Path, level: int, root: pathlib.Path) -> bool:
+71:def measure(root: pathlib.Path) -> tuple[list[str], int]:
+89:def read_baseline() -> set[str]:
+96:def main(argv: list[str]) -> int:
+98:    p.add_argument("--root", help="raíz de thyrox (por defecto, la derivada)")
+99:    p.add_argument("--strict", action="store_true", help="exit 1 si hay nuevas")
+100:    p.add_argument("--write-baseline", action="store_true")
+-- salidas/persistencia:
+114:        BASELINE.write_text(
+-- consumidores: 3 · pruebas: 1
+   consumer: bin/check_consumer_anchor
+   consumer: src/verify/check_path_arithmetic.py
+   consumer: src/verify/registry.py
+
+== [gate:check_durable_path_ownership] src/verify/check_durable_path_ownership.py
+-- responsabilidad:
+"""PathOwnershipGate: el estado durable de un banco no apunta a una raíz efímera.
+"""
+#: Los registros que gobiernan la reanudación. No las transcripciones de un
+#: trabajador (``*.stream.jsonl``): registran el ``/tmp`` de SU contenedor, no
+#: una referencia a estado que alguien tenga que volver a leer.
+        # Una orden (el `verify` de un ítem) lleva rutas entre sus palabras.
+-- entradas:
+39:def _ephemeral_values(value, field: str):
+53:def _structured_documents(workbench: Path):
+63:def violations(workbench: Path) -> list[str]:
+76:def main(argv: list[str] | None = None) -> int:
+-- salidas/persistencia:
+-- consumidores: 1 · pruebas: 1
+   consumer: bin/check_durable_path_ownership
+
+== [gate:check_role_abstraction] src/docs/check_role_abstraction.py
+-- responsabilidad:
+"""
+"""
+# ---------------------------------------------------------------------------
+# Regla A: code-block:: python en seccion 2 (Especificacion)
+# ---------------------------------------------------------------------------
+    """Detecta bloques code-block:: python dentro de la seccion 2."""
+-- entradas:
+36:def check_regla_a(path: Path, contenido: str) -> list[dict]:
+91:def _lines_outside_blocks(contenido: str) -> list[tuple[int, str]]:
+115:def check_regla_b(path: Path, contenido: str) -> list[dict]:
+141:def check_regla_c(path: Path, contenido: str) -> list[dict]:
+160:def analyze_file(path: Path) -> list[dict]:
+176:def main(directory: str = '.') -> int:
+-- salidas/persistencia:
+-- consumidores: 1 · pruebas: 0
+   consumer: bin/check_role_abstraction
+
+== [gate:check_rule_divergence] src/verify/check_rule_divergence.py
+-- responsabilidad:
+"""Las reglas con el MISMO NOMBRE en varios consumidores: quien manda y quien se quedo atras.
+"""
+#: Donde vive una regla en cualquiera de los arboles.
+#: Como declara una copia que su canon esta en otro sitio. Se busca en el
+-- entradas:
+74:def rule_files(root: Path) -> dict[str, Path]:
+82:def content_lines(path: Path) -> frozenset[str]:
+90:def _header_contains(path: Path, markers: tuple[str, ...]) -> bool:
+106:def declares_canon(path: Path) -> bool:
+110:def declares_emitted(path: Path) -> bool:
+115:def classify(name: str, copies: dict[str, Path]) -> list[tuple[str, str, str]]:
+149:def read_baseline() -> set[str]:
+156:def survey(roots: dict[str, Path]) -> tuple[dict[str, dict[str, Path]], int]:
+-- salidas/persistencia:
+209:        BASELINE.write_text(
+-- consumidores: 7 · pruebas: 3
+   consumer: bin/check_rule_divergence
+   consumer: src/rules/emit/markdown.ts
+   consumer: src/rules/index.ts
+   consumer: src/rules/provenance.py
+
+== [gate:check_absence_claim] src/verify/check_absence_claim.py
+-- responsabilidad:
+"""check_absence_claim.py — el comentario que afirma una ausencia, contra el árbol.
+**La cifra de FALSA es una COTA SUPERIOR para triaje, no un veredicto.** La
+"""
+# Sólo dispara dentro de una línea de comentario: `//`, `*` de bloque, o `/*`.
+# Las formas de afirmar una ausencia que el corpus real usa. La caja de
+# «PARCIAL» es deliberada: en minúscula, «porte parcial» es prosa corriente
+-- entradas:
+117:def _symbols_in(text: str) -> list:
+129:def find_absence_claims(text: str, path: str = "") -> list:
+161:def exported_symbols(root) -> set:
+179:def verdict(claim: AbsenceClaim, present: set) -> ClaimVerdict:
+194:def _modules(root, requested):
+204:def main(argv=None) -> int:
+206:    parser.add_argument("files", nargs="*")
+207:    parser.add_argument("--root", default="src")
+-- salidas/persistencia:
+-- consumidores: 2 · pruebas: 1
+   consumer: bin/check_absence_claim
+   consumer: src/verify/registry.py
+
+== [gate:check_stand_ins] src/verify/check_stand_ins.py
+-- responsabilidad:
+"""Gate: un sustituto local no sobrevive a su original.
+*Métrica:* coincidencia de NOMBRE entre lo que el sustituto exporta y lo que
+*Ciega a:* que los dos cuerpos hagan lo mismo —un homónimo no declarado
+"""
+-- entradas:
+71:def declared_homonyms(text: str) -> dict[str, str]:
+87:def exported_names(text: str) -> set[str]:
+98:def _target(value) -> str | None:
+108:def _walk(root: Path):
+117:def _code_files(package_dir: Path) -> list[Path]:
+122:def public_modules(package_dir: Path) -> dict[Path, str]:
+148:def _package_name(package_dir: Path) -> str:
+156:def _resolve_relative(origin: Path, specifier: str) -> Path | None:
+-- salidas/persistencia:
+-- consumidores: 2 · pruebas: 2
+   consumer: bin/check_stand_ins
+   consumer: src/verify/registry.py
+
+== [gate:check_unreachable_rules] src/verify/check_unreachable_rules.py
+-- responsabilidad:
+"""La regla `allow` que existe y nunca puede dispararse.
+"""
+    """Los clones consumidores MÁS thyrox, que también declara reglas.
+    """
+        # Sin thyrox alcanzable el gate sigue midiendo a los consumidores; lo
+-- entradas:
+38:def raices_medidas():
+67:def split_rule(text):
+86:def subcommands(content):
+106:def is_simple_prefix(content):
+113:def covers(wide, narrow):
+135:def covers_segment(content_a, content_b):
+153:def declared_rules(roots):
+175:def unreachable(rules):
+-- salidas/persistencia:
+-- consumidores: 2 · pruebas: 1
+   consumer: bin/check_unreachable_rules
+   consumer: src/verify/registry.py
+
+== [gate:implementation_order] src/task/implementation_order.py
+-- responsabilidad:
+"""Qué se implementa después: Tarjan → Kahn → unblock count → KNN → premisa.
+**Por qué la etapa 5 existe, y por qué es la última.** Una ficha declaraba
+**Tarjan va iterativo a propósito.** La versión recursiva es más corta y este
+-- entradas:
+92:def load_tasks(source):
+108:def newest_session_dir(root):
+119:def build_edges(tasks):
+164:def tarjan_scc(nodes, edges):
+221:def condense(components, edges):
+236:def kahn_topological_sort(node_count, condensed):
+260:def unblock_count(component_index, condensed, order, components, tasks):
+278:def is_ready(task_id, tasks, edges, component_of, components):
+-- salidas/persistencia:
+-- consumidores: 2 · pruebas: 1
+   consumer: bin/implementation_order
+   consumer: src/verify/verificar_premisa.py
+
+== [gate:mechanism_registry] AUSENTE
+
+== [gate:mechanisms] AUSENTE
+
+== otros candidatos por nombre (registry|catalog|discover|existing|absence|reuse)
+bin/artifact-registry-publish-artifact
+bin/check_absence_claim
+bin/check_error_catalog
+bin/local-models-catalog
+bin/model_catalog
+bin/tool-registry-apply-edits
+src/agents/model_catalog.py
+src/commands/discover.md
+src/packages/agent/assistant/sessionDiscovery.ts
+src/packages/agent/bin/extract_model_registry.py
+src/packages/agent/hooks/AsyncHookRegistry.ts
+src/packages/agent/registry.ts
+src/packages/agent/tasks/registry.ts
+src/packages/app-host/src/bootstrap/cleanupRegistry.ts
+src/packages/app-host/src/runtime/commandRegistryRuntime.ts
+src/packages/app-host/src/runtime/installToolRegistryBindings.ts
+src/packages/app-host/src/runtime/sessionRegistryAtLaunch.ts
+src/packages/app-host/src/runtime/toolRegistryRuntime.ts
+src/packages/artifact-registry/artifactFiles.ts
+src/packages/artifact-registry/artifactRegistry.ts
+src/packages/artifact-registry/artifactVerifier.ts
+src/packages/artifact-registry/bin/fetchLayer.ts
+src/packages/artifact-registry/bin/publishArtifact.ts
+src/packages/artifact-registry/bin/verifyArtifact.ts
+src/packages/artifact-registry/bunfig.toml
+src/packages/artifact-registry/diskAdmission.ts
+src/packages/artifact-registry/dockerHubArtifactRegistry.ts
+src/packages/artifact-registry/jobEgress.ts
+src/packages/artifact-registry/ociArtifactRegistry.ts
+src/packages/artifact-registry/ociDistribution.ts
