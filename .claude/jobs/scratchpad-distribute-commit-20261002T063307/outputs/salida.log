@@ -1,0 +1,11 @@
+README.md
+index.tsv
+manifest.jsonl
+outputs
+probes
+f79c8db80 Move the old scratchpad material into .claude
+  tampoco se bloquea, porque es secundaria (README D4-A, §8).
+f79c8db80828f74578dc6dfb17fe3ca36272aa85	refs/heads/feature/ai-course-notes-l1
+f79c8db80828f74578dc6dfb17fe3ca36272aa85
+execution thyrox-worker-test-muql6r8w-16891 kind=test task=TASK-THYROX-0762 exit=0
+__BG_EXIT__=0
