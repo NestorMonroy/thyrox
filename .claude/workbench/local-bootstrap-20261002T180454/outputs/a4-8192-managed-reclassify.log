@@ -1,0 +1,7 @@
+## antes
+{"model":"thyrox-library--qwen3-4b:q4_k_m-ollama-359d7dd4bcda","kind":"protocol","suite":"tool-calling@1","casesPassed":6,"casesTotal":6,"passed":true,"contextTokens":8192,"tokensPerSecond":2.866585884278765,"measurementCondition":"isolated","measuredAt":"2026-10-02T19:55:21.471Z"}
+reclasificada: thyrox-library--qwen3-4b:q4_k_m-ollama-359d7dd4bcda 2026-10-02T19:55:21.471Z isolated -> contended
+exit=0
+## después
+{"model":"thyrox-library--qwen3-4b:q4_k_m-ollama-359d7dd4bcda","kind":"protocol","suite":"tool-calling@1","casesPassed":6,"casesTotal":6,"passed":true,"contextTokens":8192,"tokensPerSecond":2.9691671112429057,"measurementCondition":"isolated","measuredAt":"2026-10-02T19:16:31.421Z"}
+{"model":"thyrox-library--qwen3-4b:q4_k_m-ollama-359d7dd4bcda","kind":"protocol","suite":"tool-calling@1","casesPassed":6,"casesTotal":6,"passed":true,"contextTokens":8192,"tokensPerSecond":2.866585884278765,"measurementCondition":"contended","measuredAt":"2026-10-02T19:55:21.471Z"}
