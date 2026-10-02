@@ -53,10 +53,34 @@ prerrequisito de ninguna otra**. Una ruta que usa herramientas la exige porque
 `eligible(ruta) = la capacidad que la ruta necesita pasó, en su versión`
 (ADR-007 1.16.0).
 
-**G7 — pendiente de decisión.** Propuesta: un eje de **capacidad** distinto del
-de esfuerzo; una cualificación de tarea declara la capacidad que mide
-(`translation`, `code`, …) y su suite versionada. El eje de esfuerzo sigue
-sirviendo a `recommend(tipo, perfil)`. A7 queda bloqueada hasta que conste.
+**G7 — decidido** (ejecutor, 2026-10-02; ADR-007 1.16.1). Cinco conceptos
+separados, ninguno codificado dentro de otro:
+
+| Concepto | Responsabilidad |
+|---|---|
+| `ModelCapability` | lo que el artefacto demostró: `translation`, `summarization`, `text-generation`, `extraction`, `classification`, `code`, `tool-calling`, `reasoning` |
+| clase de esfuerzo (`taskClass` hoy) | cuánto razonamiento pide el trabajo; la consume `recommend(tipo, perfil)`; **conserva su semántica** |
+| `RouteRequirement` | la capacidad y la suite con versión que la ruta declara |
+| `Eligibility` | compuerta determinista: `eligibleArtifacts(request, route)` → conjunto de candidatos; por artefacto `isArtifactEligibleForRoute(artifact, routeRequirement, qualifications): boolean` |
+| `Selection` | el planificador elige dentro del conjunto; no lo amplía |
+
+Identidad de una cualificación: **sha256 del artefacto + capacidad + suite con
+versión**. El nombre contractual no basta. Hoy `ModelQualification` guarda sólo
+`model` (`modelQualification.ts:34`) y el sha256 vive en
+`ModelCatalogEntry.artifact.sha256`; A7 lo lleva a la cualificación o lo
+resuelve por el catálogo — decide la implementación, la prueba 9 lo exige.
+
+**No es aprendizaje por refuerzo.** PASS/FAIL es un hecho medido, no una
+recompensa. A7 no introduce `Reward`, `ValueFunction`, `QValue`,
+`ActionValue`, `ReinforcementPolicy` ni `BanditPolicy`. `src/learning/reward.py`
+y `src/learning/experience.py` existen y quedan fuera de A7.
+
+**`taskClass` no se renombra en A7.** Sus consumidores de producción
+(`agent/bin/recommend.ts`, `local-models/qualifyCommand.ts`,
+`local-models/qualifyModel.ts`, `local-models/taskSuite.ts`,
+`model-artifacts/modelQualification.ts`, `provider/src/cost/policy.ts`) y la
+opción pública `--task-class` de `src/session/headless-pool.sh` hacen del
+renombre a `ExecutionEffortClass` una decisión aparte.
 
 ## 3. Tareas (TDD; rojo persistido contra la base, anulación por guarda)
 
@@ -67,7 +91,7 @@ sirviendo a `recommend(tipo, perfil)`. A7 queda bloqueada hasta que conste.
 | A3 | campo `compatibleRuntimes: string[]` separado de `source`; la declaración desde Ollama escribe `['ollama']`; un runtime más se añade sólo con su cualificación o verificación registrada | `catalogEntry.ts`, `declareInstalledModel.ts`, `executionPolicy.ts`, sus pruebas | A1 |
 | A4 | la clave de la cualificación incluye la suite (`id@versión`); `latestFor` no deja que una versión pise a otra; prueba explícita: con `translation@1` PASS y `tool-calling@1` FAIL, la primera sigue PASS y el artefacto sigue aceptado | `model-artifacts/modelQualification.ts`, su prueba | — |
 | A5 | G8: `qualifiedModels` deja de exigir `passed(protocol)` para toda tarea; la elegibilidad pide la capacidad de la ruta. Pruebas: `tool-calling` FAIL + capacidad de tarea PASS → elegible para la ruta sin herramientas y no elegible para la ruta con herramientas; la cualificación de protocolo sigue ejecutándose y registrándose | `model-artifacts/modelQualification.ts`, `provider/src/cost/policy.ts`, sus pruebas | A4 |
-| A7 | G7: eje de capacidad | `modelQualification.ts`, `provider/src/cost/policy.ts`, sus pruebas | **decisión del ejecutor pendiente** |
+| A7 | G7: eje de capacidad (pruebas 1–9 de `tasks/A7.md`); REUSE/EXTEND del store, el registro y el motor existentes; identificadores en inglés y nombrados por responsabilidad | `model-artifacts/modelQualification.ts`, `model-artifacts/catalogEntry.ts` si hace falta, `provider/src/cost/policy.ts`, sus pruebas | A4, A5 |
 | A6 | registrar el Qwen real: declarar el blob exacto, licencia leída del GGUF, `compatibleRuntimes: ['ollama']`, la nota de §4, y la entrada de política con `source: 'ollama'` | catálogo y política de la sesión propietaria (datos, no código) | A1, A2, A3 |
 
 Las cualificaciones del Qwen por capacidad vienen después de A6, por la suite
@@ -96,6 +120,9 @@ Sin condición de cierre. No es hallazgo, ni blocker, ni cualificación pendient
   ad-hoc en `python3` se descarta);
 - un segundo store de cualificaciones;
 - que `provenanceNotes` o `source` aparezcan en una condición de elegibilidad;
+- en A7: equivalencia de tensores, comparación con upstream, hashing, aprendizaje
+  de calidad, selección adaptativa, recompensas, bandits, aprendizaje por
+  refuerzo, y codificar una capacidad en `taskClass`;
 - convertir toda la metadata GGUF en campos obligatorios del catálogo: el
   catálogo guarda identidad y propiedades estables; los hechos del formato se
   leen de `ggufMetadata` cuando hacen falta.
