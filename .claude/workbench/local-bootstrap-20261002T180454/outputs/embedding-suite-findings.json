@@ -1,0 +1,205 @@
+{
+  "id": "findings-a2-nomic-embed",
+  "cases": [
+    {
+      "id": "H-DOCS-336",
+      "query": "el recorte de un cuerpo de función no tenía con qué fallar",
+      "relevant": "======================================================================== - **Severidad:** MEDIA - **Fecha:** 2026-08-22T20:42:21 - **Archivos:** ``.claude/eventos/sustitucion-skill-binario-20260822T201243/medir_sustitucion.py`` · ``.claude/eventos/prompt-de-comando-binario-20260822T202905/censar_prompt_de_comando.py`` - **Estado:** RESUELTO en ``docs@<este commit>`` Premisa verificada ------------",
+      "distractors": [
+        "================================================================================ - **Severidad:** ALTA - **Fecha:** 2026-08-04T04:11:40 - **Archivo:** ``src/addons/authz_signup/controllers/main.py:51`` (``signup``) y ``:96`` (``request_reset``) **Premisa verificada:** .. code-block:: text $ grep -rn \"signup_open\\|password_reset_enabled\" src/ --include=\"*.py\" \\ | grep -v \"def signup_open\\|def passw",
+        "========================================================== - **Severidad:** MEDIA - **Fecha:** 2026-09-18T16:37:38 - **Archivo:** ``thyrox: src/packages/permission/src/ (32 archivos)`` - **Premisa verificada:** ``classifierDecision.ts`` — 6 formas acentuadas contra 0 sin acentuar, traducido antes de la compactación; ``autoModeState.test.ts`` — 0 contra 4, traducido después. [PROVEN] - **Descripcio",
+        "================================================================================ - **Severidad:** BAJA - **Fecha:** 2026-09-12T09:19:35 - **Archivo:** ``thyrox: .claude/rules/trabajo-en-segundo-plano.md`` y los cinco ``kaupamex-*: .claude/rules/long-running-commands.md`` / ``bash-background-tasks.md``. - **Premisa verificada:** ``thyrox: .claude/rules/trabajo-en-segundo-plano.md`` sigue documentan"
+      ]
+    },
+    {
+      "id": "H-API-269",
+      "query": "cerrar el alta no cerraba nada: la política vivía sólo en el modelo",
+      "relevant": "================================================================================ - **Severidad:** ALTA - **Fecha:** 2026-08-04T04:11:40 - **Archivo:** ``src/addons/authz_signup/controllers/main.py:51`` (``signup``) y ``:96`` (``request_reset``) **Premisa verificada:** .. code-block:: text $ grep -rn \"signup_open\\|password_reset_enabled\" src/ --include=\"*.py\" \\ | grep -v \"def signup_open\\|def passw",
+      "distractors": [
+        "========================================================== - **Severidad:** MEDIA - **Fecha:** 2026-09-18T16:37:38 - **Archivo:** ``thyrox: src/packages/permission/src/ (32 archivos)`` - **Premisa verificada:** ``classifierDecision.ts`` — 6 formas acentuadas contra 0 sin acentuar, traducido antes de la compactación; ``autoModeState.test.ts`` — 0 contra 4, traducido después. [PROVEN] - **Descripcio",
+        "================================================================================ - **Severidad:** BAJA - **Fecha:** 2026-09-12T09:19:35 - **Archivo:** ``thyrox: .claude/rules/trabajo-en-segundo-plano.md`` y los cinco ``kaupamex-*: .claude/rules/long-running-commands.md`` / ``bash-background-tasks.md``. - **Premisa verificada:** ``thyrox: .claude/rules/trabajo-en-segundo-plano.md`` sigue documentan",
+        "======================================================================================= - **Severidad:** MEDIA - **Fecha:** 2026-09-02T21:39:38 - **Archivo:** ``api: scripts/workbench/orm-inventory-axis-20260902T205231/locate_absent_symbols.py`` - **Estado:** RESUELTO en ``api@8502449d`` Premisa verificada ------------------ El propio docstring del instrumento declaraba esta ceguera desde que se e"
+      ]
+    },
+    {
+      "id": "H-THYROX-86",
+      "query": "la tilde se perdió al cruzar la compactación",
+      "relevant": "========================================================== - **Severidad:** MEDIA - **Fecha:** 2026-09-18T16:37:38 - **Archivo:** ``thyrox: src/packages/permission/src/ (32 archivos)`` - **Premisa verificada:** ``classifierDecision.ts`` — 6 formas acentuadas contra 0 sin acentuar, traducido antes de la compactación; ``autoModeState.test.ts`` — 0 contra 4, traducido después. [PROVEN] - **Descripcio",
+      "distractors": [
+        "================================================================================ - **Severidad:** BAJA - **Fecha:** 2026-09-12T09:19:35 - **Archivo:** ``thyrox: .claude/rules/trabajo-en-segundo-plano.md`` y los cinco ``kaupamex-*: .claude/rules/long-running-commands.md`` / ``bash-background-tasks.md``. - **Premisa verificada:** ``thyrox: .claude/rules/trabajo-en-segundo-plano.md`` sigue documentan",
+        "======================================================================================= - **Severidad:** MEDIA - **Fecha:** 2026-09-02T21:39:38 - **Archivo:** ``api: scripts/workbench/orm-inventory-axis-20260902T205231/locate_absent_symbols.py`` - **Estado:** RESUELTO en ``api@8502449d`` Premisa verificada ------------------ El propio docstring del instrumento declaraba esta ceguera desde que se e",
+        "======================================================================================== - **Severidad:** MEDIA - **Fecha:** 2026-08-18T09:17:09 - **Archivo:** ``api: addons/mail/models/manual_fanout.py:47-64`` - **Estado:** DOCUMENTADO (sin fix inmediato) - **Origen:** :ref:`odoo-entorno-cap18` — cruce del capítulo 18 del *Odoo Development Cookbook* (creación masiva) contra el árbol. Premisa veri"
+      ]
+    },
+    {
+      "id": "H-THYROX-1",
+      "query": "los ejemplos de los consumidores siguen citando la ruta completa",
+      "relevant": "================================================================================ - **Severidad:** BAJA - **Fecha:** 2026-09-12T09:19:35 - **Archivo:** ``thyrox: .claude/rules/trabajo-en-segundo-plano.md`` y los cinco ``kaupamex-*: .claude/rules/long-running-commands.md`` / ``bash-background-tasks.md``. - **Premisa verificada:** ``thyrox: .claude/rules/trabajo-en-segundo-plano.md`` sigue documentan",
+      "distractors": [
+        "======================================================================================= - **Severidad:** MEDIA - **Fecha:** 2026-09-02T21:39:38 - **Archivo:** ``api: scripts/workbench/orm-inventory-axis-20260902T205231/locate_absent_symbols.py`` - **Estado:** RESUELTO en ``api@8502449d`` Premisa verificada ------------------ El propio docstring del instrumento declaraba esta ceguera desde que se e",
+        "======================================================================================== - **Severidad:** MEDIA - **Fecha:** 2026-08-18T09:17:09 - **Archivo:** ``api: addons/mail/models/manual_fanout.py:47-64`` - **Estado:** DOCUMENTADO (sin fix inmediato) - **Origen:** :ref:`odoo-entorno-cap18` — cruce del capítulo 18 del *Odoo Development Cookbook* (creación masiva) contra el árbol. Premisa veri",
+        "================================================= - **Severidad:** ALTA - **Fecha:** 2026-08-27T18:45:33 - **Archivo:** ``src/addons/base/models/ir_attachment.py`` - **Estado:** RESUELTO en ``api@bd8ebda3`` Premisa verificada ------------------ - ``odoo19c: odoo/addons/base/models/ir_attachment.py`` — ``_check_contents`` degrada a ``text/plain`` cuando ``'ht' in mimetype`` o ``'xml' in mimetype`` "
+      ]
+    },
+    {
+      "id": "H-API-1044",
+      "query": "el cubo terminal del eje era una cota superior más gruesa de lo declarado",
+      "relevant": "======================================================================================= - **Severidad:** MEDIA - **Fecha:** 2026-09-02T21:39:38 - **Archivo:** ``api: scripts/workbench/orm-inventory-axis-20260902T205231/locate_absent_symbols.py`` - **Estado:** RESUELTO en ``api@8502449d`` Premisa verificada ------------------ El propio docstring del instrumento declaraba esta ceguera desde que se e",
+      "distractors": [
+        "======================================================================================== - **Severidad:** MEDIA - **Fecha:** 2026-08-18T09:17:09 - **Archivo:** ``api: addons/mail/models/manual_fanout.py:47-64`` - **Estado:** DOCUMENTADO (sin fix inmediato) - **Origen:** :ref:`odoo-entorno-cap18` — cruce del capítulo 18 del *Odoo Development Cookbook* (creación masiva) contra el árbol. Premisa veri",
+        "================================================= - **Severidad:** ALTA - **Fecha:** 2026-08-27T18:45:33 - **Archivo:** ``src/addons/base/models/ir_attachment.py`` - **Estado:** RESUELTO en ``api@bd8ebda3`` Premisa verificada ------------------ - ``odoo19c: odoo/addons/base/models/ir_attachment.py`` — ``_check_contents`` degrada a ``text/plain`` cuando ``'ht' in mimetype`` o ``'xml' in mimetype`` ",
+        "=========================================================================== - **Severidad:** ALTA - **Fecha:** 2026-08-21T02:16:59 - **Archivo:** ``.claude/eventos/permisos-binario-20260821T020946/medir_permisos.py`` - **Estado:** RESUELTO en el mismo pase (instrumento corregido y re-corrido) El instrumento -------------- ``medir_permisos.py`` mide contra el ejecutable de la sesión los mecanismos "
+      ]
+    },
+    {
+      "id": "H-API-664",
+      "query": "``bulk_create`` omite el push del bus: el aviso masivo nunca llega en vivo",
+      "relevant": "======================================================================================== - **Severidad:** MEDIA - **Fecha:** 2026-08-18T09:17:09 - **Archivo:** ``api: addons/mail/models/manual_fanout.py:47-64`` - **Estado:** DOCUMENTADO (sin fix inmediato) - **Origen:** :ref:`odoo-entorno-cap18` — cruce del capítulo 18 del *Odoo Development Cookbook* (creación masiva) contra el árbol. Premisa veri",
+      "distractors": [
+        "================================================= - **Severidad:** ALTA - **Fecha:** 2026-08-27T18:45:33 - **Archivo:** ``src/addons/base/models/ir_attachment.py`` - **Estado:** RESUELTO en ``api@bd8ebda3`` Premisa verificada ------------------ - ``odoo19c: odoo/addons/base/models/ir_attachment.py`` — ``_check_contents`` degrada a ``text/plain`` cuando ``'ht' in mimetype`` o ``'xml' in mimetype`` ",
+        "=========================================================================== - **Severidad:** ALTA - **Fecha:** 2026-08-21T02:16:59 - **Archivo:** ``.claude/eventos/permisos-binario-20260821T020946/medir_permisos.py`` - **Estado:** RESUELTO en el mismo pase (instrumento corregido y re-corrido) El instrumento -------------- ``medir_permisos.py`` mide contra el ejecutable de la sesión los mecanismos ",
+        "========================================================================= - **Severidad:** ALTA - **Fecha:** 2026-08-20T18:48:07 - **Archivo:** ``api: addons/auto_backup/controllers/main.py:80-86`` - **Estado:** RESUELTO en ``api@1e94f80`` Premisa verificada ------------------ El constructor de la ruta apuntaba a ``backup_db.sh`` del repo hermano: .. code-block:: python _BACKUP_SCRIPT = os.path.jo"
+      ]
+    },
+    {
+      "id": "H-API-837",
+      "query": "un SVG subido conservaba su mimetype",
+      "relevant": "================================================= - **Severidad:** ALTA - **Fecha:** 2026-08-27T18:45:33 - **Archivo:** ``src/addons/base/models/ir_attachment.py`` - **Estado:** RESUELTO en ``api@bd8ebda3`` Premisa verificada ------------------ - ``odoo19c: odoo/addons/base/models/ir_attachment.py`` — ``_check_contents`` degrada a ``text/plain`` cuando ``'ht' in mimetype`` o ``'xml' in mimetype`` ",
+      "distractors": [
+        "=========================================================================== - **Severidad:** ALTA - **Fecha:** 2026-08-21T02:16:59 - **Archivo:** ``.claude/eventos/permisos-binario-20260821T020946/medir_permisos.py`` - **Estado:** RESUELTO en el mismo pase (instrumento corregido y re-corrido) El instrumento -------------- ``medir_permisos.py`` mide contra el ejecutable de la sesión los mecanismos ",
+        "========================================================================= - **Severidad:** ALTA - **Fecha:** 2026-08-20T18:48:07 - **Archivo:** ``api: addons/auto_backup/controllers/main.py:80-86`` - **Estado:** RESUELTO en ``api@1e94f80`` Premisa verificada ------------------ El constructor de la ruta apuntaba a ``backup_db.sh`` del repo hermano: .. code-block:: python _BACKUP_SCRIPT = os.path.jo",
+        "========================================================================= - **Severidad:** BAJA - **Fecha:** 2026-09-18T18:07:38 - **Archivo:** ``thyrox: src/packages/agent/internal/loopSentinelCore.ts:347-350`` - **Estado:** DOCUMENTADO (no hay fix — es una aclaración de referente) La pregunta que lo origina --------------------------- Al cerrar el porte de ``loopSentinelCore``, sus cinco casos n"
+      ]
+    },
+    {
+      "id": "H-DOCS-245",
+      "query": "la sonda de dato llevaba comillas, y el empaquetador re-cotiza",
+      "relevant": "=========================================================================== - **Severidad:** ALTA - **Fecha:** 2026-08-21T02:16:59 - **Archivo:** ``.claude/eventos/permisos-binario-20260821T020946/medir_permisos.py`` - **Estado:** RESUELTO en el mismo pase (instrumento corregido y re-corrido) El instrumento -------------- ``medir_permisos.py`` mide contra el ejecutable de la sesión los mecanismos ",
+      "distractors": [
+        "========================================================================= - **Severidad:** ALTA - **Fecha:** 2026-08-20T18:48:07 - **Archivo:** ``api: addons/auto_backup/controllers/main.py:80-86`` - **Estado:** RESUELTO en ``api@1e94f80`` Premisa verificada ------------------ El constructor de la ruta apuntaba a ``backup_db.sh`` del repo hermano: .. code-block:: python _BACKUP_SCRIPT = os.path.jo",
+        "========================================================================= - **Severidad:** BAJA - **Fecha:** 2026-09-18T18:07:38 - **Archivo:** ``thyrox: src/packages/agent/internal/loopSentinelCore.ts:347-350`` - **Estado:** DOCUMENTADO (no hay fix — es una aclaración de referente) La pregunta que lo origina --------------------------- Al cerrar el porte de ``loopSentinelCore``, sus cinco casos n",
+        "================================================================================================================================== - **Severidad:** ALTA - **Fecha:** 2026-09-16T22:18:02 - **Fuente:** ``source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-29-heavy-roots-no-discrimina-una-raiz-de-369-entradas-gira-y-una-de-861k.rst`` Descripción ----------- El cu"
+      ]
+    },
+    {
+      "id": "H-API-765",
+      "query": "El respaldo bajo demanda llamaba al guion del motor retirado",
+      "relevant": "========================================================================= - **Severidad:** ALTA - **Fecha:** 2026-08-20T18:48:07 - **Archivo:** ``api: addons/auto_backup/controllers/main.py:80-86`` - **Estado:** RESUELTO en ``api@1e94f80`` Premisa verificada ------------------ El constructor de la ruta apuntaba a ``backup_db.sh`` del repo hermano: .. code-block:: python _BACKUP_SCRIPT = os.path.jo",
+      "distractors": [
+        "========================================================================= - **Severidad:** BAJA - **Fecha:** 2026-09-18T18:07:38 - **Archivo:** ``thyrox: src/packages/agent/internal/loopSentinelCore.ts:347-350`` - **Estado:** DOCUMENTADO (no hay fix — es una aclaración de referente) La pregunta que lo origina --------------------------- Al cerrar el porte de ``loopSentinelCore``, sus cinco casos n",
+        "================================================================================================================================== - **Severidad:** ALTA - **Fecha:** 2026-09-16T22:18:02 - **Fuente:** ``source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-29-heavy-roots-no-discrimina-una-raiz-de-369-entradas-gira-y-una-de-861k.rst`` Descripción ----------- El cu",
+        "=============================================================== - **Severidad:** MEDIA - **Fecha:** 2026-08-31T06:27:23 - **Archivos:** ``scripts/check_field_class_attributes.py``, ``scripts/test_check_field_class_attributes.sh``, ``src/orm/fields.py``, ``tests/unit/orm/test_field_class_attributes.py`` - **Estado:** RESUELTO en ``api@828ff1cd`` Qué estaba mal -------------- El gate de :ref:`h-api-"
+      ]
+    },
+    {
+      "id": "H-THYROX-92",
+      "query": "``loop.md`` es un homónimo, no un archivo que faltó copiar",
+      "relevant": "========================================================================= - **Severidad:** BAJA - **Fecha:** 2026-09-18T18:07:38 - **Archivo:** ``thyrox: src/packages/agent/internal/loopSentinelCore.ts:347-350`` - **Estado:** DOCUMENTADO (no hay fix — es una aclaración de referente) La pregunta que lo origina --------------------------- Al cerrar el porte de ``loopSentinelCore``, sus cinco casos n",
+      "distractors": [
+        "================================================================================================================================== - **Severidad:** ALTA - **Fecha:** 2026-09-16T22:18:02 - **Fuente:** ``source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-29-heavy-roots-no-discrimina-una-raiz-de-369-entradas-gira-y-una-de-861k.rst`` Descripción ----------- El cu",
+        "=============================================================== - **Severidad:** MEDIA - **Fecha:** 2026-08-31T06:27:23 - **Archivos:** ``scripts/check_field_class_attributes.py``, ``scripts/test_check_field_class_attributes.sh``, ``src/orm/fields.py``, ``tests/unit/orm/test_field_class_attributes.py`` - **Estado:** RESUELTO en ``api@828ff1cd`` Qué estaba mal -------------- El gate de :ref:`h-api-",
+        "============================================================================================================================ - **Severidad:** ALTA - **Fecha:** 2026-09-19T14:04:24 - **Archivo:** ``thyrox: src/agents/agent_store.py``, ``stop_reason_provenance`` y ``cmd_stop_reason_census`` - **Estado:** RESUELTO — los seis cubos renombrados en productor y suite a la vez Premisa verificada ---------"
+      ]
+    },
+    {
+      "id": "H-THYROX-29",
+      "query": "HEAVY\\_ROOTS no discrimina: una raiz de 369 entradas gira y una de 861k termina; el eje es la API que sigue symlinks",
+      "relevant": "================================================================================================================================== - **Severidad:** ALTA - **Fecha:** 2026-09-16T22:18:02 - **Fuente:** ``source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-29-heavy-roots-no-discrimina-una-raiz-de-369-entradas-gira-y-una-de-861k.rst`` Descripción ----------- El cu",
+      "distractors": [
+        "=============================================================== - **Severidad:** MEDIA - **Fecha:** 2026-08-31T06:27:23 - **Archivos:** ``scripts/check_field_class_attributes.py``, ``scripts/test_check_field_class_attributes.sh``, ``src/orm/fields.py``, ``tests/unit/orm/test_field_class_attributes.py`` - **Estado:** RESUELTO en ``api@828ff1cd`` Qué estaba mal -------------- El gate de :ref:`h-api-",
+        "============================================================================================================================ - **Severidad:** ALTA - **Fecha:** 2026-09-19T14:04:24 - **Archivo:** ``thyrox: src/agents/agent_store.py``, ``stop_reason_provenance`` y ``cmd_stop_reason_census`` - **Estado:** RESUELTO — los seis cubos renombrados en productor y suite a la vez Premisa verificada ---------",
+        "===================================================================================== - **Severidad:** ALTA - **Fecha:** 2026-08-14T01:01:23 - **Archivo:** ``api: src/addons/`` vs ``api: addons/`` — las dos raíces que declara ``src/modules/module.py:52-56`` (``ADDONS_PATHS``) - **Estado:** RESUELTO en ``api@5f0f842`` — 21 archivos reubicados, un plano muerto retirado; gate cableado en ``scripts/ch"
+      ]
+    },
+    {
+      "id": "H-API-975",
+      "query": "la exclusión por forma era más ancha que su motivo",
+      "relevant": "=============================================================== - **Severidad:** MEDIA - **Fecha:** 2026-08-31T06:27:23 - **Archivos:** ``scripts/check_field_class_attributes.py``, ``scripts/test_check_field_class_attributes.sh``, ``src/orm/fields.py``, ``tests/unit/orm/test_field_class_attributes.py`` - **Estado:** RESUELTO en ``api@828ff1cd`` Qué estaba mal -------------- El gate de :ref:`h-api-",
+      "distractors": [
+        "============================================================================================================================ - **Severidad:** ALTA - **Fecha:** 2026-09-19T14:04:24 - **Archivo:** ``thyrox: src/agents/agent_store.py``, ``stop_reason_provenance`` y ``cmd_stop_reason_census`` - **Estado:** RESUELTO — los seis cubos renombrados en productor y suite a la vez Premisa verificada ---------",
+        "===================================================================================== - **Severidad:** ALTA - **Fecha:** 2026-08-14T01:01:23 - **Archivo:** ``api: src/addons/`` vs ``api: addons/`` — las dos raíces que declara ``src/modules/module.py:52-56`` (``ADDONS_PATHS``) - **Estado:** RESUELTO en ``api@5f0f842`` — 21 archivos reubicados, un plano muerto retirado; gate cableado en ``scripts/ch",
+        "========================================================================================== - **Severidad:** MEDIA - **Fecha:** 2026-08-14T19:23:48 - **Archivo:** ``api: addons/stock/models/stock_quant.py`` - **Estado:** RESUELTO en ``api@4784bb0`` Qué pasó ---------- El porte de ``stock.quant`` se escribió importando ``Q``, ``F``, ``Sum`` de ``django.db.models`` y armando las conjunciones a mano ("
+      ]
+    },
+    {
+      "id": "H-THYROX-136",
+      "query": "el reescritor de f-string renombró la lectura y no la clave del dict: el archivo parsea y muere con KeyError",
+      "relevant": "============================================================================================================================ - **Severidad:** ALTA - **Fecha:** 2026-09-19T14:04:24 - **Archivo:** ``thyrox: src/agents/agent_store.py``, ``stop_reason_provenance`` y ``cmd_stop_reason_census`` - **Estado:** RESUELTO — los seis cubos renombrados en productor y suite a la vez Premisa verificada ---------",
+      "distractors": [
+        "===================================================================================== - **Severidad:** ALTA - **Fecha:** 2026-08-14T01:01:23 - **Archivo:** ``api: src/addons/`` vs ``api: addons/`` — las dos raíces que declara ``src/modules/module.py:52-56`` (``ADDONS_PATHS``) - **Estado:** RESUELTO en ``api@5f0f842`` — 21 archivos reubicados, un plano muerto retirado; gate cableado en ``scripts/ch",
+        "========================================================================================== - **Severidad:** MEDIA - **Fecha:** 2026-08-14T19:23:48 - **Archivo:** ``api: addons/stock/models/stock_quant.py`` - **Estado:** RESUELTO en ``api@4784bb0`` Qué pasó ---------- El porte de ``stock.quant`` se escribió importando ``Q``, ``F``, ``Sum`` de ``django.db.models`` y armando las conjunciones a mano (",
+        "================================================================================ - **Severidad:** MEDIA - **Fecha:** 2026-08-22T07:40:46 - **Archivo:** el gobierno documental completo — ``.claude/rules/``, ``source/normativa/estandares/metodologia/`` - **Estado:** DOCUMENTADO (sin fix inmediato) Premisa verificada ------------------ Dos fuentes externas independientes, con vocabulario y propósito "
+      ]
+    },
+    {
+      "id": "H-API-572",
+      "query": "el merge trajo archivos nuevos a una ruta que esta rama había renombrado",
+      "relevant": "===================================================================================== - **Severidad:** ALTA - **Fecha:** 2026-08-14T01:01:23 - **Archivo:** ``api: src/addons/`` vs ``api: addons/`` — las dos raíces que declara ``src/modules/module.py:52-56`` (``ADDONS_PATHS``) - **Estado:** RESUELTO en ``api@5f0f842`` — 21 archivos reubicados, un plano muerto retirado; gate cableado en ``scripts/ch",
+      "distractors": [
+        "========================================================================================== - **Severidad:** MEDIA - **Fecha:** 2026-08-14T19:23:48 - **Archivo:** ``api: addons/stock/models/stock_quant.py`` - **Estado:** RESUELTO en ``api@4784bb0`` Qué pasó ---------- El porte de ``stock.quant`` se escribió importando ``Q``, ``F``, ``Sum`` de ``django.db.models`` y armando las conjunciones a mano (",
+        "================================================================================ - **Severidad:** MEDIA - **Fecha:** 2026-08-22T07:40:46 - **Archivo:** el gobierno documental completo — ``.claude/rules/``, ``source/normativa/estandares/metodologia/`` - **Estado:** DOCUMENTADO (sin fix inmediato) Premisa verificada ------------------ Dos fuentes externas independientes, con vocabulario y propósito ",
+        "======================================================================== - **Severidad:** MEDIA - **Fecha:** 2026-08-14T00:33:08 - **Archivo:** ``api: scripts/check_catalog_declaration.py`` — función ``installed_addons()`` - **Estado:** RESUELTO — la fuente pasa de ser el **texto** de ``base.py`` a ser ``get_modules()``, el mismo grafo del que ``LOCAL_APPS`` se deriva. - **Detectado por:** ``tests"
+      ]
+    },
+    {
+      "id": "H-API-582",
+      "query": "el puerto usó Django crudo donde el proyecto ya tiene espejo de la primitiva",
+      "relevant": "========================================================================================== - **Severidad:** MEDIA - **Fecha:** 2026-08-14T19:23:48 - **Archivo:** ``api: addons/stock/models/stock_quant.py`` - **Estado:** RESUELTO en ``api@4784bb0`` Qué pasó ---------- El porte de ``stock.quant`` se escribió importando ``Q``, ``F``, ``Sum`` de ``django.db.models`` y armando las conjunciones a mano (",
+      "distractors": [
+        "================================================================================ - **Severidad:** MEDIA - **Fecha:** 2026-08-22T07:40:46 - **Archivo:** el gobierno documental completo — ``.claude/rules/``, ``source/normativa/estandares/metodologia/`` - **Estado:** DOCUMENTADO (sin fix inmediato) Premisa verificada ------------------ Dos fuentes externas independientes, con vocabulario y propósito ",
+        "======================================================================== - **Severidad:** MEDIA - **Fecha:** 2026-08-14T00:33:08 - **Archivo:** ``api: scripts/check_catalog_declaration.py`` — función ``installed_addons()`` - **Estado:** RESUELTO — la fuente pasa de ser el **texto** de ``base.py`` a ser ``get_modules()``, el mismo grafo del que ``LOCAL_APPS`` se deriva. - **Detectado por:** ``tests",
+        "==================================================================== - **Severidad:** ALTA - **Fecha:** 2026-09-03T02:04:42 - **Archivo:** ``src/orm/registry.py`` · ``addons/web/models/models.py:2015`` · ``src/orm/decorators.py:141`` - **Estado:** RESUELTO en ``api@58923285`` - **Tarea:** #334 Premisa verificada ------------------ La referencia declara tres propiedades memoizadas que reúnen los mé"
+      ]
+    },
+    {
+      "id": "H-DOCS-313",
+      "query": "dos marcos nombran un rol de coordinación documental; no lo tenemos",
+      "relevant": "================================================================================ - **Severidad:** MEDIA - **Fecha:** 2026-08-22T07:40:46 - **Archivo:** el gobierno documental completo — ``.claude/rules/``, ``source/normativa/estandares/metodologia/`` - **Estado:** DOCUMENTADO (sin fix inmediato) Premisa verificada ------------------ Dos fuentes externas independientes, con vocabulario y propósito ",
+      "distractors": [
+        "======================================================================== - **Severidad:** MEDIA - **Fecha:** 2026-08-14T00:33:08 - **Archivo:** ``api: scripts/check_catalog_declaration.py`` — función ``installed_addons()`` - **Estado:** RESUELTO — la fuente pasa de ser el **texto** de ``base.py`` a ser ``get_modules()``, el mismo grafo del que ``LOCAL_APPS`` se deriva. - **Detectado por:** ``tests",
+        "==================================================================== - **Severidad:** ALTA - **Fecha:** 2026-09-03T02:04:42 - **Archivo:** ``src/orm/registry.py`` · ``addons/web/models/models.py:2015`` · ``src/orm/decorators.py:141`` - **Estado:** RESUELTO en ``api@58923285`` - **Tarea:** #334 Premisa verificada ------------------ La referencia declara tres propiedades memoizadas que reúnen los mé",
+        "======================================================================= - **Severidad:** ALTA - **Fecha:** 2026-09-07T01:03:00 - **Archivos:** el arranque de 65 guiones; ``thyrox: .claude/eventos/`` - **Estado:** RESUELTO en ``thyrox@677c6627`` y ``thyrox@93e51d5d`` Los dos defectos de este hallazgo son **del arreglo de** :ref:`h-docs-1134`, no del árbol heredado, y los dos los señaló el ejecutor."
+      ]
+    },
+    {
+      "id": "H-API-565",
+      "query": "el gate de catálogo murió por segunda vez leyendo el literal",
+      "relevant": "======================================================================== - **Severidad:** MEDIA - **Fecha:** 2026-08-14T00:33:08 - **Archivo:** ``api: scripts/check_catalog_declaration.py`` — función ``installed_addons()`` - **Estado:** RESUELTO — la fuente pasa de ser el **texto** de ``base.py`` a ser ``get_modules()``, el mismo grafo del que ``LOCAL_APPS`` se deriva. - **Detectado por:** ``tests",
+      "distractors": [
+        "==================================================================== - **Severidad:** ALTA - **Fecha:** 2026-09-03T02:04:42 - **Archivo:** ``src/orm/registry.py`` · ``addons/web/models/models.py:2015`` · ``src/orm/decorators.py:141`` - **Estado:** RESUELTO en ``api@58923285`` - **Tarea:** #334 Premisa verificada ------------------ La referencia declara tres propiedades memoizadas que reúnen los mé",
+        "======================================================================= - **Severidad:** ALTA - **Fecha:** 2026-09-07T01:03:00 - **Archivos:** el arranque de 65 guiones; ``thyrox: .claude/eventos/`` - **Estado:** RESUELTO en ``thyrox@677c6627`` y ``thyrox@93e51d5d`` Los dos defectos de este hallazgo son **del arreglo de** :ref:`h-docs-1134`, no del árbol heredado, y los dos los señaló el ejecutor.",
+        "===================================================================================== - **Severidad:** BAJA - **Fecha:** 2026-08-06T07:01:16 - **Archivo:** ``src/addons/account/models/account_group.py`` - **Estado:** RESUELTO en ``api@87d369b`` (tarea #113). Qué queda declarado sin efecto -------------------------------- - ``_check_length_prefix`` — la referencia exige que ``code_prefix_start`` y "
+      ]
+    },
+    {
+      "id": "H-API-1053",
+      "query": "el control que no discriminó destapó un porte a medias",
+      "relevant": "==================================================================== - **Severidad:** ALTA - **Fecha:** 2026-09-03T02:04:42 - **Archivo:** ``src/orm/registry.py`` · ``addons/web/models/models.py:2015`` · ``src/orm/decorators.py:141`` - **Estado:** RESUELTO en ``api@58923285`` - **Tarea:** #334 Premisa verificada ------------------ La referencia declara tres propiedades memoizadas que reúnen los mé",
+      "distractors": [
+        "======================================================================= - **Severidad:** ALTA - **Fecha:** 2026-09-07T01:03:00 - **Archivos:** el arranque de 65 guiones; ``thyrox: .claude/eventos/`` - **Estado:** RESUELTO en ``thyrox@677c6627`` y ``thyrox@93e51d5d`` Los dos defectos de este hallazgo son **del arreglo de** :ref:`h-docs-1134`, no del árbol heredado, y los dos los señaló el ejecutor.",
+        "===================================================================================== - **Severidad:** BAJA - **Fecha:** 2026-08-06T07:01:16 - **Archivo:** ``src/addons/account/models/account_group.py`` - **Estado:** RESUELTO en ``api@87d369b`` (tarea #113). Qué queda declarado sin efecto -------------------------------- - ``_check_length_prefix`` — la referencia exige que ``code_prefix_start`` y ",
+        "======================================================================= - **Severidad:** MEDIA - **Fecha:** 2026-08-04T19:25:10 - **Archivos:** ``src/addons/website_sale/controllers/main.py``, ``src/addons/payment/controllers/portal.py``, ``src/addons/stock/controllers/main.py`` - **Estado:** RESUELTO en ``api@0889ab2`` El defecto de instrumento ------------------------- Al buscar dónde declara la"
+      ]
+    },
+    {
+      "id": "H-DOCS-1135",
+      "query": "cablée el marcador y emití el banco dentro del proveedor",
+      "relevant": "======================================================================= - **Severidad:** ALTA - **Fecha:** 2026-09-07T01:03:00 - **Archivos:** el arranque de 65 guiones; ``thyrox: .claude/eventos/`` - **Estado:** RESUELTO en ``thyrox@677c6627`` y ``thyrox@93e51d5d`` Los dos defectos de este hallazgo son **del arreglo de** :ref:`h-docs-1134`, no del árbol heredado, y los dos los señaló el ejecutor.",
+      "distractors": [
+        "===================================================================================== - **Severidad:** BAJA - **Fecha:** 2026-08-06T07:01:16 - **Archivo:** ``src/addons/account/models/account_group.py`` - **Estado:** RESUELTO en ``api@87d369b`` (tarea #113). Qué queda declarado sin efecto -------------------------------- - ``_check_length_prefix`` — la referencia exige que ``code_prefix_start`` y ",
+        "======================================================================= - **Severidad:** MEDIA - **Fecha:** 2026-08-04T19:25:10 - **Archivos:** ``src/addons/website_sale/controllers/main.py``, ``src/addons/payment/controllers/portal.py``, ``src/addons/stock/controllers/main.py`` - **Estado:** RESUELTO en ``api@0889ab2`` El defecto de instrumento ------------------------- Al buscar dónde declara la",
+        "================================================================================ - **Severidad:** MEDIA - **Fecha:** 2026-08-31T08:32:53 - **Archivos:** ``src/addons/base/models/ir_autovacuum.py`` - **Estado:** RESUELTO en ``api@45d165d2`` Qué se buscaba, y qué salió ---------------------------- Cuarto caso del barrido (#250), y el patrón ya tiene forma reconocible: **una declinación cuyo bloqueo "
+      ]
+    },
+    {
+      "id": "H-API-323",
+      "query": "Las dos restricciones de prefijo de ``AccountGroup`` no se hacen cumplir",
+      "relevant": "===================================================================================== - **Severidad:** BAJA - **Fecha:** 2026-08-06T07:01:16 - **Archivo:** ``src/addons/account/models/account_group.py`` - **Estado:** RESUELTO en ``api@87d369b`` (tarea #113). Qué queda declarado sin efecto -------------------------------- - ``_check_length_prefix`` — la referencia exige que ``code_prefix_start`` y ",
+      "distractors": [
+        "======================================================================= - **Severidad:** MEDIA - **Fecha:** 2026-08-04T19:25:10 - **Archivos:** ``src/addons/website_sale/controllers/main.py``, ``src/addons/payment/controllers/portal.py``, ``src/addons/stock/controllers/main.py`` - **Estado:** RESUELTO en ``api@0889ab2`` El defecto de instrumento ------------------------- Al buscar dónde declara la",
+        "================================================================================ - **Severidad:** MEDIA - **Fecha:** 2026-08-31T08:32:53 - **Archivos:** ``src/addons/base/models/ir_autovacuum.py`` - **Estado:** RESUELTO en ``api@45d165d2`` Qué se buscaba, y qué salió ---------------------------- Cuarto caso del barrido (#250), y el patrón ya tiene forma reconocible: **una declinación cuyo bloqueo ",
+        "=================================================================== - **Severidad:** MEDIA - **Fecha:** 2026-09-07T05:42:02 - **Archivo:** ``ccnmt: packages/memory/src/memoryFileDetection.ts:134,164`` y ``ccnmt: packages/memory/src/memdir.ts`` (mismo patrón) contra ``ccnmt: packages/memory/src/teamMemPaths.ts`` (export completo). - **Premisa verificada:** ``memoryFileDetection.ts`` declara, dos ve"
+      ]
+    }
+  ]
+}
