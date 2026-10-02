@@ -1,0 +1,6 @@
+exit=1
+  FALLA caso 7: con --context-tokens el pool sale 0 — esperado [0] obtenido [2]
+  FALLA caso 7: el recomendador recibe --context 32768 — esperado [1] obtenido [0]
+15 ok · 2 falla(s) (alcance medido: headless-pool --model-policy)
+execution thyrox-worker-test-muqnu6w3-5346 kind=test task=TASK-THYROX-0781 exit=0
+__BG_EXIT__=0

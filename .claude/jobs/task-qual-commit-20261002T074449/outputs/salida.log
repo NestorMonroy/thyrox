@@ -1,0 +1,8 @@
+typecheck exit=0   local-models: 0 propio(s) · 0 de hermano · 0 fuera (total 0)  <- sin baseline
+OK: finding H-THYROX-317 indexado en /home/user/thyrox/agent-results/agent_store.sqlite3
+1
+de4284e33 Qualify a local model for a task class
+  tampoco se bloquea, porque es secundaria (README D4-A, §8).
+pushed
+execution thyrox-worker-test-muqnqyb8-3862 kind=test task=TASK-THYROX-0780 exit=0
+__BG_EXIT__=0

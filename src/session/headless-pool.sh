@@ -35,6 +35,12 @@
 # una recomendación bloqueada, por un Ollama que no arranca o por un runtime
 # de proveedor que llegue igual—. Sin política, el comportamiento de hoy.
 #
+# `--context-tokens N` (TASK-THYROX-0781) es el contexto que cada ítem necesita
+# por turno, y viaja al recomendador como `--context N`. Sin declararlo, el
+# recomendador exige su piso de subagente (126 029 tokens), que ningún modelo
+# local de 32k alcanza aunque esté cualificado; un ítem de traducción midió
+# p90 13 406 tokens por turno en 400 ítems de olas anteriores.
+#
 # El modelo de los ítems no se declara: se deriva de `--task-class` con
 # `bin/agent-recommend` (`recommend(tipo, perfil)` de @thyrox/agent), que
 # fija rango mínimo y compara los registros del catálogo. Un identificador
@@ -52,7 +58,7 @@
 #                    [--credential-source inherit|proxy-env|proxy-store|proxy-store-url]
 #                    [--isolation worktree [--verify CMD]]
 #                    [--execution host|unit [--work-reference CONSUMIDOR:ÁMBITO]]
-#                    [--model-policy ARCHIVO]
+#                    [--model-policy ARCHIVO] [--context-tokens N]
 #                    < items (uno por linea)
 #
 # Sin `--max-turns` el ítem no tiene tope de turnos, igual que `claude -p`:
@@ -213,7 +219,7 @@ RUNNER_KIND=thyrox
 PROMPT=""; OUT=""; MODEL=""; TASK_CLASS=""
 WIDTH="$(nproc 2>/dev/null || echo 4)"
 TIMEOUT=600; TOOLS="Read"; TOOLS_SET=""; ISOLATION=""; VERIFY=""; MAX_TURNS=""; WORKDIR="$PWD"; MEMFREE_SPEC=""; CACHE_TTL=""; CREDENTIAL_PROXY=""; STORE_CREDENTIAL_PROXY=""; CREDENTIAL_SOURCE=""
-EXECUTION=host; WORK_REFERENCE=""; MODEL_POLICY=""; POLICY_FALLBACK=""
+EXECUTION=host; WORK_REFERENCE=""; MODEL_POLICY=""; POLICY_FALLBACK=""; CONTEXT_TOKENS=""
 
 rehusa() { echo "headless-pool: REHUSA — $*" >&2; exit 2; }
 
@@ -239,6 +245,7 @@ while [[ $# -gt 0 ]]; do
         --execution) EXECUTION="${2:-}"; shift 2 ;;
         --work-reference) WORK_REFERENCE="${2:-}"; shift 2 ;;
         --model-policy) MODEL_POLICY="${2:-}"; shift 2 ;;
+        --context-tokens) CONTEXT_TOKENS="${2:-}"; shift 2 ;;
         -h|--help) sed -n '2,69p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) rehusa "opcion desconocida: $1" ;;
     esac
@@ -280,6 +287,8 @@ case "$TASK_CLASS" in
     mecanica|analisis|adversarial|frontera) ;;
     *) rehusa "--task-class va mecanica, analisis, adversarial o frontera, no: ${TASK_CLASS:-(vacio)}" ;;
 esac
+[[ -z "$CONTEXT_TOKENS" || "$CONTEXT_TOKENS" =~ ^[1-9][0-9]*$ ]] \
+    || rehusa "--context-tokens exige un entero positivo de tokens, no: $CONTEXT_TOKENS"
 # >>> runtime-routing
 RECOMMEND_BIN="${HEADLESS_POOL_RECOMMEND:-$THYROX_ROOT/bin/agent-recommend}"
 INFRASTRUCTURE_ENSURE_BIN="${HEADLESS_POOL_INFRASTRUCTURE_ENSURE:-$THYROX_ROOT/bin/infrastructure_ensure}"
@@ -292,7 +301,8 @@ readonly LOCAL_RUNTIME=ollama PROVIDER_RUNTIME=claude-cli MANAGED_OLLAMA_SERVICE
 # escribirlo a mano.
 derive_recommendation() {
     local reply rc=0
-    reply="$(bash "$RECOMMEND_BIN" "$TASK_CLASS" "$@" ${MODEL_POLICY:+--policy "$MODEL_POLICY"} --json 2>/dev/null)" || rc=$?
+    reply="$(bash "$RECOMMEND_BIN" "$TASK_CLASS" "$@" ${MODEL_POLICY:+--policy "$MODEL_POLICY"} \
+        ${CONTEXT_TOKENS:+--context "$CONTEXT_TOKENS"} --json 2>/dev/null)" || rc=$?
     # 3: la política bloqueó la clase; su causa viene en el JSON.
     [[ "$rc" -ne 3 ]] || rehusa "la política de modelo bloquea --task-class $TASK_CLASS: $(jq -r '.blockedReason // "sin causa"' <<< "$reply" 2>/dev/null)"
     [[ "$rc" -eq 0 ]] || reply=""

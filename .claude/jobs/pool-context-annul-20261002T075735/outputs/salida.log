@@ -1,0 +1,9 @@
+forward-context: 1 caen
+    FALLA caso 7: el recomendador recibe --context 32768
+validate-context: 3 caen
+    FALLA caso 9: un --context-tokens que no es entero positivo rehúsa con 2
+    FALLA caso 9: y dice que exige un entero positivo
+    FALLA caso 9: sin preguntar al recomendador
+ 1 file changed, 13 insertions(+), 3 deletions(-)
+execution thyrox-worker-test-muqo7dn6-6092 kind=test task=TASK-THYROX-0781 exit=0
+__BG_EXIT__=0
