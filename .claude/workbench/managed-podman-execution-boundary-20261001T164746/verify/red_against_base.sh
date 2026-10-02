@@ -5,7 +5,7 @@
 # cambio. Retirar el cambio entero es la anulación de grano de archivo; la de rama fina sigue
 # siendo evidencia del ítem.
 # Uso: red_against_base.sh <ítem> <prueba>...   cada <prueba> es una ruta relativa a la raíz.
-#   .py se corre con python3; .sh con bash; .test.ts con bun test desde su paquete.
+#   .py se corre con el intérprete de uv (uv run --frozen --no-sync python); .sh con bash; .test.ts con bun test desde su paquete.
 # Salida: 0 RED y GREEN probados · 1 alguno no · 2 sin medir. Deja outputs/<ítem>-red-verified.log.
 set -uo pipefail
 item="$1"; shift
@@ -15,10 +15,12 @@ log="$wb/outputs/$item-red-verified.log"
 base="$(mktemp -d)"; trap 'git -C "$root" worktree remove --force "$base" >/dev/null 2>&1; rm -rf "${base:?}"' EXIT
 git -C "$root" worktree add -q --detach "$base" HEAD || { echo "red: no se pudo crear el árbol base" >&2; exit 2; }
 [[ -e "$root/node_modules" ]] && ln -s "$root/node_modules" "$base/node_modules"
+# El árbol base sale del mismo HEAD, con el mismo uv.lock: usa el .venv de uv del árbol, nunca python3.
+[[ -e "$root/.venv" ]] && ln -s "$(readlink -f "$root/.venv")" "$base/.venv"
 run_test() {
   local tree="$1" test="$2"
   case "$test" in
-    *.py) (cd "$tree" && PYTHONDONTWRITEBYTECODE=1 python3 "$test") ;;
+    *.py) (cd "$tree" && PYTHONDONTWRITEBYTECODE=1 uv run --frozen --no-sync python "$test") ;;
     *.sh) (cd "$tree" && bash "$test") ;;
     *.test.ts) local package; package="$(gawk -F/ '{ print $1"/"$2"/"$3 }' <<< "$test")"
                (cd "$tree/$package" && bun test "${test#"$package"/}") ;;

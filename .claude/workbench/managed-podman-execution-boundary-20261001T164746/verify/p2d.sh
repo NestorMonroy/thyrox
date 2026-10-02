@@ -5,7 +5,7 @@ wb="$(cd "$(dirname "$0")/.." && pwd)"; cd /home/user/thyrox; fail=0
 # Las unidades por clase las demuestra el plano de control (probes/p2d_control_plane.sh):
 # una unidad no alcanza Podman (outputs/unit-podman-reachability.log).
 bash tests/session/test-bg-managed-execution.sh >/dev/null 2>&1 || { echo "FALLA test-bg-managed-execution"; fail=1; }
-python3 "$wb/tests/test_manifest_identity.py" >/dev/null 2>&1 || { echo "FALLA test_manifest_identity"; fail=1; }
+uv run --frozen --no-sync python "$wb/tests/test_manifest_identity.py" >/dev/null 2>&1 || { echo "FALLA test_manifest_identity"; fail=1; }
 for log in red green annulment; do [[ -s "$wb/outputs/p2d-$log.log" ]] || { echo "FALLA falta p2d-$log"; fail=1; }; done
 # Gates del verificador, no del trabajador (ejecutor 2026-10-02): alcance y RED contra la base.
 bash "$wb/verify/scope.sh" p2d src/lib/managed_execution.sh src/session/bg.sh tests/session/test-bg-managed-execution.sh .env.example || fail=1
