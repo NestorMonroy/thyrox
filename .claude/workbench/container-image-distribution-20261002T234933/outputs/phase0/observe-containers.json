@@ -1,0 +1,114 @@
+[
+ {
+  "id": "cde27581723d3e54a4a7eedab63573129d88169b726c9b91b58230be5b4a31b2",
+  "name": "thyrox-postgres",
+  "state": "created",
+  "running": false,
+  "pid": 0,
+  "imageId": "56a5b20c7a157dbb94149ba3cce70da76f02e1645dec234379709ddaebe607ea",
+  "image": "docker.io/pgvector/pgvector:0.8.0-pg16",
+  "created": "2026-10-02T18:38:10.824685515Z",
+  "labels": {
+   "io.thyrox.role": "infrastructure",
+   "io.thyrox.service": "postgres",
+   "thyrox.owner-id": "infrastructure-bootstrap",
+   "thyrox.owner-kind": "infrastructure",
+   "thyrox.owner-pid": "2851",
+   "thyrox.resource-config-digest": "e31da267f277789f4b066bcaf2be4fbfd24df0d1ca40cac9b395a6b759d44cf6",
+   "thyrox.resource-kind": "infrastructure",
+   "thyrox.resource-secrets-digest": "42acf4ac2bb8d04a168bf0a1921d0c3b75a6ec548c30d060bb5a7adfbcf594a8"
+  },
+  "mounts": [
+   {
+    "type": "volume",
+    "name": "thyrox-postgres-data",
+    "source": "/var/lib/containers/storage/volumes/thyrox-postgres-data/_data",
+    "destination": "/var/lib/postgresql/data",
+    "readWrite": true
+   }
+  ],
+  "portBindings": {
+   "5432/tcp": [
+    {
+     "hostIp": "127.0.0.1",
+     "hostPort": "55432"
+    }
+   ]
+  }
+ },
+ {
+  "id": "76b52211d5a56500534d80e52417277106adce7f7814eb6fd54cf30efdf496be",
+  "name": "thyrox-redis",
+  "state": "created",
+  "running": false,
+  "pid": 0,
+  "imageId": "64035c2c9726d90bea2a217d43da49d7a3f13dde8647c1f409059e02e0e61287",
+  "image": "docker.io/library/redis:7.4",
+  "created": "2026-10-02T18:38:19.457502148Z",
+  "labels": {
+   "io.thyrox.role": "infrastructure",
+   "io.thyrox.service": "redis",
+   "thyrox.owner-id": "infrastructure-bootstrap",
+   "thyrox.owner-kind": "infrastructure",
+   "thyrox.owner-pid": "2851",
+   "thyrox.resource-config-digest": "0155d5d5c1b286b4553a29c41f38aba6eb9c932b4b7fca22e43940e233660ee8",
+   "thyrox.resource-kind": "infrastructure",
+   "thyrox.resource-secrets-digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "mounts": [
+   {
+    "type": "volume",
+    "name": "352d802c33e3d138dd5dbc08ccfd275c68419a021e9000fa2deab08ce5f00161",
+    "source": "/var/lib/containers/storage/volumes/352d802c33e3d138dd5dbc08ccfd275c68419a021e9000fa2deab08ce5f00161/_data",
+    "destination": "/data",
+    "readWrite": true
+   }
+  ],
+  "portBindings": {
+   "6379/tcp": [
+    {
+     "hostIp": "127.0.0.1",
+     "hostPort": "56379"
+    }
+   ]
+  }
+ },
+ {
+  "id": "317424f04a5cdea320b9d0dfa6b0c12a55cca6dc4a28a9daf06f057c7523219f",
+  "name": "thyrox-ollama",
+  "state": "running",
+  "running": true,
+  "pid": 5510,
+  "imageId": "c178b43788bbd8f33ac3a6aa17dc561bc15dcbdba08ceac19f9388cf2415cc48",
+  "image": "docker.io/ollama/ollama:0.35.0",
+  "created": "2026-10-02T22:53:58.014022548Z",
+  "labels": {
+   "io.thyrox.role": "infrastructure",
+   "io.thyrox.service": "ollama",
+   "org.opencontainers.image.version": "24.04",
+   "thyrox.owner-id": "infrastructure-bootstrap",
+   "thyrox.owner-kind": "infrastructure",
+   "thyrox.owner-pid": "5434",
+   "thyrox.resource-config-digest": "34bbe96fd075f99122da9a3873ee1e72a38f35db5d60e3f6675538a2d198391e",
+   "thyrox.resource-kind": "infrastructure",
+   "thyrox.resource-secrets-digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "mounts": [
+   {
+    "type": "volume",
+    "name": "thyrox-ollama-bench-models",
+    "source": "/var/lib/containers/storage/volumes/thyrox-ollama-bench-models/_data",
+    "destination": "/root/.ollama",
+    "readWrite": true
+   },
+   {
+    "type": "bind",
+    "name": null,
+    "source": "/root/.ccr/ca-bundle.crt",
+    "destination": "/etc/ssl/certs/proxy-ca.crt",
+    "readWrite": false
+   }
+  ],
+  "portBindings": {}
+ }
+]

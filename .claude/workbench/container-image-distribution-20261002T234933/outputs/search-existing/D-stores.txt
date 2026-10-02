@@ -1,0 +1,274 @@
+== tareas: image
+#7  pending      [thyrox]  Build a consumer execution image under its work reference
+#8  pending      [thyrox]  Add a Transformers seq2seq runtime behind the Podman primitive
+#18  pending      [docs]  Clasificar vendor contra aplicación en el payload — hoy sin señal medible
+#18  pending      [api]  Clasificar vendor contra aplicación en el payload — hoy sin señal medible
+#27  pending      [thyrox]  Run pool items in Podman on a neutral execution primitive the pool owns
+#32  completed    [thyrox]  Admit infrastructure pulls against the real disk ceiling
+#71  pending      [thyrox]  Admit lab containers and image builds against RAM and disk before they start
+#73  completed    [thyrox]  Fase 2 — pruebas reales para los 8 paquetes sin pruebas
+#80  completed    [thyrox]  Quantize Qwen2.5-Coder-1.5B directly BF16→F16→Q4_K_M in exclusion and measure real peaks
+#81  completed    [thyrox]  Build a minimal thyrox model-quantizer image instead of depending on llama.cpp:full
+#86  pending      [thyrox]  Keep build environment values out of the quantizer image history
+#87  completed    [thyrox]  Publish lab images with a role-scoped registry credential and consume them by digest
+#88  pending      [thyrox]  Wire image resolution, disk admission and lifecycle cleanup into the worker launch
+#90  in_progress  [thyrox]  Publish lab outputs as PermanentArtifact through an ArtifactRegistry port
+#101  completed    [thyrox]  Proxy local: combos de modelo y gestión de contexto de OmniRoute
+#101  completed    [thyrox]  Generalize the Podman primitive into declarative resource materialization
+#104  pending      [thyrox]  Gate any Podman materialization outside podman-execution-primitive
+#105  pending      [thyrox]  Run managed local work only inside a primitive-materialized ExecutionUnit
+#109  completed    [thyrox]  Build the quantizer image through buildImage instead of raw podman build
+#119  pending      [thyrox]  Resolve an image tag to the registry's digest, not the local store's
+#122  pending      [thyrox]  Empaquetado P3 — nativos .node incrustados por plataforma, decisión por nativo
+#124  in_progress  [thyrox]  S1: one declarative sensitivity authority consumed by py/sh/ts
+#129  pending      [thyrox]  Refuse credentials at Podman boundaries by the sensitivity authority
+#189  pending      [api]  Barrer los 20 campos de orm/fields.py contra la firma de la referencia
+#192  pending      [api]  Portar el renderizador de códigos de barras (ir.actions.report.barcode)
+Total: 25 (alcance medido: 2416 tarea(s) de 8 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: image
+H-API-1019  [api/completar-primitiva-fields]  finding/BAJA  La sonda de calidad PNG medía la rama equivocada  (source/gestion/pm/api/iniciativas/completar-primitiva-fields/hallazgos/hallazgo-H-API-1019-la-sonda-de-calidad-png-media-la-rama-equivocada.rst)
+H-API-1021  [api/completar-primitiva-fields]  finding/ALTA  un bloqueo declarado es una afirmación de estado, y caduca solo  (source/gestion/pm/api/iniciativas/completar-primitiva-fields/hallazgos/hallazgo-H-API-1021-un-bloqueo-declarado-caduca-solo.rst)
+H-THYROX-300  [thyrox/actualizar-agentic-ai-thyrox]  finding/ALTA  Un ARG de proxy declarado en el Containerfile queda con su valor en el historial de la imagen  (thyrox: src/packages/model-artifacts/quantizer-image/Containerfile:17-19)
+H-THYROX-313  [thyrox/postgres-corpus-disk-reclaim]  finding/ALTA  El gate de propiedad de Podman no veía podman.run(<argv del dueño>): 4 rutas productivas ejecutaban Podman fuera de podman-execution, una en la ruta del grant  (src/verify/check_podman_access_ownership.py)
+H-API-386  [api/separar-rol-aplicacion-y-aprovisionamiento]  finding/ALTA  el CI seguía levantando un contenedor MariaDB cinco días después de ADR-028  (source/gestion/pm/api/iniciativas/separar-rol-aplicacion-y-aprovisionamiento/hallazgos/hallazgo-H-API-386-el-ci-seguia-levantando-un-contenedor-mariadb.rst)
+H-THYROX-298  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/ALTA  Los laboratorios saltan la admisión de recursos y tumban al pool: un OOM con el benchmark y un disco lleno con la imagen de RLVR  (src/session/resource_admission.py)
+H-API-294  [api/adaptar-familias-odoo-monolito-modular]  finding/ALTA  un PNG corrupto colgaba el helper: ``PngErrorFunc`` retorna  (source/gestion/pm/api/iniciativas/adaptar-familias-odoo-monolito-modular/hallazgos/hallazgo-H-API-294-png-corrupto-cuelga-el-helper-por-pngerrorfunc-que-retorna.rst)
+H-THYROX-402  [thyrox/embedding-route-and-local-workers]  finding/MEDIA  A SubagentStop hook recreates kaupamex-docs/ after the clone was removed, flipping the pre-push finding gate from 'not measured' to blocking  (src/hooks/error_log.py)
+H-THYROX-312  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/ALTA  resolve de un registro OCI devuelve el digest del almacén local, no el que sirve el registro  (src/packages/image-registry/ociRegistry.ts:68)
+H-THYROX-266  [thyrox/construir-harness-propio]  finding/MEDIA  El build JS no limpia dist/ antes de emitir: chunks de builds anteriores sobreviven junto a los nuevos  (src/typescript/buildJavascript.ts)
+H-THYROX-314  [local-models/ai-course-notes-es-mx]  finding/ALTA  headless-pool cae a claude-cli sin que el consumidor pueda prohibirlo  (src/session/headless-pool.sh)
+H-THYROX-265  [thyrox/construir-harness-propio]  finding/ALTA  Bun.build fija __dirname como literal absoluto del directorio fuente: el .js construido no es portable  (src/packages/computer-use-mcp/src/legacy/win32/bridgeClient.ts:42; .claude/workbench/build-runtime-assets-20260929T111144/close-check.sh)
+DEC-THYROX-007-1-17-0  [thyrox/embedding-route-and-local-workers]  decision/-  ADR-007 1.17.0: a managed execution is reclaimable only after its required execution record is durable  (src/packages/podman-execution/executionCommand.ts)
+Total: 13 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: registry
+#14  completed    [docs]  Migrar los skills al sustrato de código, empezando por los que sólo tienen apoyo
+#14  completed    [docs]  Migrar los skills al sustrato de código, empezando por los que sólo tienen apoyo
+#34  completed    [thyrox]  Make cross-session SendMessage work from thyrox -p, with its two-process test
+#36  completed    [thyrox]  Empaquetado P11 — install crea y registra los hogares de un clon nuevo
+#49  completed    [api]  Cablear SkillRegistry al despacho de herramientas del bucle
+#49  completed    [docs]  Cablear SkillRegistry al despacho de herramientas del bucle
+#49  completed    [thyrox]  Complete daemon worker launch modes, phase branches and timers
+#70  completed    [-]  Enhebrar el hilo de sesión al ToolContext para que skill getPrompt lo lea
+#70  completed    [api]  Enhebrar el hilo de sesión al ToolContext para que skill getPrompt lo lea
+#74  completed    [thyrox]  Fase 3 — corregir los leaks de aislamiento de provider y tool-registry
+#87  in_progress  [thyrox]  Build JS real y dependencias @thyrox/* por versión exacta con gate
+#87  completed    [thyrox]  Publish lab images with a role-scoped registry credential and consume them by digest
+#88  pending      [thyrox]  Wire image resolution, disk admission and lifecycle cleanup into the worker launch
+#90  in_progress  [thyrox]  Publish lab outputs as PermanentArtifact through an ArtifactRegistry port
+#91  in_progress  [thyrox]  Install a PermanentArtifact into the managed Ollama and expose it under its catalog identity
+#93  in_progress  [thyrox]  Retirar de los comentarios el historial de cambios (clean-code: eso es git log)
+#104  pending      [thyrox]  Gate any Podman materialization outside podman-execution-primitive
+#106  pending      [thyrox]  Amend ADR-007: managed local execution goes through the primitive, ExecutionAuthorization generalizes the grant
+#119  pending      [thyrox]  Resolve an image tag to the registry's digest, not the local store's
+#122  pending      [thyrox]  Empaquetado P3 — nativos .node incrustados por plataforma, decisión por nativo
+#132  in_progress  [thyrox]  Find existing mechanisms through a declarative registry before building one
+#133  pending      [thyrox]  Compose the roster into one liveness and progress verdict for controller jobs
+#193  completed    [thyrox]  #130-5 — Importar lodash-es por función en los 2 importadores del barril
+#199  completed    [thyrox]  Corregir los TS2742 de toolRegistryRuntime.ts (runtime del REPL)
+#233  completed    [thyrox]  tool-registry words — portar TDo, E$t y M4n (chunk-fvmr4qjr.js)
+Total: 25 (alcance medido: 2416 tarea(s) de 8 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: registry
+H-API-1056  [api/completar-primitiva-fields]  finding/ALTA  la lectura podia mutar filas sin avisar, y el descarte por campo no existia  (source/gestion/pm/api/iniciativas/completar-primitiva-fields/hallazgos/hallazgo-H-API-1056-la-lectura-podia-mutar-filas-sin-avisar.rst)
+H-API-958  [api/adaptar-familias-odoo-monolito-modular]  finding/MEDIA  La anotación no es una dependencia, y el ``dep`` del grafo es una cota  (source/gestion/pm/api/iniciativas/adaptar-familias-odoo-monolito-modular/hallazgos/hallazgo-H-API-958-la-anotacion-no-es-una-dependencia.rst)
+H-API-1057  [api/completar-primitiva-fields]  finding/ALTA  tres atributos con nombre de la fuente y sin un solo lector  (source/gestion/pm/api/iniciativas/completar-primitiva-fields/hallazgos/hallazgo-H-API-1057-tres-atributos-con-nombre-de-la-fuente-y-sin-lector.rst)
+H-DOCS-1005  [docs/implementar-base-datos-agentes]  finding/BAJA  ``registry.ts`` decía «gana el primero»; el cliente deja ganar al último y calla entre fuentes  (source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-1005-registry-ts-decia-gana-el-primero-y-el-cliente-deja-ganar-al-ultimo.rst)
+H-API-971  [api/completar-primitiva-domains]  finding/ALTA  El atajo de ``not_null`` no exigía columna, y el M2M pasaba por NOT NULL  (source/gestion/pm/api/iniciativas/completar-primitiva-domains/hallazgos/hallazgo-H-API-971-el-atajo-de-not-null-no-exigia-columna.rst)
+H-API-1059  [api/completar-primitiva-fields]  finding/ALTA  el doble escondia que ``_fields`` no se podia leer por la clase  (source/gestion/pm/api/iniciativas/completar-primitiva-fields/hallazgos/hallazgo-H-API-1059-el-doble-escondia-el-acceso-por-la-clase.rst)
+H-THYROX-411  [thyrox/local-bootstrap]  finding/MEDIA  Un PUT único de 2.497 GB al registry recibe ECONNRESET a los 45 s mientras uno de 986 MB sube: el umbral no está aislado; la subida por tramos quita la dependencia  (thyrox: src/packages/artifact-registry/ociDistribution.ts)
+H-API-1065  [api/completar-primitiva-fields]  finding/ALTA  el mapa de dependencias nacia del atributo crudo  (source/gestion/pm/api/iniciativas/completar-primitiva-fields/hallazgos/hallazgo-H-API-1065-el-mapa-de-dependencias-nacia-del-atributo-crudo.rst)
+H-THYROX-91  [thyrox/completar-packages-desde-la-referencia]  finding/ALTA  copiar de la fuente puede ensombrecer un puerto existente  (source/gestion/pm/thyrox/iniciativas/completar-packages-desde-la-referencia/hallazgos/hallazgo-H-THYROX-91-la-copia-ensombrece-un-puerto.rst)
+H-API-1051  [api/completar-primitiva-fields]  finding/MEDIA  Tres decoradores portados a medias, y una forma que no tenía lector  (source/gestion/pm/api/iniciativas/completar-primitiva-fields/hallazgos/hallazgo-H-API-1051-la-forma-invocable-existia-y-no-tenia-lector.rst)
+H-API-662  [api/empaquetar-kaupamex-bin-como-ejecutable]  finding/MEDIA  el acceso por nombre de modelo alcanza 27 de 337 modelos  (source/gestion/pm/api/iniciativas/empaquetar-kaupamex-bin-como-ejecutable/hallazgos/hallazgo-H-API-662-el-acceso-por-nombre-de-modelo-alcanza-27-de-337.rst)
+H-API-1053  [api/completar-primitiva-fields]  finding/ALTA  el control que no discriminó destapó un porte a medias  (source/gestion/pm/api/iniciativas/completar-primitiva-fields/hallazgos/hallazgo-H-API-1053-el-control-que-no-discrimino-destapo-un-porte-a-medias.rst)
+H-API-671  [api/completar-familia-base]  finding/MEDIA  el registro por nombre llevaba la marca de la referencia en sus identificadores  (source/gestion/pm/api/iniciativas/completar-familia-base/hallazgos/hallazgo-H-API-671-identificadores-con-la-marca-de-la-referencia.rst)
+H-API-864  [api/completar-familia-base]  finding/ALTA  los cuatro métodos de decimal.precision faltaban porque faltaba su mecanismo  (source/gestion/pm/api/iniciativas/completar-familia-base/hallazgos/hallazgo-H-API-864-el-mecanismo-de-cache-de-metodos-no-existia.rst)
+H-DOCS-1003  [docs/implementar-base-datos-agentes]  finding/ALTA  El extractor del catálogo invertía los booleanos minificados  (source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-1003-el-extractor-del-catalogo-invertia-los-booleanos-minificados.rst)
+H-API-1060  [api/completar-primitiva-fields]  finding/MEDIA  el reclamo de cero caducado forzo el porte de ``_gc_orm_signaling``  (source/gestion/pm/api/iniciativas/completar-primitiva-fields/hallazgos/hallazgo-H-API-1060-el-reclamo-de-cero-caducado-forzo-el-porte.rst)
+H-API-1098  [api/completar-raiz-orm]  finding/ALTA  ``Many2one`` estaba presente como nombre y ausente como contrato  (source/gestion/pm/api/iniciativas/completar-raiz-orm/hallazgos/hallazgo-H-API-1098-el-contrato-de-ondelete-no-estaba-portado.rst)
+H-API-1099  [api/completar-raiz-orm]  finding/ALTA  El nombre punteado de la fuente no llega a Django  (source/gestion/pm/api/iniciativas/completar-raiz-orm/hallazgos/hallazgo-H-API-1099-el-nombre-punteado-de-la-fuente-no-llega-a-django.rst)
+H-API-943  [api/adaptar-familias-odoo-monolito-modular]  finding/ALTA  Los 25 rojos heredados eran cuatro causas, no 25 defectos  (source/gestion/pm/api/iniciativas/adaptar-familias-odoo-monolito-modular/hallazgos/hallazgo-H-API-943-los-25-rojos-eran-cuatro-causas.rst)
+H-DOCS-504  [docs/implementar-base-datos-agentes]  finding/ALTA  el gate de artefactos de agente se eximía de su propia superficie  (source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-504-el-gate-se-eximia-de-su-propia-superficie.rst)
+H-DOCS-1265  [docs/actualizar-agentic-ai-thyrox]  finding/MEDIA  el conteo original de exports incompletos (9/33) no se re-midió antes de cerrar  (source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-DOCS-1265-el-conteo-original-de-exports-incompletos-no-se-remidio-antes-de-cerrar.rst)
+H-API-1061  [api/completar-primitiva-fields]  finding/MEDIA  la secuencia no es contigua, y el caso afirmaba que si  (source/gestion/pm/api/iniciativas/completar-primitiva-fields/hallazgos/hallazgo-H-API-1061-la-secuencia-no-es-contigua-y-el-caso-lo-afirmaba.rst)
+H-API-868  [api/completar-familia-base]  finding/ALTA  el campo por empresa no existía, y bloqueaba cinco símbolos  (source/gestion/pm/api/iniciativas/completar-familia-base/hallazgos/hallazgo-H-API-868-el-campo-por-empresa-no-existia-y-bloqueaba-cinco.rst)
+H-API-908  [api/adaptar-familias-odoo-monolito-modular]  finding/MEDIA  el check de nombre de tabla muere en vez de dar veredicto  (source/gestion/pm/api/iniciativas/adaptar-familias-odoo-monolito-modular/hallazgos/hallazgo-H-API-908-el-check-de-nombre-de-tabla-muere-en-vez-de-dar-veredicto.rst)
+H-API-1032  [api/completar-primitiva-fields]  finding/ALTA  el motor de computo, y por que son tres capas  (source/gestion/pm/api/iniciativas/completar-primitiva-fields/hallazgos/hallazgo-H-API-1032-el-motor-de-computo-en-tres-capas.rst)
+== tareas: mirror
+#1212  completed    [thyrox]  Enforce the task status vocabulary at the single shared point (SQLite CHECK)
+Total: 1 (alcance medido: 2416 tarea(s) de 8 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: mirror
+H-API-855  [api/completar-familia-base]  finding/ALTA  El gate de raíces espejadas medía tres de diez, y «sin contraparte» eran tres veredictos distintos  (source/gestion/pm/api/iniciativas/completar-familia-base/hallazgos/hallazgo-H-API-855-el-gate-media-tres-de-diez-raices-espejadas.rst)
+H-API-677  [api/completar-familia-base]  finding/ALTA  ``run_checks()`` antes de ``makemigrations``; el sucesor de :ref:`h-api-584`  (source/gestion/pm/api/iniciativas/completar-familia-base/hallazgos/hallazgo-H-API-677-run-checks-antes-de-makemigrations.rst)
+H-API-901  [api/adaptar-familias-odoo-monolito-modular]  finding/MEDIA  el arreglo de la doble raíz dejó sin efecto el parche del test  (source/gestion/pm/api/iniciativas/adaptar-familias-odoo-monolito-modular/hallazgos/hallazgo-H-API-901-el-arreglo-de-la-doble-raiz-dejo-sin-efecto-el-parche-del-test.rst)
+Total: 3 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: build cache
+Total: 0 (alcance medido: 2416 tarea(s) de 8 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: build cache
+Total: 0 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: preload
+Total: 0 (alcance medido: 2416 tarea(s) de 8 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: preload
+H-THYROX-224  [thyrox/construir-harness-propio]  finding/MEDIA  bun test desde el directorio de un paquete saltaba el grifo del store y escribía en el store versionado  (tests/session/test-store-faucet.sh)
+Total: 1 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: install
+#1  completed    [api]  Mudar packages/agent a .claude/packages/agent y reapuntar sus 4 consumidores
+#1  completed    [docs]  Mudar packages/agent a .claude/packages/agent y reapuntar sus 4 consumidores
+#1  completed    [thyrox]  Construir el sexto detector: Bash vs herramienta dedicada, y propagarlo a los 5 consumidores
+#2  completed    [thyrox]  Dar nombre corto a src/session, src/verify, src/agents vía bin/ + ~/.local/bin
+#3  completed    [thyrox]  Cablear el instalador de githooks al arranque de cada clon (TASK-THYROX-0246)
+#4  completed    [thyrox]  Aplicar el puente de hooks al arrancar una sesión multi-repo
+#4  completed    [thyrox]  Make the nested SDK error test independent of install layout
+#6  pending      [docs]  Resolver las tres observaciones sobre el encadenado de arranque_de_clon
+#8  pending      [thyrox]  Portar la rama de productores de plugin de Lu (isSensitivePath)
+#12  completed    [thyrox]  Documentar onboarding de un clon nuevo y cerrar el contrato de toolchain
+#14  pending      [thyrox]  Empaquetado P8 — instalar activa y verifica los githooks de cada clon
+#15  completed    [thyrox]  Pasar a PRODUCT_NAME los textos visibles que aún dicen Claude Code
+#18  pending      [thyrox]  Decidir el consumidor por defecto de user_wiring.declared_wiring
+#24  completed    [thyrox]  Estado compartido R1 — toolchain de Redis, puerto SharedStateStore y adaptador en memoria
+#36  completed    [thyrox]  Empaquetado P11 — install crea y registra los hogares de un clon nuevo
+#38  pending      [thyrox]  Empaquetado P12 — la instalación cubre la infraestructura gestionada
+#39  pending      [thyrox]  Empaquetado P13 — la instalación cubre los servicios de thyrox
+#40  completed    [thyrox]  Give the Empaquetado series a governing document in kaupamex-docs
+#42  pending      [thyrox]  Measure which entry points reach each operational dependency
+#66  completed    [docs]  T-103 Activar el driver de merge sqlite-union en el clon
+#66  completed    [docs]  T-103 Activar el driver de merge sqlite-union en el clon
+#69  in_progress  [thyrox]  Declare installed Ollama models in the catalog and qualify them by suite
+#71  completed    [thyrox]  Retirar con verificación el manifiesto y el lockfile anidados de src/packages
+#91  in_progress  [thyrox]  Install a PermanentArtifact into the managed Ollama and expose it under its catalog identity
+#104  pending      [-]  Portar share de ResUsers y get_installed de ResLang
+Total: 25 (alcance medido: 2416 tarea(s) de 8 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: install
+H-API-1023  [api/completar-primitiva-fields]  finding/ALTA  la siembra de ``base_install_request`` quedaba registrada sobre una tabla vacia  (source/gestion/pm/api/iniciativas/completar-primitiva-fields/hallazgos/hallazgo-H-API-1023-la-siembra-quedaba-registrada-sobre-una-tabla-vacia.rst)
+H-DOCS-463  [docs/unificar-trabajo-en-rama-kaupamex-l2]  finding/MEDIA  el puente de sesión no escribe sin terminal, y ``install-hooks.sh`` lo reporta como éxito  (source/gestion/pm/docs/iniciativas/unificar-trabajo-en-rama-kaupamex-l2/hallazgos/hallazgo-H-DOCS-463-el-puente-de-sesion-no-escribe-sin-terminal.rst)
+H-SERVER-19  [server/integrar-despliegue-produccion-ovhcloud]  finding/MEDIA  El instalador de unidades y el paquete son dos modelos de despliegue, no dos rutas al mismo  (source/gestion/pm/server/iniciativas/integrar-despliegue-produccion-ovhcloud/hallazgos/hallazgo-H-SERVER-19-el-instalador-de-unidades-y-el-deb-son-dos-modelos-de-despliegue.rst)
+H-API-571  [api/completar-familia-base]  finding/MEDIA  el orden de INSTALLED_APPS no es topológico  (source/gestion/pm/api/iniciativas/completar-familia-base/hallazgos/hallazgo-H-API-571-el-orden-de-installed-apps-no-es-topologico.rst)
+H-THYROX-122  [thyrox/construir-harness-propio]  finding/MEDIA  Revertir un manifiesto NO anula una declaracion: bun install no poda el enlace que el manifiesto ya no declara  (source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-122-revertir-un-manifiesto-no-anula-una-declaracion-bun-install-no-poda-el.rst)
+H-THYROX-173  [thyrox/actualizar-agentic-ai-thyrox]  finding/ALTA  The plugin execFileNoThrowWithCwd binding passed cwd positionally, so marketplace git calls ran without cwd, timeout, stdin or env  (src/packages/app-host/src/runtime/installPluginBindings.ts)
+H-THYROX-161  [thyrox/resolve-all-thyrox-errors]  finding/ALTA  Cinco constantes sin declarar entraron a develop con su gate en rojo  (kaupamex-docs: source/gestion/pm/thyrox/iniciativas/resolve-all-thyrox-errors/hallazgos/hallazgo-H-THYROX-161-cinco-constantes-sin-declarar-entraron-con-el-gate-en-rojo.rst)
+H-THYROX-225  [thyrox/actualizar-agentic-ai-thyrox]  finding/-  bun.lock no reescribe ni valida los especificadores de hermanos del workspace  (bun.lock)
+H-DB-04  [db/migrar-motor-mariadb-a-postgresql]  finding/MEDIA  El ``.env`` pisaba al entorno: una regresión frente al hermano  (source/gestion/pm/db/iniciativas/migrar-motor-mariadb-a-postgresql/hallazgos/hallazgo-H-DB-04-env-pisaba-al-entorno.rst)
+H-API-970  [api/completar-primitiva-fields]  finding/ALTA  La referencia declara ``falsy_value`` por clase, y aquí seis de nueve caben así  (source/gestion/pm/api/iniciativas/completar-primitiva-fields/hallazgos/hallazgo-H-API-970-la-referencia-declara-falsy-value-por-clase.rst)
+H-THYROX-229  [thyrox/construir-harness-propio]  finding/MEDIA  La reparación de OmniRoute sólo retira server.crt: con el modelo de CA raíz la CA instalada (ca.crt) queda confiada  (src/packages/mitm/src/repair.ts)
+H-DOCS-304  [docs/unificar-trabajo-en-rama-kaupamex-l1]  finding/MEDIA  ``server`` exige Tim Pope y no lo verifica; ``.gitattributes`` tiene tres estados en cinco repos  (source/gestion/pm/docs/iniciativas/unificar-trabajo-en-rama-kaupamex-l1/hallazgos/hallazgo-H-DOCS-304-server-sin-githooks-y-gitattributes-disparejo.rst)
+H-API-893  [api/empaquetar-kaupamex-bin-como-ejecutable]  finding/ALTA  el postinst instalaba con ``pip install -e`` e ignoraba el lock  (source/gestion/pm/api/iniciativas/empaquetar-kaupamex-bin-como-ejecutable/hallazgos/hallazgo-H-API-893-el-postinst-instalaba-con-pip-e-e-ignoraba-el-lock.rst)
+H-DB-10  [db/migrar-motor-mariadb-a-postgresql]  finding/BAJA  la configuración de MariaDB retirada framea PracticaYoruba como "el proyecto"  (source/gestion/pm/db/iniciativas/migrar-motor-mariadb-a-postgresql/hallazgos/hallazgo-H-DB-10-l0-l1-collapse-en-config-mariadb-retirada.rst)
+H-API-654  [api/empaquetar-kaupamex-bin-como-ejecutable]  finding/MEDIA  ``installable: False`` no tiene efecto porque "instalar" colapso en un paso  (source/gestion/pm/api/iniciativas/empaquetar-kaupamex-bin-como-ejecutable/hallazgos/hallazgo-H-API-654-installable-false-no-tiene-efecto-porque-instalar-colapso-en-un-paso.rst)
+H-DOCS-1025  [docs/construir-harness-propio]  finding/MEDIA  el estado de coordinación viaja como binario cuyo merge driver no está instalado en el clon  (source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1025-el-estado-compartido-viaja-como-binario-cuyo-merge-driver-no-esta-instalado.rst)
+H-THYROX-132  [thyrox/completar-packages-desde-la-referencia]  finding/MEDIA  app-host viola su propio invariante declarado, y un catch se traga el fallo  (source/gestion/pm/thyrox/iniciativas/completar-packages-desde-la-referencia/hallazgos/hallazgo-H-THYROX-132-app-host-viola-su-propio-invariante-declarado.rst)
+H-DB-03  [db/migrar-motor-mariadb-a-postgresql]  finding/ALTA  El gate de versión verificaba 13; Django 6 aborta por debajo de 14  (source/gestion/pm/db/iniciativas/migrar-motor-mariadb-a-postgresql/hallazgos/hallazgo-H-DB-03-minimo-13-no-protege-django-14.rst)
+H-DB-02  [db/provisionar-postgresql-db]  finding/MEDIA  Se midió ``19.x`` y ``18.x`` y se presentó como "el repo"  (source/gestion/pm/db/iniciativas/provisionar-postgresql-db/hallazgos/hallazgo-H-DB-02-medicion-parcial-de-odoo-tools.rst)
+H-THYROX-95  [thyrox/construir-harness-propio]  finding/MEDIA  el control establece un eje incidental y hereda el otro  (source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-95-el-control-establece-un-eje-incidental-y-hereda-el-otro.rst)
+H-SERVER-01  [server/integrar-despliegue-produccion-ovhcloud]  finding/MEDIA  el servidor de aplicación es Apache + ``mod_wsgi``, y nunca se registró como decisión  (source/gestion/pm/server/iniciativas/integrar-despliegue-produccion-ovhcloud/hallazgos/hallazgo-H-SERVER-01-stack-wsgi-sin-registro-de-decision.rst)
+H-API-1106  [api/completar-raiz-orm]  finding/ALTA  El descriptor base no tiene __set__ y el related lo necesita  (source/gestion/pm/api/iniciativas/completar-raiz-orm/hallazgos/hallazgo-H-API-1106-el-descriptor-base-no-tiene-set-y-el-related-lo-necesita.rst)
+H-API-565  [api/completar-familia-base]  finding/MEDIA  el gate de catálogo murió por segunda vez leyendo el literal  (source/gestion/pm/api/iniciativas/completar-familia-base/hallazgos/hallazgo-H-API-565-el-gate-de-catalogo-murio-por-segunda-vez-leyendo-el-literal.rst)
+H-THYROX-49  [thyrox/construir-gates-de-cobertura-y-calidad-thyrox]  finding/MEDIA  Un control que hereda su premisa del árbol se pudre con el árbol  (source/gestion/pm/thyrox/iniciativas/construir-gates-de-cobertura-y-calidad-thyrox/hallazgos/hallazgo-H-THYROX-49-un-control-que-hereda-su-premisa-del-arbol-se-pudre-con-el.rst)
+H-THYROX-85  [thyrox/agregar-entrypoints-cortos-thyrox]  finding/ALTA  dos casos de test regeneran el ``bin/`` real, y uno cerró una deriva en silencio  (source/gestion/pm/thyrox/iniciativas/agregar-entrypoints-cortos-thyrox/hallazgos/hallazgo-H-THYROX-85-dos-casos-de-test-regeneran-el-bin-real.rst)
+== tareas: provenance
+#56  pending      [thyrox]  Build a model-agnostic quantization pipeline: source → GGUF → quantize → validate → register
+#82  completed    [thyrox]  Declare a published Qwen2.5-Coder-7B Q4_K_M GGUF with exact revision and digest
+#90  in_progress  [thyrox]  Publish lab outputs as PermanentArtifact through an ArtifactRegistry port
+#135  pending      [thyrox]  Accept Ollama artifacts by digest and qualify each capability independently
+#137  pending      [thyrox]  Persist each managed execution's record before its unit becomes reclaimable
+#289  completed    [thyrox]  Datos D3-A2 — agent_store.sqlite3: Python dueño del schema con migraciones numeradas y adopción; Bun sólo valida (opción 1)
+#294  completed    [thyrox]  Datos D3-A0b — contrato de migraciones v2: name y provenance, adopción, validador de solo lectura y camino sin writer lock
+#301  completed    [docs]  CERRADA — la postura UNLICENSED de docs es DEC-DOC-016
+#306  completed    [docs]  DECISIÓN: conservar o retirar el corpus ccb ahora que su procedencia está declarada
+#796  pending      [docs]  DESCONOCIDO: distinguir material nuevo de material ya vendorizado (H-DOCS-348)
+#844  pending      [docs]  Las cinco clases de PDI en los 19 dominios del fondo (H-DOCS-388)
+#935  pending      [docs]  DECISIÓN: si adoptamos «git lo rastrea» como razón de AUTORIDAD, no sólo de durabilidad
+#936  pending      [docs]  DESCONOCIDO: sonda de conducta para los cinco mecanismos de procedencia del cliente
+Total: 13 (alcance medido: 2416 tarea(s) de 8 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: provenance
+H-DOCS-147  [docs/integrar-referencia-how-claude-code-works]  finding/BAJA  escribí RST dentro de Markdown, y ningún enlace  (source/gestion/pm/docs/iniciativas/integrar-referencia-how-claude-code-works/hallazgos/hallazgo-H-DOCS-147-escribi-rst-dentro-de-markdown-y-cero-enlaces.rst)
+H-DOCS-348  [docs/automatizar-gestion-y-control-de-documentos]  finding/MEDIA  se vendorizó un corpus cuya exclusión ya estaba medida  (source/gestion/pm/docs/iniciativas/automatizar-gestion-y-control-de-documentos/hallazgos/hallazgo-H-DOCS-348-se-vendorizo-un-corpus-cuya-exclusion-ya-estaba-medida.rst)
+H-DOCS-146  [docs/integrar-referencia-how-claude-code-works]  finding/ALTA  una licencia no se deriva de una declaración verbal  (source/gestion/pm/docs/iniciativas/integrar-referencia-how-claude-code-works/hallazgos/hallazgo-H-DOCS-146-una-licencia-no-se-deriva-de-una-declaracion.rst)
+H-THYROX-136  [thyrox/construir-harness-propio]  finding/ALTA  el reescritor de f-string renombró la lectura y no la clave del dict: el archivo parsea y muere con KeyError  (source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-THYROX-136-el-reescritor-de-f-string-renombro-la-lectura-y-no-la-clave-del-dict.rst)
+DEC-THYROX-007-1-17-0  [thyrox/embedding-route-and-local-workers]  decision/-  ADR-007 1.17.0: a managed execution is reclaimable only after its required execution record is durable  (src/packages/podman-execution/executionCommand.ts)
+Total: 5 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: digest
+#78  pending      [thyrox]  Separate durable model specifications from local model observations
+#82  completed    [thyrox]  Declare a published Qwen2.5-Coder-7B Q4_K_M GGUF with exact revision and digest
+#87  completed    [thyrox]  Publish lab images with a role-scoped registry credential and consume them by digest
+#90  in_progress  [thyrox]  Publish lab outputs as PermanentArtifact through an ArtifactRegistry port
+#91  in_progress  [thyrox]  Install a PermanentArtifact into the managed Ollama and expose it under its catalog identity
+#93  completed    [thyrox]  Carry a ResolvedModelArtifact through grant, unit and adapter identity
+#119  pending      [thyrox]  Resolve an image tag to the registry's digest, not the local store's
+#135  pending      [thyrox]  Accept Ollama artifacts by digest and qualify each capability independently
+#144  pending      [gen]  Import qwen3:4b from the official Hugging Face GGUF with pinned revision and sha256
+#158  completed    [-]  Portar _compute_kpis_actions de digest, y con el los tres que lo esperan
+#279  completed    [-]  account/models/digest.py: su _compute_kpis_actions se salta en silencio por el guard hasattr
+#287  completed    [api]  Ola 1 · portar los cinco base* ausentes (222 def, todos LGPL-3)
+Total: 12 (alcance medido: 2416 tarea(s) de 8 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: digest
+H-API-1012  [api/completar-primitiva-fields]  finding/MEDIA  El mapa de acciones de KPI no tenía eslabón base  (source/gestion/pm/api/iniciativas/completar-primitiva-fields/hallazgos/hallazgo-H-API-1012-el-mapa-de-acciones-de-kpi-sin-eslabon-base.rst)
+H-THYROX-312  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/ALTA  resolve de un registro OCI devuelve el digest del almacén local, no el que sirve el registro  (src/packages/image-registry/ociRegistry.ts:68)
+H-API-302  [api/integrar-familia-account-completa]  finding/MEDIA  El envío del digest se declaró "gap de alcance"; tres de sus cinco piezas ya existían  (source/gestion/pm/api/iniciativas/integrar-familia-account-completa/hallazgos/hallazgo-H-API-302-envio-digest-declarado-gap.rst)
+H-API-1014  [api/completar-primitiva-fields]  finding/ALTA  La acción de account en el digest se saltaba en silencio  (source/gestion/pm/api/iniciativas/completar-primitiva-fields/hallazgos/hallazgo-H-API-1014-la-accion-de-account-se-saltaba-en-silencio.rst)
+H-API-303  [api/integrar-familia-account-completa]  finding/MEDIA  ``next_run_date`` se calculaba en UTC, no en el huso del negocio  (source/gestion/pm/api/iniciativas/integrar-familia-account-completa/hallazgos/hallazgo-H-API-303-next-run-date-en-utc.rst)
+H-API-304  [api/integrar-familia-account-completa]  finding/ALTA  El signal de auto-suscripción de ``digest`` no podía suscribir a nadie  (source/gestion/pm/api/iniciativas/integrar-familia-account-completa/hallazgos/hallazgo-H-API-304-create-user-sin-grupos.rst)
+H-THYROX-305  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/BAJA  La unidad instala por la API pública de Ollama (blobs, create, show, generate), no enlazando en su almacenamiento: el enlace acopla la primitiva al formato privado y se salta el 400 por digest  (thyrox: .claude/workbench/model-scheduling-implementation-20261001T084219/probes/public_api_flow.sh)
+H-API-731  [api/completar-familia-base]  finding/MEDIA  fields.Monetary era alias pelado y no aceptaba store=False  (source/gestion/pm/api/iniciativas/completar-familia-base/hallazgos/hallazgo-H-API-731-monetary-sin-despachador-store.rst)
+H-API-1020  [api/completar-primitiva-fields]  finding/ALTA  El despachador de campo ignoraba un store=False a secas  (source/gestion/pm/api/iniciativas/completar-primitiva-fields/hallazgos/hallazgo-H-API-1020-el-despachador-ignoraba-un-store-false-a-secas.rst)
+ERR-076  [thyrox/embedding-route-and-local-workers]  finding/MEDIA  ERR: verified an artifact with an ad-hoc sha256sum instead of the existing local-models mechanisms  (src/packages/local-models/huggingFaceSource.ts)
+H-THYROX-248  [thyrox/completar-packages-desde-la-referencia]  finding/MEDIA  emit_declarations sellaba la huella de dist/ aunque tsc dejara declaraciones sin escribir (TS5055/TS5033)  (src/typescript/emit_declarations.py)
+Total: 11 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: Docker Hub
+#87  completed    [thyrox]  Publish lab images with a role-scoped registry credential and consume them by digest
+#90  in_progress  [thyrox]  Publish lab outputs as PermanentArtifact through an ArtifactRegistry port
+Total: 2 (alcance medido: 2416 tarea(s) de 8 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: Docker Hub
+H-THYROX-303  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/ALTA  Un PUT con cuerpo ReadableStream no recibe respuesta a través del proxy de salida; la publicación colgaba sin error  (thyrox: src/packages/artifact-registry/ociDistribution.ts)
+H-THYROX-402  [thyrox/embedding-route-and-local-workers]  finding/MEDIA  A SubagentStop hook recreates kaupamex-docs/ after the clone was removed, flipping the pre-push finding gate from 'not measured' to blocking  (src/hooks/error_log.py)
+Total: 2 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: th3rox
+#119  pending      [thyrox]  Resolve an image tag to the registry's digest, not the local store's
+Total: 1 (alcance medido: 2416 tarea(s) de 8 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: th3rox
+H-THYROX-312  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/ALTA  resolve de un registro OCI devuelve el digest del almacén local, no el que sirve el registro  (src/packages/image-registry/ociRegistry.ts:68)
+Total: 1 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: quantizer
+#56  pending      [thyrox]  Build a model-agnostic quantization pipeline: source → GGUF → quantize → validate → register
+#81  completed    [thyrox]  Build a minimal thyrox model-quantizer image instead of depending on llama.cpp:full
+#86  pending      [thyrox]  Keep build environment values out of the quantizer image history
+#87  completed    [thyrox]  Publish lab images with a role-scoped registry credential and consume them by digest
+#104  pending      [thyrox]  Gate any Podman materialization outside podman-execution-primitive
+#109  completed    [thyrox]  Build the quantizer image through buildImage instead of raw podman build
+Total: 6 (alcance medido: 2416 tarea(s) de 8 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: quantizer
+H-THYROX-402  [thyrox/embedding-route-and-local-workers]  finding/MEDIA  A SubagentStop hook recreates kaupamex-docs/ after the clone was removed, flipping the pre-push finding gate from 'not measured' to blocking  (src/hooks/error_log.py)
+Total: 1 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: task-runner
+#105  pending      [thyrox]  Run managed local work only inside a primitive-materialized ExecutionUnit
+#119  pending      [thyrox]  Resolve an image tag to the registry's digest, not the local store's
+Total: 2 (alcance medido: 2416 tarea(s) de 8 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: task-runner
+H-THYROX-312  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/ALTA  resolve de un registro OCI devuelve el digest del almacén local, no el que sirve el registro  (src/packages/image-registry/ociRegistry.ts:68)
+H-THYROX-314  [local-models/ai-course-notes-es-mx]  finding/ALTA  headless-pool cae a claude-cli sin que el consumidor pueda prohibirlo  (src/session/headless-pool.sh)
+Total: 2 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: semantic search
+#315  pending      [thyrox]  Semantic search worker y API (embeddings, retrieval pgvector, reranking) y consumidor RAG
+Total: 1 (alcance medido: 2416 tarea(s) de 8 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: semantic search
+Total: 0 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: prune
+#10  pending      [thyrox]  Declare a retention policy for pool snapshot refs
+#21  pending      [thyrox]  Retire superseded abandoned pool runs from the runtime
+Total: 2 (alcance medido: 2416 tarea(s) de 8 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: prune
+Total: 0 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: orphan
+#50  completed    [thyrox]  Sweep orphan PTY sockets and sanitize persisted CLI versions
+#58  pending      [thyrox]  Reconcile container ownership labels between ADR-007 1.6.3 and the code
+#88  pending      [thyrox]  Wire image resolution, disk admission and lifecycle cleanup into the worker launch
+#133  pending      [thyrox]  Compose the roster into one liveness and progress verdict for controller jobs
+#338  completed    [thyrox]  Worker container lifecycle and cleanup
+#362  pending      [thyrox]  Pool exit must not orphan live items nor sweep their worktrees
+#1141  completed    [thyrox]  Portar backends/registry.ts y sus cuatro respaldos: 1832 líneas sin import externo
+Total: 7 (alcance medido: 2416 tarea(s) de 8 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: orphan
+H-THYROX-242  [thyrox/actualizar-agentic-ai-thyrox]  finding/ALTA  Editar headless-pool.sh mientras un pool lo ejecuta mató el pool en su resumen final: bash lee el guion por partes  (.claude/jobs/pending-six-20260929T005935/outputs/salida.log)
+Total: 1 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: garbage
+Total: 0 (alcance medido: 2416 tarea(s) de 8 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: garbage
+Total: 0 (/home/user/thyrox/agent-results/agent_store.sqlite3)
