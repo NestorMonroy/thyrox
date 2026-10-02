@@ -1,0 +1,1 @@
+{"mode":"wrong-volume","action":"recreated","drift":["volume"],"destructiveWouldRun":["volume create","rm --force","create --name","start thyrox-postgres"],"mutationsRecordedNotExecuted":["volume create","rm --force","create --name","start thyrox-postgres","exec thyrox-postgres","exec thyrox-postgres"]}

@@ -6,15 +6,73 @@
   "baseCommit": "3165df440419530026dc9fde59badc8504f77dde",
   "branch": "feature/complete-orm-root",
   "afterT007": "remain paused; do not resume the RL batch",
-  "protected": ["thyrox-postgres-data", ".git", "canonical repos", ".env", "secrets", "not-yet-ingested data", "required evidence"],
-  "tasks": [
-    {"id": "T001", "dependsOn": []},
-    {"id": "T002", "dependsOn": ["T001"]},
-    {"id": "T003", "dependsOn": ["T002"]},
-    {"id": "T004", "dependsOn": ["T003"]},
-    {"id": "T005", "dependsOn": ["T003"]},
-    {"id": "T006", "dependsOn": ["T004", "T005"]},
-    {"id": "T007", "dependsOn": ["T006"]}
+  "protected": [
+    "thyrox-postgres-data",
+    ".git",
+    "canonical repos",
+    ".env",
+    "secrets",
+    "not-yet-ingested data",
+    "required evidence"
   ],
-  "freeBeforeBatchBytes": 3119812608
+  "tasks": [
+    {
+      "id": "T001",
+      "dependsOn": []
+    },
+    {
+      "id": "T002",
+      "dependsOn": [
+        "T001"
+      ]
+    },
+    {
+      "id": "T003",
+      "dependsOn": [
+        "T002"
+      ]
+    },
+    {
+      "id": "T004",
+      "dependsOn": [
+        "T003"
+      ]
+    },
+    {
+      "id": "T005",
+      "dependsOn": [
+        "T003"
+      ]
+    },
+    {
+      "id": "T006",
+      "dependsOn": [
+        "T004",
+        "T005"
+      ]
+    },
+    {
+      "id": "T007",
+      "dependsOn": [
+        "T006"
+      ]
+    }
+  ],
+  "freeBeforeBatchBytesHostMeasured": 3119812608,
+  "freeBeforeBatchNote": "el valor anterior se midió en el anfitrión (architecture_invalid); el de T001 se midió dentro de una unidad",
+  "freeAtT001ManagedBytes": 3121754112,
+  "verdicts": {
+    "T001": {
+      "verdict": "accepted",
+      "containment": "outputs/T001-containment.jsonl",
+      "evidence": [
+        "outputs/T001-inspect-checks.json",
+        "outputs/T001-corpus-state.json",
+        "outputs/T001-disk.json",
+        "outputs/T001-drift-correct.json",
+        "outputs/T001-drift-wrong-volume.json",
+        "outputs/T001-ensure-kept.txt"
+      ]
+    }
+  }
 }

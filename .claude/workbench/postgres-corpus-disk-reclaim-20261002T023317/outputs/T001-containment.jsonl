@@ -1,0 +1,5 @@
+{"gate": "ManagedExecutionContainmentGate", "step": "T001-inspect-checks", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T001-corpus-state", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T001-disk", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T001-drift-correct", "passed": true, "executions": 2, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T001-drift-wrong-volume", "passed": true, "executions": 2, "reasons": []}

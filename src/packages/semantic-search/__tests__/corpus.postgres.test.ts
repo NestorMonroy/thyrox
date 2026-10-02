@@ -101,6 +101,19 @@ if (!url) {
     })
   })
 
+  describe('corpus durable — texto que PostgreSQL no admite tal cual', () => {
+    test('un chunk con U+0000 se guarda con U+2400, y la reingesta es unchanged', async () => {
+      await withCorpusStore(testUrl, async (store, sql) => {
+        const document = { domain: DOMAIN, domainId: 'nul.md', sourceRef: 'repo/nul.md', sourceRevision: REVISION, metadata: { note: 'a\u0000b' }, chunks: ['antes\u0000después'] }
+        expect((await store.ingestDocument(document)).status).toBe('created')
+        const [row] = (await sql.unsafe('SELECT text FROM document_chunks')) as { text: string }[]
+        expect(row?.text).toBe('antes␀después')
+        expect((await store.findDocument(document))?.metadata).toEqual({ note: 'a␀b' })
+        expect((await store.ingestDocument(document)).status).toBe('unchanged')
+      })
+    })
+  })
+
   describe('corpus durable — ingesta idempotente por hash', () => {
     test('el mismo contenido otra vez: unchanged y 0 filas nuevas en documentos, chunks y embeddings', async () => {
       await withCorpusStore(testUrl, async (store, sql) => {
