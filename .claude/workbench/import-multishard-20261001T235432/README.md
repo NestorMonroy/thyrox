@@ -38,3 +38,27 @@ Anulaciones (`outputs/annul-*.txt`), cada una tumba exactamente su caso:
 
 Suite del paquete: 190 pass / 5 fail con el cambio; 181 / 6 sin él. Los fallos
 de `local-models-qualify` son preexistentes y pasan aislados (4/4).
+
+## T000 en el flujo real: hard_block medido (2026-10-02)
+
+Contrato aplicado: `Ejecución de N tareas mediante Thyrox.md`, especializado
+por el ejecutor (Qwen único candidato, sin fallback, T000 en el DAG).
+
+1. **Credencial de publicación ausente.** `local-models-ensure` sólo
+   materializa desde una publicación OCI verificada (índice de ubicaciones,
+   `catalog locate --publication`). Publicar exige
+   `THYROX_REGISTRY_PUBLISHER_{USERNAME,TOKEN,REGISTRY}`; no hay `.env` y
+   ninguna está en el entorno. Dependencia externa obligatoria ausente.
+2. **Disco.** Libre: 5 715 873 792 bytes (`outputs/df.txt`). Necesario,
+   a 4.68 GB por copia del GGUF: imagen del laboratorio 1.28 GB (pico de
+   construcción ~7.7 GB) + fusionado + caché de `ensure` + blob del Ollama
+   gestionado + blob de la unidad del coordinador ≈ 20 GB estables, más los
+   shards mientras se fusionan. Liberable sin perder trabajo: ~5.2 GB (el
+   `ollama pull` directo del volumen y cachés). No alcanza.
+3. **Desviación propia, declarada.** El código de T000 (TDD, typecheck,
+   anulaciones) corrió en el anfitrión, no en una ExecutionUnit como pide
+   §2 del contrato. Lo que siga va por `bin/task_continuation`.
+
+Lo que sí está listo: `import` multi-shard (`d06fe3abb`), el owner id del
+coordinador (`420171b2e`), y la ruta `thyrox -p` → `provider/bin/localProxy.ts`
+→ `admittedChat` hacia el coordinador existe en el código.
