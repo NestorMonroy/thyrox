@@ -423,3 +423,62 @@ sensibles. Sólo queda el TSV de nombre, estado y vida.
 
 Ningún settings declara todavía `permissions.allow` para el bootstrap: sólo
 `Skill`, en `launcher-settings.json`. P0b no se ejecuta.
+
+## Cuarta ronda (2026-10-03): contrato del veredicto, lista definitiva de permisos, «candidate»
+
+### Contrato de clasificación, fijado antes de implementar (P0c1)
+
+`podman_lock_recovery` gana un modo que **no muta nada** y publica un veredicto
+legible por máquina. El composer consume **sólo** ese veredicto; nunca analiza
+el texto que la herramienta escribe para el operador.
+
+```
+podman_lock_recovery --classify
+  stdout, una sola línea estable:
+    HEALTHY                          locks equilibrados
+    KNOWN_POST_REBOOT_RECOVERABLE    la firma exacta: 4.9.x, sqlite, uid 0,
+                                     marcador presente con mtime < btime,
+                                     allocated == 0, referenced > 0, 0 vivos
+    REFUSED <razón>                  cualquier otro estado, o una medida ausente
+  exit 0 en los tres casos (el veredicto está en stdout); exit 2 sólo por uso
+```
+
+La firma tiene una sola autoridad. `--after-reboot` vuelve a clasificar antes
+de mutar y sólo actúa sobre `KNOWN_POST_REBOOT_RECOVERABLE`. Los nombres
+pueden ajustarse a las convenciones del árbol en el RED; el contrato no: legible
+por máquina, estable, sin mutación y propiedad de `podman_lock_recovery`.
+
+### Lista definitiva para P0b–P0c4 (nueve reglas)
+
+La lista del mensaje anterior ya traía las nueve. La que estaba desfasada era
+la de este banco (sección «Permisos mínimos», siete reglas, sin `Edit` para los
+dos archivos nuevos). Ésta la reemplaza:
+
+```
+Bash(bash bin/podman_lock_recovery --confirm)
+Bash(bash bin/infrastructure_ensure)
+Edit(src/session/podman_lock_recovery.sh)
+Edit(tests/session/test-podman-lock-recovery.sh)
+Write(src/session/local_control_plane_ready.sh)
+Edit(src/session/local_control_plane_ready.sh)
+Write(tests/session/test-local-control-plane-ready.sh)
+Edit(tests/session/test-local-control-plane-ready.sh)
+Edit(src/session/control_plane_entries.tsv)
+```
+
+Fuera de la lista: `execution_policy.json`, `headless-pool.sh` e
+`infrastructureReadiness.ts`. Entran por P0c4 o P0d, si su TDD lo demuestra.
+
+### P0b es un candidato a última reparación manual, no un hecho
+
+El directorio `outputs/p0b-last-manual-bootstrap-recovery/` conserva su nombre,
+pero su carácter de «última» queda **condicionado a P0f y P0g**. Si P0c fallara
+y hubiera que reparar otra vez a mano, esta evidencia no queda falsa: era
+`candidate-last-manual-bootstrap-recovery`.
+
+### Evidencia persistida: proyección con lista de campos permitidos
+
+Las observaciones de Podman se versionan sólo como proyección con una lista
+explícita de campos permitidos (hoy: `name`, `state`, `running`, `pid`,
+`pid_alive`), nunca redactando la salida cruda con `grep`. Así queda inequívoco
+qué se puede persistir.
