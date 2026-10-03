@@ -1,0 +1,3 @@
+suite_exit=0
+execution thyrox-worker-test-mus0n0yh-8695 kind=test task=TASK-THYROX-0758 exit=0
+__BG_EXIT__=0
