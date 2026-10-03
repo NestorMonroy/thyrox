@@ -37,6 +37,21 @@ refresh_if_needed() {
   echo \$(( 2048 - \$(referenced | grep -c .) )) > "\$STATE/free-locks"
   touch "\$LIBPOD/alive"
 }
+# Una guarda que cambia A PARTIR de la medida N (N = llamadas a `version`):
+# modela el TOCTOU entre clasificar y mutar.
+change_guard_if_due() {
+  local due calls
+  due="\$(cat "\$STATE/change-at-measure" 2>/dev/null)" || return 0
+  calls="\$(grep -c '^version' "\$STATE/calls.log")"
+  (( calls >= due )) || return 0
+  case "\$(cat "\$STATE/change-kind")" in
+    live) sed -i "1s/ [0-9]*\\\$/ \$(cat "\$STATE/live-pid")/" "\$STATE/containers" ;;
+    current-boot) touch "\$LIBPOD/alive" ;;
+    partial) echo 2045 > "\$STATE/free-locks" ;;
+  esac
+  rm -f "\$STATE/change-at-measure"
+}
+[[ "\$1" == version ]] && change_guard_if_due
 case "\$1" in
   version) cat "\$STATE/version"; exit 0 ;;
   info)
@@ -283,6 +298,22 @@ for scenario in partial:3 live:0 current-boot:0; do
   thyrox_check "caso 18-20 ($name): --after-reboot rehúsa -> exit 2" "2" "$rc"
   thyrox_check "caso 18-20 ($name): el marcador queda intacto" "$before" "$(marker_fingerprint)"
   thyrox_check "caso 18-20 ($name): los locks no cambian" "$free_before" "$(cat "$STATE/free-locks")"
+done
+
+# Caso 22 — TOCTOU: la guarda cambia DESPUÉS de la clasificación y antes de
+# la mutación (segunda medida). --after-reboot tiene que revalidar sobre la
+# medida que precede a la mutación y rehusar sin tocar nada.
+for kind in live current-boot partial; do
+  seed_post_reboot 0 4
+  sleep 999 & live_pid=$!
+  echo "$live_pid" > "$STATE/live-pid"
+  echo 2 > "$STATE/change-at-measure"; echo "$kind" > "$STATE/change-kind"
+  run_recovery --after-reboot >/dev/null 2>&1; rc=$?
+  kill "$live_pid" 2>/dev/null
+  thyrox_check "caso 22 ($kind tras clasificar): --after-reboot rehúsa -> exit 2" "2" "$rc"
+  [[ -e "$LIBPOD/alive" && "$(cat "$LIBPOD/alive")" == previous-boot ]] \
+    && ok "caso 22 ($kind tras clasificar): el marcador no se retiró" \
+    || bad "caso 22 ($kind tras clasificar): se retiró el marcador tras el cambio de guarda"
 done
 
 # Caso 21 — si tras reparar la medida no queda sana: exit 3, no éxito.

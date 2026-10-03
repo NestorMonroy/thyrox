@@ -143,34 +143,41 @@ post_reboot_refusal() {
   fi
 }
 
-# @description El veredicto de una medida. Lo humano va a stderr; stdout
-# lleva sólo la línea del contrato.
-# @stdout HEALTHY | KNOWN_POST_REBOOT_RECOVERABLE | REFUSED <razón>
-classify_verdict() {
+# @description Mide y decide en ESTA shell: deja el veredicto en VERDICT y
+# la medida en ENGINE_*, para que quien mute actúe sobre la misma medida que
+# decidió. Lo humano va a stderr.
+measure_and_decide() {
   local refusal
   if ! measure_engine; then
     echo "podman_lock_recovery: Podman no publica los locks libres; no hay medida." >&2
-    echo "$VERDICT_REFUSED measurement-incomplete"
+    VERDICT="$VERDICT_REFUSED measurement-incomplete"
     return
   fi
   publish_measure >&2
   if engine_is_balanced; then
-    echo "$VERDICT_HEALTHY"
+    VERDICT="$VERDICT_HEALTHY"
     return
   fi
   if [[ -z "$ENGINE_VERSION" || -z "$ENGINE_BACKEND" ]]; then
     echo "podman_lock_recovery: Podman no publica versión o backend." >&2
-    echo "$VERDICT_REFUSED measurement-incomplete"
+    VERDICT="$VERDICT_REFUSED measurement-incomplete"
     return
   fi
   refusal="$(scope_refusal)"
   [[ -n "$refusal" ]] || refusal="$(post_reboot_refusal)"
   if [[ -n "$refusal" ]]; then
     printf 'podman_lock_recovery: %s\n' "${refusal#*$'\t'}" >&2
-    echo "$VERDICT_REFUSED ${refusal%%$'\t'*}"
+    VERDICT="$VERDICT_REFUSED ${refusal%%$'\t'*}"
     return
   fi
-  echo "$VERDICT_RECOVERABLE"
+  VERDICT="$VERDICT_RECOVERABLE"
+}
+
+# @description El veredicto, como línea del contrato.
+# @stdout HEALTHY | KNOWN_POST_REBOOT_RECOVERABLE | REFUSED <razón>
+classify_verdict() {
+  measure_and_decide
+  echo "$VERDICT"
 }
 
 # @description La reparación: retirar el marcador, dejar que Podman refresque
@@ -183,16 +190,18 @@ refresh_lock_allocation() {
 }
 
 recover_after_reboot() {
-  local verdict
-  verdict="$(classify_verdict)"
-  echo "antes: $verdict"
-  [[ "$verdict" == "$VERDICT_RECOVERABLE" ]] || refuse "--after-reboot sólo repara $VERDICT_RECOVERABLE; veredicto: $verdict. No se toca nada."
-  # El veredicto se calculó en una subshell: la medida que repara se toma aquí.
-  measure_engine || refuse "Podman dejó de publicar los locks libres entre clasificar y reparar."
+  measure_and_decide
+  echo "antes: $VERDICT"
+  [[ "$VERDICT" == "$VERDICT_RECOVERABLE" ]] || refuse "--after-reboot sólo repara $VERDICT_RECOVERABLE; veredicto: $VERDICT. No se toca nada."
+  # TOCTOU: una guarda puede cambiar entre la clasificación publicada y la
+  # mutación. La decisión que autoriza retirar el marcador se toma sobre la
+  # medida inmediatamente anterior a retirarlo.
+  measure_and_decide
+  [[ "$VERDICT" == "$VERDICT_RECOVERABLE" ]] || refuse "la firma cambió entre la clasificación y la reparación (ahora: $VERDICT). No se toca nada."
   refresh_lock_allocation
-  verdict="$(classify_verdict)"
-  echo "después: $verdict"
-  [[ "$verdict" == "$VERDICT_HEALTHY" ]] || exit "$EXIT_STILL_IMBALANCED"
+  measure_and_decide
+  echo "después: $VERDICT"
+  [[ "$VERDICT" == "$VERDICT_HEALTHY" ]] || exit "$EXIT_STILL_IMBALANCED"
 }
 
 operator_recovery() {

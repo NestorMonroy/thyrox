@@ -1,0 +1,68 @@
+  ok    el sujeto existe y es ejecutable
+tests/session/test-podman-lock-recovery.sh: line 28: version: command not found
+  ok    caso 1: plan -> exit 0
+  ok    caso 1: el plan no retira el marcador
+  ok    caso 1: el plan publica versión, backend, medida y cómo confirmar
+  ok    caso 2: recuperación -> exit 0
+  ok    caso 2: publica la medida equilibrada tras refrescar
+  ok    caso 3: equilibrado -> exit 0
+  ok    caso 3: equilibrado -> no vuelve a retirar el marcador
+  ok    caso 3: lo dice
+  ok    caso 4: contenedor vivo -> exit 2
+  ok    caso 4: no retira el marcador
+  ok    caso 4: nombra el contenedor vivo
+  ok    caso 5: version:5.0.1 -> exit 2
+  ok    caso 5: version:5.0.1 no retira el marcador
+  ok    caso 5: version:5.0.1 nombra lo que está fuera de alcance
+  ok    caso 5: backend:boltdb -> exit 2
+  ok    caso 5: backend:boltdb no retira el marcador
+  ok    caso 5: backend:boltdb nombra lo que está fuera de alcance
+  ok    caso 5: uid:1000 -> exit 2
+  ok    caso 5: uid:1000 no retira el marcador
+  ok    caso 5: uid:1000 nombra lo que está fuera de alcance
+  ok    caso 6: sin marcador -> exit 2
+  ok    caso 6: nombra el marcador ausente
+  ok    caso 7: 0/4 -> KNOWN_POST_REBOOT_RECOVERABLE
+  ok    caso 7: exit 0
+  ok    caso 7: --classify no toca el marcador
+  ok    caso 7: --classify no refresca los locks
+  ok    caso 8: 0/21 -> KNOWN_POST_REBOOT_RECOVERABLE
+  ok    caso 9: 3/4 -> REFUSED partial-allocation
+  ok    caso 9: 5/21 -> REFUSED partial-allocation
+  ok    caso 9: 20/21 -> REFUSED partial-allocation
+  ok    caso 10: 0/4 con un vivo -> REFUSED live-containers
+  ok    caso 11: version=5.0.1 -> REFUSED unsupported-version
+  ok    caso 11: backend=boltdb -> REFUSED unsupported-backend
+  ok    caso 11: uid=1000 -> REFUSED unsupported-uid
+  ok    caso 12: marcador del boot actual -> REFUSED marker-current-boot
+  ok    caso 12: mtime == btime tampoco es anterior
+  ok    caso 12: sin marcador -> REFUSED marker-absent
+  ok    caso 13: sin locks libres -> REFUSED measurement-incomplete
+  ok    caso 13: sin btime -> REFUSED measurement-incomplete
+  ok    caso 13: sin versión -> REFUSED measurement-incomplete
+  ok    caso 14: 4/4 -> HEALTHY
+  ok    caso 14: sano con otro backend sigue siendo HEALTHY
+  ok    caso 15: una sola línea
+  ok    caso 15: cumple la gramática
+  ok    caso 16: argumento desconocido -> exit 2
+  ok    caso 17: --after-reboot sobre 0/4 -> exit 0
+  ok    caso 17: los locks quedan asignados
+  ok    caso 17: después clasifica HEALTHY
+  ok    caso 18-20 (partial): --after-reboot rehúsa -> exit 2
+  ok    caso 18-20 (partial): el marcador queda intacto
+  ok    caso 18-20 (partial): los locks no cambian
+  ok    caso 18-20 (live): --after-reboot rehúsa -> exit 2
+  ok    caso 18-20 (live): el marcador queda intacto
+  ok    caso 18-20 (live): los locks no cambian
+  ok    caso 18-20 (current-boot): --after-reboot rehúsa -> exit 2
+  ok    caso 18-20 (current-boot): el marcador queda intacto
+  ok    caso 18-20 (current-boot): los locks no cambian
+  ok    caso 22 (live tras clasificar): --after-reboot rehúsa -> exit 2
+  ok    caso 22 (live tras clasificar): el marcador no se retiró
+  ok    caso 22 (current-boot tras clasificar): --after-reboot rehúsa -> exit 2
+  ok    caso 22 (current-boot tras clasificar): el marcador no se retiró
+  ok    caso 22 (partial tras clasificar): --after-reboot rehúsa -> exit 2
+  ok    caso 22 (partial tras clasificar): el marcador no se retiró
+  ok    caso 21: reparación que no equilibra -> exit 3
+
+65 casos: 65 ok, 0 fallos
