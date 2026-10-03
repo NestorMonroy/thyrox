@@ -10,7 +10,7 @@ import type { WorkflowSuite } from '../workflowSuite.ts'
 
 const ARTIFACT = resolvedArtifact()
 const SUITE: WorkflowSuite = {
-  id: 'repo-code-change@1', taskClass: 'mecanica', promptPath: '/suite/prompt.md', tools: ['Read', 'Write', 'Edit', 'Bash'],
+  id: 'repo-code-change@1', taskClass: 'mecanica', promptPath: '/suite/prompt.md', tools: ['Read', 'Write', 'Edit', 'Bash'], timeoutSeconds: 3600,
   cases: [{ id: 'title-slug', item: 'Implement title_slug.', verify: 'bash verify.sh' }],
 }
 
@@ -91,5 +91,14 @@ describe('poolCaseRunner — presupuesto de sistema', () => {
     await poolCaseRunner({ ...options, suite: SUITE })(SUITE.cases[0]!)
     argv = readFileSync(join(directory as string, 'argv'), 'utf8').trim().split('\n')
     expect(argv).not.toContain('--system-budget-tokens')
+  })
+})
+
+describe('poolCaseRunner — plazo del caso', () => {
+  test('el pool recibe el plazo de la suite, no su valor por defecto', async () => {
+    const pool = fakePool('verificado', RESULT)
+    await poolCaseRunner({ suite: { ...SUITE, timeoutSeconds: 5400 }, artifact: ARTIFACT, contextTokens: 8192, thyroxRoot: directory as string, outDir: join(directory as string, 'out'), poolBin: pool })(SUITE.cases[0]!)
+    const argv = readFileSync(join(directory as string, 'argv'), 'utf8').trim().split('\n')
+    expect(argv[argv.indexOf('--timeout') + 1]).toBe('5400')
   })
 })

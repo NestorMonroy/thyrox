@@ -1,0 +1,3 @@
+(fail) poolCaseRunner — plazo del caso > el pool recibe el plazo de la suite, no su valor por defecto [9.94ms]
+ 5 pass
+ 1 fail

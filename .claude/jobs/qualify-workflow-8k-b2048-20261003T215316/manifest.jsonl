@@ -1,1 +1,2 @@
 {"kind": "launch", "instrument": "bin/local-models-qualify thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e --context 8192 --isolated --workflow-suite src/packages/local-models/suites/repo-code-change-1/suite.json --out /home/user/thyrox/.claude/workbench/thyrox-functional-capability-audit-20261003T210741/outputs/workflow-qualify-8k-b2048", "started_at": "2026-10-03T21:53:16+00:00"}
+{"kind": "settle", "exit_code": 1, "finished_at": "2026-10-03T22:04:06+00:00", "duration_seconds": 650.836564}

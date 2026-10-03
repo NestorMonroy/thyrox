@@ -259,7 +259,7 @@ describe('runQualification — el perfil de runtime con que se midió (TASK-THYR
 
 describe('runWorkflowQualification — repo-code-change@1 por el pool (TASK-THYROX-0931)', () => {
   const SUITE: WorkflowSuite = {
-    id: 'repo-code-change@1', taskClass: 'mecanica', promptPath: '/suite/prompt.md', tools: ['Read', 'Write', 'Edit', 'Bash'],
+    id: 'repo-code-change@1', taskClass: 'mecanica', promptPath: '/suite/prompt.md', tools: ['Read', 'Write', 'Edit', 'Bash'], timeoutSeconds: 3600,
     cases: [{ id: 'title-slug', item: 'Implement title_slug.', verify: 'bash verify.sh' }, { id: 'second', item: 'Other.', verify: 'true' }],
   }
   const ticket = () => ticketTo('http://127.0.0.1:1')

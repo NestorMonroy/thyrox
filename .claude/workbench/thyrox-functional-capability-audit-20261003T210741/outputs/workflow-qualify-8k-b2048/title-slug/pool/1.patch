@@ -1,0 +1,19 @@
+diff --git a/src/packages/local-models/suites/repo-code-change-1/textkit/slug.py b/src/packages/local-models/suites/repo-code-change-1/textkit/slug.py
+index bf664813d..8f06ca708 100644
+--- a/src/packages/local-models/suites/repo-code-change-1/textkit/slug.py
++++ b/src/packages/local-models/suites/repo-code-change-1/textkit/slug.py
+@@ -18,4 +18,13 @@ def title_slug(title: str, max_length: int) -> str:
+     Corta en un límite de palabra (nunca a media palabra) y nunca termina en
+     guion. Si la primera palabra ya excede el límite, se trunca esa palabra.
+     """
+-    raise NotImplementedError("title_slug")
++    def title_slug(title, limit):
++    import re
++    # Normalize accents and other non-ASCII characters
++    normalized = re.sub(r'[^\w\s]', '', title)
++    # Split into words
++    words = normalized.split()
++    # Truncate words if they exceed the limit
++    truncated_words = [word[:limit] for word in words]
++    # Join with hyphens
++    return '-'.join(truncated_words)

@@ -8,6 +8,7 @@
     "Edit",
     "Bash"
   ],
+  "timeoutSeconds": 5400,
   "systemBudgetTokens": 2048,
   "cases": [
     {

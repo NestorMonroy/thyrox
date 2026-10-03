@@ -35,6 +35,8 @@ export interface WorkflowSuite {
   readonly promptPath: string
   /** Las herramientas que el worker recibe; las registra el perfil de runtime. */
   readonly tools: readonly string[]
+  /** El plazo de pared de cada caso (`--timeout` del pool); el del pool por defecto mata un caso en CPU. */
+  readonly timeoutSeconds: number
   /** El tope del prompt de sistema del worker (`--system-budget-tokens`); ausente, el completo. */
   readonly systemBudgetTokens?: number
   readonly cases: readonly WorkflowCase[]
@@ -64,6 +66,7 @@ export async function loadWorkflowSuite(path: string): Promise<WorkflowSuite> {
     taskClass: document.taskClass,
     promptPath,
     tools: requireToolNames(path, document.tools),
+    timeoutSeconds: requireTimeout(path, document.timeoutSeconds),
     ...optionalBudget(path, document.systemBudgetTokens),
     cases: cases.map((value, index) => workflowCase(path, value, index)),
   }
@@ -83,6 +86,13 @@ function requireToolNames(path: string, value: unknown): string[] {
   const valid = Array.isArray(value) && value.length > 0 && value.every(name => typeof name === 'string' && name !== '')
   if (!valid) throw new InvalidWorkflowSuiteError(path, 'tools', 'se espera una lista no vacía de nombres')
   return [...value]
+}
+
+function requireTimeout(path: string, value: unknown): number {
+  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value <= 0) {
+    throw new InvalidWorkflowSuiteError(path, 'timeoutSeconds', 'se espera un entero positivo de segundos')
+  }
+  return value
 }
 
 function optionalBudget(path: string, value: unknown): { readonly systemBudgetTokens?: number } {

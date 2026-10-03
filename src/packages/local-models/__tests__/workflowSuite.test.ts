@@ -20,7 +20,7 @@ function suiteFile(document: unknown, prompt = 'You are a worker.'): string {
 }
 
 const VALID = {
-  id: 'repo-code-change@1', taskClass: 'mecanica', prompt: 'prompt.md', tools: ['Read', 'Write', 'Edit', 'Bash'],
+  id: 'repo-code-change@1', taskClass: 'mecanica', prompt: 'prompt.md', tools: ['Read', 'Write', 'Edit', 'Bash'], timeoutSeconds: 3600,
   cases: [{ id: 'title-slug', item: 'Implement title_slug.', verify: 'bash verify.sh' }],
 }
 
@@ -61,5 +61,16 @@ describe('systemBudgetTokens de la suite de flujo', () => {
     expect((await loadWorkflowSuite(suiteFile({ ...VALID, systemBudgetTokens: 2000 }))).systemBudgetTokens).toBe(2000)
     const path = suiteFile({ ...VALID, systemBudgetTokens: 0 })
     await expect(loadWorkflowSuite(path)).rejects.toThrow(new InvalidWorkflowSuiteError(path, 'systemBudgetTokens', 'se espera un entero positivo de tokens'))
+  })
+})
+
+// Medido el 2026-10-03: sin plazo declarado el pool aplicó su --timeout por
+// defecto (600 s) y mató el primer caso en CPU antes del primer evento.
+describe('timeoutSeconds de la suite de flujo', () => {
+  test('es obligatorio y positivo: el plazo del caso es parte de la medida', async () => {
+    const { timeoutSeconds: _timeout, ...withoutTimeout } = VALID
+    const missing = suiteFile(withoutTimeout)
+    await expect(loadWorkflowSuite(missing)).rejects.toThrow(new InvalidWorkflowSuiteError(missing, 'timeoutSeconds', 'se espera un entero positivo de segundos'))
+    expect((await loadWorkflowSuite(suiteFile(VALID))).timeoutSeconds).toBe(3600)
   })
 })
