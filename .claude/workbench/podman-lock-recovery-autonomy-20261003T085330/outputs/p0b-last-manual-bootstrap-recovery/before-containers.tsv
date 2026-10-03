@@ -1,0 +1,4 @@
+name	state	running	pid	pid_alive
+thyrox-redis	created	False	0	False
+thyrox-ollama	running	True	3413	False
+thyrox-postgres	running	True	21341	False

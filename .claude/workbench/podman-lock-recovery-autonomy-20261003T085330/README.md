@@ -374,3 +374,52 @@ Fuera de esta lista:
 
 Estado al escribir esto: ningún settings declara reglas `permissions.allow`.
 **P0b no se reintenta** hasta que existan.
+
+## Tercera ronda del ejecutor (2026-10-03): composición por veredicto, P0g y permisos por etapa
+
+- **Una sola autoridad para la firma.** La firma post-reinicio vive **sólo** en
+  `podman_lock_recovery`: Podman 4.9.x, sqlite, uid 0, marcador viejo, 0/N y
+  sin contenedores vivos. `local_control_plane_ready` no la repite. Pregunta el
+  estado y actúa por **veredicto contractual**:
+  - `healthy` → sigue;
+  - `known-post-reboot-recoverable` → `--after-reboot` → vuelve a medir →
+    sigue;
+  - cualquier otro → **rehúsa**.
+
+  El veredicto lo publica `podman_lock_recovery` (forma por decidir en el RED
+  de P0c1: un código de salida o una línea estable), nunca la reconstruye el
+  composer.
+- **P0b queda registrado como `last-manual-bootstrap-recovery`.** Evidencia
+  antes, acción y después en `outputs/p0b-last-manual-bootstrap-recovery/`.
+- **P0g: retirar la excepción de bootstrap.** Se quitan las reglas temporales
+  y se repite una operación normal, que tiene que seguir funcionando. Prueba
+  que la excepción permitió construir el sistema, y que el sistema no depende
+  de ella.
+- **Permisos por etapa.**
+  - **P0b–P0c4:** las nueve reglas (con `Write` y `Edit` para los dos archivos
+    nuevos).
+  - **P0d:** autorización aparte, sólo para las rutas de consumidor que el TDD
+    de P0d demuestre necesarias.
+
+### Evidencia «antes» de P0b (capturada sin mutar nada)
+
+`outputs/p0b-last-manual-bootstrap-recovery/before.txt` y `before-containers.tsv`:
+
+- Podman 4.9.3, sqlite, **asignados 0, referenciados 21**;
+- marcador `mtime` 1790993734 (02:15:34Z) contra `btime` **1791017984
+  (08:59:44Z)**;
+- contenedores: `thyrox-redis` `created` sin PID; `thyrox-ollama` y
+  `thyrox-postgres` dicen `running` con PID 3413 y 21341, **ninguno vivo**.
+  0 contenedores vivos de verdad.
+
+**Hallazgo lateral:** `btime` cambió desde la medición de las 07:43:31. La VM
+**volvió a reiniciarse** hacia las 08:59 y la firma es otra vez 0/21. Es la
+cuarta muestra de la misma firma post-reinicio (0/7, 0/21, 0/21, 0/21).
+
+La observación cruda de contenedores no se versiona: lleva puertos y etiquetas
+sensibles. Sólo queda el TSV de nombre, estado y vida.
+
+### Estado
+
+Ningún settings declara todavía `permissions.allow` para el bootstrap: sólo
+`Skill`, en `launcher-settings.json`. P0b no se ejecuta.
