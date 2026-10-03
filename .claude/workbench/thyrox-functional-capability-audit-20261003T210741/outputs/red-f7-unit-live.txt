@@ -1,0 +1,4 @@
+  ok   caso 5: el .err de cada ítem conserva su referencia de trabajo
+  FALLA caso 5: el vigilante ve la salida en vivo de la unidad y la detiene — esperado [identical-tool-call] obtenido []
+  FALLA caso 5: antes del plazo del ítem — esperado [1] obtenido [0]
+28 ok · 2 falla(s) (alcance medido: headless-pool --execution unit)

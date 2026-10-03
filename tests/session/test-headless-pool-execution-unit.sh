@@ -221,5 +221,31 @@ check "caso 6: la unidad nombra THYROX_POOL_ITEM_ROOT y THYROX_POOL_ITEM_GIT_GUA
 git -C "$F/repo" worktree prune 2>/dev/null
 unset THYROX_POOL_WORKTREES_DIR
 
+# Caso 10 (TASK-THYROX-0931, F7): la primitiva real entrega la salida de la
+# unidad al terminar (`podman logs` tras `wait`), así que `<n>.stream.jsonl`
+# no crece mientras el ítem corre. El vigilante tiene que ver los eventos igual:
+# el payload los copia en vivo a un archivo del directorio montado. Medido el
+# 2026-10-03: sin eso, el plazo sin progreso habría matado un ítem sano a los
+# 30 minutos y las llamadas repetidas no se verían hasta el final.
+cat > "$F/execute" <<R
+#!/usr/bin/env bash
+[[ "\$1" == run ]] || exit 2
+args=(); keep=(); while [[ \$# -gt 0 && "\$1" != "--" ]]; do
+  [[ "\$1" == --env ]] && keep+=("\$2=\${!2}"); args+=("\$1"); shift; done; shift
+out="\$(env -i PATH="\$PATH" HOME="\$HOME" "\${keep[@]}" "\$@")"; rc=\$?
+printf '%s\n' "\$out"; exit \$rc
+R
+cat > "$F/thyrox-p-loop" <<'R'
+#!/usr/bin/env bash
+call='{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Bash","input":{"command":"ls"}}]}}'
+printf '%s\n%s\n%s\n' "$call" "$call" "$call"; sleep 60
+R
+chmod +x "$F/execute" "$F/thyrox-p-loop"
+started=$SECONDS
+printf 'alfa\n' | HEADLESS_POOL_RUNNER="$F/thyrox-p-loop" \
+  pool --out "$F/out-watchdog" --execution unit --work-reference ai-course-notes:cs224r --timeout 120 >/dev/null 2>&1
+check "caso 10: el vigilante ve la salida en vivo de la unidad y la detiene" "$(cut -f1 "$F/out-watchdog/1.watchdog" 2>/dev/null)" "identical-tool-call"
+check "caso 10: antes del plazo del ítem" "$(( SECONDS - started < 60 ))" "1"
+
 echo; echo "$PASS ok · $FAIL falla(s) (alcance medido: headless-pool --execution unit)"
 [[ $FAIL -eq 0 ]]

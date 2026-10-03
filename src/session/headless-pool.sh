@@ -911,10 +911,13 @@ _headless_item_run() {
                  [[ -z "${!name:-}" ]] || unit_args+=(--env "$name")
              done
              THYROX_ROOT="$HP_THYROX_ROOT" exec setsid timeout "$HP_TIMEOUT" "${execute_argv[@]}" run "${unit_args[@]}" \
-                -- bash -c 'prompt="$1"; shift
+                -- bash -c 'prompt="$1" live="$2"; shift 2
                             [[ -z "${THYROX_POOL_ITEM_ROOT:-}" ]] || export THYROX_ROOT="$THYROX_POOL_ITEM_ROOT"
                             [[ -z "${THYROX_POOL_ITEM_GIT_GUARD_DIR:-}" ]] || export PATH="$THYROX_POOL_ITEM_GIT_GUARD_DIR:$PATH"
-                            exec "$@" < "$prompt"' item "$HP_LIVE/$n.prompt" "${item_argv[@]}"
+                            # La primitiva entrega la salida al terminar; la copia
+                            # en vivo al directorio montado es lo que lee el vigilante.
+                            "$@" < "$prompt" | tee "$live"; exit "${PIPESTATUS[0]}"' \
+                item "$HP_LIVE/$n.prompt" "$HP_LIVE/$n.live.jsonl" "${item_argv[@]}"
          fi
          exec setsid ${HP_TIME:+"$HP_TIME" -q -f "%M %e %U %S" -o "$HP_LIVE/$n.time"} \
          timeout "$HP_TIMEOUT" "${item_argv[@]}") \
@@ -937,7 +940,10 @@ _headless_item_run() {
         snapshot_loop=$!
     fi
     local watchdog=""
-    bash "$HP_ITEM_WATCHDOG" watch "$pid" "$HP_LIVE/$n.stream.jsonl" "$HP_LIVE/$n.watchdog" 2>> "$HP_LIVE/$n.err" &
+    # En una unidad, la salida llega al terminar: el vigilante lee la copia en vivo.
+    local watched="$HP_LIVE/$n.stream.jsonl"
+    [[ "$HP_EXECUTION" != unit ]] || watched="$HP_LIVE/$n.live.jsonl"
+    bash "$HP_ITEM_WATCHDOG" watch "$pid" "$watched" "$HP_LIVE/$n.watchdog" 2>> "$HP_LIVE/$n.err" &
     watchdog=$!
     wait "$pid"
     local rc=$?
