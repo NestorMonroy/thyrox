@@ -50,3 +50,29 @@ cabeceras, y no se mandó la clave a un servicio de eco para comprobarlo.
 
 *Metrica:* estado HTTP y código de error de cada endpoint, n = 1.
 *Ciega a:* la causa del rechazo en el lado del proveedor.
+
+## Recargar las claves: el relevo, y TASK-THYROX-0927
+
+El ejecutor actualizó las claves en `THYROX_OPENAI_COMPAT_API_KEY` y
+`THYROX_OPENAI_COMPAT_PAYG_API_KEY`. Medido en esta sesión: las dos están
+AUSENTES del entorno del proceso (la sesión fijó su entorno al arrancar). Lo
+que las carga es una sesión nueva; `bin/session_restart` prepara ese relevo
+(no puede recargar una sesión viva, lo dice su cabecera).
+
+- `.env` llevaba los valores viejos que esta tarea copió de `QWENCLOUD_*`
+  (rechazados con 401): se retiraron. El entorno del proceso gana a `.env`
+  (`paths/reach.ts::productionDeclarations`, `ProcessEnvironment` primero), pero
+  un valor que se sabe inválido en disco es una trampa para quien no herede el
+  entorno.
+- `bin/session_restart` murió con un traceback en este clon: `declared_wiring`
+  llama a `reach()` para componer los `--repo`, y en un clon de thyrox solo
+  `reach()` lanza `ReachRootError` (sin `THYROX_REACH_ROOTS`) o `KeyError` (sin
+  `THYROX_CLONE_PREFIX`). TASK-THYROX-0927: `reach_roster()` los convierte en
+  `WiringRefused`; el relevo sale 2 con `REHUSA` y la variable que falta.
+  Rojo `outputs/red-0927.txt` (4), verde 4, anulación `outputs/annul-0927.txt`
+  (las 4). `tests/session/test_session_restart.py`: 81 ok y 4 fallas, las
+  mismas 4 en HEAD.
+- Sin resolver y fuera de esta tarea: `tests/session/test_user_wiring.py` no
+  puede correr en un clon de thyrox solo (su caso 1 pide un roster al entorno),
+  y el relevo sigue rehusando aquí, ahora con su causa: necesita
+  `THYROX_CLONE_PREFIX` o un roster declarado.

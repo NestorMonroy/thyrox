@@ -183,6 +183,20 @@ def resolve_consumer(declared: str | Path | None = None,
     return contextual
 
 
+def reach_roster() -> dict:
+    """El roster de clones que el cableado nombra con ``--repo``, o el rehúso.
+
+    ``reach()`` lanza ``ReachRootError`` sin raíces de trabajo y ``KeyError`` sin
+    prefijo de clon: en un clon de thyrox solo pasan las dos. Escapar como
+    traceback dejaba a ``session_restart`` sin su salida 2 (TASK-THYROX-0927);
+    se convierten en ``WiringRefused`` con la causa, que nombra la variable.
+    """
+    try:
+        return reach()
+    except (ReachRootError, KeyError) as error:
+        raise WiringRefused(f"no pude componer los --repo del cableado: {error}") from error
+
+
 def declared_wiring(root: Path | None = None,
                     consumer: str | Path | None = None,
                     advisor: str | None = None) -> dict:
@@ -236,7 +250,7 @@ def declared_wiring(root: Path | None = None,
     binroot = f"{base}/bin"
     results_dir = f"{consumer_dir}/.claude/agent-results"
     repo_flags = " ".join(f"--repo {name}={path}"
-                     for name, path in sorted(reach().items()))
+                     for name, path in sorted(reach_roster().items()))
     delta = f"bash {binroot}/measure_delta"
     registration = f"bash {binroot}/register_session"
     return {

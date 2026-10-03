@@ -1,0 +1,7 @@
+== anulación 0927: declared_wiring llama a reach() directo
+  FALLA sin raíces de trabajo, REHUSA (WiringRefused): esperado False, obtenido True
+  FALLA y el rehúso nombra THYROX_REACH_ROOTS: esperado True, obtenido False
+  FALLA sin prefijo de clon, REHUSA (WiringRefused): esperado False, obtenido True
+  FALLA y el rehúso nombra THYROX_CLONE_PREFIX: esperado True, obtenido False
+
+0 ok, 4 fallas (alcance medido: declared_wiring con reach que lanza)
