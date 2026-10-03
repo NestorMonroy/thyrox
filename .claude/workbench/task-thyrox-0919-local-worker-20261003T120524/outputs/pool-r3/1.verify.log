@@ -1,0 +1,90 @@
+FFFEF.FF
+======================================================================
+ERROR: test_found_is_printed_before_related (__main__.SearchExistingMechanismsTest.test_found_is_printed_before_related)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/772ba0951ecc/1/tests/verify/test_search_existing_mechanisms.py", line 89, in test_found_is_printed_before_related
+    self.assertEqual(self.verdicts(result)[0], 'FOUND wait-jobs')
+                     ~~~~~~~~~~~~~~~~~~~~~^^^
+IndexError: list index out of range
+
+======================================================================
+FAIL: test_all_words_in_keywords_is_found (__main__.SearchExistingMechanismsTest.test_all_words_in_keywords_is_found)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/772ba0951ecc/1/tests/verify/test_search_existing_mechanisms.py", line 80, in test_all_words_in_keywords_is_found
+    self.assertEqual(self.verdicts(result), ['FOUND wait-jobs'])
+AssertionError: Lists differ: [] != ['FOUND wait-jobs']
+
+Second list contains 1 additional elements.
+First extra element 0:
+'FOUND wait-jobs'
+
+- []
++ ['FOUND wait-jobs']
+
+======================================================================
+FAIL: test_exact_concept_ignores_case (__main__.SearchExistingMechanismsTest.test_exact_concept_ignores_case)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/772ba0951ecc/1/tests/verify/test_search_existing_mechanisms.py", line 76, in test_exact_concept_ignores_case
+    self.assertEqual(self.verdicts(result), ['FOUND item-worktree'])
+AssertionError: Lists differ: [] != ['FOUND item-worktree']
+
+Second list contains 1 additional elements.
+First extra element 0:
+'FOUND item-worktree'
+
+- []
++ ['FOUND item-worktree']
+
+======================================================================
+FAIL: test_exact_id_is_found_with_its_authority (__main__.SearchExistingMechanismsTest.test_exact_id_is_found_with_its_authority)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/772ba0951ecc/1/tests/verify/test_search_existing_mechanisms.py", line 67, in test_exact_id_is_found_with_its_authority
+    self.assertEqual(self.verdicts(result), ['FOUND process-ownership'])
+AssertionError: Lists differ: [] != ['FOUND process-ownership']
+
+Second list contains 1 additional elements.
+First extra element 0:
+'FOUND process-ownership'
+
+- []
++ ['FOUND process-ownership']
+
+======================================================================
+FAIL: test_nothing_matching_is_none_with_exit_one (__main__.SearchExistingMechanismsTest.test_nothing_matching_is_none_with_exit_one)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/772ba0951ecc/1/tests/verify/test_search_existing_mechanisms.py", line 95, in test_nothing_matching_is_none_with_exit_one
+    self.assertEqual(result.returncode, 1)
+AssertionError: 0 != 1
+
+======================================================================
+FAIL: test_some_word_in_keywords_or_authority_is_related (__main__.SearchExistingMechanismsTest.test_some_word_in_keywords_or_authority_is_related)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/772ba0951ecc/1/tests/verify/test_search_existing_mechanisms.py", line 85, in test_some_word_in_keywords_or_authority_is_related
+    self.assertEqual(self.verdicts(result), ['RELATED process-ownership'])
+AssertionError: Lists differ: [] != ['RELATED process-ownership']
+
+Second list contains 1 additional elements.
+First extra element 0:
+'RELATED process-ownership'
+
+- []
++ ['RELATED process-ownership']
+
+======================================================================
+FAIL: test_unreadable_registry_exits_two_without_none (__main__.SearchExistingMechanismsTest.test_unreadable_registry_exits_two_without_none)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/772ba0951ecc/1/tests/verify/test_search_existing_mechanisms.py", line 100, in test_unreadable_registry_exits_two_without_none
+    self.assertEqual(result.returncode, 2)
+AssertionError: 0 != 2
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.123s
+
+FAILED (failures=6, errors=1)

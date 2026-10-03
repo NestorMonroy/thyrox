@@ -65,3 +65,19 @@ dos razonando. EXTEND del relé admitido (sólo modelos locales; la traducción 
 upstreams pueden rechazar `"none"`): sin razonamiento pedido, envía `"none"`; el pedido pasa tal cual. RED → GREEN,
 anulación exacta. **Sin medir**: la calidad de Qwen3-4B sin razonar en `mecanica` —la cualificación se tomó con
 razonamiento—; r3 la mide sobre la TASK real.
+
+### r3 — 18 turnos en 35 min; Search Existing hecho; 13 heredocs sin cuerpo (rechazado)
+
+Con el razonamiento apagado: 18 turnos en 2 088 s (r2: 3 en 5 441 s). El worker corrió las tres búsquedas y
+escribió su bloque SEARCH-EXISTING; después emitió 13 veces `cat > src/verify/search_existing_mechanisms.py <<'PY' && chmod +x …`
+**en una sola línea**: el cuerpo del heredoc no llegó a la herramienta y el archivo quedó vacío; el verifier lo rechazó.
+`probes/multiline_tool_call.sh` mide si los `arguments` crudos de Ollama traen los saltos de línea.
+
+### La caché de prompts de llama-server mató la unidad (OOM)
+
+`dmesg`: `CONSTRAINT_MEMCG … Killed process (llama-server) anon-rss:8353764kB`. El log de la unidad:
+«prompt cache is enabled, size limit: 8192 MiB» —el límite entero de la unidad— y, al llegar un prompt de otro
+prefijo, «saving prompt with length 13830, total state size = 1945.003 MiB». `LLAMA_ARG_CACHE_RAM` existe en
+`libllama-common.so` de la imagen. EXTEND del perfil de Ollama (`OLLAMA_UNIT_ENVIRONMENT` en
+`hostCoordinatorComposition.ts`): `LLAMA_ARG_CACHE_RAM=0`. RED → GREEN 7/7; anulación exacta. Pendiente: el log
+de una unidad nueva que lo confirme.

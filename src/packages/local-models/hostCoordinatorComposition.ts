@@ -51,6 +51,16 @@ const TRANSFORMERS_CONTAINER_PORT = 8_080
 /** Dónde ve la unidad el snapshot concedido, montado de sólo lectura. */
 const TRANSFORMERS_MODEL_DIRECTORY = '/model'
 const OLLAMA_CONTAINER_PORT = 11_434
+/**
+ * El entorno de toda unidad de Ollama. `LLAMA_ARG_CACHE_RAM=0` desactiva la
+ * caché de prompts en RAM de llama-server: su tope por defecto, 8192 MiB, es el
+ * límite entero de la unidad, y guardar un slot de 13 830 tokens (1945 MiB) la
+ * mató por OOM (TASK-THYROX-0919). El prefijo de cada turno sigue en la caché KV.
+ */
+export const OLLAMA_UNIT_ENVIRONMENT: Readonly<Record<string, string>> = {
+  OLLAMA_HOST: `0.0.0.0:${OLLAMA_CONTAINER_PORT}`,
+  LLAMA_ARG_CACHE_RAM: '0',
+}
 /** Límites de una unidad: RAM holgada para un modelo de hasta ~7B en Q4 sobre CPU. */
 const UNIT_LIMITS = { cpus: 2, memoryMib: 8_192, pidsLimit: 256 }
 const LEASE_TTL_MS = 10 * 60_000
@@ -90,7 +100,7 @@ export function composeHostCoordinatorService(env: Environment, thyroxRoot: stri
       ollama: {
         image: OLLAMA_RUNTIME_IMAGE,
         containerPort: OLLAMA_CONTAINER_PORT,
-        environment: { OLLAMA_HOST: `0.0.0.0:${OLLAMA_CONTAINER_PORT}` },
+        environment: OLLAMA_UNIT_ENVIRONMENT,
         // Ollama sirve /v1 con su contexto por defecto si el servidor no recibe el del grant.
         grantEnvironment: grant => ({ OLLAMA_CONTEXT_LENGTH: String(grant.contextLength) }),
       },

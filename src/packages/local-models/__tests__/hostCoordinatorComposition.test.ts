@@ -13,7 +13,7 @@ import { modelCoordinatorSocketPath } from '@thyrox/model-scheduling/coordinator
 
 import { requireValidOwner } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
 
-import { composeHostCoordinatorService, cpuPlacementOf, MODEL_COORDINATOR_OWNER_KIND } from '../hostCoordinatorComposition.ts'
+import { composeHostCoordinatorService, cpuPlacementOf, MODEL_COORDINATOR_OWNER_KIND, OLLAMA_UNIT_ENVIRONMENT } from '../hostCoordinatorComposition.ts'
 
 const ROOT = '/nonexistent-thyrox-root'
 
@@ -50,5 +50,15 @@ describe('cpuPlacementOf por formato del artefacto (TASK-THYROX-0776)', () => {
   test('un snapshot de safetensors va a Transformers', () => {
     const artifact = { ...resolvedArtifact({ quantization: 'f32' }), format: 'safetensors' as const }
     expect(cpuPlacementOf({ artifact } as ResolvedModel).runtime).toBe('transformers')
+  })
+})
+
+// TASK-THYROX-0919: llama-server guarda por defecto su caché de prompts en RAM
+// con un tope de 8192 MiB, dentro de una unidad de 8192 MiB; al guardar un slot
+// de 13 830 tokens (1945 MiB) la unidad murió por OOM. `LLAMA_ARG_CACHE_RAM=0`
+// la desactiva (llama-server lee sus argumentos de `LLAMA_ARG_*`).
+describe('el entorno de una unidad de Ollama', () => {
+  test('desactiva la caché de prompts en RAM de llama-server', () => {
+    expect(OLLAMA_UNIT_ENVIRONMENT.LLAMA_ARG_CACHE_RAM).toBe('0')
   })
 })
