@@ -1,0 +1,8 @@
+function localFallbackModels(kind: TaskKind, profile: TurnProfile, permitted: LocalModelInventory,
+  policy: ExecutionPolicy | undefined, chosen: string): string[] {
+  const qualified = qualifiedModels(permitted.entries, permitted.qualifications, kind, profile.contextTokens)
+  const ordered = (policy?.fallback.chain ?? []).flatMap(target => (isProviderTarget(target)
+    ? []
+    : qualified.filter(candidate => matchesSelector(target, candidate.entry)).map(candidate => candidate.entry.name)))
+  return [...new Set(ordered)].filter(name => name !== chosen)
+}

@@ -1,0 +1,9 @@
+/**
+ * Por dónde habla `thyrox -p` con el modelo: directo, por un proxy declarado, o
+ * por uno que hay que levantar. Un modelo del catálogo local se decide ANTES de
+ * mirar la credencial (TASK-THYROX-0930, H-THYROX-455): ninguna credencial lo
+ * saca del anfitrión.
+ */
+export function decidePrintRoute(argv: string[], env: Env, readFd?: ReadFd, store?: ConnectionStore): PrintRoute {
+  if (isLocalCatalogModel(flagValue(argv, '--model'))) return localModelRoute(env)
+  const provider = flagValue(argv, '--provider') ?? DEFAULT_PROVIDER

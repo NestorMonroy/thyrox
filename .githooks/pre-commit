@@ -227,6 +227,22 @@ fi
 # no viajó. Sin rutas lee las staged del índice del propio commit.
 python3 "$GATES/check_bench_untracked.py" --repo "$ROOT" || CODE=1
 
+# El estado y los guiones de un banco o de un registro de trabajo no dependen
+# del scratchpad de la sesión ni de /tmp: desaparecen con ella, y con ellos el
+# respaldo de una anulación o la fuente de una conclusión (directiva del
+# ejecutor 2026-10-03; 40 rutas de scratchpad citadas por registros de
+# .claude/jobs ya no existían). Sólo los bancos y trabajos que el commit toca.
+durable_subjects=()
+for f in "${STAGED[@]}"; do
+    if [[ "$f" =~ ^"$ROOT"/\.claude/(workbench|jobs)/([^/]+)/ ]]; then
+        durable_subjects+=("$ROOT/.claude/${BASH_REMATCH[1]}/${BASH_REMATCH[2]}")
+    fi
+done
+if (( ${#durable_subjects[@]} )); then
+    mapfile -t durable_subjects < <(printf '%s\n' "${durable_subjects[@]}" | sort -u)
+    python3 "$GATES/check_durable_path_ownership.py" "${durable_subjects[@]}" || CODE=1
+fi
+
 # Un archivo preparado que un proceso vivo sigue escribiendo —la salida de un
 # ítem de pool escrita directamente en un banco, un log que alguien anexa— se
 # commitearía cortado en un instante arbitrario. Bloquea: el remedio es esperar

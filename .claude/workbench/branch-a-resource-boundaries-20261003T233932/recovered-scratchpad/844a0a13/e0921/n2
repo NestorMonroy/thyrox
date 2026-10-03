@@ -1,0 +1,53 @@
+  const chain = modelChainOf(body.model, options.fallbackModels ?? [])
+  const path = new URL(request.url).pathname
+  let attempt = await attemptModel(options, body.model, path, body)
+  for (let chainIndex = 1; attempt.kind === 'model_failure' && chainIndex < chain.length; chainIndex += 1) {
+    const fallbackModel = chain[chainIndex] as string
+    await attempt.response.body?.cancel()
+    options.onFallback?.(fallbackEventOf(options, body.model, fallbackModel, chainIndex, attempt))
+    attempt = await attemptModel(options, fallbackModel, path, body)
+  }
+  return attempt.response
+}
+
+/** El pedido primero y después sus respaldos, sin repetirlo (el `chn` de la referencia). */
+function modelChainOf(model: string, fallbackModels: readonly string[]): readonly string[] {
+  return [model, ...new Set(fallbackModels.filter(candidate => candidate !== '' && candidate !== model))]
+}
+
+/**
+ * Lo que dejó un intento: una respuesta que se entrega tal cual (`final`), o
+ * un fallo del modelo con su motivo, que la cadena puede saltar. Si no queda
+ * respaldo, también ese fallo se entrega tal cual.
+ */
+type Attempt =
+  | { readonly kind: 'final'; readonly response: Response }
+  | { readonly kind: 'model_failure'; readonly response: Response; readonly trigger: ModelFallbackTrigger; readonly reason: string }
+
+async function attemptModel(options: AdmittedUpstreamOptions, model: string, path: string,
+  body: Record<string, unknown>): Promise<Attempt> {
+  let admission: CoordinatorAdmission
+  try {
+    admission = await options.source.admit(admissionRequestOf(options, model))
+  } catch (error) {
+    const response = openAIError(ADMISSION_REFUSED_STATUS, 'coordinator_unavailable', `el coordinador de model scheduling no respondió: ${messageOf(error)}`)
+    return { kind: 'final', response }
+  }
+  if (admission.status !== 'admitted') {
+    const reason = refusalMessage(admission)
+    return { kind: 'model_failure', response: refusalResponse(admission, reason), trigger: refusalTrigger(admission), reason }
+  }
+  return forwardAdmitted(options.source, admission.ticket, path, body)
+}
+
+/** Un modelo que el coordinador no resuelve no existe; un rechazo en otra etapa es falta de sitio; un fallo, del servidor. */
+function refusalTrigger(refusal: AdmissionRefusal): ModelFallbackTrigger {
+  if (refusal.status === 'failed') return 'server_error'
+  return refusal.stage === 'resolve' ? 'model_not_found' : 'overloaded'
+}
+
+function fallbackEventOf(options: AdmittedUpstreamOptions, originalModel: string, fallbackModel: string,
+  chainIndex: number, failure: { trigger: ModelFallbackTrigger; reason: string }): ModelFallbackEvent {
+  const event: ModelFallbackEvent = { type: 'model_fallback', originalModel, fallbackModel, trigger: failure.trigger, chainIndex, reason: failure.reason }
+  return options.contextLength === undefined ? event : { ...event, contextLength: options.contextLength }
+}

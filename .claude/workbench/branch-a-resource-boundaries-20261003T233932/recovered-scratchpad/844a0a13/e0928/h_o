@@ -1,0 +1,4 @@
+# Uso: local_control_plane_ready [contenedor...] — los argumentos son la
+#      selección que recibe infrastructure_ensure.
+#
+# Exit 0  plano de control listo: infrastructure_ensure salió 0.

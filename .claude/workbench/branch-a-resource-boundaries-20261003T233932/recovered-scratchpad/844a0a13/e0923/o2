@@ -1,0 +1,4 @@
+  test('con el respaldo declarado, cae a claude-cli y lo nombra', () => {
+    const result = recommendExecution('mecanica', PROFILE, onlyOther, policyOf(true))
+    expect(result.runtime).toBe('claude-cli')
+  })

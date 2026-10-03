@@ -1,0 +1,44 @@
+usage() {
+  sed -n '/^# Uso:/,/^# Exit 0/p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+}
+
+# @description Sólo mide: el veredicto del motor y el estado del coordinador.
+# Nunca repara ni converge — un status que actúa fue el episodio de 0928.
+report_status() {
+  local verdict ready=0
+  verdict="$(classify)"
+  printf 'motor: %s\n' "$verdict"
+  [[ "$verdict" == "$VERDICT_HEALTHY" ]] || ready=1
+  bash "$COORDINATOR_BIN" status || ready=1
+  (( ready == 0 )) || exit "$EXIT_NOT_READY"
+}
+
+# @description Tras la infraestructura: huérfanos fuera y coordinador en marcha.
+# Cada paso que falla corta la composición con su salida.
+converge_runtime() {
+  bash "$RECONCILE_BIN" reconcile-orphans || exit $?
+  bash "$COORDINATOR_BIN" start >/dev/null || exit $?
+  bash "$COORDINATOR_BIN" status
+}
+
+converge() {
+  local verdict status
+  verdict="$(classify)"
+  case "$verdict" in
+    "$VERDICT_HEALTHY") ;;
+    "$VERDICT_RECOVERABLE") recover_after_reboot ;;
+    *) fail_closed "veredicto «$verdict»: no es $VERDICT_HEALTHY ni $VERDICT_RECOVERABLE; no se repara ni se converge." ;;
+  esac
+  bash "$INFRA_ENSURE_BIN" "$@"
+  status=$?
+  (( status == 0 )) || exit "$status"
+  converge_runtime
+}
+
+main() {
+  case "${1:-}" in
+    --help) usage ;;
+    --status) report_status ;;
+    *) converge "$@" ;;
+  esac
+}

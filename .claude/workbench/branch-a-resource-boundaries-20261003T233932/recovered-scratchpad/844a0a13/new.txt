@@ -1,0 +1,7 @@
+THYROX_INFRA_OLLAMA_VOLUME=
+
+# Libro de volúmenes durables (H-THYROX-464): qué volumen durable de la
+# infraestructura existió y desde cuándo, fuera del almacenamiento de Podman.
+# Si un volumen durable registrado falta, la primitiva rehúsa crearlo vacío.
+# Vacío: <hogar de configuración>/durable-volumes.
+THYROX_DURABLE_VOLUMES_DIR=

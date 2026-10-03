@@ -1,0 +1,8 @@
+/**
+ * La cadena declarada; sin declararla, ninguna (se deriva al recomendar). Una
+ * entrada local tiene que estar en `allowed` (el `Hr` de la referencia): un
+ * respaldo no amplía lo permitido, y aquí se rehúsa en vez de filtrarse en
+ * silencio.
+ */
+function chainOf(value: unknown, allowed: readonly LocalModelSelector[]): readonly FallbackTarget[] | undefined {
+  if (value === undefined) return undefined

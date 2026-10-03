@@ -1,0 +1,18 @@
+  // Revisión del ejecutor 2026-10-03: sin cadena declarada, la referencia no
+  // salta a otro proveedor —`rre` construye la escalera `yb(primary)` de la
+  // misma familia, filtrada por `Hr`—. Aquí la cadena se DERIVA de los modelos
+  // locales permitidos y medidos; `claude-cli` sólo entra declarado.
+  test('enabled sin cadena declarada: la cadena se deriva, no se fija', () => {
+    expect(policyWith({ enabled: true }).fallback.chain).toBeUndefined()
+  })
+
+  test('la cadena derivada da al elegido los demás locales cualificados, en el orden medido', () => {
+    const result = recommendExecution('mecanica', PROFILE, qualifiedBoth, policyWith({ enabled: true }))
+    expect([result.runtime === 'ollama' ? result.model : '', result.runtime === 'ollama' ? result.fallbackModels : undefined])
+      .toEqual([FAST.name, [QWEN.name]])
+  })
+
+  test('agotada la cadena derivada, bloqueada con la causa local, nunca el proveedor', () => {
+    const result = recommendExecution('mecanica', PROFILE, unqualified, policyWith({ enabled: true }))
+    expect([result.runtime, result.runtime === 'blocked' ? result.trigger : undefined]).toEqual(['blocked', 'unqualified'])
+  })

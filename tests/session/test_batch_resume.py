@@ -102,5 +102,29 @@ with tempfile.TemporaryDirectory() as tmp:
     check("el gate rehúsa el guion", 1, ran.returncode)
     check("y lo nombra", True, "probes/wire.sh" in ran.stdout)
 
+print("== 4. un respaldo de anulación o una evidencia que dependen del scratchpad de la sesión ==")
+with tempfile.TemporaryDirectory() as tmp:
+    workbench = build_workbench(Path(tmp), "outputs/T001.json")
+    for directory, name, text in (("mutations", "restore.sh", "cp /tmp/claude-0/x/scratchpad/ra.bak src/a.py\n"),
+                                  ("evidence", "derive.sh", "cat /home/user/.cache/s/scratchpad/case28.py\n"),
+                                  ("experiments", "run.sh", "bash /tmp/claude-0/y/scratchpad/hp-annul.sh\n")):
+        (workbench / directory).mkdir()
+        (workbench / directory / name).write_text(text)
+    ran = gate(workbench)
+    check("el gate rehúsa los tres", 1, ran.returncode)
+    check("nombra mutations/, evidence/ y experiments/", True,
+          all(f"{d}/" in ran.stdout for d in ("mutations", "evidence", "experiments")))
+    check("un scratchpad fuera de /tmp también cuenta", True, "evidence/derive.sh" in ran.stdout)
+
+print("== 5. un registro de trabajo cuyo instrumento lee del scratchpad ==")
+with tempfile.TemporaryDirectory() as tmp:
+    job = Path(tmp) / "annul-20261003T000000"
+    job.mkdir()
+    (job / "manifest.jsonl").write_text(json.dumps(
+        {"kind": "launch", "instrument": "bash /tmp/claude-0/-home-user/168b/scratchpad/anular330.sh"}) + "\n")
+    ran = gate(job)
+    check("el gate rehúsa el instrumento", 1, ran.returncode)
+    check("y nombra el campo", True, "manifest.jsonl: instrument" in ran.stdout)
+
 print(f"\n{OK} ok, {FAILED} fallos")
 raise SystemExit(1 if FAILED else 0)

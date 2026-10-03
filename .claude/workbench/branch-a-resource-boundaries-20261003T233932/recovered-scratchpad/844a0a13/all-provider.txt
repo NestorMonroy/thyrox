@@ -1,0 +1,48 @@
+bun test v1.3.14 (0d9b296a)
+120 |         const cut = calls === 1
+121 |         const body = new ReadableStream<Uint8Array>({
+122 |           start(controller) {
+123 |             if (cut) {
+124 |               controller.enqueue(enc.encode('event: message_start\ndata: {}\n\n'))
+125 |               controller.error(new Error('cortado'))
+                                         ^
+error: cortado
+      at start (/home/user/thyrox/src/packages/provider/__tests__/proxyStartServer.test.ts:125:36)
+      at fetch (/home/user/thyrox/src/packages/provider/__tests__/proxyStartServer.test.ts:121:22)
+
+__tests__/proxyStartServer.test.ts:
+120 |         const cut = calls === 1
+121 |         const body = new ReadableStream<Uint8Array>({
+122 |           start(controller) {
+123 |             if (cut) {
+124 |               controller.enqueue(enc.encode('event: message_start\ndata: {}\n\n'))
+125 |               controller.error(new Error('cortado'))
+                                         ^
+error: cortado
+      at start (/home/user/thyrox/src/packages/provider/__tests__/proxyStartServer.test.ts:125:36)
+      at fetch (/home/user/thyrox/src/packages/provider/__tests__/proxyStartServer.test.ts:121:22)
+(fail) startProxyServer > con streamRecovery, un SSE real que se corta antes del primer byte se reabre [5.30ms]
+
+# Unhandled error between tests
+-------------------------------
+133 |       },
+134 |     })
+135 |     stops.push(() => server.stop(true))
+136 |     const proxy = startProxyServer({ ...config(`http://127.0.0.1:${server.port}`), streamRecovery: { enabled: true } })
+137 |     stops.push(() => proxy.stop())
+138 |     const response = await fetch(`${proxy.url}/v1/messages`, {
+                                 ^
+error: The socket connection was closed unexpectedly. For more information, pass `verbose: true` in the second argument to fetch()
+  path: "http://127.0.0.1:41973/v1/messages",
+ errno: 0,
+  code: "ECONNRESET"
+
+      at async <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/proxyStartServer.test.ts:138:28)
+-------------------------------
+
+
+ 4995 pass
+ 1 fail
+ 1 error
+ 9486 expect() calls
+Ran 4996 tests across 302 files. [20.02s]

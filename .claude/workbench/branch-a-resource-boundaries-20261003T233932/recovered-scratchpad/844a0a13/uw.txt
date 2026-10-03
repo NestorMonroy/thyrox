@@ -1,0 +1,30 @@
+== 1. la declaracion existe y tiene la forma del settings del cliente ==
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/session/user_wiring.py", line 102, in declared_consumer_candidates
+    clones = reach()
+             ^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 1233, in reach
+    return {**roots(start), **extra_roots()}
+              ^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 1201, in roots
+    return {r: root(r, start) for r in reach_roots(start)}
+                                       ^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/paths/reach.py", line 660, in reach_roots
+    raise ReachRootError(
+paths.reach.ReachRootError: no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+
+The above exception was the direct cause of the following exception:
+
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/session/test_user_wiring.py", line 76, in <module>
+    d = w.declared_wiring()
+        ^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/session/user_wiring.py", line 202, in declared_wiring
+    consumer_dir = resolve_consumer(consumer)
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/session/user_wiring.py", line 179, in resolve_consumer
+    candidates = declared_consumer_candidates()
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/session/user_wiring.py", line 104, in declared_consumer_candidates
+    raise WiringRefused(
+user_wiring.WiringRefused: no hay roster del que derivar el consumidor (no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.). Declaralo con THYROX_CONSUMER=<raiz del clon> o con --consumer <raiz>.

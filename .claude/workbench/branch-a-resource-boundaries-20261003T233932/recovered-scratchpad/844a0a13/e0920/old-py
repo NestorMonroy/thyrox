@@ -1,0 +1,1 @@
+    check("y no nombra ningún claude- como recomendación", "→ claude-" not in r.stdout, r.stdout[:120])

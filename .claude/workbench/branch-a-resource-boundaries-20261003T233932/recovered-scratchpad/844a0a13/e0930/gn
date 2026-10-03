@@ -1,0 +1,16 @@
+function isLocalCatalogModel(model: string | undefined): boolean {
+  return model !== undefined && parseThyroxModelName(model) !== undefined
+}
+
+/**
+ * La ruta de un modelo local: el túnel ya declarado (su socket es el proxy local
+ * de quien lanzó el ítem), el proxy declarado, o uno que se levanta. Nunca la
+ * credencial del entorno, que es remota.
+ */
+function localModelRoute(env: Env): PrintRoute {
+  if (env.ANTHROPIC_UNIX_SOCKET?.trim()) return { kind: 'own', reason: 'túnel local ya declarado' }
+  const declared = env[LOCAL_PROXY_SOCKET_ENV]?.trim()
+  return declared ? { kind: 'declared-proxy', socketPath: declared } : { kind: 'launch-proxy' }
+}
+
+/** El entorno con el que el bucle entra al túnel: el socket, el marcador y la URL llana, sin ninguna credencial propia. */

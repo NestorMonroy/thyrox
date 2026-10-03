@@ -1,0 +1,4 @@
+default	segundos=90	completion_tokens=319	reasoning_chars=740	content=42 
+reasoning_effort:"none"	segundos=0	completion_tokens=?	reasoning_chars=0	content=invalid character 'r' looking for beginning of object key string 
+think:false	segundos=0	completion_tokens=?	reasoning_chars=0	content=invalid character 't' looking for beginning of object key string 
+reasoning_effort:"low"	segundos=0	completion_tokens=?	reasoning_chars=0	content=invalid character 'r' looking for beginning of object key string 

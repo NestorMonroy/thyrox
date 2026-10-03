@@ -1,0 +1,3 @@
+  const selectors = allowed.map(selectorOf)
+  const chain = chainOf((fallback as { chain?: unknown }).chain, selectors)
+  const parsed = { allowed: selectors, fallback: { enabled, chain } }

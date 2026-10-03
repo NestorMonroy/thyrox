@@ -1,0 +1,14 @@
+  test('con una cualificación de 8192 no alcanza la necesidad de A6: blocked, nunca claude-cli', () => {
+    const result = recommendExecution('mecanica', A6_PROFILE, { entries: [HF_QWEN], qualifications: qualifiedAt(HF_QWEN, 8_192) }, CANONICAL)
+    expect(result.runtime).toBe('blocked')
+  })
+
+  test('un modelo local que la política no admite queda blocked, nunca claude-cli', () => {
+    const result = recommendExecution('mecanica', A6_PROFILE, { entries: [NOT_ALLOWED], qualifications: qualifiedAt(NOT_ALLOWED, 32_768) }, CANONICAL)
+    expect(result.runtime).toBe('blocked')
+  })
+
+  test('el respaldo sigue cerrado', () => {
+    expect(CANONICAL.fallback.enabled).toBe(false)
+  })
+})

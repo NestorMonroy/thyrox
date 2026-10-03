@@ -1,0 +1,2 @@
+local-models-qualify: el coordinador falló la admisión en prepare: Ollama /api/create respondió 500: {"error":"chtimes /root/.ollama/models/blobs/sha256-1875fb29e8c91c86615c00e92d8b4114e56bc24359adb5a8db8b36452fae4a49: read-only file system"}
+__BG_EXIT__=2

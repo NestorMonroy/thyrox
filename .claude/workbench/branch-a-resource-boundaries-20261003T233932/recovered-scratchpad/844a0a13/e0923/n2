@@ -1,0 +1,4 @@
+  test('con el respaldo abierto y sin cadena, no cae a claude-cli: la cadena derivada es local', () => {
+    const result = recommendExecution('mecanica', PROFILE, onlyOther, policyOf(true))
+    expect(result.runtime).toBe('blocked')
+  })

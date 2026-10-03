@@ -1,0 +1,3 @@
+async function forwardAdmitted(
+  source: AdmissionSource, ticket: AdmissionTicket, path: string, body: Record<string, unknown>,
+): Promise<Response> {

@@ -1,0 +1,39 @@
+/** ¿La política deja llegar al proveedor? Interruptor abierto y `claude-cli` en la cadena. */
+export function allowsProvider(policy: ExecutionPolicy): boolean {
+  return policy.fallback.enabled && policy.fallback.chain.some(isProviderTarget)
+}
+
+export function isProviderTarget(target: FallbackTarget): target is ProviderTarget {
+  return target.runtime === PROVIDER_RUNTIME
+}
+
+/**
+ * La cadena declarada. Sin declararla rige `[claude-cli]`, el respaldo que
+ * `enabled` daba antes de existir la cadena. Una entrada local tiene que estar
+ * en `allowed` (el `Hr` de la referencia): un respaldo no amplía lo permitido,
+ * y aquí se rehúsa en vez de filtrarse en silencio.
+ */
+function chainOf(value: unknown, allowed: readonly LocalModelSelector[]): readonly FallbackTarget[] {
+  if (value === undefined) return [{ runtime: PROVIDER_RUNTIME }]
+  if (!Array.isArray(value)) throw new ExecutionPolicyError('`fallback.chain` es la lista ordenada de respaldos')
+  return value.map((item, index) => chainTargetOf(item, index, allowed))
+}
+
+function chainTargetOf(value: unknown, index: number, allowed: readonly LocalModelSelector[]): FallbackTarget {
+  const runtime = (value as { runtime?: unknown } | null | undefined)?.runtime
+  if (runtime === PROVIDER_RUNTIME) return { runtime: PROVIDER_RUNTIME }
+  if (runtime !== LOCAL_RUNTIME) {
+    throw new ExecutionPolicyError(`fallback.chain[${index}]: el runtime es ${LOCAL_RUNTIME} o ${PROVIDER_RUNTIME}`)
+  }
+  const selector = selectorOf(value, index)
+  if (!allowed.some(candidate => sameSelector(candidate, selector))) {
+    throw new ExecutionPolicyError(`fallback.chain[${index}]: ${selector.repository} no está en allowed; un respaldo no amplía lo permitido`)
+  }
+  return selector
+}
+
+function sameSelector(left: LocalModelSelector, right: LocalModelSelector): boolean {
+  return sameText(left.repository, right.repository)
+    && (left.quantization ?? '').toLowerCase() === (right.quantization ?? '').toLowerCase()
+    && left.source === right.source
+}

@@ -1,0 +1,10 @@
+main() {
+  local verdict
+  verdict="$(classify)"
+  case "$verdict" in
+    "$VERDICT_HEALTHY") ;;
+    "$VERDICT_RECOVERABLE") recover_after_reboot ;;
+    *) fail_closed "veredicto «$verdict»: no es $VERDICT_HEALTHY ni $VERDICT_RECOVERABLE; no se repara ni se converge." ;;
+  esac
+  bash "$INFRA_ENSURE_BIN" "$@"
+}

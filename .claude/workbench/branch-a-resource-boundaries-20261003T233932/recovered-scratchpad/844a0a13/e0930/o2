@@ -1,0 +1,1 @@
+  test('un modelo remoto con credencial sigue hablando directo', () => {

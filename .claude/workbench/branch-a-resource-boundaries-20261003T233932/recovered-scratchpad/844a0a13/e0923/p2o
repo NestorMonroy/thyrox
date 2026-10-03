@@ -1,0 +1,8 @@
+/**
+ * La cadena declarada. Sin declararla rige `[claude-cli]`, el respaldo que
+ * `enabled` daba antes de existir la cadena. Una entrada local tiene que estar
+ * en `allowed` (el `Hr` de la referencia): un respaldo no amplía lo permitido,
+ * y aquí se rehúsa en vez de filtrarse en silencio.
+ */
+function chainOf(value: unknown, allowed: readonly LocalModelSelector[]): readonly FallbackTarget[] {
+  if (value === undefined) return [{ runtime: PROVIDER_RUNTIME }]

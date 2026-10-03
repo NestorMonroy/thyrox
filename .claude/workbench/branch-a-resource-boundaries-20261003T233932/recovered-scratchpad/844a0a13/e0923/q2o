@@ -1,0 +1,5 @@
+  const chainIndex = policy.fallback.chain.findIndex(isProviderTarget)
+  if (chainIndex < 0) {
+    return { runtime: 'blocked', taskClass: kind, contextTokens: profile.contextTokens, trigger: 'no_usable_fallback',
+      blockedReason: `ningún eslabón de fallback.chain es utilizable (${policy.fallback.chain.length} declarado(s)): ${shortfall.reason}` }
+  }

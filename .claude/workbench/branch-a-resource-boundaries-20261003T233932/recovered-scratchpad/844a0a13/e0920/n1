@@ -1,0 +1,22 @@
+/** El proveedor ejecutado por `claude -p`: sólo se alcanza como eslabón de la cadena. */
+export interface ProviderTarget {
+  readonly runtime: 'claude-cli'
+}
+
+export type FallbackTarget = LocalModelSelector | ProviderTarget
+
+/**
+ * El respaldo, en la forma de Claude Code (`rre`/`$a`): `enabled` es el
+ * interruptor (`CLAUDE_CODE_NO_MODEL_FALLBACK` invertido) y `chain` el orden en
+ * que se prueban los respaldos, cada uno dentro de lo permitido.
+ */
+export interface FallbackPolicy {
+  readonly enabled: boolean
+  readonly chain: readonly FallbackTarget[]
+}
+
+export interface ExecutionPolicy {
+  readonly allowed: readonly LocalModelSelector[]
+  readonly fallback: FallbackPolicy
+  readonly controller?: ControllerPolicy
+}

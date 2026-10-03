@@ -1,0 +1,4 @@
+no se pudo resolver el corpus del consumidor (docs): no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+pre-push: corpus del consumidor no alcanzable —
+  la defensa secundaria NO MIDIO. No se afirma que el arbol esta sano;
+  tampoco se bloquea, porque es secundaria (README D4-A, §8).

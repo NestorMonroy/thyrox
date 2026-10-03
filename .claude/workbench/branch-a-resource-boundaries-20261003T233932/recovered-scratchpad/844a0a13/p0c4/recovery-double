@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+echo "double-recovery $*" >> /tmp/claude-0/-home-user-thyrox/844a0a13-9fd8-5607-beb0-74daab7018a3/scratchpad/p0c4/calls.log
+[[ "$1" == --classify ]] && echo HEALTHY
+exit 0

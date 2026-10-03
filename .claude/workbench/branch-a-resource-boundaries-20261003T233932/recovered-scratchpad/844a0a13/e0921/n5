@@ -1,0 +1,14 @@
+    release()
+    const reason = `no se pudo conectar con el runtime en ${target}: ${messageOf(error)}`
+    return { kind: 'model_failure', response: openAIError(UPSTREAM_UNREACHABLE_STATUS, 'upstream_unreachable', reason), trigger: 'server_error', reason }
+  }
+  const init = { status: runtimeResponse.status, headers: relayedHeaders(runtimeResponse.headers) }
+  const response = new Response(releasingBody(runtimeResponse.body, release), init)
+  if (!isServerError(runtimeResponse.status)) return { kind: 'final', response }
+  return { kind: 'model_failure', response, trigger: 'server_error', reason: `el runtime respondió ${runtimeResponse.status}` }
+}
+
+/** Un 5xx es del servidor y admite otro modelo; un 4xx es de la petición y se repetiría igual. */
+function isServerError(status: number): boolean {
+  return status >= SERVER_ERROR_STATUS
+}

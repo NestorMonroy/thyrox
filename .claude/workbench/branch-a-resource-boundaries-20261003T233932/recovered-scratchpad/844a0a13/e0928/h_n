@@ -1,0 +1,12 @@
+# Tras la infraestructura (TASK-THYROX-0928) compone dos autoridades más:
+#
+#   podman-execution-execute reconcile-orphans   retira los contenedores cuyo dueño murió
+#   model_coordinator start | status              deja el coordinador de modelos en marcha
+#
+# Uso: local_control_plane_ready [contenedor...] — converge; los argumentos son
+#      la selección que recibe infrastructure_ensure.
+#      local_control_plane_ready --status — sólo mide: veredicto del motor y
+#      estado del coordinador. No repara ni converge. Exit 0 listo, 1 no listo.
+#      local_control_plane_ready --help — imprime este uso y no llama a nada.
+#
+# Exit 0  plano de control listo: infraestructura, huérfanos y coordinador.

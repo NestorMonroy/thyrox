@@ -1,0 +1,12 @@
+  const chain = policy.fallback.chain
+  if (chain === undefined) {
+    // La cadena derivada son los locales permitidos y medidos: si ninguno
+    // cumple, la causa es la local, y el proveedor no se alcanza sin declararlo.
+    return { runtime: 'blocked', taskClass: kind, contextTokens: profile.contextTokens, trigger: shortfall.trigger,
+      blockedReason: `ningún modelo local permitido cumple y fallback.chain no declara claude-cli: ${shortfall.reason}` }
+  }
+  const chainIndex = chain.findIndex(isProviderTarget)
+  if (chainIndex < 0) {
+    return { runtime: 'blocked', taskClass: kind, contextTokens: profile.contextTokens, trigger: 'no_usable_fallback',
+      blockedReason: `ningún eslabón de fallback.chain es utilizable (${chain.length} declarado(s)): ${shortfall.reason}` }
+  }

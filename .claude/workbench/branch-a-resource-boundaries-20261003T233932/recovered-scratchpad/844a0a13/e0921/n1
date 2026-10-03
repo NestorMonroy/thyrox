@@ -1,0 +1,27 @@
+  readonly contextLength?: number
+  /**
+   * Los respaldos locales, en orden (`fallbackModels` de la recomendación,
+   * TASK-THYROX-0921). Sin ellos, el relé sólo sirve el modelo pedido.
+   */
+  readonly fallbackModels?: readonly string[]
+  /** Recibe cada salto de la cadena, para que quede rastro fuera del relé. */
+  readonly onFallback?: (event: ModelFallbackEvent) => void
+}
+
+/**
+ * Por qué el relé saltó al siguiente modelo: el subconjunto de los motivos de
+ * Claude Code 2.1.286 que el relé puede observar. Un error de la petición (4xx)
+ * o un coordinador ausente no son del modelo, y no saltan.
+ */
+export type ModelFallbackTrigger = 'model_not_found' | 'overloaded' | 'server_error'
+
+/** El rastro de un salto, con la forma del `system/model_fallback` de la referencia. */
+export interface ModelFallbackEvent {
+  readonly type: 'model_fallback'
+  readonly originalModel: string
+  readonly fallbackModel: string
+  readonly trigger: ModelFallbackTrigger
+  readonly chainIndex: number
+  readonly contextLength?: number
+  readonly reason: string
+}

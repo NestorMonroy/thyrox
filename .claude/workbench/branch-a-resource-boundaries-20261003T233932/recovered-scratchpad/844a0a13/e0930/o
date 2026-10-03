@@ -1,0 +1,1 @@
+  test('con una conexión del store, thyrox habla directo', () => {

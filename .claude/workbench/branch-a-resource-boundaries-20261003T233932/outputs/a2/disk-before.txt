@@ -1,0 +1,8 @@
+2026-10-03T23:43:34Z
+     Avail        Used
+4721549312 36412526592
+4721549312 36412526592
+thyrox-postgres 1.09MB (virtual 448MB)
+thyrox-ollama 16.3kB (virtual 5.51GB)
+thyrox-redis 13.5kB (virtual 116MB)
+thyrox-worker-unit-93907e9f-6688-4e9f-ad00-cec1f15288c1 4.68GB (virtual 10.2GB)

@@ -1,0 +1,7 @@
+ *     "fallback": { "enabled": true,
+ *                   "chain": [{ "runtime": "ollama", "repository": "Qwen/Qwen2.5-7B-Instruct-GGUF" },
+ *                             { "runtime": "claude-cli" }] } }
+ *
+ * `fallback.enabled` es el interruptor; `fallback.chain`, el orden de los
+ * respaldos (TASK-THYROX-0920). Sin `chain` declarada rige `[claude-cli]`.
+ *

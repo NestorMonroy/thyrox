@@ -1,0 +1,1 @@
+chmod +x "$WORK/recovery-double" "$WORK/ensure-double"

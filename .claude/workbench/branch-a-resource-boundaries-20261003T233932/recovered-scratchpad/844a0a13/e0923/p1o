@@ -1,0 +1,9 @@
+/**
+ * El respaldo, en la forma de la referencia `claude-code-bin` (`rre`/`$a`): `enabled` es el
+ * interruptor (`CLAUDE_CODE_NO_MODEL_FALLBACK` invertido) y `chain` el orden en
+ * que se prueban los respaldos, cada uno dentro de lo permitido.
+ */
+export interface FallbackPolicy {
+  readonly enabled: boolean
+  readonly chain: readonly FallbackTarget[]
+}

@@ -10,8 +10,16 @@ Mide, en cada banco:
   ``state.json``, ``manifest.jsonl``, ``plan.jsonl`` y
   ``outputs/continuation.jsonl``): cualquier palabra de un valor de texto que
   sea una ruta absoluta bajo ``/tmp``, ``/var/tmp`` o ``/dev/shm``;
-- los guiones reproducibles (``probes/``, ``tests/``) y las tareas
-  (``tasks/``): cualquier literal ``/tmp/claude-``.
+- los guiones reproducibles (``probes/``, ``tests/``), las tareas
+  (``tasks/``), los respaldos y guiones de anulación (``mutations/``), los
+  derivados de evidencia (``evidence/``) y los experimentos
+  (``experiments/``): cualquier literal ``/tmp/claude-`` o ``/scratchpad/``.
+  El scratchpad de la sesión es efímero y desaparece con ella: un guion que lo
+  lee, o un respaldo que sólo vive allí, deja una conclusión sin reproducir o
+  un archivo anulado sin restaurar (directiva del ejecutor 2026-10-03).
+
+Un banco y un registro de trabajo (``.claude/jobs/<trabajo>/``) se miden
+igual: los dos llevan ``manifest.jsonl``.
 
 Ciego a: una ruta efímera escrita en prosa libre de un ``.md`` de salida, y a
 una referencia relativa que apunte a un archivo que ya no existe —eso lo mide
@@ -27,13 +35,13 @@ import sys
 from pathlib import Path
 
 EPHEMERAL_ROOTS = ("/tmp/", "/var/tmp/", "/dev/shm/")
-SESSION_SCRATCH_LITERAL = "/tmp/claude-"
+SESSION_SCRATCH_LITERALS = ("/tmp/claude-", "/scratchpad/")
 STATE_FILES = ("batch.json", "state.json")
 #: Los registros que gobiernan la reanudación. No las transcripciones de un
 #: trabajador (``*.stream.jsonl``): registran el ``/tmp`` de SU contenedor, no
 #: una referencia a estado que alguien tenga que volver a leer.
 LINE_STATE_FILES = ("manifest.jsonl", "plan.jsonl", "outputs/continuation.jsonl")
-SCRIPT_DIRECTORIES = ("probes", "tests", "tasks")
+SCRIPT_DIRECTORIES = ("probes", "tests", "tasks", "mutations", "evidence", "experiments")
 
 
 def _ephemeral_values(value, field: str):
@@ -68,8 +76,12 @@ def violations(workbench: Path) -> list[str]:
                 found.append(f"{path.relative_to(workbench)}: {field} = {value}")
     for directory in SCRIPT_DIRECTORIES:
         for path in sorted((workbench / directory).rglob("*")) if (workbench / directory).is_dir() else []:
-            if path.is_file() and SESSION_SCRATCH_LITERAL in path.read_text(errors="replace"):
-                found.append(f"{path.relative_to(workbench)}: cita {SESSION_SCRATCH_LITERAL}")
+            if not path.is_file():
+                continue
+            text = path.read_text(errors="replace")
+            for literal in SESSION_SCRATCH_LITERALS:
+                if literal in text:
+                    found.append(f"{path.relative_to(workbench)}: cita {literal}")
     return found
 
 

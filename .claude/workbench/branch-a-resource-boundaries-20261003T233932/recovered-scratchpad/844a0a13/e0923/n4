@@ -1,0 +1,20 @@
+  // Directiva del ejecutor 2026-10-03 (TASK-THYROX-0923): el respaldo de la
+  // política versionada está abierto y SIN cadena declarada. Rige la derivada
+  // —los locales permitidos y medidos—, nunca el proveedor: una cadena escrita
+  // aquí congelaría un análisis que hay que rehacer, y `claude-cli` por defecto
+  // iría contra la autoimplementación local.
+  test('con una cualificación de 8192 no alcanza la necesidad de A6: bloqueada con su motivo, nunca claude-cli', () => {
+    const result = recommendExecution('mecanica', A6_PROFILE, { entries: [HF_QWEN], qualifications: qualifiedAt(HF_QWEN, 8_192) }, CANONICAL)
+    expect([result.runtime, result.runtime === 'blocked' ? result.trigger : undefined]).toEqual(['blocked', 'insufficient_context'])
+  })
+
+  test('un modelo local que la política no admite: bloqueada nombrando a la política, nunca claude-cli', () => {
+    const result = recommendExecution('mecanica', A6_PROFILE, { entries: [NOT_ALLOWED], qualifications: qualifiedAt(NOT_ALLOWED, 32_768) }, CANONICAL)
+    expect([result.runtime, result.runtime === 'blocked' ? result.trigger : undefined]).toEqual(['blocked', 'policy_excludes_catalog'])
+  })
+
+  test('el respaldo está abierto, la cadena no se declara y no alcanza al proveedor', () => {
+    const declared = JSON.parse(readFileSync(resolve(import.meta.dir, '../../../session/execution_policy.json'), 'utf8')) as { fallback: Record<string, unknown> }
+    expect([CANONICAL.fallback.enabled, 'chain' in declared.fallback, allowsProvider(CANONICAL)]).toEqual([true, false, false])
+  })
+})

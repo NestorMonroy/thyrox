@@ -1,0 +1,7 @@
+  test('served-by declara la ruta y si el servicio fue local, una línea JSON', () => {
+    const local = JSON.parse(servedByLine({ kind: 'launch-proxy' }, LOCAL_MODEL).replace(/^served-by /, ''))
+    const tunnel = JSON.parse(servedByLine({ kind: 'own', reason: 'túnel local ya declarado' }, LOCAL_MODEL).replace(/^served-by /, ''))
+    const remote = JSON.parse(servedByLine({ kind: 'own', reason: 'thyrox tiene credencial propia' }, 'claude-sonnet-5').replace(/^served-by /, ''))
+    expect([local.local, local.route, tunnel.local, remote.local, remote.model]).toEqual([true, 'launch-proxy', true, false, 'claude-sonnet-5'])
+  })
+  test('un modelo remoto con credencial sigue hablando directo', () => {

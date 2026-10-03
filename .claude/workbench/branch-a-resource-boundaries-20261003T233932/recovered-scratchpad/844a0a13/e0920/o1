@@ -1,0 +1,5 @@
+export interface ExecutionPolicy {
+  readonly allowed: readonly LocalModelSelector[]
+  readonly fallback: { readonly enabled: boolean }
+  readonly controller?: ControllerPolicy
+}

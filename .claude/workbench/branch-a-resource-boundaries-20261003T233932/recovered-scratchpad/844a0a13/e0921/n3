@@ -1,0 +1,9 @@
+function refusalMessage(refusal: AdmissionRefusal): string {
+  const verb = refusal.status === 'refused' ? 'rehusó' : 'falló'
+  return `la admisión ${verb} en la etapa ${refusal.stage}: ${refusal.reason}`
+}
+
+function refusalResponse(refusal: AdmissionRefusal, message: string): Response {
+  const type: AdmittedUpstreamErrorType = refusal.status === 'refused' ? 'admission_refused' : 'admission_failed'
+  return openAIError(ADMISSION_REFUSED_STATUS, type, message)
+}

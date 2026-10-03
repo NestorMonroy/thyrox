@@ -1,0 +1,15 @@
+# TASK-THYROX-0928: tras la convergencia de la infraestructura, el composer
+# retira los huérfanos por la primitiva y deja el coordinador de modelos en
+# marcha. Sus dobles registran la llamada; `coordinator-start-exit` y
+# `coordinator-status-exit` fijan sus salidas.
+cat > "$WORK/reconcile-double" <<STUB
+#!/usr/bin/env bash
+printf 'reconcile %s\n' "\$*" >> "$CALLS"
+exit "\$(cat "$WORK/reconcile-exit" 2>/dev/null || echo 0)"
+STUB
+cat > "$WORK/coordinator-double" <<STUB
+#!/usr/bin/env bash
+printf 'coordinator %s\n' "\$*" >> "$CALLS"
+exit "\$(cat "$WORK/coordinator-\$1-exit" 2>/dev/null || echo 0)"
+STUB
+chmod +x "$WORK/recovery-double" "$WORK/ensure-double" "$WORK/reconcile-double" "$WORK/coordinator-double"

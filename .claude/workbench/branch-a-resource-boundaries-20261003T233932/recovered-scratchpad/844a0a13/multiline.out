@@ -1,0 +1,1 @@
+{"command":"echo -e \"import sys\nprint(1)\nprint(2)\" \u003e /tmp/x.py"}

@@ -1,0 +1,8 @@
+2026-10-03T23:54:32Z
+     Avail        Used
+9400274944 31733800960
+thyrox-postgres 1.09MB (virtual 448MB)
+thyrox-ollama 16.3kB (virtual 5.51GB)
+thyrox-redis 13.5kB (virtual 116MB)
+thyrox-worker-unit-8e912b0d-ffb6-43e8-8cab-f531561eb4f0 64.7kB (virtual 5.51GB)
+1493265 2 4683073536 /home/user/thyrox/.thyrox/models/artifacts/sha256-1875fb29e8c91c86615c00e92d8b4114e56bc24359adb5a8db8b36452fae4a49.gguf

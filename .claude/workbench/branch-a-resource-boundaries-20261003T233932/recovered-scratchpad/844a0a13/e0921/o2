@@ -1,0 +1,9 @@
+  let admission: CoordinatorAdmission
+  try {
+    admission = await options.source.admit(admissionRequestOf(options, body.model))
+  } catch (error) {
+    return openAIError(ADMISSION_REFUSED_STATUS, 'coordinator_unavailable', `el coordinador de model scheduling no respondió: ${messageOf(error)}`)
+  }
+  if (admission.status !== 'admitted') return refusalResponse(admission)
+  return forwardAdmitted(options.source, admission.ticket, new URL(request.url).pathname, body)
+}

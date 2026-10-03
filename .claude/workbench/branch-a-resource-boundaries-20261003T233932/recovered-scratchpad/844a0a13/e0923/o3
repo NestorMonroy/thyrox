@@ -1,0 +1,3 @@
+  test('enabled sin cadena declarada conserva el respaldo de hoy: la cadena es [claude-cli]', () => {
+    expect(policyWith({ enabled: true }).fallback.chain).toEqual([{ runtime: 'claude-cli' }])
+  })

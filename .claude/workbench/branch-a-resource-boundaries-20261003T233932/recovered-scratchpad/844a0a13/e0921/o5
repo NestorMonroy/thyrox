@@ -1,0 +1,6 @@
+    release()
+    return openAIError(UPSTREAM_UNREACHABLE_STATUS, 'upstream_unreachable', `no se pudo conectar con el runtime en ${target}: ${messageOf(error)}`)
+  }
+  const init = { status: runtimeResponse.status, headers: relayedHeaders(runtimeResponse.headers) }
+  return new Response(releasingBody(runtimeResponse.body, release), init)
+}
