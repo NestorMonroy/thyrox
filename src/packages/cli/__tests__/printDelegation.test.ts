@@ -14,7 +14,7 @@ import { join } from 'node:path'
 import { openConnectionStore } from '@thyrox/provider/accounts/connectionStoreHome'
 import { SSH_PLACEHOLDER } from '@thyrox/provider/credentials'
 import {
-  credentialEnvironmentFor, decidePrintRoute, LOCAL_MODEL_CONTEXT_TOKENS_ENV, LOCAL_PROXY_SOCKET_ENV, type LocalProxyChild, type PrintRoute, TUNNEL_BASE_URL, tunnelEnv,
+  credentialEnvironmentFor, decidePrintRoute, LOCAL_MODEL_CONTEXT_LENGTH_ENV, LOCAL_PROXY_SOCKET_ENV, type LocalProxyChild, type PrintRoute, TUNNEL_BASE_URL, tunnelEnv,
 } from '../src/entry/printDelegation.ts'
 import { runPrint } from '../src/entry/print.ts'
 
@@ -156,7 +156,7 @@ describe('credentialEnvironmentFor — localizar o levantar el proxy', () => {
     const localModel = 'thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e'
     let argv: string[] = []
     const credential = await credentialEnvironmentFor(launch, {
-      env: { PATH: '/bin', [LOCAL_MODEL_CONTEXT_TOKENS_ENV]: '24663' }, cwd: '/', models: [localModel],
+      env: { PATH: '/bin', [LOCAL_MODEL_CONTEXT_LENGTH_ENV]: '24663' }, cwd: '/', models: [localModel],
       spawn: (args) => { argv = args; return shellChild('echo socket=/run/anunciado.sock; sleep 30') },
     })
     await credential.close()

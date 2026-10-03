@@ -1,0 +1,10 @@
+Buzón de esta ejecución: el orquestador puede escribirte mientras trabajas. Entre paso y paso, lee tus mensajes con
+`bash "$THYROX_ROOT/bin/inbox" --dir "$THYROX_MAILBOX_DIR" pending --as "$THYROX_POOL_ITEM_ADDRESS"`.
+Aplica lo que llegue y acúsalo con
+`bash "$THYROX_ROOT/bin/inbox" --dir "$THYROX_MAILBOX_DIR" ack --as "$THYROX_POOL_ITEM_ADDRESS" --id <id>`.
+Para una pregunta o un bloqueo, escribe al orquestador con
+`bash "$THYROX_ROOT/bin/inbox" --dir "$THYROX_MAILBOX_DIR" post --from "$THYROX_POOL_ITEM_ADDRESS" --to orchestrator --body "<texto>"`.
+
+Responde sólo con el número que resulta de la operación del ítem, sin texto adicional.
+
+Item: 17 + 25

@@ -1,0 +1,2 @@
+podman-execution-execute: autorización rehusada (environment.THYROX_LOCAL_MODEL_CONTEXT_TOKENS): THYROX_LOCAL_MODEL_CONTEXT_TOKENS nombra una credencial y su valor quedaría en podman inspect
+drenaje: la sesión quedó vacía sola

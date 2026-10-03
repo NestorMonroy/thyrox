@@ -416,7 +416,7 @@ THYROX_LOCAL_OAUTH_API_BASE	config	env	revisado 2026-10-02: ruta, umbral, bander
 THYROX_LOCAL_OAUTH_APPS_BASE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
 THYROX_LOCAL_OAUTH_CONSOLE_BASE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
 THYROX_LOCAL_PROXY_SOCKET	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
-THYROX_LOCAL_MODEL_CONTEXT_TOKENS	config	env	revisado 2026-10-03: umbral de contexto en tokens; sin valor secreto
+THYROX_LOCAL_MODEL_CONTEXT_LENGTH	config	env	revisado 2026-10-03: umbral de contexto en tokens; sin valor secreto
 THYROX_LOCATOR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
 THYROX_MAILBOX_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
 THYROX_MANAGED_EXECUTION_RUNNER	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto

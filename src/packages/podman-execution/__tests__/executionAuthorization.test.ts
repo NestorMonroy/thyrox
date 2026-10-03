@@ -1,4 +1,6 @@
 import { describe, expect, test } from 'bun:test'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 
 import { ContainerRunError } from '../containerRun.js'
 import {
@@ -127,7 +129,35 @@ describe('ExecutionAuthorization', () => {
   test('una variable que nombra una credencial se rehúsa: su valor quedaría en podman inspect', () => {
     expect(() => executionContainerSpec(authorization({ environment: { API_TOKEN: 'x' } }))).toThrow(InvalidExecutionAuthorizationError)
   })
+
+  // A6 r5: el pool nombró THYROX_LOCAL_MODEL_CONTEXT_TOKENS con --env y la
+  // autorización real la rehusó por «TOKEN»; el doble del ejecutor de la suite
+  // del pool no autoriza nada y no podía verlo. Cada variable que el pool pasa a
+  // una unidad tiene que ser una que la autorización admite.
+  test('toda variable que headless-pool nombra para la unidad pasa la autorización', () => {
+    const names = environmentNamesForwardedByHeadlessPool()
+    expect(names).toContain('THYROX_MODEL_COORDINATOR_SOCKET')
+    expect(names).toContain('THYROX_POOL_ITEM_GENERATION')
+    const refused = names.filter(name => {
+      try {
+        executionContainerSpec(authorization({ environment: { [name]: 'x' } }))
+        return false
+      } catch {
+        return true
+      }
+    })
+    expect(refused).toEqual([])
+  })
 })
+
+/** Los nombres que `headless-pool.sh` pasa con `--env` a la unidad, leídos del propio guion. */
+function environmentNamesForwardedByHeadlessPool(): string[] {
+  const script = readFileSync(join(import.meta.dir, '..', '..', '..', 'session', 'headless-pool.sh'), 'utf8')
+  const loop = /for name in ([A-Z0-9_\s\\]+?);\s*do\s*\n\s*\[\[ -z "\$\{!name:-\}" \]\] \|\| unit_args\+=\(--env "\$name"\)/.exec(script)
+  const direct = [...script.matchAll(/--env (THYROX_[A-Z0-9_]+)/g)].map(match => match[1] as string)
+  const looped = (loop?.[1] ?? '').split(/[\s\\]+/).filter(Boolean)
+  return [...new Set([...direct, ...looped])]
+}
 
 describe('el contenedor que materializa una autorización', () => {
   test('lleva tipo, referencia e id en sus etiquetas, su directorio de trabajo, su montaje y su red', () => {

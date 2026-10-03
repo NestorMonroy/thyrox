@@ -23,3 +23,13 @@ test_tsc_cycle (agent-recommend analisis): **los cinco idénticos sobre HEAD**
 con `git stash`, no atribuibles a este cambio. tsc de provider y cli: 0.
 
 Sin cambios en UNIT_LIMITS, en el contexto pedido ni en `--model`.
+
+## A6 r5 — primer error y su clasificación
+
+`podman-execution-execute: autorización rehusada (environment.THYROX_LOCAL_MODEL_CONTEXT_TOKENS): … nombra una credencial`.
+Autoridad: `CREDENTIAL_NAME_PATTERN` (`podman-execution/workerResourceProfile.ts:64`), `TOKEN` casa `TOKENS`.
+Decisión: **REUSE** de la guarda sin cambios (relajarla admitiría `*_TOKENS` de credencial) y renombrar la
+variable a `THYROX_LOCAL_MODEL_CONTEXT_LENGTH`, el vocabulario del dominio (`contextLength`, `OLLAMA_CONTEXT_LENGTH`).
+El caso 4b no podía verlo: su ejecutor es un doble que no autoriza. Prueba de contrato nueva en
+`executionAuthorization.test.ts`: lee de `headless-pool.sh` los nombres que pasa con `--env` y los autoriza
+de verdad. RED con el nombre anterior (rehúsa exactamente esa variable); GREEN tras el renombre (29/29).

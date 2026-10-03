@@ -105,14 +105,14 @@ check "caso 4: no monta el runtime entero" "$(grep -c -- 'THYROX_RUNTIME_DIR' "$
 # OOM. El doble de `thyrox -p` anota la variable tal como la recibe.
 cat > "$F/thyrox-p-context" <<R
 #!/usr/bin/env bash
-printf '%s\n' "\${THYROX_LOCAL_MODEL_CONTEXT_TOKENS:-ausente}" >> "$F/context.log"
+printf '%s\n' "\${THYROX_LOCAL_MODEL_CONTEXT_LENGTH:-ausente}" >> "$F/context.log"
 R
 chmod +x "$F/thyrox-p-context"
 : > "$F/execute.log"; : > "$F/context.log"
 printf 'alfa\n' | HEADLESS_POOL_RUNNER="$F/thyrox-p-context" THYROX_MODEL_COORDINATOR_SOCKET="$F/coord/coordinator.sock" \
   pool --out "$F/out-context" --execution unit --work-reference ai-course-notes:cs224r --context-tokens 24663 >/dev/null 2>&1
 check "caso 4b: la unidad nombra la variable del contexto" \
-  "$(grep -c -- '--env THYROX_LOCAL_MODEL_CONTEXT_TOKENS' "$F/execute.log")" "1"
+  "$(grep -c -- '--env THYROX_LOCAL_MODEL_CONTEXT_LENGTH' "$F/execute.log")" "1"
 check "caso 4b: thyrox -p recibe el contexto declarado" "$(cat "$F/context.log")" "24663"
 
 # Caso 5: la identidad del consumidor se reconstruye desde la evidencia publicada.

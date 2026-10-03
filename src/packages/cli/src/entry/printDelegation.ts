@@ -31,7 +31,7 @@ export const LOCAL_PROXY_SOCKET_ENV = 'THYROX_LOCAL_PROXY_SOCKET'
  * (`headless-pool --context-tokens`). Va al proxy como `--context-tokens`, que
  * lo pide en cada admisión; sin él, el resolver concede el máximo del modelo.
  */
-export const LOCAL_MODEL_CONTEXT_TOKENS_ENV = 'THYROX_LOCAL_MODEL_CONTEXT_TOKENS'
+export const LOCAL_MODEL_CONTEXT_LENGTH_ENV = 'THYROX_LOCAL_MODEL_CONTEXT_LENGTH'
 /** El lanzador del proxy local por su ruta en el árbol; `bin/provider-local-proxy` es su envoltorio. */
 const LOCAL_PROXY_LAUNCHER = fileURLToPath(new URL('../../../provider/bin/localProxy.ts', import.meta.url))
 const ANNOUNCEMENT_PREFIX = 'socket='
@@ -147,7 +147,7 @@ function proxyModelArguments(model: string): string[] {
 
 /** El contexto declarado pasa tal cual: lo valida el proxy, que rehúsa con su causa. */
 function contextArguments(env: Env): string[] {
-  const declared = env[LOCAL_MODEL_CONTEXT_TOKENS_ENV]?.trim()
+  const declared = env[LOCAL_MODEL_CONTEXT_LENGTH_ENV]?.trim()
   return declared ? ['--context-tokens', declared] : []
 }
 
