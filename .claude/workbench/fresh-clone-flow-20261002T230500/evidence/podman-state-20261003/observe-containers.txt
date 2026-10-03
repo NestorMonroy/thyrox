@@ -1,0 +1,70 @@
+[
+ {
+  "id": "bc55866ae10815dfc39f3aae39f103ab665b1714dbb9ae950daa1408ff1a7997",
+  "name": "thyrox-redis",
+  "state": "running",
+  "running": true,
+  "pid": 2185,
+  "imageId": "64035c2c9726d90bea2a217d43da49d7a3f13dde8647c1f409059e02e0e61287",
+  "image": "docker.io/library/redis:7.4",
+  "created": "2026-10-02T23:25:35.778122597Z",
+  "labels": {
+   "io.thyrox.role": "infrastructure",
+   "io.thyrox.service": "redis",
+   "thyrox.owner-id": "infrastructure-bootstrap",
+   "thyrox.owner-kind": "infrastructure",
+   "thyrox.owner-pid": "1969",
+   "thyrox.resource-config-digest": "0155d5d5c1b286b4553a29c41f38aba6eb9c932b4b7fca22e43940e233660ee8",
+   "thyrox.resource-kind": "infrastructure",
+   "thyrox.resource-secrets-digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "mounts": [
+   {
+    "type": "volume",
+    "name": "f5a26b53b24e81eece469781ffddb9c7103aa056051c0c4f7800bcf10bef25e3",
+    "source": "/var/lib/containers/storage/volumes/f5a26b53b24e81eece469781ffddb9c7103aa056051c0c4f7800bcf10bef25e3/_data",
+    "destination": "/data",
+    "readWrite": true
+   }
+  ],
+  "portBindings": {
+   "6379/tcp": [
+    {
+     "hostIp": "127.0.0.1",
+     "hostPort": "56379"
+    }
+   ]
+  }
+ },
+ {
+  "id": "232a6e67bc0cda0fe130679980cba173d8f59ba67e7c0e0f1ed6994bb0484a90",
+  "name": "thyrox-ollama",
+  "state": "running",
+  "running": true,
+  "pid": 3329,
+  "imageId": "c178b43788bbd8f33ac3a6aa17dc561bc15dcbdba08ceac19f9388cf2415cc48",
+  "image": "docker.io/ollama/ollama:0.35.0",
+  "created": "2026-10-02T23:26:58.336835746Z",
+  "labels": {
+   "io.thyrox.role": "infrastructure",
+   "io.thyrox.service": "ollama",
+   "org.opencontainers.image.version": "24.04",
+   "thyrox.owner-id": "infrastructure-bootstrap",
+   "thyrox.owner-kind": "infrastructure",
+   "thyrox.owner-pid": "2671",
+   "thyrox.resource-config-digest": "f3897ef2a8972851309fbf7f07f172614d895c2e9fcdb6b2df292954dd10bf65",
+   "thyrox.resource-kind": "infrastructure",
+   "thyrox.resource-secrets-digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "mounts": [
+   {
+    "type": "volume",
+    "name": "thyrox-ollama-models",
+    "source": "/var/lib/containers/storage/volumes/thyrox-ollama-models/_data",
+    "destination": "/root/.ollama",
+    "readWrite": true
+   }
+  ],
+  "portBindings": {}
+ }
+]

@@ -1,0 +1,19 @@
+[
+ {
+  "name": "f5a26b53b24e81eece469781ffddb9c7103aa056051c0c4f7800bcf10bef25e3",
+  "mountpoint": "/var/lib/containers/storage/volumes/f5a26b53b24e81eece469781ffddb9c7103aa056051c0c4f7800bcf10bef25e3/_data",
+  "createdAt": "2026-10-02T23:25:35.782006016Z",
+  "labels": {}
+ },
+ {
+  "name": "thyrox-ollama-models",
+  "mountpoint": "/var/lib/containers/storage/volumes/thyrox-ollama-models/_data",
+  "createdAt": "2026-10-02T23:25:45.785656202Z",
+  "labels": {
+   "thyrox.owner-id": "infrastructure-bootstrap",
+   "thyrox.owner-kind": "infrastructure",
+   "thyrox.resource-kind": "infrastructure",
+   "thyrox.resource-name": "thyrox-ollama"
+  }
+ }
+]
