@@ -1,0 +1,34 @@
+## consumidores de agent-recommend / recommendExecution
+bin/agent-recommend
+src/hooks/detect_agent_dispatch.py
+src/hooks/detect_client_background.py
+src/packages/agent/bin/recommend.ts
+src/packages/provider/src/cost/policy.ts
+src/packaging/reachability-matrix.tsv
+src/rules/definitions/measuredPoolFailures.body.md
+src/session/execution_policy.py
+src/session/headless-pool.sh
+src/verify/tsc_cycle.py
+## providerSelection / selectProvider
+src/packages/provider/src/__tests__/providerSelection.test.ts
+src/packages/provider/src/selection/providerSelection.ts
+## choose_candidate en task_continuation
+303:def choose_candidate(item: PlanItem, log: list[dict], excluded: set[str], rng: random.Random,
+304-                     epsilon: float = 0.5, alpha0: float = 0.5) -> str | None:
+305-    """Thompson sampling entre los candidatos PERMITIDOS por el ítem; empata por el orden declarado."""
+306-    allowed = [model for model in item.candidates if model not in excluded]
+307-    if not allowed:
+308-        return None
+309-    counts = candidate_counts(log, item.task_class)
+310-    draws = []
+311-    for rank, model in enumerate(allowed):
+312-        accepted, rejected = counts.get(model, (0, 0))
+313-        a, b = posterior(accepted, rejected, epsilon, alpha0)
+314-        draws.append((-rng.betavariate(a, b), rank, model))
+315-    return min(draws)[2]
+316-
+317-
+## tsc_cycle elige modelo
+653:    """El modelo del pool sale de la clase de tarea con `bin/agent-recommend`,
+656:    out = subprocess.run(["bash", str(THYROX / "bin" / "agent-recommend"), task_class, "--json"],
+659:    if not model.startswith("claude-"):

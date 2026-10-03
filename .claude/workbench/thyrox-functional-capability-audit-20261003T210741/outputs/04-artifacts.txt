@@ -1,0 +1,47 @@
+## artifact-locations.json
+{
+  "locations": [
+    {
+      "bytes": 2497280256,
+      "contentSha256": "7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5",
+      "manifestDigest": "sha256:6775c00845e7a12e3302e8097a8cbdcc74b69aeb65888ddb840a4be541836cf1",
+      "registry": "docker.io",
+      "repository": "th3rox/thyrox-quantization-lab-artifacts"
+    }
+  ]
+}
+
+## blobs del volumen de Ollama
+60 sha256-3e4cb14174460404e7a233e531675303b2fbf7749c02f91864fe311ab6344e4f-partial-15
+115 sha256-23be73b12b0c37de661bd27c140d9cc07fcede0e859a9c0211b39aa81e601b1d
+4096 .
+4096 ..
+2497280256 sha256-7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5
+2497280480 sha256-3e4cb14174460404e7a233e531675303b2fbf7749c02f91864fe311ab6344e4f-partial
+## manifiestos de Ollama
+/var/lib/containers/storage/volumes/thyrox-ollama-models/_data/models/manifests/registry.ollama.ai/library/thyrox-qwen--qwen3-4b-gguf/q4_k_m-hf-bc640142c66e
+## runtime: árboles
+total 48
+drwxr-xr-x 12 root root 4096 Oct  3 14:57 .
+drwxr-xr-x  5 root root 4096 Oct  2 23:07 ..
+drwxr-xr-x  2 root root 4096 Oct  3 10:40 artifact-verify
+drwxr-xr-x  2 root root 4096 Oct  3 12:59 continuation
+drwxr-xr-x  5 root root 4096 Oct  3 19:11 jobs
+drwxr-xr-x  4 root root 4096 Oct  3 18:56 launchers
+drwxr-xr-x  3 root root 4096 Oct  3 10:42 model-install
+drwxr-xr-x 19 root root 4096 Oct  3 18:32 pool
+drwxr-xr-x  4 root root 4096 Oct  3 10:19 qwen3-4b-hf-import
+drwxr-xr-x  2 root root 4096 Oct  3 10:21 qwen3-4b-hf-publish
+drwxr-xr-x  2 root root 4096 Oct  3 10:58 qwen3-4b-qualify
+drwxr-xr-x  8 root root 4096 Oct  3 18:55 snapshots
+## sha256 de la copia runtime (inodo 960702)
+7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5  .thyrox/runtime/qwen3-4b-hf-publish/model-Q4_K_M.gguf
+
+## Clasificación (auditor)
+| representación | digest | clase | por qué |
+|---|---|---|---|
+| docker.io/th3rox/thyrox-quantization-lab-artifacts@sha256:6775c008… | contenido 7485fe6f… | CANONICAL_DURABLE | `artifact-locations.json` lo declara; .env.example: «la autoridad es el artefacto permanente» |
+| .thyrox/models/artifacts/sha256-7485fe6f….gguf | 7485fe6f… | CACHE | THYROX_MODEL_ARTIFACT_CACHE_DIR: «reconstruible» |
+| .thyrox/runtime/qwen3-4b-hf-publish/model-Q4_K_M.gguf = qwen3-4b-hf-import/scratch/… (un inodo) | 7485fe6f… (medido) | BUILD_INTERMEDIATE | scratch de import y de publicación ya completados |
+| volumen thyrox-ollama-models blob sha256-7485fe6f… | 7485fe6f… | RUNTIME_MATERIALIZATION | lo sirve el manifiesto de Ollama |
+| volumen thyrox-ollama-models blob sha256-3e4cb141…-partial (+ -partial-15) | 3e4cb141… (otro contenido) | ORPHAN | descarga parcial sin manifiesto que la nombre |

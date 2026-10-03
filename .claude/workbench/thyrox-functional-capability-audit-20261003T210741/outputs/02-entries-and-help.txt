@@ -1,0 +1,32 @@
+## control_plane_entries.tsv
+# Entradas del plano de control que un orquestador puede lanzar en el anfitrión.
+# nombre en bin/<TAB>módulo al que su exec tiene que apuntar<TAB>por qué es plano de control
+headless-pool	src/session/headless-pool.sh	orquestador: reparte ítems y observa; su payload va a la primitiva
+wait-jobs	src/session/wait-jobs.sh	barrera del ledger: observa y recoge, no ejecuta payload
+infrastructure_ensure	src/session/infrastructure_ensure.sh	orquesta el bootstrap; materializa la primitiva
+infrastructure-bootstrap	src/packages/infrastructure/bin/bootstrap.ts	entrega el estado deseado a ensureResource
+podman_lock_recovery	src/session/podman_lock_recovery.sh	recuperación explícita del motor, pedida por un operador
+task_continuation	src/session/task_continuation.py	materializa la frontera de un plan declarado con GNU Parallel; despacha, verifica e integra en unidades
+model_coordinator	src/session/model_coordinator.sh	ciclo de vida del coordinador de modelos del anfitrión; el daemon materializa sus unidades por la primitiva
+image-registry-build-declared-image	src/packages/image-registry/bin/buildDeclaredImage.ts	construye sólo una imagen del catálogo por su identidad lógica; contexto, red y ciclo de vida salen de la definición y materializa la primitiva
+local_control_plane_ready	src/session/local_control_plane_ready.sh	compone la recuperación del motor y la convergencia tras un arranque; no materializa ni repara por sí mismo
+
+## parser de --help por entrada (leído, no invocado)
+infrastructure_ensure	src/session/infrastructure_ensure.sh	coincidencias-de-parser=0
+local_control_plane_ready	src/session/local_control_plane_ready.sh	coincidencias-de-parser=0
+podman_lock_recovery	src/session/podman_lock_recovery.sh	coincidencias-de-parser=0
+podman_capabilities	src/lib/podman_capabilities.sh	coincidencias-de-parser=0
+model_coordinator	src/session/model_coordinator.sh	coincidencias-de-parser=0
+infrastructure-bootstrap	src/packages/infrastructure/bin/bootstrap.ts	coincidencias-de-parser=0
+local-models-ensure	src/packages/local-models/bin/ensure.ts	coincidencias-de-parser=0
+local-models-import	src/packages/local-models/bin/import.ts	coincidencias-de-parser=0
+local-models-qualify	src/packages/local-models/bin/qualify.ts	coincidencias-de-parser=0
+local-models-catalog	src/packages/local-models/bin/catalog.ts	coincidencias-de-parser=0
+headless-pool	src/session/headless-pool.sh	coincidencias-de-parser=2
+semantic-search-ingest	src/packages/semantic-search/bin/ingest.ts	coincidencias-de-parser=0
+provider-local-proxy	src/packages/provider/bin/localProxy.ts	coincidencias-de-parser=0
+agent-recommend	src/packages/agent/bin/recommend.ts	coincidencias-de-parser=4
+wait-jobs	src/session/wait-jobs.sh	coincidencias-de-parser=3
+thyrox-bg	src/session/bg.sh	coincidencias-de-parser=2
+resource_admission	src/session/resource_admission.py	coincidencias-de-parser=31
+disk-headroom	src/repo/disk-headroom.sh	coincidencias-de-parser=2

@@ -1,0 +1,64 @@
+     23 src/lib/podman_capabilities.sh
+      7 src/session/container_measure.py
+      6 src/lib/podman_locks.sh
+      5 src/session/infrastructure_ensure.sh
+      3 src/session/podman_lock_recovery.sh
+      3 src/packages/podman-execution/workerContainerLifecycle.ts
+      3 src/packages/podman-execution/containerRun.ts
+      2 src/session/resource_admission.py
+      2 src/packages/model-scheduling/testing/schedulerFakes.ts
+      2 src/packages/model-scheduling/podmanModelUnitMaterializer.ts
+      2 src/packages/local-models/volumeBlobs.ts
+      1 src/verify/managed_execution_containment.py
+      1 src/verify/check_podman_access_ownership.py
+      1 src/session/pool_history.py
+      1 src/packages/podman-execution/workerResourceProfile.ts
+      1 src/packages/podman-execution/testing/fakePodmanHost.ts
+      1 src/packages/podman-execution/resourceMaterialization.ts
+      1 src/packages/podman-execution/repositoryJobProfile.ts
+      1 src/packages/podman-execution/podmanLockCollision.ts
+      1 src/packages/podman-execution/executionAuthorization.ts
+      1 src/packages/model-artifacts/quantizer-image/build.sh
+      1 src/packages/daemon/src/podman/specializedWorkerProfile.ts
+      1 src/packages/artifact-registry/jobEgress.ts
+== src/session/container_measure.py
+src/session/container_measure.py:4:``podman run`` que lo lanzó: el árbol ``/proc`` del wrapper de un ítem no lo
+src/session/container_measure.py:5:alcanza, y GNU Time sobre ``podman run`` midió 41 MB con el contenedor
+src/session/container_measure.py:8:PIDs y la memoria de SU cgroup, la ruta que publica ``podman inspect``.
+src/session/container_measure.py:42:#: Lo que ``podman inspect`` imprime: si corre y la ruta de su cgroup.
+src/session/container_measure.py:97:    """``podman inspect`` no respondió por una causa que no es la ausencia."""
+src/session/container_measure.py:109:    """``podman container exists``: 0 existe, 1 no existe, otro código es un
+src/session/container_measure.py:113:        raise PodmanFailed(f"podman container exists {name}: {done.stderr.strip() or f'exit {done.returncode}'}")
+src/session/container_measure.py:124:        raise PodmanFailed(f"podman inspect {name}: {done.stderr.strip() or f'exit {done.returncode}'}")
+== src/lib/podman_locks.sh
+src/lib/podman_locks.sh:4:# `podman system renumber` (H-THYROX-302, H-THYROX-308)
+src/lib/podman_locks.sh:11:#   soportado (`podman system renumber`) y rehúsa con el diagnóstico real;
+src/lib/podman_locks.sh:29:# default de Podman (2048) si ningún archivo lo declara. `podman info` sólo
+src/lib/podman_locks.sh:58:  free="$("$podman" info --format '{{.Host.FreeLocks}}' 2>/dev/null)"
+src/lib/podman_locks.sh:61:  mapfile -t containers < <("$podman" ps -a --format '{{.Names}}' 2>/dev/null)
+src/lib/podman_locks.sh:63:    [[ "${#containers[@]}" -gt 0 ]] && "$podman" container inspect --format '{{.LockNumber}}' "${containers[@]}" 2>/dev/null
+src/lib/podman_locks.sh:65:    "$podman" volume inspect --all --format '{{.LockNumber}}' 2>/dev/null
+src/lib/podman_locks.sh:80:    inspect_out="$("$podman" inspect --format '{{.State.Status}}\t{{.State.Pid}}' "$name" 2>/dev/null)" || continue
+src/lib/podman_locks.sh:83:  done < <("$podman" ps -a --format '{{.Names}}' 2>/dev/null)
+== src/session/resource_admission.py
+src/session/resource_admission.py:25:dos veces— y el ensure suelta en cuanto el `podman create` termina.
+src/session/resource_admission.py:387:    árbol si no. El RSS del cliente ``podman run`` no es lo que el contenedor
+== src/packages/model-scheduling/podmanModelUnitMaterializer.ts
+src/packages/model-scheduling/podmanModelUnitMaterializer.ts:232:/** Una entrada de `podman ps --format json`, con sólo lo que la reconstrucción lee. */
+src/packages/model-scheduling/podmanModelUnitMaterializer.ts:347:      if (error.stage === 'create') return { status: 'failed', reason: `podman create ${name}: ${error.message}`, partial: fa
+== src/packages/local-models/volumeBlobs.ts
+src/packages/local-models/volumeBlobs.ts:4: * `FROM` del Modelfile) y `podman volume inspect` da el punto de montaje del
+src/packages/local-models/volumeBlobs.ts:41:    throw new BlobLocationError(`podman volume inspect ${volume} salió ${String(result.exitCode)}: ${result.stderr.trim()}`)
+src/packages/local-models/volumeBlobs.ts:44:  if (mountpoint === '') throw new BlobLocationError(`podman volume inspect ${volume} no dio punto de montaje`)
+== src/session/pool_history.py
+src/session/pool_history.py:15:contenedor). En contenedor el árbol del ítem es el cliente ``podman run``, no
+== src/packages/daemon/src/podman/specializedWorkerProfile.ts
+src/packages/daemon/src/podman/specializedWorkerProfile.ts:50:  /** Árbol `dist/` en el anfitrión — es el CONTEXTO de `podman build`, no un montaje de `podman run`. */
+src/packages/daemon/src/podman/specializedWorkerProfile.ts:195: * Traduce un perfil validado al argv de límites de `podman create`/`run` —
+== src/packages/artifact-registry/jobEgress.ts
+src/packages/artifact-registry/jobEgress.ts:10: * El valor viaja como `--env` y queda en `podman inspect`, así que una URL
+src/packages/artifact-registry/jobEgress.ts:48:  if (url.username || url.password) throw new JobEgressError('la URL del proxy lleva credencial y quedaría en podman inspect')
+== src/packages/model-artifacts/quantizer-image/build.sh
+src/packages/model-artifacts/quantizer-image/build.sh:27:"$podman_bin" image inspect "$tag" --format json > "$out/image.inspect.json"
+== src/verify/managed_execution_containment.py
+src/verify/managed_execution_containment.py:8:   devolvió ``podman create``. ``materializer`` es ``podman-execution-primitive``.
