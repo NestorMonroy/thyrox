@@ -1,0 +1,22 @@
+bun test v1.3.14 (0d9b296a)
+
+src/proxy/__tests__/localModelProxy.test.ts:
+174 |     const coordinator = new FakeCoordinator(runtime.baseUrl, 'modelo fuera del catálogo')
+175 |     const socket = await listeningProxy(['--local-model', LOCAL_MODEL, '--coordinator-socket', await servedCoordinator(coordinator)])
+176 |     expect(await errorMessage(await sendOverSocket(socket, HELLO))).toContain('modelo fuera del catálogo')
+177 |     const retry = await sendOverSocket(socket, HELLO)
+178 |     expect(retry.status).toBe(BAD_GATEWAY)
+179 |     expect(await errorMessage(retry)).toContain('modelo fuera del catálogo')
+                                            ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "modelo fuera del catálogo"
+Received: "all upstreams failed (1 attempted): local-admitted: no auth available (último error: HTTP 502)"
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/proxy/__tests__/localModelProxy.test.ts:179:39)
+(fail) localProxy con modelos locales admitidos > un reintento tras un fallo del relé conserva la causa inicial, no sólo «no auth available» [237.08ms]
+
+ 8 pass
+ 1 fail
+ 25 expect() calls
+Ran 9 tests across 1 file. [2.14s]

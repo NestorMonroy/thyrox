@@ -1,0 +1,3 @@
+thyrox -p: 502 {"type":"error","request_id":"454581a3-62ea-4d5f-acad-84b2d0a2bf72","error":{"type":"api_error","message":"all upstreams failed (1 attempted): local-admitted: no auth available"}} (tras 11 intentos)
+execution thyrox-worker-maintenance-musaqnuq-14584 kind=maintenance work=thyrox:a6/1 exit=1
+drenaje: la sesión quedó vacía sola

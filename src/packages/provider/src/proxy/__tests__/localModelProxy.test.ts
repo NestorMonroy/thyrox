@@ -166,6 +166,19 @@ describe('localProxy con modelos locales admitidos', () => {
     expect(runtime.received).toHaveLength(0)
   })
 
+  // A6 r2/r3 (TASK-THYROX-0912): thyrox -p reintenta, el primer fallo enfría la
+  // credencial del relé y los siguientes sólo decían «no auth available». La
+  // causa del primero tiene que seguir en la respuesta del reintento.
+  test('un reintento tras un fallo del relé conserva la causa inicial, no sólo «no auth available»', async () => {
+    const runtime = fakeRuntime()
+    const coordinator = new FakeCoordinator(runtime.baseUrl, 'modelo fuera del catálogo')
+    const socket = await listeningProxy(['--local-model', LOCAL_MODEL, '--coordinator-socket', await servedCoordinator(coordinator)])
+    expect(await errorMessage(await sendOverSocket(socket, HELLO))).toContain('modelo fuera del catálogo')
+    const retry = await sendOverSocket(socket, HELLO)
+    expect(retry.status).toBe(BAD_GATEWAY)
+    expect(await errorMessage(retry)).toContain('modelo fuera del catálogo')
+  })
+
   test('sin coordinador escuchando arranca, y la petición nombra el socket que falta', async () => {
     const missingSocket = join(workDir(), 'absent.sock')
     const socket = await listeningProxy(['--local-model', LOCAL_MODEL, '--coordinator-socket', missingSocket])

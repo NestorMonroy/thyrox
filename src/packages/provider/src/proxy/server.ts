@@ -42,7 +42,7 @@
  */
 import { randomUUID } from 'node:crypto'
 import { type AccessManager, httpStatusOf } from './access.ts'
-import { type CredentialSelector, ModelCooldownError, type ProxyCredential } from './credentialSelectors.ts'
+import { type CredentialSelector, ModelCooldownError, type ProxyCredential, SelectorError } from './credentialSelectors.ts'
 import { ANTIGRAVITY_PATH, serveAntigravity } from './antigravity.ts'
 import { BRIDGE_PATH_PREFIX } from './claudeCli/bridge.ts'
 import { CHAT_COMPLETIONS_PATH, serveChatCompletion } from './chatCompletions.ts'
@@ -264,7 +264,10 @@ async function forwardBody(
       credential = config.selector.pick(upstream.provider, resolved.model, pool, new Date(), selection)
     } catch (error) {
       if (error instanceof ModelCooldownError) cooling = { error, credentials: pool }
-      reasons.push(`${upstream.name}: ${error instanceof Error ? error.message : String(error)}`)
+      // Como el 429 de enfriamiento: sin credencial disponible, el motivo lleva
+      // el último fallo de las del grupo, que es la causa y no su consecuencia.
+      const cause = error instanceof SelectorError && error.code === 'auth_unavailable' ? config.cooldown?.latestError(pool) : undefined
+      reasons.push(`${upstream.name}: ${error instanceof Error ? error.message : String(error)}${cause ? ` (último error: ${cause})` : ''}`)
       continue
     }
     try {
@@ -293,7 +296,11 @@ async function forwardBody(
         && blamesRequest(response.status, errorText, upstream.provider, { traitsOf: config.providerTraits })
       report(response.status < 400, blamed)
       if (response.status < 400) config.cooldown?.clear(credential)
-      else config.cooldown?.markUnavailable({ credential, provider: upstream.provider, model: resolved.model, status: response.status, errorText, headers: response.headers })
+      else {
+        config.cooldown?.markUnavailable({ credential, provider: upstream.provider, model: resolved.model, status: response.status, errorText, headers: response.headers })
+        const cause = errorText ?? errorMessageOf(response)
+        if (cause) config.cooldown?.noteError(credential, cause)
+      }
       if (fallsOver(response.status)) {
         reasons.push(`${response.status} ${errorMessageOf(response) ?? response.statusText}`)
         if (response.status === 501) { discard(notImplemented); notImplemented = response }
@@ -309,7 +316,9 @@ async function forwardBody(
     } catch (error) {
       // Un cierre del cliente no es culpa de la credencial.
       report(false, request.signal.aborted)
-      reasons.push(error instanceof Error ? error.message : String(error))
+      const message = error instanceof Error ? error.message : String(error)
+      config.cooldown?.noteError(credential, message)
+      reasons.push(message)
     }
   }
 

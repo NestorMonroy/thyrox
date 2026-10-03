@@ -118,6 +118,15 @@ export class CredentialCooldown {
   }
 
   /**
+   * Anota la causa legible de un fallo sin decidir ningún enfriamiento: el
+   * texto de un 5xx o de una excepción, que `markUnavailable` no recibe y que
+   * el mensaje de un reintento tiene que poder contar.
+   */
+  noteError(credential: ProxyCredential, text: string, now: Date = new Date()): void {
+    this.lastErrors.set(credential.id, { text, at: now.getTime() })
+  }
+
+  /**
    * El error más reciente entre estas credenciales; a igual instante, el de id
    * mayor. Es la causa que el error de enfriamiento de todas ellas cuenta.
    */
