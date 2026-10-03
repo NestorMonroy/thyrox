@@ -452,3 +452,37 @@ ancestro 8.33 GB que cuenta la caché de páginas). Qwen3-8B Q4 a 8K
 Qwen2.5-7B-Instruct Q4_K_M (`bb5d59e0…`, la revisión que ya nombran los fixtures
 del árbol). Coder-7B retirado con prueba (`disk/proof-before-delete-coder7b.txt`):
 su blob vivía en el volumen anónimo de su unidad y se fue con ella.
+
+### F6/F8 — resultado: HARD_BLOCK de capacidad local dentro del techo físico (2026-10-03)
+
+| modelo (Q4_K_M, 8K, presupuesto de sistema 2048) | tool-calling@1 | mecanica | repo-code-change@1 |
+|---|---|---|---|
+| qwen3-4b | 6/6 | 4/4 | 0/1 `rechazado`: def anidado que duplica `slugify`, NUL sin escapar, edita las pruebas, bucle |
+| Qwen2.5-Coder-7B | **2/6** (llamadas como texto) | — | no elegible |
+| Qwen2.5-7B-Instruct, muestra 1 | 6/6 | 4/4 | 0/1 `sin-cambios`: ruta mal leída, se rinde en 4 turnos |
+| Qwen2.5-7B-Instruct, muestra 2 | — | — | 0/1 `rechazado`: `old_string` escapado como regex (no casa), deja un error de sintaxis, nunca corre las pruebas, última llamada como texto |
+
+La infraestructura funcionó de punta a punta en todas: ruta local, unidad
+gestionada, worktree aislado, verify, registro con perfil. Los fallos son del
+modelo.
+
+**Techo físico medido de este contenedor:** disco 8.7 GB de asignación fija
+(el modelo ocupa dos copias), RAM efectiva ≈ 6 GB (cgroup ancestro 8.33 GB
+menos piso 2 GiB), 4 CPU sin GPU. Cabe hasta ~7B Q4 a 8K; Qwen3-8B a 8K ya no
+cabe en RAM.
+
+**Conclusión:** ningún modelo que cabe en este contenedor completa un cambio de
+repositorio con el prompt limpio que pide F8 (n=4 corridas reales). La
+autoimplementación local real queda bloqueada por un límite físico, no por
+código. Lo que desbloquea es una decisión del ejecutor:
+
+1. **Andamiaje del prompt** (como la corrida 0919 de las 12:05, pasos guiados):
+   contradice «prompt limpio» de F8; mediría capacidad guiada, no autónoma.
+2. **Más hardware** (RAM ≥ 16 GB efectiva o GPU) para un modelo ≥ 14B: fuera
+   de esta sesión.
+3. **Proveedor por API** como respaldo declarado: la política lo admite sólo
+   con clave; las claves PAYG/Token Plan existen sólo en una sesión nueva
+   (TASK #13) y las cuatro rutas probadas daban 401.
+
+Hasta esa decisión, `controller.implementation` sigue en `bootstrap-exception`
+(F11 no se cumple: no hay worker local cualificado para `workflow`).

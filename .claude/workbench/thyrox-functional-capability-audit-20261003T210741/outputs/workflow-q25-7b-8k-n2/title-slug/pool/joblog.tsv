@@ -1,0 +1,2 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1791068363.744	   707.796	0	0	0	0	_headless_item 1 'In src/packages/local-models/suites/repo-code-change-1/textkit/slug.py, implement title_slug as its docstring says. Run the tests with: cd src/packages/local-models/suites/repo-code-change-1 && python3 -m unittest textkit.test_slug'
