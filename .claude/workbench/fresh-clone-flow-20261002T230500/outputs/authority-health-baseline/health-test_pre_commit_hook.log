@@ -1,0 +1,157 @@
+F...F....FFF
+======================================================================
+FAIL: test_a_named_import_between_packages_passes (__main__.PreCommitHook.test_a_named_import_between_packages_passes)
+El control: el mismo acoplamiento por el nombre del paquete no es cruce.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 286, in test_a_named_import_between_packages_passes
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/tmp.0Jw6hPVIgJ/tmpom8mhd3m/.claude/eventos)
+  hogar del banco: /tmp/tmp.0Jw6hPVIgJ/tmpom8mhd3m/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 4 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 4 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 4 archivo(s) pedido(s))
+bash: /tmp/tmp.0Jw6hPVIgJ/tmpom8mhd3m/bin/check_identifier_language: No such file or directory
+check-package-boundary: 0 cruce(s) de paquete por ruta relativa (alcance medido: 1 especificador(es) en 2 archivo(s) de 2 paquete(s); 0 salida(s) de la raíz, otra clase)
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_staged_live_writers: 0 escritor(es) vivo(s) (alcance medido: 4 ruta(s) preparada(s))
+check_test_home_isolation: 0 suite(s) sin aislar (alcance medido: 0 archivo(s) de prueba)
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /tmp/tmp.0Jw6hPVIgJ/tmpom8mhd3m/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 55 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 17 aparición(es) del producto en 2 archivo(s) (alcance medido: src)
+check_podman_materialization: 0 materialización(es) fuera de src/packages/podman-execution/, 0 pendiente(s) vencido(s), 0 pendiente(s) vigente(s) (alcance medido: 36 archivo(s) productivos)
+check_podman_access_ownership: 0 acceso(s) a Podman fuera de src/packages/podman-execution/, 0 pendiente(s) vencido(s), 0 pendiente(s) vigente(s) (alcance medido: 36 archivo(s))
+check_execution_authorization: 0 materialización(es) sin ExecutionAuthorization fuera de src/packages/podman-execution/ (alcance medido: 4 archivo(s))
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 0 enlace(s) relativo(s) en 0 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 6 lectura(s) en 36 archivo(s) de producción — propias 6, proveedor 0, cliente ajeno 0, sin prefijo 0)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 2 congelada(s), 0 obsoleta(s) (alcance medido: 2 variable(s) propia(s), 0 archivo(s) de prueba)
+ERROR: no existe /tmp/tmp.0Jw6hPVIgJ/tmpom8mhd3m/.env.example. NO se emite conteo: un 0 aqui no distinguiria «no falta ninguna» de «no pude medir».
+check_env_example_coverage: REHUSA — no existe /tmp/tmp.0Jw6hPVIgJ/tmpom8mhd3m/.env.example; sin él no hay contra qué medir
+commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+
+
+======================================================================
+FAIL: test_sin_bancos_el_commit_pasa (__main__.PreCommitHook.test_sin_bancos_el_commit_pasa)
+El positivo: sin bancos propios, el hook no estorba.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 170, in test_sin_bancos_el_commit_pasa
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/tmp.0Jw6hPVIgJ/tmpx6dylvk0/.claude/eventos)
+  hogar del banco: /tmp/tmp.0Jw6hPVIgJ/tmpx6dylvk0/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_staged_live_writers: 0 escritor(es) vivo(s) (alcance medido: 1 ruta(s) preparada(s))
+check_test_home_isolation: 0 suite(s) sin aislar (alcance medido: 0 archivo(s) de prueba)
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /tmp/tmp.0Jw6hPVIgJ/tmpx6dylvk0/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 52 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 17 aparición(es) del producto en 2 archivo(s) (alcance medido: src)
+check_podman_materialization: 0 materialización(es) fuera de src/packages/podman-execution/, 0 pendiente(s) vencido(s), 0 pendiente(s) vigente(s) (alcance medido: 34 archivo(s) productivos)
+check_podman_access_ownership: 0 acceso(s) a Podman fuera de src/packages/podman-execution/, 0 pendiente(s) vencido(s), 0 pendiente(s) vigente(s) (alcance medido: 34 archivo(s))
+check_execution_authorization: 0 materialización(es) sin ExecutionAuthorization fuera de src/packages/podman-execution/ (alcance medido: 2 archivo(s))
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 0 enlace(s) relativo(s) en 0 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 6 lectura(s) en 34 archivo(s) de producción — propias 6, proveedor 0, cliente ajeno 0, sin prefijo 0)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 2 congelada(s), 0 obsoleta(s) (alcance medido: 2 variable(s) propia(s), 0 archivo(s) de prueba)
+ERROR: no existe /tmp/tmp.0Jw6hPVIgJ/tmpx6dylvk0/.env.example. NO se emite conteo: un 0 aqui no distinguiria «no falta ninguna» de «no pude medir».
+check_env_example_coverage: REHUSA — no existe /tmp/tmp.0Jw6hPVIgJ/tmpx6dylvk0/.env.example; sin él no hay contra qué medir
+commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+
+
+======================================================================
+FAIL: test_undeclared_identity_warns_without_blocking (__main__.PreCommitHook.test_undeclared_identity_warns_without_blocking)
+Sin declaracion no hay veredicto: se avisa SIN MEDIR y no se bloquea.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 162, in test_undeclared_identity_warns_without_blocking
+    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/tmp.0Jw6hPVIgJ/tmpz9rb0j4a/.claude/eventos)
+  hogar del banco: /tmp/tmp.0Jw6hPVIgJ/tmpz9rb0j4a/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_staged_live_writers: 0 escritor(es) vivo(s) (alcance medido: 1 ruta(s) preparada(s))
+check_test_home_isolation: 0 suite(s) sin aislar (alcance medido: 0 archivo(s) de prueba)
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /tmp/tmp.0Jw6hPVIgJ/tmpz9rb0j4a/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 52 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 17 aparición(es) del producto en 2 archivo(s) (alcance medido: src)
+check_podman_materialization: 0 materialización(es) fuera de src/packages/podman-execution/, 0 pendiente(s) vencido(s), 0 pendiente(s) vigente(s) (alcance medido: 34 archivo(s) productivos)
+check_podman_access_ownership: 0 acceso(s) a Podman fuera de src/packages/podman-execution/, 0 pendiente(s) vencido(s), 0 pendiente(s) vigente(s) (alcance medido: 34 archivo(s))
+check_execution_authorization: 0 materialización(es) sin ExecutionAuthorization fuera de src/packages/podman-execution/ (alcance medido: 2 archivo(s))
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 0 enlace(s) relativo(s) en 0 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 6 lectura(s) en 34 archivo(s) de producción — propias 6, proveedor 0, cliente ajeno 0, sin prefijo 0)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 2 congelada(s), 0 obsoleta(s) (alcance medido: 2 variable(s) propia(s), 0 archivo(s) de prueba)
+ERROR: no existe /tmp/tmp.0Jw6hPVIgJ/tmpz9rb0j4a/.env.example. NO se emite conteo: un 0 aqui no distinguiria «no falta ninguna» de «no pude medir».
+check_env_example_coverage: REHUSA — no existe /tmp/tmp.0Jw6hPVIgJ/tmpz9rb0j4a/.env.example; sin él no hay contra qué medir
+commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+
+
+======================================================================
+FAIL: test_the_store_arrives_reconciled_to_commit (__main__.PreCommitReconcilesBoard.test_the_store_arrives_reconciled_to_commit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 401, in test_the_store_arrives_reconciled_to_commit
+    self.assertEqual(output.returncode, 0, output.stdout + output.stderr)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/tmp.0Jw6hPVIgJ/tmprvhj9ex8/.claude/eventos)
+  hogar del banco: /tmp/tmp.0Jw6hPVIgJ/tmprvhj9ex8/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_staged_live_writers: 0 escritor(es) vivo(s) (alcance medido: 1 ruta(s) preparada(s))
+check_test_home_isolation: 0 suite(s) sin aislar (alcance medido: 0 archivo(s) de prueba)
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /tmp/tmp.0Jw6hPVIgJ/tmprvhj9ex8/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 62 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 18 aparición(es) del producto en 3 archivo(s) (alcance medido: src)
+check_podman_materialization: 0 materialización(es) fuera de src/packages/podman-execution/, 0 pendiente(s) vencido(s), 0 pendiente(s) vigente(s) (alcance medido: 52 archivo(s) productivos)
+check_podman_access_ownership: 0 acceso(s) a Podman fuera de src/packages/podman-execution/, 0 pendiente(s) vencido(s), 0 pendiente(s) vigente(s) (alcance medido: 52 archivo(s))
+check_execution_authorization: 0 materialización(es) sin ExecutionAuthorization fuera de src/packages/podman-execution/ (alcance medido: 2 archivo(s))
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 0 enlace(s) relativo(s) en 0 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 25 lectura(s) en 52 archivo(s) de producción — propias 17, proveedor 0, cliente ajeno 7, sin prefijo 1)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 5 congelada(s), 0 obsoleta(s) (alcance medido: 5 variable(s) propia(s), 0 archivo(s) de prueba)
+ERROR: no existe /tmp/tmp.0Jw6hPVIgJ/tmprvhj9ex8/.env.example. NO se emite conteo: un 0 aqui no distinguiria «no falta ninguna» de «no pude medir».
+check_env_example_coverage: REHUSA — no existe /tmp/tmp.0Jw6hPVIgJ/tmprvhj9ex8/.env.example; sin él no hay contra qué medir
+commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+reconciliar-todo: raiz /tmp/tmp.0Jw6hPVIgJ/tmpvnaekh6p
+  sesiones del store        1
+  omitidas (sin filas)      0
+    44444444-4444-4444-4444-444444444444  1 fila(s) con deriva de 1 tarjeta(s)
+  del store: 2 fila(s), 1 sin tarjeta que las nombre (1 abierta(s)) — fuera de los cubos
+  escritas: 1 fila(s)
+
+
+======================================================================
+FAIL: test_without_the_store_in_the_commit_not_se_reconciles (__main__.PreCommitReconcilesBoard.test_without_the_store_in_the_commit_not_se_reconciles)
+El hook no toca el store cuando el commit no lo lleva.
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/verify/test_pre_commit_hook.py", line 422, in test_without_the_store_in_the_commit_not_se_reconciles
+    self.assertEqual(output.returncode, 0, output.stdout + output.stderr)
+AssertionError: 1 != 0 : check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /tmp/tmp.0Jw6hPVIgJ/tmp817btmeb/.claude/eventos)
+  hogar del banco: /tmp/tmp.0Jw6hPVIgJ/tmp817btmeb/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 1 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 1 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 0 banco(s) tocado(s))
+check_staged_live_writers: 0 escritor(es) vivo(s) (alcance medido: 1 ruta(s) preparada(s))
+check_test_home_isolation: 0 suite(s) sin aislar (alcance medido: 0 archivo(s) de prueba)
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 0 versionado(s) bajo /tmp/tmp.0Jw6hPVIgJ/tmp817btmeb/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 63 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 18 aparición(es) del producto en 3 archivo(s) (alcance medido: src)
+check_podman_materialization: 0 materialización(es) fuera de src/packages/podman-execution/, 0 pendiente(s) vencido(s), 0 pendiente(s) vigente(s) (alcance medido: 52 archivo(s) productivos)
+check_podman_access_ownership: 0 acceso(s) a Podman fuera de src/packages/podman-execution/, 0 pendiente(s) vencido(s), 0 pendiente(s) vigente(s) (alcance medido: 52 archivo(s))
+check_execution_authorization: 0 materialización(es) sin ExecutionAuthorization fuera de src/packages/podman-execution/ (alcance medido: 2 archivo(s))
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 0 enlace(s) relativo(s) en 0 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 25 lectura(s) en 52 archivo(s) de producción — propias 17, proveedor 0, cliente ajeno 7, sin prefijo 1)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 5 congelada(s), 0 obsoleta(s) (alcance medido: 5 variable(s) propia(s), 0 archivo(s) de prueba)
+ERROR: no existe /tmp/tmp.0Jw6hPVIgJ/tmp817btmeb/.env.example. NO se emite conteo: un 0 aqui no distinguiria «no falta ninguna» de «no pude medir».
+check_env_example_coverage: REHUSA — no existe /tmp/tmp.0Jw6hPVIgJ/tmp817btmeb/.env.example; sin él no hay contra qué medir
+commit_identity: SIN MEDIR — THYROX_COMMIT_AUTHOR no está declarada: no hay identidad contra la que medir
+
+
+----------------------------------------------------------------------
+Ran 12 tests in 10.262s
+
+FAILED (failures=5)

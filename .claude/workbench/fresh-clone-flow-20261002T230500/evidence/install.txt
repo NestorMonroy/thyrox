@@ -1,0 +1,67 @@
+  bin/: 321 entrypoint(s) totales, 0 escrito(s)/actualizado(s), 0 retirado(s)
+
+thyrox  raíz: /home/user/thyrox  (declaracion THYROX_ROOT del archivo de entorno)
+        modo: install · destinos: 1
+
+  ok /home/user/thyrox — ya declarado
+
+  hogares del clon:
+    existía  THYROX_WORKBENCH_DIR  /home/user/thyrox/.claude/workbench
+    existía  THYROX_JOBS_DIR  /home/user/thyrox/.claude/jobs
+    creado  THYROX_JOBS_LEDGER_DIR  /home/user/thyrox/.claude/jobs-ledger
+    existía  THYROX_JOBS_ARCHIVE_DIR  /home/user/thyrox/.claude/jobs
+    existía  THYROX_CACHE_DIR  /home/user/thyrox/.claude/cache
+    existía  THYROX_PARALLEL_MAP_HISTORY_DIR  /home/user/thyrox/.claude/cache/parallel-map
+    existía  THYROX_RAM_ADMISSION_LEDGER  /home/user/thyrox/.claude/cache
+    existía  THYROX_DISK_ADMISSION_LEDGER  /home/user/thyrox/.claude/cache
+    creado  THYROX_RUNTIME_DIR  /home/user/thyrox/.thyrox/runtime
+    creado  THYROX_POOL_WORKTREES_DIR  /home/user/thyrox/.thyrox/pool-worktrees
+    creado  THYROX_MODEL_ARTIFACT_CACHE_DIR  /home/user/thyrox/.thyrox/models/artifacts
+    
+    4 hogar(es) creado(s) de 11.
+  ok /home/user/thyrox — githooks y driver de merge preparados (sin hooks de sesión: el proveedor no los declara)
+  ok /home/user/thyrox — githooks y driver de merge preparados (sin hooks de sesión: el proveedor no los declara)
+
+  preflight de la cadena:
+    ok · manifiestos
+    ok · githooks
+    ok · awk
+    aviso · parallel
+            thyrox_toolchain: falta 'parallel' (paquete parallel) y la instalacion es opt-in.
+                              Reintenta con THYROX_INSTALL_PARALLEL=1.
+                              NO se emite conteo: un cero aqui no distinguiria
+                              «no hay» de «no pude medir».
+    ok · python-proveedor
+    ok · proxy
+    ok · sqlite-reader
+    aviso · bun
+            thyrox_toolchain: 'bun' resuelve, y /home/user/thyrox/node_modules esta ausente o vacio.
+            IMPORTANT si desea usar los entrypoints .ts de src/**/bin y el paquete @thyrox/cli es necesario corregir cd /home/user/thyrox && bun install por el momento, continua sin usar los entrypoints .ts de src/**/bin y el paquete @thyrox/cli
+    ok · poppler
+    omitida · texlive
+            thyrox_toolchain: el consumidor no declara TeX (THYROX_TOOLCHAIN_TEXLIVE_PACKAGES
+                              ni THYROX_TOOLCHAIN_TEXLIVE_PROBE_FILE); la sonda se omite.
+    omitida · hunspell
+            thyrox_toolchain: el consumidor no declara THYROX_TOOLCHAIN_HUNSPELL_DICTIONARY;
+                              la sonda de hunspell se omite.
+    
+    7 ok · 0 error · 2 aviso · 2 omitida — alcance medido: 9 de 11 sondas
+
+  contrato de .env:
+    claves leidas del entorno: 515 | declaradas: 556 | sin declarar: 0
+
+thyrox declarado en 1 raíz(es).
+
+Desde ahora un consumidor invoca sin codificar la ruta:
+
+  # leyendo la declaración de su propio .env
+  python3 "$THYROX_ROOT/src/task/task_ids.py"
+
+Para comprobarlo en cualquier momento:
+
+  ./install.sh --check
+
+Y para saber QUE de bin/ se puede usar en este arbol —el preflight mide
+conducta, no presencia, y nombra la precondicion de lo que falte:
+
+  bash "/home/user/thyrox/bin/check-toolchain-ready"

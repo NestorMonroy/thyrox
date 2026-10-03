@@ -1,0 +1,16 @@
+tests/verify/test_commit_identity.py	rc=0	test_commit_identity: 15 aserciones — 15 ok, 0 falla(s)
+tests/verify/test_pre_commit_hook.py	rc=1	
+tests/verify/test-githooks-activos.sh	rc=0	test-githooks-activos: OK — 15 aserciones sobre 6 clones sinteticos
+tests/verify/test-toolchain-ready.sh	rc=0	18 casos: 18 ok, 0 fallos
+tests/lib/test-toolchain-gawk.sh	rc=0	16 casos: 16 ok, 0 fallos
+tests/install/test_install.sh	rc=0	68 aserciones: 68 ok, 0 fallidas
+tests/session/test_write_env.py	rc=0	
+tests/verify/test_env_contract_keys.py	rc=0	
+tests/paths/test_ensure_homes.py	rc=1	37 aserciones: 35 ok, 2 fallidas
+tests/session/test-arranque-de-clon.sh	rc=0	test-arranque-de-clon: 21 de 21 aserciones en verde
+tests/session/test_reconcile_user_hooks.py	rc=0	
+tests/session/test-session-start.sh	rc=0	4 ok · 0 falla(s)
+tests/session/test_generate_bin.py	rc=1	
+tests/verify/test_identifier_language.py	rc=0	25 ok, 0 fallos (alcance medido: 25 aserciones sobre /home/user/thyrox/src/verify/check_identifier_language.py)
+tests/githooks/test-pre-commit-identifier-language.sh	rc=1	test-pre-commit-identifier-language: 4 aserciones — 2 ok, 2 falla(s)
+src/packages/coordination/__tests__/branchIntegration.test.ts	rc=1	 1 fail

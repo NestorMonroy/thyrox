@@ -1,0 +1,2 @@
+thyrox-redis action=created drift=- created=yes started=yes health=healthy provision=not-declared volumes=-
+rc=0

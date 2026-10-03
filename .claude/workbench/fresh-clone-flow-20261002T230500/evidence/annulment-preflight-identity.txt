@@ -1,0 +1,66 @@
+  ok    el sujeto existe: src/verify/check-toolchain-ready.sh
+  ok    con gawk declarado, la sonda de awk sale ok (exit 0)
+  ok    recoge TODOS los fallos: nombra awk y parallel en la misma salida
+  ok    rehusa con exit 2 cuando no alcanza src/lib/toolchain.sh
+  ok    la negativa NO emite conteo
+  ok    un aviso solo no tumba el veredicto (exit 0)
+  ok    --strict promueve el aviso a fallo (exit 1)
+  ok    publica el denominador junto al conteo
+  ok    mawk presente pero sin intervalos: exit 1 (error, no aviso)
+  ok    releva el remedio de la sonda, no compone uno propio
+  ok    la forma relativa de la clave se resuelve contra la raiz, no contra el cwd
+  ok    sin core.hooksPath, la sonda githooks sale error y el preflight exit 1
+  ok    el rechazo nombra el instalador que lo arregla
+  ok    un core.hooksPath que no es .githooks tampoco cuenta como activo
+  ok    con core.hooksPath=.githooks, la sonda githooks sale ok
+  FALLO esperaba 'error · commit-identity' y exit 1 (rc=0); salida: ok · manifiestos
+ok · githooks
+ok · commit-identity
+ok · awk
+aviso · parallel
+        thyrox_toolchain: falta 'parallel' (paquete parallel) y la instalacion es opt-in.
+                          Reintenta con THYROX_INSTALL_PARALLEL=1.
+                          NO se emite conteo: un cero aqui no distinguiria
+                          «no hay» de «no pude medir».
+ok · python-proveedor
+ok · proxy
+ok · sqlite-reader
+aviso · bun
+        thyrox_toolchain: 'bun' resuelve, y /home/user/thyrox/node_modules esta ausente o vacio.
+        IMPORTANT si desea usar los entrypoints .ts de src/**/bin y el paquete @thyrox/cli es necesario corregir cd /home/user/thyrox && bun install por el momento, continua sin usar los entrypoints .ts de src/**/bin y el paquete @thyrox/cli
+ok · poppler
+omitida · texlive
+        thyrox_toolchain: el consumidor no declara TeX (THYROX_TOOLCHAIN_TEXLIVE_PACKAGES
+                          ni THYROX_TOOLCHAIN_TEXLIVE_PROBE_FILE); la sonda se omite.
+omitida · hunspell
+        thyrox_toolchain: el consumidor no declara THYROX_TOOLCHAIN_HUNSPELL_DICTIONARY;
+                          la sonda de hunspell se omite.
+
+8 ok · 0 error · 2 aviso · 2 omitida — alcance medido: 10 de 12 sondas
+  FALLO el rechazo no nombra THYROX_COMMIT_COMMITTER: ok · manifiestos
+ok · githooks
+ok · commit-identity
+ok · awk
+aviso · parallel
+        thyrox_toolchain: falta 'parallel' (paquete parallel) y la instalacion es opt-in.
+                          Reintenta con THYROX_INSTALL_PARALLEL=1.
+                          NO se emite conteo: un cero aqui no distinguiria
+                          «no hay» de «no pude medir».
+ok · python-proveedor
+ok · proxy
+ok · sqlite-reader
+aviso · bun
+        thyrox_toolchain: 'bun' resuelve, y /home/user/thyrox/node_modules esta ausente o vacio.
+        IMPORTANT si desea usar los entrypoints .ts de src/**/bin y el paquete @thyrox/cli es necesario corregir cd /home/user/thyrox && bun install por el momento, continua sin usar los entrypoints .ts de src/**/bin y el paquete @thyrox/cli
+ok · poppler
+omitida · texlive
+        thyrox_toolchain: el consumidor no declara TeX (THYROX_TOOLCHAIN_TEXLIVE_PACKAGES
+                          ni THYROX_TOOLCHAIN_TEXLIVE_PROBE_FILE); la sonda se omite.
+omitida · hunspell
+        thyrox_toolchain: el consumidor no declara THYROX_TOOLCHAIN_HUNSPELL_DICTIONARY;
+                          la sonda de hunspell se omite.
+
+8 ok · 0 error · 2 aviso · 2 omitida — alcance medido: 10 de 12 sondas
+  ok    con una identidad humana, la sonda commit-identity sale ok
+
+18 casos: 16 ok, 2 fallos

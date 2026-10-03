@@ -233,6 +233,9 @@ bash bin/declarations                    # 2. ¿qué falta declarar?
 # THYROX_JOBS_<CLON> (ver .env.example, sección «Hogares que el consumidor
 # declara y thyrox NO inventa» para el resto de la familia)
 bash bin/check_env_contract_keys --strict   # 3. contrato cerrado
+# 3b. identidad del commit (.claude/rules/git.md): declarar en .env
+#     THYROX_COMMIT_AUTHOR y THYROX_COMMIT_COMMITTER, y en cada shell que commitea:
+eval "$(bash bin/commit_identity env)"
 bash install.sh                             # 4. activa los githooks del proveedor y de cada clon
 bash bin/check_githooks_activos --strict    # 5. ¿corren de verdad? exit 1 nombra el clon y su arreglo
 bash tests/run.sh                           # 6. el árbol funciona
@@ -252,6 +255,14 @@ vive en `.git/config`, que no se clona: un clon nuevo trae `.githooks/` escrito
 y git no lo mira. Medido el 2026-09-30: `kaupamex-docs` tenía los hooks
 inactivos y sus commits pasaron sin ningún gate. El paso 5 es el que lo
 detecta; su salida trae la orden exacta que lo arregla.
+
+**Sin el paso 3b el primer commit puede salir firmado por el agente.** Bajo
+el entorno remoto, `~/.gitconfig` declara al agente como committer y sólo el
+author llega corregido por el entorno. `commit_identity check` medía el
+invariante del agente únicamente si la identidad estaba declarada; sin `.env`
+respondía «sin medir» y el pre-commit dejaba pasar el commit. Hoy el
+invariante se mide sin declaración, y el preflight lo publica como
+`error · commit-identity`.
 
 **Una suite que lanza procesos aísla sus hogares con
 `src/lib/test_homes.sh::thyrox_isolate_homes`, no exportando la clave global.**

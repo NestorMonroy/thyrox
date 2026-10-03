@@ -1647,6 +1647,44 @@ function thyrox_toolchain_require_githooks() {
 }
 export -f thyrox_toolchain_require_githooks
 
+# ---------------------------------------------------------------------------
+# thyrox_toolchain_require_commit_identity — ¿el agente firma el commit?
+# ---------------------------------------------------------------------------
+# `git.md` prohibe que el agente figure como author o committer. Un clon
+# recien bajado bajo el entorno remoto lo tiene como committer en
+# `~/.gitconfig` y todavia no tiene `.env` que declare otra identidad, asi que
+# el pre-commit respondia «sin medir» y el preflight publicaba verde. La
+# sonda delega en `commit_identity agent`, que mide la identidad que git USA
+# (`git var`) y no repite aqui el correo del agente: una sola fuente.
+#
+# Ciega a: que la identidad humana efectiva sea la declarada. Eso lo mide el
+# pre-commit contra `THYROX_COMMIT_*`; aqui se mide solo el invariante, que
+# no depende de declarar nada.
+function thyrox_toolchain_require_commit_identity() {
+  local root; root="$(thyrox_toolchain_provider_root 2>/dev/null)" || {
+    echo "thyrox_toolchain: no resuelve la raiz del proveedor." >&2
+    echo "                  NO se emite conteo." >&2
+    return 2
+  }
+  local output rc
+  output="$(cd "$root" && PYTHONPATH="$root/src${PYTHONPATH:+:$PYTHONPATH}" \
+    python3 "$root/src/verify/commit_identity.py" agent --repo "$root" 2>&1)"
+  rc=$?
+  [[ $rc -eq 0 ]] && return 0
+  if [[ $rc -ne 1 ]]; then
+    echo "thyrox_toolchain: commit_identity no pudo medir (exit $rc): $output" >&2
+    return 2
+  fi
+  printf '%s\n' "$output" >&2
+  echo "thyrox_toolchain: el proximo commit en $root saldria con la identidad" >&2
+  echo "                  del agente. Arreglo: declarar THYROX_COMMIT_AUTHOR y" >&2
+  echo "                  THYROX_COMMIT_COMMITTER en $root/.env (valores en" >&2
+  echo "                  .claude/rules/git.md) y en cada shell que commitea:" >&2
+  echo "                    eval \"\$(bash \"$root/bin/commit_identity\" env)\"" >&2
+  return 1
+}
+export -f thyrox_toolchain_require_commit_identity
+
 # @description Normaliza un nombre de paquete Python segun PEP 503: minusculas
 # y toda corrida de `-`, `_` o `.` colapsada a un solo guion medio.
 #

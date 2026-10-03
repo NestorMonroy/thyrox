@@ -1,0 +1,57 @@
+
+== el registro decide cada clave de hogar del contrato ==
+  FALLO ninguna clave de .env.example sin decidir
+        esperado=[()] obtenido=[('THYROX_PODMAN_LIBPOD_TMP_DIR', 'THYROX_TRANSFORMERS_MODEL_DIR')]
+  ok    ninguna decisión sobre una clave que el contrato ya no publica
+  ok    registrada y excluida son disjuntas
+  ok    toda exclusión lleva su razón
+  ok    todo default es relativo a la raíz
+  ok    todo hogar nombra su módulo dueño
+
+== una clave nueva en el contrato queda sin decidir ==
+  FALLO la clave nueva sale como sin decidir
+        esperado=[('THYROX_BRAND_NEW_THING_DIR',)] obtenido=[('THYROX_BRAND_NEW_THING_DIR', 'THYROX_PODMAN_LIBPOD_TMP_DIR', 'THYROX_TRANSFORMERS_MODEL_DIR')]
+
+== crea los hogares registrados, e idempotente ==
+  ok    primera corrida -> exit 0
+  ok    existen todos los hogares de directorio
+  ok    un hogar que es archivo sólo asegura su padre
+  ok    una línea de desenlace por hogar
+  ok    sobre un clon vacío, crea
+  ok    el modo del hogar creado no depende del umask
+  ok    segunda corrida -> exit 0
+  ok    segunda corrida no cambia el árbol
+  ok    segunda corrida: todo `existía`
+  ok    y lo dice
+
+== una declaración en el .env del clon gana al default ==
+  ok    exit 0
+  ok    crea el hogar declarado
+  ok    no crea el default
+
+== --resolve publica la ruta de un hogar sin crear nada ==
+  ok    exit 0
+  ok    imprime el default del registro
+  ok    no crea nada
+  ok    la declaración del clon gana
+  ok    una clave no registrada rehúsa con exit 2
+  ok    sin ruta en stdout
+  ok    nombra la clave
+
+== una declaración fuera del árbol no se crea ==
+  ok    exit 0
+  ok    lo dice
+  ok    no lo crea
+
+== una declaración no escribible rehúsa, sin crear nada ==
+  ok    exit 2
+  ok    nombra la clave
+  ok    no crea nada antes de rehusar
+
+== la caché de artefactos de modelo: mismo default que su dueño TS ==
+  ok    registrada como hogar
+  ok    es un directorio
+  ok    el dueño declara la clave
+  ok    el dueño compone el mismo default
+
+37 aserciones: 35 ok, 2 fallidas
