@@ -20,7 +20,7 @@ import { CATALOG, MODELS, effortCostIndex, usageEquivalentTokens } from '@thyrox
 import type { EffortLevel, PricingTier } from '@thyrox/agent/models'
 import type { AgentDefinition, CacheTtl } from '@thyrox/agent/types'
 import type { ModelCatalogEntry } from '@thyrox/model-artifacts/catalogEntry.ts'
-import { qualifiedModels, type ModelQualification } from '@thyrox/model-artifacts/modelQualification.ts'
+import { LOCAL_REASONING_EFFORT, qualifiedModels, type ModelQualification } from '@thyrox/model-artifacts/modelQualification.ts'
 import { promptCacheKey } from './cacheBreak.ts'
 import { allowsEntry, type ExecutionPolicy } from './executionPolicy.ts'
 
@@ -398,11 +398,20 @@ export function providerExecution(kind: TaskKind, profile: TurnProfile): Provide
 function localFallbackReason(kind: TaskKind, profile: TurnProfile, local: LocalModelInventory): string {
   if (local.entries.length === 0) return 'catálogo local vacío: ningún modelo declarado'
   const approvedAtAnyContext = qualifiedModels(local.entries, local.qualifications, kind, 0)
+  if (approvedAtAnyContext.length === 0 && measuredWithOtherProfile(local, kind)) {
+    return `hay medidas aprobadas de la clase ${kind}, pero con otro razonamiento: falta cualificar con el perfil del worker (reasoningEffort ${LOCAL_REASONING_EFFORT})`
+  }
   if (approvedAtAnyContext.length === 0) {
     return `sin cualificación aprobada vigente de la clase ${kind} entre los ${local.entries.length} modelo(s) del catálogo local`
   }
   const widest = Math.max(...approvedAtAnyContext.map((candidate) => candidate.qualification.contextTokens))
   return `contexto medido insuficiente: el mayor aprobado para ${kind} midió ${widest} tokens < ${profile.contextTokens} exigidos`
+}
+
+/** Hay una cualificación aprobada de la clase, pero medida con otro razonamiento que el del worker local. */
+function measuredWithOtherProfile(local: LocalModelInventory, kind: TaskKind): boolean {
+  const names = new Set(local.entries.map(entry => entry.name))
+  return local.qualifications.some(q => names.has(q.model) && q.passed && q.taskClass === kind && q.reasoningEffort !== LOCAL_REASONING_EFFORT)
 }
 
 /** La política dejó fuera un catálogo que sí tiene entradas: la causa es la política, no el catálogo. */

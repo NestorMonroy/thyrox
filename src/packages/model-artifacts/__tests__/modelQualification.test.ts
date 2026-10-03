@@ -5,6 +5,7 @@ import { attentionShapeOf } from '../memoryEstimate.js'
 import { thyroxModelName } from '../modelName.js'
 import {
   InvalidQualificationError,
+  LOCAL_REASONING_EFFORT,
   parseQualifications,
   qualifiedEmbeddingModels,
   qualifiedModels,
@@ -55,6 +56,7 @@ function measured(model: string, parts: Partial<ModelQualification> = {}): Model
     tokensPerSecond: 8,
     measurementCondition: 'isolated',
     measuredAt: '2026-10-01T00:10:00Z',
+    reasoningEffort: LOCAL_REASONING_EFFORT,
     ...parts,
   }
 }
@@ -220,5 +222,27 @@ describe('localModelHome', () => {
       catalog: '/data/c.json',
       qualifications: '/r/.thyrox/models/qualifications.json',
     })
+  })
+})
+
+// El worker local corre con el razonamiento apagado (el relé envía
+// `reasoning_effort: none`): una cualificación medida razonando no es evidencia
+// de ese perfil (TASK-THYROX-0919; revisión del ejecutor 2026-10-03).
+describe('la cualificación lleva el perfil de razonamiento con que se midió', () => {
+  test('el perfil del worker local es sin razonamiento', () => {
+    expect(LOCAL_REASONING_EFFORT).toBe('none')
+  })
+
+  test('validateQualification acepta el perfil y rehúsa uno desconocido', () => {
+    expect(validateQualification(measured(FAST.name, { reasoningEffort: 'model-default' })).reasoningEffort).toBe('model-default')
+    expect(() => validateQualification({ ...measured(FAST.name), reasoningEffort: 'mucho' })).toThrow()
+  })
+
+  test('una cualificación de otro perfil, o sin perfil, no habilita al modelo', () => {
+    const { reasoningEffort: _legacyTask, ...legacyTask } = measured(FAST.name)
+    const { reasoningEffort: _legacyProtocol, ...legacyProtocol } = protocolPass(FAST.name)
+    expect(qualifiedModels([FAST], [legacyProtocol, legacyTask], 'mecanica', 1)).toEqual([])
+    expect(qualifiedModels([FAST], [protocolPass(FAST.name, { reasoningEffort: 'model-default' }), measured(FAST.name, { reasoningEffort: 'model-default' })], 'mecanica', 1)).toEqual([])
+    expect(qualifiedModels([FAST], [protocolPass(FAST.name), measured(FAST.name)], 'mecanica', 1).map(q => q.entry.name)).toEqual([FAST.name])
   })
 })

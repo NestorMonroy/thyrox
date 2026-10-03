@@ -28,6 +28,14 @@ export type QualificationKind = 'protocol' | 'task' | 'embedding'
 
 /** Si la medición corrió sola o con otra carga que la desplazaba. */
 export type MeasurementCondition = 'isolated' | 'contended'
+/** Con qué razonamiento respondió el modelo durante la medición: apagado, o el que el runtime aplica por defecto. */
+export type ReasoningEffort = 'none' | 'model-default'
+/**
+ * El perfil con que corre un worker local: el relé admitido pide
+ * `reasoning_effort: none` salvo que la petición pida razonar. Sólo una
+ * cualificación medida con este perfil es evidencia para ese worker.
+ */
+export const LOCAL_REASONING_EFFORT: ReasoningEffort = 'none'
 
 export interface ModelQualification {
   /** Nombre contractual del catálogo. */
@@ -46,6 +54,8 @@ export interface ModelQualification {
   readonly measurementCondition: MeasurementCondition
   /** Instante ISO 8601 en UTC. */
   readonly measuredAt: string
+  /** El razonamiento con que se midió; ausente en las cualificaciones anteriores al perfil. */
+  readonly reasoningEffort?: ReasoningEffort
 }
 
 export class InvalidQualificationError extends Error {
@@ -79,6 +89,7 @@ function requireNonNegativeInteger(record: Record<string, unknown>, key: string,
 const QUALIFICATION_KINDS: readonly QualificationKind[] = ['protocol', 'task', 'embedding']
 const KIND_LABELS: Readonly<Record<QualificationKind, string>> = { protocol: 'protocolo', task: 'tarea', embedding: 'embeddings' }
 const MEASUREMENT_CONDITIONS: readonly MeasurementCondition[] = ['isolated', 'contended']
+const REASONING_EFFORTS: readonly ReasoningEffort[] = ['none', 'model-default']
 
 function requireOneOf<T extends string>(record: Record<string, unknown>, key: string, allowed: readonly T[], path: string): T {
   const value = requireString(record, key, path)
@@ -136,6 +147,7 @@ export function validateQualification(value: unknown, path = 'qualification'): M
     tokensPerSecond,
     measurementCondition: requireOneOf(record, 'measurementCondition', MEASUREMENT_CONDITIONS, path),
     measuredAt,
+    ...(record.reasoningEffort === undefined ? {} : { reasoningEffort: requireOneOf(record, 'reasoningEffort', REASONING_EFFORTS, path) }),
   }
 }
 
@@ -206,11 +218,14 @@ export function qualifiedModels<Entry extends { readonly name: string } = ModelC
   taskClass: LocalTaskClass,
   minContextTokens: number,
 ): QualifiedLocalModel<Entry>[] {
+  // Sólo cuentan las medidas con el perfil del worker local: una tomada
+  // razonando no dice nada de cómo trabaja sin razonar.
+  const ofWorkerProfile = qualifications.filter((q) => q.reasoningEffort === LOCAL_REASONING_EFFORT)
   return entries
     .map((entry) => ({
       entry,
-      qualification: latestFor(qualifications, entry.name, `task:${taskClass}`),
-      protocol: latestFor(qualifications, entry.name, 'protocol'),
+      qualification: latestFor(ofWorkerProfile, entry.name, `task:${taskClass}`),
+      protocol: latestFor(ofWorkerProfile, entry.name, 'protocol'),
     }))
     .filter((candidate): candidate is QualifiedLocalModel<Entry> =>
       passed(candidate.protocol) && passed(candidate.qualification)

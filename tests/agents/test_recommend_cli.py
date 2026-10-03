@@ -55,6 +55,8 @@ QUALIFICATION = {
     "tokensPerSecond": 21.5,
     "measurementCondition": "isolated",
     "measuredAt": "2026-10-01T01:00:00Z",
+    # El perfil del worker local: sin razonamiento (LOCAL_REASONING_EFFORT).
+    "reasoningEffort": "none",
 }
 # Sin la cualificación de protocolo, la de tarea no hace elegible al modelo.
 PROTOCOL_QUALIFICATION = {

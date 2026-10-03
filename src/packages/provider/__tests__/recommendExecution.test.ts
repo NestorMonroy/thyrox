@@ -49,6 +49,7 @@ function qualification(model: string, overrides: Partial<ModelQualification> = {
     tokensPerSecond: 20,
     measurementCondition: 'isolated',
     measuredAt: '2026-10-01T01:00:00Z',
+    reasoningEffort: 'none',
     ...overrides,
   }
 }
@@ -127,6 +128,22 @@ describe('recommendExecution con una política de ejecución declarada (TASK-THY
     const result = recommendExecution('mecanica', PROFILE, both, policyOf(false))
     expect(result.runtime).toBe('ollama')
     expect(result.runtime === 'ollama' ? result.model : '').toBe(QWEN.name)
+  })
+
+  // Revisión del ejecutor 2026-10-03: la cualificación de Qwen se tomó razonando
+  // y el worker corre sin razonar. Esas medidas no habilitan al modelo, y la
+  // causa tiene que decir que falta medir con el perfil del worker.
+  test('medidas de otro perfil de razonamiento: bloqueada, nombrando el perfil que falta medir', () => {
+    const legacy = {
+      entries: [QWEN],
+      qualifications: [
+        { ...protocol(QWEN.name), reasoningEffort: 'model-default' as const },
+        qualification(QWEN.name, { reasoningEffort: 'model-default' }),
+      ],
+    }
+    const result = recommendExecution('mecanica', PROFILE, legacy, policyOf(false))
+    expect(result.runtime).toBe('blocked')
+    expect(result.runtime === 'blocked' ? result.blockedReason : '').toMatch(/perfil del worker.*reasoningEffort none/)
   })
 
   test('sin candidato permitido cualificado y sin respaldo: bloqueada con su causa, nunca claude-cli', () => {

@@ -70,6 +70,7 @@ describe('runQualification — tool-calling@1 contra /api/chat', () => {
       tokensPerSecond: 20,
       measurementCondition: 'contended',
       measuredAt: '2026-10-01T05:00:00.000Z',
+      reasoningEffort: 'none',
     })
   })
 
@@ -97,6 +98,8 @@ describe('runQualification — tool-calling@1 contra /api/chat', () => {
     const first = chats[0]?.body as Record<string, any>
     expect(first.model).toBe(MODEL)
     expect(first.stream).toBe(false)
+    // El perfil del worker local: sin razonamiento. En /api/chat es think false.
+    expect(first.think).toBe(false)
     expect(first.options).toEqual({ temperature: 0, seed: 7, num_ctx: CONTEXT_TOKENS })
     expect(first.tools.map((t: any) => t.function.name)).toEqual(['get_weather'])
     const continuation = chats[5]?.body as Record<string, any>
@@ -156,6 +159,7 @@ describe('runTaskQualification — la suite de tarea de un consumidor (TASK-THYR
       tokensPerSecond: 20,
       measurementCondition: 'isolated',
       measuredAt: '2026-10-01T05:00:00.000Z',
+      reasoningEffort: 'none',
     })
   })
 
@@ -170,7 +174,7 @@ describe('runTaskQualification — la suite de tarea de un consumidor (TASK-THYR
     await qualifyTask(translated)
     const chats = (server?.requests ?? []).filter(r => r.path === '/api/chat').map(r => r.body as Record<string, unknown>)
     expect(chats).toHaveLength(2)
-    expect(chats.every(body => body.model === MODEL && body.stream === false && !('tools' in body))).toBe(true)
+    expect(chats.every(body => body.model === MODEL && body.stream === false && body.think === false && !('tools' in body))).toBe(true)
     expect(chats.map(body => (body.options as { num_ctx: number }).num_ctx)).toEqual([CONTEXT_TOKENS, CONTEXT_TOKENS])
   })
 

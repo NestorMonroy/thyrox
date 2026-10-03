@@ -15,6 +15,7 @@
  * ausente, responden un error OpenAI que nombra la etapa y la causa, y no
  * reenvían nada.
  */
+import { LOCAL_REASONING_EFFORT } from '@thyrox/model-artifacts/modelQualification.ts'
 import type { AdmissionRequest, AdmissionTicket, CoordinatorAdmission } from '@thyrox/model-scheduling/hostCoordinator.ts'
 
 /** Lo que el relé necesita del coordinador; `ModelCoordinatorClient` lo cumple. */
@@ -99,7 +100,7 @@ function admissionRequestOf(options: AdmittedUpstreamOptions, model: string): Ad
  * false` y `"low"` siguieron razonando (`probes/think_control.variants.out`).
  * El razonamiento que la petición pide pasa tal cual.
  */
-const REASONING_OFF = 'none'
+const REASONING_OFF = LOCAL_REASONING_EFFORT
 
 function runtimeBodyOf(body: Record<string, unknown>, modelId: string): Record<string, unknown> {
   return { reasoning_effort: REASONING_OFF, ...body, model: modelId }

@@ -13,7 +13,7 @@
  * Ciega a: la variación entre corridas y la calidad fuera de estos casos.
  */
 
-import type { MeasurementCondition, ModelQualification } from '@thyrox/model-artifacts/modelQualification.ts'
+import { LOCAL_REASONING_EFFORT, type MeasurementCondition, type ModelQualification } from '@thyrox/model-artifacts/modelQualification.ts'
 
 import type { AdmissionTicket } from '@thyrox/model-scheduling/hostCoordinator.ts'
 
@@ -150,6 +150,7 @@ function qualificationRun(settings: MeasurementSettings, identity: Qualification
       tokensPerSecond: speed,
       measurementCondition: settings.measurementCondition,
       measuredAt: settings.now().toISOString(),
+      reasoningEffort: LOCAL_REASONING_EFFORT,
     },
   }
 }
@@ -190,6 +191,9 @@ function chatBody(settings: MeasurementSettings, measuredCase: MeasuredCase): Re
   return {
     ...measuredCase.prompt,
     stream: false,
+    // El perfil del worker local (`LOCAL_REASONING_EFFORT`): en /api/chat de
+    // Ollama, `think: false`. Medir razonando no dice cómo trabaja sin razonar.
+    think: false,
     options: { temperature: QUALIFICATION_TEMPERATURE, seed: QUALIFICATION_SEED, num_ctx: settings.contextTokens },
   }
 }
