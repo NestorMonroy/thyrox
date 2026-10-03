@@ -32,6 +32,14 @@ export class CatalogEntryConflictError extends Error {
   }
 }
 
+/** Recalcular la forma de una entrada que el catálogo no declara: no se crea por esa vía. */
+export class CatalogEntryMissingError extends Error {
+  constructor(readonly entryName: string) {
+    super(`el catálogo no declara «${entryName}»: una entrada nueva se declara con with`)
+    this.name = 'CatalogEntryMissingError'
+  }
+}
+
 export class CatalogFileError extends Error {
   constructor(readonly path: string, reason: string) {
     super(`catálogo ilegible (${path}): ${reason}`)
@@ -143,6 +151,20 @@ export class ModelCatalog {
     const entry = validateCatalogEntry(value)
     const existing = this.entriesByName.get(entry.name)
     if (existing !== undefined) return this.keepIdentical(existing, entry)
+    return new ModelCatalog(new Map([...this.entriesByName, [entry.name, entry]]))
+  }
+
+  /**
+   * Un catálogo nuevo en el que la entrada existente toma la forma de atención
+   * recalculada. La identidad sigue inmutable: cualquier otra diferencia es un
+   * conflicto. Existe porque la forma es un dato derivado del artefacto y su
+   * cálculo se corrigió (`attention.key_length`, H-THYROX-448).
+   */
+  withRederived(value: ModelCatalogEntry): ModelCatalog {
+    const entry = validateCatalogEntry(value)
+    const existing = this.entriesByName.get(entry.name)
+    if (existing === undefined) throw new CatalogEntryMissingError(entry.name)
+    if (canonicalJson({ ...existing, attention: entry.attention }) !== canonicalJson(entry)) throw new CatalogEntryConflictError(entry.name)
     return new ModelCatalog(new Map([...this.entriesByName, [entry.name, entry]]))
   }
 

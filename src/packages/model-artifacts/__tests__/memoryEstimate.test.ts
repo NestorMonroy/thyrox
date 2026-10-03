@@ -99,6 +99,18 @@ describe('estimateServingMemoryFromShape — la ruta del catálogo, sin metadata
     expect(attentionShapeOf(withoutKvHeads)).toEqual({ blockCount: 24, kvHeadCount: 14, headDimension: 64 })
   })
 
+  // H-THYROX-448: Qwen3-4B declara key_length=128 con embedding 2560 y 32
+  // cabezas; derivar 2560/32 = 80 subestimó la caché KV al 62.5 % y el
+  // coordinador admitió una residencia que dejó el anfitrión bajo su piso.
+  test('una dimensión de cabeza declarada (attention.key_length) manda sobre embedding/cabezas', () => {
+    const qwen3 = {
+      'general.architecture': 'qwen3', 'qwen3.block_count': 36, 'qwen3.embedding_length': 2560,
+      'qwen3.attention.head_count': 32, 'qwen3.attention.head_count_kv': 8,
+      'qwen3.attention.key_length': 128, 'qwen3.attention.value_length': 128,
+    }
+    expect(attentionShapeOf(qwen3)).toEqual({ blockCount: 36, kvHeadCount: 8, headDimension: 128 })
+  })
+
   test('attentionShapeOf extrae capas, cabezas KV y dimensión de cabeza', () => {
     expect(attentionShapeOf(QWEN2_METADATA)).toEqual({ blockCount: 24, kvHeadCount: 2, headDimension: 64 })
   })

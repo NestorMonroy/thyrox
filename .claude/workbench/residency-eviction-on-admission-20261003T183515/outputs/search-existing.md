@@ -48,3 +48,19 @@ la holgura (pesos mapeados de archivo, recuperables: hipótesis, no medida).
 `THYROX_RAM_ADMISSION_FLOOR_MB` (2048 por defecto) descontado en `ram_headroom`, la fuente única de `admit-ram` y
 `headroom-ram`. Caso 27: RED 2 fallas → GREEN 86/86; anulación: caen exactamente sus 2. Consumidores:
 infrastructure-ensure 54/54, container_measure 21/21; headless-pool 145/146 y parallel-map (2 fallas), **las mismas en HEAD**.
+
+## Control real 2 y línea temporal: la causa era la estimación, no el desalojo
+
+`probes/headroom_timeline.run3.out` (muestra cada segundo): tras desalojar `ctx16384` la holgura sube a 6.87 GB; la
+memoria de `ctx32768` llega durante su carga (≈8–14 s tras aparecer la unidad) y baja la holgura ≈7.5 GB, a −0.7 GB.
+`makeRoom` no desalojó `ctx24576` porque el plan declaraba **5 518 MiB** (`probes/plan_memory.ts`): `attentionShapeOf`
+derivaba `headDimension = embedding_length / head_count = 2560/32 = 80` e ignoraba `qwen3.attention.key_length = 128`
+del GGUF real; la caché KV salía al 62.5 %.
+
+- EXTEND `memoryEstimate.ts` (`headDimensionOf`): el `key_length` declarado manda. RED → GREEN 18/18; anulación exacta.
+- La entrada instalada guardaba la forma vieja y el catálogo es inmutable por entrada. EXTEND estrecho:
+  `ModelCatalog.withRederived` sustituye sólo si todo salvo `attention` es idéntico (otra diferencia: conflicto;
+  entrada ausente: `CatalogEntryMissingError`). RED → GREEN 59/59; sin la guarda de identidad cae exactamente su prueba.
+- Aplicado con `probes/rederive_catalog_attention.ts` (la misma `catalogEntryFromGguf`): `headDimension 80 → 128`, ningún
+  otro campo cambia (diff del catálogo sin `attention`: vacío). Plan de `ctx32768`: 7 246 MiB.
+Suites: model-artifacts 222/222, model-scheduling 136/136, local-models 259/5 (los 5 de HEAD).

@@ -7,6 +7,7 @@ import type { ModelCatalogEntry } from '../catalogEntry.js'
 import { MissingGgufKeyError } from '../memoryEstimate.js'
 import {
   CatalogEntryConflictError,
+  CatalogEntryMissingError,
   CatalogFileError,
   InvalidCatalogEntryError,
   ModelCatalog,
@@ -319,5 +320,26 @@ describe('catalogEntryFromGguf', () => {
     const error = await catalogEntryFromGguf(declaration(path)).catch((caught: unknown) => caught)
     expect(error).toBeInstanceOf(InvalidCatalogEntryError)
     expect((error as InvalidCatalogEntryError).field).toBe('qwen2.context_length')
+  })
+})
+
+// H-THYROX-448: `attentionShapeOf` derivaba 80 en vez del key_length declarado
+// (128) y la forma guardada quedó desfasada. La entrada es inmutable por
+// identidad; la forma es un dato derivado del mismo artefacto.
+describe('ModelCatalog.withRederived: sólo la forma derivada puede cambiar', () => {
+  const rederivedShape = { ...VALID.attention, headDimension: VALID.attention.headDimension * 2 }
+
+  test('sustituye la entrada si sólo cambia attention', () => {
+    const catalog = ModelCatalog.empty().with(VALID).withRederived({ ...VALID, attention: rederivedShape })
+    expect(catalog.byName(VALID.name)?.attention).toEqual(rederivedShape)
+  })
+
+  test('cualquier otra diferencia sigue siendo un conflicto', () => {
+    expect(() => ModelCatalog.empty().with(VALID).withRederived({ ...VALID, attention: rederivedShape, declaredAt: '2026-10-01T00:00:00Z' }))
+      .toThrow(CatalogEntryConflictError)
+  })
+
+  test('una entrada que no existe no se crea por esta vía', () => {
+    expect(() => ModelCatalog.empty().withRederived(VALID)).toThrow(CatalogEntryMissingError)
   })
 })

@@ -110,17 +110,29 @@ function kvCacheSize(shape: AttentionShape, contextLength: number, bytesPerEleme
 export function attentionShapeOf(metadata: GgufMetadata): AttentionShape {
   const architecture = architectureOf(metadata)
   const headCountKey = `${architecture}.attention.head_count`
-  const embeddingKey = `${architecture}.embedding_length`
   const headCount = positiveIntegerKey(metadata, headCountKey)
-  const embeddingLength = positiveIntegerKey(metadata, embeddingKey)
-  if (embeddingLength % headCount !== 0) {
-    throw new InvalidMemoryEstimateInputError(headCountKey, `${embeddingKey}=${embeddingLength} no se reparte entre ${headCount} cabezas`)
-  }
   return {
     blockCount: positiveIntegerKey(metadata, `${architecture}.block_count`),
     kvHeadCount: kvHeadCountOf(metadata, `${architecture}.attention.head_count_kv`, headCount),
-    headDimension: embeddingLength / headCount,
+    headDimension: headDimensionOf(metadata, architecture, headCount),
   }
+}
+
+/**
+ * La dimensión de cabeza: la declarada (`attention.key_length`) si el GGUF la
+ * trae; si no, la del embedding repartido entre las cabezas. Qwen3-4B declara
+ * 128 con un embedding de 2560 y 32 cabezas: derivarla daba 80 y la caché KV
+ * salía al 62.5 % de la real (H-THYROX-448).
+ */
+function headDimensionOf(metadata: GgufMetadata, architecture: string, headCount: number): number {
+  const keyLengthKey = `${architecture}.attention.key_length`
+  if (metadata[keyLengthKey] !== undefined) return positiveIntegerKey(metadata, keyLengthKey)
+  const embeddingKey = `${architecture}.embedding_length`
+  const embeddingLength = positiveIntegerKey(metadata, embeddingKey)
+  if (embeddingLength % headCount !== 0) {
+    throw new InvalidMemoryEstimateInputError(`${architecture}.attention.head_count`, `${embeddingKey}=${embeddingLength} no se reparte entre ${headCount} cabezas`)
+  }
+  return embeddingLength / headCount
 }
 
 /**
