@@ -1,0 +1,3 @@
+admitted elapsedMs=22878 endpoint={"unitId":"unit-600bc55a-1ae1-495b-86f1-021e9bfc966a","kind":"model-runtime","reference":{"kind":"grant","grantId":"600bc55a-1ae1-495b-86f1-021e9bfc966a"},"owner":{"kind":"model-coordinator","id":"model-coordinator.vm","pid":25829},"containerName":"thyrox-worker-unit-600bc55a-1ae1-495b-86f1-021e9bfc
+finish=finished
+exit=0
