@@ -1,0 +1,21 @@
+{
+  "schema": "thyrox.permanent-artifact-record.v1",
+  "model": "Qwen/Qwen3-4B-GGUF",
+  "source": {
+    "provider": "hf",
+    "repository": "Qwen/Qwen3-4B-GGUF",
+    "revision": "bc640142c66e1fdd12af0bd68f40445458f3869b",
+    "file": "Qwen3-4B-Q4_K_M.gguf",
+    "evidence": "catalog entry thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e (declaredAt 2026-10-03T10:17:58Z); hf-import.log"
+  },
+  "quantization": {
+    "method": "publicada por el autor (Qwen/Qwen3-4B-GGUF), sin recuantizar",
+    "type": "Q4_K_M",
+    "file": "model-Q4_K_M.gguf"
+  },
+  "license": "apache-2.0",
+  "provenance": {
+    "task": "TASK-THYROX-0912",
+    "source": "Qwen3-4B-Q4_K_M.gguf, sha256 7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5, fijado contra la API de Hugging Face y validado por local-models-import"
+  }
+}

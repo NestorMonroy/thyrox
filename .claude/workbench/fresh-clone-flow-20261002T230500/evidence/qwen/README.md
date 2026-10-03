@@ -16,3 +16,14 @@ y en `.env`. No se sustituye esa cadena por una instalación directa en Ollama.
 Nota de identidad: el GGUF de Hugging Face no es el `library/qwen3:4b` de
 Ollama (`3e4cb141…`, el que admite `execution_policy.json`): el ruteo de
 `headless-pool` no lo elegirá hasta que la política lo declare.
+
+## Desbloqueo (credencial `DOCKER_PAT_RW`)
+
+| Paso | Autoridad | Resultado |
+|---|---|---|
+| publicar | `artifact-registry-publish-artifact`, credencial sólo en el entorno de ese proceso (`THYROX_REGISTRY_PUBLISHER_TOKEN` ← `DOCKER_PAT_RW`, usuario `th3rox`) | `verified` `th3rox/thyrox-quantization-lab-artifacts:qwen3-4b-gguf-bc640142c66e-q4_k_m` @ `sha256:6775c008…` |
+| ubicar | `local-models-catalog locate --publication` | `ubicado: sha256 7485fe6f… en …@sha256:6775c008…` |
+| instalar | `local-models-ensure` (por `local_control_plane_ready`) | `ready`, `downloaded` e `installed`; catálogo = materializado = runtime = `7485fe6f…`; 2 min 5 s |
+| inferencia | `/api/chat` del Ollama gestionado, temperatura 0, `think: false` | «What is 17 + 25? Reply with only the number.» → `42`; carga 5.38 s, total 5.9 s |
+
+Ni el log de la publicación ni el registro contienen el token (`grep -c` → 0).

@@ -1,0 +1,37 @@
+publish-artifact: → HEAD https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:e2d715974bd0c973ad314d49ffa5f3507a3fb3ee238bbcca86f191db1dbc723d
+publish-artifact: ← 401 HEAD /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:e2d715974bd0c973ad314d49ffa5f3507a3fb3ee238bbcca86f191db1dbc723d 406ms
+publish-artifact: → GET https://auth.docker.io/token
+publish-artifact: ← 200 GET /token 472ms
+publish-artifact: → HEAD https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:e2d715974bd0c973ad314d49ffa5f3507a3fb3ee238bbcca86f191db1dbc723d
+publish-artifact: ← 404 HEAD /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:e2d715974bd0c973ad314d49ffa5f3507a3fb3ee238bbcca86f191db1dbc723d 65ms
+publish-artifact: → POST https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/
+publish-artifact: ← 202 POST /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/ 119ms
+publish-artifact: → PUT https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/c99ec713-4de2-4916-a5c4-d57e964f6d78
+publish-artifact: ← 201 PUT /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/c99ec713-4de2-4916-a5c4-d57e964f6d78 600ms
+publish-artifact: → HEAD https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5
+publish-artifact: ← 404 HEAD /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/sha256:7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5 68ms
+publish-artifact: → POST https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/
+publish-artifact: ← 202 POST /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/ 128ms
+publish-artifact: → PATCH https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/e6ec2fc3-73cc-4053-a88c-edc11d000a4d
+publish-artifact: ← 202 PATCH /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/e6ec2fc3-73cc-4053-a88c-edc11d000a4d 181894ms
+publish-artifact: → PATCH https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/e6ec2fc3-73cc-4053-a88c-edc11d000a4d
+publish-artifact: ← 202 PATCH /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/e6ec2fc3-73cc-4053-a88c-edc11d000a4d 187635ms
+publish-artifact: → PATCH https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/e6ec2fc3-73cc-4053-a88c-edc11d000a4d
+publish-artifact: ← 401 PATCH /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/e6ec2fc3-73cc-4053-a88c-edc11d000a4d 165057ms
+publish-artifact: → GET https://auth.docker.io/token
+publish-artifact: ← 200 GET /token 566ms
+publish-artifact: → PATCH https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/e6ec2fc3-73cc-4053-a88c-edc11d000a4d
+publish-artifact: ← 202 PATCH /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/e6ec2fc3-73cc-4053-a88c-edc11d000a4d 174283ms
+publish-artifact: → PATCH https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/e6ec2fc3-73cc-4053-a88c-edc11d000a4d
+publish-artifact: ← 202 PATCH /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/e6ec2fc3-73cc-4053-a88c-edc11d000a4d 164328ms
+publish-artifact: → PATCH https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/e6ec2fc3-73cc-4053-a88c-edc11d000a4d
+publish-artifact: ← 202 PATCH /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/e6ec2fc3-73cc-4053-a88c-edc11d000a4d 60680ms
+publish-artifact: → PUT https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/e6ec2fc3-73cc-4053-a88c-edc11d000a4d
+publish-artifact: ← 401 PUT /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/e6ec2fc3-73cc-4053-a88c-edc11d000a4d 46ms
+publish-artifact: → GET https://auth.docker.io/token
+publish-artifact: ← 200 GET /token 447ms
+publish-artifact: → PUT https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/e6ec2fc3-73cc-4053-a88c-edc11d000a4d
+publish-artifact: ← 201 PUT /v2/th3rox/thyrox-quantization-lab-artifacts/blobs/uploads/e6ec2fc3-73cc-4053-a88c-edc11d000a4d 1753ms
+publish-artifact: → PUT https://registry-1.docker.io/v2/th3rox/thyrox-quantization-lab-artifacts/manifests/qwen3-4b-gguf-bc640142c66e-q4_k_m
+publish-artifact: ← 201 PUT /v2/th3rox/thyrox-quantization-lab-artifacts/manifests/qwen3-4b-gguf-bc640142c66e-q4_k_m 1378ms
+publish-artifact: verified docker.io/th3rox/thyrox-quantization-lab-artifacts@sha256:6775c00845e7a12e3302e8097a8cbdcc74b69aeb65888ddb840a4be541836cf1
