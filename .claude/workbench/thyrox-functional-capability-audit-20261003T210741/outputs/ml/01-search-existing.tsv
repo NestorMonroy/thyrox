@@ -1,0 +1,26 @@
+TransformersRuntimeAdapter	src/packages/local-models/__tests__/transformersRuntimeAdapter.test.ts src/packages/local-models/hostCoordinatorComposition.ts src/packages/local-models/transformersRuntimeAdapter.ts 
+TRANSFORMERS_RUNTIME_IMAGE	src/packages/local-models/hostCoordinatorComposition.ts 
+thyrox-transformers-runtime	src/packages/local-models/hostCoordinatorComposition.ts src/packages/model-scheduling/__tests__/podmanModelUnitMaterializer.test.ts 
+safetensors	src/packages/local-models/__tests__/hostCoordinatorComposition.test.ts src/packages/local-models/__tests__/ollamaRuntimeAdapter.test.ts src/packages/local-models/__tests__/quantizationRun.test.ts src/packages/local-models/__tests__/snapshotManifest.test.ts src/packages/local-models/__tests__/transformersRuntimeAdapter.test.ts src/packages/local-models/hostCoordinatorComposition.ts src/packages/local-models/snapshotManifest.ts src/packages/local-models/transformers-runtime/Containerfile src/packages/local-models/transformers-runtime/transformers_runtime_server.py src/packages/model-artifacts/__
+runtime.{0,6}transformers	.env.example src/packages/local-models/__tests__/transformersRuntimeAdapter.test.ts src/packages/local-models/transformersRuntimeApi.ts src/packages/model-scheduling/__tests__/podmanModelUnitMaterializer.test.ts 
+admittedEmbed	src/packages/local-models/admittedEmbed.ts src/packages/local-models/qualifyModel.ts 
+semantic_search_worker	src/packages/daemon/src/podman/specializedWorkerProfile.ts 
+specializedWorkerProfile	src/packages/daemon/src/__tests__/specializedWorkerProfile.test.ts src/packages/daemon/src/podman/specializedWorkerProfile.ts 
+SentenceTransformer	
+sentence.transformers	
+CrossEncoder	
+rerank	src/packages/semantic-search/__tests__/corpus.postgres.test.ts src/packages/semantic-search/__tests__/rerank.test.ts src/packages/semantic-search/__tests__/store.postgres.test.ts src/packages/semantic-search/analysisRuns.ts src/packages/semantic-search/corpusSql.ts src/packages/semantic-search/package.json src/packages/semantic-search/rerank.ts src/packages/semantic-search/store.ts src/packages/tool-registry/src/tools/BashTool/readOnlyValidation.ts 
+-i:madlad	src/packages/local-models/__tests__/transformersRuntimeAdapter.test.ts src/packages/local-models/admittedSeq2seq.ts src/packages/local-models/transformers-runtime/Containerfile src/packages/local-models/transformers-runtime/transformers_runtime_server.py tests/local_models/test_transformers_runtime_server.py 
+AutoModelForSeq2SeqLM	src/packages/local-models/transformers-runtime/transformers_runtime_server.py tests/local_models/test_transformers_runtime_server.py 
+NLLB	
+ExecutionOutcomeClassifier	
+OUTCOME_CLASSIFIER	.env.example src/session/task_continuation.py src/verify/env_sensitivity.tsv tests/session/test_task_continuation.py 
+AutoModelForSequenceClassification	
+-i:reward.model	
+-i:value.model	src/packages/agent/__tests__/schema.test.ts src/packages/mitm/src/aliasConfig.ts src/packages/model-scheduling/coordinatorProtocol.ts src/packages/provider/src/model/deprecation.ts 
+RLVR	
+\btrl\b	
+-i:nomic	src/corpus/bie_series.py src/corpus/xls_to_text.py src/packages/agent/__tests__/messagesPureHelpers.test.ts src/packages/config/frontmatterParser.ts src/packages/local-models/__tests__/declaredCapabilities.test.ts src/packages/local-models/__tests__/embeddingValidation.test.ts src/packages/local-models/externalArtifact.ts src/packages/memory/src/memoryTypes.ts src/packages/model-artifacts/__tests__/modelQualification.test.ts src/packages/model-artifacts/memoryEstimate.ts src/packages/permission/src/__tests__/shellRuleMatching-edge.test.ts src/skills/definitions/cpDiagnosis.prompt.md src/skills
+onnxruntime	
+embedding@1	src/packages/local-models/__tests__/embeddingSuite.test.ts src/packages/local-models/suites/batch-worker-mecanica-1.json src/packages/model-artifacts/__tests__/modelQualification.test.ts 
+TASK-THYROX-0904	

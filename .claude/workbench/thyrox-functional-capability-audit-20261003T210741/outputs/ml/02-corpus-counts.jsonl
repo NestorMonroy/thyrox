@@ -1,0 +1,3 @@
+{"vector_extension":[{"extname":"vector","extversion":"0.8.0"}]}
+{"datname":"postgres","schemas":[],"corpusTables":[]}
+{"datname":"thyrox","schemas":[{"table_schema":"public","tables":1}],"corpusTables":[]}

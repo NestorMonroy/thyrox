@@ -1,0 +1,111 @@
+[
+ {
+  "id": "056739dd0acd180324483ca7deab876355f210f00d350f697b4a6992b6ee589d",
+  "tags": [
+   "localhost/thyrox-model-quantizer:candidate-2027edfaf1a2"
+  ],
+  "digests": [
+   "localhost/thyrox-model-quantizer@sha256:1e7427acebf3481547f69aee5741e703dad02be7c9fb50a35fc5d03667c322d6"
+  ],
+  "bytes": 1279631478,
+  "created": "2026-10-03T10:16:07.663985145Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "io.thyrox.image.definition": "thyrox-model-quantizer",
+   "io.thyrox.image.definition-commit": "2027edfaf1a24d135da82b8a4de7e877c2c4b3dc",
+   "io.thyrox.image.lifecycle": "permanent",
+   "org.opencontainers.image.version": "24.04",
+   "thyrox.task": "TASK-THYROX-0912"
+  }
+ },
+ {
+  "id": "2bb9f235830eb30689864b5447eeea083ae1e3607a18fdca353b5c91de5e5e5a",
+  "tags": [],
+  "digests": [
+   "docker.io/th3rox/thyrox-task-runner@sha256:1cced65c16b40c7ac5fc73a6908ce0353ec450618251cac1893ef8c82ad25ba5"
+  ],
+  "bytes": 386466654,
+  "created": "2026-10-02T02:21:31.177761464Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "io.thyrox.image.lifecycle": "permanent",
+   "org.opencontainers.image.version": "24.04",
+   "thyrox.task": "TASK-THYROX-0724"
+  }
+ },
+ {
+  "id": "9ace0117e8ff59e3d54beeea8069d919b9a882168385a1dfc5a1d8b9503df50c",
+  "tags": [],
+  "digests": [
+   "ghcr.io/ggml-org/llama.cpp@sha256:88ef2d9c2a221e80d5eb96f707a719524e9fc522d34b272bf2852dde4898d2dc",
+   "ghcr.io/ggml-org/llama.cpp@sha256:f3f04c295b2906b706754b9b2ed239fc636751e4c92687dab823336fc026f076"
+  ],
+  "bytes": 2957557436,
+  "created": "2026-09-30T04:49:29.236058659Z",
+  "labels": {
+   "org.opencontainers.image.created": "2026-09-30T04:38:22Z",
+   "org.opencontainers.image.description": "LLM inference in C/C++",
+   "org.opencontainers.image.revision": "eae11d2217fe9225d1aaba48773b6cca45ae4de9",
+   "org.opencontainers.image.source": "https://github.com/ggml-org/llama.cpp",
+   "org.opencontainers.image.title": "llama.cpp",
+   "org.opencontainers.image.url": "https://github.com/ggml-org/llama.cpp",
+   "org.opencontainers.image.version": "b11277"
+  }
+ },
+ {
+  "id": "c178b43788bbd8f33ac3a6aa17dc561bc15dcbdba08ceac19f9388cf2415cc48",
+  "tags": [
+   "docker.io/ollama/ollama:0.35.0"
+  ],
+  "digests": [
+   "docker.io/ollama/ollama@sha256:2a6e883b917fc543389599dae79918f5cac9e1438890506982f44aa4f5625d01",
+   "docker.io/ollama/ollama@sha256:9c1dc45ea758396139ec0adfa52947714c61f8d1e4537a6e2daef8138e7a64a9"
+  ],
+  "bytes": 5513676936,
+  "created": "2026-09-29T01:43:16.242329418Z",
+  "labels": {
+   "org.opencontainers.image.version": "24.04"
+  }
+ },
+ {
+  "id": "64035c2c9726d90bea2a217d43da49d7a3f13dde8647c1f409059e02e0e61287",
+  "tags": [
+   "docker.io/library/redis:7.4"
+  ],
+  "digests": [
+   "docker.io/library/redis@sha256:95acc00495ddacfec75111ba47021f903121a890311d49264c723b4423ac9601",
+   "docker.io/library/redis@sha256:c6eabf748fc7a61dbb5a705c78bcf3d6377b1127a97d0ce965c11c44ba46896f"
+  ],
+  "bytes": 116068690,
+  "created": "2026-09-19T00:38:19.910809608Z",
+  "labels": {}
+ },
+ {
+  "id": "69f919497cada9a8611f3de61df902d9f94bf20f84552ef5bd93125c38608ef9",
+  "tags": [
+   "docker.io/library/ubuntu:24.04"
+  ],
+  "digests": [
+   "docker.io/library/ubuntu@sha256:a853f94d226358a79c740cfc7bce0c289748f3fe3488d921d038ccd752c61b60",
+   "docker.io/library/ubuntu@sha256:f610ab94648195aa356059f5b41d6085c9d4d903c072430cdd1af7bdb646106b"
+  ],
+  "bytes": 80701300,
+  "created": "2026-09-18T21:20:38.103397332Z",
+  "labels": {
+   "org.opencontainers.image.version": "24.04"
+  }
+ },
+ {
+  "id": "56a5b20c7a157dbb94149ba3cce70da76f02e1645dec234379709ddaebe607ea",
+  "tags": [
+   "docker.io/pgvector/pgvector:0.8.0-pg16"
+  ],
+  "digests": [
+   "docker.io/pgvector/pgvector@sha256:a132765ec351c65111b5b675928a3a0515a466a40f97277329db8b8209ad8bc9",
+   "docker.io/pgvector/pgvector@sha256:c72df104202409108a1660ecccd2b7ffac6b17e44c31b2636d10e983f410f8eb"
+  ],
+  "bytes": 446874579,
+  "created": "2025-08-15T18:23:37.090125259Z",
+  "labels": {}
+ }
+]
