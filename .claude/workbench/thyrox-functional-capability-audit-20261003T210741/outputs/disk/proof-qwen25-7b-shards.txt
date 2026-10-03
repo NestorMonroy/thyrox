@@ -1,0 +1,7 @@
+## caché por digest + retirada de shards (BUILD_INTERMEDIATE) 2026-10-03T22:45:59Z
+medido caché: 1875fb29e8c91c86615c00e92d8b4114e56bc24359adb5a8db8b36452fae4a49
+.thyrox/runtime/qwen25-7b-import/scratch/qwen2.5-7b-instruct-q4_k_m.gguf 4683073536 inode=1493265 links=2
+.thyrox/models/artifacts/sha256-1875fb29e8c91c86615c00e92d8b4114e56bc24359adb5a8db8b36452fae4a49.gguf 4683073536 inode=1493265 links=2
+shards fijados por revisión bb5d59e06d9551d752d08b292a50eb208b07ab1f y sha256 (dfce12e3…, 539cf93f…): reimportables
+disco antes: 4763688960
+retirados shards; disco después: 9446760448
