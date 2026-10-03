@@ -1,0 +1,14 @@
+policy: {"subagents": false, "unmanagedPayloads": false, "implementation": "bootstrap-exception"}
+unmanaged_payloads_allowed: False | controller_may_implement: True
+declarada en control_plane_entries: True
+[bash bin/thyrox-bg start local-control-plane-ready --grace 0 -- bin/local_control_plane_ready] client_background=PASS | controller_mutation=PASS
+[bash bin/thyrox-bg register local-control-plane-ready] client_background=PASS | controller_mutation=PASS
+[bash bin/local_control_plane_ready] client_background=PASS | controller_mutation=PASS
+control [bash tests/run.sh] run_in_background=True -> AVISO
+control [bash bin/local_control_plane_ready] run_in_background=True -> AVISO
+execution_policy.json intacto
+--- capa del plano de control (bg.sh), con dobles de las dos autoridades ---
+thyrox-bg start p0c4-control-plane -- bin/local_control_plane_ready  -> aceptado, done:0
+llamadas de los dobles: "double-recovery --classify" | "double-ensure"
+wait-jobs wait -> OK p0c4-control-plane exit=0
+control: thyrox-bg start p0c4-undeclared -- bin/podman_capabilities -> rc=2, «no es una entrada declarada», sin trabajo creado

@@ -1,0 +1,11 @@
+## contenedores (name state running pid pid_alive)
+thyrox-redis	running	true	2185	false
+thyrox-ollama	running	true	3329	false
+## locks (allocated referenced)
+0 4
+## volúmenes (name)
+f5a26b53b24e81eece469781ffddb9c7103aa056051c0c4f7800bcf10bef25e3
+thyrox-ollama-models
+## imágenes (id12 tag)
+64035c2c9726	docker.io/library/redis:7.4
+c178b43788bb	docker.io/ollama/ollama:0.35.0
