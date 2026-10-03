@@ -1,0 +1,40 @@
+  ok    el sujeto existe y es ejecutable
+  ok    caso 1: HEALTHY -> exit 0
+  ok    caso 1: clasifica y converge
+  ok    caso 2: firma conocida -> exit 0
+  ok    caso 2: classify, after-reboot, classify, ensure
+  ok    caso 3: after-reboot sale 3 -> exit 3
+  ok    caso 3: no converge
+  FALLO caso 4: reclasificación no sana -> exit 2
+        esperado=[2]
+        obtenido=[0]
+  FALLO caso 4: no converge
+        esperado=[recovery --classify|recovery --after-reboot|recovery --classify]
+        obtenido=[recovery --classify|recovery --after-reboot|recovery --classify|ensure ]
+  FALLO caso 4: no nombra el veredicto: []
+  ok    caso 5: REFUSED -> exit 2
+  ok    caso 5: sólo clasifica
+  ok    caso 5: nombra la razón
+  ok    caso 6: veredicto [healthy] -> exit 2
+  ok    caso 6: veredicto [healthy] no repara ni converge
+  ok    caso 6: veredicto [] -> exit 2
+  ok    caso 6: veredicto [] no repara ni converge
+  ok    caso 6: veredicto [HEALTHY extra] -> exit 2
+  ok    caso 6: veredicto [HEALTHY extra] no repara ni converge
+  ok    caso 6: veredicto [KNOWN_POST_REBOOT_RECOVERABLE?] -> exit 2
+  ok    caso 6: veredicto [KNOWN_POST_REBOOT_RECOVERABLE?] no repara ni converge
+  ok    caso 6: --classify sale 2 -> exit 2
+  ok    caso 6: --classify sale 2 -> no converge
+  ok    caso 7: ensure sale 1 -> exit 1
+  ok    caso 8: pasa la selección al ensure
+  ok    caso 9: el código del composer no menciona [podman ]
+  ok    caso 9: el código del composer no menciona ["$PODMAN"]
+  ok    caso 9: el código del composer no menciona [4\.9]
+  ok    caso 9: el código del composer no menciona [sqlite]
+  ok    caso 9: el código del composer no menciona [btime]
+  ok    caso 9: el código del composer no menciona [mtime]
+  ok    caso 9: el código del composer no menciona [alive]
+  ok    caso 9: el código del composer no menciona [renumber]
+  ok    caso 9: el código del composer no menciona [FreeLocks]
+
+34 casos: 31 ok, 3 fallos

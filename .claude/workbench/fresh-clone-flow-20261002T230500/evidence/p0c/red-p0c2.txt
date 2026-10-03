@@ -1,0 +1,3 @@
+  FALLO no existe o no es ejecutable: /home/user/thyrox/src/session/local_control_plane_ready.sh
+
+1 casos: 0 ok, 1 fallos

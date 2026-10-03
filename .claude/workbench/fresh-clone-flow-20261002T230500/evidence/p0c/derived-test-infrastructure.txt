@@ -1,0 +1,38 @@
+  ok    el sujeto existe: /home/user/thyrox/src/lib/infrastructure.sh
+  ok    el sujeto se sourcea sin error
+  ok    declara thyrox_infrastructure_container_names
+  ok    declara thyrox_infrastructure_health_check_argv
+  ok    declara thyrox_infrastructure_inspect
+  ok    container_names lista los tres nombres fijos, en orden
+  ok    la salud de postgres usa el usuario y la base declarados
+  ok    health_check_argv(postgres) es pg_isready
+  ok    health_check_argv(redis) es redis-cli ping
+  ok    disk_need_bytes(postgres) sale 0
+  ok    disk_need_bytes(postgres): capas comprimidas medidas x factor de pull
+  ok    disk_need_bytes(redis): capas comprimidas medidas x factor de pull
+  ok    disk_need_bytes de un nombre desconocido sale 2
+  ok    disk_need_bytes de un nombre desconocido no imprime nada
+  ok    image(postgres) es la imagen declarada
+  ok    image(redis) respeta la variable
+  ok    image de un nombre desconocido sale 2
+  ok    image(ollama) respeta la variable
+  ok    health_check_argv(ollama) es ollama list
+  ok    disk_need_bytes(ollama): comprimido + desempaquetado medidos
+  ok    .env.example declara THYROX_INFRA_OLLAMA_IMAGE vacia
+  ok    .env.example declara THYROX_INFRA_OLLAMA_PORT vacia
+  ok    .env.example declara THYROX_INFRA_PROXY_CA_BUNDLE vacia
+  ok    is_lock_collision reconoce el literal de Podman 4.9.3
+  ok    is_lock_collision reconoce el lock que Podman no puede liberar
+  ok    is_lock_collision no clasifica como colision: [Error: no such image]
+  ok    is_lock_collision no clasifica como colision: []
+  ok    el remedio nombra thyrox-ollama
+  ok    el remedio nombra retirar
+  ok    el remedio nombra bin/podman_lock_recovery
+  ok    el remedio no manda a renumerar a mano
+  ok    inspect usa THYROX_TOOLCHAIN_PODMAN_BIN y publica estado y pid
+  ok    0735: el volumen declarado en el .env se monta sin exportarlo
+  ok    0735: el puerto declarado en el .env se usa sin exportarlo
+  ok    0735: la variable del proceso gana sobre el .env
+  ok    0735: sin declaración en proceso ni archivo queda el volumen por defecto
+
+36 casos: 36 ok, 0 fallos

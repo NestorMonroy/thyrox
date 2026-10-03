@@ -1,0 +1,56 @@
+  ok    el sujeto existe y es ejecutable: /home/user/thyrox/src/session/infrastructure_ensure.sh
+  ok    caso 1: los tres -> exit 0
+  ok    caso 1: el bootstrap recibe los tres, en orden
+  ok    caso 1: el bootstrap se invoca una vez
+  ok    caso 1: las líneas del bootstrap llegan a stdout
+  ok    caso 1: ningún podman create/start/rm/exec/run desde el ensure
+  ok    caso 2: credencial en el .env -> exit 0
+  ok    caso 2: el bootstrap recibe la credencial por su entorno
+  ok    caso 2: la credencial no viaja en argv ni en la declaración
+  ok    caso 3: sólo ollama, sin credencial -> exit 0
+  ok    caso 3: el bootstrap recibe sólo ollama
+  ok    caso 3: sin postgres, el bootstrap no recibe la credencial
+  ok    caso 4: postgres sin credencial -> exit 2
+  ok    caso 4: nombra la variable
+  ok    caso 4: ni podman ni el bootstrap se invocan
+  ok    caso 5: nombre desconocido -> exit 2
+  ok    caso 5: no se invoca nada
+  ok    caso 6: el bootstrap sale 1 -> el ensure sale 1
+  ok    caso 6: el bootstrap sale 2 -> el ensure sale 2
+  ok    caso 6: el bootstrap sale 3 -> el ensure sale 3
+  ok    caso 7: cabe -> exit 0
+  ok    caso 7: reserva la suma de las imágenes que faltan, a nombre de un pid
+  ok    caso 7: el orden es admitir, materializar y soltar
+  ok    caso 8: no cabe -> exit 2
+  ok    caso 8: sin disco admitido no se invoca el bootstrap
+  ok    caso 8: el rehúso nombra thyrox-postgres
+  ok    caso 8: el rehúso nombra 625290552
+  ok    caso 8: el rehúso nombra techo
+  ok    caso 8: el rehúso nombra disk-reserve-reach-20260930T191002
+  ok    caso 9: imágenes presentes -> exit 0 aunque el disco no admita
+  ok    caso 9: con las imágenes presentes no se pide disco
+  ok    caso 10: con el bootstrap fallido, la reserva se suelta
+  ok    caso 11: .env.example declara THYROX_INFRA_DISK_ADMISSION_BIN
+  ok    caso 11: .env.example declara THYROX_INFRA_BOOTSTRAP_BIN
+  ok    caso 12: locks desfasados con todo parado -> exit 3
+  ok    caso 12: el ensure no ejecuta ningún podman system
+  ok    caso 12: sin locks sanos no se invoca el bootstrap
+  ok    caso 12: publica la medida
+  ok    caso 12: nombra la reparación explícita
+  ok    caso 12: ningún podman create/start/rm/exec/run desde el ensure
+  ok    caso 13: base coherente -> exit 0
+  ok    caso 13: base coherente -> ningún podman system
+  ok    caso 14: desfase con un contenedor vivo -> exit 3
+  ok    caso 14: con un contenedor vivo, ningún podman system
+  ok    caso 14: con un contenedor vivo no se invoca el bootstrap
+  ok    caso 14: nombra el contenedor vivo y la reparación
+  ok    caso 15: sin medida de locks -> sigue (exit 0)
+  ok    caso 15: sin medida de locks, ningún podman system
+  ok    caso 16: sqlite 4.9 con volúmenes -> exit 3
+  ok    caso 16: reconoce las precondiciones de H-THYROX-308
+  ok    caso 16: publica versión, backend y volúmenes medidos
+  ok    caso 16: reconocerlo no ejecuta renumber
+  ok    caso 17: otro backend -> exit 3
+  ok    caso 17: con boltdb no se atribuye a H-THYROX-308
+
+54 casos: 54 ok, 0 fallos

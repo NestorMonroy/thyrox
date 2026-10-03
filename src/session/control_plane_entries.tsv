@@ -8,3 +8,4 @@ podman_lock_recovery	src/session/podman_lock_recovery.sh	recuperación explícit
 task_continuation	src/session/task_continuation.py	materializa la frontera de un plan declarado con GNU Parallel; despacha, verifica e integra en unidades
 model_coordinator	src/session/model_coordinator.sh	ciclo de vida del coordinador de modelos del anfitrión; el daemon materializa sus unidades por la primitiva
 image-registry-build-declared-image	src/packages/image-registry/bin/buildDeclaredImage.ts	construye sólo una imagen del catálogo por su identidad lógica; contexto, red y ciclo de vida salen de la definición y materializa la primitiva
+local_control_plane_ready	src/session/local_control_plane_ready.sh	compone la recuperación del motor y la convergencia tras un arranque; no materializa ni repara por sí mismo

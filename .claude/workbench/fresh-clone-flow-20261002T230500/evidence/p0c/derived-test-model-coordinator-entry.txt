@@ -1,0 +1,19 @@
+  ok    1 es entrada declarada del plano de control
+  ok    2 start sale 0
+  ok    2 imprime el socket canónico
+  ok    2 el socket acepta conexiones
+  ok    2 el daemon corre con origen service
+  ok    2 el trabajo está en el ledger de thyrox-bg
+  ok    3 un segundo start sale 0
+  ok    3 no lanza un segundo daemon
+  ok    4 status sano sale 0
+  ok    4 publica los tickets del protocolo
+  ok    4 un socket que no habla el protocolo sale 1
+  ok    5 con trabajos en el daemon stop rehúsa con 4
+  ok    5 y el coordinador sigue sano
+  ok    5 con tickets vivos stop rehúsa con 4
+  ok    6 stop sale 0
+  ok    6 al volver stop, el daemon ya terminó (su barrido incluido)
+  ok    6 el socket desaparece
+  ok    6 status detenido no sale 0
+model_coordinator: 18 ok, 0 fallas
