@@ -1,0 +1,10 @@
+     83 .thyrox/context
+     38 .thyrox/runtime
+     28 .thyrox/models
+     15 .thyrox/pool-worktrees
+     12 .thyrox/rules
+      8 .thyrox/registry
+      5 .thyrox/THYROX.md
+      2 .thyrox/ROADMAP
+      1 .thyrox/jobs
+      1 .thyrox/daemon.

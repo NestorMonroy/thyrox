@@ -1,0 +1,86 @@
+src/packages/local-observability/src/logging/internal.ts:16: * Get the current Kubernetes namespace:
+src/packages/local-observability/src/logging/internal.ts:75:    namespace:
+src/packages/local-observability/src/storageKeys.ts:105:  const base = withOptional({ namespace: 'transcript' as const, projectKey, sessionId }, 'agentId', agentId)
+src/packages/local-observability/src/storageKeys.ts:111:  const base = withOptional({ namespace: 'log' as const, sessionId, channel }, 'agentId', options?.agentId)
+src/packages/local-observability/src/storageKeys.ts:118:  journal: (projectKey: string, sessionId: string, agentRelPath: readonly string[]) => ({ namespace: 'transcript' as const, projectKey, sessionId, agentRelPath, journal: true as const }),
+src/packages/local-observability/src/storageKeys.ts:119:  sessionJournal: (projectKey: string, sessionId: string, sessionJournal: string) => ({ namespace: 'transcript' as const, projectKey, sessionId, sessionJournal }),
+src/packages/local-observability/src/storageKeys.ts:120:  history: () => ({ namespace: 'history' as const }),
+src/packages/local-observability/src/storageKeys.ts:122:  globalConfig: () => ({ namespace: 'globalConfig' as const }),
+src/packages/local-observability/src/storageKeys.ts:123:  globalConfigCopy: (kind: string, stamp: string) => ({ namespace: 'globalConfig' as const, kind, stamp }),
+src/packages/local-observability/src/storageKeys.ts:124:  userSettings: () => ({ namespace: 'settings' as const, layer: 'user' as const }),
+src/packages/local-observability/src/storageKeys.ts:125:  projectSettings: (projectKey: string) => ({ namespace: 'settings' as const, layer: 'project' as const, projectKey }),
+src/packages/local-observability/src/storageKeys.ts:126:  localSettings: (consentRootKey: string) => ({ namespace: 'settings' as const, layer: 'local' as const, consentRootKey }),
+src/packages/local-observability/src/storageKeys.ts:127:  task: (listId: string, taskId: string) => ({ namespace: 'task' as const, listId, taskId }),
+src/packages/local-observability/src/storageKeys.ts:128:  taskListMeta: (listId: string) => ({ namespace: 'task' as const, listId, meta: true as const }),
+src/packages/local-observability/src/storageKeys.ts:129:  taskListHighWaterMark: (listId: string) => ({ namespace: 'task' as const, listId, highWaterMark: true as const }),
+src/packages/local-observability/src/storageKeys.ts:130:  memory: (projectKey: string, relPath: readonly string[]) => ({ namespace: 'memory' as const, projectKey, relPath }),
+src/packages/local-observability/src/storageKeys.ts:131:  pluginRegistry: (file: string) => ({ namespace: 'pluginRegistry' as const, file }),
+src/packages/local-observability/src/storageKeys.ts:132:  marketplaceCache: (marketplace: string, form: string) => ({ namespace: 'marketplaceCache' as const, marketplace, form }),
+src/packages/local-observability/src/storageKeys.ts:133:  marketplaceTree: (marketplace: string, relPath: readonly string[]) => ({ namespace: 'marketplaceCache' as const, marketplace, relPath }),
+src/packages/local-observability/src/storageKeys.ts:134:  pluginCache: (marketplace: string, plugin: string, version: string, relPath: readonly string[]) => ({ namespace: 'pluginCache' as const, marketplace, plugin, version, relPath }),
+src/packages/local-observability/src/storageKeys.ts:135:  cache: (store: string, id: string) => ({ namespace: 'cache' as const, store, id }),
+src/packages/local-observability/src/storageKeys.ts:136:  paste: (id: string) => ({ namespace: 'paste' as const, id }),
+src/packages/local-observability/src/storageKeys.ts:137:  state: (id: string) => ({ namespace: 'state' as const, id }),
+src/packages/local-observability/src/storageKeys.ts:138:  pluginAssetCache: (digest: string) => ({ namespace: 'pluginAssetCache' as const, digest }),
+src/packages/local-observability/src/storageKeys.ts:139:  plan: (name: string) => ({ namespace: 'plan' as const, name }),
+src/packages/local-observability/src/storageKeys.ts:140:  daemon: (relPath: readonly string[]) => ({ namespace: 'daemon' as const, relPath }),
+src/packages/local-observability/src/storageKeys.ts:141:  feedbackDraft: (draftId: string) => ({ namespace: 'feedbackDraft' as const, draftId }),
+src/packages/local-observability/src/storageKeys.ts:142:  agentMemory: (agentType: string, relPath: readonly string[]) => ({ namespace: 'agentMemory' as const, layer: 'user' as const, agentType, relPath }),
+src/packages/local-observability/src/storageKeys.ts:143:  identity: () => ({ namespace: 'identity' as const }),
+src/packages/local-observability/src/storageKeys.ts:144:  team: (team: string) => ({ namespace: 'team' as const, team }),
+src/packages/local-observability/src/storageKeys.ts:145:  sidecar: (projectKey: string, sessionId: string, relPath: readonly string[]) => ({ namespace: 'sidecar' as const, projectKey, sessionId, relPath }),
+src/packages/local-observability/src/storageKeys.ts:146:  mailbox: (team: string, teammate: string) => ({ namespace: 'mailbox' as const, team, teammate }),
+src/packages/local-observability/src/storageKeys.ts:147:  scratch: (sessionId: string, relPath: readonly string[]) => ({ namespace: 'scratch' as const, sessionId, relPath }),
+src/packages/local-observability/src/storageKeys.ts:148:  userConfigDir: (dir: string, relPath: readonly string[]) => ({ namespace: 'userConfigDir' as const, dir, relPath }),
+src/packages/local-observability/src/storageKeys.ts:149:  fileHistory: (sessionId: string, backupFileName: string) => ({ namespace: 'fileHistory' as const, sessionId, backupFileName }),
+src/packages/local-observability/src/storageKeys.ts:150:  job: (jobId: string, relPath: readonly string[]) => ({ namespace: 'job' as const, jobId, relPath }),
+src/packages/local-observability/src/storageKeys.ts:151:  jobTimeline: (jobId: string) => ({ namespace: 'jobTimeline' as const, jobId }),
+src/packages/local-observability/src/storageKeys.ts:152:  recording: (projectKey: string, sessionId: string, stamp: string) => ({ namespace: 'recording' as const, projectKey, sessionId, stamp }),
+src/packages/local-observability/src/storageKeys.ts:153:  sessionLog: (projectKey: string, date: SessionLogDate, logName: string) => ({ namespace: 'sessionLog' as const, projectKey, year: date.year, month: date.month, day: date.day, logName }),
+src/packages/local-observability/src/storageKeys.ts:154:  jobPins: () => ({ namespace: 'jobsRoot' as const, file: 'pins' }),
+src/packages/local-observability/src/storageKeys.ts:155:  jobDraft: (draftKey: string) => ({ namespace: 'jobsRoot' as const, draftKey }),
+src/packages/local-observability/src/storageKeys.ts:156:  session: (file: string) => ({ namespace: 'session' as const, file }),
+src/packages/local-observability/src/storageKeys.ts:157:  bridgePointer: (projectKey: string) => ({ namespace: 'bridgePointer' as const, projectKey }),
+src/packages/local-observability/src/storageKeys.ts:158:  sessionAliases: (projectKey: string) => ({ namespace: 'sessionAliases' as const, projectKey }),
+src/packages/local-observability/src/storageKeys.ts:159:  dirSyncRecord: (projectKey: string, sessionId: string) => ({ namespace: 'dirSyncRecord' as const, projectKey, sessionId }),
+src/packages/local-observability/src/storageKeys.ts:163:export type StorageKey = { namespace: string } & Record<string, unknown>
+src/packages/local-observability/src/storageKeys.ts:167:  return { namespace: 'transcript' as const, projectKey, sessionId, agentRelPath: [] as string[] }
+src/packages/local-observability/src/storageKeys.ts:172:  return { namespace: 'bridgeSpawn' as const }
+src/packages/local-observability/src/storageKeys.ts:177:  return relPath === undefined || relPath.length === 0 ? { namespace: 'marketplaceCache' as const, marketplace } : { namespace: 'marketplaceCache' as const, marketplace, relPath }
+src/packages/local-observability/src/uds/inboxKeys.ts:51:export type SessionStorageKey = { namespace: 'session'; file: string }
+src/packages/local-observability/src/uds/inboxKeys.ts:55:export type StorageListEntry = { kind: string; key: { namespace: string; file?: string } }
+src/packages/local-observability/src/uds/inboxKeys.ts:60:  ensureScope(scope: { namespace: 'session' }): Promise<StorageResult<unknown>>
+src/packages/local-observability/src/uds/inboxKeys.ts:63:  listEntries(scope: { namespace: 'session' }, page: { cursor: string | undefined; skipKeyStats: true }): Promise<StorageResult<StoragePage<StorageListEntry>>>
+src/packages/local-observability/src/uds/inboxKeys.ts:139:export const sessionKey = (file: string): SessionStorageKey => ({ namespace: 'session', file })
+src/packages/local-observability/src/uds/inboxKeys.ts:186:      cursor => storage.listEntries({ namespace: 'session' }, { cursor, skipKeyStats: true }),
+src/packages/local-observability/src/uds/inboxKeys.ts:224:  const scope = await storage.ensureScope({ namespace: 'session' })
+src/packages/provider/src/accounts/zed/zedNativeAuth.ts:20:const PRIVATE_KEY_PREFIX = 'zed-rsa-pkcs1:'
+src/packages/provider/src/accounts/zed/zedNativeAuth.ts:56:  return `${PRIVATE_KEY_PREFIX}${Buffer.from(privateKeyPem).toString('base64url')}`
+src/packages/provider/src/accounts/zed/zedNativeAuth.ts:61:  if (!value.startsWith(PRIVATE_KEY_PREFIX)) throw new Error('Missing Zed private key verifier; restart the login flow')
+src/packages/provider/src/accounts/zed/zedNativeAuth.ts:62:  return Buffer.from(value.slice(PRIVATE_KEY_PREFIX.length), 'base64url').toString('utf8')
+src/packages/provider/src/proxy/session/affinitySelector.ts:337:export function parseLcpNamespace(namespace: string): { provider: string; model: string; callerScope: string } | undefined {
+src/packages/provider/src/proxy/session/lcpMatcher.ts:83:  namespace: string
+src/packages/provider/src/proxy/session/lcpMatcher.ts:141:  match(namespace: string, turns: CanonicalTurn[]): MerklePrefixMatch | undefined {
+src/packages/provider/src/proxy/session/lcpMatcher.ts:147:  matchFingerprints(namespace: string, fingerprints: string[], tailFingerprints: string[], envDigest: string, minPrefixLength: number): MerklePrefixMatch | undefined {
+src/packages/provider/src/proxy/session/lcpMatcher.ts:157:  bindWithResult(namespace: string, turns: CanonicalTurn[], authId: string): MerklePrefixBindResult {
+src/packages/provider/src/proxy/session/lcpMatcher.ts:163:  bindFingerprints(namespace: string, fingerprints: string[], tailFingerprints: string[], envDigest: string, minPrefixLength: number, authId: string): MerklePrefixBindResult {
+src/packages/provider/src/proxy/session/lcpMatcher.ts:173:  touch(namespace: string, turns: CanonicalTurn[], authId: string): boolean {
+src/packages/provider/src/proxy/session/lcpMatcher.ts:179:  touchFingerprints(namespace: string, fingerprints: string[], tailFingerprints: string[], envDigest: string, minPrefixLength: number, authId: string): boolean {
+src/packages/provider/src/proxy/session/lcpMatcher.ts:193:  removeFingerprintsBefore(namespace: string, fingerprints: string[], authId: string, maxGeneration: number): boolean {
+src/packages/provider/src/proxy/session/lcpMatcher.ts:224:  lookupSession(sessionId: string): { authIds: string[]; namespace: string } | undefined {
+src/packages/provider/src/proxy/session/lcpMatcher.ts:239:    return authIds.length > 0 ? { authIds, namespace: active[0]!.namespace } : undefined
+src/packages/provider/src/proxy/session/lcpMatcher.ts:271:  private touchInternal(namespace: string, fingerprints: string[], tails: string[], env: string, minPrefixLength: number, authId: string, now: number): boolean {
+src/packages/provider/src/proxy/session/lcpMatcher.ts:300:  private bindInternal(namespace: string, fingerprints: string[], tailFingerprints: string[], envDigest: string, minPrefixLength: number, authId: string, now: number): MerklePrefixBindResult {
+src/packages/provider/src/proxy/session/lcpMatcher.ts:390:  private matchInternal(namespace: string, fingerprints: string[], tails: string[], env: string, minPrefixLength: number, now: number): MerklePrefixMatch | undefined {
+src/packages/provider/src/proxy/session/lcpMatcher.ts:432:  private matchCompaction(ns: Namespace, namespace: string, fingerprints: string[], tailFingerprints: string[], env: string, minPrefixLength: number, bestLength: number, now: number): MerklePrefixMatch | undefined {
+src/packages/provider/src/proxy/session/lcpMatcher.ts:583:export function newLcpSessionId(namespace: string, firstPrefix: string): string {
+src/packages/provider/src/proxy/session/lcpMatcher.ts:587:function newLcpCompactionSessionId(namespace: string, parentSessionId: string, sequence: string): string {
+src/packages/provider/src/proxy/shuffleDeck.ts:73:export function getNextFromDeckSync(namespace: string, itemIds: readonly string[]): string {
+src/packages/provider/src/proxy/shuffleDeck.ts:89:export async function getNextFromDeck(namespace: string, itemIds: readonly string[]): Promise<string> {
+src/packages/provider/src/proxy/shuffleDeck.ts:110:  namespace: string,
+src/packages/repl/src/hooks/usePluginRecommendationBase.tsx:63:  keyPrefix: string,
+src/packages/repl/src/hooks/usePluginRecommendationBase.tsx:74:      key: `${keyPrefix}-installed`,
+src/packages/repl/src/hooks/usePluginRecommendationBase.tsx:86:      key: `${keyPrefix}-install-failed`,
+src/packages/shared-state/redis.ts:39:  keyPrefix?: string
+src/packages/shared-state/redis.ts:46:  const keyPrefix = options.keyPrefix ?? ''
+src/packages/shared-state/redis.ts:50:    return `${keyPrefix}${key}`

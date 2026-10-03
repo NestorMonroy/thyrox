@@ -1,0 +1,7 @@
+src/packages/agent/claudeInChrome/chromeNativeHost.ts:149:          if (!file.endsWith('.sock')) {
+src/packages/agent/claudeInChrome/chromeNativeHost.ts:152:          const pid = parseInt(file.replace('.sock', ''), 10)
+src/packages/agent/claudeInChromeCommon.ts:379:  return join(getSocketDir(), `${process.pid}.sock`)
+src/packages/agent/claudeInChromeCommon.ts:387:    return (await readdir(dir)).filter(entry => entry.endsWith('.sock')).map(entry => join(dir, entry))
+src/packages/cli/src/entry/printDelegation.ts:227:  const requestedSocket = join(dir, 'proxy.sock')
+src/packages/local-observability/src/uds/liveSessionRegistry.ts:485:  const isRealSocket = (record: RawSessionRecord) => Boolean(record.sock) && !(ownOverride && isSameSocket(record.sock, ownOverride))
+src/packages/model-scheduling/coordinatorProtocol.ts:22:const MODEL_COORDINATOR_SOCKET = 'coordinator.sock'

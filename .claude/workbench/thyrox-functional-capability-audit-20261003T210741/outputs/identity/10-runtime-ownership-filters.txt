@@ -1,0 +1,56 @@
+src/lib/podman_capabilities.sh:483:  listed="$("$PODMAN" ps -a --filter "name=^${cname}\$" --format '{{.Names}}' 2>/dev/null)"
+src/packages/agent/messages.ts:663:  return content.startsWith(AUTO_MODE_REJECTION_PREFIX)
+src/packages/binary/src/bunfs.ts:111:      if (!entries.every(e => e.name.startsWith(BUNFS_PREFIX))) continue
+src/packages/binary/src/corpus.ts:101:  const conPrefijo = name.startsWith(BUNFS_PREFIX)
+src/packages/cli/src/entry/printDelegation.ts:172:      const line = buffer.split('\n').find(l => l.startsWith(ANNOUNCEMENT_PREFIX))
+src/packages/config/plugin/marketplaceManager.ts:833:    args.push('--filter=blob:none', '--no-checkout')
+src/packages/config/plugin/marketplaceManager.ts:1037: *   `sparse-checkout disable` on a --filter=blob:none partial clone, which would
+src/packages/config/plugin/officialMarketplaceGcs.ts:124:      if (!arcPath.startsWith(ARC_PREFIX)) continue
+src/packages/config/plugin/pluginLoader.ts:715: * Uses partial clone (--filter=tree:0) + sparse-checkout so only the tree
+src/packages/config/plugin/pluginLoader.ts:721: * 1. clone --depth 1 --filter=tree:0 --no-checkout [--branch ref]
+src/packages/config/plugin/pluginLoader.ts:756:    '--filter=tree:0',
+src/packages/config/plugin/schemas.ts:1158:              'Cloned sparsely using partial clone (--filter=tree:0) to minimize bandwidth for monorepos.',
+src/packages/image-registry/testing/fakePodmanRegistry.ts:64:    if (arg !== '--filter') return []
+src/packages/ink/src/core/output.ts:607:        s.code.length >= OSC8_PREFIX.length && s.code.startsWith(OSC8_PREFIX),
+src/packages/ink/src/core/screen.ts:1104:    if (code.length < 5 || !code.startsWith(OSC8_PREFIX)) continue
+src/packages/ink/src/core/screen.ts:1116:      !style.code.startsWith(OSC8_PREFIX) || !OSC8_REGEX.test(style.code),
+src/packages/local-observability/src/aggregates/headlessProfiler.ts:52:    if (mark.name.startsWith(MARK_PREFIX)) {
+src/packages/local-observability/src/aggregates/headlessProfiler.ts:113:  const marks = allMarks.filter(mark => mark.name.startsWith(MARK_PREFIX))
+src/packages/local-observability/src/uds/peerRefTable.ts:189:  return address.startsWith(STABLE_SESSION_ID_PREFIX)
+src/packages/mcp-runtime/src/compat.ts:136:  if (name.startsWith(CLAUDEAI_SERVER_PREFIX)) {
+src/packages/mcp-runtime/src/normalization.ts:19:  if (name.startsWith(CLAUDEAI_SERVER_PREFIX)) {
+src/packages/model-artifacts/modelName.ts:32:export const THYROX_MODEL_PREFIX = 'thyrox-'
+src/packages/model-artifacts/modelName.ts:63:const THYROX_NAME_PATTERN = /^thyrox-(.+):([a-z0-9_]+)-([a-z]+)-([0-9a-f]{12})$/
+src/packages/model-artifacts/modelName.ts:75:  const model = `${THYROX_MODEL_PREFIX}${repositorySlug(parts.repository)}`
+src/packages/model-artifacts/modelResolver.ts:122:  return lowered.startsWith(DIGEST_PREFIX) ? lowered.slice(DIGEST_PREFIX.length) : lowered
+src/packages/model-artifacts/resolvedModelArtifact.ts:90:  return revision.startsWith(DIGEST_PREFIX) ? revision.slice(DIGEST_PREFIX.length) : revision
+src/packages/permission/src/permissionContext.ts:69:  return rule === SKILL_TOOL_NAME || rule.startsWith(`${SKILL_TOOL_NAME}(`) || rule.startsWith(SKILL_RULE_PREFIX)
+src/packages/permission/src/yoloSystemPrompt.ts:217:    if (rule.ruleValue.ruleContent?.startsWith(BASH_PROMPT_RULE_PREFIX)) continue
+src/packages/podman-execution/imageStore.ts:86:  const filters = Object.entries(labels).flatMap(([key, value]) => ['--filter', `label=${key}=${value}`])
+src/packages/podman-execution/podmanObservation.ts:232:  return parseList('ps', await read(podman, 'ps', ['ps', '--all', '--filter', `label=${labelKey}`, '--format', 'json']))
+src/packages/podman-execution/resourceMaterialization.ts:173:  const workerNamed = desired.name.startsWith(WORKER_CONTAINER_NAME_PREFIX)
+src/packages/podman-execution/workerContainerLifecycle.ts:139:  return key.startsWith(OWNER_LABEL_KEY_PREFIX) || key === WORKER_ID_LABEL_KEY
+src/packages/podman-execution/workerContainerLifecycle.ts:219:  return ['ps', '--all', '--filter', `name=^${WORKER_CONTAINER_NAME_PREFIX}`, '--format', '{{.Names}}']
+src/packages/provider/src/accounts/fieldCipher.ts:64:  return typeof value === 'string' && value.startsWith(PREFIX)
+src/packages/provider/src/accounts/fieldCipher.ts:102:    if (plaintext.startsWith(PREFIX)) return plaintext
+src/packages/provider/src/accounts/grok/grokTokens.ts:70:    if (entry && typeof entry === 'object' && typeof entry.key === 'string' && entry.key.startsWith(JWT_PREFIX)) {
+src/packages/provider/src/accounts/imports/cliProxyAuthImport.ts:67:  const isDca = (value: string | null) => Boolean(value?.startsWith(DCA_PREFIX))
+src/packages/provider/src/accounts/imports/credentialBlob.ts:38:  if (typeof blob !== 'string' || !blob.startsWith(CREDENTIAL_BLOB_PREFIX)) {
+src/packages/provider/src/accounts/imports/grokCliPaste.ts:14:const isJwt = (value: unknown) => typeof value === 'string' && value.startsWith(JWT_PREFIX)
+src/packages/provider/src/accounts/imports/grokCliPaste.ts:48:  if (trimmed.startsWith(JWT_PREFIX)) {
+src/packages/provider/src/accounts/kiro/kiroService.ts:188:    if (!token.startsWith(AWS_REFRESH_TOKEN_PREFIX)) throw new Error(`Invalid token format. Token should start with ${AWS_REFRESH_TOKEN_PREFIX}...`)
+src/packages/provider/src/accounts/refresh/googleClientBinding.ts:37:  if (typeof oauthClientMarker === 'string' && oauthClientMarker.startsWith(CUSTOM_PREFIX) && oauthClientMarker.slice(CUSTOM_PREFIX.length) === configuredClient?.clientId && configuredClient.clientSecret) {
+src/packages/provider/src/accounts/zed/zedNativeAuth.ts:61:  if (!value.startsWith(PRIVATE_KEY_PREFIX)) throw new Error('Missing Zed private key verifier; restart the login flow')
+src/packages/provider/src/errors.ts:141:    text.startsWith(API_ERROR_MESSAGE_PREFIX) ||
+src/packages/provider/src/headlessProfiler.ts:20:    if (mark.name.startsWith(MARK_PREFIX)) {
+src/packages/provider/src/proxy/claudeCli/requestTranslation.ts:65:  if (!mcpName.startsWith(BRIDGE_TOOL_PREFIX)) return undefined
+src/packages/provider/src/proxy/openaiCompat/streamTranslation.ts:25:    for (const line of lines) if (line.startsWith(DATA_PREFIX)) yield line.slice(DATA_PREFIX.length).trim()
+src/packages/provider/src/proxy/openaiCompat/streamTranslation.ts:27:  if (pending.startsWith(DATA_PREFIX)) yield pending.slice(DATA_PREFIX.length).trim()
+src/packages/provider/src/proxy/server.ts:419:  if (!pathname.startsWith(BRIDGE_PATH_PREFIX)) return undefined
+src/packages/provider/src/proxy/session/canonicalTurns.ts:300:const isTruncationMarker = (p: CanonicalPart | undefined) => p !== undefined && p.kind === 'value' && p.value.startsWith(TRUNCATED_PREFIX)
+src/packages/provider/src/proxy/translators/responseOpenAIToMessages.ts:260:        if (n.startsWith(CLAUDE_OAUTH_TOOL_PREFIX)) n = n.slice(CLAUDE_OAUTH_TOOL_PREFIX.length)
+src/packages/repl/src/components/memory/MemoryFileSelector.tsx:308:          if (value.startsWith(OPEN_FOLDER_PREFIX)) {
+src/packages/repl/src/components/messages/UserToolResultMessage/UserToolErrorMessage.tsx:53:    param.content.startsWith(PLAN_REJECTION_PREFIX)
+src/packages/repl/src/components/messages/UserToolResultMessage/UserToolErrorMessage.tsx:62:    param.content.startsWith(REJECT_MESSAGE_WITH_REASON_PREFIX)
+src/packages/tool-registry/src/tools/BashTool/readOnlyValidation.ts:1050:  // are deliberately excluded. -F/--filter (read filter from file) also excluded.
+src/packages/tool-registry/src/tools/BashTool/readOnlyValidation.ts:1124:      // SECURITY: -F/--filter EXCLUDED — reads filter expressions from a file

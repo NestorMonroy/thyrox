@@ -1,0 +1,198 @@
+bin/thyrox-audit:6:exec "$THYROX_ROOT/src/verify/thyrox-audit.sh" "$@"
+src/agents/definitions/increment-acceptor.md:87:Si ACEPTADO: el incremento pasa el gate; siguiente paso ``/thyrox:track``.
+src/agents/reconcile-agents.sh:159:        if [[ -f "$NIVEL/thyrox/src/roster/job_liveness.py" ]]; then
+src/agents/reconcile-agents.sh:160:            READER="$NIVEL/thyrox/src"; break
+src/commands/accept.md:7:# /thyrox:accept — Aceptar el incremento (gate 6→7)
+src/commands/accept.md:29:`/thyrox:track`. Si RECHAZADO → volver a `/thyrox:execute` con las observaciones.
+src/commands/analyze.md:6:# /thyrox:analyze — Phase 3: ANALYZE
+src/commands/audit-coherence.md:3:description: Auditoría crítica de COHERENCIA del repo / multi-repo (no de completitud de un WP — eso es /thyrox:audit→workflow-audit). Patrón Command → Script + Agente: corre los gates mecánicos (.claude/scripts/thyrox-audit.sh) y delega el juicio cualitativo en increment-acceptor. No corrige — documenta. El reporte va a docs/source/**.
+src/commands/audit-coherence.md:7:# /thyrox:audit-coherence — Auditor crítico de coherencia
+src/commands/audit-coherence.md:10:está `/thyrox:audit` → `workflow-audit`). Patrón **Command → Script + Agente**.
+src/commands/audit-coherence.md:16:   bash .claude/scripts/thyrox-audit.sh
+src/commands/audit-coherence.md:49:modifica** el trabajo auditado. Complementa `/thyrox:audit` (WP) y
+src/commands/audit-coherence.md:50:`/thyrox:accept` (DoD del incremento).
+src/commands/audit.md:6:# /thyrox:audit — Auditor crítico de work packages
+src/commands/constraints.md:6:# /thyrox:constraints — Phase 4: CONSTRAINTS
+src/commands/decompose.md:6:# /thyrox:decompose — Phase 8: PLAN EXECUTION
+src/commands/deep-review.md:6:# /thyrox:deep-review
+src/commands/deep-review.md:14:/thyrox:deep-review
+src/commands/deep-review.md:21:/thyrox:deep-review [path/to/reference]
+src/commands/design.md:6:# /thyrox:design — Phase 7: DESIGN/SPECIFY
+src/commands/discover.md:6:# /thyrox:discover — Phase 1: DISCOVER
+src/commands/execute.md:6:# /thyrox:execute — Phase 10: EXECUTE
+src/commands/help.md:6:# /thyrox:help — Cómo usar THYROX en kaupamex
+src/commands/help.md:33:| descubrir / medir / diagnosticar | `/thyrox:discover` · `:measure` · `:analyze` | skills `workflow-*` |
+src/commands/help.md:34:| restricciones / estrategia / scope | `/thyrox:constraints` · `:strategy` · `:plan` | skills `workflow-*` |
+src/commands/help.md:35:| estructurar spec / descomponer | `/thyrox:structure` · `:decompose` | skills `workflow-*` |
+src/commands/help.md:36:| implementar | `/thyrox:execute` | skill `workflow-implement` |
+src/commands/help.md:37:| **aceptar el incremento (gate)** | **`/thyrox:accept`** | agente `increment-acceptor` vs DoD |
+src/commands/help.md:38:| seguimiento / estandarizar | `/thyrox:track` · `:standardize` | skills `workflow-*` |
+src/commands/help.md:39:| **retrospectiva / cierre** | **`/thyrox:retro`** | agente `retro-facilitator` → lecciones |
+src/commands/help.md:40:| auditar coherencia del WP | `/thyrox:audit` | skill `workflow-audit` |
+src/commands/help.md:41:| **estado rápido** | **`/thyrox:status`** | lee SMD + git (sin agente) |
+src/commands/init.md:6:# /thyrox:init — Bootstrap de Tech Skills
+src/commands/loop-analyze.md:6:# /thyrox:loop-analyze — Análisis continuo contra la referencia
+src/commands/loop-analyze.md:12:/loop 15m /thyrox:loop-analyze
+src/commands/loop-analyze.md:19:| `/thyrox:analyze` | **Una** fase (Stage 3) de un WP: causa raíz | El WP activo |
+src/commands/loop-analyze.md:20:| `/thyrox:loop` | Ejecuta la siguiente `T-NNN` **ya planificada** | El `tareas-<slug>.rst` |
+src/commands/loop-analyze.md:21:| **`/thyrox:loop-analyze`** | **Produce** la decisión: mide, documenta, nombra la siguiente | La salida de su propia iteración anterior |
+src/commands/loop-analyze.md:23:La diferencia operativa está en la última columna. `/thyrox:loop` consume un
+src/commands/loop-analyze.md:200:/loop 15m /thyrox:loop-analyze     # cadencia normal
+src/commands/loop-analyze.md:201:/loop 30m /thyrox:loop-analyze     # análisis densos (lectura de árbol amplia)
+src/commands/loop.md:6:# /thyrox:loop — Ejecución continua THYROX
+src/commands/loop.md:11:/loop 10m /thyrox:loop
+src/commands/loop.md:25:  detenido: la iniciativa activa no está en EXECUTE. Usar `/thyrox:execute`
+src/commands/loop.md:28:  iniciativa activa. Usar `/thyrox:discover` para iniciar."
+src/commands/loop.md:35:  tareas `[x]`. Usar `/thyrox:track`."
+src/commands/loop.md:64:Si no quedan tareas → reportar compleción y proponer `/thyrox:track`.
+src/commands/loop.md:89:/loop 10m /thyrox:loop
+src/commands/loop.md:92:/loop 5m /thyrox:loop
+src/commands/loop.md:95:/loop 30m /thyrox:loop
+src/commands/measure.md:6:# /thyrox:measure — Phase 2: MEASURE
+src/commands/pilot.md:6:# /thyrox:pilot — Phase 9: PILOT/VALIDATE
+src/commands/plan.md:6:# /thyrox:plan — Phase 6: PLAN
+src/commands/retro.md:7:# /thyrox:retro — Retrospectiva (cierre de ciclo)
+src/commands/spec-driven.md:6:# /thyrox:spec-driven — Specification-Driven Development
+src/commands/spec-driven.md:18:## Cuándo usar este comando vs /thyrox:structure vs /thyrox:test-driven-development
+src/commands/spec-driven.md:20:| `/thyrox:structure` | `/thyrox:spec-driven` | `/thyrox:test-driven-development` |
+src/commands/standardize.md:6:# /thyrox:standardize — Phase 12: STANDARDIZE
+src/commands/status.md:6:# /thyrox:status — Estado rápido
+src/commands/strategy.md:6:# /thyrox:strategy — Phase 5: STRATEGY
+src/commands/structure.md:3:description: Phase 7 DESIGN/SPECIFY — especificar requisitos con Given/When/Then. Produce requirements-spec.md y opcionalmente design.md. Requiere Phase 6 PLAN aprobado. Alias de /thyrox:design.
+src/commands/structure.md:6:# /thyrox:structure — Phase 7: DESIGN/SPECIFY
+src/commands/test-driven-development.md:6:# /thyrox:test-driven-development — TDD Puro
+src/commands/test-driven-development.md:9:contractual DbC. Complementa `/thyrox:spec-driven` cubriendo los casos donde los contratos
+src/commands/test-driven-development.md:17:| TDD puro (`/thyrox:test-driven-development`) | SDD completo (`/thyrox:spec-driven`) |
+src/commands/test-driven-development.md:27:aplica a todos los inputs posibles → usar `/thyrox:spec-driven` con contratos DbC.
+src/commands/test-driven-development.md:147:- Cuándo complementar con DbC → usar `/thyrox:spec-driven`
+src/commands/track.md:6:# /thyrox:track — Phase 11: TRACK/EVALUATE
+src/commands/types.ts:12: *      que el cliente usa en `/thyrox:track`. Copiar el tipo del skill habria
+src/commands/types.ts:31:   * escribe tras el namespace (`/thyrox:<id>`), y NO se emite al frontmatter
+src/commands/workflow_init.md:108:- Siguiente paso sugerido: `/thyrox:discover` para empezar Phase 1
+src/docs/initiative_placement.py:15:el proveedor, así que su hogar era ``pm/thyrox/``.
+src/hooks/detect_client_background.py:9:(``.claude/rules/trabajo-en-segundo-plano.md``): ``bin/thyrox-bg start`` más
+src/hooks/detect_client_background.py:70:    "anfitrión, fuera del ledger y de una ExecutionUnit. Lánzalo con `bash bin/thyrox-bg start <nombre> --task "
+src/hooks/detect_client_background.py:150:        "deja marcador. Para UN trabajo: `bash bin/thyrox-bg start <nombre> "
+src/hooks/detect_client_background.py:151:        "--memfree <tamaño> -- <comando>` y `bash bin/thyrox-bg register "
+src/hooks/detect_foreground_long_command.py:215:    "`Monitor` con el comando `bash bin/thyrox-bg wait <nombre> >/dev/null 2>&1; "
+src/hooks/detect_foreground_long_command.py:216:    "echo \"<nombre>: $(bash bin/thyrox-bg status <nombre>)\"` (para N, "
+src/hooks/detect_topic_duplication.py:5:``pm/thyrox/``, que llevaba dos días con la misma corrección —
+src/hooks/detect_topic_duplication.py:11:(``kaupamex-docs: source/gestion/pm/thyrox/lecciones-aprendidas/
+src/hooks/detect_unbounded_traversal.py:8:    for db in glob.glob('/home/user/thyrox/**/*.sqlite3', recursive=True): ...
+src/hooks/detect_unbounded_traversal.py:85:Y ``HEAVY_ROOTS`` sigue listando ``/home/user/thyrox``, cuyo recorrido lineal
+src/hooks/detect_unbounded_traversal.py:164:    r"/home/user/thyrox\b",
+src/lib/infrastructure.sh:137:THYROX_INFRA_POSTGRES_USER="$(thyrox_infrastructure_setting THYROX_INFRA_POSTGRES_USER 'thyrox')"
+src/lib/infrastructure.sh:138:THYROX_INFRA_POSTGRES_DB="$(thyrox_infrastructure_setting THYROX_INFRA_POSTGRES_DB 'thyrox')"
+src/lib/infrastructure.sh:219:    --arg dataDir "$_INFRASTRUCTURE_POSTGRES_DATA_DIR" --arg user "$THYROX_INFRA_POSTGRES_USER" \
+src/lib/infrastructure.sh:220:    --arg db "$THYROX_INFRA_POSTGRES_DB" --arg secret "$_INFRASTRUCTURE_POSTGRES_SECRET" \
+src/lib/infrastructure.sh:225:     | .environment = {POSTGRES_USER: $user, POSTGRES_DB: $db, POSTGRES_PASSWORD_FILE: ($secretDir + "/" + $target)}
+src/lib/infrastructure.sh:329:      printf '%s\n' pg_isready -U "$THYROX_INFRA_POSTGRES_USER" -d "$THYROX_INFRA_POSTGRES_DB"
+src/lib/toolchain.sh:644:    CREATE ROLE thyrox_test LOGIN PASSWORD '${password}';
+src/packages/agent/internal/fileHistoryCore.ts:230:  // for any wrapper that honors same-ref returns (src/THYROX.md wrapper
+src/packages/app-host/src/commands/initPrompts.ts:54:Before asking anything, check if THYROX.md already exists at the project root (just \`cat ./THYROX.md\` \u2014 only the project-root file counts; don't explore the tree yet). If it doesn't, check for the legacy CLAUDE.md (\`cat ./CLAUDE.md\`): thyrox reads it only while THYROX.md is absent, so treat it as the existing file and write any result to THYROX.md, carrying over what it says. This branches Phase 1.
+src/packages/app-host/src/state/selectors.ts:5: * `ls /home/user/thyrox/src/packages/ | grep repl` → vacío — así que un
+src/packages/bridge/src/replBridge.ts:240:   * src/THYROX.md si el callback deja escapar el throw aquí.
+src/packages/bridge/src/workSecret.ts:56: * work queue, work poll response) uses `cse_*` (compat/THYROX.md:13). Both
+src/packages/cli/src/commands/help.ts:13:  bun run bin/thyrox.ts --prompt "..." [opciones]
+src/packages/cli/src/entry/systemPrompt.ts:16: *   .claude/THYROX.md          el gobierno de la sesión
+src/packages/computer-use-mcp/src/legacy/wrapper.tsx:60: * rule (src/THYROX.md): the dispatcher closure must persist across calls so
+src/packages/config/env/instructionFiles.ts:27:/** `<dir>/THYROX.md`, luego `<dir>/THYROX.md`. */
+src/packages/config/env/instructionFiles.ts:32:/** `<dir>/THYROX.local.md`, luego `<dir>/THYROX.local.md`. */
+src/packages/config/env/instructionFiles.ts:37:/** `<dir>/.thyrox/THYROX.md`, luego `<dir>/.claude/THYROX.md`: cada nombre
+src/packages/config/internal/pendingCrossPackageDeps.ts:23: * '/home/user/thyrox/src/packages/config')` — los símbolos marcados
+src/packages/config/plugin/schemas.ts:17: * Official marketplace names that are reserved for Anthropic/thyrox official use.
+src/packages/config/plugin/schemas.ts:69: * Pattern to detect names that impersonate official Anthropic/thyrox marketplaces.
+src/packages/config/plugin/schemas.ts:90: * Check if a marketplace name impersonates an official Anthropic/thyrox marketplace.
+src/packages/daemon/src/podman/specializedWorkerProfile.ts:32:export const SPECIALIZED_WORKER_DIST_PATH = '/opt/thyrox/dist'
+src/packages/daemon/src/podman/specializedWorkerProfile.ts:35:export const DEFAULT_SPECIALIZED_WORKER_REGISTRY = 'docker.io/thyrox'
+src/packages/finding/index.ts:270:    ['bash', 'bin/thyrox-bg', 'start', render, '--grace', '0', '--', 'bash', 'bin/run-task-pool', join(options.runDir, 'render.jobs')],
+src/packages/finding/index.ts:271:    ['bash', 'bin/thyrox-bg', 'register', render],
+src/packages/image-registry/declaredImages.ts:42:    repository: 'localhost/thyrox-model-quantizer',
+src/packages/local-models/hostCoordinatorComposition.ts:50:export const TRANSFORMERS_RUNTIME_IMAGE = 'localhost/thyrox-transformers-runtime:dev'
+src/packages/local-models/labCommandOptions.ts:4:export const DEFAULT_LAB_IMAGE = 'localhost/thyrox-model-quantizer:dev'
+src/packages/mcp-runtime/src/channelPermissions.ts:230: * closure — NO a nivel de módulo (según src/THYROX.md de ccnmt), NO en
+src/packages/memory/src/memoryTypes.ts:6: * and file structure are derivable (via grep/git/THYROX.md) and should NOT
+src/packages/model-artifacts/quantizer-image/build.sh:18:tag="${2:-localhost/thyrox-model-quantizer:dev}"
+src/packages/observability/src/store.ts:76: * `/home/user/thyrox/.claude`, `/home/user/kaupamex-docs/.claude`), así que un ascenso
+src/packages/paths/docs.ts:40: * del arbol —la clave `submodulos:` de `.claude/THYROX.md`— y renombrarlo tiene
+src/packages/paths/docs.ts:233: * documentacion y `source/thyrox/` la implementacion de THYROX, mientras
+src/packages/paths/docs.ts:234: * `pm/docs/` y `pm/thyrox/` llevan su gestion. Y `gestion` entra: es una
+src/packages/paths/reach.ts:733: * cadena (`/home/user/.claude`, `/home/user/thyrox/.claude` y
+src/packages/podman-execution/executionCommand.ts:27:export const DEFAULT_EXECUTION_IMAGE = 'localhost/thyrox-task-runner:dev'
+src/packages/podman-execution/testing/helperImage.ts:107:  const image = `localhost/thyrox-podman-execution-${tag}`
+src/packages/provider/src/internal/legacyRuntimeSupport.ts:6: * `/home/user/thyrox/src/packages/provider`, genuinamente no resuelven en
+src/packages/repl/src/components/memory/MemoryFileSelector.tsx:131:      description = 'Saved in ~/.claude/THYROX.md'
+src/packages/repl/src/components/memory/MemoryFileSelector.tsx:137:      description = `${isGit ? 'Checked in at' : 'Saved in'} ./THYROX.md`
+src/packages/repl/src/hooks/useReplBridge.tsx:498:              //     unchanged (3-way invariant violation per src/THYROX.md)
+src/packages/ripgrep-napi/native/src/lib.rs:381:    if searcher.search_path(&matcher, &path, &mut sink).is_err() {
+src/packages/ripgrep-napi/native/src/lib.rs:614:    let _ = searcher.search_path(&matcher, path, &mut sink);
+src/packages/semantic-search/store.ts:18: * La conexión fija el esquema del store como `search_path` en el arranque de
+src/packages/semantic-search/store.ts:158:  const sql = new SQL({ url, connection: { search_path: config.name } })
+src/packages/semantic-search/store.ts:186:      await sql.unsafe(`CREATE SCHEMA IF NOT EXISTS ${config.name}`)
+src/packages/semantic-search/vectorSql.ts:8: * conexión sólo lleva el esquema del store en su `search_path`, y la
+src/packages/shell/src/execFileNoThrowPortable.ts:31: * `/home/user/thyrox/package.json` no declara `"workspaces"`, así que no
+src/packages/storage/src/claudemd.ts:1319:  // Procesa los archivos de memoria del proyecto (THYROX.md y .claude/THYROX.md)
+src/packages/store/testing/postgresTestSchema.ts:10: * El `search_path` se fija en el arranque de cada conexión, no con un `SET`
+src/packages/store/testing/postgresTestSchema.ts:54:  /** El esquema que cada conexión del pool tendrá como `search_path` desde su arranque. */
+src/packages/store/testing/postgresTestSchema.ts:73:  return new SQL({ url, connection: { search_path: options.searchPath } })
+src/packages/store/testing/postgresTestSchema.ts:122: * conexión que recibe `body` tiene ese esquema como `search_path` en todas las
+src/packages/store/testing/postgresTestSchema.ts:139:    await admin.unsafe(`CREATE SCHEMA ${schema}`)
+src/packages/tools/src/definitions/incrementAcceptor.prompt.md:76:Si ACEPTADO: el incremento pasa el gate; siguiente paso ``/thyrox:track``.
+src/paths/reach_roots.py:92:    src = str(path.parent.parent)          # …/thyrox/src
+src/paths/surface.py:59:    'src/verify/thyrox-audit.sh',
+src/rules/paths.ts:68: * `/home/user/thyrox/.claude/rules`.
+src/session/bg.sh:272:_MEMFREE_DIR="${THYROX_BG_MEMFREE_DIR:-${TMPDIR:-/tmp}/thyrox-bg-memfree}"
+src/session/bounded_scan.py:6:    glob.glob('/home/user/thyrox/**/*.sqlite3', recursive=True)
+src/session/generate_bin.py:62:trazabilidad (``bin/thyrox-bg`` sigue apuntando a ``src/session/bg.sh``, igual
+src/session/generate_bin.py:70:``src/verify/thyrox-audit.sh`` usa guion, no guion bajo. ``resolve_bin_name()``
+src/session/generate_bin.py:348:    ENTRYPOINT — ``src/verify/thyrox-audit.sh`` es el precedente exacto:
+src/session/generate_bin.py:516:    ``THYROX_ROOT="${THYROX_ROOT:-/home/user/thyrox}"`` en el resto del árbol)
+src/session/generate_bin.py:523:        'THYROX_ROOT="${THYROX_ROOT:-/home/user/thyrox}"\n'
+src/session/headless-pool.sh:971:        # en objetos de git bajo refs/thyrox/snapshots/<run>/<n>/<gen>: si algo
+src/session/headless-pool.sh:992:# refs/thyrox/snapshots/<run>/<n>/<gen>. Si la ref ya existe, la foto la
+src/session/headless-pool.sh:1001:    ref="refs/thyrox/snapshots/${HP_LIVE##*/}/$n/$HP_ITEM_GENERATION"
+src/session/model_coordinator.sh:123:  while [[ "$(bash "$ROOT/bin/thyrox-bg" status "$JOB_NAME" 2>/dev/null)" == running ]]; do
+src/session/model_coordinator.sh:124:    (( waited >= 1200 )) && { echo "model_coordinator: el daemon sigue tras 120 s; log: bash bin/thyrox-bg log $JOB_NAME" >&2; return 3; }
+src/session/model_coordinator.sh:145:  bash "$ROOT/bin/thyrox-bg" start "$JOB_NAME" --grace 0 -- "$ROOT/bin/model_coordinator" run >&2 || return $?
+src/session/model_coordinator.sh:148:    if [[ "$(bash "$ROOT/bin/thyrox-bg" status "$JOB_NAME" 2>/dev/null)" == done:* ]]; then
+src/session/model_coordinator.sh:149:      echo "model_coordinator: el daemon terminó sin abrir $socket; log: bash bin/thyrox-bg log $JOB_NAME" >&2
+src/session/model_coordinator.sh:153:      echo "model_coordinator: el socket $socket no aceptó conexiones en ${START_TIMEOUT_SECONDS} s; log: bash bin/thyrox-bg log $JOB_NAME" >&2
+src/session/recovery_controller.py:94:    return f"refs/heads/thyrox/recovery/{run}/{item}/{generation}"
+src/session/session-start.sh:51:    echo "  Tech skills: ninguno — ejecuta /thyrox:init para configurar"
+src/session/snapshot_store.py:22:4. La ref ``refs/thyrox/snapshots/<run>/<item>/<gen>`` se crea con
+src/session/snapshot_store.py:51:REF_PREFIX = "refs/thyrox/snapshots"
+src/session/worker_secret_inheritance.sh:9:root="${THYROX_ROOT:-/home/user/thyrox}"
+src/skills/paths.ts:77: * /home/user/kaupamex-api` resolvia a `/home/user/thyrox/.claude/rules`— y esta
+src/task/project-status.sh:4:# Uso: bash .claude/skills/thyrox/scripts/task/project-status.sh
+src/task/update-state.sh:110:### Scripts de gestión (\`.claude/skills/thyrox/scripts/\`)
+src/testing/clone_tree.py:37:    """Construye `<base>/<prefix><clon>` por clon y un proveedor en `<base>/thyrox`.
+src/verify/check_consumer_copies.py:14:`bash .claude/skills/thyrox/scripts/...` — su propia copia, con el nombre de
+src/verify/check_doc_citations.py:23:    T=/home/user/thyrox
+src/verify/check_finding_id_unique.py:34:    T=/home/user/thyrox
+src/verify/check_gitattributes.py:48:    ``thyrox/src/verify/`` da ``/home/thyrox``, que no existe — el gate busca a
+src/verify/check_gitattributes.py:66:    # anterior buscaba a thyrox como hermano de sí mismo (`/home/thyrox`).
+src/verify/check_hallazgo_submodulo.py:24:    T=/home/user/thyrox
+src/verify/check_hook_script_token.py:48:    ``thyrox/src/verify/`` da ``/home/thyrox``, que no existe — el gate busca a
+src/verify/check_hook_script_token.py:66:    # anterior buscaba a thyrox como hermano de sí mismo (`/home/thyrox`).
+src/verify/check_package_typecheck.py:29:segundo plano (`bash bin/thyrox-bg`), y su baseline es lo que viaja al commit.
+src/verify/check_package_typecheck.py:54:  explicito, a mano o en segundo plano con ``bin/thyrox-bg``.
+src/verify/check_script_deprecated.py:42:    ``thyrox/src/verify/`` da ``/home/thyrox``, que no existe — el gate busca a
+src/verify/check_script_deprecated.py:60:    # anterior buscaba a thyrox como hermano de sí mismo (`/home/thyrox`).
+src/verify/env_sensitivity.tsv:371:THYROX_INFRA_POSTGRES_DB	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+src/verify/env_sensitivity.tsv:375:THYROX_INFRA_POSTGRES_USER	sensitive-config	env	usuario de base de datos
+src/verify/env_sensitivity.tsv:594:POSTGRES_USER	sensitive-config	external	usuario de PostgreSQL
+src/verify/env_sensitivity.tsv:595:POSTGRES_DB	config	external	nombre de la base
+src/verify/thyrox-audit.sh:3:# src/verify/thyrox-audit.sh — auditoría mecánica de coherencia (kaupamex)
+src/verify/thyrox-audit.sh:7:# increment-acceptor vía /thyrox:audit-coherence.
+src/verify/thyrox-audit.sh:9:# Adaptado del thyrox-audit.sh de NestorMonroy/thyrox (Command -> Script +
+src/verify/thyrox-audit.sh:20:#   bash src/verify/thyrox-audit.sh            # reporte a stdout
+src/verify/thyrox-audit.sh:21:#   bash src/verify/thyrox-audit.sh --strict   # exit 1 si algún FAIL
+src/verify/thyrox-audit.sh:135:CANON=".claude/CLAUDE.md .claude/skills/thyrox/SKILL.md"
+src/verify/thyrox-audit.sh:136:CANON_DIRS=".claude/commands .claude/rules .claude/agents .claude/skills/thyrox/references"
+src/verify/thyrox-audit.sh:227:    [[ -e ".claude/skills/thyrox/$d" ]] || MISS="$MISS $d"
+src/verify/tsc_cycle.py:432:    commands = [pool, ["bash", "bin/thyrox-bg", "register", f"{name}-pool"],
+src/verify/tsc_cycle.py:734:    return [["bash", "bin/thyrox-bg", "start", f"{name}-pool", "--grace", "0", "--", "bash", "-c", pool],
+src/verify/tsc_cycle.py:735:            ["bash", "bin/thyrox-bg", "start", f"{name}-pipeline", "--grace", "0", "--",
+src/verify/tsc_cycle.py:767:    commands += [["bash", "bin/thyrox-bg", "register", f"{args.bench.name}-{job}"] for job in ("pool", "pipeline")]
+src/verify/tsc_fix_census.sh:8:#   proyecto entero: lanzarlo con `bin/thyrox-bg`, no en primer plano.
+src/verify/tsc_proposers.sh:9:#   proyecto entero: lanzarlo con `bin/thyrox-bg`, no en primer plano.

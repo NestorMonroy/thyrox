@@ -86,6 +86,21 @@ if (!url) {
       })
     })
 
+    // Auditoría de migración de identidad (thyrox → kaupamex-ai, 2026-10-03):
+    // la procedencia de una ingesta anterior al cutover dice `thyrox@…` y la
+    // de una posterior `kaupamex-ai@…`. Es procedencia, no identidad: el
+    // hallazgo histórico conserva su id y los dos convergen en un documento.
+    test('4b: el mismo hallazgo ingerido como thyrox@ y luego como kaupamex-ai@ es un documento', async () => {
+      await withCorpusStore(testUrl, async (store, sql) => {
+        const legacy = await store.ingestDocument(finding('H-THYROX-293', 'thyrox@0123456:docs/hallazgo-H-THYROX-293.rst', ['cuerpo'], '0123456'))
+        const renamed = await store.ingestDocument(finding('H-THYROX-293', 'kaupamex-ai@89abcde:docs/hallazgo-H-THYROX-293.rst', ['cuerpo'], '89abcde'))
+        expect(renamed).toEqual({ status: 'unchanged', documentId: legacy.documentId, version: 1 })
+        expect(await countRows(sql, 'documents')).toBe(1)
+        const found = await store.findDocument({ domain: FINDINGS, domainId: 'H-THYROX-293' })
+        expect(found).toMatchObject({ documentId: legacy.documentId, sourceRef: 'kaupamex-ai@89abcde:docs/hallazgo-H-THYROX-293.rst', sourceRevision: '89abcde' })
+      })
+    })
+
     test('5: cambiar sourceRevision sin cambiar el contenido no crea versión', async () => {
       await withCorpusStore(testUrl, async (store, sql) => {
         const first = await store.ingestDocument(finding('H-API-0001', 'h.rst', ['texto'], REVISION_A))

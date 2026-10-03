@@ -1,0 +1,7 @@
+     16 localhost/thyrox-model-quantizer
+      3 localhost/thyrox-task-runner
+      2 localhost/thyrox-worker
+      2 localhost/thyrox-transformers-runtime
+      2 localhost/thyrox-helper
+      2 docker.io/thyrox
+      1 localhost/thyrox-podman-execution-

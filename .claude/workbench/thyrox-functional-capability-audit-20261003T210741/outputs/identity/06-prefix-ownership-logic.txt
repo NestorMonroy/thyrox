@@ -1,0 +1,28 @@
+src/agents/measure_delta.py:127:    thyrox no sabe qué árbol vigila un kaupamex-* ni dónde guarda su log.
+src/agents/register_session.py:688:    sabe a qué store escribe un kaupamex-*, y fabricar ``["--repo", "docs"]``
+src/corpus/census_counterparts.py:40:# kaupamex-* ni dónde guarda su declaración. La versión anterior la componía
+src/packages/model-artifacts/modelName.ts:6: * exacta, y el prefijo `thyrox-` lo separa de lo que un usuario creó a mano:
+src/packages/model-artifacts/modelName.ts:32:export const THYROX_MODEL_PREFIX = 'thyrox-'
+src/packages/model-artifacts/modelName.ts:63:const THYROX_NAME_PATTERN = /^thyrox-(.+):([a-z0-9_]+)-([a-z]+)-([0-9a-f]{12})$/
+src/packages/paths/__tests__/consumerEnvLayer.test.ts:18:const PROVIDER_KEY = 'THYROX_CLONE_PREFIX'
+src/packages/paths/__tests__/reachRoster.test.ts:16:const KEYS = ['THYROX_REACH_ROOT', 'THYROX_CLONE_PREFIX', 'THYROX_REACH_ROOTS', 'THYROX_ENV_FILE']
+src/packages/paths/__tests__/reachRoster.test.ts:25:  process.env.THYROX_CLONE_PREFIX = 'acme-'
+src/packages/paths/__tests__/unprefixedClone.test.ts:7: * (`THYROX_CLONE_PREFIX`) o se deriva de los hermanos, y es opcional: un clon
+src/packages/paths/__tests__/unprefixedClone.test.ts:18:const VARS = ['THYROX_ENV_FILE', 'THYROX_REACH_ROOT', 'THYROX_CLONE_PREFIX', 'THYROX_REACH_ROOTS', 'KAUPAMEX_ROOT']
+src/packages/paths/__tests__/unprefixedClone.test.ts:30:  delete process.env.THYROX_CLONE_PREFIX
+src/packages/paths/__tests__/unprefixedClone.test.ts:47:    process.env.THYROX_CLONE_PREFIX = 'otro-'
+src/packages/paths/reach.ts:496:export const CLONE_PREFIX_VAR = 'THYROX_CLONE_PREFIX'
+src/packages/paths/reach.ts:541: * El prefijo: lo declarado en `THYROX_CLONE_PREFIX`, si no el derivado. Sin
+src/packages/podman-execution/__tests__/executionCommand.test.ts:312:    expect(build.some(arg => arg.startsWith('thyrox.task='))).toBe(false)
+src/packages/provider/__tests__/accounts/imports/pasteImports.test.ts:24:    expect(blob.startsWith('thyrox-cred-v1.')).toBe(true)
+src/paths/reach.py:110:CLONE_PREFIX_VAR = "THYROX_CLONE_PREFIX"
+src/paths/reach.py:615:    El prefijo es el DECLARADO (``THYROX_CLONE_PREFIX``) si lo hay, y si no el
+src/paths/reach.py:847:#: ``kaupamex-*``; ésta nombra el proveedor.
+src/session/generate_bin.py:71:prefija con ``thyrox-`` **cualquier** stem que ``compgen -b`` liste como
+src/session/write-env.sh:71:_clone="${_clone#"${THYROX_CLONE_PREFIX:-kaupamex-}"}"
+src/task/layer_signals.tsv:7:# de metodología y los `kaupamex-*` son sus consumidores: qué capas existen
+src/task/task_ids.py:134:#: cinco ``kaupamex-*``; con ``thyrox`` no coinciden, porque es un repo y **no** es una capa del producto: es su
+src/task/task_ids.py:135:#: PROVEEDOR de metodologia, y los cinco ``kaupamex-*`` son sus consumidores.
+src/verify/env_sensitivity.tsv:68:THYROX_CLONE_PREFIX	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+src/verify/pre-commit.sh:38:# mecanismo de thyrox aunque el sujeto medido sea de kaupamex-*.
+src/verify/thyrox-audit.sh:259:    HERM=$(ls -d "$PARENT"/kaupamex-* 2>/dev/null | wc -l)
