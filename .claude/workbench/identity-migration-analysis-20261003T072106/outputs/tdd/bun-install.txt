@@ -1,0 +1,10 @@
+PID=13364
+LOG=/home/user/thyrox/.claude/jobs/identity-bun-install-20261003T082659/outputs/salida.log
+LIVE=/home/user/thyrox/.thyrox/runtime/jobs/identity-bun-install-20261003T082659/salida.log
+RUN=/home/user/thyrox/.claude/jobs/identity-bun-install-20261003T082659
+bun install v1.3.11 (af24e281)
+
+1 package installed [3.91s]
+[0.08ms] ".env"
+Saved lockfile
+execution thyrox-worker-probe-mus4p1md-13369 kind=probe task=TASK-THYROX-0918 exit=0

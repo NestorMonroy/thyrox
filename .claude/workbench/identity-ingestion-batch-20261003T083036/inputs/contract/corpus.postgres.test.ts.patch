@@ -1,0 +1,51 @@
+diff --git a/src/packages/semantic-search/__tests__/corpus.postgres.test.ts b/src/packages/semantic-search/__tests__/corpus.postgres.test.ts
+index 006f1855e..92f3bc237 100644
+--- a/src/packages/semantic-search/__tests__/corpus.postgres.test.ts
++++ b/src/packages/semantic-search/__tests__/corpus.postgres.test.ts
+@@ -14,6 +14,7 @@ import { join } from 'node:path'
+ 
+ import { describe, expect, test } from 'bun:test'
+ 
++import { projectIdentityMetadata } from '@thyrox/project-identity/projectIdentity.ts'
+ import { resolvePostgresTestUrl, withDisposableSchema } from '@thyrox/store/testing/postgresTestSchema.ts'
+ 
+ import { EmbeddingSpaceStateError, NoActiveEmbeddingSpaceError } from '../errors.ts'
+@@ -108,12 +109,37 @@ if (!url) {
+         expect((await store.ingestDocument(document)).status).toBe('created')
+         const [row] = (await sql.unsafe('SELECT text FROM document_chunks')) as { text: string }[]
+         expect(row?.text).toBe('antes␀después')
+-        expect((await store.findDocument(document))?.metadata).toEqual({ note: 'a␀b' })
++        expect((await store.findDocument(document))?.metadata).toEqual({ note: 'a␀b', ...projectIdentityMetadata(null) })
+         expect((await store.ingestDocument(document)).status).toBe('unchanged')
+       })
+     })
+   })
+ 
++  describe('corpus durable — identidad del proyecto', () => {
++    test('la ingesta estampa la identidad en la metadata y conserva el texto y el id históricos', async () => {
++      await withCorpusStore(testUrl, async (store, sql) => {
++        const document = { domain: DOMAIN, domainId: 'H-THYROX-431', sourceRef: 'repo/h431.rst', sourceRevision: REVISION, metadata: { severity: 'ALTA' }, chunks: ['thyrox-ollama failed after the VM restart'] }
++        expect((await store.ingestDocument(document)).status).toBe('created')
++        const stored = await store.findDocument(document)
++        expect(stored?.domainId).toBe('H-THYROX-431')
++        expect(stored?.metadata).toEqual({ severity: 'ALTA', ...projectIdentityMetadata('thyrox') })
++        const [row] = (await sql.unsafe('SELECT text FROM document_chunks')) as { text: string }[]
++        expect(row?.text).toBe('thyrox-ollama failed after the VM restart')
++      })
++    })
++
++    test('reingerir el mismo contenido refresca la metadata sin versión ni chunks nuevos', async () => {
++      await withCorpusStore(testUrl, async (store, sql) => {
++        const document = { domain: DOMAIN, domainId: 'm.md', sourceRef: 'repo/m.md', sourceRevision: REVISION, metadata: { label: 'before' }, chunks: ['uno'] }
++        const first = await store.ingestDocument(document)
++        const chunksBefore = await countRows(sql, 'document_chunks')
++        const again = await store.ingestDocument({ ...document, metadata: { label: 'after' } })
++        expect(again).toEqual({ status: 'unchanged', documentId: first.documentId, version: 1 })
++        expect((await store.findDocument(document))?.metadata).toMatchObject({ label: 'after', canonical_project: 'kaupamex-ai' })
++        expect(await countRows(sql, 'document_chunks')).toBe(chunksBefore)
++      })
++    })
++  })
+   describe('corpus durable — ingesta idempotente por hash', () => {
+     test('el mismo contenido otra vez: unchanged y 0 filas nuevas en documentos, chunks y embeddings', async () => {
+       await withCorpusStore(testUrl, async (store, sql) => {

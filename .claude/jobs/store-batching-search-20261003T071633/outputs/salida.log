@@ -1,0 +1,6 @@
+  8498 /home/user/thyrox/.claude/workbench/versioned-store-turn-loop-20261003T065214/outputs/batching-files.txt
+   413 /home/user/thyrox/.claude/workbench/versioned-store-turn-loop-20261003T065214/outputs/batching-x-store-lines.txt
+    61 /home/user/thyrox/.claude/workbench/versioned-store-turn-loop-20261003T065214/outputs/batching-x-store.txt
+  8972 total
+execution thyrox-worker-probe-mus26gt4-4285 kind=probe task=TASK-THYROX-0916 exit=0
+__BG_EXIT__=0

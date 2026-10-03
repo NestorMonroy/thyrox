@@ -1,0 +1,17 @@
+     1 /home/user/thyrox/.claude/workbench/identity-migration-analysis-20261003T072106/outputs/census-dotdir-names-current.tsv
+   741 /home/user/thyrox/.claude/workbench/identity-migration-analysis-20261003T072106/outputs/census-env-names-current.tsv
+    80 /home/user/thyrox/.claude/workbench/identity-migration-analysis-20261003T072106/outputs/census-pkg-names-current.tsv
+     5 /home/user/thyrox/.claude/workbench/identity-migration-analysis-20261003T072106/outputs/census-registry-names-current.tsv
+   254 /home/user/thyrox/.claude/workbench/identity-migration-analysis-20261003T072106/outputs/census-resource-names-current.tsv
+  3441 /home/user/thyrox/.claude/workbench/identity-migration-analysis-20261003T072106/outputs/census-paths-with-thyrox.txt
+  4522 total
+env	3852 archivos	22431 líneas
+registry	105 archivos	403 líneas
+finding	968 archivos	2680 líneas
+task	3477 archivos	7745 líneas
+resource	3676 archivos	52245 líneas
+word	18621 archivos	603612 líneas
+pkg	6183 archivos	195058 líneas
+dotdir	1417 archivos	94930 líneas
+execution thyrox-worker-probe-mus2cnbd-6907 kind=probe task=TASK-THYROX-0917 exit=0
+__BG_EXIT__=0

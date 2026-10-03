@@ -1,0 +1,10 @@
+PID=14887
+LOG=/home/user/thyrox/.claude/jobs/identity-typecheck-20261003T082832/outputs/salida.log
+LIVE=/home/user/thyrox/.thyrox/runtime/jobs/identity-typecheck-20261003T082832/salida.log
+RUN=/home/user/thyrox/.claude/jobs/identity-typecheck-20261003T082832
+check-package-typecheck: 1 provider(s) reconstruido(s) por viejos: project-identity
+  project-identity: 0 propio(s) · 0 de hermano · 0 fuera (total 0)  <- sin baseline
+  semantic-search: 0 propio(s) · 0 de hermano · 0 fuera (total 0)  <- sin baseline
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 2 de 2 paquete(s))
+execution thyrox-worker-test-mus4r0u9-14892 kind=test task=TASK-THYROX-0918 exit=0

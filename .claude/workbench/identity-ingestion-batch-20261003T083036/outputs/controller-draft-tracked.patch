@@ -1,0 +1,180 @@
+diff --git a/bun.lock b/bun.lock
+index 856cdea68..293a6d67a 100644
+--- a/bun.lock
++++ b/bun.lock
+@@ -409,6 +409,7 @@
+       "name": "@thyrox/image-registry",
+       "version": "0.1.0",
+       "dependencies": {
++        "@thyrox/artifact-registry": "0.1.0",
+         "@thyrox/podman-execution": "0.1.0",
+       },
+       "devDependencies": {
+@@ -643,6 +644,10 @@
+       "name": "@thyrox/podman-execution",
+       "version": "0.1.0",
+     },
++    "src/packages/project-identity": {
++      "name": "@thyrox/project-identity",
++      "version": "0.1.0",
++    },
+     "src/packages/provider": {
+       "name": "@thyrox/provider",
+       "version": "0.1.0",
+@@ -746,6 +751,7 @@
+       "name": "@thyrox/semantic-search",
+       "version": "0.1.0",
+       "dependencies": {
++        "@thyrox/project-identity": "0.1.0",
+         "@thyrox/store": "0.1.0",
+       },
+     },
+@@ -1379,6 +1385,8 @@
+ 
+     "@thyrox/podman-execution": ["@thyrox/podman-execution@workspace:src/packages/podman-execution"],
+ 
++    "@thyrox/project-identity": ["@thyrox/project-identity@workspace:src/packages/project-identity"],
++
+     "@thyrox/provider": ["@thyrox/provider@workspace:src/packages/provider"],
+ 
+     "@thyrox/registry-credentials": ["@thyrox/registry-credentials@workspace:src/packages/registry-credentials"],
+diff --git a/src/packages/semantic-search/__tests__/corpus.postgres.test.ts b/src/packages/semantic-search/__tests__/corpus.postgres.test.ts
+index 006f1855e..92f3bc237 100644
+--- a/src/packages/semantic-search/__tests__/corpus.postgres.test.ts
++++ b/src/packages/semantic-search/__tests__/corpus.postgres.test.ts
+@@ -14,6 +14,7 @@ import { join } from 'node:path'
+ 
+ import { describe, expect, test } from 'bun:test'
+ 
++import { projectIdentityMetadata } from '@thyrox/project-identity/projectIdentity.ts'
+ import { resolvePostgresTestUrl, withDisposableSchema } from '@thyrox/store/testing/postgresTestSchema.ts'
+ 
+ import { EmbeddingSpaceStateError, NoActiveEmbeddingSpaceError } from '../errors.ts'
+@@ -108,12 +109,37 @@ if (!url) {
+         expect((await store.ingestDocument(document)).status).toBe('created')
+         const [row] = (await sql.unsafe('SELECT text FROM document_chunks')) as { text: string }[]
+         expect(row?.text).toBe('antes␀después')
+-        expect((await store.findDocument(document))?.metadata).toEqual({ note: 'a␀b' })
++        expect((await store.findDocument(document))?.metadata).toEqual({ note: 'a␀b', ...projectIdentityMetadata(null) })
+         expect((await store.ingestDocument(document)).status).toBe('unchanged')
+       })
+     })
+   })
+ 
++  describe('corpus durable — identidad del proyecto', () => {
++    test('la ingesta estampa la identidad en la metadata y conserva el texto y el id históricos', async () => {
++      await withCorpusStore(testUrl, async (store, sql) => {
++        const document = { domain: DOMAIN, domainId: 'H-THYROX-431', sourceRef: 'repo/h431.rst', sourceRevision: REVISION, metadata: { severity: 'ALTA' }, chunks: ['thyrox-ollama failed after the VM restart'] }
++        expect((await store.ingestDocument(document)).status).toBe('created')
++        const stored = await store.findDocument(document)
++        expect(stored?.domainId).toBe('H-THYROX-431')
++        expect(stored?.metadata).toEqual({ severity: 'ALTA', ...projectIdentityMetadata('thyrox') })
++        const [row] = (await sql.unsafe('SELECT text FROM document_chunks')) as { text: string }[]
++        expect(row?.text).toBe('thyrox-ollama failed after the VM restart')
++      })
++    })
++
++    test('reingerir el mismo contenido refresca la metadata sin versión ni chunks nuevos', async () => {
++      await withCorpusStore(testUrl, async (store, sql) => {
++        const document = { domain: DOMAIN, domainId: 'm.md', sourceRef: 'repo/m.md', sourceRevision: REVISION, metadata: { label: 'before' }, chunks: ['uno'] }
++        const first = await store.ingestDocument(document)
++        const chunksBefore = await countRows(sql, 'document_chunks')
++        const again = await store.ingestDocument({ ...document, metadata: { label: 'after' } })
++        expect(again).toEqual({ status: 'unchanged', documentId: first.documentId, version: 1 })
++        expect((await store.findDocument(document))?.metadata).toMatchObject({ label: 'after', canonical_project: 'kaupamex-ai' })
++        expect(await countRows(sql, 'document_chunks')).toBe(chunksBefore)
++      })
++    })
++  })
+   describe('corpus durable — ingesta idempotente por hash', () => {
+     test('el mismo contenido otra vez: unchanged y 0 filas nuevas en documentos, chunks y embeddings', async () => {
+       await withCorpusStore(testUrl, async (store, sql) => {
+diff --git a/src/packages/semantic-search/corpus.ts b/src/packages/semantic-search/corpus.ts
+index 1b911ac0c..5f530b6f6 100644
+--- a/src/packages/semantic-search/corpus.ts
++++ b/src/packages/semantic-search/corpus.ts
+@@ -20,10 +20,11 @@ import {
+   LOCK_DOCUMENT_QUERY,
+   SELECT_DOCUMENT_QUERY,
+   UPDATE_DOCUMENT_QUERY,
+-  UPDATE_PROVENANCE_QUERY,
++  REFRESH_UNCHANGED_DOCUMENT_QUERY,
+ } from './corpusSql.ts'
+ import type { CorpusVisibility, DurableVisibility } from './corpusPolicy.ts'
+ import { InvalidCorpusInputError } from './errors.ts'
++import { stampProjectIdentity } from './projectIdentityStamp.ts'
+ 
+ export type Metadata = Record<string, unknown>
+ 
+@@ -42,7 +43,7 @@ export type DocumentInput = DocumentIdentity & {
+   chunks: readonly string[]
+ }
+ 
+-/** `created`: primera versión · `new-version`: el hash cambió · `unchanged`: mismo contenido, a lo sumo procedencia nueva. */
++/** `created`: primera versión · `new-version`: el hash cambió · `unchanged`: mismo contenido, a lo sumo procedencia o metadata nuevas. */
+ export type IngestStatus = 'created' | 'new-version' | 'unchanged'
+ 
+ export type IngestResult = { status: IngestStatus; documentId: string; version: number }
+@@ -149,7 +150,7 @@ async function addVersion(tx: Transaction, existing: DocumentRow, input: Documen
+ }
+ 
+ async function keepVersion(tx: Transaction, existing: DocumentRow, input: DocumentInput): Promise<IngestResult> {
+-  await tx.unsafe(UPDATE_PROVENANCE_QUERY, [existing.document_id, input.sourceRef, input.sourceRevision])
++  await tx.unsafe(REFRESH_UNCHANGED_DOCUMENT_QUERY, [existing.document_id, input.sourceRef, input.sourceRevision, JSON.stringify(input.metadata)])
+   return { status: 'unchanged', documentId: existing.document_id, version: existing.version }
+ }
+ 
+@@ -180,8 +181,9 @@ export function storableDocument(input: DocumentInput): DocumentInput {
+ }
+ 
+ /**
+- * Ingiere un documento. Misma identidad y mismo hash: `unchanged`, sin
+- * versión ni chunks nuevos —sólo la procedencia, si cambió—. Hash distinto:
++ * Ingiere un documento con la identidad del proyecto estampada en su
++ * metadata. Misma identidad y mismo hash: `unchanged`, sin versión ni chunks
++ * nuevos —sólo la procedencia y la metadata, si cambiaron—. Hash distinto:
+  * versión nueva con sus chunks, y la anterior deja de ser buscable (su texto
+  * se conserva para los análisis).
+  *
+@@ -191,7 +193,7 @@ export function storableDocument(input: DocumentInput): DocumentInput {
+  */
+ export async function ingestDocument(sql: SQL, received: DocumentInput, visibility: DurableVisibility): Promise<IngestResult> {
+   assertValidDocument(received)
+-  const input = storableDocument(received)
++  const input = storableDocument(stampProjectIdentity(received))
+   const contentHash = documentHash(input.chunks)
+   return sql.begin(async tx => {
+     const [existing] = (await tx.unsafe(LOCK_DOCUMENT_QUERY, identityParameters(input))) as DocumentRow[]
+diff --git a/src/packages/semantic-search/corpusSql.ts b/src/packages/semantic-search/corpusSql.ts
+index ad0529613..cb4d85908 100644
+--- a/src/packages/semantic-search/corpusSql.ts
++++ b/src/packages/semantic-search/corpusSql.ts
+@@ -144,9 +144,13 @@ export const INSERT_DOCUMENT_QUERY = `INSERT INTO documents (domain, scope, doma
+ export const UPDATE_DOCUMENT_QUERY = `UPDATE documents SET version = $2, content_hash = $3, metadata = $4::jsonb, source_ref = $5, source_revision = $6, ingested_at = now()
+    WHERE document_id = $1`
+ 
+-/** Actualiza sólo la procedencia, si cambió: `$1` documento, `$2` ref, `$3` revisión. */
+-export const UPDATE_PROVENANCE_QUERY = `UPDATE documents SET source_ref = $2, source_revision = $3
+-   WHERE document_id = $1 AND (source_ref IS DISTINCT FROM $2 OR source_revision IS DISTINCT FROM $3)`
++/**
++ * Mismo contenido: actualiza la procedencia y la metadata si alguna cambió,
++ * sin versión nueva. `$1` documento, `$2` ref, `$3` revisión, `$4` metadata JSON.
++ */
++export const REFRESH_UNCHANGED_DOCUMENT_QUERY = `UPDATE documents SET source_ref = $2, source_revision = $3, metadata = $4::jsonb
++   WHERE document_id = $1
++     AND (source_ref IS DISTINCT FROM $2 OR source_revision IS DISTINCT FROM $3 OR metadata IS DISTINCT FROM $4::jsonb)`
+ 
+ /** El documento compartido ya mapeado a una identidad, como miembro de una convergencia: `$1` dominio, `$2` scope, `$3` id. */
+ export const LOCK_MAPPED_MEMBER_QUERY = `SELECT document_id, ingested_at FROM documents
+diff --git a/src/packages/semantic-search/package.json b/src/packages/semantic-search/package.json
+index 7011c284a..c505055c7 100644
+--- a/src/packages/semantic-search/package.json
++++ b/src/packages/semantic-search/package.json
+@@ -12,6 +12,7 @@
+     }
+   },
+   "dependencies": {
++    "@thyrox/project-identity": "0.1.0",
+     "@thyrox/store": "0.1.0"
+   }
+ }

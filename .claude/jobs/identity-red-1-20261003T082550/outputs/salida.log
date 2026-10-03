@@ -1,0 +1,16 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/projectIdentity.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../projectIdentity.ts' from '/home/user/thyrox/src/packages/project-identity/__tests__/projectIdentity.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [766.00ms]
+execution thyrox-worker-test-mus4nk8j-12251 kind=test task=TASK-THYROX-0918 exit=1
+__BG_EXIT__=1

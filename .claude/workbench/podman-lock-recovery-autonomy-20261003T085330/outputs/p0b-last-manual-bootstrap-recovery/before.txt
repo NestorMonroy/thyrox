@@ -1,0 +1,5 @@
+# last-manual-bootstrap-recovery — BEFORE (2026-10-03T09:13:03Z)
+podman 4.9.3 · backend sqlite · locks asignados 0, referenciados 21 · marcador /run/libpod/alive
+plan: retirar /run/libpod/alive y dejar que Podman refresque la asignación de locks. Ejecutar con --confirm.
+marker_mtime_epoch=1790993734
+kernel_btime_epoch=1791017984

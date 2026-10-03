@@ -1,0 +1,28 @@
+== reinicio
+H-THYROX-308  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/ALTA  podman system renumber falla con sqlite (no such column: ID) y /run/libpod/alive sobrevive al reinicio porque /run está
+H-THYROX-296  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/MEDIA  Tras reiniciar el contenedor de la sesión, un objeto nuevo de Podman puede recibir el lock de uno anterior y todo arra
+H-THYROX-307  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/MEDIA  thyrox-ollama montado sobre un volumen vacío (infrastructure_ensure no carga .env) y muerto tras reiniciar la VM con P
+H-THYROX-260  [thyrox/actualizar-agentic-ai-thyrox]  finding/MEDIA  Actualizar postgresql-16 por apt sin systemd deja el clúster sirviendo la versión vieja hasta un pg_ctlcluster restart explícito 
+Total: 4 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== reboot
+H-THYROX-442  [podman-execution/identity-migration-analysis]  finding/ALTA  Podman's defaults assume a volatile /run; here /run is ext4 and /dev/shm is tmpfs, so every reboot desyncs locks  (_referenc
+Total: 1 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== session restart
+H-THYROX-439  [observability/versioned-store-turn-loop]  finding/ALTA  Conformance A.6.6 is met for a stale-running sweep that nothing calls  (src/conformance/checklist.ts)
+Total: 1 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== podman lock
+H-THYROX-296  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/MEDIA  Tras reiniciar el contenedor de la sesión, un objeto nuevo de Podman puede recibir el lock de uno anterior y todo arra
+H-THYROX-302  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/ALTA  Tras reiniciar la VM, Podman (locks) y los consumidores de Redis/Ollama (running) confiaban en estado persistido sin pro
+H-THYROX-308  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/ALTA  podman system renumber falla con sqlite (no such column: ID) y /run/libpod/alive sobrevive al reinicio porque /run está
+H-THYROX-442  [podman-execution/identity-migration-analysis]  finding/ALTA  Podman's defaults assume a volatile /run; here /run is ext4 and /dev/shm is tmpfs, so every reboot desyncs locks  (_referenc
+Total: 4 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== infrastructure_ensure
+H-THYROX-307  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/MEDIA  thyrox-ollama montado sobre un volumen vacío (infrastructure_ensure no carga .env) y muerto tras reiniciar la VM con P
+H-THYROX-296  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/MEDIA  Tras reiniciar el contenedor de la sesión, un objeto nuevo de Podman puede recibir el lock de uno anterior y todo arra
+Total: 2 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== running sin proceso
+H-THYROX-302  [thyrox/implementar-ciclo-de-vida-del-pool-thyrox]  finding/ALTA  Tras reiniciar la VM, Podman (locks) y los consumidores de Redis/Ollama (running) confiaban en estado persistido sin pro
+H-THYROX-410  [thyrox/local-bootstrap]  finding/ALTA  L1 nunca pudo correr local: plan con candidatos API escritos a mano, delegate.sh que fuerza Token Plan, ninguna cualificación local suficiente y 
+Total: 2 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== stale runtime
+Total: 0 (/home/user/thyrox/agent-results/agent_store.sqlite3)

@@ -1,0 +1,37 @@
+  ok    el sujeto existe y es ejecutable
+  ok    caso 1: plan -> exit 0
+  ok    caso 1: el plan no retira el marcador
+  ok    caso 1: el plan publica versión, backend, medida y cómo confirmar
+  ok    caso 2: recuperación -> exit 0
+  ok    caso 2: publica la medida equilibrada tras refrescar
+  ok    caso 3: equilibrado -> exit 0
+  ok    caso 3: equilibrado -> no vuelve a retirar el marcador
+  ok    caso 3: lo dice
+  ok    caso 4: contenedor vivo -> exit 2
+  ok    caso 4: no retira el marcador
+  ok    caso 4: nombra el contenedor vivo
+  ok    caso 5: version:5.0.1 -> exit 2
+  ok    caso 5: version:5.0.1 no retira el marcador
+  ok    caso 5: version:5.0.1 nombra lo que está fuera de alcance
+  ok    caso 5: backend:boltdb -> exit 2
+  ok    caso 5: backend:boltdb no retira el marcador
+  ok    caso 5: backend:boltdb nombra lo que está fuera de alcance
+  ok    caso 5: uid:1000 -> exit 2
+  ok    caso 5: uid:1000 no retira el marcador
+  ok    caso 5: uid:1000 nombra lo que está fuera de alcance
+  ok    caso 6: sin marcador -> exit 2
+  ok    caso 6: nombra el marcador ausente
+  FALLO caso 7: marcador anterior al arranque -> exit 0
+        esperado=[0]
+        obtenido=[2]
+  FALLO caso 7: no recuperó: [podman_lock_recovery: argumento desconocido: --after-reboot (uso: podman_lock_recovery [--confirm])]
+  ok    caso 8: marcador de este arranque -> exit 2
+  ok    caso 8: no retira el marcador
+  FALLO caso 8: no da la razón del arranque ni --confirm: [podman_lock_recovery: argumento desconocido: --after-reboot (uso: podman_lock_recovery [--confirm])]
+  ok    caso 9: contenedor vivo con marcador obsoleto -> exit 2
+  ok    caso 9: no retira el marcador
+  FALLO caso 9: no nombra el contenedor vivo: [podman_lock_recovery: argumento desconocido: --after-reboot (uso: podman_lock_recovery [--confirm])]
+
+31 casos: 27 ok, 4 fallos
+execution thyrox-worker-test-mus55wvu-21027 kind=test task=TASK-THYROX-0737 exit=1
+__BG_EXIT__=1

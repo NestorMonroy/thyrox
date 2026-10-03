@@ -1,0 +1,30 @@
+PID=14698
+LOG=/home/user/thyrox/.claude/jobs/lock-recovery-suite-20261003T073636/outputs/salida.log
+LIVE=/home/user/thyrox/.thyrox/runtime/jobs/lock-recovery-suite-20261003T073636/salida.log
+RUN=/home/user/thyrox/.claude/jobs/lock-recovery-suite-20261003T073636
+  ok    el sujeto existe y es ejecutable
+  ok    caso 1: plan -> exit 0
+  ok    caso 1: el plan no retira el marcador
+  ok    caso 1: el plan publica versión, backend, medida y cómo confirmar
+  ok    caso 2: recuperación -> exit 0
+  ok    caso 2: publica la medida equilibrada tras refrescar
+  ok    caso 3: equilibrado -> exit 0
+  ok    caso 3: equilibrado -> no vuelve a retirar el marcador
+  ok    caso 3: lo dice
+  ok    caso 4: contenedor vivo -> exit 2
+  ok    caso 4: no retira el marcador
+  ok    caso 4: nombra el contenedor vivo
+  ok    caso 5: version:5.0.1 -> exit 2
+  ok    caso 5: version:5.0.1 no retira el marcador
+  ok    caso 5: version:5.0.1 nombra lo que está fuera de alcance
+  ok    caso 5: backend:boltdb -> exit 2
+  ok    caso 5: backend:boltdb no retira el marcador
+  ok    caso 5: backend:boltdb nombra lo que está fuera de alcance
+  ok    caso 5: uid:1000 -> exit 2
+  ok    caso 5: uid:1000 no retira el marcador
+  ok    caso 5: uid:1000 nombra lo que está fuera de alcance
+  ok    caso 6: sin marcador -> exit 2
+  ok    caso 6: nombra el marcador ausente
+
+23 casos: 23 ok, 0 fallos
+execution thyrox-worker-test-mus2w8e8-14703 kind=test task=TASK-THYROX-0917 exit=0

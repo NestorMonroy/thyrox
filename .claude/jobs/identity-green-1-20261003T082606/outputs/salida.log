@@ -1,0 +1,22 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/projectIdentity.test.ts:
+(pass) PROJECT_IDENTITY > declara el ecosistema, el proyecto canónico y los nombres legacy [4.23ms]
+(pass) PROJECT_IDENTITY > es inmutable [0.17ms]
+(pass) observedProjectOf > reconoce el nombre que usó la fuente: thyrox-ollama failed to start [5.31ms]
+(pass) observedProjectOf > reconoce el nombre que usó la fuente: see TASK-THYROX-0710 for the cause [0.65ms]
+(pass) observedProjectOf > reconoce el nombre que usó la fuente: models live in .thyrox/models/ [0.05ms]
+(pass) observedProjectOf > reconoce el nombre que usó la fuente: THYROX_INFRA_OLLAMA_PORT was not declared [0.01ms]
+(pass) observedProjectOf > reconoce el nombre que usó la fuente: kaupamex-ai-model-quantizer was published
+(pass) observedProjectOf > devuelve el primero que aparece cuando la fuente nombra los dos [0.12ms]
+(pass) observedProjectOf > no confunde una palabra que sólo contiene el nombre [0.61ms]
+(pass) observedProjectOf > devuelve null cuando la fuente no nombra ningún proyecto [0.09ms]
+(pass) projectIdentityMetadata > describe la identidad canónica y el nombre observado [0.13ms]
+(pass) projectIdentityMetadata > conserva un nombre observado ausente como null [0.03ms]
+
+ 12 pass
+ 0 fail
+ 16 expect() calls
+Ran 12 tests across 1 file. [187.00ms]
+execution thyrox-worker-test-mus4nwrq-12528 kind=test task=TASK-THYROX-0918 exit=0
+__BG_EXIT__=0

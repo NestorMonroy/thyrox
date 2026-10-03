@@ -1,0 +1,8 @@
+  api      430
+  db       6
+  docs     566
+  gen      835
+  server   5
+  thyrox   577
+  ui       4
+total: 2423 id(es) de cita en /home/user/thyrox/agent-results/agent_store.sqlite3

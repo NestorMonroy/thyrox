@@ -1,0 +1,42 @@
+id	tags	lifecycle	owner	task	definition
+245ae25cd5be	localhost/thyrox-model-quantizer:candidate-81e5a993a7be	permanent	null	TASK-THYROX-0912	thyrox-model-quantizer
+a3327b102032	<untagged>	undefined	null		
+b3014db2b8f6	localhost/thyrox-model-quantizer:dev,localhost/thyrox-model-quantizer:clean-candidate	cache	null	TASK-THYROX-0747	
+ec1abf12aa46	<untagged>	undefined	null		
+1c1a3ab4600e	<untagged>	undefined	null		
+29215f3ff891	<untagged>	undefined	null		
+b5d366f14ed6	<untagged>	undefined	null		
+2fe71c5b7bec	<untagged>	undefined	null		
+0bc5dc55d62e	<untagged>	undefined	null		
+bce466222b43	<untagged>	undefined	null		
+e0eecd9add4e	<untagged>	undefined	null		
+21e1990a0075	<untagged>	undefined	null		
+0eeacaaee071	<untagged>	undefined	null		
+72b5859b94bf	<untagged>	undefined	null		
+117cb4575e46	<untagged>	undefined	null		
+7ee64f4ff49b	<untagged>	undefined	null		
+014a46951068	<untagged>	undefined	null		
+51f6f7c671f6	<untagged>	undefined	null		
+2bb9f235830e	docker.io/th3rox/thyrox-task-runner:ubuntu24.04-bun1.3.11-uv0.8.17,localhost/thyrox-task-runner:candidate	permanent	null	TASK-THYROX-0724	
+1e02a8954079	<untagged>	undefined	null		
+05ae188ca037	<untagged>	undefined	null		
+264da9d03eb3	<untagged>	undefined	null		
+82d1a3f1a1cb	<untagged>	undefined	null		
+95d7e60fc00b	<untagged>	undefined	null		
+24c9da34a856	<untagged>	undefined	null		
+8ee2ef2046c4	<untagged>	undefined	null		
+78f62cf98610	<untagged>	undefined	null		
+0d469d62f999	<untagged>	undefined	null		
+26af4d189984	localhost/thyrox-task-runner:dev	cache	null	TASK-THYROX-0742	
+4f65c7dfee65	<untagged>	undefined	null		
+61b9d21cee35	<untagged>	undefined	null		
+28c023aeef75	<untagged>	undefined	null		
+5c810f8d34a2	<untagged>	undefined	null		
+f3e7b383fcaf	<untagged>	undefined	null		
+efc2db794f6d	<untagged>	undefined	null		
+b78504eefd22	<untagged>	undefined	null		
+9ace0117e8ff	<untagged>	undefined	null		
+c178b43788bb	docker.io/ollama/ollama:0.35.0	undefined	null		
+64035c2c9726	docker.io/library/redis:7.4	undefined	null		
+6232b3879100	docker.io/library/ubuntu:24.04	undefined	null		
+56a5b20c7a15	docker.io/pgvector/pgvector:0.8.0-pg16	undefined	null		

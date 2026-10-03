@@ -1,0 +1,4 @@
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+headless-pool: REHUSA — no recibio ningun item por stdin.
+execution thyrox-worker-probe-mus2svq4-12356 kind=probe task=TASK-THYROX-0917 exit=2
+__BG_EXIT__=2

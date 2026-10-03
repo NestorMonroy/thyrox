@@ -1,0 +1,2 @@
+podman 4.9.3 · backend sqlite · locks asignados 0, referenciados 21 · marcador /run/libpod/alive
+plan: retirar /run/libpod/alive y dejar que Podman refresque la asignación de locks. Ejecutar con --confirm.

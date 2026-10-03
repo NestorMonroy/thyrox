@@ -1,0 +1,14 @@
+{
+  "name": "@thyrox/project-identity",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Declaración única de la identidad del proyecto (ecosistema, proyecto canónico y nombres legacy) y la metadata con que se normaliza la evidencia sin reescribirla.",
+  "exports": {
+    "./*.ts": {
+      "@thyrox/source": "./*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./*.ts"
+    }
+  }
+}

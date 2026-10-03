@@ -1,0 +1,44 @@
+PID=14497
+LOG=/home/user/thyrox/.claude/jobs/identity-semantic-suite-20261003T082810/outputs/salida.log
+LIVE=/home/user/thyrox/.thyrox/runtime/jobs/identity-semantic-suite-20261003T082810/salida.log
+RUN=/home/user/thyrox/.claude/jobs/identity-semantic-suite-20261003T082810
+
+__tests__/extension.test.ts:
+(pass) assertVectorExtensionUsable > no disponible en el servidor: error de infraestructura [0.27ms]
+(pass) assertVectorExtensionUsable > disponible pero no habilitada en la base: error de provisioning, con la versión ofrecida [0.22ms]
+(pass) assertVectorExtensionUsable > habilitada con versión menor que la mínima: error de versión con las dos versiones [0.45ms]
+(pass) assertVectorExtensionUsable > habilitada con versión compatible: devuelve versión y esquema de la extensión [0.07ms]
+(pass) assertVectorExtensionUsable > la mínima exacta es compatible [0.08ms]
+(pass) compareVersions > compara por segmento numérico, no como texto [0.18ms]
+(pass) compareVersions > una versión ilegible rehúsa en vez de compararse como cero [0.17ms]
+
+__tests__/projectIdentityStamp.test.ts:
+(pass) stampProjectIdentity > añade la identidad canónica y el nombre observado a la metadata [2.22ms]
+(pass) stampProjectIdentity > no reescribe el texto, el id de dominio ni la procedencia [0.10ms]
+(pass) stampProjectIdentity > no cambia el hash de versión [0.14ms]
+(pass) stampProjectIdentity > toma el nombre observado del id de dominio antes que del texto [0.08ms]
+(pass) stampProjectIdentity > deja el nombre observado en null cuando la fuente no nombra ningún proyecto [0.08ms]
+(pass) stampProjectIdentity > no muta la entrada [0.07ms]
+
+__tests__/identity.postgres.test.ts:
+(skip) identidad de dominio — postgres > NO MEDIDO: declara THYROX_TEST_POSTGRES_URL para correrlo
+
+__tests__/documentRecognition.test.ts:
+(pass) recognizeErrors > reconoce sólo los errores, con su identidad de dominio y la ruta relativa como procedencia [3.83ms]
+(pass) recognizeErrors > un finding sigue siendo finding: cada dominio reconoce sólo su nombre [3.14ms]
+(pass) recognizeErrors > los dominios con reconocedor son finding y error; otro se rehúsa [0.23ms]
+
+6 tests skipped:
+(skip) SemanticSearchStore — postgres > NO MEDIDO: declara THYROX_TEST_POSTGRES_URL para correrlo
+(skip) corpus durable — postgres > NO MEDIDO: declara THYROX_TEST_POSTGRES_URL para correrlo
+(skip) runIngestCommand — postgres > NO MEDIDO: declara THYROX_TEST_POSTGRES_URL para correrlo
+(skip) visibilidad del corpus — postgres > NO MEDIDO: declara THYROX_TEST_POSTGRES_URL para correrlo
+(skip) ingestFindings — postgres > NO MEDIDO: declara THYROX_TEST_POSTGRES_URL para correrlo
+(skip) identidad de dominio — postgres > NO MEDIDO: declara THYROX_TEST_POSTGRES_URL para correrlo
+
+ 57 pass
+ 6 skip
+ 0 fail
+ 117 expect() calls
+Ran 63 tests across 15 files. [248.00ms]
+execution thyrox-worker-test-mus4qjtz-14502 kind=test task=TASK-THYROX-0918 exit=0

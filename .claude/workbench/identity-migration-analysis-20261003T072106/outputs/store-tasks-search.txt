@@ -1,0 +1,36 @@
+parallel_map: memoria: sin ejecución previa de este historial: nada que derivar; no se reserva
+== rename
+#9  pending      [thyrox]  Regularize date-only benches to the workbench convention
+#26  pending      [thyrox]  Translate the Spanish shell identifiers of the files this session touched
+#68  completed    [thyrox]  Medir el idioma de los identificadores TypeScript en el pre-commit
+#90  pending      [api]  Portar los tres gates de estilo con sujeto medido al harness (TS)
+#90  pending      [docs]  Portar los tres gates de estilo con sujeto medido al harness (TS)
+#114  completed    [thyrox]  MITM F2b — handler antigravity (Gemini→OpenAI y catálogo dinámico)
+== identity
+#1  pending      [thyrox]  Block the agent identity on a fresh thyrox clone
+#15  pending      [thyrox]  Empaquetado P9 — cada regla viaja con su script
+#46  pending      [thyrox]  Ingest pool and agent-worktree evidence into the durable corpus
+#53  completed    [thyrox]  Make the GPU an optional capability behind a memory backend port
+#69  pending      [docs]  Medir el CUMPLIMIENTO de una directiva tras compactación, no sólo su supervivencia textual
+#69  pending      [docs]  Medir el CUMPLIMIENTO de una directiva tras compactación, no sólo su supervivencia textual
+== kaupamex
+#1  completed    [api]  Mudar packages/agent a .claude/packages/agent y reapuntar sus 4 consumidores
+#1  pending      [docs]  Borrar las dos ramas claude/* medidas sin trabajo propio
+#1  completed    [docs]  Mudar packages/agent a .claude/packages/agent y reapuntar sus 4 consumidores
+#1  completed    [thyrox]  Construir el sexto detector: Bash vs herramienta dedicada, y propagarlo a los 5 consumidores
+#2  pending      [docs]  Llevar la regla sobre ramas claude/** a los siete repos
+#4  completed    [docs]  Renombrar la colisión de H-DOCS-293 antes de fusionar l0 y l1
+== namespace
+#58  pending      [thyrox]  Reconcile container ownership labels between ADR-007 1.6.3 and the code
+#143  completed    [thyrox]  MITM F7e-2c — aplicar y revertir las reglas TPROXY reales dentro del namespace
+#144  completed    [thyrox]  MITM F7e-2d — captura TPROXY de extremo a extremo con descifrado en el namespace
+#317  completed    [api]  Mover 90 addons a <repo>/addons y dejar base en src/addons
+#578  pending      [docs]  Re-medir las lecturas 1 y 2 de CS 106X contra su fuente
+#1036  completed    [docs]  Dar productor en src/ a los 84 skills que siguen en thyrox/.claude/skills
+== publish
+#54  pending      [thyrox]  Publish parallel_map item closure so its history records again
+#82  completed    [thyrox]  Declare a published Qwen2.5-Coder-7B Q4_K_M GGUF with exact revision and digest
+#86  pending      [thyrox]  Keep build environment values out of the quantizer image history
+#87  completed    [thyrox]  Publish lab images with a role-scoped registry credential and consume them by digest
+#90  in_progress  [thyrox]  Publish lab outputs as PermanentArtifact through an ArtifactRegistry port
+#91  in_progress  [thyrox]  Install a PermanentArtifact into the managed Ollama and expose it under its catalog identity

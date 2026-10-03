@@ -1,0 +1,7 @@
+.claude/rules/clean-code.md:10:Fuente: *Clean Code2* (49 láminas, resumen en español de Robert C. Martin,
+.claude/rules/migracion-de-hooks.md:49:Si al instalar el cableado aparece una reconciliación que no es parte de la
+.claude/rules/perfil-de-rigor-de-cierre.md:51:  registrarse con un resumen de una línea y sin cita `file:line` exhaustiva
+.claude/rules/search-existing-antes-de-construir.md:15:que aparece: sinónimos del verbo (`retire`, `prune`, `sweep`, `orphan`,
+.claude/rules/search-existing-antes-de-construir.md:16:`stale`, `cleanup`, `gc`, `lifecycle`, …), en `src/`, `bin/`, `tests/`,
+.claude/rules/search-existing-antes-de-construir.md:37:imágenes, la observación de Podman, el ciclo de vida de imágenes, la
+.claude/rules/trabajo-en-segundo-plano.md:137:salida es por item, no un resumen. Frente al proceso: sí paga tokens, así que

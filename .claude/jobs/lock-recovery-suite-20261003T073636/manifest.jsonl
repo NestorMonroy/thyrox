@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts run --task TASK-THYROX-0917 --kind test --workdir /home/user/thyrox --env THYROX_EXECUTION_ENTRY -- bash tests/session/test-podman-lock-recovery.sh", "started_at": "2026-10-03T07:36:36+00:00"}

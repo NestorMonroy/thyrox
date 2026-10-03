@@ -1,0 +1,45 @@
+== restart
+#43  completed    [api]  Analizar en el binario 2.1.258 el flujo de reanudación y reconciliación de estado tras un reinicio
+#43  completed    [-]  Analizar en el binario 2.1.258 el flujo de reanudación y reconciliación de estado tras un reinicio
+#57  completed    [thyrox]  Detect Podman lock collisions after a container restart and report the remedy
+#89  completed    [thyrox]  Reconcile persisted running state against live processes after a reboot
+#147  completed    [thyrox]  MITM F7j-3 — `thyrox mitm` privilegiado: start/stop/restart, trust-cert, dns, reset, repair, diagnose, upstream-ca, tproxy
+#275  completed    [thyrox]  Daemon D7 — daemon.json, worker types, hot reload y feature gate de remoteControl (Mr Ct Tt)
+#324  completed    [thyrox]  Refuse once when the PostgreSQL test server is unreachable
+#326  pending      [thyrox]  Measure Podman restart and healthcheck without systemd
+== reboot
+#89  completed    [thyrox]  Reconcile persisted running state against live processes after a reboot
+#92  completed    [thyrox]  Reproduce lock imbalance after a second VM reboot: renumber leaves volume locks unallocated
+#97  completed    [thyrox]  Resolve THYROX_INFRA_* from the declared .env in infrastructure_ensure
+#99  pending      [thyrox]  Measure Podman lock recovery before deciding whether to automate it
+#100  completed    [thyrox]  Amend ADR-007 Rule 4: one Podman materialization primitive, separate ownership
+#102  completed    [thyrox]  Port infrastructure_ensure onto InfrastructureBootstrap and the primitive
+#103  completed    [thyrox]  Materialize thyrox-postgres through the primitive and prove durability
+#120  pending      [thyrox]  Keep thyrox-ollama's model store in one durable managed volume
+== podman
+#4  pending      [thyrox]  Run headless-pool items inside ExecutionUnits
+#8  pending      [thyrox]  Add a Transformers seq2seq runtime behind the Podman primitive
+#11  pending      [thyrox]  Add a candle seq2seq runtime for the official MADLAD GGUF
+#17  completed    [gen]  Implement PodmanWorkerManager under the daemon (TASK-THYROX-0557)
+#20  completed    [thyrox]  Name the awaited tool_use ids when the local proxy rejects a tool_result
+#23  pending      [thyrox]  Decide where Ollama runs and with which model
+#27  pending      [thyrox]  Run pool items in Podman on a neutral execution primitive the pool owns
+#32  completed    [thyrox]  Admit infrastructure pulls against the real disk ceiling
+== lock
+#1  completed    [api]  Mudar packages/agent a .claude/packages/agent y reapuntar sus 4 consumidores
+#1  completed    [docs]  Mudar packages/agent a .claude/packages/agent y reapuntar sus 4 consumidores
+#1  pending      [thyrox]  Block the agent identity on a fresh thyrox clone
+#2  completed    [api]  Decidir la conducta del harness ante thinking_delta en el stream SSE
+#2  completed    [thyrox]  Decidir la conducta del harness ante thinking_delta en el stream SSE
+#2  completed    [thyrox]  Run the pre-commit lexicon gates with the provider interpreter
+#3  completed    [api]  Puentear los `- [ ]` de los RST al tablero de tareas
+#3  completed    [docs]  Puentear los `- [ ]` de los RST al tablero de tareas
+== recovery
+#10  pending      [thyrox]  Declare a retention policy for pool snapshot refs
+#21  pending      [thyrox]  Retire superseded abandoned pool runs from the runtime
+#99  pending      [thyrox]  Measure Podman lock recovery before deciding whether to automate it
+#100  completed    [thyrox]  Proxy local: resiliencia de OmniRoute (enfriamiento por cuenta, límites adaptativos, clasificador de errores, recuperación de stream)
+#102  completed    [thyrox]  Port infrastructure_ensure onto InfrastructureBootstrap and the primitive
+#122  pending      [thyrox]  Route the remaining Podman observers through podman-execution observe
+#149  pending      [gen]  Emit the existing api_retry event from AnthropicHttpProvider
+#150  in_progress  [thyrox]  Run the host model coordinator under a declared Linux lifecycle

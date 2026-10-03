@@ -1,0 +1,17 @@
+store: /home/user/thyrox/agent-results/agent_store.sqlite3
+tabla                               filas    hoy  ultima escritura      fechada por
+agent_sessions                       2055     51  2026-10-03T07:29:29.297Z started_at,updated_at,timeout_at
+cleared_tool_results                 3379      0  2026-10-02T15:17:46.812Z cleared_at
+documents                            6515      0  2026-09-29T12:51:34+00:00 updated_at,declared_at,commit_at
+findings_fts                         1740      ?  -                     -
+findings_fts_config                     1      -  -                     (sombra FTS5)
+findings_fts_data                     144      -  -                     (sombra FTS5)
+findings_fts_docsize                 1740      -  -                     (sombra FTS5)
+findings_fts_idx                      133      -  -                     (sombra FTS5)
+findings_history                     1740     18  2026-10-03T07:28:12   created_at,updated_at
+merge_conflicts                         0      0  -                     detected_at
+schema_migrations                      14      0  2026-09-29T18:45:25   applied_at
+task_session_highwater                  0      ?  -                     -
+tasks                                2423      6  2026-10-03T07:21:06   created_at,updated_at,opened_at
+
+13 tablas (4 de sombra FTS5) | 2 vacias | 2 sin columna de fecha (no fechables por este instrumento)

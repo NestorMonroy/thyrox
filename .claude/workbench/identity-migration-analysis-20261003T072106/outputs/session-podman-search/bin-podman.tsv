@@ -1,0 +1,8 @@
+check_infrastructure_runtime_idle	src/session/generate_bin.py
+check_podman_access_ownership	src/session/generate_bin.py
+check_podman_materialization	src/session/generate_bin.py
+infrastructure-bootstrap	src/session/generate_bin.py
+infrastructure_ensure	src/session/generate_bin.py
+podman-execution-execute	src/session/generate_bin.py
+podman_capabilities	src/session/generate_bin.py
+podman_lock_recovery	src/session/generate_bin.py

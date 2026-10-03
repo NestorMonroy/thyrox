@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts run --task TASK-THYROX-0917 --kind probe --workdir /home/user/thyrox --env THYROX_EXECUTION_ENTRY -- git gc --quiet", "started_at": "2026-10-03T07:47:34+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-03T07:50:37+00:00", "duration_seconds": 183.082739}
