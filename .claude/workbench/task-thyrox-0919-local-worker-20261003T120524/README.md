@@ -108,3 +108,10 @@ no repetir una orden ya ejecutada.
 del contexto completo de `thyrox -p` (en la sonda mínima sí llegaba). Terminó escribiendo el programa como texto.
 Siguiente forma, medida antes de despachar: un `printf '%s\n' 'línea' … > archivo` en una sola línea, sin saltos de
 línea en el argumento.
+
+### Ruta completa con un heredoc corto: el cuerpo llega
+
+`probes/heredoc-route/` (pool → unidad → `thyrox -p` → proxy → relé → unidad de modelo, `--tools Bash`): la tool call
+trae las cinco líneas y el archivo queda con `alfa`, `beta` y `gama`. La cadena conserva los saltos de línea; lo que
+falla es un **cuerpo largo** en una tool call con el contexto de la TASK. `probes/printf-long` en contexto mínimo
+también pasó. `prompt.md`: el programa se escribe por partes de ≤12 líneas (`>` la primera, `>>` las siguientes).

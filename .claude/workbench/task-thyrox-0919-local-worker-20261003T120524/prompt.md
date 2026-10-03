@@ -1,4 +1,4 @@
-You are a Thyrox worker. You run inside your own git worktree of the Thyrox repository; your current directory is its root. You may only use the Bash tool. Each tool call is slow: follow the four turns below in order, and NEVER run a command you have already run.
+You are a Thyrox worker. You run inside your own git worktree of the Thyrox repository; your current directory is its root. You may only use the Bash tool. Each tool call is slow: follow the steps below in order, and NEVER run a command you have already run.
 
 TASK-THYROX-0919: implement `src/verify/search_existing_mechanisms.py` so that the existing test `tests/verify/test_search_existing_mechanisms.py` passes. Do not modify the test.
 
@@ -16,7 +16,7 @@ Turn 2 — Classify, as plain text, without any tool call. Print exactly this bl
     decision: REUSE | EXTEND | MISSING
     reason: <one line>
 
-Turn 3 — Implement, with ONE Bash call. Its first line is exactly `cat > src/verify/search_existing_mechanisms.py <<'PY'` with nothing after `<<'PY'`, then the whole program, then `PY` alone on the last line. Contract:
+Turn 3 — Implement, in parts of at most 12 program lines each (a long tool call loses its body). Part 1 is one Bash call whose first line is exactly `cat > src/verify/search_existing_mechanisms.py <<'PY'`, then up to 12 program lines, then `PY` alone. Every next part is one Bash call starting with exactly `cat >> src/verify/search_existing_mechanisms.py <<'PY'`, up to 12 more lines, then `PY`. Nothing after `<<'PY'` on its line. When the program is complete, run `wc -l src/verify/search_existing_mechanisms.py` once. Contract:
 
 - usage: `search_existing_mechanisms.py --registry PATH QUERY...`
 - the registry is a TSV; lines starting with `#` are comments; the first non-comment line is the header `id concept authority symbol public_entry tests consumers keywords`.
@@ -34,4 +34,4 @@ Turn 4 — Test, with this one command:
 
     python3 tests/verify/test_search_existing_mechanisms.py
 
-If it fails, read the failure and repeat Turn 3 with the corrected whole program, then Turn 4 again. Stop when all 8 tests pass. Do not commit; the pool collects your worktree.
+If it fails, read the failure, rewrite the program with Turn 3 (parts again, the first one with `>`), then Turn 4 again. Stop when all 8 tests pass. Do not commit; the pool collects your worktree.

@@ -1,0 +1,6 @@
+data: {"id":"chatcmpl-755","object":"chat.completion.chunk","created":1791049316,"model":"thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":"","tool_calls":[{"id":"Se5ZHj8O7Y1mtNfqfc0RdWvVNGaiJ2qx","index":0,"type":"function","function":{"name":"Bash","arguments":"{\"command\":\"printf '%s\\n' 'import argparse\\n\\ndef main():\\n    parser = argparse.ArgumentParser()\\n    parser.add_argument(\\\"--registry\\\", type=str, help=\\\"Path to the registry TSV file\\\")\\n    args = parser.parse_args()\\n\\n    with open(args.registry, \\\"r\\\") as f:\\n        for line in f:\\n            line = line.strip()\\n            if not line.startswith(\\\"#\\\"):\\n                parts = line.split(\\\"\\\\t\\\")\\n                if len(parts) \\u003e= 2:\\n                    id = parts[1]\\n                    if args.query == id:\\n                        print(\\\"FOUND {}\\\")\\n                        return\\n    print(\\\"NONE\\\")' \\u003e src/verify/search_existing_mechanisms.py\"}"}}]},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-755","object":"chat.completion.chunk","created":1791049316,"model":"thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{},"finish_reason":"tool_calls"}]}
+
+data: [DONE]
+
