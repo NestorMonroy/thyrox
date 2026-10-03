@@ -1,0 +1,2 @@
+verify: tests/session/test-pool-calibrate.sh sigue en el baseline
+exit=1

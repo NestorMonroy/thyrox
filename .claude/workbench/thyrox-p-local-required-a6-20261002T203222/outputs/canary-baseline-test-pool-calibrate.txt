@@ -1,0 +1,13 @@
+  FALLA 1. sale 0 — esperado [0] obtenido [1]
+  FALLA 2. una fila por ejecución, de thyrox -p — esperado [2x/home/user/thyrox/bin/cli] obtenido []
+  FALLA 2b. con la huella de la plantilla — esperado [7ea109993456144eeeb024da5c78d0605b71b61b3fdbe5e5a967ce90b716fae9] obtenido []
+  FALLA 3. cada ítem llegó al proxy con el marcador local, no con la credencial del anfitrión — esperado [4xauth=x-api-key] obtenido []
+  ok   4. el proxy no queda vivo
+  FALLA 4b. lo dice: peticiones y filas — esperado [1] obtenido [0]
+  ok   5. sin peticiones al proxy: exit 1
+  ok   5b. lo nombra
+  ok   6. sin GNU Time: exit 2
+  ok   6b. sin filas
+
+5 ok · 5 falla(s) (alcance medido: pool-calibrate contra el proxy local)
+exit=1
