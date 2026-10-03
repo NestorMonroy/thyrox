@@ -1,0 +1,20 @@
+[ 6875.274944] llama-server invoked oom-killer: gfp_mask=0xcc0(GFP_KERNEL), order=0, oom_score_adj=0
+[ 6875.276892]  oom_kill_process.cold+0x8/0x90
+[ 6875.349279] [  pid  ]   uid  tgid total_vm      rss rss_anon rss_file rss_shmem pgtables_bytes swapents oom_score_adj name
+[ 6875.356187] oom-kill:constraint=CONSTRAINT_MEMCG,nodemask=(null),cpuset=libpod-89e9971883b69187dfd17a131f755a0a705ad9abb10ec28f608ded08654d2104,mems_allowed=0,oom_memcg=/libpod_parent/libpod-89e9971883b69187dfd17a131f755a0a705ad9abb10ec28f608ded08654d2104,task_memcg=/libpod_parent/libpod-89e9971883b69187dfd17a131f755a0a705ad9abb10ec28f608ded08654d2104,task=llama-server,pid=28821,uid=0
+[ 6875.363448] Memory cgroup out of memory: Killed process 28821 (llama-server) total-vm:9409336kB, anon-rss:8353048kB, file-rss:1664kB, shmem-rss:0kB, UID:0 pgtables:16524kB oom_score_adj:0
+[ 6913.369743] llama-server invoked oom-killer: gfp_mask=0xcc0(GFP_KERNEL), order=0, oom_score_adj=0
+[ 6913.371739]  oom_kill_process.cold+0x8/0x90
+[ 6913.444775] [  pid  ]   uid  tgid total_vm      rss rss_anon rss_file rss_shmem pgtables_bytes swapents oom_score_adj name
+[ 6913.451302] oom-kill:constraint=CONSTRAINT_MEMCG,nodemask=(null),cpuset=libpod-d200acb93e6fffb83f0fff4bb6b8953fa5baa42053dc7dec1e04dd20cec7f56b,mems_allowed=0,oom_memcg=/libpod_parent/libpod-d200acb93e6fffb83f0fff4bb6b8953fa5baa42053dc7dec1e04dd20cec7f56b,task_memcg=/libpod_parent/libpod-d200acb93e6fffb83f0fff4bb6b8953fa5baa42053dc7dec1e04dd20cec7f56b,task=llama-server,pid=30036,uid=0
+[ 6913.458005] Memory cgroup out of memory: Killed process 30036 (llama-server) total-vm:9409336kB, anon-rss:8353796kB, file-rss:1152kB, shmem-rss:0kB, UID:0 pgtables:16508kB oom_score_adj:0
+[ 6965.391694] llama-server invoked oom-killer: gfp_mask=0xcc0(GFP_KERNEL), order=0, oom_score_adj=0
+[ 6965.393539]  oom_kill_process.cold+0x8/0x90
+[ 6965.463085] [  pid  ]   uid  tgid total_vm      rss rss_anon rss_file rss_shmem pgtables_bytes swapents oom_score_adj name
+[ 6965.469697] oom-kill:constraint=CONSTRAINT_MEMCG,nodemask=(null),cpuset=libpod-fd88cab2196f3d8b76e8c20a632e20c36b2c22fdc550d380bcc852f4d541d904,mems_allowed=0,oom_memcg=/libpod_parent/libpod-fd88cab2196f3d8b76e8c20a632e20c36b2c22fdc550d380bcc852f4d541d904,task_memcg=/libpod_parent/libpod-fd88cab2196f3d8b76e8c20a632e20c36b2c22fdc550d380bcc852f4d541d904,task=llama-server,pid=31257,uid=0
+[ 6965.476423] Memory cgroup out of memory: Killed process 31257 (llama-server) total-vm:9409336kB, anon-rss:8353044kB, file-rss:1600kB, shmem-rss:0kB, UID:0 pgtables:16524kB oom_score_adj:0
+[ 7056.583826] llama-server invoked oom-killer: gfp_mask=0xcc0(GFP_KERNEL), order=0, oom_score_adj=0
+[ 7056.585695]  oom_kill_process.cold+0x8/0x90
+[ 7056.655198] [  pid  ]   uid  tgid total_vm      rss rss_anon rss_file rss_shmem pgtables_bytes swapents oom_score_adj name
+[ 7056.661815] oom-kill:constraint=CONSTRAINT_MEMCG,nodemask=(null),cpuset=libpod-fccaa8cbbafd6985c93092d6f4358c3bb34b642f807c850fe1d51d0fa9dc510d,mems_allowed=0,oom_memcg=/libpod_parent/libpod-fccaa8cbbafd6985c93092d6f4358c3bb34b642f807c850fe1d51d0fa9dc510d,task_memcg=/libpod_parent/libpod-fccaa8cbbafd6985c93092d6f4358c3bb34b642f807c850fe1d51d0fa9dc510d,task=llama-server,pid=32507,uid=0
+[ 7056.668484] Memory cgroup out of memory: Killed process 32507 (llama-server) total-vm:9540408kB, anon-rss:8353308kB, file-rss:1876kB, shmem-rss:0kB, UID:0 pgtables:16528kB oom_score_adj:0

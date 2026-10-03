@@ -1,0 +1,1 @@
+último error: upstream \"local-admitted\" (http://127.0.0.1:41193/v1/chat/completions) respondió 503: {\"error\":{\"type\":\"admission_failed\",\"message\":\"la admisión falló en la etapa load: Ollama /api/generate respondió 500: {\\\"error\\\":\\\"llama-server process has terminated: signal: killed\\\"}\"}})"}} (tras 11 intentos)
