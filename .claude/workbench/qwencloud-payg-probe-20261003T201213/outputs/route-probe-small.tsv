@@ -1,0 +1,4 @@
+token-plan	anthropic	qwen3.8-flash	401	1253ms	{"request_id":"f8948db9-7468-443b-b13b-959bd3c35c81","code":"InvalidApiKey","message":"Invalid API-key provided. For det
+token-plan	openai	qwen3.8-flash	401	282ms	{"error":{"message":"Invalid API-key provided. For details, see: https://www.alibabacloud.com/help/en/model-studio/error
+payg	anthropic	qwen3.8-flash	401	1469ms	{"request_id":"6ecf7cb8-5275-9bc1-bb3d-8371b25395c5","code":"InvalidApiKey","message":"Invalid API-key provided. For det
+payg	openai	qwen3.8-flash	401	282ms	{"error":{"message":"Invalid API-key provided. For details, see: https://www.alibabacloud.com/help/en/model-studio/error

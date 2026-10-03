@@ -443,6 +443,7 @@ THYROX_NODE_API_HEADERS	credential	env	cabeceras HTTP: pueden llevar Authorizati
 THYROX_OBSERVABILITY_DATABASE_URL	credential	env	URL de base de datos: puede llevar usuario:contraseña
 THYROX_OBSERVABILITY_DATA_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
 THYROX_OPENAI_COMPAT_API_KEY	credential	env	clave de API del upstream compatible con OpenAI
+THYROX_OPENAI_COMPAT_PAYG_API_KEY	credential	env	clave de API de Pay-As-You-Go de Qwen Cloud
 THYROX_OPENAI_COMPAT_BASE_URL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
 THYROX_OPENAI_COMPAT_MODEL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
 THYROX_OPENFERENCE_OAUTH_CLIENT_ID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto

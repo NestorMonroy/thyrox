@@ -1,0 +1,4 @@
+QWENCLOUD_APK_TP	https://maas.qwencloudapi.com/compatible-mode/v1/chat/completions	401	invalid_api_key
+QWENCLOUD_APK_PAYG	https://token-plan.maas.qwencloudapi.com/compatible-mode/v1/chat/completions	401	invalid_api_key
+QWENCLOUD_APK_TP	https://token-plan.maas.qwencloudapi.com/compatible-mode/v1/models	401	
+QWENCLOUD_APK_PAYG	https://maas.qwencloudapi.com/compatible-mode/v1/models	401	invalid_api_key
