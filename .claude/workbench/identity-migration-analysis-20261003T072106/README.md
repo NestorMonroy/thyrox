@@ -692,3 +692,38 @@ La implementación la hace el worker local por
 `headless-pool --isolation worktree --verify` y `pool_integrate`
 (`trabajo-en-segundo-plano.md`, cuarta forma). Banco:
 `.claude/workbench/identity-ingestion-batch-20261003T083036/`.
+
+## 11. Cómo se soluciona el desfase de locks de Podman (pedido del ejecutor)
+
+### El mecanismo del fallo, medido
+
+| Pieza | Ruta | Sistema de archivos | Tras reiniciar la VM |
+|---|---|---|---|
+| locks de Podman (memoria compartida) | `/dev/shm/libpod_lock` | tmpfs | **se borran** |
+| marcador de «ya refresqué en este arranque» | `/run/libpod/alive` | ext4 (`/`) | **sobrevive** |
+
+Podman decide si refresca su estado —reasignar los locks que la base guarda por
+objeto— según exista `alive`. Aquí los locks se pierden y el marcador queda, así
+que Podman cree que no hubo reinicio y no reasigna: 0 locks asignados, 21
+referenciados. `containers.conf` lo exige en su comentario de `tmp_dir`: *«Must be
+tmpfs (wiped after reboot)»* (`/usr/share/containers/containers.conf:701-702`).
+Ni `/etc/containers/containers.conf` ni `storage.conf` existen: rige el
+default `/run/libpod`.
+
+### Tres soluciones, y cuál procede
+
+| Solución | Qué hace | Veredicto |
+|---|---|---|
+| A. `bin/podman_lock_recovery --confirm` | retira `alive`; el siguiente comando de Podman refresca | **la reparación de hoy.** Ya existe, rehúsa fuera del alcance medido y con contenedores vivos, y no toca volúmenes. El clasificador de la sesión la deniega dos veces («Modify Shared Resources»): la corre el operador o se le da una regla de permiso |
+| B. cambiar `tmp_dir` a `/dev/shm/libpod` en `containers.conf` | el marcador viviría en tmpfs | **NO.** `podman-system-reset.1.md:14-16`: cambiar `tmp_dir` exige correr antes `podman system reset`, que borra contenedores, imágenes y **volúmenes** (`thyrox-postgres-data` incluido). Prohibido |
+| C. montar un tmpfs **sobre** `/run/libpod` antes del primer comando de Podman tras cada arranque | misma ruta (la base no ve cambio de configuración) y volátil como Podman supone | **la causa raíz.** Sin `reset`. Falta el disparo: no hay systemd (PID 1 es `process_api`) y lo único que corre al arrancar sesión es `item_worktree sweep-orphans` |
+
+C no está implementada ni medida. Antes de implementarla hay que medir dos cosas:
+
+- que un tmpfs montado sobre `/run/libpod` con la base sqlite intacta da un
+  refresco limpio, igual que A;
+- si `runroot` (`/run/containers/storage`, también en ext4) arrastra el mismo
+  supuesto.
+
+Es la tarea #99, que pasa de «¿automatizar?» a una pregunta concreta: **montar
+tmpfs en el arranque contra retirar el marcador en el arranque**.
