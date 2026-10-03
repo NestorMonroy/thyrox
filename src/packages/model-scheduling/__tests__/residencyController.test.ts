@@ -299,3 +299,56 @@ describe('ResidencyController: la RAM se mide y se libera antes de establecer ot
     expect(registry.list()).toEqual([])
   })
 })
+
+// TASK-THYROX-0932: cada unidad de modelo toma CPUs fijas (UNIT_LIMITS) y nada
+// sumaba las comprometidas contra las del anfitrión. La CPU es otra dimensión
+// de la misma admisión: se mide antes de establecer y, si falta, se desaloja
+// una ociosa como con la RAM. El rechazo nombra la dimensión que falta.
+describe('ResidencyController: la CPU comprometida se admite como la RAM', () => {
+  const CPUS = { hostCpus: 4, reserveCpus: 0, unitCpus: 2 }
+
+  function cpuController(capacity = CPUS): ResidencyController {
+    return new ResidencyController({
+      coordination, ledger, issuer, primitive, runtime, registry, leaseTtlMs: 60_000,
+      health: { attempts: HEALTH_ATTEMPTS, intervalMs: 50 },
+      sleep: async ms => { sleeps.push(ms) },
+      cpuCapacity: capacity,
+    })
+  }
+
+  const plan = (residencyKey: string, requestId: string): ExecutionPlan => ({ ...PLAN, residencyKey, requestId })
+
+  test('caben dos unidades de 2 CPUs en 4; la tercera, con las dos ocupadas, se rehúsa nombrando la CPU', async () => {
+    const cpu = cpuController()
+    expect((await cpu.admit(plan('residency/a', 'request-a'))).status).toBe('admitted')
+    expect((await cpu.admit(plan('residency/b', 'request-b'))).status).toBe('admitted')
+    const refused = await cpu.admit(plan('residency/c', 'request-c'))
+    expect(refused.status).toBe('refused')
+    if (refused.status === 'refused') {
+      expect(refused.stage).toBe('reserve')
+      expect(refused.reason).toMatch(/necesita 2 CPU y quedan 0 de 4/)
+    }
+  })
+
+  test('con una ociosa, la desaloja por CPU y establece la nueva', async () => {
+    const cpu = cpuController()
+    const first = await cpu.admit(plan('residency/a', 'request-a'))
+    if (first.status !== 'admitted') throw new Error(JSON.stringify(first))
+    await cpu.finish(first)
+    expect((await cpu.admit(plan('residency/b', 'request-b'))).status).toBe('admitted')
+    expect((await cpu.admit(plan('residency/c', 'request-c'))).status).toBe('admitted')
+    expect(registry.get('residency/a')?.state ?? 'absent').toBe('absent')
+  })
+
+  test('la reserva del anfitrión cuenta: con 1 CPU reservada, una segunda unidad de 2 no cabe en 4', async () => {
+    const cpu = cpuController({ ...CPUS, reserveCpus: 1 })
+    expect((await cpu.admit(plan('residency/a', 'request-a'))).status).toBe('admitted')
+    expect((await cpu.admit(plan('residency/b', 'request-b'))).status).toBe('refused')
+  })
+
+  test('una unidad que no cabe ni sola se rehúsa sin desalojar nada', async () => {
+    const cpu = cpuController({ hostCpus: 1, reserveCpus: 0, unitCpus: 2 })
+    expect((await cpu.admit(plan('residency/a', 'request-a'))).status).toBe('refused')
+    expect(registry.list()).toEqual([])
+  })
+})

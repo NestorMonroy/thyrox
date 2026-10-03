@@ -47,6 +47,21 @@ export interface ResidencyControllerDependencies {
   readonly sleep?: (ms: number) => Promise<void>
   /** La holgura de RAM medida; sin ella el controlador no mide antes de establecer. */
   readonly ramHeadroom?: RamHeadroom
+  /** Las CPUs del anfitrión y las de cada unidad; sin ellas el controlador no cuenta CPU. */
+  readonly cpuCapacity?: CpuCapacity
+}
+
+/**
+ * La CPU como dimensión de admisión (TASK-THYROX-0932): cada unidad de modelo
+ * toma `unitCpus` fijas, y las de todas las residencias vivas más la nueva
+ * no pueden pasar de `hostCpus - reserveCpus`.
+ * Ciega a: las CPUs que toman las unidades que no son de modelo (los ítems del
+ * pool); este controlador sólo cuenta las suyas.
+ */
+export interface CpuCapacity {
+  readonly hostCpus: number
+  readonly reserveCpus: number
+  readonly unitCpus: number
 }
 
 /**
@@ -56,6 +71,12 @@ export interface ResidencyControllerDependencies {
  */
 export interface RamHeadroom {
   availableBytes(): Promise<number | undefined>
+}
+
+/** Una dimensión que no alcanza: su causa, y si desalojar una ociosa puede liberarla. */
+interface Shortage {
+  readonly reason: string
+  readonly evictionHelps: boolean
 }
 
 export type ResidencyStage = 'lease' | 'reserve' | 'grant' | 'materialize' | 'generation' | 'health' | 'prepare' | 'verify' | 'load' | 'observe' | 'allocate'
@@ -158,23 +179,49 @@ export class ResidencyController {
   }
 
   /**
-   * Mide la RAM antes de establecer una residencia y, si no cabe, desaloja las
-   * ocupadas sin peticiones activas, de la más antigua a la más nueva, volviendo
-   * a medir tras cada una (H-THYROX-448). Devuelve la causa del rechazo, o nada
-   * si cabe. Sin medición rehúsa: admitir a ciegas es lo que agotó el anfitrión.
+   * Comprueba cada dimensión (RAM, CPU) antes de establecer una residencia y,
+   * mientras alguna no quepa, desaloja las ocupadas sin peticiones activas, de
+   * la más antigua a la más nueva, volviendo a medir tras cada una
+   * (H-THYROX-448). Devuelve la causa del rechazo, que nombra la dimensión, o
+   * nada si cabe. Sin medición de la RAM rehúsa: admitir a ciegas es lo que
+   * agotó el anfitrión.
    */
   private async makeRoom(plan: ExecutionPlan): Promise<string | undefined> {
-    const { ramHeadroom, registry } = this.dependencies
-    if (!ramHeadroom || plan.memoryBytes === undefined) return undefined
-    let available = await ramHeadroom.availableBytes()
+    const { registry } = this.dependencies
+    let shortage = await this.shortage(plan)
     for (const idle of registry.list().filter(r => r.state === 'resident' && r.activeRequests === 0 && r.residencyKey !== plan.residencyKey)) {
-      if (available === undefined || available >= plan.memoryBytes) break
+      if (shortage === undefined || !shortage.evictionHelps) break
       await this.evict(idle.residencyKey)
-      available = await ramHeadroom.availableBytes()
+      shortage = await this.shortage(plan)
     }
-    if (available === undefined) return `no se pudo medir la RAM libre para ${plan.residencyKey}`
+    return shortage?.reason
+  }
+
+  /** La primera dimensión que no alcanza para el plan, o nada si caben todas. */
+  private async shortage(plan: ExecutionPlan): Promise<Shortage | undefined> {
+    return await this.ramShortage(plan) ?? this.cpuShortage(plan)
+  }
+
+  private async ramShortage(plan: ExecutionPlan): Promise<Shortage | undefined> {
+    const { ramHeadroom } = this.dependencies
+    if (!ramHeadroom || plan.memoryBytes === undefined) return undefined
+    const available = await ramHeadroom.availableBytes()
+    if (available === undefined) return { reason: `no se pudo medir la RAM libre para ${plan.residencyKey}`, evictionHelps: false }
     if (available >= plan.memoryBytes) return undefined
-    return `la residencia ${plan.residencyKey} necesita ${plan.memoryBytes} bytes de RAM y quedan ${available} sin residencias ociosas que desalojar`
+    return { reason: `la residencia ${plan.residencyKey} necesita ${plan.memoryBytes} bytes de RAM y quedan ${available} sin residencias ociosas que desalojar`, evictionHelps: true }
+  }
+
+  private cpuShortage(plan: ExecutionPlan): Shortage | undefined {
+    const { cpuCapacity, registry } = this.dependencies
+    if (!cpuCapacity) return undefined
+    const usable = cpuCapacity.hostCpus - cpuCapacity.reserveCpus
+    const live = registry.list().filter(r => r.state !== 'absent' && r.residencyKey !== plan.residencyKey).length
+    const committed = live * cpuCapacity.unitCpus
+    if (committed + cpuCapacity.unitCpus <= usable) return undefined
+    return {
+      reason: `la residencia ${plan.residencyKey} necesita ${cpuCapacity.unitCpus} CPU y quedan ${usable - committed} de ${cpuCapacity.hostCpus} (reserva ${cpuCapacity.reserveCpus}) sin residencias ociosas que desalojar`,
+      evictionHelps: live > 0,
+    }
   }
 
   /** Suelta la VRAM de la petición y descuenta la residencia. */

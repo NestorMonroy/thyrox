@@ -19,7 +19,7 @@ import { RuntimeAdapterRouter } from '@thyrox/model-scheduling/runtimeAdapterRou
 import type { ArtifactFormat } from '@thyrox/model-artifacts/catalogEntry.ts'
 import type { ModelRuntime } from '@thyrox/model-artifacts/executionGrant.ts'
 import { randomUUID } from 'node:crypto'
-import { hostname } from 'node:os'
+import { availableParallelism, hostname } from 'node:os'
 import { join } from 'node:path'
 
 import { localArtifactHome, localModelHome } from '@thyrox/model-artifacts/localModelHome.ts'
@@ -33,7 +33,7 @@ import { MemoryGrantIssuer } from '@thyrox/model-scheduling/memoryGrantIssuer.ts
 import { createMemoryResidencyVramLedger } from '@thyrox/model-scheduling/memoryVramLedger.ts'
 import { PodmanModelUnitMaterializer } from '@thyrox/model-scheduling/podmanModelUnitMaterializer.ts'
 import { ResidencyRegistry } from '@thyrox/model-scheduling/residency.ts'
-import { ResidencyController, type RamHeadroom } from '@thyrox/model-scheduling/residencyController.ts'
+import { ResidencyController, type CpuCapacity, type RamHeadroom } from '@thyrox/model-scheduling/residencyController.ts'
 import { createPodmanExecutor, type PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
 import type { ContainerOwner } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
 
@@ -63,7 +63,16 @@ export const OLLAMA_UNIT_ENVIRONMENT: Readonly<Record<string, string>> = {
   LLAMA_ARG_CACHE_RAM: '0',
 }
 /** Límites de una unidad: RAM holgada para un modelo de hasta ~7B en Q4 sobre CPU. */
-const UNIT_LIMITS = { cpus: 2, memoryMib: 8_192, pidsLimit: 256 }
+export const UNIT_LIMITS = { cpus: 2, memoryMib: 8_192, pidsLimit: 256 }
+
+/**
+ * Las CPUs que las residencias pueden comprometer (TASK-THYROX-0932): las del
+ * anfitrión, sin reserva —el plano de control son procesos ligeros y la RAM ya
+ * guarda su piso—, a `UNIT_LIMITS.cpus` por unidad.
+ */
+export function unitCpuCapacity(hostCpus: number): CpuCapacity {
+  return { hostCpus, reserveCpus: 0, unitCpus: UNIT_LIMITS.cpus }
+}
 const LEASE_TTL_MS = 10 * 60_000
 const GRANT_TTL_MS = 10 * 60_000
 /** La salud de una unidad recién creada: hasta un minuto, cada medio segundo. */
@@ -132,6 +141,8 @@ export function composeHostCoordinatorService(env: Environment, thyroxRoot: stri
     // La RAM se mide antes de establecer otra residencia, y las ociosas se
     // desalojan si no cabe (H-THYROX-448): la holgura es la de `admit-ram`.
     ramHeadroom: dependencies.ramHeadroom ?? new ResourceAdmissionCli(join(thyroxRoot, 'bin', 'resource_admission'), process.pid),
+    // Y la CPU: las unidades vivas más la nueva no pasan de las del anfitrión.
+    cpuCapacity: unitCpuCapacity(availableParallelism()),
   })
   const catalogPath = localModelHome(env, thyroxRoot).catalog
   const coordinator = new ModelSchedulingCoordinator({

@@ -13,7 +13,7 @@ import { modelCoordinatorSocketPath } from '@thyrox/model-scheduling/coordinator
 
 import { requireValidOwner } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
 
-import { composeHostCoordinatorService, cpuPlacementOf, MODEL_COORDINATOR_OWNER_KIND, OLLAMA_UNIT_ENVIRONMENT } from '../hostCoordinatorComposition.ts'
+import { composeHostCoordinatorService, cpuPlacementOf, MODEL_COORDINATOR_OWNER_KIND, OLLAMA_UNIT_ENVIRONMENT, UNIT_LIMITS, unitCpuCapacity } from '../hostCoordinatorComposition.ts'
 
 const ROOT = '/nonexistent-thyrox-root'
 
@@ -60,5 +60,11 @@ describe('cpuPlacementOf por formato del artefacto (TASK-THYROX-0776)', () => {
 describe('el entorno de una unidad de Ollama', () => {
   test('desactiva la caché de prompts en RAM de llama-server', () => {
     expect(OLLAMA_UNIT_ENVIRONMENT.LLAMA_ARG_CACHE_RAM).toBe('0')
+  })
+})
+
+describe('la capacidad de CPU del coordinador (TASK-THYROX-0932)', () => {
+  test('cada unidad cuenta las CPUs con que se materializa y el anfitrión las suyas', () => {
+    expect(unitCpuCapacity(4)).toEqual({ hostCpus: 4, reserveCpus: 0, unitCpus: UNIT_LIMITS.cpus })
   })
 })
