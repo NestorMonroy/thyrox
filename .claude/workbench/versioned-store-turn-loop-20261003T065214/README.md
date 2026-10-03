@@ -235,3 +235,37 @@ Clasificación revisada del problema 1: EXTEND `reconcile_user_hooks`
 (parche 2, de telemetría) + EXTEND `declared_wiring` (cablear el
 reconciliador en `SessionStart` `startup`). Cablear `stop_pending_work` sigue
 siendo útil para el veredicto propio, pero por sí solo no corta el bucle.
+
+### Segunda corrección — `src/store` y `src/packages/**` (señalado por el ejecutor)
+
+El store tiene **tres escritores** de `agent_sessions`, no uno: los hooks
+(`src/agents/register_session.py` sobre `src/store/agent_sessions.py`),
+`reconcile_store.py`, y el harness TS (`@thyrox/observability`
+`recordHarnessSession`, llamado desde `tools/src/agent.ts:83`). Todos abren por
+`@thyrox/store/db.ts` / `store/agent_sessions.connect` (WAL + `busy_timeout`).
+
+Lo que cambia la clasificación:
+
+- **El problema 3 ya tiene autoridad en TS:** `reconcileStaleRunningRows`
+  (T-094, `observability/src/store.ts:239`) barre filas `running` y las cierra
+  por evidencia de `pid`/`procStart`. **Cero invocadores de producción**, aunque
+  `src/conformance/checklist.ts` A.6.6 lo da por `met` («la cierra al
+  reiniciar»). Y aunque corriera, no tocaría las colgadas: medido en sólo lectura,
+  **14** filas `running`, todas `general-purpose` y **ninguna con `pid`** en
+  `metadata_json`, y el barrido deja intacta una fila sin `pid`. EXTEND: cablearlo
+  y añadirle la evidencia del transcript (la de `reconcile_store._verdict`) con los
+  estados `orphaned`/`abandoned`/`unmatched_stop`, en lugar de abrir un segundo
+  barrido en Python.
+- `reconcileWorkingTree` (T-093) es un reporte de árbol sucio y de commits por
+  delante del remoto, también sin invocador. No tiene eje de telemetría.
+- `stopHooksCore.handleStopHooks` es el runner de `Stop` de `thyrox -p`: corre lo
+  que declaren los settings y no tiene lógica de telemetría propia. El arreglo
+  del problema 1 (parche 2 de `reconcile_user_hooks`, entrada `Stop`) sirve
+  también a este cliente.
+- **Problema 2 (churn):** ningún paquete agrupa escrituras al store
+  (`local-observability` no lo abre). Sigue en MISSING.
+
+Patrón común a las tres rupturas: el mecanismo existe, tiene pruebas, y le falta
+el cableado (`stop_pending_work`, `reconcile_user_hooks`,
+`reconcileStaleRunningRows`). El cambio necesario es sobre todo cableado y
+extensión, no mecanismo nuevo.
