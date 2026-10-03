@@ -204,3 +204,34 @@ Invariantes respetados: el store sigue versionado, `sqlite-union` sigue siendo
 el merge, no hay segundo store, ni segundo lifecycle, ni segundo pending-work,
 ni se descarta telemetría. La implementación va al worker; el controlador no
 muta producto.
+
+### Corrección — búsqueda sobre todo `thyrox/**` (el ejecutor señaló que el primer pase sólo cubría `src bin tests .githooks`)
+
+`git grep -lE` sobre todo lo versionado, agrupado por área con gawk: 1398
+`.claude/workbench`, 547 `_references`, 214 `.claude/jobs`, 100 `src`, 56
+`_archived`, 23 `tests`, 22 `.claude/cache`, 9 `build-logs`, 2 `bin`, 1 skill.
+Thyrox no tiene aún `bin/search_existing_mechanisms` (TASK-THYROX-0769), así
+que el instrumento fue `git grep` + gawk.
+
+Lo que el primer pase **no vio** y cambia una fila:
+
+- **`src/session/reconcile_user_hooks.py`** ya es la autoridad que **parchea
+  el hook de Stop de la plataforma** (`~/.claude/stop-hook-git-check.sh`)
+  de forma declarativa e idempotente: forma correcta, forma defectuosa
+  conocida, y rehúsa con 2 ante una forma desconocida. Tiene un parche
+  (`stop-hook-signature-only`). Así que el gate de la plataforma **no** está
+  fuera de autoridad: es EXTEND de este módulo con un segundo `Patch` que
+  haga que la comprobación de suciedad ignore las rutas de telemetría
+  declaradas.
+- **Segunda ruptura medida:** `bin/reconcile_user_hooks --check` da aquí
+  `1 PENDIENTE` (el parche 1 tampoco está aplicado). Su único invocador es
+  `src/session/session-start.sh:63`, y `declared_wiring()` no lo cablea
+  (`settings.local.json`: 0 apariciones de `session-start`). El mecanismo
+  existe y no corre, igual que `stop_pending_work`.
+- `src/session/stop-hook-git-check.sh` es el porte de la era archivada:
+  avisa y sale 0, sin cablear. Sólo referencia.
+
+Clasificación revisada del problema 1: EXTEND `reconcile_user_hooks`
+(parche 2, de telemetría) + EXTEND `declared_wiring` (cablear el
+reconciliador en `SessionStart` `startup`). Cablear `stop_pending_work` sigue
+siendo útil para el veredicto propio, pero por sí solo no corta el bucle.
