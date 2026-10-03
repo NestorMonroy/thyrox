@@ -13,7 +13,7 @@ import { modelCoordinatorSocketPath } from '@thyrox/model-scheduling/coordinator
 
 import { requireValidOwner } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
 
-import { composeHostCoordinatorService, cpuPlacementOf, MODEL_COORDINATOR_OWNER_KIND, OLLAMA_UNIT_ENVIRONMENT, UNIT_LIMITS, unitCpuCapacity } from '../hostCoordinatorComposition.ts'
+import { composeHostCoordinatorService, cpuPlacementOf, MODEL_COORDINATOR_OWNER_KIND, OLLAMA_UNIT_ENVIRONMENT, ollamaUnitProfile, UNIT_LIMITS, unitCpuCapacity } from '../hostCoordinatorComposition.ts'
 
 const ROOT = '/nonexistent-thyrox-root'
 
@@ -60,6 +60,28 @@ describe('cpuPlacementOf por formato del artefacto (TASK-THYROX-0776)', () => {
 describe('el entorno de una unidad de Ollama', () => {
   test('desactiva la caché de prompts en RAM de llama-server', () => {
     expect(OLLAMA_UNIT_ENVIRONMENT.LLAMA_ARG_CACHE_RAM).toBe('0')
+  })
+})
+
+// H-THYROX-471: subir el GGUF por `/api/blobs` dejaba una segunda copia de
+// 4.68 GB en la capa escribible de cada unidad, sin dueño declarado. La unidad
+// ve el GGUF canónico de la caché, de sólo lectura, como su propio blob.
+describe('el artefacto de una unidad de Ollama', () => {
+  const profile = ollamaUnitProfile('/cache')
+  const artifact = resolvedArtifact({ artifactId: 'a'.repeat(64) })
+
+  test('es el GGUF canónico de la caché montado como blob del almacén de Ollama', () => {
+    expect(profile.artifactMount?.hostPath(artifact)).toBe(`/cache/sha256-${'a'.repeat(64)}.gguf`)
+    expect(profile.artifactMount?.containerPath(artifact)).toBe(`${OLLAMA_UNIT_ENVIRONMENT.OLLAMA_MODELS}/blobs/sha256-${'a'.repeat(64)}`)
+  })
+
+  test('de escritura: Ollama 0.35.0 hace chtimes sobre el blob y de sólo lectura /api/create responde 500', () => {
+    expect(profile.artifactMount?.mode).toBe('rw')
+  })
+
+  test('el almacén se declara y Ollama no poda al arrancar el blob montado', () => {
+    expect(OLLAMA_UNIT_ENVIRONMENT.OLLAMA_MODELS).toMatch(/^\//)
+    expect(OLLAMA_UNIT_ENVIRONMENT.OLLAMA_NOPRUNE).toBe('1')
   })
 })
 

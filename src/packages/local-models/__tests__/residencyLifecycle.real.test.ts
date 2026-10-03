@@ -41,6 +41,7 @@ import { createPodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts
 import { removeWorkerContainerArgv, workerContainerName } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
 
 import { OllamaRuntimeAdapter } from '../ollamaRuntimeAdapter.ts'
+import { ollamaUnitProfile } from '../hostCoordinatorComposition.ts'
 
 const OPT_IN_ENV = 'THYROX_E2E_MODEL_RESIDENCY'
 const RUNTIME_IMAGE = 'docker.io/ollama/ollama:0.35.0'
@@ -147,13 +148,14 @@ describe.skipIf(skipReason !== undefined)('residencia real: Podman + Ollama', ()
     const primitive = new PodmanModelUnitMaterializer({
       podman,
       currentGeneration,
-      profiles: { ollama: { image: RUNTIME_IMAGE, containerPort: OLLAMA_CONTAINER_PORT, environment: { OLLAMA_HOST: `0.0.0.0:${OLLAMA_CONTAINER_PORT}` } } },
+      // El perfil de producción: el GGUF de la caché montado como blob, sin copia en la unidad (H-THYROX-471).
+      profiles: { ollama: { ...ollamaUnitProfile(cache), image: RUNTIME_IMAGE } },
       owner: { kind: 'model-coordinator', id: OWNER, pid: process.pid },
       limits: UNIT_LIMITS,
       allocatePort: freeLoopbackPort,
       now: () => new Date(),
     })
-    const runtime = new OllamaRuntimeAdapter({ artifactPath, currentGeneration })
+    const runtime = new OllamaRuntimeAdapter({ artifactPath, currentGeneration, artifactMounted: true })
     const registry = new ResidencyRegistry()
     const controller = new ResidencyController({ coordination, ledger, issuer, primitive, runtime, registry, leaseTtlMs: LEASE_TTL_MS, health: HEALTH })
 

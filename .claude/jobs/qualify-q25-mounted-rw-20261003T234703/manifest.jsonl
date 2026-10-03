@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bin/local-models-qualify thyrox-qwen--qwen2.5-7b-instruct-gguf:q4_k_m-hf-bb5d59e06d95", "started_at": "2026-10-03T23:47:03+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-03T23:48:31+00:00", "duration_seconds": 88.745378}

@@ -31,7 +31,7 @@ import { ModelSchedulingCoordinator, type PlacementDecision } from '@thyrox/mode
 import type { HostCoordinatorServiceOptions } from '@thyrox/model-scheduling/hostCoordinatorService.ts'
 import { MemoryGrantIssuer } from '@thyrox/model-scheduling/memoryGrantIssuer.ts'
 import { createMemoryResidencyVramLedger } from '@thyrox/model-scheduling/memoryVramLedger.ts'
-import { PodmanModelUnitMaterializer } from '@thyrox/model-scheduling/podmanModelUnitMaterializer.ts'
+import { PodmanModelUnitMaterializer, type RuntimeContainerProfile } from '@thyrox/model-scheduling/podmanModelUnitMaterializer.ts'
 import { ResidencyRegistry } from '@thyrox/model-scheduling/residency.ts'
 import { ResidencyController, type CpuCapacity, type RamHeadroom } from '@thyrox/model-scheduling/residencyController.ts'
 import { createPodmanExecutor, type PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
@@ -61,6 +61,41 @@ const OLLAMA_CONTAINER_PORT = 11_434
 export const OLLAMA_UNIT_ENVIRONMENT: Readonly<Record<string, string>> = {
   OLLAMA_HOST: `0.0.0.0:${OLLAMA_CONTAINER_PORT}`,
   LLAMA_ARG_CACHE_RAM: '0',
+  // El almacén se declara porque el blob montado vive en una ruta suya, y
+  // Ollama no poda al arrancar un blob que ningún manifiesto nombra todavía.
+  OLLAMA_MODELS: '/root/.ollama/models',
+  OLLAMA_NOPRUNE: '1',
+}
+
+/**
+ * La unidad de Ollama ve el GGUF canónico de la caché como el blob
+ * `sha256-<hex>` de su almacén: `/api/create` lo encuentra y nada se sube.
+ * Subirlo por `/api/blobs` dejaba una segunda copia —4.68 GB medidos por
+ * unidad, en su capa escribible— sin dueño declarado (H-THYROX-471).
+ *
+ * El montaje es de escritura y sólo de ese archivo: Ollama 0.35.0 hace
+ * `chtimes` sobre el blob al crear el modelo, y de sólo lectura respondió 500
+ * (medido). Ollama no reescribe un blob existente —escribe los nuevos con
+ * temporal y `rename`, que sobre un archivo montado falla—; lo que cambia en
+ * la caché es su mtime, que nada consulta.
+ */
+export function ollamaUnitProfile(artifactCache: string): RuntimeContainerProfile {
+  return {
+    image: OLLAMA_RUNTIME_IMAGE,
+    containerPort: OLLAMA_CONTAINER_PORT,
+    environment: OLLAMA_UNIT_ENVIRONMENT,
+    // Ollama sirve /v1 con su contexto por defecto si el servidor no recibe el del grant.
+    grantEnvironment: grant => ({ OLLAMA_CONTEXT_LENGTH: String(grant.contextLength) }),
+    artifactMount: {
+      hostPath: artifact => cachedGgufPath(artifactCache, artifact.artifactId),
+      containerPath: artifact => `${OLLAMA_UNIT_ENVIRONMENT.OLLAMA_MODELS}/blobs/sha256-${artifact.artifactId}`,
+      mode: 'rw',
+    },
+  }
+}
+
+function cachedGgufPath(artifactCache: string, sha256: string): string {
+  return join(artifactCache, `sha256-${sha256}.gguf`)
 }
 /** Límites de una unidad: RAM holgada para un modelo de hasta ~7B en Q4 sobre CPU. */
 export const UNIT_LIMITS = { cpus: 2, memoryMib: 8_192, pidsLimit: 256 }
@@ -108,18 +143,12 @@ export function composeHostCoordinatorService(env: Environment, thyroxRoot: stri
     podman,
     currentGeneration,
     profiles: {
-      ollama: {
-        image: OLLAMA_RUNTIME_IMAGE,
-        containerPort: OLLAMA_CONTAINER_PORT,
-        environment: OLLAMA_UNIT_ENVIRONMENT,
-        // Ollama sirve /v1 con su contexto por defecto si el servidor no recibe el del grant.
-        grantEnvironment: grant => ({ OLLAMA_CONTEXT_LENGTH: String(grant.contextLength) }),
-      },
+      ollama: ollamaUnitProfile(artifactCache),
       transformers: {
         image: TRANSFORMERS_RUNTIME_IMAGE,
         containerPort: TRANSFORMERS_CONTAINER_PORT,
         environment: { THYROX_TRANSFORMERS_MODEL_DIR: TRANSFORMERS_MODEL_DIRECTORY, THYROX_TRANSFORMERS_PORT: String(TRANSFORMERS_CONTAINER_PORT) },
-        artifactMount: { hostDirectory: artifact => snapshotDirectory(artifactCache, artifact.artifactId), containerDirectory: TRANSFORMERS_MODEL_DIRECTORY },
+        artifactMount: { hostPath: artifact => snapshotDirectory(artifactCache, artifact.artifactId), containerPath: () => TRANSFORMERS_MODEL_DIRECTORY },
       },
     },
     owner,
@@ -133,7 +162,7 @@ export function composeHostCoordinatorService(env: Environment, thyroxRoot: stri
     issuer: new MemoryGrantIssuer({ ttlMs: GRANT_TTL_MS, now: () => new Date(), newGrantId: randomUUID }),
     primitive,
     runtime: new RuntimeAdapterRouter({
-      ollama: new OllamaRuntimeAdapter({ artifactPath: sha256 => join(artifactCache, `sha256-${sha256}.gguf`), currentGeneration }),
+      ollama: new OllamaRuntimeAdapter({ artifactPath: sha256 => cachedGgufPath(artifactCache, sha256), currentGeneration, artifactMounted: true }),
       transformers: new TransformersRuntimeAdapter({ currentGeneration }),
     }),
     registry: new ResidencyRegistry(),

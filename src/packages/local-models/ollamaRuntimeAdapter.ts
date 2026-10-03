@@ -5,8 +5,10 @@
  * HTTP quedan aquí, el puerto no los conoce.
  *
  * - `probeHealth`: una consulta a `/api/version`; nunca espera ni reintenta.
- * - `prepareRuntimeArtifact`: sube el blob del grant si la unidad no lo tiene
- *   (`HEAD`/`POST /api/blobs`) y crea el modelo desde él (`/api/create`).
+ * - `prepareRuntimeArtifact`: crea el modelo desde el blob del grant
+ *   (`/api/create`). Con el artefacto montado en la unidad (`artifactMounted`)
+ *   el blob ya está y nunca se sube: si falta, rehúsa en vez de copiarlo
+ *   (H-THYROX-471). Sin montaje lo sube si falta (`HEAD`/`POST /api/blobs`).
  * - `verifyArtifactIdentity`: `POST /api/show`, el `FROM` del blob y la
  *   cuantización contra el grant.
  * - `loadResidency` / `unloadResidency`: `/api/generate` con `keep_alive`.
@@ -47,6 +49,14 @@ export interface OllamaRuntimeAdapterOptions {
   artifactPath(sha256: string): string
   /** La generación vigente de una residencia, de la coordinación. */
   currentGeneration(residencyKey: string): Promise<number | 'unavailable'>
+  /** La unidad ve el artefacto de la caché montado como su blob: no se sube. */
+  readonly artifactMounted?: boolean
+}
+
+export class MountedBlobMissingError extends Error {
+  constructor(sha256: string) {
+    super(`el blob montado sha256-${sha256} no está en la unidad: no se copia a su almacén`)
+  }
 }
 
 export class OllamaRuntimeAdapter implements RuntimeAdapter {
@@ -66,7 +76,10 @@ export class OllamaRuntimeAdapter implements RuntimeAdapter {
   async prepareRuntimeArtifact(binding: ResidencyBinding, grant: ExecutionGrant): Promise<RuntimeMutationOutcome> {
     const sha256 = grant.artifact.artifactId
     return this.mutate(binding, async api => {
-      if (!await api.hasBlob(sha256)) await api.pushBlob(sha256, this.options.artifactPath(sha256))
+      if (!await api.hasBlob(sha256)) {
+        if (this.options.artifactMounted) throw new MountedBlobMissingError(sha256)
+        await api.pushBlob(sha256, this.options.artifactPath(sha256))
+      }
       await api.createModel(grant.artifact.modelId, sha256)
     })
   }

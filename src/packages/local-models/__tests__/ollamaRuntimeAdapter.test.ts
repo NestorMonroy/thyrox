@@ -106,6 +106,24 @@ describe('OllamaRuntimeAdapter: preparar el artefacto', () => {
     expect(ollama.requests.filter(request => request.method === 'POST' && request.path.startsWith('/api/blobs'))).toEqual([])
   })
 
+  test('con el artefacto montado no sube nada: crea el modelo desde el blob que la unidad ya ve', async () => {
+    ollama.blobs.set(SHA, CONTENT.byteLength)
+    const mounted = new OllamaRuntimeAdapter({ artifactPath: sha => join(directory, sha), currentGeneration: async () => generation, artifactMounted: true })
+    const outcome = await mounted.prepareRuntimeArtifact(binding(), grant(SHA))
+    expect(outcome.status).toBe('done')
+    expect(ollama.models.get(MODEL)).toBe(SHA)
+    expect(ollama.requests.filter(request => request.method === 'POST' && request.path.startsWith('/api/blobs'))).toEqual([])
+  })
+
+  test('con el artefacto montado y el blob ausente rehúsa en vez de copiarlo a la unidad', async () => {
+    const mounted = new OllamaRuntimeAdapter({ artifactPath: sha => join(directory, sha), currentGeneration: async () => generation, artifactMounted: true })
+    const outcome = await mounted.prepareRuntimeArtifact(binding(), grant(SHA))
+    expect(outcome.status).toBe('failed')
+    expect(outcome.status === 'failed' ? outcome.reason : '').toContain('montado')
+    expect(ollama.blobs.has(SHA)).toBe(false)
+    expect(ollama.models.has(MODEL)).toBe(false)
+  })
+
   test('un blob rechazado por contenido es failed, no done', async () => {
     await writeFile(join(directory, OTHER_SHA), CONTENT)
     const outcome = await adapter.prepareRuntimeArtifact(binding(), grant(OTHER_SHA))

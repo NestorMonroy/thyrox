@@ -90,16 +90,28 @@ export interface RuntimeContainerProfile {
   readonly grantEnvironment?: (grant: ExecutionGrant) => Readonly<Record<string, string>>
   /**
    * Cómo ve la unidad el artefacto concedido, si el runtime lo lee del disco
-   * en vez de recibirlo por su API (TASK-THYROX-0776): el directorio del
-   * anfitrión que lo contiene, verificado, se monta de sólo lectura.
+   * en vez de recibirlo por su API (TASK-THYROX-0776): la ruta del anfitrión
+   * que lo contiene, verificada, se monta de sólo lectura. Sin montaje, un
+   * runtime que recibe el artefacto por su API guarda una segunda copia en la
+   * unidad (H-THYROX-471).
    */
   readonly artifactMount?: ArtifactMount
 }
 
-/** El artefacto del grant expuesto a la unidad: de dónde se lee y dónde lo ve el runtime. */
+/**
+ * El artefacto del grant expuesto a la unidad: de dónde se lee y dónde lo ve
+ * el runtime. Las dos rutas dependen del artefacto —un directorio de snapshot,
+ * o un archivo con el nombre que el almacén del runtime espera—.
+ */
 export interface ArtifactMount {
-  hostDirectory(artifact: ResolvedModelArtifact): string
-  readonly containerDirectory: string
+  hostPath(artifact: ResolvedModelArtifact): string
+  containerPath(artifact: ResolvedModelArtifact): string
+  /**
+   * De sólo lectura salvo que se declare: un runtime que exige escribir
+   * metadatos del archivo montado (Ollama toca el mtime del blob en
+   * `/api/create`) lo declara aquí con su razón.
+   */
+  readonly mode?: 'ro' | 'rw'
 }
 
 /** Límites de recursos de un contenedor de unidad. */
@@ -248,7 +260,7 @@ export function modelUnitAuthorization(spec: ModelUnitContainerSpec): ExecutionA
 function artifactMounts(spec: ModelUnitContainerSpec): WorkerResourceMount[] {
   const mount = spec.profile.artifactMount
   if (mount === undefined) return []
-  return [{ source: mount.hostDirectory(spec.grant.artifact), destination: mount.containerDirectory, mode: 'ro' }]
+  return [{ source: mount.hostPath(spec.grant.artifact), destination: mount.containerPath(spec.grant.artifact), mode: mount.mode ?? 'ro' }]
 }
 
 function pidsOf(pid: unknown): readonly number[] {

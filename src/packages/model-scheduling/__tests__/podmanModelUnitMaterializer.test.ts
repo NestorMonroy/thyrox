@@ -296,7 +296,7 @@ describe('una unidad de Transformers con el artefacto del grant montado (TASK-TH
       profiles: {
         transformers: {
           image: TRANSFORMERS_IMAGE, containerPort: 8_080, environment: {},
-          artifactMount: { hostDirectory: artifact => `/srv/artifacts/${artifact.artifactId}`, containerDirectory: '/model' },
+          artifactMount: { hostPath: artifact => `/srv/artifacts/${artifact.artifactId}`, containerPath: () => '/model' },
         },
       },
       owner: { kind: 'model-coordinator', id: 'host-coordinator', pid: 4321 },
@@ -315,7 +315,28 @@ describe('una unidad de Transformers con el artefacto del grant montado (TASK-TH
     expect(create).toContain(TRANSFORMERS_IMAGE)
   })
 
-  test('un perfil sin montaje declarado no monta nada, como el de Ollama', async () => {
+  test('el destino del montaje puede depender del artefacto: un archivo en el almacén del runtime (H-THYROX-471)', async () => {
+    const podman = healthyPodman()
+    const primitive = new PodmanModelUnitMaterializer({
+      podman,
+      currentGeneration: async () => generation,
+      profiles: {
+        ollama: {
+          image: 'docker.io/ollama/ollama:0.35.0', containerPort: 11_434, environment: {},
+          artifactMount: { hostPath: artifact => `/cache/sha256-${artifact.artifactId}.gguf`, containerPath: artifact => `/models/blobs/sha256-${artifact.artifactId}`, mode: 'rw' },
+        },
+      },
+      owner: { kind: 'model-coordinator', id: 'host-coordinator', pid: 4321 },
+      limits: { cpus: 2, memoryMib: 4_096, pidsLimit: 256 },
+      allocatePort: async () => PORT,
+      now: () => NOW,
+    })
+    await primitive.materialize(GRANT)
+    const create = podman.calls.find(call => call[0] === 'create')!.join(' ')
+    expect(create).toContain(`-v /cache/sha256-${GRANT.artifact.artifactId}.gguf:/models/blobs/sha256-${GRANT.artifact.artifactId}:rw`)
+  })
+
+  test('un perfil sin montaje declarado no monta nada', async () => {
     const podman = healthyPodman()
     await primitiveWith(podman).materialize(GRANT)
     expect(podman.calls.find(call => call[0] === 'create')!).not.toContain('-v')
