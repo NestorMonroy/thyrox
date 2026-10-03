@@ -1,0 +1,7 @@
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+infrastructure_ensure: locks de Podman desfasados (asignados 0, referenciados 21); no se materializa nada.
+                       Podman 4.9.3 · backend sqlite · 22 volumen(es) · vivos: ninguno
+                       Coincide con las precondiciones de H-THYROX-308: con backend sqlite, `podman system renumber` se detiene en el primer volumen.
+                       El ensure no repara el motor. Reparación explícita: bin/podman_lock_recovery (sin --confirm muestra el plan); después, volver a correr el ensure.
+headless-pool: REHUSA — thyrox-ollama no arrancó (infrastructure_ensure salió 3) y la política de modelo no permite respaldo
+__BG_EXIT__=2

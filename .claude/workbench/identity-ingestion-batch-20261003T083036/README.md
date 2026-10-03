@@ -56,3 +56,15 @@ comparación del resultado del worker; **no** se aplica al árbol.
 Bloqueado por la reparación de Podman (locks 0/21, `infrastructure_ensure`
 exit 3, H-THYROX-442): Ollama no arranca, así que el worker no puede correr.
 La reparación (`bin/podman_lock_recovery --confirm`) la autoriza el operador.
+
+### Lanzamiento del lote 1 (2026-10-03T08:33Z)
+
+`thyrox-bg start identity-batch-1` → `done:2`. `headless-pool` **rehusó** antes
+de crear ningún worktree: `infrastructure_ensure` salió 3 (locks de Podman
+asignados 0, referenciados 21) y la política de modelo no permite respaldo.
+Salida en `outputs/batch-1-refusal/salida.log`; corrida en
+`.claude/jobs/identity-batch-1-20261003T083346/`.
+
+Es la negativa esperada, no un defecto del batch. Se relanza con el mismo
+comando después de `bin/podman_lock_recovery --confirm` y
+`bin/infrastructure_ensure`.
