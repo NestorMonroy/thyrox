@@ -79,7 +79,24 @@ RECOMMEND_REPLY='{"runtime":"ollama","model":"thyrox-qwen","taskClass":"analisis
 check "respaldo por servicio: exit 0" "$CODE" "0"
 check "respaldo por servicio: pide el proveedor forzado" "$(gawk 'index($0, "--runtime claude-cli"){n++} END{print n+0}' "$RECOMMEND_LOG")" "1"
 check "respaldo por servicio: el ítem va a claude sin upstream abierto" "$(item_result)" "model=claude-sonnet-5|base=none|open=none"
-check "respaldo por servicio: la línea nombra runtime y motivo" "$(model_line)" "modelo: claude-sonnet-5 (derivado de --task-class analisis) runtime: claude-cli — respaldo: thyrox-ollama no arrancó (infrastructure_ensure salió 3)"
+check "respaldo por servicio: la línea nombra runtime y motivo" "$(model_line)" "modelo: claude-sonnet-5 (derivado de --task-class analisis) runtime: claude-cli — respaldo: thyrox-ollama no arrancó (local_control_plane_ready salió 3)"
+
+# 3b — P0d: sin declarar el arranque, el pool usa bin/local_control_plane_ready
+# del árbol, que recupera el motor tras un reinicio antes de converger; nunca
+# bin/infrastructure_ensure a secas, que ante el desfase de locks sale 3. El
+# árbol es un espejo de enlaces del real con esas dos entradas como dobles.
+MIRROR="$F/mirror"; mkdir -p "$MIRROR/bin"
+for entry in "$ROOT"/* "$ROOT"/.[!.]*; do [[ "$(basename "$entry")" == bin ]] || ln -s "$entry" "$MIRROR/"; done
+for entry in "$ROOT"/bin/*; do ln -s "$entry" "$MIRROR/bin/"; done
+rm -f "$MIRROR/bin/local_control_plane_ready" "$MIRROR/bin/infrastructure_ensure"
+printf '#!/usr/bin/env bash\nprintf "ready %%s\\n" "$*" >> "%s"\nexit 0\n' "$F/default.log" > "$MIRROR/bin/local_control_plane_ready"
+printf '#!/usr/bin/env bash\nprintf "ensure %%s\\n" "$*" >> "%s"\nexit 99\n' "$F/default.log" > "$MIRROR/bin/infrastructure_ensure"
+chmod +x "$MIRROR/bin/local_control_plane_ready" "$MIRROR/bin/infrastructure_ensure"
+rm -f "$F/default.log"
+RECOMMEND_REPLY='{"runtime":"ollama","model":"thyrox-qwen","taskClass":"analisis"}' \
+  HEADLESS_POOL_INFRASTRUCTURE_ENSURE='' THYROX_ROOT="$MIRROR" run_pool
+check "P0d: por defecto llama a local_control_plane_ready con el servicio" "$(cat "$F/default.log" 2>/dev/null)" "ready thyrox-ollama"
+check "P0d: por defecto el ítem corre en ollama" "$(model_line)" "modelo: thyrox-qwen (derivado de --task-class analisis) runtime: ollama"
 
 # 4 — el selector ya cae: el motivo llega a la línea y no se toca el servicio.
 RECOMMEND_REPLY='{"runtime":"claude-cli","model":"claude-sonnet-5","taskClass":"analisis","fallbackReason":"catálogo vacío"}' run_pool

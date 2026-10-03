@@ -298,7 +298,10 @@ esac
     || rehusa "--context-tokens exige un entero positivo de tokens, no: $CONTEXT_TOKENS"
 # >>> runtime-routing
 RECOMMEND_BIN="${HEADLESS_POOL_RECOMMEND:-$THYROX_ROOT/bin/agent-recommend}"
-INFRASTRUCTURE_ENSURE_BIN="${HEADLESS_POOL_INFRASTRUCTURE_ENSURE:-$THYROX_ROOT/bin/infrastructure_ensure}"
+# El arranque del Ollama gestionado pasa por local_control_plane_ready: recupera
+# el motor tras un reinicio y después converge (P0d). El ensure a secas sale 3
+# ante el desfase de locks y dejaría el pool en el respaldo sin necesidad.
+CONTROL_PLANE_READY_BIN="${HEADLESS_POOL_INFRASTRUCTURE_ENSURE:-$THYROX_ROOT/bin/local_control_plane_ready}"
 readonly LOCAL_RUNTIME=ollama PROVIDER_RUNTIME=claude-cli MANAGED_OLLAMA_SERVICE=thyrox-ollama
 # El selector devuelve `runtime`, `model` y, si cayó al proveedor,
 # `fallbackReason`. Un registro sin `runtime` es el del selector de catálogo:
@@ -328,12 +331,12 @@ derive_recommendation
 # (decisión del ejecutor 2026-10-01: local por defecto y respaldo en claude-cli).
 ensure_local_runtime() {
     local ensure_exit=0
-    bash "$INFRASTRUCTURE_ENSURE_BIN" "$MANAGED_OLLAMA_SERVICE" >&2 || ensure_exit=$?
+    bash "$CONTROL_PLANE_READY_BIN" "$MANAGED_OLLAMA_SERVICE" >&2 || ensure_exit=$?
     [[ "$ensure_exit" -ne 0 ]] || return 0
     [[ "$POLICY_FALLBACK" != false ]] \
-        || rehusa "$MANAGED_OLLAMA_SERVICE no arrancó (infrastructure_ensure salió $ensure_exit) y la política de modelo no permite respaldo"
+        || rehusa "$MANAGED_OLLAMA_SERVICE no arrancó (local_control_plane_ready salió $ensure_exit) y la política de modelo no permite respaldo"
     derive_recommendation --runtime "$PROVIDER_RUNTIME"
-    FALLBACK_REASON="$MANAGED_OLLAMA_SERVICE no arrancó (infrastructure_ensure salió $ensure_exit)"
+    FALLBACK_REASON="$MANAGED_OLLAMA_SERVICE no arrancó (local_control_plane_ready salió $ensure_exit)"
 }
 announce_model() {
     echo "modelo: $MODEL (derivado de --task-class $TASK_CLASS) runtime: $RUNTIME${FALLBACK_REASON:+ — respaldo: $FALLBACK_REASON}"

@@ -1,0 +1,22 @@
+bun test v1.3.14 (0d9b296a)
+
+__tests__/infrastructureReadiness.test.ts:
+58 |     chmodSync(script, 0o755)
+59 |     const decoy = join(root, 'bin', 'infrastructure_ensure')
+60 |     writeFileSync(decoy, `#!/usr/bin/env bash\ntouch "${root}/ensure-called"\nexit 99\n`)
+61 |     chmodSync(decoy, 0o755)
+62 |     const result = await localControlPlaneReadyCommand(root)(['thyrox-redis', 'thyrox-ollama'])
+63 |     expect(result.exitCode).toBe(0)
+                                 ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 99
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/infrastructureReadiness.test.ts:63:29)
+(fail) localControlPlaneReadyCommand > corre bin/local_control_plane_ready del árbol con los contenedores como argumentos, nunca el ensure [6.35ms]
+
+ 2 pass
+ 1 fail
+ 5 expect() calls
+Ran 3 tests across 1 file. [127.00ms]

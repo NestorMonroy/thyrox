@@ -26,7 +26,7 @@ import { createPodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts
 import { inspectImage } from '@thyrox/podman-execution/podmanObservation.ts'
 
 import { ensureModel, type EnsureOutcome } from '../ensureModel.js'
-import { infrastructureEnsureCommand, OLLAMA_CONTAINER, requireInfrastructure } from '../infrastructureReadiness.js'
+import { localControlPlaneReadyCommand, OLLAMA_CONTAINER, requireInfrastructure } from '../infrastructureReadiness.js'
 import { OllamaModelInstaller } from '../ollamaModelInstaller.js'
 import { createPodmanArtifactFetcher } from '../podmanArtifactFetcher.js'
 
@@ -75,7 +75,7 @@ const egress = (() => {
 })()
 
 try {
-  await requireInfrastructure([OLLAMA_CONTAINER], infrastructureEnsureCommand(root))
+  await requireInfrastructure([OLLAMA_CONTAINER], localControlPlaneReadyCommand(root))
 } catch (error) {
   refuse((error as Error).message)
 }

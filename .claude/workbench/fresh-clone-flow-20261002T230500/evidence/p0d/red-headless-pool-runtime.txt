@@ -1,0 +1,25 @@
+OK   ollama: exit 0
+OK   ollama: asegura el servicio gestionado
+OK   ollama: el ítem recibe el modelo y ningún upstream por entorno
+OK   ollama: la línea modelo dice el runtime
+OK   puerto declarado: tampoco viaja al ítem
+OK   respaldo por servicio: exit 0
+OK   respaldo por servicio: pide el proveedor forzado
+OK   respaldo por servicio: el ítem va a claude sin upstream abierto
+FALLA respaldo por servicio: la línea nombra runtime y motivo — esperado 'modelo: claude-sonnet-5 (derivado de --task-class analisis) runtime: claude-cli — respaldo: thyrox-ollama no arrancó (local_control_plane_ready salió 3)', obtenido 'modelo: claude-sonnet-5 (derivado de --task-class analisis) runtime: claude-cli — respaldo: thyrox-ollama no arrancó (infrastructure_ensure salió 3)'
+FALLA P0d: por defecto llama a local_control_plane_ready con el servicio — esperado 'ready thyrox-ollama', obtenido 'ensure thyrox-ollama'
+FALLA P0d: por defecto el ítem corre en ollama — esperado 'modelo: thyrox-qwen (derivado de --task-class analisis) runtime: ollama', obtenido 'modelo: claude-sonnet-5 (derivado de --task-class analisis) runtime: claude-cli — respaldo: thyrox-ollama no arrancó (infrastructure_ensure salió 99)'
+OK   respaldo del selector: exit 0
+OK   respaldo del selector: no asegura el servicio
+OK   respaldo del selector: la línea lleva su motivo
+OK   respaldo del selector: sin upstream abierto
+OK   ollama con id claude: exit 2
+OK   ollama con id claude: no asegura el servicio
+OK   claude-cli con nombre thyrox: exit 2
+OK   runtime desconocido: exit 2
+OK   runtime desconocido: lo nombra
+OK   sin runtime: exit 0
+OK   sin runtime: claude-cli sin motivo
+OK   runner claude con ollama: exit 2
+OK   runner claude con ollama: no asegura el servicio
+21/24 aserciones

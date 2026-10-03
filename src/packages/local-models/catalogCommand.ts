@@ -24,7 +24,7 @@ import { EXIT_OK, EXIT_REFUSED, type CommandOutput } from './commandOutput.js'
 import { declareInstalledModel, type DeclarationOptions } from './declareInstalledModel.js'
 import { managedOllama, type Environment } from './managedOllama.js'
 import { OllamaApi } from './ollamaApi.js'
-import { infrastructureEnsureCommand, OLLAMA_CONTAINER, requireInfrastructure, type InfrastructureEnsure } from './infrastructureReadiness.js'
+import { localControlPlaneReadyCommand, OLLAMA_CONTAINER, requireInfrastructure, type InfrastructureEnsure } from './infrastructureReadiness.js'
 import { volumeMountpoint } from './volumeBlobs.js'
 
 export const CATALOG_USAGE = [
@@ -38,13 +38,13 @@ export interface CommandContext {
   readonly thyroxRoot: string
   readonly output: CommandOutput
   readonly now: () => Date
-  /** Reconciliación de la infraestructura antes de usarla; sin declarar, `bin/infrastructure_ensure` del árbol. */
+  /** Reconciliación de la infraestructura antes de usarla; sin declarar, `bin/local_control_plane_ready` del árbol. */
   readonly ensureInfrastructure?: InfrastructureEnsure
 }
 
 /** El ensure del contexto, o el del árbol de thyrox. */
 export function infrastructureEnsureOf(context: CommandContext): InfrastructureEnsure {
-  return context.ensureInfrastructure ?? infrastructureEnsureCommand(context.thyroxRoot)
+  return context.ensureInfrastructure ?? localControlPlaneReadyCommand(context.thyroxRoot)
 }
 
 interface DeclareArguments {

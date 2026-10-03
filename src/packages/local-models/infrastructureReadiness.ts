@@ -1,12 +1,15 @@
 /**
  * Antes de usar Redis u Ollama, el consumidor no confía en el estado que
- * Podman persistió: pide a `infrastructure_ensure` que reconcilie lo
- * declarado, lo persistido y lo que corre de verdad (TASK-THYROX-0727).
+ * Podman persistió: pide a `local_control_plane_ready` que deje listo el
+ * plano de control local (TASK-THYROX-0727, P0d de TASK-THYROX-0912).
  *
- * El ensure ya trata un `running` con el PID muerto como stale y lo recrea,
- * renumera los locks desfasados y corre el health check; este módulo es la
- * puerta que obliga a pasar por él. Si la infraestructura no queda sana, el
- * consumidor rehúsa con la causa en vez de correr sin ella.
+ * Esa entrada compone dos autoridades: `podman_lock_recovery` repara el
+ * desfase de locks conocido tras un reinicio, e `infrastructure_ensure`
+ * reconcilia lo declarado, lo persistido y lo que corre de verdad (un
+ * `running` con el PID muerto es stale y se recrea) y corre el health check.
+ * Este módulo es la puerta que obliga a pasar por ella. Si la
+ * infraestructura no queda sana, el consumidor rehúsa con la causa en vez de
+ * correr sin ella.
  */
 import { spawn } from 'node:child_process'
 import { join } from 'node:path'
@@ -56,10 +59,10 @@ export async function requireInfrastructure(containers: readonly string[], ensur
   if (result.exitCode !== 0) throw new InfrastructureNotReadyError(containers, result.exitCode, result.stderr)
 }
 
-/** El ensure real: `bin/infrastructure_ensure` del árbol de thyrox. */
-export function infrastructureEnsureCommand(thyroxRoot: string): InfrastructureEnsure {
+/** La entrada real: `bin/local_control_plane_ready` del árbol de thyrox. */
+export function localControlPlaneReadyCommand(thyroxRoot: string): InfrastructureEnsure {
   return containers => new Promise(resolve => {
-    const child = spawn('bash', [join(thyroxRoot, 'bin', 'infrastructure_ensure'), ...containers], { stdio: ['ignore', 'pipe', 'pipe'] })
+    const child = spawn('bash', [join(thyroxRoot, 'bin', 'local_control_plane_ready'), ...containers], { stdio: ['ignore', 'pipe', 'pipe'] })
     let stdout = ''
     let stderr = ''
     child.stdout.on('data', chunk => { stdout += String(chunk) })

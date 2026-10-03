@@ -6,13 +6,13 @@
  * un contenedor cuyo proceso ya no existe.
  */
 import { afterEach, describe, expect, test } from 'bun:test'
-import { chmodSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 import {
   InfrastructureNotReadyError,
-  infrastructureEnsureCommand,
+  localControlPlaneReadyCommand,
   requireInfrastructure,
   type InfrastructureEnsure,
 } from '../infrastructureReadiness.js'
@@ -45,17 +45,24 @@ describe('requireInfrastructure', () => {
   })
 })
 
-describe('infrastructureEnsureCommand', () => {
-  test('corre bin/infrastructure_ensure del árbol con los contenedores como argumentos', async () => {
+describe('localControlPlaneReadyCommand', () => {
+  // P0d: tras un reinicio, `infrastructure_ensure` a secas sale 3 ante el
+  // desfase de locks. El consumidor pide `local_control_plane_ready`, que
+  // recupera el motor y después converge; nunca el ensure directamente.
+  test('corre bin/local_control_plane_ready del árbol con los contenedores como argumentos, nunca el ensure', async () => {
     const root = mkdtempSync(join(tmpdir(), 'readiness-'))
     roots.push(root)
     mkdirSync(join(root, 'bin'))
-    const script = join(root, 'bin', 'infrastructure_ensure')
-    writeFileSync(script, `#!/usr/bin/env bash\nprintf '%s\\n' "$@" > "${root}/argv"\necho reconciliado\nexit 0\n`)
+    const script = join(root, 'bin', 'local_control_plane_ready')
+    writeFileSync(script, `#!/usr/bin/env bash\nprintf '%s\\n' "$@" > "${root}/argv"\necho listo\nexit 0\n`)
     chmodSync(script, 0o755)
-    const result = await infrastructureEnsureCommand(root)(['thyrox-redis', 'thyrox-ollama'])
+    const decoy = join(root, 'bin', 'infrastructure_ensure')
+    writeFileSync(decoy, `#!/usr/bin/env bash\ntouch "${root}/ensure-called"\nexit 99\n`)
+    chmodSync(decoy, 0o755)
+    const result = await localControlPlaneReadyCommand(root)(['thyrox-redis', 'thyrox-ollama'])
     expect(result.exitCode).toBe(0)
-    expect(result.stdout).toContain('reconciliado')
+    expect(result.stdout).toContain('listo')
     expect(readFileSync(join(root, 'argv'), 'utf8')).toBe('thyrox-redis\nthyrox-ollama\n')
+    expect(existsSync(join(root, 'ensure-called'))).toBe(false)
   })
 })
