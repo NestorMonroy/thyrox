@@ -1,12 +1,21 @@
-You are a Thyrox worker. You run inside your own git worktree of the Thyrox repository; your current directory is its root. You may only use the Bash tool. Each tool call is slow: follow the four turns below in order, and NEVER run a command you have already run.
+Buzón de esta ejecución: el orquestador puede escribirte mientras trabajas. Entre paso y paso, lee tus mensajes con
+`bash "$THYROX_ROOT/bin/inbox" --dir "$THYROX_MAILBOX_DIR" pending --as "$THYROX_POOL_ITEM_ADDRESS"`.
+Aplica lo que llegue y acúsalo con
+`bash "$THYROX_ROOT/bin/inbox" --dir "$THYROX_MAILBOX_DIR" ack --as "$THYROX_POOL_ITEM_ADDRESS" --id <id>`.
+Para una pregunta o un bloqueo, escribe al orquestador con
+`bash "$THYROX_ROOT/bin/inbox" --dir "$THYROX_MAILBOX_DIR" post --from "$THYROX_POOL_ITEM_ADDRESS" --to orchestrator --body "<texto>"`.
+
+You are a Thyrox worker. You run inside your own git worktree of the Thyrox repository; your current directory is its root. You may only use the Bash tool. Work in small steps and check every result.
 
 TASK-THYROX-0919: implement `src/verify/search_existing_mechanisms.py` so that the existing test `tests/verify/test_search_existing_mechanisms.py` passes. Do not modify the test.
 
-Turn 1 — Search Existing. Run exactly this one command, once:
+Step 1 — Search Existing (mandatory, before writing any code). Run these commands and read their output:
 
-    rg -l -e search_existing -e mechanisms.tsv src bin tests; sed -n '1,60p' tests/verify/test_search_existing_mechanisms.py
+    rg -l "search_existing|mechanisms.tsv" src bin tests
+    sed -n '1,40p' tests/verify/test_search_existing_mechanisms.py
+    sed -n '1,30p' src/verify/check_env_example_coverage.py
 
-Turn 2 — Classify, as plain text, without any tool call. Print exactly this block, filled in from Turn 1:
+Then print exactly this block, filled in:
 
     SEARCH-EXISTING
     capability: answer FOUND/RELATED/NONE for a mechanism query over a TSV registry
@@ -16,7 +25,7 @@ Turn 2 — Classify, as plain text, without any tool call. Print exactly this bl
     decision: REUSE | EXTEND | MISSING
     reason: <one line>
 
-Turn 3 — Implement, with ONE Bash call. Its first line is exactly `cat > src/verify/search_existing_mechanisms.py <<'PY'` with nothing after `<<'PY'`, then the whole program, then `PY` alone on the last line. Contract:
+Step 2 — Implement. Write the file with ONE heredoc whose first line is exactly `cat > src/verify/search_existing_mechanisms.py <<'PY'` — nothing after `<<'PY'` on that line, no `&&`, no `chmod` — then the program, then `PY` alone on the last line. The file does not need to be executable: the test runs it with python3. Contract, from the test docstring:
 
 - usage: `search_existing_mechanisms.py --registry PATH QUERY...`
 - the registry is a TSV; lines starting with `#` are comments; the first non-comment line is the header `id concept authority symbol public_entry tests consumers keywords`.
@@ -30,8 +39,10 @@ Turn 3 — Implement, with ONE Bash call. Its first line is exactly `cat > src/v
 - never print the words REUSE, EXTEND or MISSING.
 - identifiers in English; comments and docstrings in Spanish; standard library only.
 
-Turn 4 — Test, with this one command:
+Step 3 — Test. Run:
 
     python3 tests/verify/test_search_existing_mechanisms.py
 
-If it fails, read the failure and repeat Turn 3 with the corrected whole program, then Turn 4 again. Stop when all 8 tests pass. Do not commit; the pool collects your worktree.
+If a test fails, read the failure, fix the implementation, and run the test again. Stop when all 8 tests pass. Do not commit; the pool collects your worktree.
+
+Item: TASK-THYROX-0919

@@ -92,3 +92,11 @@ de una unidad nueva que lo confirme.
 - Caso largo **con** `&& chmod` en la primera línea (`probes/heredoc-long-chained.sse`): Ollama devuelve sólo esa
   línea. **Sin** el encadenado (`probes/heredoc-long-plain.sse`): el programa completo. Causa: la forma que pedía el
   prompt del controlador (H-THYROX-450). `prompt.md` pide ahora un heredoc sin nada tras `<<'PY'`; sin `chmod`.
+
+### r4 — bucle en Search Existing (sin cambios)
+
+9 turnos en 4 229 s. El worker repitió seis veces las tres búsquedas, reescritas con `\|` (en `rg` y `grep -E` no es
+alternancia: no encontraban nada), nunca imprimió el bloque y terminó describiendo en prosa lo que haría. Junto con r3,
+es la varianza de un 4B sin razonamiento ante un prompt con margen. `prompt.md` v3: cuatro turnos fijos —una orden
+de búsqueda (comprobada: devuelve la prueba), el bloque como texto, un heredoc, una orden de prueba— y la regla de
+no repetir una orden ya ejecutada.
