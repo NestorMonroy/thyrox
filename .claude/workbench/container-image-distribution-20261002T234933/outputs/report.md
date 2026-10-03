@@ -231,3 +231,29 @@ it does not see them, and no Thyrox code reads those names.
    - `promoteCandidate` → `publishPromotedImage`;
    - verify the remote digest.
 4. Update `credential-rotation.tsv` when the exposed token is replaced.
+
+### Correction to the WARNING above (2026-10-03, measured)
+
+The WARNING's table claimed the four `THYROX_REGISTRY_*` variables were absent.
+**That was not measured**: the presence check had covered only `GIT_*`,
+`DOCKER_*` and `QWENCLOUD_*`. Measured now through `paths.reach.env_value`,
+presence only:
+
+| Variable | State | Source |
+|---|---|---|
+| `THYROX_REGISTRY_PUBLISHER_USERNAME` | present | `.env` |
+| `THYROX_REGISTRY_PUBLISHER_TOKEN` | present | `.env` |
+| `THYROX_REGISTRY_PUBLISHER_REGISTRY` | present | `.env` |
+| `THYROX_REGISTRY_READER_USERNAME` | absent | — |
+| `THYROX_REGISTRY_READER_TOKEN` | absent | — |
+
+The executor confirmed that the `THYROX_*` variables are the valid ones, and
+that `DOCKER_*` and `QWENCLOUD_*` are not for this.
+
+**Still open:** whether the `.env` value of `THYROX_REGISTRY_PUBLISHER_TOKEN`
+is the rotated token or the one recorded `exposed` on 2026-10-01
+(`credential-rotation.tsv:3`). Comparing values is not allowed here, and the
+exposure record holds no comparable fingerprint. Publication waits for the
+executor to state which one it is.
+
+The reader credential is absent, so reads stay anonymous.
