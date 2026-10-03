@@ -30,8 +30,8 @@
   "portBindings": {
    "6379/tcp": [
     {
-     "hostIp": "127.0.0.1",
-     "hostPort": "56379"
+     "hostIp": "<redacted: loopback>",
+     "hostPort": "<redacted: THYROX_INFRA_*_PORT>"
     }
    ]
   }
@@ -105,8 +105,8 @@
   "portBindings": {
    "5432/tcp": [
     {
-     "hostIp": "127.0.0.1",
-     "hostPort": "55432"
+     "hostIp": "<redacted: loopback>",
+     "hostPort": "<redacted: THYROX_INFRA_*_PORT>"
     }
    ]
   }

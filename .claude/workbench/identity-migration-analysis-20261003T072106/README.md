@@ -432,10 +432,11 @@ tags»).
 ### Redis y la red entre contenedores
 
 - `thyrox-redis` se declara junto a postgres y ollama (`infrastructure.sh:77`, imagen
-  `redis:7.4`, puerto `127.0.0.1:56379`).
+  `redis:7.4`, puerto `THYROX_INFRA_REDIS_PORT` en loopback).
 - **postgres y redis** están en la red con nombre `thyrox-infra`: bridge con DNS
-  (aardvark-dns), 10.89.0.0/24. Publican en loopback: 55432 y 56379.
-- **ollama** está en la red del anfitrión (`127.0.0.1:51434`). Es una decisión medida:
+  (aardvark-dns) y subred asignada por Podman. Publican en loopback los puertos
+  `THYROX_INFRA_POSTGRES_PORT` y `THYROX_INFRA_REDIS_PORT` (valores en `.env`).
+- **ollama** está en la red del anfitrión (loopback, `THYROX_INFRA_OLLAMA_PORT`). Es una decisión medida:
   la descarga por la red de Podman era lenta (`infrastructure.sh:106-113`).
 - **Red interna worker ↔ unidad de modelo:** diseñada, no implementada. Es
   TASK-THYROX-0913 / tarea #153, y exige enmendar ADR-007
@@ -473,3 +474,18 @@ tags»).
 
 La misma reparación desbloquea las tres líneas: el corpus en PostgreSQL, el pase con
 modelos locales y A6.
+
+### Corrección (2026-10-03): direcciones y puertos fuera de la evidencia
+
+La sección 6 y `outputs/runtime-podman-containers.txt` publicaban puertos de loopback
+y la subred de `thyrox-infra`. Medido sin imprimirlos: los valores efectivos
+coinciden con los defaults de `src/lib/infrastructure.sh`, porque el `.env` no los
+sobreescribe. `src/verify/env_sensitivity.tsv` los clasifica como `config`, no como
+secreto. Aun así, regla del ejecutor: la evidencia nombra la variable
+(`THYROX_INFRA_{POSTGRES,REDIS,OLLAMA}_PORT`), nunca su valor. Se reemplazaron en
+los dos archivos. Los commits anteriores ya publicados los conservan; quitarlos de la
+historia sería reescribirla (decisión del ejecutor).
+
+A partir de aquí la prosa nombra el proyecto **kaupamex-ai**. `thyrox` sólo aparece
+donde es identidad histórica o un nombre técnico vigente: rutas, `bin/`, `THYROX_*`,
+`TASK-THYROX-*`, contenedores `thyrox-*`.
