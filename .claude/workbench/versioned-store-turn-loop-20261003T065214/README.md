@@ -108,3 +108,56 @@ y eso no es nuestro de hacer; las opciones 3–5 detienen su crecimiento.
 
 Recomendación: 1 y 2 ya, como primera tarea de worker (son pequeñas, locales
 y verificables); 3 y 4 como decisión de #1219; 5 sigue su curso en #350.
+
+## Decisión del ejecutor (2026-10-03) y lo que exige antes de aplicarla
+
+> «`agent_store.sqlite3` debe dejar de ser un artefacto versionado y
+> compartido por Git […] SQLite local para runtime + PostgreSQL como autoridad
+> durable + Git sólo para representaciones textuales/versionables».
+> Secuencia del ejecutor: clasificar → dejar de versionar → telemetría a
+> SQLite local → lifecycle con `orphaned`/`abandoned` → identidad explícita de
+> ejecución Thyrox → `register_session` separa lifecycle de telemetría → D4-B →
+> proyecciones de texto → retirar `sqlite-union` → decidir sobre la historia.
+
+### Paso 1 — clasificación de las tablas (`outputs/store-tables.tsv`)
+
+| Tabla | Filas | MB | Clase | Por qué |
+|---|---|---|---|---|
+| `tasks` | 2 421 | 2,84 | DURABLE | sujeto, estado y cita `TASK-<CAPA>-NNNN`; ADR-006 1.3.0 la manda a D4-B |
+| `findings_history` | 1 737 | 1,60 | DURABLE | los hallazgos y sus versiones; índice de búsqueda entre sesiones (CLAUDE.md paso 5) |
+| `findings_fts*` | 1 737 | ~0,6 | DERIVED | índice FTS5 de `findings_history`; se reconstruye |
+| `agent_sessions` | 2 049 | 3,39 | TELEMETRY (parcialmente DURABLE) | 74 % son subagentes internos del cliente; el resto, sesiones de agentes reales |
+| `cleared_tool_results` | 3 379 | 0,96 | TELEMETRY | resultados de herramienta vaciados por compactación: hash y tamaño |
+| `documents` | 6 515 | 1,57 | DERIVED | fechas y retención por ruta de documento; se recalcula desde git |
+| `schema_migrations`, `sqlite_sequence` | 14, 1 | 0 | CACHE (del motor) | estado del esquema |
+| `merge_conflicts`, `task_session_highwater` | 0, 0 | 0 | TELEMETRY | vacías |
+
+### Lo que depende de que el store viaje por git (Search Existing)
+
+| Dependiente | Qué asume |
+|---|---|
+| `.gitattributes:1` + `src/agents/merge_sqlite_union.py`, `merge_stores.py`, `install-hooks.sh`, `tests/agents/test-merge-sqlite-union.sh`, `tests/verify/test-gitattributes.sh` | el store se fusiona entre ramas y clones |
+| `.githooks/pre-commit:336-348` (`board_sync reconciliar-todo` + `git add`) | el store va en el commit; con el archivo ignorado ese `git add` falla |
+| `.githooks/post-commit` | sincroniza el índice del store tras un commit por pathspec |
+| `src/repo/pending_work.py` (eje `telemetry`) | el gate de Stop **propio** ya separa telemetría de trabajo; el de la plataforma (`stop-hook-git-check.sh`) no, y no es nuestro |
+| `bin/hallazgo_ids propose-id`, `check_finding_id_unique.py` | leen las filas de hallazgos del store como segunda fuente frente a los `.rst` |
+| 11 suites de `tests/agents`, `tests/verify`, `tests/repo` | el store versionado en `agent-results/` |
+
+### Conflicto de autoridad — sin resolver
+
+`.gitignore:70-75`, **directiva del ejecutor 2026-09-06**: «TODO es
+evidencia, así que NADA de esto se ignora […] el store sqlite […] Ignorarlos
+deja el trabajo tan durable como el contenedor, que es el nivel 4 de
+niveles-de-retencion.md: completitud percibida sin persistencia».
+
+Hoy git es la **única** vía por la que el store sobrevive al contenedor: el
+PostgreSQL local vive en un volumen de esta VM, que muere con ella (ADR-008
+1.5.0, «Durable respecto a qué»; D4-B #350 sigue pendiente). Dejar de
+versionarlo **antes** de que exista otro hogar durable fuera del contenedor
+pierde `tasks` y `findings_history` cuando la sesión se recicle.
+
+Condición para el paso 2 sin perder nada: que lo DURABLE (`tasks`,
+`findings_history`) tenga antes una salida que sobreviva al contenedor — la
+proyección de texto determinista versionada en git (paso 8 del ejecutor,
+adelantado sólo para esas dos tablas) o D4-B. La telemetría sí puede quedar
+local desde ya, si se acepta que muere con el contenedor.
