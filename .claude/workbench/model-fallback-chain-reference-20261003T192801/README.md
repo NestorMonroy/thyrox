@@ -68,3 +68,42 @@ sintetiza su proyecto y no lee el `tsconfig.json` del paquete
 en swarm publicó 0 (`outputs/annul-0922.txt`). Lo que ahora lo ve es
 `tests/verify/test_tsconfig_file_paths.py` (144 `tsconfig` versionados):
 rojo 10 rutas, verde 0, anulación en swarm 2.
+
+## TASK-THYROX-0921 — el relé avanza por los respaldos locales
+
+La cadena llega de punta a punta: `recommendExecution.fallbackModels` →
+`headless-pool` (`THYROX_LOCAL_MODEL_FALLBACKS`, también a la unidad con
+`--env`) → `printDelegation` (`--fallback-model`, en orden) → `localProxy` →
+`admittedUpstream`.
+
+En el relé, con los motivos de la referencia que el relé puede observar:
+
+| fallo | motivo | avanza |
+|---|---|---|
+| admisión rehusada en `resolve` | `model_not_found` | sí |
+| admisión rehusada en otra etapa (sin sitio) | `overloaded` | sí |
+| admisión fallida | `server_error` | sí |
+| runtime inalcanzable o 5xx | `server_error` | sí, soltando la admisión |
+| runtime 4xx | — es de la petición | no |
+| coordinador ausente | — no es del modelo | no |
+
+El salto es de una petición; agotada la cadena se entrega el último fallo.
+Cada salto queda en stderr del proxy como `model_fallback <json>`, que
+`printDelegation` reenvía al stderr del ítem. Divergencia declarada: el
+reintento en el sitio de un `overloaded` agotado (`$a`, `inPlace`) queda en
+los reintentos del cliente (`anthropicHttp`, `REINTENTABLES` incluye 502/503).
+
+Rojo: `outputs/red-0921-relay.txt` (7), `red-0921-wiring.txt` (2),
+`red-0921-pool.txt` (2). Anulaciones (`annul-0921-*.txt`): no-advance 7,
+resolve-trigger 1, server-status 1, dedupe-primary 1, cancel-on-advance 1,
+proxy-flag 1, delegation-env 1, unidad 2, export 1.
+
+Subconjunto derivado (`outputs/green-0921.txt`): 5 suites TS en verde
+(87 pruebas); de las 10 del pool, dos fallas previas medidas idénticas en HEAD
+antes de esta tarea (`test-headless-pool-worktree.sh` «el trabajo aparece…»,
+`test-headless-pool.sh` 145/146). `test_identifier_language_shell.py` da 11
+fallas también en `18f2fa10e`, anterior a esta sesión de trabajo: no es de
+este diff.
+
+*Ciega a:* un salto real contra el coordinador y Ollama del anfitrión; las
+pruebas usan un coordinador y un runtime dobles.

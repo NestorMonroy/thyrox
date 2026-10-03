@@ -14,6 +14,14 @@
  * runtime no respondió. Una admisión rehusada o fallida, o un coordinador
  * ausente, responden un error OpenAI que nombra la etapa y la causa, y no
  * reenvían nada.
+ *
+ * Con `fallbackModels` (TASK-THYROX-0921) un fallo DEL MODELO —admisión
+ * rehusada o fallida, runtime inalcanzable o 5xx— avanza al siguiente respaldo
+ * y lo comunica a `onFallback`, como el `$a` de la referencia `claude-code-bin/2.1.286`. El salto es
+ * de una petición: la siguiente vuelve a pedir el modelo original. Agotada la
+ * cadena se entrega el último fallo. Lo que la referencia hace además —
+ * reintentar en el sitio un `overloaded` agotado— queda en la política de
+ * reintentos del cliente, que ya reintenta 502/503.
  */
 import { LOCAL_REASONING_EFFORT } from '@thyrox/model-artifacts/modelQualification.ts'
 import type { AdmissionRequest, AdmissionTicket, CoordinatorAdmission } from '@thyrox/model-scheduling/hostCoordinator.ts'
@@ -35,6 +43,31 @@ export interface AdmittedUpstreamOptions {
    * caber en su memoria (A6 r4).
    */
   readonly contextLength?: number
+  /**
+   * Los respaldos locales, en orden (`fallbackModels` de la recomendación,
+   * TASK-THYROX-0921). Sin ellos, el relé sólo sirve el modelo pedido.
+   */
+  readonly fallbackModels?: readonly string[]
+  /** Recibe cada salto de la cadena, para que quede rastro fuera del relé. */
+  readonly onFallback?: (event: ModelFallbackEvent) => void
+}
+
+/**
+ * Por qué el relé saltó al siguiente modelo: el subconjunto de los motivos de
+ * la referencia `claude-code-bin/2.1.286` que el relé puede observar. Un error de la petición (4xx)
+ * o un coordinador ausente no son del modelo, y no saltan.
+ */
+export type ModelFallbackTrigger = 'model_not_found' | 'overloaded' | 'server_error'
+
+/** El rastro de un salto, con la forma del `system/model_fallback` de la referencia. */
+export interface ModelFallbackEvent {
+  readonly type: 'model_fallback'
+  readonly originalModel: string
+  readonly fallbackModel: string
+  readonly trigger: ModelFallbackTrigger
+  readonly chainIndex: number
+  readonly contextLength?: number
+  readonly reason: string
 }
 
 export interface AdmittedUpstream {
@@ -55,6 +88,7 @@ export const UPSTREAM_UNREACHABLE_STATUS = 502
 
 const LOOPBACK = '127.0.0.1'
 const BAD_REQUEST_STATUS = 400
+const SERVER_ERROR_STATUS = 500
 /** Las cabeceras de la respuesta del runtime que no se copian: el relé re-enmarca el cuerpo. */
 const HOP_BY_HOP_HEADERS = ['content-length', 'transfer-encoding', 'connection', 'content-encoding']
 
@@ -78,14 +112,58 @@ async function relayRequest(options: AdmittedUpstreamOptions, request: Request):
   if (!hasModel(body)) {
     return openAIError(BAD_REQUEST_STATUS, 'invalid_request_error', 'la petición no declara un `model` de texto')
   }
+  const chain = modelChainOf(body.model, options.fallbackModels ?? [])
+  const path = new URL(request.url).pathname
+  let attempt = await attemptModel(options, body.model, path, body)
+  for (let chainIndex = 1; attempt.kind === 'model_failure' && chainIndex < chain.length; chainIndex += 1) {
+    const fallbackModel = chain[chainIndex] as string
+    await attempt.response.body?.cancel()
+    options.onFallback?.(fallbackEventOf(options, body.model, fallbackModel, chainIndex, attempt))
+    attempt = await attemptModel(options, fallbackModel, path, body)
+  }
+  return attempt.response
+}
+
+/** El pedido primero y después sus respaldos, sin repetirlo (el `chn` de la referencia). */
+function modelChainOf(model: string, fallbackModels: readonly string[]): readonly string[] {
+  return [model, ...new Set(fallbackModels.filter(candidate => candidate !== '' && candidate !== model))]
+}
+
+/**
+ * Lo que dejó un intento: una respuesta que se entrega tal cual (`final`), o
+ * un fallo del modelo con su motivo, que la cadena puede saltar. Si no queda
+ * respaldo, también ese fallo se entrega tal cual.
+ */
+type Attempt =
+  | { readonly kind: 'final'; readonly response: Response }
+  | { readonly kind: 'model_failure'; readonly response: Response; readonly trigger: ModelFallbackTrigger; readonly reason: string }
+
+async function attemptModel(options: AdmittedUpstreamOptions, model: string, path: string,
+  body: Record<string, unknown>): Promise<Attempt> {
   let admission: CoordinatorAdmission
   try {
-    admission = await options.source.admit(admissionRequestOf(options, body.model))
+    admission = await options.source.admit(admissionRequestOf(options, model))
   } catch (error) {
-    return openAIError(ADMISSION_REFUSED_STATUS, 'coordinator_unavailable', `el coordinador de model scheduling no respondió: ${messageOf(error)}`)
+    const response = openAIError(ADMISSION_REFUSED_STATUS, 'coordinator_unavailable', `el coordinador de model scheduling no respondió: ${messageOf(error)}`)
+    return { kind: 'final', response }
   }
-  if (admission.status !== 'admitted') return refusalResponse(admission)
-  return forwardAdmitted(options.source, admission.ticket, new URL(request.url).pathname, body)
+  if (admission.status !== 'admitted') {
+    const reason = refusalMessage(admission)
+    return { kind: 'model_failure', response: refusalResponse(admission, reason), trigger: refusalTrigger(admission), reason }
+  }
+  return forwardAdmitted(options.source, admission.ticket, path, body)
+}
+
+/** Un modelo que el coordinador no resuelve no existe; un rechazo en otra etapa es falta de sitio; un fallo, del servidor. */
+function refusalTrigger(refusal: AdmissionRefusal): ModelFallbackTrigger {
+  if (refusal.status === 'failed') return 'server_error'
+  return refusal.stage === 'resolve' ? 'model_not_found' : 'overloaded'
+}
+
+function fallbackEventOf(options: AdmittedUpstreamOptions, originalModel: string, fallbackModel: string,
+  chainIndex: number, failure: { trigger: ModelFallbackTrigger; reason: string }): ModelFallbackEvent {
+  const event: ModelFallbackEvent = { type: 'model_fallback', originalModel, fallbackModel, trigger: failure.trigger, chainIndex, reason: failure.reason }
+  return options.contextLength === undefined ? event : { ...event, contextLength: options.contextLength }
 }
 
 function admissionRequestOf(options: AdmittedUpstreamOptions, model: string): AdmissionRequest {
@@ -119,10 +197,14 @@ function hasModel(body: Record<string, unknown>): body is Record<string, unknown
   return typeof body.model === 'string'
 }
 
-function refusalResponse(refusal: AdmissionRefusal): Response {
-  const type: AdmittedUpstreamErrorType = refusal.status === 'refused' ? 'admission_refused' : 'admission_failed'
+function refusalMessage(refusal: AdmissionRefusal): string {
   const verb = refusal.status === 'refused' ? 'rehusó' : 'falló'
-  return openAIError(ADMISSION_REFUSED_STATUS, type, `la admisión ${verb} en la etapa ${refusal.stage}: ${refusal.reason}`)
+  return `la admisión ${verb} en la etapa ${refusal.stage}: ${refusal.reason}`
+}
+
+function refusalResponse(refusal: AdmissionRefusal, message: string): Response {
+  const type: AdmittedUpstreamErrorType = refusal.status === 'refused' ? 'admission_refused' : 'admission_failed'
+  return openAIError(ADMISSION_REFUSED_STATUS, type, message)
 }
 
 /**
@@ -132,7 +214,7 @@ function refusalResponse(refusal: AdmissionRefusal): Response {
  */
 async function forwardAdmitted(
   source: AdmissionSource, ticket: AdmissionTicket, path: string, body: Record<string, unknown>,
-): Promise<Response> {
+): Promise<Attempt> {
   const release = releaseOnce(source, ticket.admissionId)
   const target = `${ticket.unit.endpoint}${path}`
   let runtimeResponse: Response
@@ -147,10 +229,18 @@ async function forwardAdmitted(
     } as RequestInit)
   } catch (error) {
     release()
-    return openAIError(UPSTREAM_UNREACHABLE_STATUS, 'upstream_unreachable', `no se pudo conectar con el runtime en ${target}: ${messageOf(error)}`)
+    const reason = `no se pudo conectar con el runtime en ${target}: ${messageOf(error)}`
+    return { kind: 'model_failure', response: openAIError(UPSTREAM_UNREACHABLE_STATUS, 'upstream_unreachable', reason), trigger: 'server_error', reason }
   }
   const init = { status: runtimeResponse.status, headers: relayedHeaders(runtimeResponse.headers) }
-  return new Response(releasingBody(runtimeResponse.body, release), init)
+  const response = new Response(releasingBody(runtimeResponse.body, release), init)
+  if (!isServerError(runtimeResponse.status)) return { kind: 'final', response }
+  return { kind: 'model_failure', response, trigger: 'server_error', reason: `el runtime respondió ${runtimeResponse.status}` }
+}
+
+/** Un 5xx es del servidor y admite otro modelo; un 4xx es de la petición y se repetiría igual. */
+function isServerError(status: number): boolean {
+  return status >= SERVER_ERROR_STATUS
 }
 
 /** Una función que llama `finish` la primera vez y no hace nada las siguientes. */

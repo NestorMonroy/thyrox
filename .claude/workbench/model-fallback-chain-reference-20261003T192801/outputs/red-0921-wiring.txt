@@ -1,0 +1,6 @@
+(fail) localProxy --fallback-model > una admisión rehusada avanza al respaldo y el salto queda en stderr [262.29ms]
+ 11 pass
+ 1 fail
+(fail) credentialEnvironmentFor — localizar o levantar el proxy > los respaldos declarados viajan al proxy como --fallback-model, en orden [3.59ms]
+ 19 pass
+ 1 fail

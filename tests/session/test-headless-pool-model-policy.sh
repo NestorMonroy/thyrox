@@ -25,6 +25,7 @@ cat > "$F/recommend" <<R
 printf '%s\n' "\$*" >> "$F/recommend.log"
 case "\${RECOMMEND_MODE:-local}:\$*" in
   *"--runtime claude-cli"*|provider:*) echo '{"runtime":"claude-cli","model":"claude-haiku-4-5"}' ;;
+  local-fallbacks:*) echo '{"runtime":"ollama","model":"thyrox-qwen--qwen2.5-7b-instruct-gguf:q4_k_m-hf-bb5d59e06d95","fallbackModels":["thyrox-b","thyrox-c"]}' ;;
   blocked:*) echo '{"runtime":"blocked","taskClass":"analisis","blockedReason":"ningún modelo permitido cumple"}'; exit 3 ;;
   *) echo '{"runtime":"ollama","model":"thyrox-qwen--qwen2.5-7b-instruct-gguf:q4_k_m-hf-bb5d59e06d95"}' ;;
 esac
@@ -33,6 +34,7 @@ printf '#!/usr/bin/env bash\nexit "${ENSURE_EXIT:-0}"\n' > "$F/ensure"
 cat > "$F/thyrox-p" <<R
 #!/usr/bin/env bash
 cat > /dev/null; printf '%s\n' "\$*" >> "$F/runner.log"
+printf 'fallbacks=%s\n' "\${THYROX_LOCAL_MODEL_FALLBACKS:-}" >> "$F/runner.env"
 echo '{"type":"result","subtype":"success","result":"ok","usage":{}}'
 R
 chmod +x "$F/recommend" "$F/ensure" "$F/thyrox-p"
@@ -101,6 +103,17 @@ check "caso 11: no pide claude-cli al recomendador" "$(grep -c -- '--runtime cla
 OUTPUT="$(RECOMMEND_MODE=provider pool --model-policy "$F/cadena-local.json")"; CODE=$?
 check "caso 12: un proveedor devuelto contra una cadena sin claude-cli rehúsa con 2" "$CODE" "2"
 check "caso 12: ningún ítem se lanza" "$(wc -l < "$F/runner.log" | tr -d ' ')" "0"
+
+# TASK-THYROX-0921: los respaldos locales de la recomendación llegan al ítem
+# como THYROX_LOCAL_MODEL_FALLBACKS, en su orden; sin respaldos, la variable no se fija.
+: > "$F/runner.env"
+OUTPUT="$(RECOMMEND_MODE=local-fallbacks pool --model-policy "$F/policy.json")"; CODE=$?
+check "caso 13: con respaldos locales el pool sale 0" "$CODE" "0"
+check "caso 13: el ítem recibe THYROX_LOCAL_MODEL_FALLBACKS en orden" "$(cat "$F/runner.env")" "fallbacks=thyrox-b,thyrox-c"
+check "caso 13: y el anuncio los nombra" "$([[ "$OUTPUT" == *"respaldos locales: thyrox-b,thyrox-c"* ]] && echo si)" "si"
+: > "$F/runner.env"
+OUTPUT="$(pool --model-policy "$F/policy.json")"; CODE=$?
+check "caso 14: sin respaldos, el ítem no recibe la variable" "$(cat "$F/runner.env")" "fallbacks="
 
 echo; echo "$PASS ok · $FAIL falla(s) (alcance medido: headless-pool --model-policy)"
 [[ $FAIL -eq 0 ]]

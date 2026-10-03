@@ -4,7 +4,7 @@
  * (`bin/provider-local-proxy`).
  *
  *   localProxy --socket <ruta> [--model <id>]... [--cli <ejecutable>]
- *              [--local-model <id>]... [--context-tokens N]
+ *              [--local-model <id>]... [--context-tokens N] [--fallback-model <id>]...
  *
  * Es la otra mitad del túnel para quien no tiene credencial propia: escucha
  * en `<ruta>` y atiende cada petición lanzando `claude -p` —el del PATH, o el
@@ -27,7 +27,10 @@
  * alcanza el endpoint de la unidad del ticket (ADR-007 1.14.0, M8). Sin
  * coordinador escuchando arranca igual y cada petición responde nombrando el
  * socket que falta. Con `--context-tokens N`, cada admisión pide ese contexto;
- * sin él, el resolver concede el máximo del modelo (A6 r4). La declaración por entorno `THYROX_OPENAI_COMPAT_*` está
+ * sin él, el resolver concede el máximo del modelo (A6 r4). Con
+ * `--fallback-model <id>` (repetible, en orden) el relé avanza a ese respaldo
+ * cuando el modelo pedido no se puede servir, y cada salto queda en stderr
+ * como `model_fallback <json>` (TASK-THYROX-0921). La declaración por entorno `THYROX_OPENAI_COMPAT_*` está
  * retirada: declararla rehúsa con exit 2.
  *
  * Sin `claude` y con modelos locales, arranca sirviendo sólo esos: una
@@ -44,7 +47,9 @@ import { CoordinatorUnavailableError, ModelCoordinatorClient } from '@thyrox/mod
 import { modelCoordinatorSocketPath } from '@thyrox/model-scheduling/coordinatorProtocol.ts'
 import type { AdmissionRequest, CoordinatorAdmission } from '@thyrox/model-scheduling/hostCoordinator.ts'
 import { startCredentialProxy } from '../src/credentialProxy.ts'
-import { startAdmittedUpstream, type AdmissionSource, type AdmittedUpstream } from '../src/proxy/openaiCompat/admittedUpstream.ts'
+import {
+  startAdmittedUpstream, type AdmissionSource, type AdmittedUpstream, type ModelFallbackEvent,
+} from '../src/proxy/openaiCompat/admittedUpstream.ts'
 import { startProxyServer } from '../src/proxy/startServer.ts'
 import type { GatewayModelEntry, GatewayUpstream } from '../src/proxy/upstreamRouting.ts'
 
@@ -176,10 +181,16 @@ function startLocalModelGuard(localModels: readonly string[], upstreamUrl: strin
   })
 }
 
+/** Cada salto de la cadena, en una línea de stderr que printDelegation reenvía al ítem. */
+function reportFallback(event: ModelFallbackEvent): void {
+  process.stderr.write(`model_fallback ${JSON.stringify(event)}\n`)
+}
+
 refuseRetiredDeclaration()
 const socketPath = argument('--socket') ?? refuse('falta --socket <ruta>')
 const localModels = repeatedArgument('--local-model')
 const contextLength = contextTokensArgument()
+const fallbackModels = repeatedArgument('--fallback-model')
 const executable = argument('--cli') ?? Bun.which('claude') ?? undefined
 if (executable === undefined && localModels.length === 0) refuse('sin ejecutable de claude: declara --cli <ruta> o ponlo en el PATH')
 const cliUpstreams = executable === undefined ? [] : [{ name: UPSTREAM_NAME, command: { executable }, cwd: process.cwd() }]
@@ -190,7 +201,9 @@ const { version } = (await Bun.file(new URL('../package.json', import.meta.url))
 const accessKey = randomUUID()
 const admissionSource = new CoordinatorAdmissionSource(argument('--coordinator-socket') ?? modelCoordinatorSocketPath(process.env))
 const admitted: AdmittedUpstream | undefined = localModels.length > 0
-  ? startAdmittedUpstream({ source: admissionSource, client: LOCAL_PROXY_CLIENT, newRequestId: randomUUID, contextLength })
+  ? startAdmittedUpstream({
+    source: admissionSource, client: LOCAL_PROXY_CLIENT, newRequestId: randomUUID, contextLength, fallbackModels, onFallback: reportFallback,
+  })
   : undefined
 
 const proxy = startProxyServer({

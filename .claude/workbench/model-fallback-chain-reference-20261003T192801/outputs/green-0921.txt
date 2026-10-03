@@ -1,0 +1,19 @@
+src/packages/cli/__tests__/printDelegation.test.ts →  20 pass  0 fail 
+src/packages/podman-execution/__tests__/executionAuthorization.test.ts →  29 pass  0 fail 
+src/packages/provider/__tests__/localProxyProcess.test.ts →  4 pass  0 fail 
+src/packages/provider/src/proxy/__tests__/admittedUpstream.test.ts →  22 pass  0 fail 
+src/packages/provider/src/proxy/__tests__/localModelProxy.test.ts →  12 pass  0 fail 
+tests/session/test-headless-pool-credential-source.sh → exit=0 aserciones: 42 de 42 · fallos: 0 
+tests/session/test-headless-pool-execution-unit.sh → exit=0 28 ok · 0 falla(s) (alcance medido: headless-pool --execution unit) 
+tests/session/test-headless-pool-exit-live-items.sh → exit=0 
+tests/session/test-headless-pool-frozen-launcher.sh → exit=0 
+tests/session/test-headless-pool-item-drain.sh → exit=0 
+tests/session/test-headless-pool-lifecycle.sh → exit=0 
+tests/session/test-headless-pool-model-policy.sh → exit=0 28 ok · 0 falla(s) (alcance medido: headless-pool --model-policy) 
+tests/session/test-headless-pool-runtime.sh → exit=0 
+tests/session/test-headless-pool-worktree.sh → exit=0   FALLA el trabajo aparece bajo la salida del ítem: esperado «1», obtenido «0» test-headless-pool-worktree: 46 aserciones — 45 ok, 1 falla(s) 
+tests/session/test-headless-pool.sh → exit=0 FALLA admision: la reserva ajena sigue en el registro — esperado '900', obtenido '{ aserciones: 145 de 146 · fallos: 1 
+tests/session/test_headless_pool_boundary.py →   ok    gpu_monitor no crece (deuda de TASK-THYROX-0667: 4 de 4) 10 ok, 0 fallas (alcance medido: 1 archivo, 7 términos prohibidos, 3 congelados) 
+tests/verify/test_identifier_language_shell.py →   FALLO los .sh del árbol no tienen deuda fuera del baseline: esperaba 0, obtuve 2 test_identifier_language_shell: 59 aserciones — 48 ok, 11 falla(s) 
+tests/hooks/test_detect_foreground_long_command.py →   ok    test_without_client_background_a_detached_wait_is_sent_to_a_monitor resumen: 0 fallo(s) 
+DONE

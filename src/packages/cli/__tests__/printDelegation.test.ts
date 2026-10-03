@@ -14,7 +14,7 @@ import { join } from 'node:path'
 import { openConnectionStore } from '@thyrox/provider/accounts/connectionStoreHome'
 import { SSH_PLACEHOLDER } from '@thyrox/provider/credentials'
 import {
-  credentialEnvironmentFor, decidePrintRoute, LOCAL_MODEL_CONTEXT_LENGTH_ENV, LOCAL_PROXY_SOCKET_ENV, type LocalProxyChild, type PrintRoute, TUNNEL_BASE_URL, tunnelEnv,
+  credentialEnvironmentFor, decidePrintRoute, LOCAL_MODEL_CONTEXT_LENGTH_ENV, LOCAL_MODEL_FALLBACKS_ENV, LOCAL_PROXY_SOCKET_ENV, type LocalProxyChild, type PrintRoute, TUNNEL_BASE_URL, tunnelEnv,
 } from '../src/entry/printDelegation.ts'
 import { runPrint } from '../src/entry/print.ts'
 
@@ -161,6 +161,20 @@ describe('credentialEnvironmentFor — localizar o levantar el proxy', () => {
     })
     await credential.close()
     expect(argv.slice(argv.indexOf('--context-tokens'), argv.indexOf('--context-tokens') + 2)).toEqual(['--context-tokens', '24663'])
+  })
+
+  // TASK-THYROX-0921: los respaldos locales que eligió el recomendador viajan
+  // al proxy en su orden, uno por `--fallback-model`.
+  test('los respaldos declarados viajan al proxy como --fallback-model, en orden', async () => {
+    const localModel = 'thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e'
+    let argv: string[] = []
+    const credential = await credentialEnvironmentFor(launch, {
+      env: { PATH: '/bin', [LOCAL_MODEL_FALLBACKS_ENV]: 'thyrox-b, thyrox-c' }, cwd: '/', models: [localModel],
+      spawn: (args) => { argv = args; return shellChild('echo socket=/run/anunciado.sock; sleep 30') },
+    })
+    await credential.close()
+    const fallbacks = argv.flatMap((value, index) => (argv[index - 1] === '--fallback-model' ? [value] : []))
+    expect(fallbacks).toEqual(['thyrox-b', 'thyrox-c'])
   })
 
   // A6 r2 (TASK-THYROX-0912): el relé falló tras anunciar y sólo quedó «no auth

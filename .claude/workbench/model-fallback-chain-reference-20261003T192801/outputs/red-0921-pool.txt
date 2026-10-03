@@ -1,0 +1,5 @@
+  ok   caso 13: con respaldos locales el pool sale 0
+  FALLA caso 13: el ítem recibe THYROX_LOCAL_MODEL_FALLBACKS en orden — esperado [fallbacks=thyrox-b,thyrox-c] obtenido [fallbacks=]
+  FALLA caso 13: y el anuncio los nombra — esperado [si] obtenido []
+  ok   caso 14: sin respaldos, el ítem no recibe la variable
+26 ok · 2 falla(s) (alcance medido: headless-pool --model-policy)

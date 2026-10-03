@@ -1,0 +1,7 @@
+== anulación pool: la unidad no nombra la variable
+  FALLA caso 4e: la unidad nombra la variable de los respaldos — esperado [1] obtenido [0]
+  FALLA caso 4e: thyrox -p recibe los respaldos en orden — esperado [thyrox-b,thyrox-c] obtenido [ausente]
+26 ok · 2 falla(s) (alcance medido: headless-pool --execution unit)
+== anulación pool: no se exporta
+  FALLA caso 13: el ítem recibe THYROX_LOCAL_MODEL_FALLBACKS en orden — esperado [fallbacks=thyrox-b,thyrox-c] obtenido [fallbacks=]
+27 ok · 1 falla(s) (alcance medido: headless-pool --model-policy)

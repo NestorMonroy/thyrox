@@ -10,7 +10,7 @@ import type { AdmissionRequest, AdmissionTicket, CoordinatorAdmission } from '@t
 
 import {
   ADMISSION_REFUSED_STATUS, UPSTREAM_UNREACHABLE_STATUS, startAdmittedUpstream,
-  type AdmissionSource, type AdmittedUpstream,
+  type AdmissionSource, type AdmittedUpstream, type ModelFallbackEvent,
 } from '../openaiCompat/admittedUpstream.ts'
 import { startFakeOpenAIUpstream, type FakeOpenAIUpstream } from './fakeOpenAIUpstream.ts'
 
@@ -228,5 +228,109 @@ describe('startAdmittedUpstream', () => {
     await Bun.sleep(0)
     expect(source.admitted.map(request => request.requestId).sort()).toEqual(['request-1', 'request-2'])
     expect([...source.finished].sort()).toEqual(['admission-1', 'admission-2'])
+  })
+})
+
+// TASK-THYROX-0921: el relé avanza por los respaldos locales cuando el modelo
+// pedido no se puede servir, con los motivos cerrados de la referencia `claude-code-bin/2.1.286`
+// (`$a`, `IMo`; banco model-fallback-chain-reference-20261003T192801). Un
+// error de la petición o un coordinador ausente no avanzan: no son del modelo.
+describe('startAdmittedUpstream con fallbackModels (TASK-THYROX-0921)', () => {
+  const FALLBACK = 'thyrox-fallback-b'
+  const SECOND = 'thyrox-fallback-c'
+  const CONTEXT = 32_768
+
+  function chainRelay(source: AdmissionSource, fallbackModels: readonly string[], events: ModelFallbackEvent[]): AdmittedUpstream {
+    let next = 0
+    const upstream = startAdmittedUpstream({
+      source, client: 'proxy-test', newRequestId: () => `request-${++next}`, contextLength: CONTEXT,
+      fallbackModels, onFallback: event => events.push(event),
+    })
+    cleanups.push(() => upstream.stop())
+    return upstream
+  }
+
+  /** Decide por modelo: el primario recibe `primary`, el resto se admite al runtime. */
+  function byModel(primary: (request: AdmissionRequest, admissionId: string) => CoordinatorAdmission | Error, endpoint: string) {
+    return (request: AdmissionRequest, admissionId: string) =>
+      (request.model === MODEL ? primary(request, admissionId) : admitTo(endpoint)(request, admissionId))
+  }
+
+  const refusedAt = (stage: 'reserve' | 'resolve') => (): CoordinatorAdmission => ({ status: 'refused', stage, reason: `sin sitio en ${stage}` })
+  const admittedModels = (source: FakeSource) => source.admitted.map(request => request.model)
+
+  test('una admisión rehusada por recursos avanza al respaldo como overloaded y lo registra', async () => {
+    const runtime = fakeRuntime()
+    const source = new FakeSource(byModel(refusedAt('reserve'), endpointOf(runtime)))
+    const events: ModelFallbackEvent[] = []
+    const response = await chat(chainRelay(source, [FALLBACK], events), HELLO)
+    expect([response.status, admittedModels(source)]).toEqual([200, [MODEL, FALLBACK]])
+    expect(events).toEqual([{ type: 'model_fallback', originalModel: MODEL, fallbackModel: FALLBACK,
+      trigger: 'overloaded', chainIndex: 1, contextLength: CONTEXT, reason: 'la admisión rehusó en la etapa reserve: sin sitio en reserve' }])
+  })
+
+  test('un modelo que el coordinador no resuelve avanza como model_not_found', async () => {
+    const runtime = fakeRuntime()
+    const events: ModelFallbackEvent[] = []
+    await chat(chainRelay(new FakeSource(byModel(refusedAt('resolve'), endpointOf(runtime))), [FALLBACK], events), HELLO)
+    expect(events.map(event => event.trigger)).toEqual(['model_not_found'])
+  })
+
+  test('una unidad que falla al establecerse avanza como server_error', async () => {
+    const runtime = fakeRuntime()
+    const failed = (): CoordinatorAdmission => ({ status: 'failed', stage: 'load', reason: 'el runtime no cargó' })
+    const events: ModelFallbackEvent[] = []
+    await chat(chainRelay(new FakeSource(byModel(failed, endpointOf(runtime))), [FALLBACK], events), HELLO)
+    expect(events.map(event => event.trigger)).toEqual(['server_error'])
+  })
+
+  test('un 5xx del runtime suelta la admisión y avanza como server_error', async () => {
+    const broken = startFakeOpenAIUpstream({ failure: { kind: 'status', status: 503, body: 'caído' } })
+    cleanups.push(broken.stop)
+    const healthy = fakeRuntime()
+    const source = new FakeSource(byModel(admitTo(endpointOf(broken)), endpointOf(healthy)))
+    const events: ModelFallbackEvent[] = []
+    const response = await chat(chainRelay(source, [FALLBACK], events), HELLO)
+    expect([response.status, source.finished.includes('admission-1'), events.map(event => event.trigger)])
+      .toEqual([200, true, ['server_error']])
+  })
+
+  test('un 4xx del runtime es de la petición: no avanza', async () => {
+    const strict = startFakeOpenAIUpstream({ failure: { kind: 'status', status: 400, body: 'mal formada' } })
+    cleanups.push(strict.stop)
+    const source = new FakeSource(admitTo(endpointOf(strict)))
+    const events: ModelFallbackEvent[] = []
+    const response = await chat(chainRelay(source, [FALLBACK], events), HELLO)
+    expect([response.status, admittedModels(source), events]).toEqual([400, [MODEL], []])
+  })
+
+  test('un coordinador ausente no es del modelo: no avanza', async () => {
+    const source = new FakeSource(() => new Error('socket cerrado'))
+    const events: ModelFallbackEvent[] = []
+    const response = await chat(chainRelay(source, [FALLBACK], events), HELLO)
+    expect([response.status, admittedModels(source), events]).toEqual([ADMISSION_REFUSED_STATUS, [MODEL], []])
+  })
+
+  test('agotada la cadena responde el último rechazo, tras recorrerla en orden', async () => {
+    const source = new FakeSource(refusedAt('reserve'))
+    const events: ModelFallbackEvent[] = []
+    const response = await chat(chainRelay(source, [FALLBACK, SECOND], events), HELLO)
+    expect([response.status, (await errorOf(response)).type, admittedModels(source), events.map(event => event.chainIndex)])
+      .toEqual([ADMISSION_REFUSED_STATUS, 'admission_refused', [MODEL, FALLBACK, SECOND], [1, 2]])
+  })
+
+  test('el salto es de una petición: la siguiente vuelve a pedir el modelo original', async () => {
+    const runtime = fakeRuntime()
+    const source = new FakeSource(byModel(refusedAt('reserve'), endpointOf(runtime)))
+    const upstream = chainRelay(source, [FALLBACK], [])
+    await (await chat(upstream, HELLO)).text()
+    await (await chat(upstream, HELLO)).text()
+    expect(admittedModels(source)).toEqual([MODEL, FALLBACK, MODEL, FALLBACK])
+  })
+
+  test('el propio modelo pedido en la cadena no se reintenta como respaldo', async () => {
+    const source = new FakeSource(refusedAt('reserve'))
+    await chat(chainRelay(source, [MODEL, FALLBACK], []), HELLO)
+    expect(admittedModels(source)).toEqual([MODEL, FALLBACK])
   })
 })

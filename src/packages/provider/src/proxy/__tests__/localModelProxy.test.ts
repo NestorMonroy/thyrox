@@ -240,3 +240,47 @@ describe('localProxy con modelos locales admitidos', () => {
     expect(await new Response(child.stderr).text()).toContain('--cli')
   })
 })
+
+// TASK-THYROX-0921: `--fallback-model` (repetible) da al relé sus respaldos
+// locales; cada salto queda en stderr como `model_fallback <json>`, la línea
+// que printDelegation reenvía al stderr del ítem.
+describe('localProxy --fallback-model', () => {
+  const FALLBACK = 'thyrox-fallback-b'
+
+  /** Rehúsa por falta de sitio sólo el modelo pedido; los respaldos se admiten. */
+  class PrimaryRefusingCoordinator extends FakeCoordinator {
+    override async admit(request: AdmissionRequest): Promise<CoordinatorAdmission> {
+      if (request.model !== LOCAL_MODEL) return super.admit(request)
+      this.admitted.push(request)
+      return { status: 'refused', stage: 'reserve', reason: 'sin memoria para la residencia' }
+    }
+  }
+
+  async function announcedSocket(child: ReturnType<typeof launch>): Promise<string> {
+    const decoder = new TextDecoder()
+    let seen = ''
+    for await (const chunk of child.stdout) {
+      seen += decoder.decode(chunk, { stream: true })
+      const announced = SOCKET_ANNOUNCEMENT.exec(seen)
+      if (announced) return announced[1] as string
+    }
+    throw new Error(`localProxy no anunció su socket: ${await new Response(child.stderr).text()}`)
+  }
+
+  test('una admisión rehusada avanza al respaldo y el salto queda en stderr', async () => {
+    const runtime = fakeRuntime()
+    const coordinator = new PrimaryRefusingCoordinator(runtime.baseUrl.replace(/\/v1$/, ''))
+    const child = launch(['--local-model', LOCAL_MODEL, '--fallback-model', FALLBACK, '--context-tokens', '24663',
+      '--coordinator-socket', await servedCoordinator(coordinator)])
+    const response = await sendOverSocket(await announcedSocket(child), HELLO)
+    const status = response.status
+    await response.text()
+    child.kill('SIGTERM')
+    await child.exited
+    const event = (await new Response(child.stderr).text()).split('\n').find(line => line.startsWith('model_fallback '))
+    expect([status, coordinator.admitted.map(request => request.model)]).toEqual([200, [LOCAL_MODEL, FALLBACK]])
+    expect(JSON.parse((event ?? 'model_fallback {}').slice('model_fallback '.length))).toMatchObject({
+      type: 'model_fallback', originalModel: LOCAL_MODEL, fallbackModel: FALLBACK, trigger: 'overloaded', chainIndex: 1, contextLength: 24_663,
+    })
+  })
+})

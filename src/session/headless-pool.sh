@@ -224,7 +224,7 @@ RUNNER_KIND=thyrox
 PROMPT=""; OUT=""; MODEL=""; TASK_CLASS=""
 WIDTH="$(nproc 2>/dev/null || echo 4)"
 TIMEOUT=600; TOOLS="Read"; TOOLS_SET=""; ISOLATION=""; VERIFY=""; MAX_TURNS=""; WORKDIR="$PWD"; MEMFREE_SPEC=""; CACHE_TTL=""; CREDENTIAL_PROXY=""; STORE_CREDENTIAL_PROXY=""; CREDENTIAL_SOURCE=""
-EXECUTION=host; WORK_REFERENCE=""; MODEL_POLICY=""; POLICY_FALLBACK=""; POLICY_PROVIDER=""; CONTEXT_TOKENS=""; SYSTEM_BUDGET=""
+EXECUTION=host; WORK_REFERENCE=""; MODEL_POLICY=""; POLICY_FALLBACK=""; POLICY_PROVIDER=""; CONTEXT_TOKENS=""; LOCAL_FALLBACKS=""; SYSTEM_BUDGET=""
 
 rehusa() { echo "headless-pool: REHUSA — $*" >&2; exit 2; }
 
@@ -328,6 +328,9 @@ derive_recommendation() {
     [[ "$rc" -eq 0 ]] || reply=""
     IFS=$'\t' read -r RUNTIME MODEL FALLBACK_REASON < <(printf '%s' "$reply" \
         | jq -r --arg default "$PROVIDER_RUNTIME" '[.runtime // $default, .model // "", .fallbackReason // ""] | @tsv' 2>/dev/null)
+    # Los respaldos locales, en el orden de fallback.chain (TASK-THYROX-0921): se
+    # leen aparte porque `read` con IFS de tabulador colapsa los campos vacíos.
+    LOCAL_FALLBACKS="$(printf '%s' "$reply" | jq -r '(.fallbackModels // []) | join(",")' 2>/dev/null)"
     case "$RUNTIME:$MODEL" in
         "$LOCAL_RUNTIME":thyrox-*|"$PROVIDER_RUNTIME":claude-*) ;;
         *) rehusa "no se pudo derivar el modelo de --task-class $TASK_CLASS con $RECOMMEND_BIN: runtime ${RUNTIME:-(sin respuesta)}, modelo ${MODEL:-(sin respuesta)}" ;;
@@ -349,7 +352,7 @@ ensure_local_runtime() {
     FALLBACK_REASON="$MANAGED_OLLAMA_SERVICE no arrancó (local_control_plane_ready salió $ensure_exit)"
 }
 announce_model() {
-    echo "modelo: $MODEL (derivado de --task-class $TASK_CLASS) runtime: $RUNTIME${FALLBACK_REASON:+ — respaldo: $FALLBACK_REASON}"
+    echo "modelo: $MODEL (derivado de --task-class $TASK_CLASS) runtime: $RUNTIME${FALLBACK_REASON:+ — respaldo: $FALLBACK_REASON}${LOCAL_FALLBACKS:+ — respaldos locales: $LOCAL_FALLBACKS}"
 }
 # <<< runtime-routing
 [[ -d "$WORKDIR" ]] || rehusa "--cwd no existe: $WORKDIR"
@@ -484,6 +487,9 @@ export HP_COORDINATOR_SOCKET
 # proxy local, que lo pide al coordinador. Sin él, el resolver concede el
 # máximo del modelo y la unidad de modelo puede morir por OOM (A6 r4).
 [[ -z "$CONTEXT_TOKENS" ]] || export THYROX_LOCAL_MODEL_CONTEXT_LENGTH="$CONTEXT_TOKENS"
+# Los respaldos locales llegan al proxy del ítem, que avanza por ellos si el
+# modelo pedido no se puede servir; sólo con runtime local (TASK-THYROX-0921).
+[[ -z "${LOCAL_FALLBACKS:-}" || "$RUNTIME" != "$LOCAL_RUNTIME" ]] || export THYROX_LOCAL_MODEL_FALLBACKS="$LOCAL_FALLBACKS"
 # El plazo de cada petición del ítem (API_TIMEOUT_MS, 600 s por defecto en el
 # cliente) no puede ser menor que el del ítem: un modelo local en CPU tarda
 # minutos en su primer byte (A6 r7). Una declaración previa gana; un --timeout
@@ -888,7 +894,7 @@ _headless_item_run() {
              fi
              for name in THYROX_CODE_PROMPT_CACHE_TTL THYROX_POOL_DOCUMENT_INTENT THYROX_POOL_RUN_ID THYROX_POOL_ITEM \
                          THYROX_POOL_ITEM_GENERATION THYROX_MAILBOX_DIR THYROX_POOL_ITEM_ADDRESS \
-                         THYROX_LOCAL_MODEL_CONTEXT_LENGTH API_TIMEOUT_MS; do
+                         THYROX_LOCAL_MODEL_CONTEXT_LENGTH THYROX_LOCAL_MODEL_FALLBACKS API_TIMEOUT_MS; do
                  [[ -z "${!name:-}" ]] || unit_args+=(--env "$name")
              done
              THYROX_ROOT="$HP_THYROX_ROOT" exec setsid timeout "$HP_TIMEOUT" "${execute_argv[@]}" run "${unit_args[@]}" \

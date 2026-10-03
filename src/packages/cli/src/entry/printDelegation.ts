@@ -32,6 +32,13 @@ export const LOCAL_PROXY_SOCKET_ENV = 'THYROX_LOCAL_PROXY_SOCKET'
  * lo pide en cada admisión; sin él, el resolver concede el máximo del modelo.
  */
 export const LOCAL_MODEL_CONTEXT_LENGTH_ENV = 'THYROX_LOCAL_MODEL_CONTEXT_LENGTH'
+/**
+ * Los respaldos locales del modelo pedido, separados por coma y en orden
+ * (`fallbackModels` de la recomendación, TASK-THYROX-0921). Van al proxy como
+ * un `--fallback-model` por modelo; el relé avanza por ellos si el pedido no
+ * se puede servir.
+ */
+export const LOCAL_MODEL_FALLBACKS_ENV = 'THYROX_LOCAL_MODEL_FALLBACKS'
 /** El lanzador del proxy local por su ruta en el árbol; `bin/provider-local-proxy` es su envoltorio. */
 const LOCAL_PROXY_LAUNCHER = fileURLToPath(new URL('../../../provider/bin/localProxy.ts', import.meta.url))
 const ANNOUNCEMENT_PREFIX = 'socket='
@@ -151,6 +158,12 @@ function contextArguments(env: Env): string[] {
   return declared ? ['--context-tokens', declared] : []
 }
 
+/** Los respaldos declarados, en su orden, uno por `--fallback-model`; vacíos o repetidos los descarta el proxy. */
+function fallbackArguments(env: Env): string[] {
+  const declared = env[LOCAL_MODEL_FALLBACKS_ENV] ?? ''
+  return declared.split(',').map(model => model.trim()).filter(model => model !== '').flatMap(model => ['--fallback-model', model])
+}
+
 /** Prefijo de lo que el proxy local escribe en stderr una vez anunciado. */
 const PROXY_DIAGNOSTIC_PREFIX = 'proxy local: '
 
@@ -179,7 +192,7 @@ async function launchLocalProxy(options: CredentialEnvironmentOptions): Promise<
   const dir = mkdtempSync(join(tmpdir(), 'thyrox-local-proxy-'))
   const requestedSocket = join(dir, 'proxy.sock')
   const spawn = options.spawn ?? spawnLocalProxy
-  const argv = ['--socket', requestedSocket, ...options.models.flatMap(proxyModelArguments), ...contextArguments(options.env)]
+  const argv = ['--socket', requestedSocket, ...options.models.flatMap(proxyModelArguments), ...contextArguments(options.env), ...fallbackArguments(options.env)]
   const child = spawn(argv, { env: options.env, cwd: options.cwd })
   const stop = async (): Promise<void> => {
     child.kill()

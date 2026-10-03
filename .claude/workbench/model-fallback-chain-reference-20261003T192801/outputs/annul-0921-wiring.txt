@@ -1,0 +1,15 @@
+== proxy-flag
+(fail) localProxy --fallback-model > una admisión rehusada avanza al respaldo y el salto queda en stderr [259.53ms]
+ 11 pass
+ 1 fail
+ 20 pass
+ 0 fail
+== delegation-env
+ 12 pass
+ 0 fail
+(fail) credentialEnvironmentFor — localizar o levantar el proxy > los respaldos declarados viajan al proxy como --fallback-model, en orden [2.88ms]
+ 19 pass
+ 1 fail
+ src/packages/cli/src/entry/printDelegation.ts | 15 ++++++++++++++-
+ src/packages/provider/bin/localProxy.ts       | 21 +++++++++++++++++----
+ 2 files changed, 31 insertions(+), 5 deletions(-)

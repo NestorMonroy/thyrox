@@ -24,7 +24,7 @@ check() { if [[ "$2" == "$3" ]]; then PASS=$((PASS+1)); echo "  ok   $1"; else F
 printf 'Traduce el ítem.\n' > "$F/prompt.md"
 cat > "$F/recommend" <<'R'
 #!/usr/bin/env bash
-echo '{"runtime":"ollama","model":"thyrox-qwen--qwen2.5-7b-instruct-gguf:q4_k_m-hf-bb5d59e06d95"}'
+echo "{\"runtime\":\"ollama\",\"model\":\"thyrox-qwen--qwen2.5-7b-instruct-gguf:q4_k_m-hf-bb5d59e06d95\",\"fallbackModels\":[${RECOMMEND_FALLBACKS:-}]}"
 R
 printf '#!/usr/bin/env bash\nexit 0\n' > "$F/ensure"
 # El ejecutor de ítems: anota su argv, su entrada y si ve la credencial, y responde stream-json.
@@ -114,6 +114,21 @@ printf 'alfa\n' | HEADLESS_POOL_RUNNER="$F/thyrox-p-context" THYROX_MODEL_COORDI
 check "caso 4b: la unidad nombra la variable del contexto" \
   "$(grep -c -- '--env THYROX_LOCAL_MODEL_CONTEXT_LENGTH' "$F/execute.log")" "1"
 check "caso 4b: thyrox -p recibe el contexto declarado" "$(cat "$F/context.log")" "24663"
+
+# Caso 4e (TASK-THYROX-0921): los respaldos locales de la recomendación cruzan
+# a la unidad, donde `thyrox -p` los pasa al proxy como --fallback-model.
+cat > "$F/thyrox-p-fallbacks" <<R
+#!/usr/bin/env bash
+printf '%s\n' "\${THYROX_LOCAL_MODEL_FALLBACKS:-ausente}" >> "$F/fallbacks.log"
+R
+chmod +x "$F/thyrox-p-fallbacks"
+: > "$F/execute.log"; : > "$F/fallbacks.log"
+printf 'alfa\n' | RECOMMEND_FALLBACKS='"thyrox-b","thyrox-c"' HEADLESS_POOL_RUNNER="$F/thyrox-p-fallbacks" \
+  THYROX_MODEL_COORDINATOR_SOCKET="$F/coord/coordinator.sock" \
+  pool --out "$F/out-fallbacks" --execution unit --work-reference ai-course-notes:cs224r >/dev/null 2>&1
+check "caso 4e: la unidad nombra la variable de los respaldos" \
+  "$(grep -c -- '--env THYROX_LOCAL_MODEL_FALLBACKS' "$F/execute.log")" "1"
+check "caso 4e: thyrox -p recibe los respaldos en orden" "$(cat "$F/fallbacks.log")" "thyrox-b,thyrox-c"
 
 # Caso 4c (A6 r7): la petición de `thyrox -p` a un modelo en CPU puede tardar
 # minutos en su primer byte. Su plazo (API_TIMEOUT_MS, 600 s por defecto) no
