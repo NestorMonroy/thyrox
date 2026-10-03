@@ -33,6 +33,7 @@ printf '%s\n' "\$*" >> "\$STATE/calls.log"
 referenced() { cat "\$STATE/containers" "\$STATE/volumes" 2>/dev/null | cut -d' ' -f2 | sort -u; }
 refresh_if_needed() {
   [[ -e "\$LIBPOD/alive" ]] && return
+  [[ -e "\$STATE/no-refresh" ]] && return
   echo \$(( 2048 - \$(referenced | grep -c .) )) > "\$STATE/free-locks"
   touch "\$LIBPOD/alive"
 }
@@ -40,7 +41,7 @@ case "\$1" in
   version) cat "\$STATE/version"; exit 0 ;;
   info)
     [[ "\$*" == *DatabaseBackend* ]] && { cat "\$STATE/backend"; exit 0; }
-    [[ "\$*" == *FreeLocks* ]] && { refresh_if_needed; cat "\$STATE/free-locks"; exit 0; }
+    [[ "\$*" == *FreeLocks* ]] && { refresh_if_needed; cat "\$STATE/free-locks" 2>/dev/null; exit 0; }
     exit 0 ;;
   ps) refresh_if_needed; cut -d' ' -f1 "\$STATE/containers" 2>/dev/null; exit 0 ;;
   container)
@@ -73,8 +74,15 @@ run_recovery() {
   THYROX_INFRA_PODMAN_NUM_LOCKS=2048 \
   THYROX_PODMAN_LIBPOD_TMP_DIR="${TEST_LIBPOD:-$LIBPOD}" \
   THYROX_PODMAN_LOCK_RECOVERY_UID="${TEST_UID:-0}" \
+  THYROX_PODMAN_PROC_STAT="${TEST_PROC_STAT:-$WORK/proc-stat}" \
     bash "$SUBJECT" "$@"
 }
+
+# El arranque del núcleo de las suites: `btime` de un /proc/stat falso.
+# El marcador sembrado por `seed_imbalanced` es de este instante, así que
+# para los casos 1-6 pertenece al arranque actual.
+BOOT_EPOCH="$(date +%s)"
+printf 'cpu  0 0 0 0\nbtime %s\nprocesses 1\n' "$BOOT_EPOCH" > "$WORK/proc-stat"
 
 # Caso 1 — sin --confirm es un plan: publica la medida y no toca nada.
 seed_imbalanced
@@ -137,5 +145,150 @@ seed_imbalanced
 err="$(TEST_LIBPOD="$WORK/absent" run_recovery --confirm 2>&1 >/dev/null)"; rc=$?
 thyrox_check "caso 6: sin marcador -> exit 2" "2" "$rc"
 [[ "$err" == *"$WORK/absent/alive"* ]] && ok "caso 6: nombra el marcador ausente" || bad "caso 6: no nombra el marcador: [$err]"
+
+# =============================================================================
+# --classify — el veredicto que el composer consume (P0c1)
+# =============================================================================
+# Contrato: una sola línea en stdout, HEALTHY, KNOWN_POST_REBOOT_RECOVERABLE o
+# REFUSED <razón>; exit 0 en los tres; exit 2 sólo por uso. No muta nada.
+#
+# La firma post-reboot es CONJUNTA: 4.9.x, sqlite, uid 0, marcador presente
+# con mtime < btime, allocated == 0, referenced > 0 y ningún vivo. Es el estado
+# medido tras reiniciar la VM: /run no es volátil aquí, el marcador del
+# arranque anterior sobrevive, Podman no refresca y la memoria compartida de
+# locks nace vacía (H-THYROX-442).
+
+# @description Siembra el estado post-reboot: N números de lock distintos
+# referenciados, `allocated` asignados, contenedores con PID muerto y el
+# marcador del arranque ANTERIOR (mtime una hora antes de btime).
+# @arg $1 int asignados. @arg $2 int referenciados (>= 2).
+seed_post_reboot() {
+  local allocated="$1" referenced="$2" i
+  rm -rf "${STATE:?}" "${LIBPOD:?}"; mkdir -p "$STATE" "$LIBPOD"
+  printf 'ctr-redis 0 running 999999\nctr-ollama 1 running 999998\n' > "$STATE/containers"
+  : > "$STATE/volumes"
+  for (( i = 0; i < referenced; i++ )); do printf 'vol-%s %s\n' "$i" "$i" >> "$STATE/volumes"; done
+  echo $(( 2048 - allocated )) > "$STATE/free-locks"
+  echo 4.9.3 > "$STATE/version"
+  echo sqlite > "$STATE/backend"
+  echo previous-boot > "$LIBPOD/alive"
+  touch -d "@$(( BOOT_EPOCH - 3600 ))" "$LIBPOD/alive"
+}
+marker_fingerprint() { printf '%s:%s' "$(cat "$LIBPOD/alive" 2>/dev/null)" "$(stat -c %Y "$LIBPOD/alive" 2>/dev/null)"; }
+classify() { run_recovery --classify 2>/dev/null; }
+
+# Caso 7 — 0/4 con todas las guardas: la firma conocida, sin mutar nada.
+seed_post_reboot 0 4
+before="$(marker_fingerprint)"
+out="$(run_recovery --classify 2>/dev/null)"; rc=$?
+thyrox_check "caso 7: 0/4 -> KNOWN_POST_REBOOT_RECOVERABLE" "KNOWN_POST_REBOOT_RECOVERABLE" "$out"
+thyrox_check "caso 7: exit 0" "0" "$rc"
+thyrox_check "caso 7: --classify no toca el marcador" "$before" "$(marker_fingerprint)"
+thyrox_check "caso 7: --classify no refresca los locks" "2048" "$(cat "$STATE/free-locks")"
+
+# Caso 8 — la firma no depende de N: 0/21 también.
+seed_post_reboot 0 21
+thyrox_check "caso 8: 0/21 -> KNOWN_POST_REBOOT_RECOVERABLE" "KNOWN_POST_REBOOT_RECOVERABLE" "$(classify)"
+
+# Caso 9 — un desfase PARCIAL no es la firma: allocated < referenced no basta.
+for pair in 3:4 5:21 20:21; do
+  seed_post_reboot "${pair%%:*}" "${pair#*:}"
+  thyrox_check "caso 9: ${pair/:/\/} -> REFUSED partial-allocation" "REFUSED partial-allocation" "$(classify)"
+done
+
+# Caso 10 — 0/N con un contenedor realmente vivo: rehúsa.
+seed_post_reboot 0 4
+sleep 999 & live_pid=$!
+printf 'ctr-redis 0 running %s\nctr-ollama 1 running 999998\n' "$live_pid" > "$STATE/containers"
+out="$(classify)"
+kill "$live_pid" 2>/dev/null
+thyrox_check "caso 10: 0/4 con un vivo -> REFUSED live-containers" "REFUSED live-containers" "$out"
+
+# Caso 11 — fuera del alcance medido: versión, backend, uid.
+for variant in version:5.0.1:unsupported-version backend:boltdb:unsupported-backend uid:1000:unsupported-uid; do
+  seed_post_reboot 0 4
+  IFS=: read -r key value reason <<< "$variant"
+  if [[ "$key" == uid ]]; then
+    out="$(TEST_UID="$value" run_recovery --classify 2>/dev/null)"
+  else
+    echo "$value" > "$STATE/$key"; out="$(classify)"
+  fi
+  thyrox_check "caso 11: $key=$value -> REFUSED $reason" "REFUSED $reason" "$out"
+done
+
+# Caso 12 — el marcador del arranque ACTUAL no es la firma: rehúsa.
+seed_post_reboot 0 4
+touch -d "@$(( BOOT_EPOCH + 5 ))" "$LIBPOD/alive"
+thyrox_check "caso 12: marcador del boot actual -> REFUSED marker-current-boot" "REFUSED marker-current-boot" "$(classify)"
+seed_post_reboot 0 4
+touch -d "@$BOOT_EPOCH" "$LIBPOD/alive"
+thyrox_check "caso 12: mtime == btime tampoco es anterior" "REFUSED marker-current-boot" "$(classify)"
+seed_post_reboot 0 4
+out="$(TEST_LIBPOD="$WORK/absent" run_recovery --classify 2>/dev/null)"
+thyrox_check "caso 12: sin marcador -> REFUSED marker-absent" "REFUSED marker-absent" "$out"
+
+# Caso 13 — medida incompleta: rehúsa, nunca infiere.
+seed_post_reboot 0 4
+rm -f "$STATE/free-locks"
+thyrox_check "caso 13: sin locks libres -> REFUSED measurement-incomplete" "REFUSED measurement-incomplete" "$(classify)"
+seed_post_reboot 0 4
+printf 'cpu 0 0 0 0\n' > "$WORK/proc-stat-nobtime"
+out="$(TEST_PROC_STAT="$WORK/proc-stat-nobtime" run_recovery --classify 2>/dev/null)"
+thyrox_check "caso 13: sin btime -> REFUSED measurement-incomplete" "REFUSED measurement-incomplete" "$out"
+seed_post_reboot 0 4
+: > "$STATE/version"
+thyrox_check "caso 13: sin versión -> REFUSED measurement-incomplete" "REFUSED measurement-incomplete" "$(classify)"
+
+# Caso 14 — balance sano: HEALTHY, sin mirar el resto de la firma.
+seed_post_reboot 4 4
+thyrox_check "caso 14: 4/4 -> HEALTHY" "HEALTHY" "$(classify)"
+seed_post_reboot 4 4; echo boltdb > "$STATE/backend"
+thyrox_check "caso 14: sano con otro backend sigue siendo HEALTHY" "HEALTHY" "$(classify)"
+
+# Caso 15 — el veredicto es UNA línea de la gramática, y lo humano va a stderr.
+seed_post_reboot 3 4
+out="$(run_recovery --classify 2>/dev/null)"
+thyrox_check "caso 15: una sola línea" "1" "$(printf '%s\n' "$out" | grep -c .)"
+[[ "$out" =~ ^(HEALTHY|KNOWN_POST_REBOOT_RECOVERABLE|REFUSED\ [a-z-]+)$ ]] \
+  && ok "caso 15: cumple la gramática" || bad "caso 15: fuera de la gramática: [$out]"
+
+# Caso 16 — un argumento desconocido es error de uso: exit 2.
+run_recovery --classify-typo >/dev/null 2>&1; rc=$?
+thyrox_check "caso 16: argumento desconocido -> exit 2" "2" "$rc"
+
+# =============================================================================
+# --after-reboot — repara SÓLO la firma conocida (P0c1)
+# =============================================================================
+
+# Caso 17 — firma conocida: repara, vuelve a medir y queda HEALTHY.
+seed_post_reboot 0 4
+out="$(run_recovery --after-reboot 2>&1)"; rc=$?
+thyrox_check "caso 17: --after-reboot sobre 0/4 -> exit 0" "0" "$rc"
+thyrox_check "caso 17: los locks quedan asignados" "2044" "$(cat "$STATE/free-locks")"
+thyrox_check "caso 17: después clasifica HEALTHY" "HEALTHY" "$(classify)"
+
+# Casos 18-20 — fuera de la firma rehúsa SIN mutar: nunca cae a --confirm.
+for scenario in partial:3 live:0 current-boot:0; do
+  name="${scenario%%:*}"
+  seed_post_reboot "${scenario#*:}" 4
+  live_pid=""
+  case "$name" in
+    live) sleep 999 & live_pid=$!
+          printf 'ctr-redis 0 running %s\nctr-ollama 1 running 999998\n' "$live_pid" > "$STATE/containers" ;;
+    current-boot) touch -d "@$(( BOOT_EPOCH + 5 ))" "$LIBPOD/alive" ;;
+  esac
+  before="$(marker_fingerprint)"; free_before="$(cat "$STATE/free-locks")"
+  run_recovery --after-reboot >/dev/null 2>&1; rc=$?
+  [[ -n "$live_pid" ]] && kill "$live_pid" 2>/dev/null
+  thyrox_check "caso 18-20 ($name): --after-reboot rehúsa -> exit 2" "2" "$rc"
+  thyrox_check "caso 18-20 ($name): el marcador queda intacto" "$before" "$(marker_fingerprint)"
+  thyrox_check "caso 18-20 ($name): los locks no cambian" "$free_before" "$(cat "$STATE/free-locks")"
+done
+
+# Caso 21 — si tras reparar la medida no queda sana: exit 3, no éxito.
+seed_post_reboot 0 4
+touch "$STATE/no-refresh"
+run_recovery --after-reboot >/dev/null 2>&1; rc=$?
+thyrox_check "caso 21: reparación que no equilibra -> exit 3" "3" "$rc"
 
 thyrox_summary
