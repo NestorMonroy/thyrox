@@ -1,0 +1,5 @@
+thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e	ctx=8192	kv=1152MiB	total=3790MiB
+thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e	ctx=16384	kv=2304MiB	total=4942MiB
+thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e	ctx=24576	kv=3456MiB	total=6094MiB
+thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e	ctx=32768	kv=4608MiB	total=7246MiB
+thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e	ctx=40960	kv=5760MiB	total=8398MiB

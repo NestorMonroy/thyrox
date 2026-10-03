@@ -1,0 +1,28 @@
+## estados que el código nombra (src/session, src/packages/daemon)
+zombie: 2 archivo(s)
+stuck: 1 archivo(s)
+orphan: 2 archivo(s)
+blocked: 10 archivo(s)
+sleeping: 0 archivo(s)
+stalled: 4 archivo(s)
+## mecanismos
+adopt_background
+process_ownership
+recovery_controller
+stdin_probe
+stop_pending_work
+stranded-evidence
+thyrox-bg
+wait-jobs
+writer_inspector
+## wait-jobs: subcomandos
+--after-ok --run --marker --timeout --heartbeat --pattern --only --match --label --log --dry-run adopt-external ledger-home 
+## trabajos sin recoger
+a6-qwen-hf-r3  [SIN-RECOGER]  /home/user/thyrox/.claude/jobs/a6-qwen-hf-r3-20261003T111610/outputs/salida.log
+a6-qwen-hf-r4  [SIN-RECOGER]  /home/user/thyrox/.claude/jobs/a6-qwen-hf-r4-20261003T112712/outputs/salida.log
+## sus marcadores
+a6-qwen-hf-r3-20261003T111610: __BG_EXIT__=1
+a6-qwen-hf-r4-20261003T112712: __BG_EXIT__=1
+## worktree de pool retenido
+2d156aa0e Have the local worker write long files in short parts
+?? src/verify/search_existing_mechanisms.py

@@ -1,0 +1,30 @@
+2.4G	.thyrox/models
+2.4G	.thyrox/pool-worktrees
+2.4G	.thyrox/runtime
+15G	/var/lib/containers/storage
+2.4G	/var/lib/containers/storage/volumes
+13G	/var/lib/containers/storage/overlay
+970M	_references
+989M	.claude/workbench
+228M	.claude/jobs
+706M	.git
+14M	agent-results
+821M	node_modules
+## volúmenes con datos
+4.0K	/var/lib/containers/storage/volumes/07f2690e2a52340896c8d9f8e6e54b3d334fa168397a2e4e396a78b192b286e4/_data
+4.0K	/var/lib/containers/storage/volumes/2350956da7ec4f769d5922b43b2811931a3bbb38bcf147a6c2a0c18ce9ee4abb/_data
+4.0K	/var/lib/containers/storage/volumes/2abf93f5468768df1ba292a70885ae0db8dde4d8933c7def927a9232ce5422e4/_data
+4.0K	/var/lib/containers/storage/volumes/3c6611958d2deee4e8320c76cbf7d9beb5285c9ef70a42b85e8ebeb8e3c3bddd/_data
+4.0K	/var/lib/containers/storage/volumes/5e382c585a94be52feea4fa118a7530f43a76f7e3a6aede79fab5a95f8579f3b/_data
+4.0K	/var/lib/containers/storage/volumes/f5a26b53b24e81eece469781ffddb9c7103aa056051c0c4f7800bcf10bef25e3/_data
+4.0K	/var/lib/containers/storage/volumes/f9d0b16553f837c145b2d4b277735266844062c8d24318e5db2949779d161436/_data
+47M	/var/lib/containers/storage/volumes/thyrox-postgres-data/_data
+2.4G	/var/lib/containers/storage/volumes/thyrox-ollama-models/_data
+## disk floor de admisión
+src/session/resource_admission.py:57:DISK_FLOOR_VAR = "THYROX_DISK_ADMISSION_FLOOR_MB"
+src/session/resource_admission.py:69:DEFAULT_DISK_FLOOR_MB = 2048
+src/session/resource_admission.py:76:DEFAULT_DISK_HEADROOM = Path(__file__).resolve().parent.parent / "repo" / "disk-headroom.sh"
+src/session/resource_admission.py:79:DEFAULT_DISK_PATH = "/"
+960702	2	2497280256	.thyrox/runtime/qwen3-4b-hf-publish/model-Q4_K_M.gguf
+960702	2	2497280256	.thyrox/runtime/qwen3-4b-hf-import/scratch/Qwen3-4B-Q4_K_M.gguf
+952048	1	2497280256	.thyrox/models/artifacts/sha256-7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5.gguf

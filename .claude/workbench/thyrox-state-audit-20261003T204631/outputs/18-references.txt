@@ -1,0 +1,142 @@
+## _references/ (primer nivel)
+advanced-features.md
+agent-authoring.md
+agent-spec.md
+agentic-calibration-workflow-example.md
+agentic-mandate.md
+bash-awk-probabilidad
+benchmark-skill-vs-claude.md
+calibration-framework.md
+ccb
+checkpointing.md
+claude-authoring.md
+claude-code
+claude-code-bin
+claude-code-components.md
+clean-code-solid
+cli-reference.md
+cliproxyapi
+command-execution-model.md
+component-decision.md
+context-engineering.md
+conventions.md
+coordinator-integration.md
+development-methodologies.md
+examples.md
+gate-calibrated-contracts.md
+github-actions.md
+glossary.md
+harness-books
+harness-engineering
+hook-authoring.md
+hook-output-control.md
+hooks.md
+how-claude-code-works
+known-issues.md
+litellm
+long-context-tips.md
+long-running-calls.md
+mcp-integration.md
+memory-hierarchy.md
+memory-patterns.md
+methodology-selection-guide.md
+multi-instance-workflows.md
+multimodal.md
+output-formats.md
+parallel-agent-state-files.md
+permission-model.md
+platform-evolution-tracking.md
+plugins.md
+podman-docs
+production-safety.md
+prompting-tips.md
+restored-src
+scheduled-tasks.md
+sdd.md
+security-hardening.md
+settings-reference.md
+skill-authoring.md
+skill-vs-agent.md
+slash-commands-reference.md
+state-management.md
+stream-resilience.md
+streaming-errors.md
+subagent-patterns.md
+testing-patterns.md
+tool-execution-model.md
+tool-patterns.md
+visual-reference.md
+## claude-code-bin builds
+2.1.266
+2.1.274
+2.1.275
+2.1.281
+2.1.282
+2.1.283
+2.1.284
+2.1.285
+2.1.286
+README.md
+_archived
+## tamaño
+48K	_references/ccb
+48K	_references/clean-code-solid
+188K	_references/how-claude-code-works
+280K	_references/harness-books
+316K	_references/bash-awk-probabilidad
+716K	_references/claude-code
+832K	_references/litellm
+1004K	_references/restored-src
+1.6M	_references/harness-engineering
+3.6M	_references/podman-docs
+32M	_references/cliproxyapi
+929M	_references/claude-code-bin
+## PROVENANCE por corpus
+_references/bash-awk-probabilidad/: 1
+_references/ccb/: 1
+_references/claude-code-bin/: 0
+_references/claude-code/: 1
+_references/clean-code-solid/: 1
+_references/cliproxyapi/: 1
+_references/harness-books/: 1
+_references/harness-engineering/: 1
+_references/how-claude-code-works/: 1
+_references/litellm/: 1
+_references/podman-docs/: 1
+_references/restored-src/: 0
+## ¿referencias de podman o redis?
+podman-docs
+## bin/binary: subcomandos (cabecera de binary.ts)
+ *   info                 version declarada, secciones, tamano de la tabla
+ *   extract [--out R] [--base V]
+ *   graph [--json]       grafo de imports entre modulos
+ *   freshness [--root R] compara el corpus con el ejecutable vivo
+ *   reflow <mod> [--out F] [--root R]
+ *   symbol <chunk> <nombre>... [--root R]
+ *   references <chunk> <nombre> [--root R]
+ *   declarations <chunk> [--root R]
+ *   literal <texto> [--root R]
+## pruebas de @thyrox/binary
+bunfs.test.ts
+canonical.test.ts
+corpus.test.ts
+corpusDiff.test.ts
+declaration.test.ts
+declarationParseOnce.test.ts
+inventory.test.ts
+literal.test.ts
+liveBuild.test.ts
+namespaceReferences.test.ts
+## ¿algún flujo automatiza duda→referencia→análisis→decisión?
+src/packages/agent/__tests__/promptCacheTtl.test.ts:12:// Porte de la cadena de 2.1.282, extraída con `bin/binary symbol
+src/packages/agent/promptCacheTtl.ts:6: * `bin/binary symbol chunk-c9jscxk0.js EPt QCt pxe yyo fxe`:
+src/packages/app-host/src/bootstrap/__tests__/gracefulShutdown.test.ts:9: * `bin/binary symbol chunk-csayct82.js Zmo`): si `process.exit` lanza, se
+src/packages/audio-capture-napi/__tests__/audioCapture.test.ts:6: * con `bin/binary` sobre 2.1.283 (banco `napi-contracts-20260927T073211`):
+src/packages/cli/__tests__/startupFailure.test.ts:4: * extraidos con `bin/binary symbol`):
+src/packages/cli/__tests__/startupFailure.test.ts:123:  test('13. it comes from PRODUCT_NAME, not from a binary literal', () => {
+src/packages/cli/src/argv.ts:25: *   binary/bin/binary.ts:    function opcion(argv, nombre, defecto) { ... }
+src/packages/cli/src/argv.ts:33: * `harness/bin/harness.ts` y `binary/bin/binary.ts`, ambos fuera de las
+src/packages/cli/src/entry/cwdCheck.ts:3: * 2.1.283; extraido con `bin/binary symbol cli rt` a
+src/packages/cli/src/entry/flags.ts:7: * y `binary/bin/binary.ts`, ambos fuera de las rutas de este agente». Esta
+## otros repositorios kaupamex-* en disco
+ninguno en /home/user

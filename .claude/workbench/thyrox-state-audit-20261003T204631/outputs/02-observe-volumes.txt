@@ -1,0 +1,66 @@
+[
+ {
+  "name": "f5a26b53b24e81eece469781ffddb9c7103aa056051c0c4f7800bcf10bef25e3",
+  "mountpoint": "/var/lib/containers/storage/volumes/f5a26b53b24e81eece469781ffddb9c7103aa056051c0c4f7800bcf10bef25e3/_data",
+  "createdAt": "2026-10-02T23:25:35.782006016Z",
+  "labels": {}
+ },
+ {
+  "name": "thyrox-ollama-models",
+  "mountpoint": "/var/lib/containers/storage/volumes/thyrox-ollama-models/_data",
+  "createdAt": "2026-10-02T23:25:45.785656202Z",
+  "labels": {
+   "thyrox.owner-id": "infrastructure-bootstrap",
+   "thyrox.owner-kind": "infrastructure",
+   "thyrox.resource-kind": "infrastructure",
+   "thyrox.resource-name": "thyrox-ollama"
+  }
+ },
+ {
+  "name": "3c6611958d2deee4e8320c76cbf7d9beb5285c9ef70a42b85e8ebeb8e3c3bddd",
+  "mountpoint": "/var/lib/containers/storage/volumes/3c6611958d2deee4e8320c76cbf7d9beb5285c9ef70a42b85e8ebeb8e3c3bddd/_data",
+  "createdAt": "2026-10-03T09:56:11.30447735Z",
+  "labels": {}
+ },
+ {
+  "name": "thyrox-postgres-data",
+  "mountpoint": "/var/lib/containers/storage/volumes/thyrox-postgres-data/_data",
+  "createdAt": "2026-10-03T10:04:25.349209274Z",
+  "labels": {
+   "thyrox.owner-id": "infrastructure-bootstrap",
+   "thyrox.owner-kind": "infrastructure",
+   "thyrox.resource-kind": "infrastructure",
+   "thyrox.resource-name": "thyrox-postgres"
+  }
+ },
+ {
+  "name": "2abf93f5468768df1ba292a70885ae0db8dde4d8933c7def927a9232ce5422e4",
+  "mountpoint": "/var/lib/containers/storage/volumes/2abf93f5468768df1ba292a70885ae0db8dde4d8933c7def927a9232ce5422e4/_data",
+  "createdAt": "2026-10-03T10:04:35.415385958Z",
+  "labels": {}
+ },
+ {
+  "name": "2350956da7ec4f769d5922b43b2811931a3bbb38bcf147a6c2a0c18ce9ee4abb",
+  "mountpoint": "/var/lib/containers/storage/volumes/2350956da7ec4f769d5922b43b2811931a3bbb38bcf147a6c2a0c18ce9ee4abb/_data",
+  "createdAt": "2026-10-03T10:16:36.4908291Z",
+  "labels": {}
+ },
+ {
+  "name": "07f2690e2a52340896c8d9f8e6e54b3d334fa168397a2e4e396a78b192b286e4",
+  "mountpoint": "/var/lib/containers/storage/volumes/07f2690e2a52340896c8d9f8e6e54b3d334fa168397a2e4e396a78b192b286e4/_data",
+  "createdAt": "2026-10-03T10:17:14.292921694Z",
+  "labels": {}
+ },
+ {
+  "name": "5e382c585a94be52feea4fa118a7530f43a76f7e3a6aede79fab5a95f8579f3b",
+  "mountpoint": "/var/lib/containers/storage/volumes/5e382c585a94be52feea4fa118a7530f43a76f7e3a6aede79fab5a95f8579f3b/_data",
+  "createdAt": "2026-10-03T13:19:13.435991413Z",
+  "labels": {}
+ },
+ {
+  "name": "f9d0b16553f837c145b2d4b277735266844062c8d24318e5db2949779d161436",
+  "mountpoint": "/var/lib/containers/storage/volumes/f9d0b16553f837c145b2d4b277735266844062c8d24318e5db2949779d161436/_data",
+  "createdAt": "2026-10-03T14:57:40.202888652Z",
+  "labels": {}
+ }
+]

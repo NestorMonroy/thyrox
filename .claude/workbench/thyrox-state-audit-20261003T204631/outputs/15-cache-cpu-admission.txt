@@ -1,0 +1,42 @@
+## LLAMA_ARG_CACHE_RAM
+src/packages/local-models/__tests__/hostCoordinatorComposition.test.ts:58:// de 13 830 tokens (1945 MiB) la unidad murió por OOM. `LLAMA_ARG_CACHE_RAM=0`
+src/packages/local-models/__tests__/hostCoordinatorComposition.test.ts:62:    expect(OLLAMA_UNIT_ENVIRONMENT.LLAMA_ARG_CACHE_RAM).toBe('0')
+src/packages/local-models/hostCoordinatorComposition.ts:56: * El entorno de toda unidad de Ollama. `LLAMA_ARG_CACHE_RAM=0` desactiva la
+src/packages/local-models/hostCoordinatorComposition.ts:63:  LLAMA_ARG_CACHE_RAM: '0',
+## ¿la cualificación registra cache/CPU/tools/system budget? campos de ModelQualification
+  readonly model: string
+  readonly kind: QualificationKind
+  readonly taskClass?: LocalTaskClass
+  readonly suite: string
+  readonly casesPassed: number
+  readonly casesTotal: number
+  readonly passed: boolean
+  readonly contextTokens: number
+  readonly tokensPerSecond: number
+  readonly measurementCondition: MeasurementCondition
+  readonly measuredAt: string
+  readonly reasoningEffort?: ReasoningEffort
+## RAM admission: piezas
+src/packages/local-models/hostCoordinatorComposition.ts:77:export type CompositionDependencies = { podman?: PodmanExecutor; ramHeadroom?: RamHeadroom 
+src/packages/local-models/hostCoordinatorComposition.ts:134:    ramHeadroom: dependencies.ramHeadroom ?? new ResourceAdmissionCli(join(thyroxRoot, 'bi
+src/packages/local-models/importCommand.ts:76:    { memoryBytes: parsed.request.memoryLimitBytes, cpus: parsed.cpus },
+src/packages/local-models/quantizationLab.ts:26:  readonly memoryBytes: number
+src/packages/local-models/quantizeCommand.ts:83:    { memoryBytes: parsed.request.memoryLimitBytes, cpus: parsed.cpus },
+src/packages/local-models/resourceAdmission.ts:40:   * (`headroom-ram`); sin medición, nada. El coordinador de modelos la lee
+src/packages/local-models/resourceAdmission.ts:44:    const result = await runCommand(this.admissionBin, ['headroom-ram'])
+src/packages/model-scheduling/hostCoordinator.ts:166:      memoryBytes: resolved.memoryProfile.totalBytes,
+src/packages/model-scheduling/residencyController.ts:49:  readonly ramHeadroom?: RamHeadroom
+src/packages/model-scheduling/residencyController.ts:54: * comprometido sin usar (`resource_admission headroom-ram`). `undefined` si
+src/packages/model-scheduling/residencyController.ts:155:    const room = await this.makeRoom(plan)
+src/packages/model-scheduling/residencyController.ts:166:  private async makeRoom(plan: ExecutionPlan): Promise<string | undefined> {
+src/packages/model-scheduling/residencyController.ts:167:    const { ramHeadroom, registry } = this.dependencies
+src/packages/model-scheduling/residencyController.ts:168:    if (!ramHeadroom || plan.memoryBytes === undefined) return undefined
+## CPU: ¿alguna admisión/reserva por CPU?
+## límites de la unidad de modelo
+src/packages/local-models/hostCoordinatorComposition.ts:66:const UNIT_LIMITS = { cpus: 2, memoryMib: 8_192, pidsLimit: 256 }
+src/packages/local-models/hostCoordinatorComposition.ts:116:    limits: UNIT_LIMITS,
+src/packages/model-scheduling/podmanModelUnitMaterializer.ts:105:  readonly cpus: number
+src/packages/model-scheduling/podmanModelUnitMaterializer.ts:106:  readonly memoryMib: number
+## threads de llama/ollama
+Binary file src/packages/shell/vendor/ripgrep/arm64-linux/rg matches
+Binary file src/packages/shell/vendor/ripgrep/x64-linux/rg matches

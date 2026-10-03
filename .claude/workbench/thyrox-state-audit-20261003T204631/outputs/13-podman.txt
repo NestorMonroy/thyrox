@@ -1,0 +1,41 @@
+== check_podman_access_ownership
+check_podman_access_ownership: 0 acceso(s) a Podman fuera de src/packages/podman-execution/, 0 pendiente(s) vencido(s), 4 pendiente(s) vigente(s) (alcance medido: 4192 archivo(s))
+== check_podman_materialization
+check_podman_materialization: 0 materialización(es) fuera de src/packages/podman-execution/, 0 pendiente(s) vencido(s), 1 pendiente(s) vigente(s) (alcance medido: 4192 archivo(s) productivos)
+== check_execution_authorization
+check_execution_authorization: 0 materialización(es) sin ExecutionAuthorization fuera de src/packages/podman-execution/ (alcance medido: 3763 archivo(s))
+## pendientes declarados
+--- src/verify/podman_access_pending.txt
+# Consumidores que todavía emiten un verbo de Podman fuera de @thyrox/podman-execution.
+# Lista CERRADA: una entrada vale mientras su tarea esté abierta en el store; cerrada,
+# deja de eximir (check_podman_access_ownership.py). Nada nuevo entra aquí sin tarea.
+# ruta	tarea	motivo
+src/lib/podman_capabilities.sh	TASK-THYROX-0746	sondas de capacidades de Podman por mover a la primitiva
+src/session/infrastructure_ensure.sh	TASK-THYROX-0759	preflight (version, info, volume ls) por pedir a observe
+src/session/podman_lock_recovery.sh	TASK-THYROX-0759	recuento de locks y objetos por pedir a observe
+src/packages/local-models/quantizationLab.ts	TASK-THYROX-0759	observación del laboratorio por pedir a observe
+--- src/verify/podman_materialization_pending.txt
+# Sitios que todavía materializan fuera de src/packages/podman-execution/.
+# ruta<TAB>tarea que lo cierra<TAB>razón. Una entrada vale sólo mientras su tarea esté abierta.
+src/lib/podman_capabilities.sh	TASK-THYROX-0746	sondas de capacidades de Podman por mover a la primitiva
+## uso directo de podman run|start|create en bancos/sondas versionados (no medido por los gates)
+23
+      4 .claude/workbench/model-quantization-pipeline-20260930T224613
+      3 .claude/workbench/model-scheduling-implementation-20261001T084219
+      2 .claude/workbench/podman-execution-primitive-20260930T215755
+      2 .claude/workbench/local-models-for-thyrox-work-20260930T231038
+      1 .claude/workbench/task-thyrox-0546-unshare-cgroup-pids-20260930T074813
+      1 .claude/workbench/rlvr-local-models-20261001T002602
+      1 .claude/workbench/postgres-durability-through-primitive-20261002T014441
+      1 .claude/workbench/ollama-podman-measure-20260930T185844
+## ¿podman (exec|logs|stats|inspect) directo en producto?
+src/lib/infrastructure.sh:18:# explicitamente con `podman exec` o `podman healthcheck run` — no corre
+src/lib/infrastructure.sh:318:# contenedor (via `podman exec <nombre> <estas palabras>`, o registrado como
+src/lib/infrastructure.sh:458:# @exitcode 0 `podman inspect` respondio.
+src/lib/infrastructure.sh:460:# @exitcode >0 el que devuelva `podman inspect` (p. ej. contenedor inexistente).
+src/lib/podman_capabilities.sh:53:#                       SIN que aparezca en `podman inspect`
+src/lib/podman_capabilities.sh:769:# valor aparece en `podman inspect`? `efectivo` solo si el candidato
+src/lib/podman_locks.sh:80:    inspect_out="$("$podman" inspect --format '{{.State.Status}}\t{{.State.Pid}}' "$name" 2>/dev/null)" || continue
+src/packages/artifact-registry/jobEgress.ts:10: * El valor viaja como `--env` y queda en `podman inspect`, así que una URL
+src/packages/artifact-registry/jobEgress.ts:48:  if (url.username || url.password) throw new JobEgressError('la URL del proxy lleva credencial y quedaría en po
+src/packages/model-artifacts/modelName.ts:38: * Ollama 0.35.0 (`podman exec thyrox-ollama ollama cp …`, 2026-09-30): 80

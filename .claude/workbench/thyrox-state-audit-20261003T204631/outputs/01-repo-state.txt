@@ -1,0 +1,37 @@
+## capturado 2026-10-03T20:46:39Z
+rama: feature/fresh-clone-bootstrap
+HEAD local: ff1d8feaa3213cd667187afa3500476844bafe8f
+HEAD remoto: ff1d8feaa3213cd667187afa3500476844bafe8f
+## git status --short
+?? .claude/workbench/thyrox-state-audit-20261003T204631/
+?? oom
+## worktrees
+/home/user/thyrox                                        ff1d8feaa [feature/fresh-clone-bootstrap]
+/home/user/thyrox/.thyrox/pool-worktrees/276193a40e30/1  2d156aa0e (detached HEAD)
+## oom
+-rw-r--r-- 1 root root 0 Oct  3 11:05 oom
+9a8180c1e Remove an empty stray file committed by mistake
+(sin historia = nunca versionado)
+## procesos thyrox vivos (pgrep con clase de corchetes)
+521 /bin/bash -c source /root/.claude/shell-snapshots/snapshot-bash-1791060390917-632zyw.sh 2>/dev/null || true && export BUN_OPTIONS="--smol${BUN_OPTIONS:+ $BU
+## jobs en ledger
+a6-qwen-hf-r3  [SIN-RECOGER]  /home/user/thyrox/.claude/jobs/a6-qwen-hf-r3-20261003T111610/outputs/salida.log
+a6-qwen-hf-r4  [SIN-RECOGER]  /home/user/thyrox/.claude/jobs/a6-qwen-hf-r4-20261003T112712/outputs/salida.log
+## .claude/jobs (últimos)
+model-coordinator-20261003T191153
+model-coordinator-20261003T190432
+model-coordinator-20261003T190238
+model-coordinator-20261003T185728
+write-route-20261003T183202
+task-0919-qwen-r6-20261003T175326
+heredoc-route-20261003T174223
+task-0919-qwen-r5-20261003T170700
+total: 2440
+## runtime no versionado (.thyrox)
+models
+pool-worktrees
+runtime
+2.4G	.thyrox/models
+2.4G	.thyrox/pool-worktrees
+2.4G	.thyrox/runtime
+CORRECCIÓN del auditor: la línea «(sin historia = nunca versionado)» es falsa — git log muestra 9a8180c1e «Remove an empty stray file committed by mistake»: oom se versionó una vez por error y se retiró; el archivo actual (11:05, vacío) es una recreación sin versionar.

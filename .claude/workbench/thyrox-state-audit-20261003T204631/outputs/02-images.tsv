@@ -1,0 +1,23 @@
+localhost/thyrox-model-quantizer:candidate-2027edfaf1a2	1220MiB	permanent	TASK-THYROX-0912	2026-10-03T10:16:07
+<sin tag>	1220MiB	-	-	2026-10-03T10:16:07
+<sin tag>	1220MiB	-	-	2026-10-03T10:16:07
+<sin tag>	1220MiB	-	-	2026-10-03T10:16:07
+<sin tag>	1220MiB	-	-	2026-10-03T10:16:07
+<sin tag>	1220MiB	-	-	2026-10-03T10:16:07
+<sin tag>	1220MiB	-	-	2026-10-03T10:15:47
+<sin tag>	158MiB	-	-	2026-10-03T10:15:04
+<sin tag>	160MiB	-	-	2026-10-03T10:15:04
+<sin tag>	159MiB	-	-	2026-10-03T10:15:04
+<sin tag>	158MiB	-	-	2026-10-03T10:15:04
+<sin tag>	138MiB	-	-	2026-10-03T10:15:03
+<sin tag>	126MiB	-	-	2026-10-03T10:15:03
+<sin tag>	126MiB	-	-	2026-10-03T10:15:03
+<sin tag>	126MiB	-	-	2026-10-03T10:15:02
+<sin tag>	76MiB	-	-	2026-10-03T10:14:50
+<sin tag>	2820MiB	-	-	2026-10-03T10:14:47
+<sin tag>	368MiB	permanent	TASK-THYROX-0724	2026-10-02T02:21:31
+<sin tag>	2820MiB	-	-	2026-09-30T04:49:29
+docker.io/ollama/ollama:0.35.0	5258MiB	-	-	2026-09-29T01:43:16
+docker.io/library/redis:7.4	110MiB	-	-	2026-09-19T00:38:19
+docker.io/library/ubuntu:24.04	76MiB	-	-	2026-09-18T21:20:38
+docker.io/pgvector/pgvector:0.8.0-pg16	426MiB	-	-	2025-08-15T18:23:37

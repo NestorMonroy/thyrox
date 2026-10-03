@@ -1,0 +1,113 @@
+## paquete shared-state
+ls: cannot access 'src/packages/shared-state/src': No such file or directory
+src/packages/shared-state:
+__tests__
+bunfig.toml
+consistency.ts
+contract.ts
+dist
+factory.ts
+memory.ts
+package.json
+port.ts
+redis.ts
+tsconfig.build.json
+tsconfig.test.json
+## adaptadores y factoría
+src/packages/shared-state/consistency.ts:24: * `multi`, sin `THYROX_REDIS_URL` declarada, o con redis caído en el instante
+src/packages/shared-state/factory.ts:4: * El modo se DECLARA con `THYROX_PROXY_MODE` (`single` por omisión, o
+src/packages/shared-state/factory.ts:5: * `multi`); la URL de `THYROX_REDIS_URL` sólo dice dónde está redis y no
+src/packages/shared-state/factory.ts:10: * exige vista GLOBAL (`forConsistency('requiresGlobalConsistency')`) nunca
+src/packages/shared-state/factory.ts:22:export const REDIS_URL_ENV = 'THYROX_REDIS_URL'
+src/packages/shared-state/factory.ts:23:export const PROXY_MODE_ENV = 'THYROX_PROXY_MODE'
+src/packages/shared-state/factory.ts:30:/** `THYROX_PROXY_MODE` trae un valor que no es `single` ni `multi`. */
+src/packages/shared-state/factory.ts:64:  /** El modo declarado por `THYROX_PROXY_MODE` (`single` por omisión). */
+src/packages/shared-state/factory.ts:67:  forConsistency: (consistency: ConsistencyClass) => SharedStateStore
+src/packages/shared-state/factory.ts:72:export function openSharedStateStore(options: OpenSharedStateOptions = {}): OpenedSharedState {
+src/packages/shared-state/factory.ts:98:    return { backend: 'memory', degraded: () => false, mode, forConsistency: () => memoryStore, close }
+src/packages/shared-state/factory.ts:151:      forConsistency: () => sharedStore,
+src/packages/shared-state/factory.ts:183:  function forConsistency(consistency: ConsistencyClass): SharedStateStore {
+src/packages/shared-state/factory.ts:194:  return { backend: 'redis', degraded: () => degraded, mode, forConsistency, close }
+src/packages/shared-state/memory.ts:38:export function createMemorySharedStateStore(options: MemorySharedStateStoreOptions = {}): SharedStateStore {
+src/packages/shared-state/port.ts:11: * (`THYROX_REDIS_URL`). Los dos pasan la misma suite de contrato
+src/packages/shared-state/port.ts:15: * Con varias instancias (`THYROX_PROXY_MODE=multi`), un `SharedStateStore`
+src/packages/shared-state/port.ts:20: * `forConsistency(cls)`, no este puerto: la interfaz de abajo describe un
+src/packages/shared-state/redis.ts:42:export function createRedisSharedStateStore(
+## consumidores FUERA del paquete (imports de @thyrox/shared-state)
+src/packages/local-models/__tests__/quantizationRun.test.ts
+src/packages/local-models/importCommand.ts
+src/packages/local-models/package.json
+src/packages/local-models/quantizeCommand.ts
+src/packages/local-models/runLease.ts
+src/packages/mitm/__tests__/sharedStateBoundary.test.ts
+src/packages/model-scheduling/__tests__/redisCoordination.test.ts
+src/packages/model-scheduling/package.json
+src/packages/provider/package.json
+src/packages/provider/src/accounts/refresh/__tests__/tokenRefreshSharedLease.test.ts
+src/packages/provider/src/accounts/refresh/tokenRefresh.ts
+src/packages/provider/src/proxy/__tests__/connectionRefresh.test.ts
+src/packages/provider/src/proxy/__tests__/startServerSharedState.test.ts
+src/packages/provider/src/proxy/connectionRefresh.ts
+src/packages/provider/src/proxy/resilience/__tests__/credentialCooldownShared.test.ts
+src/packages/provider/src/proxy/resilience/__tests__/rateLimitManagerSharedWindow.test.ts
+src/packages/provider/src/proxy/resilience/credentialCooldown.ts
+src/packages/provider/src/proxy/resilience/rateLimitManager.ts
+src/packages/provider/src/proxy/startServer.ts
+src/packaging/reachability-matrix.tsv
+## lecturas de THYROX_REDIS_URL fuera del paquete
+src/packages/cli/__tests__/fixtures/startupActivation/eagerRedisConnection.ts:1:// Control de anulación: una inicialización ansiosa que abre una conexión TCP a THYROX_
+src/packages/cli/__tests__/fixtures/startupActivation/eagerRedisConnection.ts:2:const redisUrl = new URL(process.env.THYROX_REDIS_URL ?? '')
+src/packages/cli/__tests__/startupActivation.test.ts:90:    THYROX_REDIS_URL: `redis://127.0.0.1:${port}`,
+src/packages/local-models/__tests__/commandInfrastructureReadiness.test.ts:27:    env: { THYROX_REDIS_URL: 'redis://127.0.0.1:1' },
+src/packages/local-models/runLease.ts:30:    super(`sin exclusión global para la ejecución: ${reason}; levanta Redis con bin/infrastructure_ensure thyrox-redis y declar
+src/packages/model-scheduling/__tests__/coordinationTopology.test.ts:16:  test('no se deduce de THYROX_PROXY_MODE ni de THYROX_REDIS_URL', () => {
+src/packages/model-scheduling/__tests__/coordinationTopology.test.ts:17:    expect(coordinationTopologyOf({ THYROX_PROXY_MODE: 'multi', THYROX_REDIS_URL: 'redis://127.0.0
+src/packages/model-scheduling/__tests__/coordinationTopology.test.ts:34:  test('shared sin THYROX_REDIS_URL rehúsa al abrir', () => {
+src/packages/model-scheduling/__tests__/coordinationTopology.test.ts:39:    const coordination = openModelSchedulingCoordination({ THYROX_MODEL_SCHEDULING_COORDINATION: '
+src/packages/model-scheduling/coordinationFactory.ts:10:export const REDIS_URL_ENV = 'THYROX_REDIS_URL'
+## .env / entorno
+1
+entorno: ausente
+## declaración de infraestructura de redis
+src/packages/infrastructure/__tests__/infrastructureBootstrap.test.ts:38:function redis(): InfrastructureDeclaration {
+src/packages/infrastructure/__tests__/infrastructureBootstrap.test.ts:41:    name: 'thyrox-redis',
+src/packages/infrastructure/__tests__/infrastructureBootstrap.test.ts:42:    image: 'docker.io/library/redis:7.4',
+src/packages/infrastructure/__tests__/infrastructureBootstrap.test.ts:47:    command: ['redis-server', '--save', '', '--appendonly', 'no'],
+src/packages/infrastructure/__tests__/infrastructureBootstrap.test.ts:48:    labels: { 'io.thyrox.role': 'infrastructure', 'io.thyrox.service': 'redis' },
+src/packages/infrastructure/__tests__/infrastructureBootstrap.test.ts:49:    health: { command: ['redis-cli', 'ping'], timeoutSeconds: 2, intervalSeconds: 1 },
+src/packages/infrastructure/__tests__/infrastructureBootstrap.test.ts:72:    host.healthyContainers.add('thyrox-redis')
+src/packages/infrastructure/__tests__/infrastructureBootstrap.test.ts:73:    const report = await bootstrapInfrastructure(deps(), [postgres(), redis()], ENVIRONMENT, 4242)
+src/packages/infrastructure/__tests__/infrastructureBootstrap.test.ts:81:      'thyrox-redis action=created drift=- created=yes started=yes health=healthy provision=not-declared volumes=-',
+src/packages/infrastructure/__tests__/infrastructureBootstrap.test.ts:123:    const lockFailing = { ...redis() }
+src/packages/infrastructure/__tests__/infrastructureBootstrap.test.ts:134:    const parsed = parseInfrastructureDeclarations(JSON.stringify([postgres(), redis()]))
+src/packages/infrastructure/__tests__/infrastructureBootstrap.test.ts:135:    expect(parsed.map(declaration => declaration.name)).toEqual(['thyrox-postgres', 'thyrox-redis'])
+src/packages/infrastructure/package.json:6:  "description": "InfrastructureBootstrap (ADR-007 1.15.0): dueño de la infraestructura gestionada —PostgreSQL, Redis, Ollama—; declara su estado desead
+## commits
+6336b054a Converge the full default with PostgreSQL and a sentinel
+0a326fa4f Recover the real post-reboot state through the new entry
+b5ffc1ab6 Record podman state after the VM restart
+d4f8fc18d Classify runtime images by ownership and distribution
+4294a62a9 Measure what install.sh needs to leave a clone ready
+e18759949 Apply the granted context to the local model runtime
+bba2ee933 Record W1 blockers and lab image ownership
+a5e1bdb30 Remove the podman create composers from the library
+07db1d8bf Declare managed infrastructure as desired resources
+d4616cc97 Sweep orphan model units before serving, red half
+e22633600 Implement scheduling coordination, ledger and scheduler
+48bcd6316 Contract the model scheduler and its red tests
+
+## Lectura (auditor)
+- Código: `@thyrox/shared-state` (port.ts, memory.ts, redis.ts, factory.ts, consistency.ts).
+- Pruebas contra Redis REAL: factory.redis.test.ts, redis.test.ts, redisCoordination.test.ts levantan un
+  `redis-server` del toolchain (redisServerFromToolchain.ts) — no el contenedor gestionado `thyrox-redis`.
+- Consumidores de producción: proxy (`startServer.ts:259` → RateLimitManager, credentialCooldown,
+  connectionRefresh, tokenRefresh lease), coordinación del scheduler (`coordinationFactory.ts:20`),
+  `local-models/runLease.ts` (exige backend redis o rehúsa).
+- Selección de backend: `openSharedStateStore` lee `config.env`/`process.env`. Sin THYROX_REDIS_URL en el
+  entorno del proceso → memoria. `.env` declara THYROX_REDIS_URL, el entorno de esta sesión no; el proxy
+  lee `env: process.env` (localProxy.ts), no `envValue`, así que el `.env` no le llega por esta vía.
+- Scheduler: topología sólo de THYROX_MODEL_SCHEDULING_COORDINATION; no declarada (ni .env ni entorno) →
+  `local` → memoria.
+- Infraestructura: `thyrox-redis` declarado `redis-server --save '' --appendonly no` (sin persistencia por
+  diseño); volumen anónimo sin etiquetas (07f2690e…, el VOLUME de la imagen). Estado observado tras el
+  reciclado: `created`, pid 0 (no corre).

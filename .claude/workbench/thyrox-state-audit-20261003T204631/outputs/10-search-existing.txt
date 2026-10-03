@@ -1,0 +1,40 @@
+## archivos versionados que nombran search_existing / search-existing / SEARCH_EXISTING (fuera de bancos y jobs)
+.claude/rules/search-existing-antes-de-construir.md
+agent-results/agent_store.sqlite3
+tests/verify/test_search_existing_mechanisms.py
+## existe src/verify/search_existing_mechanisms.py?
+ls: cannot access 'src/verify/search_existing_mechanisms.py': No such file or directory
+## existe registro src/verify/mechanisms.tsv / bin/search_existing_mechanisms / bin/check_mechanism_search_evidence?
+ls: cannot access 'src/verify/mechanisms.tsv': No such file or directory
+ls: cannot access 'bin/search_existing_mechanisms': No such file or directory
+ls: cannot access 'bin/check_mechanism_search_evidence': No such file or directory
+## código productivo (src/, bin/) con REUSE|EXTEND|MISSING como decisión
+src/packages/bridge/src/sessionRunner.ts:355:        `[bridge:session] Spawning sessionId=${opts.sessionId} sdkUrl=${opts.sdkUrl} accessToken=${opts.accessToken
+src/packages/cli/__tests__/providersWriteVerbs.test.ts:131:      [['--credential-env', 'MISSING'], 'Environment variable MISSING is empty or unset.'],
+src/packages/config/__tests__/envExpansion.test.ts:37:    const r = expandEnvVarsInString('value=${MISSING:-fallback}')
+src/packages/config/__tests__/envExpansion.test.ts:50:    // second :-, so `${MISSING:-foo:-bar}` returned just 'foo'. Fixed by
+src/packages/config/__tests__/envExpansion.test.ts:53:    const r = expandEnvVarsInString('${MISSING:-foo:-bar}')
+src/packages/config/__tests__/envExpansion.test.ts:75:    const r = expandEnvVarsInString('a${MISSING:-}b')
+src/packages/config/plugin/pluginLoader.ts:2342:          // entry.version / installedVersion), REUSE it. The post-clone
+src/packages/provider/src/__tests__/isBilledAsExtraUsage.behavior.test.ts:61:    // option wasn't GA at that point. Pin the exclusion by what's MISSING.
+src/packages/provider/src/__tests__/saveApiKeyKeychain.behavior.test.ts:57:    // Pin: this guard was MISSING. Critical for /login correctness.
+src/packages/storage/src/sessionPaths.ts:131: * MISSING (gh-30217).
+## fase SEARCH_EXISTING en worker/pool/continuation
+src/packages/agent/commands/security-review.ts:94:Phase 1 - Repository Context Research (Use file search tools):
+## hooks/gates que exijan la búsqueda
+## commits que la nombran
+befeb912d Disable llama-server's RAM prompt cache in model units
+c9a365b4c Persist the red half of the first local-worker task
+bf95944de Admit the installed Hugging Face Qwen3-4B in the policy
+3252e2714 Replan P0 as local control plane ready
+e49adfe90 Search existing mechanisms for an upstream image mirror cache
+32a6e93a7 Search existing session restart and Podman recovery mechanisms
+ff3d99705 Analyse OCI and local-model identity before the rename
+2c0cb9f29 Record the store-loop Search Existing matrix
+a707c6e5c Merge feature/fresh-clone-bootstrap into feature/complete-orm-root
+1723a2a26 Search existing worktree retirement before acting
+cc237e78f Record the admission proof and the math specialist search
+f3eb95e06 Classify container images through T005 and plan their preservation
+124c945bd Map the fresh-clone flow onto its existing authorities
+942af68cc Block the agent identity on a fresh clone
+d8ac07be2 Close the Search Existing reclassification with ownership

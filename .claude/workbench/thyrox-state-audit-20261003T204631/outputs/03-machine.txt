@@ -1,0 +1,61 @@
+## memoria (/proc/meminfo)
+MemTotal:       16480972 kB
+MemAvailable:   15840544 kB
+SwapTotal:             0 kB
+## resource_admission headroom-ram (kB, con piso)
+11560144
+exit=0
+## piso RAM declarado: <sin declarar: default del código>
+74:DEFAULT_RAM_FLOOR_MB = 2048
+## CPU
+4
+4
+model name	: Intel(R) Xeon(R) Processor @ 2.10GHz
+## cgroup
+9:name=systemd:/
+8:pids:/
+7:blkio:/
+6:freezer:/
+5:devices:/
+4:memory:/process_api/01a10384-5510-70fc-a480-0833660bf7c7/claude-code-bash
+3:cpuset:/
+2:cpuacct:/
+1:cpu:/
+0::/
+/sys/fs/cgroup/cpu.max: ausente
+/sys/fs/cgroup/memory.max: ausente
+/sys/fs/cgroup/pids.max: ausente
+## disco
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/vda        252G   35G  4.0G  90% /
+/dev/vda        252G   35G  4.0G  90% /
+/dev/vda        252G   35G  4.0G  90% /
+capacidad         251.97 GiB
+disponible        4039.71 MiB   ← lo que «df» llama Avail
+reserved           213.66 GiB   (84.8% de la capacidad)
+options          rw,relatime,discard,resv_strict,resuid=65534,resgid=65534
+CAP_SYS_RESOURCE  AUSENTE
+borrado y abierto 0.00 MiB   (espacio que no vuelve hasta cerrar el descriptor)
+VEREDICTO         RESERVA_INALCANZABLE
+  el montaje declara resv_strict, que cierra la reserva incluso a root.
+## hardware-inventory
+virtio	virtio8	vmw_vsock_virtio_transport	0x0013
+virtio	virtio9	virtio_rng	0x0004
+context	cmdline	mitigations=auto,no_guest_host,no_guest_guest deferred_init=lazy dhash_entries=131072 ihash_entries=65536 console=ttyS0 reboot=k panic=1 nomodule random.trust_cpu=1 ipv6.disable=1 swiotlb=noforce psi=1 rdinit=/process_api -- --firecracker-init --addr 0.0.0.0:2024 --max-ws-buffer-size 32768 --block-local-connections --listen-vsock-port 2024 --log-vsock-port 5002
+context	kernel	6.18.44-fc-v64
+context	virt	docker
+context	lspci	ausente
+signal	pci_nvidia	absent	-
+signal	pci_display	absent	-
+signal	dev_nvidia	absent	-
+signal	dev_dri	absent	-
+signal	proc_driver_nvidia	absent	-
+signal	libcuda	absent	-
+signal	libnvml	absent	-
+signal	nvidia_smi	absent	-
+verdict	none	missing=pci_nvidia dev_nvidia proc_driver_nvidia libcuda nvidia_smi 
+## virt
+/dev/vda
+/dev/vdb
+/dev/vdc
+6.18.44-fc-v64

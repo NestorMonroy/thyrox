@@ -1,0 +1,4 @@
+thyrox-ollama	running	32208	docker.io/ollama/ollama:0.35.0	infrastructure	infrastructure-bootstrap	31871	thyrox-ollama-models	2026-10-03T09:56:15
+thyrox-postgres	running	13996	docker.io/pgvector/pgvector:0.8.0-pg16	infrastructure	infrastructure-bootstrap	13681	thyrox-postgres-data	2026-10-03T10:04:32
+thyrox-redis	running	3908	docker.io/library/redis:7.4	infrastructure	infrastructure-bootstrap	3742	07f2690e2a52340896c8d9f8e6e54b3d334fa168397a2e4e396a78b192b286e4	2026-10-03T10:17:14
+thyrox-worker-unit-8d5fdd55-c82d-4612-be62-674176b88023	running	26321	docker.io/ollama/ollama:0.35.0	model-coordinator	model-coordinator.vm	20390		2026-10-03T19:12:49

@@ -1,0 +1,171 @@
+## commit cc237e78f
+cc237e78f 2026-10-03 Record the admission proof and the math specialist search
+The declared build route refused a real quantizer build before Podman
+when free disk (2462 MiB) was below its declared 3 GiB peak.
+
+Search Existing for TASK-THYROX-0911 against the local math specialist
+plan: the first candidates ship published Q4_K_M GGUFs, so the import
+route (externalArtifact) replaces quantizing; qualification records and
+the coordinator route are reusable; the capability axis waits on A7's
+RouteRequirement; and local-models import and ensure have no declared
+control-plane route under the execution policy.
+
+
+ .../README.md                                      |  16 +
+ .../manifest.jsonl                                 |   2 +
+ .../outputs/pid                                    |   1 +
+ .../outputs/salida.log                             |   4 +
+ .../outputs/salida.log.time                        |   1 +
+ .../README.md                                      |  53 ++
+ .../inputs/especialista-matematico-local-1.0.0.md  | 654 +++++++++++++++++++++
+ .../README.md                                      |  21 +
+ .../inputs/adr-007-read-for-search-existing.rst    | 557 ++++++++++++++++++
+ .../outputs/admission-refusal-real.log             |   4 +
+ agent-results/agent_store.sqlite3                  | Bin 13918208 -> 13918208 bytes
+ 11 files changed, 1313 insertions(+)
+## código con mathematical|math-reasoning|specialist|capabilit (src, bin; sin node_modules)
+src/agents/definitions/agentic-reasoning.md:25:Especialista en calibración epistémica de artefactos metodológicos. Detecta la diferencia entre afirmar calidad y demost
+src/agents/definitions/agentic-validator.md:15:Especialista en detección de anti-patrones en código Python agentic. Valida archivos contra el catálogo AP-01..AP-30, pr
+src/agents/definitions/deep-dive.md:23:Especialista en disección adversarial de cualquier artefacto — documentos, código, arquitecturas, decisiones, problemas, framew
+src/agents/definitions/diagrama-ishikawa.md:3:description: "Especialista en análisis de causa raíz con diagramas de Ishikawa (espina de pescado / causa-efecto). Usar cu
+src/agents/definitions/diagrama-ishikawa.md:22:Eres un especialista en análisis de causa raíz (RCA) usando la metodología de Ishikawa (diagrama de espina de pescado / 
+src/agents/definitions/pattern-harvester.md:15:Especialista en extraer patrones accionables de corpus de análisis — convierte archivos de calibración y deep-dive en h
+src/agents/definitions/task-synthesizer.md:15:Especialista en consolidar múltiples outputs de análisis en un task-plan coherente, deduplicado y listo para ejecutar. No 
+src/packages/output/src/__tests__/fpsTracker.test.ts:12: * mathematical relationships (e.g. low1PctFps ≤ averageFps), not
+src/packages/shell/src/bash/__tests__/unicodeDashes.test.ts:50:  // U+2212 (mathematical minus) is intentionally NOT in the dash set —
+src/packages/tool-registry/src/tools/AgentTool/built-in/exploreAgent.ts:25:  return `You are a file search specialist for ${PRODUCT_NAME}, Anthropic's official CLI for ${
+src/packages/tool-registry/src/tools/AgentTool/built-in/planAgent.ts:22:  return `You are a software architect and planning specialist for ${PRODUCT_NAME}. Your role is t
+src/packages/tool-registry/src/tools/AgentTool/built-in/verificationAgent.ts:10:const VERIFICATION_SYSTEM_PROMPT = `You are a verification specialist. Your job is not to 
+src/packages/tools/src/definitions/agenticReasoning.prompt.md:14:Especialista en calibración epistémica de artefactos metodológicos. Detecta la diferencia entre afirma
+src/packages/tools/src/definitions/agenticValidator.prompt.md:4:Especialista en detección de anti-patrones en código Python agentic. Valida archivos contra el catálogo
+src/packages/tools/src/definitions/deepDive.prompt.md:12:Especialista en disección adversarial de cualquier artefacto — documentos, código, arquitecturas, decisiones,
+src/packages/tools/src/definitions/diagramaIshikawa.prompt.md:10:Eres un especialista en análisis de causa raíz (RCA) usando la metodología de Ishikawa (diagrama de es
+src/packages/tools/src/definitions/diagramaIshikawa.ts:24:    'Especialista en análisis de causa raíz con diagramas de Ishikawa ' +
+src/packages/tools/src/definitions/patternHarvester.prompt.md:4:Especialista en extraer patrones accionables de corpus de análisis — convierte archivos de calibración
+src/packages/tools/src/definitions/taskSynthesizer.prompt.md:4:Especialista en consolidar múltiples outputs de análisis en un task-plan coherente, deduplicado y listo p
+## TaskKind / task classes
+src/packages/agent/bin/recommend.ts:50:  type TaskKind,
+src/packages/daemon/src/__tests__/classifierState.test.ts:2:import { TASK_KINDS, type TaskKind } from '../classifier/state.js'
+src/packages/daemon/src/classifier/state.ts:20:export const TASK_KINDS = [
+src/packages/daemon/src/classifier/state.ts:26:export type TaskKind = (typeof TASK_KINDS)[number]
+src/packages/provider/src/cost/policy.ts:163:export const TASK_KINDS = ['mecanica', 'analisis', 'adversarial', 'frontera'] as const
+src/packages/provider/src/cost/policy.ts:164:export type TaskKind = (typeof TASK_KINDS)[number]
+## capabilities del catálogo de modelos
+src/packages/model-artifacts/__tests__/modelCatalog.test.ts:41:    capabilities: ['completion', 'tools'],
+src/packages/model-artifacts/__tests__/modelCatalog.test.ts:179:    const twice = once.with({ ...VALID, capabilities: [...VALID.capabilities] })
+src/packages/model-artifacts/__tests__/modelCatalog.test.ts:289:      capabilities: ['completion', 'tools'] as const,
+src/packages/model-artifacts/__tests__/modelQualification.test.ts:38:    capabilities: ['completion', 'tools'],
+src/packages/model-artifacts/__tests__/modelQualification.test.ts:176:  const EMBEDDER: ModelCatalogEntry = { ...entry('nomic-ai/nomic-embed-text-v1.5-GGUF', 'd'.repeat(4
+src/packages/model-artifacts/__tests__/modelQualification.test.ts:201:    const api = { name: 'api:openai-compat:text-embedding-3-small', route: 'api', capabilities: ['em
+src/packages/model-artifacts/__tests__/modelResolver.test.ts:3:import type { ModelCapability, ModelCatalogEntry } from '../catalogEntry.js'
+src/packages/model-artifacts/__tests__/modelResolver.test.ts:32:  readonly capabilities?: readonly ModelCapability[]
+src/packages/model-artifacts/__tests__/modelResolver.test.ts:51:    capabilities: parts.capabilities ?? ['completion', 'tools'],
+src/packages/model-artifacts/__tests__/modelResolver.test.ts:138:    const embedder = entry({ quantization: 'f16', capabilities: ['embeddings'] })
+src/packages/model-artifacts/__tests__/resolvedModelArtifact.test.ts:47:    capabilities: ['completion'],
+src/packages/model-artifacts/catalogEntry.ts:25:export type ModelCapability = 'completion' | 'tools' | 'embeddings'
+src/packages/model-artifacts/catalogEntry.ts:51:  readonly capabilities: readonly ModelCapability[]
+src/packages/model-artifacts/modelCatalog.ts:15:import type { ArtifactFormat, CatalogArtifact, ModelCapability, ModelCatalogEntry } from './catalogEntry.js'
+src/packages/model-artifacts/modelCatalog.ts:59:  readonly capabilities: readonly ModelCapability[]
+## RouteRequirement
+## banco del plan matemático
+--- .claude/jobs/build-quantizer-admit-0912-20261003T020650/README.md
+# build-quantizer-admit-0912
+
+## Qué se lanzó
+
+```
+bin/image-registry-build-declared-image --task TASK-THYROX-0912 thyrox-model-quantizer
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*
+--- .claude/workbench/math-specialist-search-existing-20261003T020646/README.md
+# math-specialist-search-existing
+
+## El encargo
+
+Reconciliar el trabajo de imágenes con `Especialista matemático local - 1.0.0`
+(`inputs/`): Search Existing repo-wide antes de declarar, materializar o
+cualificar un especialista. Dueño: **TASK-THYROX-0911** (existe, pendiente;
+su descripción todavía nombra `qwen2-math`).
+
+## La premisa, corregida
+
+- TASK-THYROX-0912 es infraestructura, no avance del especialista.
+- El documento refinó el orden: **OpenReasoning-Nemotron-1.5B** →
+  **OpenMath-Nemotron-1.5B** → **DeepScaleR-1.5B**, Q4_K_M; `qwen3-4b`
+  sigue de generalista y línea base. `qwen2-math` deja de ser el primero.
+- Los tres publican GGUF Q4_K_M: **no hace falta cuantizar** para el primer
+  especialista.
+
+## Matriz (MEASURED salvo marca)
+
+| Pieza | Autoridad encontrada | Decisión |
+|---|---|---|
+| requirement/capability `mathematical-reasoning` | `ModelCapability` (`model-artifacts/catalogEntry.ts:25`) es de runtime: `completion | tools | embeddings`. `ModelQualification` (`modelQualification.ts`) se indexa por `taskClass` ∈ `mecanica | analisis | adversarial | frontera`. `RouteRequirement`: 0 apariciones en código. GEN-0818: «name that capability by responsibility (not taskClass) … after A7 lands RouteRequirement». | **EXTEND** `ModelQualification` con un eje de capacidad; **bloqueado** por A7 (`RouteRequirement`). No crear `taskClass=matematica`. |
+| capability evidence | `ModelQualification` ya registra model, suite, casesPassed/Total, contextTokens, tokensPerSecond, measurementCondition, measuredAt — exactamente los campos del documento | **REUSE** el registro; EXTEND sólo la clave |
+| qualification suite | `local-models/suites/` (`tool-calling@1`, `batch-worker-mecanica-1`); runner `bin/local-models-qualify` | runner **REUSE**; suite `mathematical-reasoning@1` **MISSING** (datos + TDD) |
+| artifact declaration/acquisition | `externalArtifact.ts` (TASK-THYROX-0720): GGUF publicado, sha256 fijado antes de descargar, admisión de disco, validación, catálogo; `huggingFaceSource.ts` por revisión completa; `bin/local-models-import` | **REUSE** — la ruta del primer candidato; sin cuantizador |
+| validación del import | `importCommand.ts:74` corre la validación (y la fusión de shards) en la imagen de laboratorio `DEFAULT_LAB_IMAGE = localhost/thyrox-model-quantizer:dev` | el cuantizador sí es dependencia, **como herramienta de validación**; localmente existe (censo H-THYROX-422, PROVISIONAL); su publicación importa para una instalación nueva, no para el primer especialista aquí |
+| ensure/materialization | `bin/local-models-ensure` + catálogo + Ollama gestionado | **REUSE** |
+| ruta bajo E0 de import/ensure | `importCommand.ts:73` y `bin/ensure.ts:55` usan `createPodmanExecutor()`; ninguno es entrada declarada (0 filas en `control_plane_entries.tsv`) | **MISSING** — en el anfitrión es payload no gestionado, y una unidad no ve Podman: la misma clase de hueco que 0912. Código → **BLOCKED_BY_BOOTSTRAP** |
+| cualificación vía Ollama gestionado | `qualifyCommand.ts` habla con `ModelCoordinatorClient` (socket del coordinador; `model_coordinator` es entrada declarada) | **REUSE** |
+| selección | `recommendExecution(kind: TaskKind…)` (`provider/src/cost/policy.ts:419`) elige el local más rápido aprobado para la **clase**; no hay selector por capacidad | **EXTEND** con el eje de capacidad (TASK-THYROX-0750, GEN-0818) |
+| ExecutionGrant | `hostCoordinator` emite tickets de admisión; `ModelScheduler`/`ExecutionGrant` en TASK-THYROX-0699 **pendiente** | ticket **REUSE**; grant pendiente de 0699 |
+| UNSCHEDULABLE sin cualificado | `recommendExecution` con `policy.fallback.enabled=false` devuelve `runtime: 'blocked'` con la causa | **REUSE** |
+
+## Ruta crítica derivada
+
+1. Ruta declarada para `local-models-import`/`ensure` bajo E0 (excepción
+   estrecha nueva, como 0912) — sin ella no entra ningún modelo.
+2. Import de OpenReasoning-Nemotron-1.5B Q4_K_M por `externalArtifact`
+   (revisión y sha256 fijados) → ensure → Ollama gestionado.
+--- .claude/workbench/publish-quantizer-image-20261003T005015/README.md
+# publish-quantizer-image
+
+## El encargo
+
+Excepción bootstrap estrecha del ejecutor (2026-10-03): el controlador puede
+pedir **una imagen declarada por identidad lógica**, nunca el
+`podman-execution-execute` entero ni el `build-image` genérico. Contexto,
+Containerfile, red, ciclo de vida y etiqueta salen de una definición
+versionada. TASK-THYROX-0912.
+
+## La premisa, si se corrigió al primer comando
+
+- `control_plane_entries.tsv` autoriza ejecutables enteros por basename
+  (H-THYROX-429). Declarar la primitiva abriría `run`, `remove-image` y
+  `reconcile-orphans`.
+- `build-image` solo tampoco basta: el llamador elige `--context` y
+  `--containerfile`, o sea el programa que corre en los RUN.
+
+## Search Existing (T0)
+
+| Pregunta | Respuesta medida |
+|---|---|
+| ¿Representación canónica de una imagen construible? | Parcial: `BuildDefinition` (`image-registry/imageRequirement.ts`) existe como tipo; **ningún catálogo** mapea identidad lógica → definición. Los tags viven sueltos (`build.sh`, `DEFAULT_LAB_IMAGE`, `DEFAULT_EXECUTION_IMAGE`, `TRANSFORMERS_RUNTIME_IMAGE`). |
+| Entrada estrecha existente | Ninguna en `bin/`. Precedente de forma: `infrastructure_ensure` (sólo nombres declarados, rehúsa el resto). |
+| Tarea previa | Ninguna para la frontera; 0747 y 0724 son la imagen y su publicación. |
+| ADR-007 | Sin cláusula de petición de build (leído de `kaupamex-docs`). |
+| Decisión | **EXTEND** la autoridad de `image-registry` con un catálogo; el builder sigue siendo la primitiva. |
+
+## Las piezas
+
+| archivo | qué hace |
+|---|---|
+| `src/packages/image-registry/declaredImages.ts` | catálogo: `thyrox-model-quantizer` → contexto, `permanent`, red `host`, tag `candidate-<commit12>`; rehúsa contexto con cambios sin commitear |
+| `src/packages/image-registry/declaredImageBuildCommand.ts` | la frontera: `--task|--work` + una identidad; todo lo demás, 2 sin tocar Podman |
+| `src/packages/podman-execution/executionCommand.ts` | `buildManagedImage`: la composición existente de `build-image`, exportada |
+| `src/session/control_plane_entries.tsv` | fila `image-registry-build-declared-image` |
+| `tests/session/test-declared-image-build-entry.sh` | política: entrada sí, primitiva no, `thyrox-bg`/hook/entrada rehúsan |
+| `probes/annul_declared_build.sh` | los tres mutantes de anulación |
+
+## Los resultados
+## catálogo local instalado: nombres y capacidades
+thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e	Qwen/Qwen3-4B-GGUF	completion

@@ -1,0 +1,121 @@
+## SemanticSearchStore: declaraciones
+src/packages/semantic-search/config.ts:42:export class SemanticSearchConfigError extends Error {
+src/packages/semantic-search/findingIngestion.ts:23:import type { SemanticSearchStore } from './store.ts'
+src/packages/semantic-search/findingIngestion.ts:71:export async function ingestFindings(store: SemanticSearchStore, recognized: readonly RecognizedDocument[]):
+src/packages/semantic-search/ingestCommand.ts:21:import { openSemanticSearchStore } from './store.ts'
+src/packages/semantic-search/ingestCommand.ts:58:  const store = openSemanticSearchStore({ url, schema: { name: schema } })
+src/packages/semantic-search/store.ts:2: * `SemanticSearchStore` (ADR-THYROX-008 1.6.0): el corpus durable y su
+src/packages/semantic-search/store.ts:88:export type SemanticSearchStore = {
+src/packages/semantic-search/store.ts:153:export function openSemanticSearchStore(options: SemanticSearchStoreOptions, deps: SemanticSearchStoreDeps = {}): Sema
+## paquetes semantic*
+src/packages/semantic-search
+src/packages/storage
+## consumidores fuera de su paquete
+src/packaging/reachability-matrix.tsv
+src/packaging/reachability.ts
+## ingesta
+check-fr-admin-coverage
+check_env_example_coverage
+provider-generate-storage-key
+semantic-search-ingest
+storage
+src/lib/infrastructure.sh:3:# thyrox — PostgreSQL+pgvector, Redis (TASK-THYROX-0607, ADR-THYROX-007
+src/lib/infrastructure.sh:123:THYROX_INFRA_POSTGRES_IMAGE="$(thyrox_infrastructure_setting THYROX_INFRA_POSTGRES_IMAGE 'docker.io/pgvector/pgvector:0.
+src/lib/infrastructure.sh:212:# La imagen crea la base sólo sobre un volumen vacío; pgvector se habilita en
+src/lib/infrastructure.sh:227:     | .provision = [["psql", "-v", "ON_ERROR_STOP=1", "-U", $user, "-d", $db, "-c", "CREATE EXTENSION IF NOT EXISTS vec
+src/lib/toolchain.sh:411:# (`PostgreSQL 16.13 …` -> `16`). El paquete de pgvector depende de ella.
+src/lib/toolchain.sh:421:# @description La version fijada de pgvector (`vector.control` declara
+src/lib/toolchain.sh:428:export THYROX_PGVECTOR_SOURCE_URL="${THYROX_PGVECTOR_SOURCE_URL:-https://github.com/pgvector/pgvector.git}"
+src/lib/toolchain.sh:435:function thyrox_toolchain_pgvector_installed_version() {
+src/lib/toolchain.sh:442:export -f thyrox_toolchain_pgvector_installed_version
+src/lib/toolchain.sh:445:# paquete de Ubuntu de pgvector antes de compilar encima. Declarados para que
+## ¿el worker/agente consulta recuperación semántica?
+## postgres: declaración y estado
+src/lib/infrastructure.sh:76:readonly _INFRASTRUCTURE_POSTGRES_NAME="thyrox-postgres"
+src/lib/infrastructure.sh:95:readonly _INFRASTRUCTURE_POSTGRES_VOLUME="thyrox-postgres-data"
+src/lib/infrastructure.sh:123:THYROX_INFRA_POSTGRES_IMAGE="$(thyrox_infrastructure_setting THYROX_INFRA_POSTGRES_IMAGE 'docker.io/pgvector/pgvector:0.
+src/lib/infrastructure.sh:143:# @stdout `thyrox-postgres`, `thyrox-redis` y `thyrox-ollama`, en ese orden.
+src/lib/infrastructure.sh:177:readonly _INFRASTRUCTURE_POSTGRES_SECRET="thyrox-postgres-password"
+src/lib/infrastructure.sh:277:# @arg $1 string `thyrox-postgres`, `thyrox-redis` o `thyrox-ollama`.
+## commits
+8c5efdf47 Size the KV cache from the declared head dimension
+8352f7f0d Place the kaupamex-ai identity in the semantic corpus model
+ecc4b863a Record the store after the corpus review searches
+81a08987a Review what the semantic corpus already decided
+2ccff624c Decide the semantic corpus schema name
+5204cd170 Inventory the corpus trees for reclaim v2
+d4f8fc18d Classify runtime images by ownership and distribution
+18403df50 Correct the image batch classification after the second review
+b6c70ad82 Map mathematical reasoning onto the qualification authority
+36d6ea6a3 Classify the math specialist against existing authorities
+0761b1ab5 Promote the mecanica task suite; record its timeout
+eb83acb32 Keep the qualification coordinator alive past idle
+9ba67b4d7 Specify the experience ingestor before building it
+f253ae881 Split A8 into ingestion and semantic retrieval
+## métodos del store
+export type SemanticSearchStore = {
+  /** Comprueba pgvector y aplica las migraciones del corpus que falten; devuelve las versiones aplicadas ahora. */
+  migrate(): Promise<number[]>
+  ingestDocument(input: DocumentInput): Promise<IngestResult>
+  /** El documento ingerido con esa identidad, con su versión y hash vigentes; una fila sin mapear nunca se devuelve. */
+  findDocument(identity: DocumentIdentity): Promise<StoredDocument | null>
+  /** Asigna la identidad de dominio a las filas de la migración 2 y converge las que coinciden. */
+  reconcileLegacyIdentities(resolve: LegacyIdentityResolver): Promise<ReconciliationResult>
+  createEmbeddingSpace(declaration: SpaceDeclaration): Promise<EmbeddingSpace>
+  getEmbeddingSpace(spaceId: number): Promise<EmbeddingSpace | null>
+  activeEmbeddingSpace(): Promise<EmbeddingSpace | null>
+  chunksWithoutEmbedding(spaceId: number, limit: number): Promise<PendingChunk[]>
+  putEmbeddings(spaceId: number, embeddings: readonly ChunkEmbedding[]): Promise<void>
+  activateSpace(spaceId: number): Promise<Activation>
+  dropSpace(spaceId: number): Promise<void>
+  /** Candidatos vigentes y visibles del espacio activo por distancia de Hamming de la cuantización binaria. */
+  searchBinaryCandidates(query: readonly number[], limit: number, visibility?: SearchVisibility): Promise<BinaryCandidate[]>
+  /** Los `k` chunks vigentes y visibles más cercanos en el espacio activo; sin espacio activo rehúsa. */
+  searchNearest(query: readonly number[], k: number, options: { candidates: number } & SearchVisibility): Promise<NearestResult[]>
+  recordAnalysisRun(run: AnalysisRunInput): Promise<string>
+  getAnalysisRun(analysisId: string): Promise<AnalysisRun | null>
+  /** La extensión utilizable (versión y esquema), comprobada una vez por store. */
+  vectorExtension(): Promise<UsableVectorExtension>
+  close(): Promise<void>
+}
+## pruebas del paquete y si usan PostgreSQL real
+config.test.ts: postgres://
+contentHash.test.ts: -
+corpus.postgres.test.ts: THYROX_TEST_POSTGRES_URL
+corpusPolicy.test.ts: -
+documentRecognition.test.ts: -
+extension.test.ts: -
+findingIngestion.postgres.test.ts: THYROX_TEST_POSTGRES_URL
+identity.postgres.test.ts: THYROX_TEST_POSTGRES_URL
+ingestCommand.postgres.test.ts: postgres://
+rerank.test.ts: -
+rstDocument.test.ts: -
+storableDocument.test.ts: -
+store.postgres.test.ts: THYROX_TEST_POSTGRES_URL
+visibility.postgres.test.ts: THYROX_TEST_POSTGRES_URL
+## ejecuciones de ingesta registradas (jobs/bancos)
+.claude/workbench/identity-migration-analysis-20261003T072106/outputs/census-word-files.txt
+.claude/workbench/identity-migration-analysis-20261003T072106/outputs/census-env-files.txt
+.claude/workbench/thyrox-state-audit-20261003T204631/outputs/16-postgres-semantic.txt
+.claude/workbench/mechanism-registry-20261002T061646/outputs/T001-retained-worktree-entry-plan.txt
+.claude/workbench/postgres-corpus-disk-reclaim-v2-20261003T023413/outputs/R3-corpus-inventory.json
+## commits de matemáticas: archivos
+b6c70ad82 Map mathematical reasoning onto the qualification authority
+ .../outputs/search-existing-matrix.md              | 32 ++++++++++++++++++++++
+ 1 file changed, 32 insertions(+)
+36d6ea6a3 Classify the math specialist against existing authorities
+ .../README.md                                      | 17 +++++++++++++++
+ .../manifest.jsonl                                 |  1 +
+ .../outputs/search-existing.md                     | 24 ++++++++++++++++++++++
+ 3 files changed, 42 insertions(+)
+## ¿quién llama a putEmbeddings / createEmbeddingSpace fuera de pruebas?
+src/packages/semantic-search/spaces.ts:101:export async function createEmbeddingSpace(sql: SQL, extensionSchema: string, declaration: SpaceDeclaration): Promise
+src/packages/semantic-search/spaces.ts:121:export async function putEmbeddings(sql: SQL, extensionSchema: string, spaceId: number, embeddings: readonly ChunkEmb
+src/packages/semantic-search/spaces.ts:132:export async function activateSpace(sql: SQL, spaceId: number): Promise<Activation> {
+## THYROX_TEST_POSTGRES_URL: de dónde sale
+src/lib/toolchain.sh:596:# (`THYROX_TEST_POSTGRES_URL`): un rol y una base desechables, `thyrox_test`,
+src/lib/toolchain.sh:605:# stdout una sola línea `THYROX_TEST_POSTGRES_URL=…` para el `.env`, que esta
+src/lib/toolchain.sh:615:# @exitcode 0 La base sirve; THYROX_TEST_POSTGRES_URL exportada.
+src/lib/toolchain.sh:618:  local declared="${THYROX_TEST_POSTGRES_URL:-}"
+## inventario del corpus en el banco R3 (último medido)
+{"trees":[".claude/workbench",".claude/build-logs",".claude/cache",".claude/logs",".thyrox"],"chunkCharacters":2000,"totals":{"total_bytes_scanned":8281449525,"semantic_bytes":48896907,"durable_evidence_bytes":826226860,"reconstructible_bytes":7546107,"excluded_secret_bytes":24071727,"excluded_binary_bytes":4216794876,"duplicate_bytes":3155305741,"estimated_documents":46306,"estimated_chunks":469502,"rows_by_class":{"binary_non_indexable":188,"duplicate":34637,"durable_evidence":35690,"execution_state":6155,"reconstructible_cache":317,"secret_sensitive":388,"semantic_content":10616}},"A":[{"pa
