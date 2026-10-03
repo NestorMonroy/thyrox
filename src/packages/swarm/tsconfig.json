@@ -20,7 +20,7 @@
     "src/mailbox/index.ts",
     "src/core/teamHelpers.ts",
     "../cli/src/types/global.d.ts",
-    "../@ant/ink/src/types/ink-jsx.d.ts",
-    "../@ant/ink/src/types/ink-elements.d.ts"
+    "../ink/src/types/ink-jsx.d.ts",
+    "../ink/src/types/ink-elements.d.ts"
   ]
 }
