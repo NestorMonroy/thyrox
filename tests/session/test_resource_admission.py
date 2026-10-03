@@ -24,6 +24,10 @@ sys.path.insert(0, str(ROOT / "src"))
 from session import gpu_monitor as gm
 from session import resource_admission as ra
 
+# Los casos de RAM miden la holgura sin piso de seguridad; el piso tiene su caso
+# (27). Los subprocesos heredan este entorno.
+os.environ["THYROX_RAM_ADMISSION_FLOOR_MB"] = "0"
+
 OK = FAILED = 0
 
 
@@ -422,6 +426,23 @@ with tempfile.TemporaryDirectory() as headroom_dir:
                      "--meminfo", str(headroom_root / "no-existe"))
     check("sin lectura de lo libre sale 2 y no publica un cero", (2, ""),
           (unmeasured.returncode, unmeasured.stdout.strip()))
+
+print("caso 27 — la RAM tiene un piso que ninguna admisión reparte, como el disco (H-THYROX-448)")
+with tempfile.TemporaryDirectory() as floor_dir:
+    floor_root = Path(floor_dir)
+    floor_meminfo = meminfo(floor_root / "meminfo", 5_000_000)
+    def headroom_with(floor_mb: str) -> str:
+        return subprocess.run([sys.executable, "-m", "session.resource_admission", "headroom-ram",
+                               "--self-cgroup", str(NO_CGROUP), "--ledger", str(floor_root / "ram.json"),
+                               "--meminfo", str(floor_meminfo)],
+                              capture_output=True, text=True, env={**os.environ, "THYROX_RAM_ADMISSION_FLOOR_MB": floor_mb}).stdout.strip()
+    check("sin piso, la holgura es lo libre", "5000000", headroom_with("0"))
+    check("con un piso de 2048 MiB, la holgura lo descuenta", str(5_000_000 - 2048 * 1024), headroom_with("2048"))
+    refused_by_floor = subprocess.run([sys.executable, "-m", "session.resource_admission", "admit-ram", "4000000",
+                                       "--self-cgroup", str(NO_CGROUP), "--ledger", str(floor_root / "ram.json"),
+                                       "--owner", str(os.getpid()), "--meminfo", str(floor_meminfo), "--timeout", "0"],
+                                      capture_output=True, text=True, env={**os.environ, "THYROX_RAM_ADMISSION_FLOOR_MB": "2048"})
+    check("admit-ram decide con el mismo piso: 4 GB no caben en 5 GB con 2 GiB de piso", 3, refused_by_floor.returncode)
 
 print(f"test_resource_admission: {OK} ok, {FAILED} fallos")
 sys.exit(1 if FAILED else 0)

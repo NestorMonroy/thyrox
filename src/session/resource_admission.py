@@ -55,6 +55,7 @@ RAM_LEDGER_VAR = "THYROX_RAM_ADMISSION_LEDGER"
 MEMINFO_VAR = "THYROX_RAM_ADMISSION_MEMINFO"
 DISK_LEDGER_VAR = "THYROX_DISK_ADMISSION_LEDGER"
 DISK_FLOOR_VAR = "THYROX_DISK_ADMISSION_FLOOR_MB"
+RAM_FLOOR_VAR = "THYROX_RAM_ADMISSION_FLOOR_MB"
 DISK_HEADROOM_VAR = "THYROX_DISK_ADMISSION_HEADROOM"
 BYTES_PER_MIB = 1024 * 1024
 BYTES_PER_KB = 1024
@@ -66,6 +67,11 @@ CONTAINER_OWNERS_SUFFIX = ".containers.json"
 #: los worktrees de un pool, y deja margen para que el propio registro y el
 #: `git` de la sesión no mueran con `no space left on device`.
 DEFAULT_DISK_FLOOR_MB = 2048
+#: El piso de RAM que ninguna admisión reparte, el hermano del de disco. Sin él,
+#: el coordinador de modelos desalojaba hasta que la residencia nueva «cabía
+#: justo» y dejaba 1.4 GB para todo lo demás del anfitrión: los ítems del pool,
+#: las suites y el propio coordinador (H-THYROX-448, control real).
+DEFAULT_RAM_FLOOR_MB = 2048
 #: El `disk-headroom` del árbol, hermano de este módulo en `src/repo/`.
 DEFAULT_DISK_HEADROOM = Path(__file__).resolve().parent.parent / "repo" / "disk-headroom.sh"
 #: Dónde vive el almacén de Podman: el `graphroot` medido está en el sistema de
@@ -401,7 +407,12 @@ def ram_headroom(live: dict[str, int], meminfo: Path = Path("/proc/meminfo"),
         used = {int(pid): usage(int(pid)) for pid in live}
     except MembersUnavailable:
         return None
-    return free - pending(live, used, {pid: {pid} for pid in used})
+    return free - pending(live, used, {pid: {pid} for pid in used}) - ram_floor_kb()
+
+
+def ram_floor_kb() -> int:
+    """El piso de seguridad de RAM en kB, declarado en MiB."""
+    return int(os.environ.get(RAM_FLOOR_VAR) or DEFAULT_RAM_FLOOR_MB) * BYTES_PER_MIB // BYTES_PER_KB
 
 
 def bounded_need(need_kb: int, memory_limit_kb: int | None) -> int:

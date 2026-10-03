@@ -34,3 +34,17 @@ Suites: model-scheduling 136/136; model-artifacts 218/218; local-models 259 pass
 (257/5, `local-models-qualify` sólo falla en la corrida completa del paquete; por separado 8/8 en los dos árboles).
 *Ciega a*: la carrera con otros admisores entre medir y cargar; la memoria real del proceso frente a la estimada.
 Pendiente: el control real (un coordinador vivo que desaloje la residencia ociosa al pedir otro contexto).
+
+## Control real 1 (`probes/real_eviction.run1.out`)
+
+Coordinador reiniciado con el código nuevo; tres admisiones soltadas al momento:
+`ctx16384` (holgura 9 969 724 kB) → `ctx24576` (9 981 488 kB) → antes de `ctx32768` 3 777 724 kB: desalojó la ociosa
+más antigua (`ctx16384`) y cargó la nueva. Final: unidades `ctx24576,ctx32768`, **holgura 1 406 732 kB**.
+El desalojo funciona; pero «cabe justo» deja 1.4 GB para el resto del anfitrión. Cargar `ctx16384` apenas movió
+la holgura (pesos mapeados de archivo, recuperables: hipótesis, no medida).
+
+## Piso de RAM (EXTEND de `resource_admission`, simétrico al de disco)
+
+`THYROX_RAM_ADMISSION_FLOOR_MB` (2048 por defecto) descontado en `ram_headroom`, la fuente única de `admit-ram` y
+`headroom-ram`. Caso 27: RED 2 fallas → GREEN 86/86; anulación: caen exactamente sus 2. Consumidores:
+infrastructure-ensure 54/54, container_measure 21/21; headless-pool 145/146 y parallel-map (2 fallas), **las mismas en HEAD**.

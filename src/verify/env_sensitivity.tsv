@@ -330,6 +330,7 @@ THYROX_COWORK_MEMORY_PATH_OVERRIDE	config	env	revisado 2026-10-02: ruta, umbral,
 THYROX_DEBUG	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
 THYROX_DISABLE_TOKEN_HEALTHCHECK	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
 THYROX_DISK_ADMISSION_FLOOR_MB	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_RAM_ADMISSION_FLOOR_MB	config	env	revisado 2026-10-03: umbral de RAM en MiB; sin valor secreto
 THYROX_DISK_ADMISSION_HEADROOM	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
 THYROX_DISK_ADMISSION_LEDGER	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
 THYROX_ENABLE_PROMPT_CACHING_1H	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
