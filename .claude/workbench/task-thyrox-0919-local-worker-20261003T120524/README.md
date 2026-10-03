@@ -81,3 +81,11 @@ prefijo, «saving prompt with length 13830, total state size = 1945.003 MiB». `
 `libllama-common.so` de la imagen. EXTEND del perfil de Ollama (`OLLAMA_UNIT_ENVIRONMENT` en
 `hostCoordinatorComposition.ts`): `LLAMA_ARG_CACHE_RAM=0`. RED → GREEN 7/7; anulación exacta. Pendiente: el log
 de una unidad nueva que lo confirme.
+
+### Dónde se pierde el cuerpo del heredoc
+
+- Unidad nueva: `llama-server` registra «prompt cache is disabled» (`LLAMA_ARG_CACHE_RAM=0` confirmado en real).
+- `probes/multiline_tool_call.sh` (no-stream): Ollama devuelve `{"command":"cat > /tmp/x.py <<'PY'\nimport sys\nprint(1)\nprint(2)\nPY"}` — saltos de línea intactos.
+- Streaming (`probes/heredoc-short.sse`): los `arguments` llegan completos en un fragmento, y
+  `probes/translate_sse.ts` —nuestra traducción `messagesEventsFromOpenAISse`— los conserva.
+- Falta el caso largo (un programa de ~40 líneas, como en r3): `heredoc-long.sse`.
