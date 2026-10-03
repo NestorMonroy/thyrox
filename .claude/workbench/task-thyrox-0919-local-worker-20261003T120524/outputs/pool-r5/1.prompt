@@ -1,0 +1,46 @@
+Buzón de esta ejecución: el orquestador puede escribirte mientras trabajas. Entre paso y paso, lee tus mensajes con
+`bash "$THYROX_ROOT/bin/inbox" --dir "$THYROX_MAILBOX_DIR" pending --as "$THYROX_POOL_ITEM_ADDRESS"`.
+Aplica lo que llegue y acúsalo con
+`bash "$THYROX_ROOT/bin/inbox" --dir "$THYROX_MAILBOX_DIR" ack --as "$THYROX_POOL_ITEM_ADDRESS" --id <id>`.
+Para una pregunta o un bloqueo, escribe al orquestador con
+`bash "$THYROX_ROOT/bin/inbox" --dir "$THYROX_MAILBOX_DIR" post --from "$THYROX_POOL_ITEM_ADDRESS" --to orchestrator --body "<texto>"`.
+
+You are a Thyrox worker. You run inside your own git worktree of the Thyrox repository; your current directory is its root. You may only use the Bash tool. Each tool call is slow: follow the four turns below in order, and NEVER run a command you have already run.
+
+TASK-THYROX-0919: implement `src/verify/search_existing_mechanisms.py` so that the existing test `tests/verify/test_search_existing_mechanisms.py` passes. Do not modify the test.
+
+Turn 1 — Search Existing. Run exactly this one command, once:
+
+    rg -l -e search_existing -e mechanisms.tsv src bin tests; sed -n '1,60p' tests/verify/test_search_existing_mechanisms.py
+
+Turn 2 — Classify, as plain text, without any tool call. Print exactly this block, filled in from Turn 1:
+
+    SEARCH-EXISTING
+    capability: answer FOUND/RELATED/NONE for a mechanism query over a TSV registry
+    existing authority: <path, or none>
+    consumers: <paths, or none>
+    tests: tests/verify/test_search_existing_mechanisms.py
+    decision: REUSE | EXTEND | MISSING
+    reason: <one line>
+
+Turn 3 — Implement, with ONE Bash call. Its first line is exactly `cat > src/verify/search_existing_mechanisms.py <<'PY'` with nothing after `<<'PY'`, then the whole program, then `PY` alone on the last line. Contract:
+
+- usage: `search_existing_mechanisms.py --registry PATH QUERY...`
+- the registry is a TSV; lines starting with `#` are comments; the first non-comment line is the header `id concept authority symbol public_entry tests consumers keywords`.
+- rule 1: the whole query (words joined by one space) equals the `id` or the `concept`, ignoring case → `FOUND <id>`.
+- rule 2: else, every query word (lower case) appears among the words of `keywords`, `concept` or `id` (split `id` on `-` too) → `FOUND <id>`.
+- rule 3: else, some query word appears among the words of `keywords`, or inside `authority`, `symbol` or `public_entry` → `RELATED <id>`.
+- rule 4: no row matched → print `NONE`, exit 1.
+- after each `FOUND`/`RELATED` line print five lines: `  authority: …`, `  symbol: …`, `  entry: …`, `  tests: …`, `  consumers: …`.
+- print every FOUND before any RELATED. Exit 0 when something matched.
+- if the registry cannot be read, write the reason to stderr and exit 2 without printing NONE.
+- never print the words REUSE, EXTEND or MISSING.
+- identifiers in English; comments and docstrings in Spanish; standard library only.
+
+Turn 4 — Test, with this one command:
+
+    python3 tests/verify/test_search_existing_mechanisms.py
+
+If it fails, read the failure and repeat Turn 3 with the corrected whole program, then Turn 4 again. Stop when all 8 tests pass. Do not commit; the pool collects your worktree.
+
+Item: TASK-THYROX-0919

@@ -100,3 +100,11 @@ alternancia: no encontraban nada), nunca imprimió el bloque y terminó describi
 es la varianza de un 4B sin razonamiento ante un prompt con margen. `prompt.md` v3: cuatro turnos fijos —una orden
 de búsqueda (comprobada: devuelve la prueba), el bloque como texto, un heredoc, una orden de prueba— y la regla de
 no repetir una orden ya ejecutada.
+
+### r5 — el heredoc limpio también llega sin cuerpo en el contexto real (rechazado)
+
+15 turnos en 1 962 s. Search Existing hecho con la orden fijada (más tres repeticiones). Después 10 tool calls
+`cat > src/verify/search_existing_mechanisms.py <<'PY'` de **53 caracteres**: sin `&&`, el cuerpo tampoco llegó dentro
+del contexto completo de `thyrox -p` (en la sonda mínima sí llegaba). Terminó escribiendo el programa como texto.
+Siguiente forma, medida antes de despachar: un `printf '%s\n' 'línea' … > archivo` en una sola línea, sin saltos de
+línea en el argumento.
