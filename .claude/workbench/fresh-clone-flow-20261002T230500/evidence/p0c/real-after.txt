@@ -1,0 +1,19 @@
+## contenedores (name state running pid pid_alive)
+thyrox-redis	running	true	32005	true
+thyrox-ollama	running	true	32208	true
+## locks (allocated referenced)
+5 5
+## volúmenes (name)
+3c6611958d2deee4e8320c76cbf7d9beb5285c9ef70a42b85e8ebeb8e3c3bddd
+f5a26b53b24e81eece469781ffddb9c7103aa056051c0c4f7800bcf10bef25e3
+thyrox-ollama-models
+## imágenes (id12 tag)
+64035c2c9726	docker.io/library/redis:7.4
+c178b43788bb	docker.io/ollama/ollama:0.35.0
+## puertos de servicio (contrato: 127.0.0.1)
+redis abierto
+ollama abierto
+## redis PING
+PONG
+## clasificación final
+HEALTHY

@@ -1,0 +1,10 @@
+podman 4.9.3 · backend sqlite · locks asignados 0, referenciados 4 · marcador /run/libpod/alive
+podman 4.9.3 · backend sqlite · locks asignados 0, referenciados 4 · marcador /run/libpod/alive
+antes: KNOWN_POST_REBOOT_RECOVERABLE
+tras refrescar: locks asignados 4, referenciados 4
+podman 4.9.3 · backend sqlite · locks asignados 4, referenciados 4 · marcador /run/libpod/alive
+después: HEALTHY
+podman 4.9.3 · backend sqlite · locks asignados 4, referenciados 4 · marcador /run/libpod/alive
+infrastructure_ensure: falta THYROX_INFRA_POSTGRES_PASSWORD (credencial de PostgreSQL).
+                       No se invoca podman ni se toca nada.
+__BG_EXIT__=2

@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bin/local_control_plane_ready", "started_at": "2026-10-03T09:55:43+00:00"}
+{"kind": "settle", "exit_code": 2, "finished_at": "2026-10-03T09:55:50+00:00", "duration_seconds": 7.776688}
