@@ -194,3 +194,75 @@ esta migración. Lo único MISSING es una declaración: `canonical = kaupamex-ai
 Pendiente de este encargo y no hecho todavía: la matriz fila a fila del censo con
 tipo, estrategia, consumidores y pruebas por superficie; la propuesta de fases; y
 qué migra antes del dataset. Se retoman cuando el ejecutor cierre la decisión OCI.
+
+---
+
+## 3. Censo v2 — con las herramientas de thyrox (pedido del ejecutor)
+
+El censo de la sección 2 contaba texto con una sonda propia. Éste reutiliza las
+piezas de los gates que ya miden identidad en thyrox, importadas, sin escribir
+baselines (`probes/census_v2_python.py`, `probes/census_v2_ts.ts`, EXPERIMENTAL),
+y las herramientas de censo del store. Salidas en `outputs/census-v2/`.
+
+| Herramienta de thyrox | Qué midió | Archivo |
+|---|---|---|
+| `check_product_word.measure` (palabra cambiada a `thyrox`, mismo recorrido y extensiones) | 26 371 apariciones en 3 797 archivos de código | `product-word-thyrox-by-{file,area}.tsv` |
+| `checkEnvPrefix.ts` (`extractEnvReads`, `classifyName`, `isProductionPath`, `isTestPath`) | 660 nombres de entorno **leídos** en producción: 366 propios `THYROX_*` (123 sin prueba que los nombre), 255 sin prefijo, 27 de proveedor, 12 ajenos `CLAUDE_*` | `env-reads.tsv` |
+| `imageLifecycle.lifecycleOf` / `ownerOf` sobre la observación | 2 `permanent`, 2 `cache`, 37 sin clase (33 sin etiqueta + 4 upstream); 0 con dueño legible | `image-lifecycle.tsv` |
+| `bin/task_ids census` | 2 423 citas: thyrox 577, docs 566, api 430, **gen 835**, db 6, server 5, ui 4 | `task-ids-census.txt` |
+| `bin/agent_store censo-tablas` | filas, escrituras de hoy y última escritura por tabla | `store-tables-census.txt` |
+| `bin/agent_store buscar-hallazgos` / `buscar-tareas` | precedentes de renombre | `../store-findings-search.txt`, `../store-tasks-search.txt` |
+
+### Qué aporta que el censo de texto no tenía
+
+1. **El trinquete de producto es ciego a lo que no es código.**
+   `MEASURED_EXTENSIONS` = `.ts .tsx .js .mjs .py .sh`. Quedan fuera
+   `.claude/rules/*.md`, skills, `CLAUDE.md`, `README.md`, `.env.example` (681 líneas
+   con `thyrox`), `package.json` y `pyproject.toml`. Un rename vigilado por ese gate
+   no vería esas superficies: es EXTEND del gate (extensiones o raíces declaradas),
+   no un gate nuevo.
+2. **Contrato de entorno real ≠ nombres mencionados.** Se **leen** 366 `THYROX_*`;
+   el censo de texto contaba 741 nombres distintos (lecturas, documentación, pruebas,
+   ejemplos). La familia `THYROX_CODE_*` (211) es la configuración heredada del
+   cliente, renombrada desde `CLAUDE_CODE_*` el 2026-09-27; `THYROX_TOOLCHAIN_*` (42)
+   es la segunda. Ésos son los candidatos a `KAUPAMEX_AI_*` con alias, no los 741.
+   123 de los 366 no tienen prueba que los nombre: renombrarlos sin alias no lo
+   detectaría ninguna suite.
+3. **Siguen leyéndose 12 `CLAUDE_*`** (`CLAUDE_PROJECT_DIR`, `CLAUDE_CONFIG_DIR`,
+   `CLAUDE_CODE_SESSION_ID`…). Son del cliente anfitrión, no de thyrox, y no entran en
+   este rename.
+4. **Ninguna imagen local tiene dueño legible** (`OWNER_KIND_LABEL` / `OWNER_ID_LABEL`
+   ausentes en las 41), y 37 no tienen clase. Para la autoridad de ciclo de vida,
+   sólo 2 son publicables por clase (`permanent`): `245ae25cd5be` y `2bb9f235830e`.
+   Esto confirma la matriz C.
+5. **La capa `gen` tiene 835 citas.** Una tarea sin capa conocida cae ahí (le pasó a
+   las dos de esta sesión antes de `fix-layer`). Añadir la capa `ai` a `LAYERS` no
+   arregla ese desvío: hay que declararla al acuñar.
+6. **Precedentes de renombre que deben gobernar la ejecución:**
+   - H-API-884/886: el reescritor renombra por nombre, no por ligadura;
+   - H-API-607: ciego dentro de f-strings;
+   - H-DOCS-1100: el verde falso de un renombre;
+   - H-DOCS-1039: un cambio masivo sin banco no deja instrumento;
+   - H-THYROX-252: renombrar una tarjeta acuña una segunda cita.
+
+### El pase con modelos locales — bloqueado, no corrido
+
+Preparado: `inputs/local-model-classify/` contiene la plantilla y 34 superficies, cada
+una con su conteo y una línea real de evidencia. El selector asigna
+`thyrox-library--qwen3-4b:q4_k_m-ollama-359d7dd4bcda` (`batch-worker-mecanica@1` 4/4)
+con `--context-tokens 16000`, y el pool se lanzó como entrada declarada del plano de
+control.
+
+Cómo se bloqueó:
+
+- **Primer intento:** como trabajo de unidad, falló porque la unidad no tiene `podman`.
+- **Segundo intento:** en el anfitrión, `infrastructure_ensure` sale 3: locks de Podman
+  desfasados, asignados 0 frente a 21 referenciados, ningún contenedor vivo. Son las
+  precondiciones de H-THYROX-308.
+- **Plan de reparación** (`podman-lock-recovery-plan.txt`): retirar
+  `/run/libpod/alive` para que Podman reasigne los locks.
+- **Ejecución rechazada:** `--confirm` lo rechazó el clasificador de permisos de la
+  sesión («Modify Shared Resources»). No se intentó por otra vía.
+
+Para correrlo hace falta que el ejecutor autorice o ejecute esa reparación. Después
+basta relanzar el mismo comando; la plantilla y los ítems ya están en el banco.

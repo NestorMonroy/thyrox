@@ -1,0 +1,9 @@
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+thyrox_toolchain: falta 'podman' (paquete podman) y la instalacion es opt-in.
+                  Reintenta con THYROX_INSTALL_PODMAN=1.
+                  NO se emite conteo: un cero aqui no distinguiria
+                  «no hay» de «no pude medir».
+infrastructure_ensure: podman no esta disponible; no se toca nada.
+headless-pool: REHUSA — thyrox-ollama no arrancó (infrastructure_ensure salió 2) y la política de modelo no permite respaldo
+execution thyrox-worker-probe-mus2t9gj-12774 kind=probe task=TASK-THYROX-0917 exit=2
+__BG_EXIT__=2

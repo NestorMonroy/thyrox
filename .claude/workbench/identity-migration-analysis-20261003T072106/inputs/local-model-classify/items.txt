@@ -1,0 +1,34 @@
+THYROX_CODE_[A-Z_]+ | product occurrences: 2387 | example: src/packages/agent/QueryEngine.ts:474:          isEnvTruthy(readEnv('THYROX_CODE_EAGER_FLUSH'))   
+THYROX_TOOLCHAIN_[A-Z_]+ | product occurrences: 389 | example: bin/agent-cross-model-read-gate:13:THYROX_TOOLCHAIN_NODE_MODULES_HOME="${THYROX_TOOLCHAIN_NODE_MODULES_HOME:-$WRAPPER_ROOT/node_modules}" \
+THYROX_INFRA_[A-Z_]+ | product occurrences: 75 | example: src/lib/infrastructure.sh:103:THYROX_INFRA_OLLAMA_VOLUME="$(thyrox_infrastructure_setting THYROX_INFRA_OLLAMA_VOLUME 'thyrox-ollama-models')"
+THYROX_MODEL_[A-Z_]+ | product occurrences: 48 | example: src/agents/model_catalog.py:52:    env_value("THYROX_MODEL_CATALOG")
+THYROX_REGISTRY_[A-Z_]+ | product occurrences: 19 | example: src/packages/artifact-registry/readerCredential.ts:11:  username: 'THYROX_REGISTRY_READER_USERNAME',
+THYROX_AGENT_STORE | product occurrences: 9 | example: src/agents/agents_paths.py:125:    `THYROX_AGENT_STORE` diga otra cosa. Dos composiciones de la misma ruta son
+KAUPAMEX_AGENT_STORE | product occurrences: 2 | example: src/agents/model_catalog.py:59:_STORE_ENV = env_value("THYROX_AGENT_STORE") or env_value("KAUPAMEX_AGENT_STORE")
+PRODUCT_NAME = 'thyrox' | product occurrences: 1 | example: src/packages/config/product.ts:28:export const PRODUCT_NAME = 'thyrox'
+THYROX_MODEL_PREFIX | product occurrences: 2 | example: src/packages/model-artifacts/modelName.ts:32:export const THYROX_MODEL_PREFIX = 'thyrox-'
+io\.thyrox\.image\.lifecycle | product occurrences: 4 | example: src/packages/image-registry/imageLifecycle.ts:22:export const LIFECYCLE_LABEL = 'io.thyrox.image.lifecycle'
+io\.thyrox\.image\.definition | product occurrences: 2 | example: src/packages/image-registry/declaredImages.ts:14:export const DEFINITION_LABEL = 'io.thyrox.image.definition'
+'thyrox\.task' | product occurrences: 1 | example: src/packages/podman-execution/executionCommand.ts:232:  if (reference.kind === 'task') return { 'thyrox.task': reference.citation }
+thyrox\.owner-kind | product occurrences: 6 | example: src/packages/podman-execution/workerContainerLifecycle.ts:30:export const OWNER_KIND_LABEL_KEY = 'thyrox.owner-kind'
+thyrox\.resource-kind | product occurrences: 1 | example: src/packages/podman-execution/resourceMaterialization.ts:138:export const RESOURCE_KIND_LABEL_KEY = 'thyrox.resource-kind'
+@thyrox/agent | product occurrences: 1689 | example: src/agents/definitions/skill-generator.md:26:La fuente es `@thyrox/agent` (`.claude/packages/agent`):
+\.thyrox/runtime | product occurrences: 7 | example: src/hooks/detect_controller_mutation.py:18:  ``.thyrox/runtime/worktrees/``, fuera del estado (``.claude/``, ``.thyrox/``,
+\.thyrox/models | product occurrences: 24 | example: src/packages/model-artifacts/localModelHome.ts:5: * repositorio: cae bajo `.thyrox/models/` de la raíz de thyrox salvo que el
+TASK-THYROX-[0-9]{4} | product occurrences: 427 | example: .githooks/commit-msg:66:# cita `TASK-THYROX-0445`, forma impecable y ningun sujeto.
+H-THYROX-[0-9]+ | product occurrences: 215 | example: .githooks/pre-commit:153:# consumidor), así que este árbol commiteó una: H-THYROX-279.
+thyrox-postgres-data | product occurrences: 11 | example: src/lib/infrastructure.sh:95:readonly _INFRASTRUCTURE_POSTGRES_VOLUME="thyrox-postgres-data"
+thyrox-ollama-models | product occurrences: 4 | example: src/lib/infrastructure.sh:103:THYROX_INFRA_OLLAMA_VOLUME="$(thyrox_infrastructure_setting THYROX_INFRA_OLLAMA_VOLUME 'thyrox-ollama-models')"
+thyrox-postgres\b | product occurrences: 46 | example: src/lib/infrastructure.sh:76:readonly _INFRASTRUCTURE_POSTGRES_NAME="thyrox-postgres"
+thyrox-redis | product occurrences: 24 | example: src/lib/infrastructure.sh:77:readonly _INFRASTRUCTURE_REDIS_NAME="thyrox-redis"
+thyrox-ollama\b | product occurrences: 23 | example: src/lib/infrastructure.sh:58:# el `.env` declarado: `thyrox-ollama` se creo sobre un volumen vacio porque
+thyrox-model-quantizer | product occurrences: 30 | example: src/packages/image-registry/declaredImages.ts:39:    id: 'thyrox-model-quantizer',
+thyrox-task-runner | product occurrences: 3 | example: src/packages/podman-execution/executionCommand.ts:25:export const DEFAULT_EXECUTION_IMAGE = 'localhost/thyrox-task-runner:dev'
+thyrox-bg | product occurrences: 61 | example: src/hooks/detect_client_background.py:9:(``.claude/rules/trabajo-en-segundo-plano.md``): ``bin/thyrox-bg start`` más
+thyrox-worker-w1 | product occurrences: 31 | example: src/packages/daemon/src/__tests__/podmanWorkerSupervision.test.ts:102:    const manager = fakeManager({ retired: [retirement('thyrox-worker-w1')] })
+th3rox/ | product occurrences: 29 | example: src/packages/artifact-registry/__tests__/providerAndPolicy.test.ts:20:    expect(dockerHubRepository('th3rox/thyrox-lab-artifacts')).toBe('th3rox/thyrox-lab-artifacts')
+thyrox-quantization-lab-artifacts | product occurrences: 2 | example: src/packages/model-artifacts/__tests__/ggufMetadata.test.ts:112:const REAL_Q4_K_M = '/var/lib/containers/storage/volumes/thyrox-quantization-lab-artifacts/_data/model-Q4_
+THYROX_SEMANTIC_SEARCH_SCHEMA | product occurrences: 2 | example: src/packages/semantic-search/ingestCommand.ts:23:export const SEMANTIC_SEARCH_SCHEMA_VAR = 'THYROX_SEMANTIC_SEARCH_SCHEMA'
+"name": "thyrox" | product occurrences: 0 | example: package.json:2:  "name": "thyrox",
+thyrox-rename: keep | product occurrences: 46 | example: src/agents/agent-cost.sh:19:# thyrox-rename: keep — directorio del cliente anfitrión
+agent-results/agent_store\.sqlite3 | product occurrences: 9 | example: .githooks/post-commit:48:STORE_REL="agent-results/agent_store.sqlite3"
