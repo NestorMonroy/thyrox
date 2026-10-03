@@ -10,3 +10,4 @@ model_coordinator	src/session/model_coordinator.sh	ciclo de vida del coordinador
 image-registry-build-declared-image	src/packages/image-registry/bin/buildDeclaredImage.ts	construye sólo una imagen del catálogo por su identidad lógica; contexto, red y ciclo de vida salen de la definición y materializa la primitiva
 local_control_plane_ready	src/session/local_control_plane_ready.sh	compone la recuperación del motor y la convergencia tras un arranque; no materializa ni repara por sí mismo
 local-models-qualify	src/packages/local-models/bin/qualify.ts	mide un modelo pidiendo admisión al coordinador y habla sólo con la unidad del ticket; la unidad la materializa la primitiva
+local-models-import	src/packages/local-models/bin/import.ts	adquiere un modelo publicado: reserva disco y memoria y lo valida en el laboratorio, que materializa la primitiva

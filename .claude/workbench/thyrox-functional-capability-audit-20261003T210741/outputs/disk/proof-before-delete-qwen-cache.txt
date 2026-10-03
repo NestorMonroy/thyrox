@@ -1,0 +1,14 @@
+## prueba antes de retirar la copia CACHE del GGUF de qwen3-4b (2026-10-03T22:24:45Z)
+### clase: CACHE (THYROX_MODEL_ARTIFACT_CACHE_DIR, «reconstruible»); sólo se lee si la unidad Ollama no tiene el blob (ollamaRuntimeAdapter.ts:69)
+cache  .thyrox/models/artifacts/sha256-7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5.gguf 2497280256 bytes inode=952048 links=1
+ollama /var/lib/containers/storage/volumes/thyrox-ollama-models/_data/models/blobs/sha256-7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5 2497280256 bytes inode=1196051 links=1
+### digests (sha256 de contenido)
+cache:  7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5
+ollama: 7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5
+### canónico durable
+{"registry":"docker.io","repository":"th3rox/thyrox-quantization-lab-artifacts","manifestDigest":"sha256:6775c00845e7a12e3302e8097a8cbdcc74b69aeb65888ddb840a4be541836cf1","contentSha256":"7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5","bytes":2497280256}
+### disco antes
+9157300224
+### retirada 2026-10-03T22:27:33Z: .thyrox/models/artifacts/sha256-7485fe6f11af29433bc51cab58009521f205840f5b4ae3a32fa7f92e8534fdf5.gguf
+### disco después
+11654565888
