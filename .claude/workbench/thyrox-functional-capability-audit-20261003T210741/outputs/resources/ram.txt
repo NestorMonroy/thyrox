@@ -1,0 +1,22 @@
+MemTotal:       16480972 kB
+MemFree:         9674648 kB
+MemAvailable:    9885108 kB
+Cached:           240804 kB
+SwapTotal:             0 kB
+cgroup levels: ['/sys/fs/cgroup/memory/process_api/01a10397-d708-7285-a67a-6e3789c62825/claude-code-bash', '/sys/fs/cgroup/memory/process_api/01a10397-d708-7285-a67a-6e3789c62825', '/sys/fs/cgroup/memory/process_api']
+  /sys/fs/cgroup/memory/process_api/01a10397-d708-7285-a67a-6e3789c62825/claude-code-bash limit 14345035776 usage 377626624
+  /sys/fs/cgroup/memory/process_api/01a10397-d708-7285-a67a-6e3789c62825 limit UNLIMITED usage 1079074816
+  /sys/fs/cgroup/memory/process_api limit UNLIMITED usage 1079091200
+effective_available_kb 9881392 floor_kb 2097152
+/sys/fs/cgroup/memory limit=9223372036854771712 usage=6530777088
+/sys/fs/cgroup/memory/libpod_parent/ limit=9223372036854771712 usage=5753118720
+/sys/fs/cgroup/memory/process_api/ limit=9223372036854771712 usage=1071640576
+/sys/fs/cgroup/memory/sbx-telemetry/ limit=67108864 usage=815104
+cache 14569472
+rss 446464
+inactive_file 159744
+active_file 28672
+total_cache 299667456
+total_rss 6231179264
+total_inactive_file 46661632
+total_active_file 220905472

@@ -1,0 +1,13 @@
+target              .   (montaje /, /dev/vda)
+capacidad         251.97 GiB
+disponible        4536.48 MiB   ← lo que «df» llama Avail
+reserved           213.66 GiB   (84.8% de la capacidad)
+options          rw,relatime,discard,resv_strict,resuid=65534,resgid=65534
+CAP_SYS_RESOURCE  AUSENTE
+--- holdings
+2.4G	/var/lib/containers/storage/volumes/thyrox-ollama-models
+2.4G /var/lib/containers/storage/volumes/thyrox-ollama-models/
+4.4G	.thyrox/models/artifacts
+292K	.thyrox/runtime/qwen25-7b-import
+.thyrox/models/artifacts/sha256-1875fb29e8c91c86615c00e92d8b4114e56bc24359adb5a8db8b36452fae4a49.gguf links=2 4683073536
+30G	/var/lib/containers/storage/overlay

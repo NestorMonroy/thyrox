@@ -453,7 +453,16 @@ Qwen2.5-7B-Instruct Q4_K_M (`bb5d59e0…`, la revisión que ya nombran los fixtu
 del árbol). Coder-7B retirado con prueba (`disk/proof-before-delete-coder7b.txt`):
 su blob vivía en el volumen anónimo de su unidad y se fue con ella.
 
-### F6/F8 — resultado: HARD_BLOCK de capacidad local dentro del techo físico (2026-10-03)
+### F6/F8 — resultado: BLOCKED_FOR_CURRENT_ACCEPTANCE_PROFILE (2026-10-03; corregido)
+
+> **Corrección del ejecutor (2026-10-03).** La primera redacción de esta sección
+> concluía «HARD_BLOCK físico» y «ningún modelo que cabe en el contenedor puede».
+> Eso excede lo demostrado: se probaron identidades concretas bajo un perfil
+> concreto, y el «techo físico» mezclaba configuración de admisión y
+> materialización con límites de la máquina. La conclusión válida está en
+> «Local autonomous implementation experiment» y en «Resource ceiling: physical
+> vs configured», más abajo. Se conserva el texto original tachado para que la
+> corrección sea trazable.
 
 | modelo (Q4_K_M, 8K, presupuesto de sistema 2048) | tool-calling@1 | mecanica | repo-code-change@1 |
 |---|---|---|---|
@@ -466,23 +475,135 @@ La infraestructura funcionó de punta a punta en todas: ruta local, unidad
 gestionada, worktree aislado, verify, registro con perfil. Los fallos son del
 modelo.
 
-**Techo físico medido de este contenedor:** disco 8.7 GB de asignación fija
-(el modelo ocupa dos copias), RAM efectiva ≈ 6 GB (cgroup ancestro 8.33 GB
-menos piso 2 GiB), 4 CPU sin GPU. Cabe hasta ~7B Q4 a 8K; Qwen3-8B a 8K ya no
-cabe en RAM.
+~~**Techo físico medido de este contenedor:** disco 8.7 GB de asignación fija~~
+~~(el modelo ocupa dos copias), RAM efectiva ≈ 6 GB (cgroup ancestro 8.33 GB~~
+~~menos piso 2 GiB), 4 CPU sin GPU. Cabe hasta ~7B Q4 a 8K; Qwen3-8B a 8K ya no~~
+~~cabe en RAM.~~
 
-**Conclusión:** ningún modelo que cabe en este contenedor completa un cambio de
-repositorio con el prompt limpio que pide F8 (n=4 corridas reales). La
-autoimplementación local real queda bloqueada por un límite físico, no por
-código. Lo que desbloquea es una decisión del ejecutor:
+~~**Conclusión:** ningún modelo que cabe en este contenedor completa un cambio de~~
+~~repositorio con el prompt limpio que pide F8 (n=4 corridas reales). La~~
+~~autoimplementación local real queda bloqueada por un límite físico, no por~~
+~~código. Lo que desbloquea es una decisión del ejecutor:~~
 
-1. **Andamiaje del prompt** (como la corrida 0919 de las 12:05, pasos guiados):
-   contradice «prompt limpio» de F8; mediría capacidad guiada, no autónoma.
-2. **Más hardware** (RAM ≥ 16 GB efectiva o GPU) para un modelo ≥ 14B: fuera
-   de esta sesión.
-3. **Proveedor por API** como respaldo declarado: la política lo admite sólo
-   con clave; las claves PAYG/Token Plan existen sólo en una sesión nueva
-   (TASK #13) y las cuatro rutas probadas daban 401.
+~~1. **Andamiaje del prompt** (como la corrida 0919 de las 12:05, pasos guiados):~~
+~~   contradice «prompt limpio» de F8; mediría capacidad guiada, no autónoma.~~
+~~2. **Más hardware** (RAM ≥ 16 GB efectiva o GPU) para un modelo ≥ 14B: fuera~~
+~~   de esta sesión.~~
+~~3. **Proveedor por API** como respaldo declarado: la política lo admite sólo~~
+~~   con clave; las claves PAYG/Token Plan existen sólo en una sesión nueva~~
+~~   (TASK #13) y las cuatro rutas probadas daban 401.~~
 
-Hasta esa decisión, `controller.implementation` sigue en `bootstrap-exception`
-(F11 no se cumple: no hay worker local cualificado para `workflow`).
+~~Hasta esa decisión, `controller.implementation` sigue en `bootstrap-exception`~~
+~~(F11 no se cumple: no hay worker local cualificado para `workflow`).~~
+
+---
+
+## Local autonomous implementation experiment (2026-10-03)
+
+**Perfil de aceptación probado (CURRENT_ACCEPTANCE_PROFILE):**
+`repo-code-change@1` · runtime local (Ollama 0.35.0) · ejecución en unidad
+gestionada · contexto 8192 · presupuesto de sistema 2048 · perfil del worker
+actual (reasoning none, caché de prompt desactivada, 2 CPU, 8192 MiB) ·
+herramientas Read/Write/Edit/Bash · prompt limpio (`suites/repo-code-change-1/prompt.md`)
+· vigilante activo (excepto la corrida de qwen3-4b, donde su proceso se retiró a
+mano, H-THYROX-467) · `--local-only` · plazo del caso 5400 s.
+
+**Identidades probadas (exactas):**
+
+| identidad | revisión · cuantización · artefacto | tool-calling@1 | mecanica (batch-worker-mecanica@1) | repo-code-change@1 |
+|---|---|---|---|---|
+| `thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e` | `bc640142c66e…` · Q4_K_M · sha `7485fe6f…` | PASS 6/6 | PASS 4/4 | FAIL (`rechazado`) |
+| `thyrox-qwen--qwen2.5-coder-7b-instruct-gguf:q4_k_m-hf-13fb94bfda8c` | `13fb94bfda8c…` · Q4_K_M · sha `509287f7…` | FAIL 2/6 | — | no elegible |
+| `thyrox-qwen--qwen2.5-7b-instruct-gguf:q4_k_m-hf-bb5d59e06d95` | `bb5d59e06d95…` · Q4_K_M · sha `1875fb29…` | PASS 6/6 | PASS 4/4 | FAIL muestra 1 (`sin-cambios`), FAIL muestra 2 (`rechazado`) |
+
+### Causas por fracaso (evidencia, puede haber varias)
+
+| corrida | observado | MODEL_CAPABILITY | TOOL_PROTOCOL | WORKFLOW | RUNTIME_PROFILE |
+|---|---|---|---|---|---|
+| qwen3-4b | reemplaza sólo la línea `raise` con un `def` anidado que duplica `slugify` | sí (razonamiento de alcance en el repo) | — | — | posible: presupuesto 2048 recorta la guía del sistema |
+| qwen3-4b | `\u0000` sin escapar para JSON → archivo binario | posible | sí (escape de argumentos) | — | — (seguridad de salida/edición: `Edit` acepta NUL) |
+| qwen3-4b | edita el archivo de pruebas | sí | — | sí (la plantilla lo prohíbe; nada lo impide) | — |
+| qwen3-4b | `Edit` sin cambio ×3 y la misma prueba ×5 | sí | — | sí (lo detiene el vigilante cuando está activo) | — |
+| qwen3-4b | última llamada como texto | — | sí | — | posible (contexto 8K agotado) |
+| qwen2.5-7b m1 | lee una ruta truncada (`textkit/slug.py` sin `suites/repo-code-change-1/`) | posible | — | posible (presentación del ítem) | posible (presupuesto 2048) |
+| qwen2.5-7b m1 | termina con prosa tras 4 turnos, sin cambios | sí | — | sí (el bucle termina en un turno sin herramienta) | — |
+| qwen2.5-7b m2 | `old_string` escapado como regex → no casa ×2 | posible | posible (ergonomía de `Edit`: texto literal) | — | — |
+| qwen2.5-7b m2 | deja un error de sintaxis; nunca corre las pruebas | sí | — | sí | — |
+| qwen2.5-7b m2 | última llamada como texto | — | sí | — | posible |
+| coder-7b | protocolo 2/6: llamadas como texto | — | sí (PROTOCOL_CAPABILITY) | — | — |
+
+Ninguna corrección se aplica durante la auditoría: medir no lo exige.
+
+### Hallazgo arquitectónico
+
+`tool-calling@1 PASS` + `mecanica PASS` **≠** `repo-code-change@1 PASS`. Son tres
+cualificaciones distintas: protocolo, tarea de un turno y flujo de repositorio.
+`mecanica` no vuelve a usarse como sustituto de capacidad de implementación
+(H-THYROX-472).
+
+### Proven
+
+- la ejecución local gestionada funciona (unidad, `served-by … local:true`);
+- el worktree aislado y el verify funcionan;
+- el ruteo de modelos locales funciona (política del pool limitada al modelo medido);
+- la cualificación registra el perfil de runtime completo;
+- el vigilante funciona (en host y, tras H-THYROX-467, en unidad);
+- `repo-code-change@1` discrimina capacidad (un cuerpo correcto pasa; uno ingenuo y uno duplicado no);
+- las identidades probadas fallaron el cambio de repositorio con prompt limpio.
+
+### Not proven
+
+- que todos los modelos ≤ 7B fallen;
+- que 14B sea el mínimo necesario (un modelo mayor es **experimento candidato**, no requisito);
+- que haga falta GPU;
+- que haga falta un flujo guiado;
+- que haga falta respaldo por API;
+- que el hardware sea un bloqueo inevitable.
+
+### Current verdict
+
+```
+AUTONOMOUS_LOCAL_SELF_IMPLEMENTATION = NOT_ACCEPTED_YET
+reason: no currently qualified/tested local model passed repo-code-change@1
+H-THYROX-470 = BLOCKED_FOR_CURRENT_ACCEPTANCE_PROFILE  (clasificación final tras el DAG)
+```
+
+## Resource ceiling: physical vs configured (medido 2026-10-03)
+
+### RAM (`resources/ram.txt`)
+
+| capa | valor | clase |
+|---|---|---|
+| RAM física | 16 480 972 kB (≈15.7 GiB), sin swap | FÍSICO |
+| cgroup de la sesión (`process_api/…/claude-code-bash`) | límite 14 345 035 776 B (≈13.4 GiB) | CONFIGURACIÓN del anfitrión |
+| cgroup de las unidades (`libpod_parent`) | sin límite; 5.75 GB con qwen2.5-7b residente | — |
+| piso de admisión | 2 GiB (`DEFAULT_RAM_FLOOR_MB`) | CONFIGURACIÓN |
+| límite de memoria por unidad | 8192 MiB (`UNIT_LIMITS`) | CONFIGURACIÓN |
+| holgura que mide la admisión | la del cgroup **de la sesión**, contando la caché de páginas como usada | MEDICIÓN |
+
+**Corrección:** las unidades de modelo se cargan a `libpod_parent`, fuera del
+cgroup de la sesión; la admisión mide el de la sesión y cuenta su caché de
+páginas (que mis propios `sha256sum` de GGUF de 4.7 GB inflaron). El rechazo del
+laboratorio de 8 GiB salió de esa medición, no de la máquina (H-THYROX-471). Un
+modelo de ~9 GB de pesos + KV a 8K **no** está excluido por la RAM física; sí por
+`UNIT_LIMITS` (8192 MiB) y por la medición actual.
+
+### Disco (`resources/disk.txt`)
+
+| capa | valor | clase |
+|---|---|---|
+| dispositivo | 251.97 GiB | FÍSICO |
+| reservado por el montaje (`resv_strict`) | 213.66 GiB | CONFIGURACIÓN del anfitrión (asignación de la sesión) |
+| disponible al inicio de la sesión | ≈ 8.7 GB; hoy 4.5 GB con lo de abajo | — |
+| piso de admisión de disco | 2 GiB | CONFIGURACIÓN |
+| artefacto canónico | remoto (HF por revisión, o `docker.io/th3rox/…@sha256`): **0 bytes locales obligatorios** | — |
+| caché de artefactos | 4.68 GB (qwen2.5-7b) | CACHE |
+| materialización en la unidad | copia por `pushBlob` en la capa escribible de la unidad (≈4.7 GB) o en `thyrox-ollama-models` (2.4 GB, qwen3-4b) | RUNTIME_MATERIALIZATION |
+| shards de descarga | transitorios: hasta 2× el modelo durante el ensamblado | BUILD_INTERMEDIATE |
+
+**Mínimos reales:** bytes canónicos locales = 0; bytes de runtime = 1 copia del
+modelo si la unidad leyera la caché montada en lugar de copiarla (hoy son 2: caché
++ copia de `pushBlob`); más el piso. Con una sola copia, la asignación actual de la
+sesión admite un GGUF de ≈ 12 GB; con la doble materialización actual, ≈ 6 GB.
+«Dos copias» es consecuencia de la materialización, no un requisito físico
+(H-THYROX-471).
