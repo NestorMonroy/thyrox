@@ -114,3 +114,80 @@ Además, controles de anulación:
    especialista matemático. El rename general queda aparcado.
 3. **P2:** esta tarea. Decisión, implementación por el batch y prueba de
    reinicio real.
+
+## P0 replanteado: «Local Control Plane Ready» es un estado, no una acción
+
+Decisión del ejecutor del 2026-10-03:
+
+- P0 es la dependencia de mayor prioridad; **no** es un actor ni un permiso;
+- P0 incluye la automatización, así que no se declara cerrado mientras el
+  siguiente reinicio vuelva a exigir una persona;
+- se autoriza una **excepción de bootstrap acotada a cerrar P0**, que
+  desaparece al demostrarlo. Cada cambio hecho bajo ella lleva TASK, Search
+  Existing, RED, GREEN, verificación, commit, evidencia y ciclo de vida
+  explícito.
+
+**Postcondiciones de P0:**
+
+- locks de Podman consistentes;
+- PostgreSQL `healthy`, Ollama gestionado `healthy`, Redis en el estado
+  declarado;
+- volúmenes durables `preserved`;
+- primitiva de Podman operativa;
+- coordinador de modelos sano;
+- workers locales programables.
+
+### P0a: Search Existing (`outputs/p0a-search-existing.tsv`)
+
+Superficies recorridas: `control_plane_entries.tsv`, `execution_policy.json`,
+`infrastructure_ensure.sh`, `podman_lock_recovery.sh`, `podman_locks.sh`,
+`infrastructureBootstrap.ts`, `infrastructureReadiness.ts`,
+`podmanLockCollision.ts`, `headless-pool.sh`, `model_coordinator.sh`, el
+cableado `SessionStart` de `user_wiring.py`, `check_execution_authorization`,
+el store (H-THYROX-296/302/307/308/442/444) y las tareas #57, #89, #92 y #99.
+
+**Quién puede satisfacer P0 hoy: nadie de forma autónoma.** Las dos autoridades
+existen y se conservan:
+
+- reparación: `podman_lock_recovery`;
+- convergencia: `infrastructure_ensure`.
+
+Ninguna pieza las **compone**:
+
+- `infrastructureReadiness` es la puerta del **consumidor**: llama al ensure
+  y rehúsa, y no debe reparar el motor;
+- `headless-pool` también es consumidor;
+- `model_coordinator` es un servicio que P0 debe dejar sano, no quien lo
+  satisface;
+- el hook `startup` sólo barre worktrees.
+
+### Decisión de autoridad (PROPOSED)
+
+| Pieza | Decisión |
+|---|---|
+| `podman_lock_recovery` | **EXTEND**: una segunda forma de autorizar además del `--confirm` del operador, la prueba objetiva de obsolescencia (marcador `mtime < btime`), con las mismas guardas de versión, backend, uid, sin contenedores vivos y marcador presente |
+| `infrastructure_ensure` | **REUSE** sin cambios: detecta y rehúsa, nunca repara |
+| entrada de plano de control nueva, «local control plane ready» | **MISSING** justificado: sólo **compone** medir → recuperación con guardas → volver a medir → ensure → postcondiciones, y publica cuál falló. No repara nada por sí misma |
+| `control_plane_entries.tsv` + `execution_policy.json` | **EXTEND**: declarar esa entrada y el actor de plano de control que puede invocar la recuperación con prueba. La autorización final vive en la política versionada de thyrox, no en los settings de Claude Code |
+| disparo tras reinicio | **EXTEND** del hook `startup`, **pendiente de medir** si dispara tras un reinicio de la VM dentro de la misma sesión; si no, `infrastructureReady` invoca la entrada nueva en lugar del ensure directo |
+
+**Actor canónico propuesto:** la entrada de plano de control «local control
+plane ready», lanzada por el orquestador en el anfitrión (como
+`infrastructure_ensure` hoy) o por el disparo de arranque. El controlador
+no ejecuta payload: invoca una entrada declarada, igual que hoy.
+
+### Deriva documental encontrada (H-THYROX-445)
+
+`infrastructureReadiness.ts:7` y `podmanLockCollision.ts:12` dicen que el
+ensure «renumera los locks». Es falso desde la decisión del 2026-10-02: el
+ensure sólo detecta y rehúsa. Se corrige en P0c junto con el código.
+
+### Plan P0b a P0f
+
+| Paso | Qué | Bloqueo actual |
+|---|---|---|
+| P0b | recuperar la instalación actual: `podman_lock_recovery --confirm` → ensure | clasificador de la sesión: denegado tres veces. Necesita una regla `permissions.allow` (andamio del bootstrap, no arquitectura) |
+| P0c | EXTEND de la recuperación + entrada nueva + política, en TDD | clasificador: el primer intento fue bloqueado como «Auto-Mode Bypass». Necesita una regla que cubra editar esos archivos bajo la excepción de bootstrap |
+| P0d | recuperación con guardas invocada por la entrada | depende de P0c |
+| P0e | `infrastructure_ensure` → postcondiciones | depende de P0d |
+| P0f | reinicio real sin intervención | depende de P0e; el reinicio lo dispara el entorno |
