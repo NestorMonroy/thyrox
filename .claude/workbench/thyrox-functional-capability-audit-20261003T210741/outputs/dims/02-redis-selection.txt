@@ -1,0 +1,14 @@
+## consumidores de la fábrica de shared-state
+72:export function openSharedStateStore(options: OpenSharedStateOptions = {}): OpenedSharedState {
+src/packages/local-models/importCommand.ts
+src/packages/local-models/quantizeCommand.ts
+src/packages/provider/src/proxy/startServer.ts
+## runLease
+src/packages/local-models/importCommand.ts
+src/packages/local-models/quantizeCommand.ts
+src/packages/local-models/runLease.ts
+## providerSelection
+src/packages/provider/src/selection/providerSelection.ts
+## THYROX_MODEL_SCHEDULING_COORDINATION por defecto
+19:/** La topología sale sólo de `THYROX_MODEL_SCHEDULING_COORDINATION`; nunca del modo del proxy. */
+21:  if (coordinationTopologyOf(env) === 'local') return createMemoryCoordination()

@@ -1,0 +1,23 @@
+## Redis: quién abre el adaptador redis en producción
+src/packages/local-models/hostCoordinatorComposition.ts:28:import { openModelSchedulingCoordination } from '@thyrox/model-scheduling/coordinationFactory.ts'
+src/packages/local-models/hostCoordinatorComposition.ts:101:  const coordination = openModelSchedulingCoordination(env)
+src/packages/model-scheduling/coordinationFactory.ts:20:export function openModelSchedulingCoordination(env: Readonly<Record<string, string | undefined>>): ModelSchedulin
+src/packages/model-scheduling/redisCoordination.ts:112:  const client = new Bun.RedisClient(url, { autoReconnect: false, enableOfflineQueue: false })
+src/packages/shared-state/factory.ts:20:import { createRedisSharedStateStore } from './redis.ts'
+src/packages/shared-state/factory.ts:101:  const createRedis = options.createRedis ?? ((redisUrl: string) => createRedisSharedStateStore(redisUrl))
+src/packages/shared-state/redis.ts:42:export function createRedisSharedStateStore(
+src/packages/shared-state/redis.ts:47:  const client = new Bun.RedisClient(url)
+## variables de Redis/modo en .env (presencia)
+THYROX_REDIS_URL=<set>
+## URLs de PostgreSQL en .env (presencia)
+## Search Existing
+  ls: cannot access 'src/verify/search_existing_mechanisms.py': No such file or directory
+  ls: cannot access 'src/verify/mechanisms.tsv': No such file or directory
+  ls: cannot access 'bin/search_existing_mechanisms': No such file or directory
+  ls: cannot access 'bin/check_mechanism_search_evidence': No such file or directory
+## specialist routing
+  (vacío = 0)
+## autoridades de selección
+src/packages/provider/src/cost/policy.ts
+src/session/task_continuation.py
+## consumidores de providerSelection

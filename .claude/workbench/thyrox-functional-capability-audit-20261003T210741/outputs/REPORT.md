@@ -607,3 +607,104 @@ modelo si la unidad leyera la caché montada en lugar de copiarla (hoy son 2: ca
 sesión admite un GGUF de ≈ 12 GB; con la doble materialización actual, ≈ 6 GB.
 «Dos copias» es consecuencia de la materialización, no un requisito físico
 (H-THYROX-471).
+
+---
+
+## Capability matrix — estado al cierre de la fotografía (2026-10-03)
+
+Sustituye a la matriz inicial (arriba), que describía el estado antes de los
+cambios de esta tarde. Evidencia nueva en `dims/`, `ml/`, `resources/`, `identity/`.
+
+| Capability | State | Authority | Consumer | Real proof | Consumable today | Active now | Gap / dependencia |
+|---|---|---|---|---|---|---|---|
+| ejecución en unidad gestionada | REAL_VERIFIED | `podman-execution-execute run` | pool `--execution unit` | 4 corridas de flujo hoy | sí | no (bajo demanda) | imagen por defecto `:dev` ausente; sólo funciona con `THYROX_EXEC_IMAGE` al digest publicado |
+| worktree aislado + verify + integración | REAL_VERIFIED | `headless-pool --isolation worktree --verify` + `pool_integrate` | pool, cualificación de flujo | veredictos reales hoy | sí | no | huérfanos: los retira `item_worktree sweep-orphans` con rescate (usado hoy) |
+| vigilante del ítem | REAL_VERIFIED (host y unidad en pruebas) | `item_watchdog.py` | pool | pruebas + anulación; no disparó en real (su proceso se retiró a mano en una corrida) | sí | por ítem | — |
+| convergencia tras reciclado | REAL_VERIFIED | `local_control_plane_ready` (status/converge) | sesión | 0/13 → 13/13 | sí | — | — |
+| volumen durable perdido | IMPLEMENTED + INTEGRATED | `resourceMaterialization.ensureVolumes` + libro de volúmenes durables | infraestructura | pruebas + anulación; no ejercido en real | sí (al próximo ensure) | — | el corpus ya se perdió (H-THYROX-464) |
+| catálogo / import / validación | REAL_VERIFIED | `local-models-catalog`, `local-models-import` (entrada declarada) | manual | 2 imports reales hoy | sí | — | valores por defecto inservibles aquí: lab `:dev`, 8 GiB (H-THYROX-469) |
+| materialización en la unidad | REAL_VERIFIED | `OllamaRuntimeAdapter.prepareRuntimeArtifact` (`pushBlob`) | coordinador | real | sí | 1 residencia | dos copias por modelo (H-THYROX-471) |
+| cualificación con perfil | REAL_VERIFIED | `ModelQualification.runtimeProfile` + `local-models-qualify` | recomendador | 10+ registros hoy | sí | — | — |
+| cualificación de flujo (`repo-code-change@1`) | REAL_VERIFIED | `--workflow-suite` + `workflowPool` | — | 4 corridas reales; discrimina | sí | — | ninguna identidad aprobada (H-THYROX-470) |
+| selección de modelo | INTEGRATED, **dos autoridades activas + una desconectada** | `recommendExecution` (pool, tsc_cycle) · `choose_candidate` (task_continuation) · `providerSelection.ts` (0 consumidores) | pool, task_continuation | real (pool eligió el modelo medido) | sí | — | unificar (0750/0925) |
+| admisión RAM | REAL_VERIFIED, **mide el cgroup equivocado** | `resource_admission.py` | coordinador, import | rechazos reales hoy | sí | — | cgroup de sesión + caché de páginas; unidades en `libpod_parent` (H-THYROX-471) |
+| admisión CPU | IMPLEMENTED + INTEGRATED | `ResidencyController.makeRoom` + `unitCpuCapacity` | coordinador | pruebas + anulaciones | sí | — | no cuenta las unidades que no son de modelo |
+| admisión disco | REAL_VERIFIED | `resource_admission disk-admit` + `disk-headroom` | import | rechazo real hoy (145 MB) | sí | — | — |
+| fallback de selección / local→local | IMPLEMENTED (dobles) | `policy.ts`, `admittedUpstream.ts` | pool, proxy | dobles | sí | — | ningún salto real ejercido |
+| localidad (thyrox-* nunca `own`) | REAL_VERIFIED | `decidePrintRoute` + `served-by` + `--local-only` | pool | `served-by … local:true` en las 4 corridas | sí | — | — |
+| Redis en producción | INTEGRATED parcial | `@thyrox/shared-state` (proxy, si `THYROX_REDIS_URL`) · `runLease` (import/quantize) | proxy del anfitrión, import | lease real en los imports de hoy | sí | sólo leases de import | claves sin prefijo de componente (H-THYROX-463); las unidades no reciben la URL (memoria); coordinación de modelos `local` |
+| PostgreSQL + pgvector | REAL_VERIFIED como servicio | `infrastructure-bootstrap` | semantic-search, observabilidad | sano, pgvector 0.8.0 | **no**: ninguna `THYROX_*_DATABASE_URL` declarada en `.env` | contenedor sí | corpus perdido; sin URL de consumidor |
+| SemanticSearch (store) | IMPLEMENTED | `semantic-search/store.ts` | 0 paquetes de producto | suites postgres (esquema desechable), caso 4b hoy | no | no | sin productor de vectores (H-THYROX-466) |
+| RAG | ABSENT | — | — | — | no | no | depende de embeddings + retrieval |
+| Transformers runtime | IMPLEMENTED + INTEGRATED, nunca construido | `hostCoordinatorComposition` | — | — | no | no | H-THYROX-465 |
+| embeddings | orquestación IMPLEMENTED; modelo, cualificación, producción ABSENT | `admittedEmbed` | sólo cualificación | ninguna | no | no | 0904 |
+| semantic_search_worker | PROFILE ONLY | `specializedWorkerProfile.ts` | ninguno | — | no | no | D5 |
+| SentenceTransformer / CrossEncoder / reward-value | ABSENT | — | — | — | no | no | — |
+| traducción por Transformers | IMPLEMENTED, no verificada | `admittedSeq2seq` + `/v1/seq2seq` | ninguno | — | no | no | imagen, modelo, suite |
+| clasificador de resultados | INTERFACE ONLY | `THYROX_OUTCOME_CLASSIFIER_COMMAND` | task_continuation | — | no | no | sin modelo |
+| autoridades de Podman | INTEGRATED | `@thyrox/podman-execution` (0 violaciones) | todos | gates 0 | sí | — | 5 excepciones pendientes con tarea (0746 capacidades, 0759 observación ×3) |
+| ciclo de vida de imágenes | PARTIAL | `image-registry/declaredImages.ts` | builds | candidate del quantizer | parcial | — | catálogo declara **1** imagen; runner, transformers y otras sin declarar (nada las reconstruye); por defecto `:dev` en dos sitios |
+| ciclo de vida de artefactos | REAL_VERIFIED | `artifact-locations.json`, `externalArtifact`, caché por digest | coordinador | real | sí | — | publicación durable sólo de qwen3-4b; los 7B importados sin publicar (decisión de identidad) |
+| propiedad de runtime/caché | PARTIAL | `configHome`/`resolveDataDir`, `.thyrox/` | todos | — | sí | — | pertenencia por prefijo `thyrox-`/`kaupamex-` (H-THYROX-461/462) |
+| monitoreo de procesos/trabajos | REAL_VERIFIED | `thyrox-bg`, `wait-jobs` (heartbeat + `stdin_probe`), `item_watchdog` | sesión, pool | real | sí | — | 2 trabajos A6 `SIN-RECOGER` desde las 11:16 |
+| logs/stats/health por la primitiva | ABSENT | — | — | — | no | — | #20 |
+| Search Existing | DESIGNED_ONLY | regla `search-existing-antes-de-construir.md` | — | 0 archivos (`search_existing_mechanisms.py`, `mechanisms.tsv`, bins): sólo el parche rescatado de 0919 | no | no | depende de un worker aceptado o de implementación del controlador |
+| specialist routing | ABSENT | — (`RouteRequirement`: 0) | — | — | no | no | — |
+| identidad kaupamex-ai | AUDITADO, nada migrado | inventario + DAG de fases | — | — | — | — | #24, #25 |
+
+## Authority duplication (actual)
+
+- **Selección**: `recommendExecution` y `choose_candidate` activos; `providerSelection.ts` sin consumidores.
+- **Imagen por defecto vs catálogo**: `DEFAULT_LAB_IMAGE`/`DEFAULT_EXECUTION_IMAGE` fijan tags `:dev` fuera de `declaredImages` (que etiqueta `candidate-<commit>`).
+- **Esquema de etiquetas**: cuatro módulos, dos prefijos (H-THYROX-462).
+- **Holgura de RAM**: la admisión del anfitrión (cgroup de sesión) y la realidad de las unidades (`libpod_parent`) no miden el mismo recurso (H-THYROX-471).
+- **Respaldo de modelo**: `withRetry`/`--fallback-model` del bucle portado frente a `admittedUpstream` de la ruta local.
+
+## Disconnected implementations (actual)
+
+`providerSelection.ts` · `semantic-search` (store completo, 0 consumidores) ·
+`admittedEmbed` fuera de la cualificación · `TransformersRuntimeAdapter` (imagen
+inexistente) · `admittedSeq2seq` · `specializedWorkerProfile` ·
+`learned_classifier_from_environment` sin orden declarada · `apiModelCatalog` ·
+`cutover_bootstrap.sh` / `delegate.sh` (bancos).
+
+## Final dependency graph (DAG) — tras la fotografía completa
+
+```
+A. Medición correcta de recursos (H-THYROX-471)
+   A1 admisión de RAM sobre el cgroup donde corren las unidades, sin caché
+      de páginas como usada
+   A2 una sola copia por modelo (la unidad lee la caché, sin pushBlob)
+        └→ habilita experimentos de contexto/presupuesto y candidatos mayores
+B. Experimentos de aceptación (no requisitos) sobre repo-code-change@1
+   B1 mismas identidades con contexto/presupuesto mayores (RUNTIME_PROFILE)
+   B2 ergonomía de herramientas: Edit literal, rechazo de NUL (TOOL_PROTOCOL)
+   B3 flujo del worker: correr pruebas antes de terminar, no tocar tests,
+      no terminar en prosa (WORKFLOW; F9/F10)
+   B4 candidato mayor = experimento, tras A1+A2
+        └→ C. aceptación nueva (F11) → managed-only
+D. Search Existing (F9) — depende de C o de una excepción declarada del
+   controlador
+E. Identidad kaupamex-ai: E1 decisiones (#24) → E2 pertenencia por identidad
+   (#25: H-461/462/463) → E3 fases del DAG de identidad — antes de publicar
+   nuevos artefactos permanentes (los 7B importados quedan sin publicar)
+F. Datos: F1 corpus re-ingerido (fuentes en kaupamex-docs) → F2 embeddings
+   (#27/0904: modelo, suite, productor, espacio activo, imagen transformers
+   declarada) → F3 retrieval → F4 RAG
+G. Redis: prefijo por componente (H-463) → decisión de producción (#21)
+H. Observación por la primitiva (#20) y cierre de las 5 excepciones de Podman
+I. Imágenes: declarar runner y transformers en el catálogo; quitar `:dev`
+   como identidad (H-469)
+J. Selección: unificar autoridades (#12)
+```
+
+### Clasificación de H-THYROX-470 respecto del resto
+
+**MIXED.** La evidencia de las cuatro corridas contiene MODEL_CAPABILITY
+(alcance, ruta, abandono), TOOL_PROTOCOL (escape de argumentos, llamadas como
+texto, `Edit` no literal), WORKFLOW (no corre pruebas, edita tests, termina en
+prosa) y un RUNTIME_PROFILE no explorado (8K y presupuesto 2048 elegidos por una
+admisión que medía el recurso equivocado, H-471). **PHYSICAL_RESOURCE_BLOCK no
+está demostrado**: la RAM física (15.7 GiB) y una materialización de una copia
+dejan espacio para experimentos que hoy la configuración impide. La rama B del
+DAG es la que puede convertirla en MODEL_CAPABILITY_LIMIT o en aceptación.

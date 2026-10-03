@@ -1,0 +1,9 @@
+## thyrox-task-runner
+src/packages/podman-execution/executionCommand.ts:27:export const DEFAULT_EXECUTION_IMAGE = 'localhost/thyrox-task-runner:dev'
+## thyrox-worker
+## thyrox-helper
+## thyrox-transformers-runtime
+src/packages/local-models/hostCoordinatorComposition.ts:50:export const TRANSFORMERS_RUNTIME_IMAGE = 'localhost/thyrox-transformers-runtime:dev'
+## ledger de trabajos
+a6-qwen-hf-r3  [SIN-RECOGER]  /home/user/thyrox/.claude/jobs/a6-qwen-hf-r3-20261003T111610/outputs/salida.log
+a6-qwen-hf-r4  [SIN-RECOGER]  /home/user/thyrox/.claude/jobs/a6-qwen-hf-r4-20261003T112712/outputs/salida.log

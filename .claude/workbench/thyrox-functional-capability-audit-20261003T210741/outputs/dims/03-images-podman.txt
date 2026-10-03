@@ -1,0 +1,8 @@
+## imágenes declaradas
+39:    id: 'thyrox-model-quantizer',
+42:    repository: 'localhost/thyrox-model-quantizer',
+## pendientes de las puertas de Podman
+check_podman_access_ownership.py
+check_podman_materialization.py
+podman_access_pending.txt
+podman_materialization_pending.txt
