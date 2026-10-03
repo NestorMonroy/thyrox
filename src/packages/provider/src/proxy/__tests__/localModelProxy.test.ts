@@ -156,6 +156,20 @@ describe('localProxy con modelos locales admitidos', () => {
     expect(coordinator.finished).toEqual(['admission-1'])
   })
 
+  test('--context-tokens N llega a la admisión de cada petición local como contextLength', async () => {
+    const runtime = fakeRuntime()
+    const coordinator = new FakeCoordinator(runtime.baseUrl.replace(/\/v1$/, ''))
+    const socket = await listeningProxy(['--local-model', LOCAL_MODEL, '--context-tokens', '24663', '--coordinator-socket', await servedCoordinator(coordinator)])
+    expect((await sendOverSocket(socket, HELLO)).status).toBe(200)
+    expect(coordinator.admitted.map(request => request.contextLength)).toEqual([24_663])
+  })
+
+  test('--context-tokens que no es un entero positivo rehúsa con exit 2 y no escucha', async () => {
+    const child = launch(['--local-model', LOCAL_MODEL, '--context-tokens', 'mucho'], withoutCli())
+    expect(await child.exited).toBe(REFUSAL_EXIT_CODE)
+    expect(await new Response(child.stderr).text()).toContain('--context-tokens')
+  })
+
   test('una admisión rehusada llega al cliente con su causa y el runtime no recibe nada', async () => {
     const runtime = fakeRuntime()
     const coordinator = new FakeCoordinator(runtime.baseUrl, 'modelo fuera del catálogo')

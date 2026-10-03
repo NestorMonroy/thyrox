@@ -48,7 +48,7 @@ R
 chmod +x "$F/recommend" "$F/ensure" "$F/thyrox-p" "$F/execute"
 pool() {
   HEADLESS_POOL_RECOMMEND="$F/recommend" HEADLESS_POOL_INFRASTRUCTURE_ENSURE="$F/ensure" \
-  HEADLESS_POOL_RUNNER="$F/thyrox-p" THYROX_MANAGED_EXECUTION_RUNNER="$F/execute" \
+  HEADLESS_POOL_RUNNER="${HEADLESS_POOL_RUNNER:-$F/thyrox-p}" THYROX_MANAGED_EXECUTION_RUNNER="$F/execute" \
   HEADLESS_POOL_TIME="$F/no-existe" HEADLESS_POOL_HISTORY_DIR="$F/hist" ANTHROPIC_API_KEY=valor-del-anfitrion \
   bash "$POOL" --prompt "$F/prompt.md" --task-class analisis --width 2 "$@"
 }
@@ -98,6 +98,22 @@ check "caso 4: la unidad monta el directorio del socket de sólo lectura" \
   "$(grep -c -- "--mount $F/coord:$F/coord:ro" "$F/execute.log")" "1"
 check "caso 4: y nombra el socket del coordinador" "$(grep -c -- '--env THYROX_MODEL_COORDINATOR_SOCKET' "$F/execute.log")" "1"
 check "caso 4: no monta el runtime entero" "$(grep -c -- 'THYROX_RUNTIME_DIR' "$F/execute.log")" "0"
+
+# Caso 4b (A6 r4): el contexto que el pool declara con --context-tokens llega
+# a `thyrox -p` dentro de la unidad, que lo pasa a la admisión del proxy local.
+# Sin él, el resolver cae al máximo del modelo y la unidad de modelo muere por
+# OOM. El doble de `thyrox -p` anota la variable tal como la recibe.
+cat > "$F/thyrox-p-context" <<R
+#!/usr/bin/env bash
+printf '%s\n' "\${THYROX_LOCAL_MODEL_CONTEXT_TOKENS:-ausente}" >> "$F/context.log"
+R
+chmod +x "$F/thyrox-p-context"
+: > "$F/execute.log"; : > "$F/context.log"
+printf 'alfa\n' | HEADLESS_POOL_RUNNER="$F/thyrox-p-context" THYROX_MODEL_COORDINATOR_SOCKET="$F/coord/coordinator.sock" \
+  pool --out "$F/out-context" --execution unit --work-reference ai-course-notes:cs224r --context-tokens 24663 >/dev/null 2>&1
+check "caso 4b: la unidad nombra la variable del contexto" \
+  "$(grep -c -- '--env THYROX_LOCAL_MODEL_CONTEXT_TOKENS' "$F/execute.log")" "1"
+check "caso 4b: thyrox -p recibe el contexto declarado" "$(cat "$F/context.log")" "24663"
 
 # Caso 5: la identidad del consumidor se reconstruye desde la evidencia publicada.
 # El runner real imprime `execution <contenedor> kind=… work=<ref>` por stderr

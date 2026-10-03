@@ -4,6 +4,7 @@
  * (`bin/provider-local-proxy`).
  *
  *   localProxy --socket <ruta> [--model <id>]... [--cli <ejecutable>]
+ *              [--local-model <id>]... [--context-tokens N]
  *
  * Es la otra mitad del túnel para quien no tiene credencial propia: escucha
  * en `<ruta>` y atiende cada petición lanzando `claude -p` —el del PATH, o el
@@ -25,7 +26,8 @@
  * (`--coordinator-socket`, por defecto el del hogar de runtime) y sólo
  * alcanza el endpoint de la unidad del ticket (ADR-007 1.14.0, M8). Sin
  * coordinador escuchando arranca igual y cada petición responde nombrando el
- * socket que falta. La declaración por entorno `THYROX_OPENAI_COMPAT_*` está
+ * socket que falta. Con `--context-tokens N`, cada admisión pide ese contexto;
+ * sin él, el resolver concede el máximo del modelo (A6 r4). La declaración por entorno `THYROX_OPENAI_COMPAT_*` está
  * retirada: declararla rehúsa con exit 2.
  *
  * Sin `claude` y con modelos locales, arranca sirviendo sólo esos: una
@@ -74,6 +76,14 @@ function repeatedArgument(name: string): string[] {
 function refuse(message: string): never {
   process.stderr.write(`localProxy: ${message}. NO se escucha.\n`)
   process.exit(REFUSAL_EXIT_CODE)
+}
+
+/** `--context-tokens N`: el contexto que el consumidor declaró, para cada admisión; ausente, ninguno. */
+function contextTokensArgument(): number | undefined {
+  const raw = argument('--context-tokens')
+  if (raw === undefined) return undefined
+  if (!/^[1-9][0-9]*$/.test(raw)) refuse(`--context-tokens exige un entero positivo de tokens, no: ${raw}`)
+  return Number(raw)
 }
 
 function refuseRetiredDeclaration(): void {
@@ -167,6 +177,7 @@ function startLocalModelGuard(localModels: readonly string[], upstreamUrl: strin
 refuseRetiredDeclaration()
 const socketPath = argument('--socket') ?? refuse('falta --socket <ruta>')
 const localModels = repeatedArgument('--local-model')
+const contextLength = contextTokensArgument()
 const executable = argument('--cli') ?? Bun.which('claude') ?? undefined
 if (executable === undefined && localModels.length === 0) refuse('sin ejecutable de claude: declara --cli <ruta> o ponlo en el PATH')
 const cliUpstreams = executable === undefined ? [] : [{ name: UPSTREAM_NAME, command: { executable }, cwd: process.cwd() }]
@@ -177,7 +188,7 @@ const { version } = (await Bun.file(new URL('../package.json', import.meta.url))
 const accessKey = randomUUID()
 const admissionSource = new CoordinatorAdmissionSource(argument('--coordinator-socket') ?? modelCoordinatorSocketPath(process.env))
 const admitted: AdmittedUpstream | undefined = localModels.length > 0
-  ? startAdmittedUpstream({ source: admissionSource, client: LOCAL_PROXY_CLIENT, newRequestId: randomUUID })
+  ? startAdmittedUpstream({ source: admissionSource, client: LOCAL_PROXY_CLIENT, newRequestId: randomUUID, contextLength })
   : undefined
 
 const proxy = startProxyServer({

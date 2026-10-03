@@ -470,6 +470,10 @@ if [[ "$EXECUTION" == unit && "$RUNTIME" == "$LOCAL_RUNTIME" ]]; then
     [[ "$HP_COORDINATOR_SOCKET" == /* ]] || rehusa "no se resolvió el socket del coordinador para el modelo local $MODEL"
 fi
 export HP_COORDINATOR_SOCKET
+# El contexto declarado llega también a la admisión: `thyrox -p` lo pasa al
+# proxy local, que lo pide al coordinador. Sin él, el resolver concede el
+# máximo del modelo y la unidad de modelo puede morir por OOM (A6 r4).
+[[ -z "$CONTEXT_TOKENS" ]] || export THYROX_LOCAL_MODEL_CONTEXT_TOKENS="$CONTEXT_TOKENS"
 # Con el modelo local el ítem no recibe ningún upstream: su `thyrox -p` pasa el
 # nombre contractual a su proxy, que pide la admisión al coordinador del
 # anfitrión y sólo alcanza la unidad del ticket (ADR-007 1.14.0, M8).
@@ -849,7 +853,8 @@ _headless_item_run() {
                  unit_args+=(--mount "${HP_COORDINATOR_SOCKET%/*}:${HP_COORDINATOR_SOCKET%/*}:ro" --env THYROX_MODEL_COORDINATOR_SOCKET)
              fi
              for name in THYROX_CODE_PROMPT_CACHE_TTL THYROX_POOL_DOCUMENT_INTENT THYROX_POOL_RUN_ID THYROX_POOL_ITEM \
-                         THYROX_POOL_ITEM_GENERATION THYROX_MAILBOX_DIR THYROX_POOL_ITEM_ADDRESS; do
+                         THYROX_POOL_ITEM_GENERATION THYROX_MAILBOX_DIR THYROX_POOL_ITEM_ADDRESS \
+                         THYROX_LOCAL_MODEL_CONTEXT_TOKENS; do
                  [[ -z "${!name:-}" ]] || unit_args+=(--env "$name")
              done
              exec setsid timeout "$HP_TIMEOUT" "${execute_argv[@]}" run "${unit_args[@]}" \

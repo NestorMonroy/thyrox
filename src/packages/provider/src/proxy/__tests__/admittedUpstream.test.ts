@@ -78,9 +78,9 @@ function admitTo(endpoint: string) {
     ({ status: 'admitted', ticket: ticketFor(request, endpoint, admissionId) })
 }
 
-function relay(source: AdmissionSource): AdmittedUpstream {
+function relay(source: AdmissionSource, contextLength?: number): AdmittedUpstream {
   let next = 0
-  const upstream = startAdmittedUpstream({ source, client: 'proxy-test', newRequestId: () => `request-${++next}` })
+  const upstream = startAdmittedUpstream({ source, client: 'proxy-test', newRequestId: () => `request-${++next}`, contextLength })
   cleanups.push(() => upstream.stop())
   return upstream
 }
@@ -108,6 +108,14 @@ describe('startAdmittedUpstream', () => {
     expect(runtime.paths).toEqual(['/v1/chat/completions'])
     expect(runtime.received[0]?.model).toBe(MODEL)
     expect(source.finished).toEqual(['admission-1'])
+  })
+
+  test('el contexto declarado por el consumidor viaja en la admisión: sin él, el resolver cae al máximo del modelo (A6 r4)', async () => {
+    const runtime = fakeRuntime()
+    const source = new FakeSource(admitTo(endpointOf(runtime)))
+    const response = await chat(relay(source, 24_663), HELLO)
+    expect(response.status).toBe(200)
+    expect(source.admitted).toEqual([{ requestId: 'request-1', client: 'proxy-test', model: MODEL, contextLength: 24_663 }])
   })
 
   test('en streaming, finish espera a que el cliente termine de leer el cuerpo', async () => {

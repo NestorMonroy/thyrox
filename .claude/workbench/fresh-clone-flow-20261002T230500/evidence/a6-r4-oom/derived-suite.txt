@@ -1,0 +1,37 @@
+bash tests/session/test-headless-pool-runtime.sh rc=0 OK   sin runtime: claude-cli sin motivo OK   runner claude con ollama: exit 2 OK   runner claude con ollama: no asegura el servicio 
+bash tests/session/test-headless-pool-credential-source.sh rc=0 OK   store-url con otra fuente: exit 2 OK   store-url con otra fuente: nombra la fuente que sí sirve OK   store-url con otra fuente: no se lanza ningún proxy 
+bash tests/session/test-headless-pool-thyrox-p.sh rc=0 12 ok · 0 falla(s) (alcance medido: headless-pool con thyrox -p) 
+bash tests/session/test-headless-pool-worktree.sh rc=1 test-headless-pool-worktree: 46 aserciones — 45 ok, 1 falla(s) 
+bash tests/session/test-headless-pool-local-model-e2e.sh rc=0 8 ok · 0 falla(s) (alcance medido: modelo local por el coordinador desde la unidad, con dobles) 
+bash tests/session/test-headless-pool.sh rc=1 OK   sin filas en el joblog: el total es el del índice OK   el runtime real se resuelve OK   el runtime real no recibe ejecuciones de la suite 
+bash tests/session/test-gnu-time-launchers.sh rc=2 
+bash tests/session/test-headless-pool-execution-unit.sh rc=0 16 ok · 0 falla(s) (alcance medido: headless-pool --execution unit) 
+bash tests/session/test-gpu-admission-cli.sh rc=0 OK   con sitio: exit 0 OK   sin sitio: exit 3 OK   tras esperar el plazo, no antes 
+bash tests/session/test-headless-pool-model-policy.sh rc=0 20 ok · 0 falla(s) (alcance medido: headless-pool --model-policy) 
+bash tests/session/test-bg-stdin-source.sh rc=0 bg --stdin: 8 ok, 0 fallas 
+bash tests/session/test-headless-pool-lifecycle.sh rc=0 OK   el párrafo dice cómo leer, acusar y escribir al orquestador OK   la plantilla del usuario va después del párrafo y antes del ítem OK   el orquestador recibió begin, publish y close-run 
+bash tests/session/test-headless-pool-item-drain.sh rc=0 OK   control: sin drenaje el pool cierra con el hijo vivo OK   control: y el hijo sigue escribiendo en el stream del ítem OK   control: con el escritor vivo, la publicación rehúsa y el ítem no se cierra 
+bash tests/session/test-headless-pool-exit-live-items.sh rc=0 OK   control Ac: sin drenaje, el runner sobrevive al pool OK   control Bc: la guarda se retiró OK   control Bc: sin la guarda, el worktree del ítem no cerrado se barrió 
+bash tests/session/test-item-worktree-stash.sh rc=0 
+bash tests/session/test-headless-pool-frozen-launcher.sh rc=0 OK   the frozen copy is removed when the pool exits OK   control: the freeze block was removed from the unfrozen copy OK   control: without the freeze, the rewrite reaches the live pool 
+bash tests/skills/test-evals-use-thyrox-p.sh rc=0 
+uv run --quiet pytest -q tests/verify/test_identifier_language_shell.py rc=0 8 passed in 0.32s 
+uv run --quiet pytest -q tests/verify/test_env_contract_keys.py rc=0 9 passed in 3.92s 
+uv run --quiet pytest -q tests/session/test_parallel_map_history.py rc=3 
+uv run --quiet pytest -q tests/session/test_gpu_backend.py rc=3   ok    etapa 2 — lectura que falla: error, sin cifra test_gpu_backend: 50 ok, 0 falla(s) 
+uv run --quiet pytest -q tests/session/test_pool_history.py rc=3 test_pool_history: 107 ok, 0 falla(s) 
+uv run --quiet pytest -q tests/verify/test_env_example_coverage.py rc=0 9 passed in 0.32s 
+uv run --quiet pytest -q tests/verify/test_tsc_cycle.py rc=2 
+uv run --quiet pytest -q tests/session/test_documentation_publisher.py rc=5 
+uv run --quiet pytest -q tests/session/test_gpu_scenarios.py rc=5 
+uv run --quiet pytest -q tests/hooks/test_detect_foreground_long_command.py rc=0 24 passed in 0.10s 
+uv run --quiet pytest -q tests/session/test_headless_pool_boundary.py rc=5 
+uv run --quiet pytest -q tests/hooks/test_execution_policy_enforcement.py rc=5 
+uv run --quiet pytest -q tests/hooks/test_detect_agent_dispatch.py rc=0 11 passed in 0.03s 
+bun test src/proxy/__tests__ __tests__/localProxyProcess.test.ts rc=0  99 pass  0 fail Ran 99 tests across 10 files. [4.99s] 
+bun test __tests__/printDelegation.test.ts __tests__/print.test.ts rc=0  42 pass  0 fail Ran 42 tests across 2 files. [2.54s] 
+bash -c cd src/packages/provider && bunx tsc --noEmit -p . | tail -3 rc=0 
+bash -c cd src/packages/cli && bunx tsc --noEmit -p . | tail -3 rc=0 
+uv run --quiet shellcheck src/session/headless-pool.sh tests/session/test-headless-pool-execution-unit.sh rc=1 
+
+[exited with code 0]

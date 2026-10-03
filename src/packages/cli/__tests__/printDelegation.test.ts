@@ -14,7 +14,7 @@ import { join } from 'node:path'
 import { openConnectionStore } from '@thyrox/provider/accounts/connectionStoreHome'
 import { SSH_PLACEHOLDER } from '@thyrox/provider/credentials'
 import {
-  credentialEnvironmentFor, decidePrintRoute, LOCAL_PROXY_SOCKET_ENV, type LocalProxyChild, type PrintRoute, TUNNEL_BASE_URL, tunnelEnv,
+  credentialEnvironmentFor, decidePrintRoute, LOCAL_MODEL_CONTEXT_TOKENS_ENV, LOCAL_PROXY_SOCKET_ENV, type LocalProxyChild, type PrintRoute, TUNNEL_BASE_URL, tunnelEnv,
 } from '../src/entry/printDelegation.ts'
 import { runPrint } from '../src/entry/print.ts'
 
@@ -147,6 +147,20 @@ describe('credentialEnvironmentFor — localizar o levantar el proxy', () => {
     const valueAfter = (flag: string): string[] => argv.flatMap((token, index) => (token === flag ? [argv[index + 1] as string] : []))
     expect(valueAfter('--local-model')).toEqual([localModel])
     expect(valueAfter('--model')).toEqual(['claude-sonnet-5'])
+    expect(argv).not.toContain('--context-tokens')
+  })
+
+  // A6 r4: el consumidor declaraba 24663 tokens y la admisión no los recibía;
+  // el resolver caía al máximo del modelo y la unidad moría por OOM.
+  test('el contexto que declara el consumidor viaja al proxy como --context-tokens', async () => {
+    const localModel = 'thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e'
+    let argv: string[] = []
+    const credential = await credentialEnvironmentFor(launch, {
+      env: { PATH: '/bin', [LOCAL_MODEL_CONTEXT_TOKENS_ENV]: '24663' }, cwd: '/', models: [localModel],
+      spawn: (args) => { argv = args; return shellChild('echo socket=/run/anunciado.sock; sleep 30') },
+    })
+    await credential.close()
+    expect(argv.slice(argv.indexOf('--context-tokens'), argv.indexOf('--context-tokens') + 2)).toEqual(['--context-tokens', '24663'])
   })
 
   // A6 r2 (TASK-THYROX-0912): el relé falló tras anunciar y sólo quedó «no auth

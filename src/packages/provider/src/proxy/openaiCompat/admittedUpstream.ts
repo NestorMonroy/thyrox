@@ -28,6 +28,12 @@ export interface AdmittedUpstreamOptions {
   /** Quién pide, para trazar en el coordinador: el proxy de un ítem, `thyrox -p`. */
   readonly client: string
   readonly newRequestId: () => string
+  /**
+   * El contexto que declaró el consumidor, en tokens. Viaja en cada admisión:
+   * sin él, el resolver concede el máximo del modelo y la unidad puede no
+   * caber en su memoria (A6 r4).
+   */
+  readonly contextLength?: number
 }
 
 export interface AdmittedUpstream {
@@ -73,12 +79,17 @@ async function relayRequest(options: AdmittedUpstreamOptions, request: Request):
   }
   let admission: CoordinatorAdmission
   try {
-    admission = await options.source.admit({ requestId: options.newRequestId(), client: options.client, model: body.model })
+    admission = await options.source.admit(admissionRequestOf(options, body.model))
   } catch (error) {
     return openAIError(ADMISSION_REFUSED_STATUS, 'coordinator_unavailable', `el coordinador de model scheduling no respondió: ${messageOf(error)}`)
   }
   if (admission.status !== 'admitted') return refusalResponse(admission)
   return forwardAdmitted(options.source, admission.ticket, new URL(request.url).pathname, body)
+}
+
+function admissionRequestOf(options: AdmittedUpstreamOptions, model: string): AdmissionRequest {
+  const request: AdmissionRequest = { requestId: options.newRequestId(), client: options.client, model }
+  return options.contextLength === undefined ? request : { ...request, contextLength: options.contextLength }
 }
 
 async function readJsonObject(request: Request): Promise<Record<string, unknown>> {

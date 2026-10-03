@@ -26,6 +26,12 @@ type Env = Record<string, string | undefined>
 
 /** El socket de un proxy local que alguien ya levantó (un pool, una sesión). */
 export const LOCAL_PROXY_SOCKET_ENV = 'THYROX_LOCAL_PROXY_SOCKET'
+/**
+ * El contexto, en tokens, que el consumidor declaró para un modelo local
+ * (`headless-pool --context-tokens`). Va al proxy como `--context-tokens`, que
+ * lo pide en cada admisión; sin él, el resolver concede el máximo del modelo.
+ */
+export const LOCAL_MODEL_CONTEXT_TOKENS_ENV = 'THYROX_LOCAL_MODEL_CONTEXT_TOKENS'
 /** El lanzador del proxy local por su ruta en el árbol; `bin/provider-local-proxy` es su envoltorio. */
 const LOCAL_PROXY_LAUNCHER = fileURLToPath(new URL('../../../provider/bin/localProxy.ts', import.meta.url))
 const ANNOUNCEMENT_PREFIX = 'socket='
@@ -139,6 +145,12 @@ function proxyModelArguments(model: string): string[] {
   return parseThyroxModelName(model) === undefined ? ['--model', model] : ['--local-model', model]
 }
 
+/** El contexto declarado pasa tal cual: lo valida el proxy, que rehúsa con su causa. */
+function contextArguments(env: Env): string[] {
+  const declared = env[LOCAL_MODEL_CONTEXT_TOKENS_ENV]?.trim()
+  return declared ? ['--context-tokens', declared] : []
+}
+
 /** Prefijo de lo que el proxy local escribe en stderr una vez anunciado. */
 const PROXY_DIAGNOSTIC_PREFIX = 'proxy local: '
 
@@ -167,7 +179,7 @@ async function launchLocalProxy(options: CredentialEnvironmentOptions): Promise<
   const dir = mkdtempSync(join(tmpdir(), 'thyrox-local-proxy-'))
   const requestedSocket = join(dir, 'proxy.sock')
   const spawn = options.spawn ?? spawnLocalProxy
-  const argv = ['--socket', requestedSocket, ...options.models.flatMap(proxyModelArguments)]
+  const argv = ['--socket', requestedSocket, ...options.models.flatMap(proxyModelArguments), ...contextArguments(options.env)]
   const child = spawn(argv, { env: options.env, cwd: options.cwd })
   const stop = async (): Promise<void> => {
     child.kill()
