@@ -5,7 +5,11 @@
  * seguridad. Con `--timeout 0` se decide en el acto: un laboratorio que no
  * cabe rehúsa antes de descargar, no espera ni corre sin reserva.
  */
-import { runCommand } from '@thyrox/podman-execution/podmanExecutor.ts'
+import { join } from 'node:path'
+
+import { runCommand, type PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
+
+import { observedUnitPlacement, type UnitPlacement } from './unitPlacement.ts'
 
 const EXIT_ADMITTED = 0
 const EXIT_UNMEASURED = 2
@@ -22,17 +26,30 @@ export interface ResourceAdmission {
   releaseAll(): Promise<void>
 }
 
+/** La ubicación no se pudo derivar: no se mide en otra frontera en su lugar. */
+class UnderivablePlacement {
+  constructor(readonly detail: string) {}
+}
+
+/**
+ * Con `placement`, la RAM se mide y se reserva en el cgroup donde el runtime
+ * crea la unidad (`--target-cgroup`, H-THYROX-471); sin él, en el de este
+ * proceso, que es la frontera de lo que corre dentro de él.
+ */
 export class ResourceAdmissionCli implements ResourceAdmission {
-  constructor(private readonly admissionBin: string, private readonly ownerPid: number) {}
+  constructor(private readonly admissionBin: string, private readonly ownerPid: number,
+    private readonly placement?: UnitPlacement) {}
 
   admitDisk(needBytes: number, path: string): Promise<AdmissionOutcome> {
     return this.admit(['disk-admit', '--need-bytes', String(needBytes), '--owner', this.owner(), '--path', path, '--timeout', IMMEDIATE_DECISION])
   }
 
-  admitMemory(needBytes: number, containerName: string): Promise<AdmissionOutcome> {
+  async admitMemory(needBytes: number, containerName: string): Promise<AdmissionOutcome> {
+    const target = await this.targetArguments()
+    if (target instanceof UnderivablePlacement) return { admitted: false, unmeasured: true, detail: target.detail }
     const needKib = String(Math.ceil(needBytes / BYTES_PER_KIB))
     return this.admit(['admit-ram', needKib, '--owner', this.owner(), '--container', containerName,
-      '--memory-limit-kb', needKib, '--timeout', IMMEDIATE_DECISION])
+      '--memory-limit-kb', needKib, '--timeout', IMMEDIATE_DECISION, ...target])
   }
 
   /**
@@ -41,7 +58,9 @@ export class ResourceAdmissionCli implements ResourceAdmission {
    * para desalojar residencias ociosas antes de establecer otra (H-THYROX-448).
    */
   async availableBytes(): Promise<number | undefined> {
-    const result = await runCommand(this.admissionBin, ['headroom-ram'])
+    const target = await this.targetArguments()
+    if (target instanceof UnderivablePlacement) return undefined
+    const result = await runCommand(this.admissionBin, ['headroom-ram', ...target])
     const kib = result.stdout.trim()
     return result.exitCode === EXIT_ADMITTED && /^-?\d+$/.test(kib) ? Number(kib) * BYTES_PER_KIB : undefined
   }
@@ -49,6 +68,15 @@ export class ResourceAdmissionCli implements ResourceAdmission {
   async releaseAll(): Promise<void> {
     await runCommand(this.admissionBin, ['disk-release', '--owner', this.owner()])
     await runCommand(this.admissionBin, ['release', '--owner', this.owner()])
+  }
+
+  private async targetArguments(): Promise<readonly string[] | UnderivablePlacement> {
+    if (!this.placement) return []
+    try {
+      return ['--target-cgroup', await this.placement()]
+    } catch (error) {
+      return new UnderivablePlacement(`ubicación de la unidad no derivable: ${error instanceof Error ? error.message : String(error)}`)
+    }
   }
 
   private owner(): string {
@@ -60,4 +88,13 @@ export class ResourceAdmissionCli implements ResourceAdmission {
     if (result.exitCode === EXIT_ADMITTED) return { admitted: true }
     return { admitted: false, unmeasured: result.exitCode === EXIT_UNMEASURED, detail: result.stderr.trim() }
   }
+}
+
+/**
+ * La admisión de quien crea unidades de Podman —el coordinador y los
+ * laboratorios—: mide y reserva en la ubicación que el runtime informa de sus
+ * unidades, no en el cgroup de este proceso.
+ */
+export function unitResourceAdmission(thyroxRoot: string, podman: PodmanExecutor, ownerPid = process.pid): ResourceAdmissionCli {
+  return new ResourceAdmissionCli(join(thyroxRoot, 'bin', 'resource_admission'), ownerPid, observedUnitPlacement(podman))
 }

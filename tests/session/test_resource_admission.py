@@ -444,5 +444,60 @@ with tempfile.TemporaryDirectory() as floor_dir:
                                       capture_output=True, text=True, env={**os.environ, "THYROX_RAM_ADMISSION_FLOOR_MB": "2048"})
     check("admit-ram decide con el mismo piso: 4 GB no caben en 5 GB con 2 GiB de piso", 3, refused_by_floor.returncode)
 
+print("caso 28 — la holgura se mide en la frontera donde corre la unidad, no en la de la sesión (H-THYROX-471)")
+with tempfile.TemporaryDirectory() as target_dir:
+    target_root = Path(target_dir)
+    host = meminfo(target_root / "meminfo", 10_000)
+    session = membership(target_root / "self", "4:memory:/process_api/s/bash\n0::/\n")
+    for ancestor in (("process_api",), ("process_api", "s")):
+        cgroup_level(target_root.joinpath("memory", *ancestor), V1_FILES, str(V1_SENTINEL), str(5 * MIB // 2))
+    cgroup_level(target_root / "memory" / "process_api" / "s" / "bash", V1_FILES, str(3 * MIB), str(5 * MIB // 2))
+    cgroup_level(target_root / "memory" / "libpod_parent", V1_FILES, str(V1_SENTINEL), str(2 * MIB))
+    session_view = ra.CgroupView(session, target_root)
+    unit_view = ra.CgroupView(session, target_root, placement="/libpod_parent")
+    session_kb = ra.effective_available_ram_kb(host, session_view)
+    unit_kb = ra.effective_available_ram_kb(host, unit_view)
+    check("la sesión deja 512 kB bajo su límite", 512, session_kb)
+    check("la frontera de las unidades no tiene límite: manda el anfitrión", 10_000, unit_kb)
+    check("la memoria de la sesión no es la de la unidad", True, session_kb != unit_kb)
+    cgroup_level(target_root / "memory" / "libpod_parent", V1_FILES, str(4 * MIB), str(1 * MIB))
+    check("un límite en la frontera de las unidades sí cuenta: 3 MiB", 3072,
+          ra.effective_available_ram_kb(host, unit_view))
+    published = cli("headroom-ram", "--self-cgroup", str(session), "--cgroup-root", str(target_root),
+                    "--target-cgroup", "/libpod_parent", "--ledger", str(target_root / "ram.json"),
+                    "--meminfo", str(host))
+    check("headroom-ram --target-cgroup publica la holgura de la frontera de la unidad", (0, "3072"),
+          (published.returncode, published.stdout.strip()))
+    admitted = cli("admit-ram", "2048", "--self-cgroup", str(session), "--cgroup-root", str(target_root),
+                   "--target-cgroup", "/libpod_parent", "--ledger", str(target_root / "admit.json"),
+                   "--owner", str(os.getpid()), "--meminfo", str(host), "--timeout", "0")
+    check("admit-ram reserva contra la misma frontera: 2 MiB caben aunque la sesión deje 512 kB", 0,
+          admitted.returncode)
+    floored = subprocess.run([sys.executable, "-m", "session.resource_admission", "headroom-ram",
+                              "--self-cgroup", str(session), "--cgroup-root", str(target_root),
+                              "--target-cgroup", "/libpod_parent", "--ledger", str(target_root / "floor.json"),
+                              "--meminfo", str(host)],
+                             capture_output=True, text=True, cwd=ROOT / "src",
+                             env={**os.environ, "THYROX_RAM_ADMISSION_FLOOR_MB": "1"}).stdout.strip()
+    check("el piso de seguridad se descuenta igual en la frontera de la unidad", str(3072 - 1024), floored)
+
+print("caso 29 — el uso de un nivel es su working set: la caché de archivos inactiva se recupera")
+with tempfile.TemporaryDirectory() as ws_dir:
+    ws_root = Path(ws_dir)
+    ws_host = meminfo(ws_root / "meminfo", 10_000)
+    ws_self = membership(ws_root / "self", "4:memory:/a\n")
+    cgroup_level(ws_root / "memory" / "a", V1_FILES, str(4 * MIB), str(3 * MIB))
+    (ws_root / "memory" / "a" / "memory.stat").write_text(f"cache {2 * MIB}\ntotal_inactive_file {2 * MIB}\n")
+    check("v1: 4 MiB − (3 MiB − 2 MiB inactivos) = 3 MiB", 3072,
+          ra.effective_available_ram_kb(ws_host, ra.CgroupView(ws_self, ws_root)))
+    ws_v2 = membership(ws_root / "self-v2", "0::/b\n")
+    cgroup_level(ws_root / "unified" / "b", V2_FILES, str(4 * MIB), str(3 * MIB))
+    (ws_root / "unified" / "b" / "memory.stat").write_text(f"anon {MIB}\ninactive_file {MIB}\n")
+    check("v2: 4 MiB − (3 MiB − 1 MiB inactivo) = 2 MiB", 2048,
+          ra.effective_available_ram_kb(ws_host, ra.CgroupView(ws_v2, ws_root / "unified")))
+    (ws_root / "unified" / "b" / "memory.stat").write_text("inactive_file basura\n")
+    check("un memory.stat ilegible es «sin medida», no el uso bruto", None,
+          ra.effective_available_ram_kb(ws_host, ra.CgroupView(ws_v2, ws_root / "unified")))
+
 print(f"test_resource_admission: {OK} ok, {FAILED} fallos")
 sys.exit(1 if FAILED else 0)

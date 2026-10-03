@@ -38,7 +38,7 @@ import { createPodmanExecutor, type PodmanExecutor } from '@thyrox/podman-execut
 import type { ContainerOwner } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
 
 import { freeLoopbackPort } from './loopbackPort.ts'
-import { ResourceAdmissionCli } from './resourceAdmission.ts'
+import { unitResourceAdmission } from './resourceAdmission.ts'
 import type { Environment } from './managedOllama.ts'
 import { OllamaRuntimeAdapter } from './ollamaRuntimeAdapter.ts'
 import { TransformersRuntimeAdapter } from './transformersRuntimeAdapter.ts'
@@ -103,8 +103,9 @@ export function composeHostCoordinatorService(env: Environment, thyroxRoot: stri
   const owner: ContainerOwner = { kind: MODEL_COORDINATOR_OWNER_KIND, id: `${MODEL_COORDINATOR_OWNER_KIND}.${hostname()}`, pid: process.pid }
   const currentGeneration = (residencyKey: string) => coordination.currentGeneration(residencyKey)
   const artifactCache = localArtifactHome(env, thyroxRoot).artifactCache
+  const podman = dependencies.podman ?? createPodmanExecutor()
   const primitive = new PodmanModelUnitMaterializer({
-    podman: dependencies.podman ?? createPodmanExecutor(),
+    podman,
     currentGeneration,
     profiles: {
       ollama: {
@@ -139,8 +140,9 @@ export function composeHostCoordinatorService(env: Environment, thyroxRoot: stri
     leaseTtlMs: LEASE_TTL_MS,
     health: HEALTH,
     // La RAM se mide antes de establecer otra residencia, y las ociosas se
-    // desalojan si no cabe (H-THYROX-448): la holgura es la de `admit-ram`.
-    ramHeadroom: dependencies.ramHeadroom ?? new ResourceAdmissionCli(join(thyroxRoot, 'bin', 'resource_admission'), process.pid),
+    // desalojan si no cabe (H-THYROX-448): la holgura es la de `admit-ram`,
+    // medida donde el runtime crea las unidades (H-THYROX-471).
+    ramHeadroom: dependencies.ramHeadroom ?? unitResourceAdmission(thyroxRoot, podman),
     // Y la CPU: las unidades vivas más la nueva no pasan de las del anfitrión.
     cpuCapacity: unitCpuCapacity(availableParallelism()),
   })

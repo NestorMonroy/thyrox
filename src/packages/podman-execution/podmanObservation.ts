@@ -21,6 +21,8 @@ export type ObservedMount = { type: string; name: string | null; source: string;
 export type ObservedContainer = {
   id: string; name: string; state: string; running: boolean; pid: number; imageId: string; image: string
   created: string; labels: Record<string, string>; mounts: ObservedMount[]; portBindings: Record<string, { hostIp: string; hostPort: string }[]>
+  /** El cgroup del contenedor visto desde el anfitrión (`State.CgroupPath`); vacío si no corre. */
+  cgroup: string
 }
 export type ObservedVolume = { name: string; mountpoint: string; createdAt: string; labels: Record<string, string> }
 export type ObservedImage = { id: string; tags: string[]; digests: string[]; bytes: number; created: string; labels: Record<string, string> }
@@ -65,6 +67,7 @@ function containerOf(document: Json): ObservedContainer {
     })),
     portBindings: Object.fromEntries(Object.entries(bindings).map(([port, list]) =>
       [port, (list ?? []).map(binding => ({ hostIp: binding.HostIp ?? '', hostPort: binding.HostPort ?? '' }))])),
+    cgroup: asString(state.CgroupPath),
   }
 }
 

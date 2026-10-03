@@ -24,7 +24,7 @@ import { importExternalArtifact, importIdOf, type ExternalArtifactRequest } from
 import { isGgufQuantization } from './ggufValidation.js'
 import { QuantizationLab, containerMeasureProbe, resolveLabImage } from './quantizationLab.js'
 import { DEFAULT_LAB_IMAGE, EXIT_LEASE_BUSY, LAB_IMAGE_ENV, optionsOf } from './labCommandOptions.js'
-import { ResourceAdmissionCli } from './resourceAdmission.js'
+import { unitResourceAdmission } from './resourceAdmission.js'
 import { RunLeaseBusyError, RunLeaseUnavailableError, acquireRunLease, globalLeaseStore } from './runLease.js'
 
 export const IMPORT_USAGE = 'uso: local-models-import run --repository R --revision SHA --file F[,F…] --sha256 HEX[,HEX…] '
@@ -79,7 +79,7 @@ async function acquire(parsed: ImportArguments, context: CommandContext): Promis
   const outcome = await importExternalArtifact(parsed.request, {
     fetcher: url => fetch(url),
     runInLab: step => lab.run(step),
-    admission: new ResourceAdmissionCli(join(context.thyroxRoot, 'bin', 'resource_admission'), process.pid),
+    admission: unitResourceAdmission(context.thyroxRoot, podman),
     freeBytes: async path => { const info = await statfs(path); return info.bavail * info.bsize },
     catalogPath: localModelHome(context.env, context.thyroxRoot).catalog,
     labImageDigest: image.digest,

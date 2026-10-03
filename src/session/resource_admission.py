@@ -279,9 +279,18 @@ class CgroupUnreadable(Exception):
 
 @dataclass(frozen=True)
 class CgroupView:
-    """De dónde se lee el cgroup: la pertenencia del proceso y la raíz montada."""
+    """De dónde se lee el cgroup: la pertenencia del proceso, la raíz montada
+    y, si se declara, la ubicación del destino de ejecución.
+
+    ``placement`` es el cgroup donde el runtime crea la unidad que se admite
+    (el padre del ``CgroupPath`` que Podman informa de sus unidades). Sin él
+    se mide el cgroup de este proceso, que sólo es la frontera correcta para
+    lo que corre dentro de él: una unidad de Podman no se carga a la sesión
+    que la pidió (H-THYROX-471). La pertenencia sigue decidiendo la jerarquía
+    —v1 o v2—, que es del anfitrión y no del proceso."""
     membership: Path = SELF_CGROUP
     root: Path = DEFAULT_CGROUP_ROOT
+    placement: str | None = None
 
 
 @dataclass(frozen=True)
@@ -291,6 +300,7 @@ class MemoryHierarchy:
     own: str
     limit_file: str
     usage_file: str
+    inactive_file_key: str
 
     def levels(self) -> list[Path]:
         """El cgroup propio y sus ancestros, sin la raíz de la jerarquía: la
@@ -309,11 +319,12 @@ def memory_hierarchy(view: CgroupView) -> MemoryHierarchy | None:
         raise CgroupUnreadable(f"pertenencia ilegible en {view.membership}: {error}") from error
     for _hierarchy, controllers, own in lines:
         if V1_MEMORY_CONTROLLER in controllers.split(","):
-            return MemoryHierarchy(view.root / V1_MEMORY_CONTROLLER, own,
-                                   "memory.limit_in_bytes", "memory.usage_in_bytes")
+            return MemoryHierarchy(view.root / V1_MEMORY_CONTROLLER, view.placement or own,
+                                   "memory.limit_in_bytes", "memory.usage_in_bytes", "total_inactive_file")
     for hierarchy, controllers, own in lines:
         if hierarchy == V2_HIERARCHY_ID and not controllers:
-            return MemoryHierarchy(view.root, own, "memory.max", "memory.current")
+            return MemoryHierarchy(view.root, view.placement or own, "memory.max", "memory.current",
+                                   "inactive_file")
     return None
 
 
@@ -326,13 +337,32 @@ def read_limit(path: Path) -> int | Unlimited:
     return UNLIMITED if value >= V1_UNLIMITED_FLOOR else value
 
 
+def reclaimable_bytes(level: Path, hierarchy: MemoryHierarchy) -> int:
+    """La caché de archivos inactiva del nivel, que el kernel recupera antes
+    de rehusar memoria. Sin ``memory.stat``, 0: el uso bruto es la cota
+    conservadora. Un ``memory.stat`` presente e ilegible no es 0: lanza."""
+    stat = level / "memory.stat"
+    if not stat.exists():
+        return 0
+    for line in stat.read_text().splitlines():
+        key, _, value = line.partition(" ")
+        if key == hierarchy.inactive_file_key:
+            return int(value)
+    return 0
+
+
 def level_headroom(level: Path, hierarchy: MemoryHierarchy) -> int | Unlimited:
-    """Lo que queda bajo el límite de UN nivel: ``max(0, límite − uso)``."""
+    """Lo que queda bajo el límite de UN nivel: ``max(0, límite − working set)``.
+
+    El working set es el uso menos la caché de archivos inactiva: el uso
+    bruto de v1 y v2 incluye la caché de página, y contarla como ocupada
+    rehúsa memoria que el kernel entrega reclamando esa caché."""
     try:
         limit = read_limit(level / hierarchy.limit_file)
         if isinstance(limit, Unlimited):
             return UNLIMITED
-        return max(0, limit - int((level / hierarchy.usage_file).read_text().strip()))
+        usage = int((level / hierarchy.usage_file).read_text().strip())
+        return max(0, limit - max(0, usage - reclaimable_bytes(level, hierarchy)))
     except (OSError, ValueError) as error:
         raise CgroupUnreadable(f"cgroup ilegible en {level}: {error}") from error
 
@@ -531,13 +561,18 @@ def admit_ram(args: argparse.Namespace) -> int:
     admitted = admit_with(ledger, bounded_need(args.need, args.memory_limit_kb), args.owner,
                           lambda live: ram_headroom(live, meminfo,
                                                     ledger_usage(ledger, args.podman, args.cgroup_root),
-                                                    CgroupView(args.self_cgroup, args.cgroup_root)),
+                                                    target_view(args)),
                           "ram-admission", args.timeout, args.interval)
     if admitted:
         return EXIT_ADMITTED
-    report_ram_refusal(bounded_need(args.need, args.memory_limit_kb), meminfo, ledger,
-                       CgroupView(args.self_cgroup, args.cgroup_root))
+    report_ram_refusal(bounded_need(args.need, args.memory_limit_kb), meminfo, ledger, target_view(args))
     return EXIT_TIMEOUT
+
+
+def target_view(args: argparse.Namespace) -> CgroupView:
+    """La vista del cgroup que acota la RAM de lo que se admite: la ubicación
+    del destino si se declaró con ``--target-cgroup``, la de este proceso si no."""
+    return CgroupView(args.self_cgroup, args.cgroup_root, args.target_cgroup)
 
 
 def report_ram_refusal(need_kb: int, meminfo: Path, ledger: Path, cgroup: CgroupView) -> None:
@@ -559,7 +594,7 @@ def headroom_ram(args: argparse.Namespace) -> int:
     ledger = args.ledger or ram_ledger_path()
     headroom = ram_headroom(ReservationLedger(ledger).live(), meminfo,
                             ledger_usage(ledger, args.podman, args.cgroup_root),
-                            CgroupView(args.self_cgroup, args.cgroup_root))
+                            target_view(args))
     if headroom is None:
         print("resource_admission headroom-ram: no se pudo medir lo libre o el uso de un dueño", file=sys.stderr)
         return EXIT_UNMEASURED
@@ -590,6 +625,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_admit.add_argument("--cgroup-root", type=Path, default=DEFAULT_CGROUP_ROOT)
     p_admit.add_argument("--self-cgroup", type=Path, default=SELF_CGROUP,
                          help="la pertenencia a cgroups cuyo límite acota la RAM libre")
+    p_admit.add_argument("--target-cgroup", default=None,
+                         help="el cgroup donde el runtime crea la unidad (p. ej. el padre del CgroupPath de "
+                              "sus unidades); sin él se mide el del proceso que pregunta")
     p_admit.set_defaults(handler=admit_ram)
     p_headroom = sub.add_parser("headroom-ram", help="publica en kB, sin reservar, la holgura de RAM; sale 2 si no mide")
     p_headroom.add_argument("--ledger", type=Path, default=None)
@@ -598,6 +636,9 @@ def build_parser() -> argparse.ArgumentParser:
     p_headroom.add_argument("--cgroup-root", type=Path, default=DEFAULT_CGROUP_ROOT)
     p_headroom.add_argument("--self-cgroup", type=Path, default=SELF_CGROUP,
                             help="la pertenencia a cgroups cuyo límite acota la RAM libre")
+    p_headroom.add_argument("--target-cgroup", default=None,
+                            help="el cgroup donde el runtime crea la unidad (p. ej. el padre del CgroupPath de "
+                              "sus unidades); sin él se mide el del proceso que pregunta")
     p_headroom.set_defaults(handler=headroom_ram)
     p_release = sub.add_parser("release", help="suelta la reserva de RAM de OWNER")
     p_release.add_argument("--ledger", type=Path, default=None)

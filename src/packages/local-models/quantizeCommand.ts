@@ -26,7 +26,7 @@ import { QuantizationLab, containerMeasureProbe, resolveLabImage } from './quant
 import { runIdOf, runQuantization, type QuantizationRequest, type RunState } from './quantizationRun.js'
 import { quantizedPath } from './quantizationSteps.js'
 import { DEFAULT_LAB_IMAGE, EXIT_LEASE_BUSY, LAB_IMAGE_ENV, optionsOf } from './labCommandOptions.js'
-import { ResourceAdmissionCli } from './resourceAdmission.js'
+import { unitResourceAdmission } from './resourceAdmission.js'
 import { RunLeaseBusyError, RunLeaseUnavailableError, acquireRunLease, globalLeaseStore } from './runLease.js'
 import { sha256OfFile } from './sha256File.js'
 
@@ -87,7 +87,7 @@ async function quantize(parsed: QuantizeArguments, context: CommandContext): Pro
     fetcher: url => fetch(url),
     runInLab: step => lab.run(step),
     labImage: image,
-    admission: new ResourceAdmissionCli(join(context.thyroxRoot, 'bin', 'resource_admission'), process.pid),
+    admission: unitResourceAdmission(context.thyroxRoot, podman),
     freeBytes: async path => { const info = await statfs(path); return info.bavail * info.bsize },
     register: (state, request) => registerArtifact(state, request, context),
     now: context.now,
