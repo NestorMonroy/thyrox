@@ -6,9 +6,9 @@
   ok    4 la entrada declarada no es un payload no gestionado
   ok    4 la primitiva genérica se niega
   ok    4 un payload de shell se niega
-  FALLA 5 una identidad no declarada — esperado [2] obtenido [2 sin el motivo «imagen no declarada»]
-  FALLA 5 run como identidad — esperado [2] obtenido [2 sin el motivo «imagen no declarada»]
+  ok    5 una identidad no declarada
+  ok    5 run como identidad
   ok    5 --context del llamador
   ok    5 --mount del socket de Podman
   ok    5 Podman no se invocó en ningún rechazo
-test-declared-image-build-entry: 11 ok, 2 falla(s)
+test-declared-image-build-entry: 13 ok, 0 falla(s)

@@ -1,51 +1,64 @@
 bun test v1.3.11 (af24e281)
 
 __tests__/declaredImageBuildCommand.test.ts:
-(pass) the catalog declares the quantizer image > thyrox-model-quantizer is declared with a versioned context, permanent lifecycle and its own network policy [0.17ms]
-(pass) the catalog declares the quantizer image > an undeclared identity is refused by the catalog [0.16ms]
+(pass) the catalog declares the quantizer image > thyrox-model-quantizer is declared with a versioned context, permanent lifecycle and its own network policy [0.13ms]
+(pass) the catalog declares the quantizer image > an undeclared identity is refused by the catalog [0.17ms]
 (pass) the catalog declares the quantizer image > every declared context lives inside the repository [0.06ms]
-(pass) declared image build: the allowed request > the quantizer builds from its catalog definition through the primitive [1.21ms]
+(pass) declared image build: the allowed request > the quantizer builds from its catalog definition through the primitive [1.58ms]
 (pass) declared image build: the allowed request > the result names the image, its tag, its id and the definition it came from [0.24ms]
-(pass) declared image build: the allowed request > the proxy reaches the build only as the primitive passes it: never as a recorded build argument [0.28ms]
-(pass) declared image build: refused without touching Podman > an undeclared identity [0.17ms]
+(pass) declared image build: the allowed request > the proxy reaches the build only as the primitive passes it: never as a recorded build argument [0.33ms]
+(pass) declared image build: refused without touching Podman > an undeclared identity [0.18ms]
 (pass) declared image build: refused without touching Podman > a primitive subcommand as identity: run [0.03ms]
 (pass) declared image build: refused without touching Podman > a primitive subcommand as identity: remove-image [0.02ms]
 (pass) declared image build: refused without touching Podman > a primitive subcommand as identity: reconcile-orphans [0.02ms]
-(pass) declared image build: refused without touching Podman > the generic builder as identity: build-image [0.02ms]
+(pass) declared image build: refused without touching Podman > the generic builder as identity: build-image [0.03ms]
 (pass) declared image build: refused without touching Podman > no identity [0.04ms]
 (pass) declared image build: refused without touching Podman > two identities [0.02ms]
 (pass) declared image build: refused without touching Podman > no task or work reference [0.02ms]
-(pass) declared image build: refused without touching Podman > a malformed task citation [0.01ms]
-129 |     ['a shell payload after --', ['--task', TASK, QUANTIZER, '--', 'bash', '-c', 'id']],
-130 |   ]
-131 |   for (const [name, argv] of refusals) {
-132 |     test(name, async () => {
-133 |       const h = harness()
-134 |       expect(await runDeclaredImageBuildCommand(argv, h.deps)).toBe(EXIT_REFUSED)
+(pass) declared image build: refused without touching Podman > a malformed task citation [0.02ms]
+142 |     ['a shell payload after --', ['--task', TASK, QUANTIZER, '--', 'bash', '-c', 'id']],
+143 |   ]
+144 |   for (const [name, argv] of refusals) {
+145 |     test(name, async () => {
+146 |       const h = harness()
+147 |       expect(await runDeclaredImageBuildCommand(argv, h.deps)).toBe(EXIT_REFUSED)
                                                                      ^
 error: expect(received).toBe(expected)
 
 Expected: 2
 Received: 0
 
-      at <anonymous> (/home/user/thyrox/.thyrox/runtime/worktrees/declared-image-build/src/packages/image-registry/__tests__/declaredImageBuildCommand.test.ts:134:64)
-(fail) declared image build: refused without touching Podman > a caller --context [0.18ms]
-(pass) declared image build: refused without touching Podman > a caller --containerfile [0.07ms]
-(pass) declared image build: refused without touching Podman > a caller --network [0.01ms]
+      at <anonymous> (/home/user/thyrox/src/packages/image-registry/__tests__/declaredImageBuildCommand.test.ts:147:64)
+(fail) declared image build: refused without touching Podman > a caller --context [0.26ms]
+(pass) declared image build: refused without touching Podman > a caller --containerfile [0.09ms]
+(pass) declared image build: refused without touching Podman > a caller --network [0.02ms]
 (pass) declared image build: refused without touching Podman > a caller --lifecycle [0.02ms]
-(pass) declared image build: refused without touching Podman > a caller --tag [0.01ms]
+(pass) declared image build: refused without touching Podman > a caller --tag [0.03ms]
 (pass) declared image build: refused without touching Podman > a caller --mount of / [0.02ms]
 (pass) declared image build: refused without touching Podman > a caller --mount of HOME [0.02ms]
-(pass) declared image build: refused without touching Podman > a caller --mount of the Podman socket [0.08ms]
+(pass) declared image build: refused without touching Podman > a caller --mount of the Podman socket [0.04ms]
 (pass) declared image build: refused without touching Podman > a caller --image [0.03ms]
-(pass) declared image build: refused without touching Podman > a shell payload after -- [0.02ms]
-(pass) declared image build: refused without touching Podman > a definition with uncommitted changes has no versioned identity [0.18ms]
-(pass) declared image build: refused without touching Podman > a revision that is not a full commit is refused [0.12ms]
+(pass) declared image build: refused without touching Podman > a shell payload after -- [0.03ms]
+(pass) declared image build: refused without touching Podman > a definition with uncommitted changes has no versioned identity [0.23ms]
+(pass) declared image build: refused without touching Podman > a revision that is not a full commit is refused [0.15ms]
+(pass) the managed worker stays outside the Podman control plane > a default unit receives no Podman socket, store or host variable [2.59ms]
+(pass) the managed worker stays outside the Podman control plane > control: a caller mount of the socket does reach the unit — the reason run stays unreachable [0.52ms]
+(pass) the build is admitted against disk before Podman runs > the declared peak is reserved before the build and released after it [0.27ms]
+(pass) the build is admitted against disk before Podman runs > a build that does not fit is refused before Podman and nothing is reserved to release [0.28ms]
+(pass) the build is admitted against disk before Podman runs > a failed build still releases its reservation [0.35ms]
+(pass) the build is admitted against disk before Podman runs > every declared image declares a positive disk peak [0.10ms]
+(pass) the versioned identity covers the whole definition, catalog included > the revision is measured over the catalog and the build context [0.26ms]
+(pass) the versioned identity covers the whole definition, catalog included > the catalog path names the module that declares the images [0.14ms]
+(pass) a consumer work reference follows the canonical patterns > --work Upper:id is refused [0.19ms]
+(pass) a consumer work reference follows the canonical patterns > --work consumer: is refused [0.08ms]
+(pass) a consumer work reference follows the canonical patterns > --work :id is refused [0.03ms]
+(pass) a consumer work reference follows the canonical patterns > --work consumer:/absolute is refused [0.02ms]
+(pass) a consumer work reference follows the canonical patterns > a well-formed --work builds under the consumer identity [0.22ms]
 
 1 tests failed:
-(fail) declared image build: refused without touching Podman > a caller --context [0.18ms]
+(fail) declared image build: refused without touching Podman > a caller --context [0.26ms]
 
- 26 pass
+ 39 pass
  1 fail
- 59 expect() calls
-Ran 27 tests across 1 file. [207.00ms]
+ 90 expect() calls
+Ran 40 tests across 1 file. [155.00ms]

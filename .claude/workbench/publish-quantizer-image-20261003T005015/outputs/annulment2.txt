@@ -1,0 +1,30 @@
+baseline	unit-fail=0	policy-fail=0
+identity	unit-fail=12	policy-fail=0
+  identity unit (fail) the catalog declares the quantizer image > an undeclared identity is refused by the catalog [2.21ms]
+  identity unit (fail) declared image build: refused without touching Podman > an undeclared identity [0.25ms]
+  identity unit (fail) declared image build: refused without touching Podman > a primitive subcommand as identity: run [0.08ms]
+  identity unit (fail) declared image build: refused without touching Podman > a primitive subcommand as identity: remove-image [0.06ms]
+  identity unit (fail) declared image build: refused without touching Podman > a primitive subcommand as identity: reconcile-orphans [0.10ms]
+  identity unit (fail) declared image build: refused without touching Podman > the generic builder as identity: build-image [0.07ms]
+  identity unit (fail) the catalog declares the quantizer image > an undeclared identity is refused by the catalog [2.21ms]
+  identity unit (fail) declared image build: refused without touching Podman > an undeclared identity [0.25ms]
+  identity unit (fail) declared image build: refused without touching Podman > a primitive subcommand as identity: run [0.08ms]
+  identity unit (fail) declared image build: refused without touching Podman > a primitive subcommand as identity: remove-image [0.06ms]
+  identity unit (fail) declared image build: refused without touching Podman > a primitive subcommand as identity: reconcile-orphans [0.10ms]
+  identity unit (fail) declared image build: refused without touching Podman > the generic builder as identity: build-image [0.07ms]
+caller-context	unit-fail=2	policy-fail=0
+  caller-context unit (fail) declared image build: refused without touching Podman > a caller --context [0.27ms]
+  caller-context unit (fail) declared image build: refused without touching Podman > a caller --context [0.27ms]
+entry-row	unit-fail=0	policy-fail=2
+  entry-row policy   FALLA 1 la construcción declarada es entrada del plano de control — esperado [0] obtenido [1]
+  entry-row policy   FALLA 4 la entrada declarada no es un payload no gestionado — esperado [allow] obtenido [deny]
+disk-admission	unit-fail=4	policy-fail=0
+  disk-admission unit (fail) the build is admitted against disk before Podman runs > the declared peak is reserved before the build and released after it [0.50ms]
+  disk-admission unit (fail) the build is admitted against disk before Podman runs > a build that does not fit is refused before Podman and nothing is reserved to release [0.47ms]
+  disk-admission unit (fail) the build is admitted against disk before Podman runs > the declared peak is reserved before the build and released after it [0.50ms]
+  disk-admission unit (fail) the build is admitted against disk before Podman runs > a build that does not fit is refused before Podman and nothing is reserved to release [0.47ms]
+catalog-closure	unit-fail=2	policy-fail=0
+  catalog-closure unit (fail) the versioned identity covers the whole definition, catalog included > the revision is measured over the catalog and the build context [0.46ms]
+  catalog-closure unit (fail) the versioned identity covers the whole definition, catalog included > the revision is measured over the catalog and the build context [0.46ms]
+ M src/packages/image-registry/declaredImageBuildCommand.ts
+ M src/packages/image-registry/declaredImages.ts

@@ -60,11 +60,19 @@ check "4 la entrada declarada no es un payload no gestionado" "$(verdict 'bash b
 check "4 la primitiva genérica se niega" "$(verdict 'bash bin/podman-execution-execute build-image --task TASK-THYROX-0912 --context / --tag x:y')" "deny"
 check "4 un payload de shell se niega" "$(verdict 'bash -c id')" "deny"
 
-refused() { bash "$ENTRY" "$@" >/dev/null 2>&1; echo "$?"; }
-check "5 una identidad no declarada" "$(refused --task TASK-THYROX-0912 thyrox-anything)" "2"
-check "5 run como identidad" "$(refused --task TASK-THYROX-0912 run)" "2"
-check "5 --context del llamador" "$(refused --task TASK-THYROX-0912 --context / thyrox-model-quantizer)" "2"
-check "5 --mount del socket de Podman" "$(refused --task TASK-THYROX-0912 --mount /run/podman/podman.sock thyrox-model-quantizer)" "2"
+# El código 2 no basta: también lo da una admisión de disco que rehúsa. Se
+# exige el motivo, para que un mutante que deje pasar la petición no quede
+# oculto tras otro rechazo posterior.
+refused() {
+  local reason="$1" errors rc
+  shift
+  errors="$(bash "$ENTRY" "$@" 2>&1 >/dev/null)"; rc=$?
+  if grep -qF -- "$reason" <<<"$errors"; then echo "$rc"; else echo "$rc sin el motivo «$reason»"; fi
+}
+check "5 una identidad no declarada" "$(refused 'imagen no declarada' --task TASK-THYROX-0912 thyrox-anything)" "2"
+check "5 run como identidad" "$(refused 'imagen no declarada' --task TASK-THYROX-0912 run)" "2"
+check "5 --context del llamador" "$(refused "'--context'" --task TASK-THYROX-0912 --context / thyrox-model-quantizer)" "2"
+check "5 --mount del socket de Podman" "$(refused "'--mount'" --task TASK-THYROX-0912 --mount /run/podman/podman.sock thyrox-model-quantizer)" "2"
 check "5 Podman no se invocó en ningún rechazo" "$(cat "$TMP/podman.calls" 2>/dev/null | wc -l | tr -d ' ')" "0"
 
 echo "test-declared-image-build-entry: $ok ok, $failures falla(s)"

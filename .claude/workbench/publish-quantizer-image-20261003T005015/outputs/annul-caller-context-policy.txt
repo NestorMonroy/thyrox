@@ -8,7 +8,7 @@
   ok    4 un payload de shell se niega
   ok    5 una identidad no declarada
   ok    5 run como identidad
-  FALLA 5 --context del llamador — esperado [2] obtenido [0]
+  FALLA 5 --context del llamador — esperado [2] obtenido [2 sin el motivo «'--context'»]
   ok    5 --mount del socket de Podman
-  FALLA 5 Podman no se invocó en ningún rechazo — esperado [0] obtenido [2]
-test-declared-image-build-entry: 11 ok, 2 falla(s)
+  ok    5 Podman no se invocó en ningún rechazo
+test-declared-image-build-entry: 12 ok, 1 falla(s)

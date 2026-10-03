@@ -10,13 +10,14 @@
  * rehúsan con 2 sin invocar Podman.
  */
 import { describe, expect, test } from 'bun:test'
+import { realpathSync } from 'node:fs'
 import { join } from 'node:path'
 
 import { runExecutionCommand, type ExecutionCommandDeps } from '@thyrox/podman-execution/executionCommand.ts'
 import type { PodmanCommandResult, PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
 
 import { runDeclaredImageBuildCommand, type DeclaredImageBuildDeps } from '../declaredImageBuildCommand.ts'
-import { DECLARED_IMAGES, DEFINITION_COMMIT_LABEL, DEFINITION_LABEL, findDeclaredImage, UndeclaredImageError } from '../declaredImages.ts'
+import { DECLARED_IMAGES, DEFINITION_CATALOG_PATH, DEFINITION_COMMIT_LABEL, DEFINITION_LABEL, findDeclaredImage, UndeclaredImageError } from '../declaredImages.ts'
 import { LIFECYCLE_LABEL } from '../imageLifecycle.ts'
 
 const ROOT = '/srv/thyrox'
@@ -25,16 +26,22 @@ const TASK = 'TASK-THYROX-0912'
 const QUANTIZER = 'thyrox-model-quantizer'
 const EXIT_REFUSED = 2
 
-type Harness = { deps: DeclaredImageBuildDeps; calls: string[][]; stdout: string[]; stderr: string[] }
+type Harness = { deps: DeclaredImageBuildDeps; calls: string[][]; stdout: string[]; stderr: string[]; events: string[]; revisedPaths: string[][] }
 
-function harness(revision = { commit: COMMIT, clean: true }, env: Record<string, string> = {}): Harness {
+type HarnessOptions = { admitted?: boolean; buildFails?: boolean }
+
+function harness(revision = { commit: COMMIT, clean: true }, env: Record<string, string> = {}, options: HarnessOptions = {}): Harness {
   const calls: string[][] = []
+  const events: string[] = []
+  const revisedPaths: string[][] = []
   const stdout: string[] = []
   const stderr: string[] = []
   const podman: PodmanExecutor = {
     async run(args) {
       calls.push([...args])
-      const result: PodmanCommandResult = { exitCode: 0, stdout: args[0] === 'image' ? `sha256:${'c'.repeat(64)}\n` : '', stderr: '' }
+      events.push(`podman ${args[0]}`)
+      const failed = options.buildFails === true && args[0] === 'build'
+      const result: PodmanCommandResult = { exitCode: failed ? 1 : 0, stdout: args[0] === 'image' ? `sha256:${'c'.repeat(64)}\n` : '', stderr: failed ? 'no space left on device' : '' }
       return result
     },
   }
@@ -43,9 +50,14 @@ function harness(revision = { commit: COMMIT, clean: true }, env: Record<string,
     podman,
     repositoryRoot: ROOT,
     output: { stdout: text => { stdout.push(text) }, stderr: text => { stderr.push(text) } },
-    definitionRevision: async () => revision,
+    definitionRevision: async paths => { revisedPaths.push([...paths]); return revision },
+    admitDisk: async (bytes, purpose) => {
+      events.push(`admit ${bytes} ${purpose}`)
+      return options.admitted ?? true
+    },
+    releaseDisk: async () => { events.push('release') },
   }
-  return { deps, calls, stdout, stderr }
+  return { deps, calls, stdout, stderr, events, revisedPaths }
 }
 
 function buildArgv(h: Harness): string[] {
@@ -197,5 +209,62 @@ describe('the managed worker stays outside the Podman control plane', () => {
     }
     await runExecutionCommand(['run', '--task', TASK, '--kind', 'probe', '--mount', '/run/podman/podman.sock', '--', 'id'], deps)
     expect((calls.find(call => call[0] === 'create') ?? []).join(' ')).toContain('/run/podman/podman.sock')
+  })
+})
+
+describe('the build is admitted against disk before Podman runs', () => {
+  test('the declared peak is reserved before the build and released after it', async () => {
+    const h = harness()
+    expect(await runDeclaredImageBuildCommand(['--task', TASK, QUANTIZER], h.deps)).toBe(0)
+    const image = findDeclaredImage(QUANTIZER)
+    expect(h.events[0]).toBe(`admit ${image.estimatedDiskBytes} build localhost/thyrox-model-quantizer:candidate-${COMMIT.slice(0, 12)}`)
+    expect(h.events.indexOf('podman build')).toBeGreaterThan(0)
+    expect(h.events.at(-1)).toBe('release')
+  })
+
+  test('a build that does not fit is refused before Podman and nothing is reserved to release', async () => {
+    const h = harness(undefined, {}, { admitted: false })
+    expect(await runDeclaredImageBuildCommand(['--task', TASK, QUANTIZER], h.deps)).toBe(EXIT_REFUSED)
+    expect(h.calls).toEqual([])
+    expect(h.events.filter(event => event === 'release')).toEqual([])
+    expect(h.stderr.join('')).toContain(String(findDeclaredImage(QUANTIZER).estimatedDiskBytes))
+  })
+
+  test('a failed build still releases its reservation', async () => {
+    const h = harness(undefined, {}, { buildFails: true })
+    expect(await runDeclaredImageBuildCommand(['--task', TASK, QUANTIZER], h.deps)).toBe(1)
+    expect(h.events.at(-1)).toBe('release')
+  })
+
+  test('every declared image declares a positive disk peak', () => {
+    for (const image of DECLARED_IMAGES) expect(Number.isSafeInteger(image.estimatedDiskBytes) && image.estimatedDiskBytes > 0).toBe(true)
+  })
+})
+
+describe('the versioned identity covers the whole definition, catalog included', () => {
+  test('the revision is measured over the catalog and the build context', async () => {
+    const h = harness()
+    await runDeclaredImageBuildCommand(['--task', TASK, QUANTIZER], h.deps)
+    expect(h.revisedPaths).toEqual([[DEFINITION_CATALOG_PATH, 'src/packages/model-artifacts/quantizer-image']])
+  })
+
+  test('the catalog path names the module that declares the images', () => {
+    const repositoryRoot = join(import.meta.dir, '..', '..', '..', '..')
+    expect(realpathSync(join(repositoryRoot, DEFINITION_CATALOG_PATH))).toBe(realpathSync(join(import.meta.dir, '..', 'declaredImages.ts')))
+  })
+})
+
+describe('a consumer work reference follows the canonical patterns', () => {
+  for (const work of ['Upper:id', 'consumer:', ':id', 'consumer:/absolute']) {
+    test(`--work ${work} is refused`, async () => {
+      const h = harness()
+      expect(await runDeclaredImageBuildCommand(['--work', work, QUANTIZER], h.deps)).toBe(EXIT_REFUSED)
+      expect(h.calls).toEqual([])
+    })
+  }
+
+  test('a well-formed --work builds under the consumer identity', async () => {
+    const h = harness()
+    expect(await runDeclaredImageBuildCommand(['--work', 'ai-course-notes:es-mx/quantizer', QUANTIZER], h.deps)).toBe(0)
   })
 })

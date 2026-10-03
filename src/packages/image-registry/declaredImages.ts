@@ -14,6 +14,8 @@ import type { BuildDefinition } from './imageRequirement.ts'
 export const DEFINITION_LABEL = 'io.thyrox.image.definition'
 /** La etiqueta con el commit completo en que esa definición estaba versionada. */
 export const DEFINITION_COMMIT_LABEL = 'io.thyrox.image.definition-commit'
+/** Este catálogo, relativo a la raíz: forma parte de la definición de cada imagen que declara. */
+export const DEFINITION_CATALOG_PATH = 'src/packages/image-registry/declaredImages.ts'
 
 const COMMIT_PATTERN = /^[0-9a-f]{40}$/
 const CANDIDATE_TAG_PREFIX = 'candidate-'
@@ -28,6 +30,8 @@ export type DeclaredImage = Omit<BuildDefinition, 'tag'> & {
   lifecycle: 'permanent'
   /** La red de sus RUN la decide la definición, nunca el solicitante. */
   network: 'none' | 'host'
+  /** Pico de disco de construirla; la admisión lo reserva antes de que Podman empiece. */
+  estimatedDiskBytes: number
 }
 
 export const DECLARED_IMAGES: readonly DeclaredImage[] = [
@@ -39,6 +43,9 @@ export const DECLARED_IMAGES: readonly DeclaredImage[] = [
     lifecycle: 'permanent',
     // Sus RUN instalan paquetes del sistema: el único egreso es el proxy del anfitrión.
     network: 'host',
+    // Medido: la primera construcción por esta ruta bajó el disco libre de 5316 a 2452 MiB
+    // (banco publish-quantizer-image-20261003T005015); 3 GiB lo cubre, el piso lo pone la admisión.
+    estimatedDiskBytes: 3 * 1024 ** 3,
   },
 ]
 

@@ -34,5 +34,9 @@ mutate identity "$catalog" 'if (image === undefined) throw new UndeclaredImageEr
 mutate caller-context "$command" "options: { task: { type: 'string' }, work: { type: 'string' } }" "options: { task: { type: 'string' }, work: { type: 'string' }, context: { type: 'string' } }"
 # 3. Sin la fila de la entrada declarada.
 cp "$entries" "$out/backup"; grep -v '^image-registry-build-declared-image' "$out/backup" > "$entries"; run_suites entry-row; cp "$out/backup" "$entries"
+# 4. Sin admisión de disco: la construcción empieza sin reservar.
+mutate disk-admission "$command" '  if (!(await deps.admitDisk(bytes, purpose))) throw new DiskNotAdmittedError(purpose, bytes)' '  void bytes; void purpose'
+# 5. La identidad versionada sin el catálogo: sólo el contexto.
+mutate catalog-closure "$command" '  return [DEFINITION_CATALOG_PATH, image.context,' '  return [image.context,'
 rm -f "$out/backup"
 git status --short -- "$catalog" "$command" "$entries"

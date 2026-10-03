@@ -1,0 +1,16 @@
+# red2-0912
+
+## Qué se lanzó
+
+```
+bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts run --task TASK-THYROX-0912 --kind test --workdir /home/user/thyrox/src/packages/image-registry --env THYROX_EXECUTION_ENTRY -- bash -c bun test __tests__/declaredImageBuildCommand.test.ts > /home/user/thyrox/.claude/workbench/publish-quantizer-image-20261003T005015/outputs/red2-unit.txt 2>&1; echo exit=$? >> /home/user/thyrox/.claude/workbench/publish-quantizer-image-20261003T005015/outputs/red2-unit.txt
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

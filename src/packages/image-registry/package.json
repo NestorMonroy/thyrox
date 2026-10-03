@@ -12,6 +12,7 @@
     }
   },
   "dependencies": {
+    "@thyrox/artifact-registry": "0.1.0",
     "@thyrox/podman-execution": "0.1.0"
   },
   "devDependencies": {
