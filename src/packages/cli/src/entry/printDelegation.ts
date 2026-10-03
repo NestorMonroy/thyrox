@@ -139,6 +139,30 @@ function proxyModelArguments(model: string): string[] {
   return parseThyroxModelName(model) === undefined ? ['--model', model] : ['--local-model', model]
 }
 
+/** Prefijo de lo que el proxy local escribe en stderr una vez anunciado. */
+const PROXY_DIAGNOSTIC_PREFIX = 'proxy local: '
+
+/**
+ * Reenvía al stderr de thyrox -p, línea a línea, lo que el proxy escribe tras
+ * anunciar su socket: el error de un relé es la causa de un turno fallido, y
+ * sin leer la tubería se perdía (A6 r2) o podía llenarla y bloquear al proxy.
+ */
+async function forwardDiagnostics(stderr: ReadableStream<Uint8Array>): Promise<void> {
+  const decoder = new TextDecoder()
+  let pending = ''
+  try {
+    for await (const chunk of stderr) {
+      pending += decoder.decode(chunk, { stream: true })
+      const lines = pending.split('\n')
+      pending = lines.pop() ?? ''
+      for (const line of lines) process.stderr.write(`${PROXY_DIAGNOSTIC_PREFIX}${line}\n`)
+    }
+  } catch {
+    // La tubería se cierra con el proxy: no hay más que reenviar.
+  }
+  if (pending !== '') process.stderr.write(`${PROXY_DIAGNOSTIC_PREFIX}${pending}\n`)
+}
+
 async function launchLocalProxy(options: CredentialEnvironmentOptions): Promise<{ socketPath: string; stop: () => Promise<void> }> {
   const dir = mkdtempSync(join(tmpdir(), 'thyrox-local-proxy-'))
   const requestedSocket = join(dir, 'proxy.sock')
@@ -164,7 +188,10 @@ async function launchLocalProxy(options: CredentialEnvironmentOptions): Promise<
     clearTimeout(timer)
   }
   const socketPath = announcedSocket(outcome)
-  if (socketPath !== undefined) return { socketPath, stop }
+  if (socketPath !== undefined) {
+    const forwarding = forwardDiagnostics(child.stderr)
+    return { socketPath, stop: async () => { await stop(); await forwarding } }
+  }
   if (outcome.kind === 'timeout') {
     await stop()
     throw new Error(`el proxy local no anunció el socket en ${timeoutMs} ms`)

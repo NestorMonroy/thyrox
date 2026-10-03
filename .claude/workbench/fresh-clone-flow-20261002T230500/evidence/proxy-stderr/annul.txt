@@ -1,0 +1,22 @@
+bun test v1.3.14 (0d9b296a)
+
+__tests__/printDelegation.test.ts:
+161 |       })
+162 |       await Bun.sleep(300)
+163 |       await credential.close()
+164 |       return 0
+165 |     })
+166 |     expect(err).toMatch(/proxy local: relay: primer error del upstream/)
+                      ^
+error: expect(received).toMatch(expected)
+
+Expected substring or pattern: /proxy local: relay: primer error del upstream/
+Received: ""
+
+      at <anonymous> (/home/user/thyrox/src/packages/cli/__tests__/printDelegation.test.ts:166:17)
+(fail) credentialEnvironmentFor — localizar o levantar el proxy > lo que el proxy escribe en stderr tras anunciar llega al stderr de thyrox -p, nombrando al proxy [304.80ms]
+
+ 17 pass
+ 1 fail
+ 31 expect() calls
+Ran 18 tests across 1 file. [2.29s]

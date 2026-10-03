@@ -149,6 +149,23 @@ describe('credentialEnvironmentFor — localizar o levantar el proxy', () => {
     expect(valueAfter('--model')).toEqual(['claude-sonnet-5'])
   })
 
+  // A6 r2 (TASK-THYROX-0912): el relé falló tras anunciar y sólo quedó «no auth
+  // available» de los reintentos; el primer error del proxy se perdía en una
+  // tubería que nadie leía. Lo que escribe después de anunciar es diagnóstico
+  // del turno y tiene que llegar al stderr de thyrox -p.
+  test('lo que el proxy escribe en stderr tras anunciar llega al stderr de thyrox -p, nombrando al proxy', async () => {
+    const { err } = await capture(async () => {
+      const credential = await credentialEnvironmentFor(launch, {
+        env: { PATH: '/bin' }, cwd: '/', models: ['m'],
+        spawn: () => shellChild('echo socket=/run/anunciado.sock; echo "relay: primer error del upstream" >&2; sleep 30'),
+      })
+      await Bun.sleep(300)
+      await credential.close()
+      return 0
+    })
+    expect(err).toMatch(/proxy local: relay: primer error del upstream/)
+  })
+
   test('el lanzador que sale antes de anunciar es una causa: su código y su stderr', async () => {
     const pending = credentialEnvironmentFor(launch, {
       env: {}, cwd: '/', models: ['m'], spawn: () => shellChild('echo "sin claude en el PATH" >&2; exit 2'),
