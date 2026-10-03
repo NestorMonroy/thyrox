@@ -2,10 +2,12 @@
   "declaration": "project-identity",
   "version": "1.0.0",
   "declaredAt": "2026-10-03",
-  "declaredBy": "ejecutor",
+  "declaredBy": "executor",
   "ecosystem": "kaupamex",
   "canonicalProject": "kaupamex-ai",
-  "legacyProjects": ["thyrox"],
+  "legacyProjects": [
+    "thyrox"
+  ],
   "rules": {
     "historicalIdentitiesAreImmutable": true,
     "normalizeInMetadataNeverRewriteContent": true,
@@ -24,12 +26,14 @@
   "ingestionMetadata": {
     "ecosystem": "kaupamex",
     "canonical_project": "kaupamex-ai",
-    "legacy_project": "thyrox",
-    "observed_project": "<the project name the source used when it was written>"
+    "legacy_projects": [
+      "thyrox"
+    ],
+    "observed_project": "<project name the source used when it was written, or null>"
   },
   "registry": {
     "namespace": "th3rox",
-    "namespaceStatus": "provisional (ejecutor 2026-10-03)",
+    "namespaceStatus": "provisional (executor decision 2026-10-03)",
     "ownImagePrefix": "kaupamex-ai-",
     "mirrorAndCachePrefix": "kaupamex-"
   },
@@ -38,5 +42,6 @@
     "renaming THYROX_* variables",
     "renaming containers, volumes or databases",
     "rewriting any historical record"
-  ]
+  ],
+  "productAuthority": "src/packages/project-identity/projectIdentity.ts (PROJECT_IDENTITY)"
 }

@@ -1,0 +1,110 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/rstDocument.test.ts:
+(pass) parseRstDocument > el bloque meta va a metadata y no a los chunks [1.14ms]
+(pass) parseRstDocument > un chunk por sección, cada uno con su título [0.20ms]
+(pass) parseRstDocument > no pierde texto: todo párrafo del cuerpo está en algún chunk [0.26ms]
+(pass) parseRstDocument > una sección más larga que el tope se parte por párrafos, sin pasar el tope [1.13ms]
+(pass) parseRstDocument > un párrafo solo más largo que el tope se parte por caracteres sin perder ninguno [0.15ms]
+(pass) parseRstDocument > un subrayado más corto que el título no es un encabezado [0.06ms]
+(pass) parseRstDocument > sin texto no hay chunks [0.03ms]
+
+__tests__/contentHash.test.ts:
+(pass) documentHash > es sha256 en hexadecimal y estable para el mismo contenido [0.24ms]
+(pass) documentHash > distingue el mismo texto cortado en otros chunks [0.05ms]
+(pass) chunkHash > es el sha256 del texto del chunk [0.03ms]
+
+__tests__/store.postgres.test.ts:
+(skip) SemanticSearchStore — postgres > NO MEDIDO: declara THYROX_TEST_POSTGRES_URL para correrlo
+
+__tests__/corpusPolicy.test.ts:
+(pass) política de ingesta del corpus > la política inicial declara los seis dominios de D5, todos shared [0.08ms]
+(pass) política de ingesta del corpus > un dominio declarado entra con la visibilidad que declara, sin dueño [0.20ms]
+(pass) política de ingesta del corpus > un origen sin declarar rehúsa nombrándolo y nombrando los declarados [0.33ms]
+(pass) política de ingesta del corpus > lo efímero no entra al corpus durable: exige promoción explícita [0.12ms]
+(pass) política de ingesta del corpus > una visibilidad distinta de la declarada por el dominio rehúsa [0.15ms]
+(pass) política de ingesta del corpus > lo privado exige dueño, y lo compartido no admite uno [0.20ms]
+(pass) política de ingesta del corpus > una política que declara dos veces un dominio rehúsa [0.08ms]
+
+__tests__/corpus.postgres.test.ts:
+(skip) corpus durable — postgres > NO MEDIDO: declara THYROX_TEST_POSTGRES_URL para correrlo
+
+__tests__/rerank.test.ts:
+(pass) cosineSimilarity > vectores paralelos dan 1, opuestos -1, ortogonales 0 [0.25ms]
+(pass) cosineSimilarity > un vector de norma cero da 0, no NaN [0.03ms]
+(pass) rerankByCosine > ordena de mayor a menor similitud y corta en k [0.12ms]
+
+__tests__/storableDocument.test.ts:
+(pass) storableDocument > cada U+0000 de los chunks y de la metadata pasa a U+2400 [0.27ms]
+(pass) storableDocument > el texto literal «\u0000» (seis caracteres) no se confunde con el carácter [0.05ms]
+(pass) storableDocument > un documento sin U+0000 queda idéntico y con el mismo hash [0.76ms]
+
+__tests__/ingestCommand.postgres.test.ts:
+(pass) runIngestCommand — rechazos > sin URL del store rehúsa nombrando la variable [0.66ms]
+(pass) runIngestCommand — rechazos > un dominio sin ingestor rehúsa nombrándolo [0.18ms]
+(pass) runIngestCommand — rechazos > sin --root rehúsa: el recorrido es siempre de una raíz nombrada [0.42ms]
+(skip) runIngestCommand — postgres > NO MEDIDO: declara THYROX_TEST_POSTGRES_URL para correrlo
+
+__tests__/visibility.postgres.test.ts:
+(skip) visibilidad del corpus — postgres > NO MEDIDO: declara THYROX_TEST_POSTGRES_URL para correrlo
+
+__tests__/findingIngestion.postgres.test.ts:
+(pass) recognizeFindings > reconoce sólo los findings, fuera de .git y node_modules, con ruta relativa [6.70ms]
+(pass) recognizeFindings > un archivo con nombre de finding y sin texto queda sin reconocer, nombrado [2.64ms]
+(skip) ingestFindings — postgres > NO MEDIDO: declara THYROX_TEST_POSTGRES_URL para correrlo
+
+__tests__/config.test.ts:
+(pass) resolveSemanticSearchDatabaseUrl > lee la URL de la variable declarada [0.30ms]
+(pass) resolveSemanticSearchDatabaseUrl > sin la variable rehúsa nombrándola: no hay base por defecto [0.19ms]
+(pass) validateStoreUrl > acepta postgres:// y postgresql:// [0.05ms]
+(pass) validateStoreUrl > sqlite: y file: rehúsan: no cae a SQLite [0.17ms]
+(pass) validateStoreUrl > el rechazo no filtra la contraseña [0.35ms]
+(pass) validateSchemaConfig > acepta un esquema con nombre de identificador simple [0.17ms]
+(pass) validateSchemaConfig > rechaza un nombre que no es un identificador simple [0.24ms]
+(pass) validateEmbeddingShape > acepta una dimensión positiva con representación conocida [0.17ms]
+(pass) validateEmbeddingShape > rechaza una dimensión no entera o no positiva [0.22ms]
+(pass) validateEmbeddingShape > rechaza una representación desconocida [0.16ms]
+(pass) validateEmbedding > un vector de otra dimensión se rechaza nombrando las dos [0.27ms]
+(pass) validateEmbedding > un componente no finito se rechaza [0.14ms]
+(pass) validateEmbedding > un vector de la dimensión declarada pasa [0.06ms]
+
+__tests__/extension.test.ts:
+(pass) assertVectorExtensionUsable > no disponible en el servidor: error de infraestructura [0.27ms]
+(pass) assertVectorExtensionUsable > disponible pero no habilitada en la base: error de provisioning, con la versión ofrecida [0.22ms]
+(pass) assertVectorExtensionUsable > habilitada con versión menor que la mínima: error de versión con las dos versiones [0.45ms]
+(pass) assertVectorExtensionUsable > habilitada con versión compatible: devuelve versión y esquema de la extensión [0.07ms]
+(pass) assertVectorExtensionUsable > la mínima exacta es compatible [0.08ms]
+(pass) compareVersions > compara por segmento numérico, no como texto [0.18ms]
+(pass) compareVersions > una versión ilegible rehúsa en vez de compararse como cero [0.17ms]
+
+__tests__/projectIdentityStamp.test.ts:
+(pass) stampProjectIdentity > añade la identidad canónica y el nombre observado a la metadata [2.22ms]
+(pass) stampProjectIdentity > no reescribe el texto, el id de dominio ni la procedencia [0.10ms]
+(pass) stampProjectIdentity > no cambia el hash de versión [0.14ms]
+(pass) stampProjectIdentity > toma el nombre observado del id de dominio antes que del texto [0.08ms]
+(pass) stampProjectIdentity > deja el nombre observado en null cuando la fuente no nombra ningún proyecto [0.08ms]
+(pass) stampProjectIdentity > no muta la entrada [0.07ms]
+
+__tests__/identity.postgres.test.ts:
+(skip) identidad de dominio — postgres > NO MEDIDO: declara THYROX_TEST_POSTGRES_URL para correrlo
+
+__tests__/documentRecognition.test.ts:
+(pass) recognizeErrors > reconoce sólo los errores, con su identidad de dominio y la ruta relativa como procedencia [3.83ms]
+(pass) recognizeErrors > un finding sigue siendo finding: cada dominio reconoce sólo su nombre [3.14ms]
+(pass) recognizeErrors > los dominios con reconocedor son finding y error; otro se rehúsa [0.23ms]
+
+6 tests skipped:
+(skip) SemanticSearchStore — postgres > NO MEDIDO: declara THYROX_TEST_POSTGRES_URL para correrlo
+(skip) corpus durable — postgres > NO MEDIDO: declara THYROX_TEST_POSTGRES_URL para correrlo
+(skip) runIngestCommand — postgres > NO MEDIDO: declara THYROX_TEST_POSTGRES_URL para correrlo
+(skip) visibilidad del corpus — postgres > NO MEDIDO: declara THYROX_TEST_POSTGRES_URL para correrlo
+(skip) ingestFindings — postgres > NO MEDIDO: declara THYROX_TEST_POSTGRES_URL para correrlo
+(skip) identidad de dominio — postgres > NO MEDIDO: declara THYROX_TEST_POSTGRES_URL para correrlo
+
+ 57 pass
+ 6 skip
+ 0 fail
+ 117 expect() calls
+Ran 63 tests across 15 files. [248.00ms]
+execution thyrox-worker-test-mus4qjtz-14502 kind=test task=TASK-THYROX-0918 exit=0
+__BG_EXIT__=0

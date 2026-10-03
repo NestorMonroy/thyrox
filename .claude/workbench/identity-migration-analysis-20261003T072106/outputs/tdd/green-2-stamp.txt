@@ -1,0 +1,19 @@
+PID=13642
+LOG=/home/user/thyrox/.claude/jobs/identity-green-2-20261003T082708/outputs/salida.log
+LIVE=/home/user/thyrox/.thyrox/runtime/jobs/identity-green-2-20261003T082708/salida.log
+RUN=/home/user/thyrox/.claude/jobs/identity-green-2-20261003T082708
+bun test v1.3.11 (af24e281)
+
+__tests__/projectIdentityStamp.test.ts:
+(pass) stampProjectIdentity > añade la identidad canónica y el nombre observado a la metadata [0.77ms]
+(pass) stampProjectIdentity > no reescribe el texto, el id de dominio ni la procedencia [0.08ms]
+(pass) stampProjectIdentity > no cambia el hash de versión [1.28ms]
+(pass) stampProjectIdentity > toma el nombre observado del id de dominio antes que del texto [0.08ms]
+(pass) stampProjectIdentity > deja el nombre observado en null cuando la fuente no nombra ningún proyecto [0.06ms]
+(pass) stampProjectIdentity > no muta la entrada [0.05ms]
+
+ 6 pass
+ 0 fail
+ 9 expect() calls
+Ran 6 tests across 1 file. [163.00ms]
+execution thyrox-worker-test-mus4p8gq-13647 kind=test task=TASK-THYROX-0918 exit=0

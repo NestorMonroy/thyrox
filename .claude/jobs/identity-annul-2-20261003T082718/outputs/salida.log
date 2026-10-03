@@ -1,0 +1,29 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/projectIdentityStamp.test.ts:
+(pass) stampProjectIdentity > añade la identidad canónica y el nombre observado a la metadata [0.78ms]
+(pass) stampProjectIdentity > no reescribe el texto, el id de dominio ni la procedencia [0.08ms]
+(pass) stampProjectIdentity > no cambia el hash de versión [0.22ms]
+45 |     expect(documentHash(stampProjectIdentity(original).chunks)).toBe(documentHash(original.chunks))
+46 |   })
+47 | 
+48 |   test('toma el nombre observado del id de dominio antes que del texto', () => {
+49 |     const stamped = stampProjectIdentity(finding({ chunks: ['kaupamex-ai now owns the corpus'] }))
+50 |     expect(stamped.metadata.observed_project).toBe('thyrox')
+                                                   ^
+error: expect(received).toBe(expected)
+
+Expected: "thyrox"
+Received: "kaupamex-ai"
+
+      at <anonymous> (/home/user/thyrox/src/packages/semantic-search/__tests__/projectIdentityStamp.test.ts:50:47)
+(fail) stampProjectIdentity > toma el nombre observado del id de dominio antes que del texto [0.27ms]
+(pass) stampProjectIdentity > deja el nombre observado en null cuando la fuente no nombra ningún proyecto [0.08ms]
+(pass) stampProjectIdentity > no muta la entrada [0.06ms]
+
+ 5 pass
+ 1 fail
+ 9 expect() calls
+Ran 6 tests across 1 file. [166.00ms]
+execution thyrox-worker-test-mus4pg5w-13903 kind=test task=TASK-THYROX-0918 exit=1
+__BG_EXIT__=1

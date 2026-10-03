@@ -617,3 +617,78 @@ Orden que garantiza «identidad antes de la ingesta»:
 3. sólo entonces, la ingesta masiva y la re-estampa de los 1 675 documentos existentes.
 
 Mientras TASK-THYROX-0918 no esté integrada, **no se lanza ninguna ingesta masiva**.
+
+## 10. Implementación TDD de la identidad en la ingesta (TASK-THYROX-0918)
+
+El ejecutor autorizó al controlador a implementarla. Identificadores en inglés y
+comentarios en español técnico (`identificadores-en-ingles.md`).
+
+### Search Existing antes de escribir
+
+| Necesidad | Candidato | Decisión |
+|---|---|---|
+| dónde vive la identidad del proyecto | `@thyrox/config/product.ts` (`PRODUCT_NAME`) | descartado como hogar: `@thyrox/config` depende de agent, repl, provider y 12 paquetes más; `semantic-search` sólo depende de `@thyrox/store`, y cargar ese grafo en la ingesta sería un acoplamiento nuevo |
+| paquete ligero ya dueño de declaraciones de proyecto | `@thyrox/paths` (raíces y hogares), los paquetes sin dependencias | ninguno posee la identidad → **MISSING estrecho** (confirma la sección 2) → paquete mínimo `@thyrox/project-identity` con la forma de `bounded-download`; el namespace `@thyrox/*` se conserva (declaración, fuera de alcance) |
+| dónde estampar | `corpus.ts` `ingestDocument`, el único punto por el que pasa toda ingesta (`findingIngestion`, `ingestCommand`) | **EXTEND** |
+| refrescar la metadata con el mismo contenido | `keepVersion` + `UPDATE_PROVENANCE_QUERY` (su único consumidor) | **EXTEND** → `REFRESH_UNCHANGED_DOCUMENT_QUERY` (procedencia + metadata, sin versión nueva) |
+| pruebas por paquete y typecheck | `bin/thyrox-bg` (trabajos `--kind test`), `bin/check_package_typecheck` | **REUSE** |
+
+### Piezas
+
+- `src/packages/project-identity/projectIdentity.ts`: `PROJECT_IDENTITY` (congelado),
+  `observedProjectOf(text)`, que da el primer nombre de proyecto con borde de token o
+  `null`, y `projectIdentityMetadata(observed)`.
+- `src/packages/semantic-search/projectIdentityStamp.ts`: `stampProjectIdentity(input)`.
+  Toma el nombre observado del id de dominio antes que del texto, y no toca chunks,
+  id, procedencia ni hash.
+- `corpus.ts`: `ingestDocument` estampa antes de `storableDocument`. `keepVersion`
+  refresca la procedencia y la metadata con `REFRESH_UNCHANGED_DOCUMENT_QUERY`.
+
+### Evidencia (`outputs/tdd/`, cada corrida como trabajo gestionado de TASK-THYROX-0918)
+
+| Paso | Resultado |
+|---|---|
+| RED 1 `projectIdentity.test.ts` | módulo inexistente |
+| GREEN 1 | 12/12 |
+| anulación 1: sin el borde de token | cae **exactamente 1** («no confunde una palabra que sólo contiene el nombre») |
+| RED 2 `projectIdentityStamp.test.ts` | módulo inexistente |
+| GREEN 2 | 6/6 |
+| anulación 2: el texto antes que el id de dominio | cae **exactamente 1** («toma el nombre observado del id de dominio antes que del texto») |
+| suite `semantic-search` | 57 pass, 0 fail, **6 skip** |
+| `check_package_typecheck --strict` | project-identity 0 y semantic-search 0 errores propios |
+
+**NO MEDIDO:**
+
+- **Las pruebas `*.postgres.test.ts`, incluidas las dos nuevas de
+  `corpus.postgres.test.ts`, no corrieron.** La unidad gestionada no recibe
+  `THYROX_TEST_POSTGRES_URL` y el servidor está caído (locks de Podman). Su RED/GREEN
+  y su anulación quedan pendientes de la reparación:
+  - «la ingesta estampa la identidad…»;
+  - «reingerir el mismo contenido refresca la metadata…».
+
+  Hasta entonces, el cambio de `keepVersion` y de la consulta SQL está escrito pero
+  **no verificado** contra PostgreSQL.
+
+`bun.lock` además recoge `@thyrox/artifact-registry` en `image-registry`: deriva
+previa, porque su `package.json` ya la declaraba. `bun install --offline` la sincronizó.
+
+### Corrección: el producto se revirtió y la implementación va por el batch
+
+Directiva del ejecutor 2026-10-03: *«tienes que realizar la implementación via
+batch»*. Lo que describe esta sección lo escribió **el controlador**, y eso
+contradice la autoimplementación con workers locales: el controlador selecciona,
+prepara contexto, despacha, verifica e integra, pero no implementa.
+
+- `src/` y `bun.lock` volvieron a `HEAD` (0 entradas en `git status --porcelain`
+  bajo esas rutas). El enlace `node_modules/@thyrox/project-identity` se retiró.
+- El borrador del controlador **no se descarta**: queda como evidencia en
+  `identity-ingestion-batch-20261003T083036/outputs/` (`controller-draft-*`).
+- Las pruebas de contrato (12 + 6, y el parche de `corpus.postgres.test.ts`) son
+  la entrada del batch: `identity-ingestion-batch-20261003T083036/inputs/contract/`.
+- La evidencia RED/GREEN/anulación de arriba prueba que **el contrato
+  discrimina**; no es la implementación integrada.
+
+La implementación la hace el worker local por
+`headless-pool --isolation worktree --verify` y `pool_integrate`
+(`trabajo-en-segundo-plano.md`, cuarta forma). Banco:
+`.claude/workbench/identity-ingestion-batch-20261003T083036/`.
