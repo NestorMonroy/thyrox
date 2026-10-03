@@ -304,3 +304,71 @@ basta relanzar el mismo comando; la plantilla y los ítems ya están en el banco
   `--confirm` como «Modify Shared Resources». Es la frontera que la propia pieza
   declara («pedida por un operador»): la sesión no se autoriza a sí misma a mutar el
   motor de Podman del anfitrión.
+
+---
+
+## 4. Dataset semántico × identidad kaupamex-ai (pedido del ejecutor)
+
+El análisis del dataset que se pidió **ya existe y no se rehízo**:
+`.claude/workbench/semantic-dataset-search-existing-20261003T054914/`. Contiene
+A–E, la matriz de 20 tipos × 21 columnas, las marcas PROVEN, EXISTING_DECISION,
+INFERRED, PROPOSED y SEARCH_INCOMPLETE, la reutilización de reclaim v1/v2 y la
+ADR-008 1.5.0. Lo que sigue es lo que esa revisión no cubría: dónde cabe la
+identidad nueva y qué hace falta para llenar PostgreSQL.
+
+### Dónde cabe la identidad en lo que ya existe
+
+| Concepto pedido | Dónde vive hoy | Marca |
+|---|---|---|
+| identidad del registro | `documents.domain` · `scope` · `domain_id` · `owner`; para findings `scope = ''` (`DOMAIN_WIDE_SCOPE`, `corpus.ts:31`) | PROVEN |
+| `source_id` histórico (`H-THYROX-431`, `ERR-NNN`) | es el `domain_id`; inmutable por regla | PROVEN + EXISTING_DECISION |
+| repositorio / revisión | `source_ref`, `source_revision` (procedencia, no identidad) | PROVEN |
+| `content_hash` | versión; calculado sobre los chunks, **la metadata no entra** | PROVEN |
+| `ecosystem`, `canonical_project`, `observed_project`, `legacy_aliases` | ningún campo; sólo cabrían en `metadata JSONB` | PROPOSED |
+| consulta `thyrox` ↔ `kaupamex-ai` sobre la misma evidencia | nada | MISSING |
+
+**Por qué el orden importa, medido en código:** reingerir un documento con el mismo
+contenido devuelve `unchanged` y sólo reescribe `source_ref` y `source_revision`
+(`corpus.ts` `keepVersion` → `UPDATE_PROVENANCE_QUERY`). **La metadata no se
+actualiza.** Los 1 675 documentos ya ingeridos no recibirían
+`canonical_project = kaupamex-ai` aunque se volvieran a ingerir con esa metadata.
+Hace falta una de dos cosas:
+
+- declarar la identidad **antes** de la ingesta que va a llenar el corpus;
+- o EXTEND de `ingestDocument` con una actualización explícita de metadata sin
+  versión nueva.
+
+Es la evidencia concreta del argumento «identidad antes del dataset».
+
+### Qué falta para llenar PostgreSQL (estado de hoy)
+
+1. **PostgreSQL no está corriendo.** La base de Podman marca `thyrox-postgres`
+   `running` con PID 21341, que no existe en `/proc`. Hay locks desfasados (0/21) y
+   `infrastructure_ensure` sale 3. Lo primero es la reparación de la sección 3,
+   pendiente de autorización.
+2. **Lo que ya contiene** (R0 de reclaim v2): 1 675 documentos, 9 981 chunks,
+   0 espacios de embedding, 0 análisis. Findings y errors están ingeridos.
+3. **El hueco más grande es el vector, no el texto.** La API de espacios existe
+   (`createEmbeddingSpace`, `putEmbeddings`, `activateSpace`), pero el **productor de
+   embeddings no** (TASK-THYROX-0904). Además, el modelo de embeddings del catálogo
+   (`thyrox-nomic-ai--nomic-embed-text-v1.5-gguf:f16-hf-0188c9bf4097`) **no tiene
+   ninguna cualificación registrada** en `qualifications.json`; la suite existe
+   (`local-models/embeddingSuite.ts`). Sin cualificarlo, el selector no puede
+   asignarlo.
+4. **Ampliar dominios** (adr, technical-doc, runbook, evidence, lecciones) exige las
+   decisiones de los huecos 1, 2, 3 y 7 del banco del dataset. Mientras tanto, la ADR
+   vigente sólo autoriza findings y errors.
+
+### Orden propuesto (PROPOSED)
+
+1. Declarar la identidad: `ecosystem=kaupamex`, `canonical=kaupamex-ai`,
+   `legacy=[thyrox]`, ids históricos inmutables, normalización en metadata y nunca en
+   el texto.
+2. Reparar Podman (operador) → ensure → PostgreSQL arriba.
+3. Cualificar el modelo de embeddings local con su suite.
+4. Productor de embeddings (TASK-THYROX-0904) → primer espacio activo sobre los
+   9 981 chunks existentes.
+5. Decidir cómo los 1 675 documentos reciben la identidad nueva (EXTEND de metadata
+   o reingesta tras la declaración).
+6. Sólo entonces el release `kaupamex-semantic-corpus` (dataset) y los dominios
+   nuevos.
