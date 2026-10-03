@@ -269,3 +269,109 @@ Patrón común a las tres rupturas: el mecanismo existe, tiene pruebas, y le fal
 el cableado (`stop_pending_work`, `reconcile_user_hooks`,
 `reconcileStaleRunningRows`). El cambio necesario es sobre todo cableado y
 extensión, no mecanismo nuevo.
+
+## Tercera ronda — correcciones del ejecutor (TASK-THYROX-0916)
+
+Invariantes, sin cambio: el store sigue versionado; `sqlite-union` es la
+autoridad de merge; `@thyrox/store` / `src/store` son la autoridad de apertura y
+escritura SQLite; no hay otro store, ni otro lifecycle, ni otro pending-work, ni
+se descarta telemetría.
+
+### 1. Fuente canónica de la ruta de telemetría
+
+| Lado | Autoridad | Forma |
+|---|---|---|
+| Python | `src/paths/reach.py` `agent_store_path()` | `THYROX_AGENT_STORE` (o `KAUPAMEX_AGENT_STORE`) declarada gana; si no, `thyrox_root()/AGENT_STORE_DIR/AGENT_STORE_NAME` (`agent-results`, `agent_store.sqlite3`). `agents_paths.agent_store_path` delega en ella |
+| TS | `@thyrox/observability` `storePath()` / `STORE_FILE` | ruta del consumidor si se declara; si no, `thyroxRoot()/STORE_DIR/STORE_FILE` |
+
+Duplicados literales medidos (no autoridades): `.githooks/pre-commit`
+`STORE_REL`, `.githooks/post-commit` `STORE_REL`, `.gitattributes:1`,
+`user_wiring.STORE_DIR_NAME`, `detect_controller_mutation.STATE_TOPS`.
+
+**Decisión:** la ruta de telemetría **no se escribe** en `pending_work`,
+`reconcile_user_hooks` ni `user_wiring`. Se **deriva** de
+`reach.agent_store_path(create=False)` relativa a la raíz del repo medido; si el
+store declarado vive fuera de ese repo, no hay ruta de telemetría para él
+(correcto: no ensucia ese árbol). `pending_work` sigue recibiendo `telemetry` como
+parámetro (DEC-04); quien lo compone es el cableado, desde `reach`.
+
+Divergencia anotada, no corregida aquí: Python resuelve la declaración por
+`THYROX_AGENT_STORE`, TS por la raíz del consumidor. Pueden apuntar a stores
+distintos. Queda como hallazgo.
+
+### 2. Churn — `_spool` NO es batching; batching sigue MISSING
+
+`hook_error_log._spool` + `drain_spool` es **retry-after-failure** con contrato de
+idempotencia declarado por el llamador. Usarlo para diferir escrituras correctas
+lo convertiría en write-behind. Se retira esa propuesta.
+
+Búsqueda por comportamiento sobre todo lo versionado
+(`probes/batching_search.sh`, EXPERIMENTAL; `outputs/batching-by-area.tsv`,
+`batching-x-store*.txt`): 8 972 líneas de salida, 61 archivos de código que
+además tocan el store. Ningún candidato agrupa escrituras ni decide **cuándo**
+commitear el store:
+
+| Candidato | Qué es | Veredicto |
+|---|---|---|
+| `agent_store.py` `PRAGMA journal_mode=WAL` | journal de SQLite (durabilidad), no agrupado | descartado |
+| `agent_store.py` `snapshot-tareas`, `refresh-board.sh` «volcar» | vuelca el board al store, por demanda | descartado: no es checkpoint del store a git |
+| `agent_store.py:1883` `checkpoint.ts` | cita de namespaces de la referencia | descartado |
+| `measure_delta.py` | símbolos ganados por un subagente | descartado |
+| `reconcile_store.py` `journal` | journal de workflows como evidencia de desenlace | descartado (es evidencia de lifecycle) |
+| `store_field_classes`, `merge_sqlite_union` | merge de tres vías | REUSE, no agrupa |
+| `.githooks/pre-commit:336-348` | reconcilia y re-prepara el store **si ya está preparado** | candidato de frontera de checkpoint, hoy pasivo |
+| `.githooks/post-commit` | sincroniza el índice tras un commit por pathspec | idem |
+
+**N escrituras SQLite ≠ N commits git.** Medido antes: 427 versiones del blob, 354
+commits que tocan el store, 40 commits sólo-store en 24 h. Esos 40 los produce
+el gate de Stop que obliga a commitear, no la frecuencia de escritura SQLite. Con
+el problema 1 resuelto (telemetría sola no bloquea), los commits sólo-store
+dejan de ser obligatorios **sin tocar la semántica durable del store**: cada
+evento sigue siendo una escritura SQLite. Lo que falta decidir es la frontera de
+checkpoint: en qué commit viaja el store (p. ej. con el siguiente commit de
+trabajo, o al cierre de sesión). Eso es MISSING y se diseña aparte, después de
+medir el efecto del problema 1.
+
+### 3. Lifecycle — una autoridad de veredicto, varios productores de evidencia
+
+| Pieza | Evidencia | Escribe transición | Invocador de producción | Pruebas |
+|---|---|---|---|---|
+| `reconcile_store._verdict` (Py) | `api_error` > `journal` > firma del transcript (sólo con sidecar), con `outcome_source` | sí, vía `agent_store` | **ninguno** (sólo citado en `session/transcripts.py`) | `tests/agents/test-reconciliar-store-journal.sh`, `-status.sh` |
+| `reconcileStaleRunningRows` (TS) | `pid`+`procStart` por `verifyAdoption` | sí, `running→failed` directo por SQL | **ninguno** | `storeReconcile.test.ts` |
+| `verifyAdoption` (TS, `agent/loop/session/reconcile.ts`) | primitiva de proceso | no | `reconcileStaleRunningRows` | `reconcile.test.ts` |
+| `verifyAdoption` (TS, `daemon/bgWorkerRegistry.ts`) | registros de workers del daemon | no (otro dominio) | `workerVm.ts` | daemon |
+
+Hoy hay **dos implementaciones independientes de la transición** sobre la misma
+tabla. Autoridad propuesta: `reconcile_store._verdict`, porque (a) `agent_store.py`
+es el dueño del esquema (DEC-TASK 2026-09-29, citado en `observability/store.ts`),
+(b) ya ordena la evidencia por autoridad y declara la procedencia, y (c) ya
+existe el precedente de «una implementación en Python, usada por su interfaz desde
+TS» (`gpuAdmission.ts` → `bin/gpu_monitor`). La evidencia de proceso entra como
+**otra fuente ordenada** de ese veredicto; `reconcileStaleRunningRows` deja de
+escribir la transición y llama a la autoridad, o se retira.
+
+Medido sobre las colgadas: 14 filas `running` (2026-09-30 03:56–05:25), ninguna
+con `pid`; **13 de 14 tienen su transcript en el anfitrión**, así que la
+evidencia existe y el veredicto sí es decidible. `reconcile_store --dry-run` desde
+una unidad gestionada da `transcripts en disco: 0`
+(`outputs/reconcile-store-dry-run.txt`). *Ciega a:* la unidad no monta
+`/root/.claude/projects`; ese cero no es ausencia.
+
+**Defecto de conformidad:** `src/conformance/checklist.ts` A.6.6 está en `met` y
+afirma que `reconcileStaleRunningRows` cierra la fila «al reiniciar». No tiene
+invocador de producción. O se cablea o A.6.6 baja de `met`.
+
+### Orden de implementación (sin cambios respecto al pedido)
+
+1. Ruta de telemetría derivada de `reach.agent_store_path`.
+2. RED/GREEN: `stop_pending_work` cableado por `declared_wiring` con esa
+   telemetría — no opcional: es el gate propio.
+3. `reconcile_user_hooks` parche 2 (misma semántica en el hook de plataforma).
+4. `reconcile_user_hooks` en `SessionStart startup`.
+5. E2E con anulación: sólo-telemetría→PASS, telemetría+trabajo→BLOCK,
+   trabajo→BLOCK, limpio→PASS; store tracked, `sqlite-union` presente, ninguna
+   fila perdida; e instalación en un hogar nuevo que demuestre que los hooks
+   quedan activos.
+6. Lifecycle: una autoridad (`_verdict`) + cableado; corregir A.6.6.
+7. Churn: frontera de checkpoint a git, después de medir el efecto del paso 2.
+8. `_spool` no se toca.

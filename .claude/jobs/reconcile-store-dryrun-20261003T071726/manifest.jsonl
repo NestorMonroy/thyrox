@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts run --task TASK-THYROX-0916 --kind probe --workdir /home/user/thyrox --env THYROX_EXECUTION_ENTRY -- bash bin/reconcile_store --dry-run", "started_at": "2026-10-03T07:17:26+00:00"}

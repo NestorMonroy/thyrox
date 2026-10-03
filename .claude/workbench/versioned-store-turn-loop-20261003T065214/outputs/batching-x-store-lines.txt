@@ -1,0 +1,413 @@
+src/agents/agent-cost.sh:89:    print("                  siguió acumulando costo real después de ese momento.")
+src/agents/agent_store.py:735:    #: ``usage: K7(<delta>, <base>)``, con la contabilidad del evento terminal
+src/agents/agent_store.py:756:    #: acumulado por el propio cliente, asi que sin saber sobre cuantos eventos
+src/agents/agent_store.py:757:    #: se acumulo, la cifra no se puede leer. Medido: 3 transcripts, 1 evento
+src/agents/agent_store.py:771:    #: - ``journal``    — el `journal.jsonl` del workflow declaro `result`
+src/agents/agent_store.py:835:#: otra que id tienen— y divergirian en cuanto alguien volcara sin acuñar. Ver
+src/agents/agent_store.py:1134:    ``COALESCE`` sobre ``session_id`` porque la columna admitía NULL en el
+src/agents/agent_store.py:1167:               COALESCE(session_id, 'desconocida'),
+src/agents/agent_store.py:1665:    ``busy_timeout`` + ``journal_mode=WAL`` — adaptado de
+src/agents/agent_store.py:1679:    conn.execute("PRAGMA journal_mode = WAL")
+src/agents/agent_store.py:1862:    conn.execute("PRAGMA journal_mode = WAL")
+src/agents/agent_store.py:1883:    src/utils/checkpoint.ts`` resuelve con namespaces separados
+src/agents/agent_store.py:1886:    ``checkpoint.json`` es un blob unico que exige leer-modificar-escribir
+src/agents/agent_store.py:1904:                type_source   = COALESCE(excluded.type_source, agent_sessions.type_source),
+src/agents/agent_store.py:1952:    Ante NULL ``json_patch`` devuelve NULL, así que el ``COALESCE`` externo deja
+src/agents/agent_store.py:1968:                "COALESCE(json_patch(COALESCE(metadata_json, '{}'), ?), metadata_json)",
+src/agents/agent_store.py:1970:    return ("metadata_json", "COALESCE(?, metadata_json)", reemplazo)
+src/agents/agent_store.py:2007:            ("output_key", "COALESCE(?, output_key)", args.output_key),
+src/agents/agent_store.py:2008:            ("model", "COALESCE(?, model)", args.model),
+src/agents/agent_store.py:2009:            ("model_alias", "COALESCE(?, model_alias)", args.model_alias),
+src/agents/agent_store.py:2010:            ("description", "COALESCE(?, description)", args.description),
+src/agents/agent_store.py:2011:            ("turns", "COALESCE(?, turns)", args.turns),
+src/agents/agent_store.py:2012:            ("input_tokens", "COALESCE(?, input_tokens)", args.input_tokens),
+src/agents/agent_store.py:2013:            ("cache_creation_tokens", "COALESCE(?, cache_creation_tokens)",
+src/agents/agent_store.py:2015:            ("cache_read_tokens", "COALESCE(?, cache_read_tokens)",
+src/agents/agent_store.py:2017:            ("output_tokens", "COALESCE(?, output_tokens)", args.output_tokens),
+src/agents/agent_store.py:2018:            ("equiv_cost", "COALESCE(?, equiv_cost)", args.equiv_cost),
+src/agents/agent_store.py:2019:            ("usage_source", "COALESCE(?, usage_source)", args.usage_source),
+src/agents/agent_store.py:2022:            # un `COALESCE(?, type_source)` pelado se desincronizaban — la fila
+src/agents/agent_store.py:2048:             "THEN type_source ELSE COALESCE(?, type_source) END",
+src/agents/agent_store.py:2050:            ("spawn_depth", "COALESCE(?, spawn_depth)", args.spawn_depth),
+src/agents/agent_store.py:2051:            ("source", "COALESCE(?, source)", args.source),
+src/agents/agent_store.py:2052:            ("tool_use_id", "COALESCE(?, tool_use_id)", args.tool_use_id),
+src/agents/agent_store.py:2059:            ("duration_s", "COALESCE(?, duration_s)", args.duration_s),
+src/agents/agent_store.py:2060:            ("tool_uses_total", "COALESCE(?, tool_uses_total)",
+src/agents/agent_store.py:2062:            ("tool_uses_json", "COALESCE(?, tool_uses_json)",
+src/agents/agent_store.py:2064:            ("prompt", "COALESCE(?, prompt)", args.prompt),
+src/agents/agent_store.py:2065:            ("retention_level", "COALESCE(?, retention_level)",
+src/agents/agent_store.py:2067:            ("effort", "COALESCE(?, effort)", args.effort),
+src/agents/agent_store.py:2068:            ("client_version", "COALESCE(?, client_version)",
+src/agents/agent_store.py:2070:            ("service_tier", "COALESCE(?, service_tier)", args.service_tier),
+src/agents/agent_store.py:2071:            ("api_error_status", "COALESCE(?, api_error_status)",
+src/agents/agent_store.py:2073:            ("api_error_detail", "COALESCE(?, api_error_detail)",
+src/agents/agent_store.py:2075:            ("rate_limit_type", "COALESCE(?, rate_limit_type)",
+src/agents/agent_store.py:2077:            ("stop_reason", "COALESCE(?, stop_reason)", args.stop_reason),
+src/agents/agent_store.py:2078:            ("compactions", "COALESCE(?, compactions)", args.compactions),
+src/agents/agent_store.py:2079:            ("dropped_tokens", "COALESCE(?, dropped_tokens)",
+src/agents/agent_store.py:2081:            ("outcome_source", "COALESCE(?, outcome_source)",
+src/agents/agent_store.py:2088:            # estilo: COALESCE devuelve el PRIMER no-nulo, así que poner el
+src/agents/agent_store.py:2092:            #   COALESCE(?, NULLIF(t,'desconocido'), t)   'Explore' + 'gp' -> 'gp'      ← pisa
+src/agents/agent_store.py:2093:            #   COALESCE(NULLIF(t,'desconocido'), ?, t)   'Explore' + 'gp' -> 'Explore' ← preserva
+src/agents/agent_store.py:2094:            #   COALESCE(NULLIF(t,'desconocido'), ?, t)   'desconocido' + 'gp' -> 'gp'  ← rellena
+src/agents/agent_store.py:2095:            #   COALESCE(NULLIF(t,'desconocido'), ?, t)   'desconocido' + NULL -> 'desconocido'
+src/agents/agent_store.py:2097:             "COALESCE(NULLIF(subagent_type, 'desconocido'), ?, subagent_type)",
+src/agents/agent_store.py:2111:        # misma forma que `cmd_snapshot_tasks` ya usa sobre `tasks`.
+src/agents/agent_store.py:2148:    """Las citas que un volcado de ``tasks_dir`` movería a OTRO sujeto.
+src/agents/agent_store.py:2152:    vacía = volcar es seguro.
+src/agents/agent_store.py:2155:    ``snapshot-tareas`` la consulta para REHUSAR y ``render-tablero`` para
+src/agents/agent_store.py:2157:    decir «al día» sobre un volcado que el guard acababa de rechazar. Dos
+src/agents/agent_store.py:2162:    difiere del guardado»*, y eso dejó de ser la pregunta cuando el volcado pasó
+src/agents/agent_store.py:2164:    cada volcado por construcción, así que esa comparación reportaba 110
+src/agents/agent_store.py:2193:            continue            # un archivo a medio escribir lo cuenta el volcado
+src/agents/agent_store.py:2219:    el volcado. Ordenar por el nombre en texto pone ``#10`` antes que ``#2``.
+src/agents/agent_store.py:2230:    El upsert de ``snapshot-tareas`` escribe por ``(session_id, task_id)``, y el
+src/agents/agent_store.py:2306:def cmd_snapshot_tasks(args: argparse.Namespace) -> None:
+src/agents/agent_store.py:2311:    snapshot reescribiría la fecha de alta y la columna mediría «último
+src/agents/agent_store.py:2312:    snapshot», no «cuándo apareció la tarea».
+src/agents/agent_store.py:2334:        print(f"snapshot-tareas: 0 tareas (no existe {tasks_dir})")
+src/agents/agent_store.py:2363:        # Volcar un directorio vivo sobre una sesión que ya tiene otras filas
+src/agents/agent_store.py:2367:        # Se mide ANTES de escribir nada y se rehúsa el volcado ENTERO: un
+src/agents/agent_store.py:2368:        # volcado a medias deja unas citas movidas y otras no, que es peor que
+src/agents/agent_store.py:2383:                f"snapshot-tareas: REHÚSA — {len(reassignments)} id(s) de cita "
+src/agents/agent_store.py:2397:                "  Para volcar a sabiendas: --permitir-reasignacion",
+src/agents/agent_store.py:2405:                # Un archivo a medio escribir no debe abortar el snapshot de los
+src/agents/agent_store.py:2477:                    # cuando el volcado viene del hook PostToolUse: entonces
+src/agents/agent_store.py:2480:                    # Un volcado de reconciliación corre el mismo INSERT sobre
+src/agents/agent_store.py:2502:                    "respaldo al volcar el board: nadie declaro la capa",
+src/agents/agent_store.py:2518:        f"snapshot-tareas: {nuevas} nuevas · {actualizadas} actualizadas · "
+src/agents/agent_store.py:3112:            # el mismo churn que el `WHERE` de snapshot-tareas ya cerro.
+src/agents/agent_store.py:3154:    Portado del ``def celda`` en jq de ``snapshot-tasks.sh``, y el orden del
+src/agents/agent_store.py:3180:    el volcado al store no correría y la re-definición se quedaría sólo en el
+src/agents/agent_store.py:3318:        # Estado 2 de los tres (tarea #94): si volcar movería citas, el volcado
+src/agents/agent_store.py:3400:            "   El volcado no se hizo porque habría movido esas citas a otro",
+src/agents/agent_store.py:3430:    out += ["Alcance del volcado", "-------------------", ""]
+src/agents/agent_store.py:3578:    (``hook``/``journal``/``api_error``/``sin_transcript``) nombra instrumentos
+src/agents/agent_store.py:4012:    usuario — el hook siempre pasa un literal) volcaria el indice completo
+src/agents/agent_store.py:4125:                         "acumulado, sumarlo contaría dos veces")
+src/agents/agent_store.py:4127:                    choices=("transcript", "journal", "api_error"),
+src/agents/agent_store.py:4200:        "snapshot-tareas",
+src/agents/agent_store.py:4201:        help="volcar el directorio de TASK del cliente a la tabla durable",
+src/agents/agent_store.py:4208:    p.add_argument("--source", default="snapshot",
+src/agents/agent_store.py:4209:                   help="vía de captura de la fila; default 'snapshot'")
+src/agents/agent_store.py:4212:                   help="volcar aunque el upsert cambie el sujeto de un id ya "
+src/agents/agent_store.py:4215:                        "bajo él, así que volcar un directorio vivo sobre una "
+src/agents/agent_store.py:4217:    p.set_defaults(func=cmd_snapshot_tasks)
+src/agents/agents_paths.py:113:    Es el hogar de `registro-de-agentes.md`, `delta-de-agentes.md` y los
+src/agents/drain_spool.py:15:``registrar-sesion`` y ``actualizar-sesion`` resuelven con ``COALESCE`` sobre
+src/agents/measure_delta.py:2:"""measure_delta — qué símbolos ganó o perdió el disco durante un subagente.
+src/agents/measure_delta.py:4:Porte del mecanismo de ``kaupamex-docs: .claude/hooks/medir_delta_subagente.py``.
+src/agents/measure_delta.py:31:    """Dónde se apenda el delta. Es PARÁMETRO del consumidor.
+src/agents/measure_delta.py:42:    return base / 'delta-de-agentes.md'
+src/agents/measure_delta.py:59:        print(f'measure_delta: el consumidor de {base} no está en disco; '
+src/agents/measure_delta.py:60:              'no se registra el delta', file=sys.stderr)
+src/agents/measure_delta.py:139:    """Compara contra la fotografía y apenda el delta al log."""
+src/agents/measure_delta.py:207:    equivocado, y publicarlo como delta sería peor que no publicar nada.
+src/agents/measure_delta.py:232:        print('measure_delta: faltan parámetros del consumidor '
+src/agents/merge_stores.py:104:    Es la misma guarda que `snapshot-tareas` aplica con exit 4, y por la misma
+src/agents/reconcile-agents.sh:111:# criterio que snapshot-tasks.sh: adivinar cuando el entorno lo declara es
+src/agents/reconcile-agents.sh:201:    # H-DOCS-120, medida dos veces más al escribir snapshot-tasks.sh y su test.
+src/agents/reconcile_store.py:234:_JOURNAL_CACHE = None
+src/agents/reconcile_store.py:237:def _journal_index() -> dict:
+src/agents/reconcile_store.py:238:    """``agentId`` → ``'result'`` | ``'started'``, leído de los journals.
+src/agents/reconcile_store.py:242:    el journal de la corrida, así que su última línea es el ``tool_result`` de
+src/agents/reconcile_store.py:255:    en ``running``, y de ésas **83 tienen ``result`` en el journal** (o sea:
+src/agents/reconcile_store.py:256:    entregaron) y **11 sólo ``started``** (ésas sí murieron). El journal cubre
+src/agents/reconcile_store.py:257:    las 94: ninguna quedó fuera de todo journal.
+src/agents/reconcile_store.py:260:    ``Stop`` y releer los journals por agente los abriría N veces.
+src/agents/reconcile_store.py:262:    global _JOURNAL_CACHE
+src/agents/reconcile_store.py:263:    if _JOURNAL_CACHE is not None:
+src/agents/reconcile_store.py:264:        return _JOURNAL_CACHE
+src/agents/reconcile_store.py:268:        for j in raiz.rglob("subagents/workflows/*/journal.jsonl"):
+src/agents/reconcile_store.py:290:    _JOURNAL_CACHE = indice
+src/agents/reconcile_store.py:486:def _desenlace_contra_journal(transcripts: list) -> set:
+src/agents/reconcile_store.py:487:    """Filas cuyo ``status`` en el store discrepa del que el journal declara.
+src/agents/reconcile_store.py:491:    desenlace equivocado. Sin este pase, las 83 filas que el journal declara
+src/agents/reconcile_store.py:495:    Es deuda que se paga sola: el barrido corre en cada ``Stop`` y los journals
+src/agents/reconcile_store.py:510:    indice = _journal_index()
+src/agents/reconcile_store.py:687:                "outcome_source=COALESCE(outcome_source, ?) WHERE agent_id=?",
+src/agents/reconcile_store.py:869:    citados en el journal de algún workflow; de 88 con sidecar, 0 lo están.
+src/agents/reconcile_store.py:883:    el journal de la corrida, no por el texto final, así que la ausencia de
+src/agents/reconcile_store.py:895:    **Desde #653 el journal SÍ se consulta** (era la tarea #448): el desenlace
+src/agents/reconcile_store.py:896:    del agente de workflow está en ``workflows/*/journal.jsonl``, indexado por
+src/agents/reconcile_store.py:897:    ``agentId``. Ver ``_journal_index``. Dejarlo en ``running`` era lo correcto
+src/agents/reconcile_store.py:915:    2. ``journal``   — el desenlace declarado por el motor de workflow.
+src/agents/reconcile_store.py:932:        # Canal Workflow: su desenlace lo declara el journal, no el transcript.
+src/agents/reconcile_store.py:936:        by_journal = _journal_index().get(_agent_id(transcript))
+src/agents/reconcile_store.py:937:        if by_journal == "result":
+src/agents/reconcile_store.py:938:            return ("completed", "journal")
+src/agents/reconcile_store.py:939:        if by_journal == "started":
+src/agents/reconcile_store.py:940:            return ("failed", "journal")
+src/agents/reconcile_store.py:991:    erroneas = _desenlace_erroneo(on_disk) | _desenlace_contra_journal(on_disk)
+src/agents/register_session.py:220:                # nuevos. Se acumula aparte para no perderlo si el reseteo de
+src/agents/register_session.py:471:        # vistos porque el campo ya es acumulado: con dos compactaciones, la
+src/agents/register_session.py:1050:    # idempotentes —resuelven con COALESCE sobre la misma clave— asi que
+src/agents/save_result.mjs:62: * H-DOCS-136: el uso se INDEXA por id, no se acumula. Un turno que llama a
+src/conformance/checklist.ts:48:  { id: "A.1.3", section: "A.1", question: "Is model output handled as event stream instead of final prose blob?", status: "met", evidence: ["src/packages/agent/loop/types.ts"], note: "HarnessEvent: turn_start, text_delta, tool_start/end — flujo, no prosa final" },
+src/conformance/checklist.ts:73:  { id: "A.5.5", section: "A.5", question: "Do automated recoveries include counters, retry caps, and circuit breakers?", status: "met", evidence: ["src/packages/agent/internal/tokenBudget.ts"], note: "continuationCount, umbral del 90 % y deteccion de dos deltas cortos: contador, tope y breaker" },
+src/conformance/checklist.ts:80:  { id: "A.6.6", section: "A.6", question: "Is agent lifecycle observable, interruptible, and reclaimable?", status: "met", evidence: ["src/packages/tools/src/agent.ts", "src/packages/observability/src/store.ts"], note: "Las tres palabras del predicado, y las tres tienen mecanismo. OBSERVABLE: hooks SubagentStart/SubagentStop mas el journal mas una fila en el store con su modelo, sus turnos y su uso. INTERRUMPIBLE: `signal: ctx.abort` viaja al bucle del hijo. RECUPERABLE: la fila se escribe `running` ANTES de arrancar, asi que si el proceso muere a mitad, `reconcileStaleRunningRows` la cierra al reiniciar en vez de dejarla colgada para siempre" },
+src/conformance/checklist.ts:86:  { id: "A.7.5", section: "A.7", question: "Are transcript, task output, and hook events retained as replay evidence?", status: "met", evidence: ["src/packages/agent/loop/transcript.ts", "src/packages/observability/src/store.ts", "src/packages/observability/src/journal.ts", "src/packages/observability/src/transcriptShape.ts"], note: "Las tres clases del predicado se retienen: el transcript JSONL guarda turnos, adjuntos y fronteras de compactacion; el store guarda la fila de sesion con su forma y su uso; el journal guarda los eventos. `transcriptShape` los vuelve a leer, que es lo que hace del registro una evidencia de replay y no un vertedero" },
+src/conformance/checklist.ts:94:  { id: "A.8.7", section: "A.8", question: "Does failure recovery include circuit breakers and anti-loop guards?", status: "met", evidence: ["src/packages/agent/loop/context/contextLevel.ts", "src/packages/agent/internal/tokenBudget.ts"], note: "Dos, uno por bucle de recuperacion. Compactacion: `rapidRefill`/`markCompacted` cortan a la tercera recarga rapida con `compaction_thrashing` — el rescate de A.4.6 cuenta igual, o tres rescates seguidos pasarian por tres turnos normales. Presupuesto de salida: `continuationCount` con su tope y la deteccion de dos deltas cortos seguidos" },
+src/hooks/error_log.py:15:``delta-de-agentes.md``: NUNCA se imprime a ``stdout`` (el canal de salida JSON
+src/packages/agent/loop/index.ts:32:import { Journal } from '@thyrox/observability/journal'
+src/packages/agent/loop/index.ts:77:  journalPath?: string
+src/packages/agent/loop/index.ts:197:  const diario = opts.journalPath ? new Journal(opts.journalPath, sesion.id) : null
+src/packages/agent/loop/index.ts:281:  // Tokens de salida acumulados del trabajo — el insumo del presupuesto.
+src/packages/agent/loop/index.ts:390:        // El tipo del delta se conserva: aplanar el pensamiento a texto lo
+src/packages/agent/loop/index.ts:419:      // presupuesto y ante dos deltas cortos seguidos, que es el circuit
+src/packages/agent/loop/index.ts:676:  // limpieza libera un delta negativo— seguiría vetado, y quien declaró 0
+src/packages/cli/src/commands/help.ts:49:  --journal <ruta>        diario de eventos JSONL
+src/packages/cli/src/entry/runLoop.ts:196:      journalPath: flag(argv, 'journal'),
+src/packages/cli/src/entry/runLoop.ts:216:    journalPath: flag(argv, 'journal'),
+src/packages/cli/src/entry/runLoop.ts:247:  // cualquier hook SessionStart pueda hacer un snapshot de process.env.
+src/packages/cli/src/entry/runLoop.ts:257:      /** Turnos cuyo texto ya salió por deltas: su `text` no se vuelve a imprimir. */
+src/packages/cli/src/entry/runLoop.ts:258:      const drawnByDelta = new Set<number>()
+src/packages/cli/src/entry/runLoop.ts:270:          // El delta se escribe SIN salto de línea y marca el turno como ya
+src/packages/cli/src/entry/runLoop.ts:273:          if (e.type === 'text_delta' && style === 'text') {
+src/packages/cli/src/entry/runLoop.ts:275:            drawnByDelta.add(e.turn)
+src/packages/cli/src/entry/runLoop.ts:276:          } else if (e.type === 'text' && drawnByDelta.has(e.turn)) {
+src/packages/observability/__tests__/observability.test.ts:14:import { Journal, readJournal } from '../src/journal.ts'
+src/packages/observability/__tests__/observability.test.ts:75:    const j = new Journal(join(d, 'diario.jsonl'), 'ses-1')
+src/packages/observability/__tests__/observability.test.ts:78:    const filas = readJournal(join(d, 'diario.jsonl'))
+src/packages/observability/__tests__/observability.test.ts:87:    const j = new Journal('/proc/no/se/puede/escribir.jsonl', 's')
+src/packages/observability/__tests__/observability.test.ts:93:    expect(readJournal(join(dir(), 'no-hay.jsonl'))).toEqual([])
+src/packages/observability/__tests__/observability.test.ts:99:    const j = new Journal(p, 's')
+src/packages/observability/__tests__/observability.test.ts:103:    expect(readJournal(p).map((f) => f.kind)).toEqual(['uno', 'dos'])
+src/packages/observability/__tests__/transcriptShape.test.ts:88:  test('la caída se DERIVA de pre−post, no se lee del acumulado', () => {
+src/packages/observability/__tests__/transcriptShape.test.ts:89:    // Invariante medido 14 de 14 en el corpus: el delta de
+src/packages/observability/__tests__/transcriptShape.test.ts:91:    // Guardar el acumulado en crudo sería guardar un número sin referente:
+src/packages/observability/src/store.ts:137:   * `file-history-snapshot` y `attribution-snapshot`, y el corpus medido no
+src/packages/task/__tests__/schema.test.ts:7: * `TABLERO_DDL` declara **13**. El delta es exactamente
+src/packages/task/__tests__/schema.test.ts:67:describe('el invariante: piso ⊂ base, y el delta lo cubre un ALTER', () => {
+src/packages/task/__tests__/schema.test.ts:83:  test('el delta medido hoy son las dos columnas de capa y board_ordinal', () => {
+src/packages/tools/__tests__/subagent.test.ts:19:import { readJournal } from '@thyrox/observability/journal'
+src/packages/tools/__tests__/subagent.test.ts:105:    const journalPath = join(d, 'diario.jsonl')
+src/packages/tools/__tests__/subagent.test.ts:106:    const t = agentTool({ provider: new RecordedProvider([texto('ok')]), transcriptDir: d, definitions: {}, journalPath })
+src/packages/tools/__tests__/subagent.test.ts:108:    const clases = readJournal(journalPath).map((e) => e.kind)
+src/packages/tools/__tests__/todoWrite.test.ts:49:  test('reemplaza, no acumula — la segunda llamada deja sólo lo que trae', async () => {
+src/packages/tools/src/agent.ts:20:import { Journal } from '@thyrox/observability/journal'
+src/packages/tools/src/agent.ts:40:  journalPath?: string
+src/packages/tools/src/agent.ts:73:  const diario = opts.journalPath ? new Journal(opts.journalPath, 'harness') : null
+src/packages/tools/src/tasks.ts:34: * único que impide que el tablero acumule estados que nadie sabe leer.
+src/packages/tools/src/tasks.ts:250:         WHERE session_id = ? AND COALESCE(source, '') != '${FUENTE_TODO}'
+src/packages/tools/src/tasks.ts:339:                      FROM tasks WHERE session_id = ? AND COALESCE(source, '') != '${FUENTE_TODO}'`
+src/packages/tools/src/tasks.ts:367:             FROM tasks WHERE session_id = ? AND task_id = ? AND COALESCE(source, '') != '${FUENTE_TODO}'`,
+src/packages/tools/src/tasks.ts:417:        // Los campos directos se actualizan con COALESCE: null deja el valor.
+src/packages/tools/src/tasks.ts:419:          `UPDATE tasks SET status = COALESCE(?, status), subject = COALESCE(?, subject),
+src/packages/tools/src/tasks.ts:420:                            description = COALESCE(?, description), active_form = COALESCE(?, active_form),
+src/packages/tools/src/tasks.ts:421:                            owner = COALESCE(?, owner), blocked_by_json = COALESCE(?, blocked_by_json),
+src/packages/tools/src/tasks.ts:460:      'Reemplaza la lista de trabajo del turno. Se escribe entera en cada llamada; no acumula.',
+src/paths/declarations.py:179:    usando. No se acumula historial — el registro dice el ESTADO, no la
+src/paths/reach.py:24:   ``tree_root(start=...)``. Dos razones que se acumulan. La primera es que una
+src/paths/reach.py:190:#: El orden lo decide la referencia, no el gusto. Medido en el volcado del
+src/paths/reach.py:1469:        sys.stdout.flush()
+src/paths/surface.py:62:    'src/task/snapshot-tasks.sh',
+src/session/user_wiring.py:213:    # 1002 lineas, `measure_delta.py` 227, `save_result.mjs` 259— y los tres
+src/session/user_wiring.py:224:    #   measure_delta     --repo <n>=<ruta> (de `reach`) y --results-dir
+src/session/user_wiring.py:240:    delta = f"bash {binroot}/measure_delta"
+src/session/user_wiring.py:245:                cmd(f"{delta} --start {repo_flags} --results-dir {results_dir}"),
+src/session/user_wiring.py:295:                cmd(f"{delta} --stop {repo_flags} --results-dir {results_dir}"),
+src/session/user_wiring.py:344:#: la clave se escribio — por eso el delta se mide por VALOR y no por presencia.
+src/session/user_wiring.py:349:def cache_key_delta(current: dict, declared: dict,
+src/session/user_wiring.py:511:    2. **Leer lo vivo** y medir el delta de la clave de cache. Si un campo de la
+src/session/user_wiring.py:530:    `cache_key_delta` es vacio se corre a mitad de sesion sin coste. El episodio
+src/session/user_wiring.py:547:    delta = cache_key_delta(current, declared)
+src/session/user_wiring.py:548:    record["cache_key_delta"] = delta
+src/session/user_wiring.py:549:    if delta and not allow_cache_key_change:
+src/session/user_wiring.py:553:                        for k in delta)
+src/session/user_wiring.py:589:#: (`$VAR/` y `${VAR}/`). Ver `vxr`/`b0t`/`k0t` en el volcado de esa build.
+src/session/user_wiring.py:834:    if record["cache_key_delta"]:
+src/session/user_wiring.py:836:              f"{', '.join(record['cache_key_delta'])} — es campo de la "
+src/session/wait-jobs.sh:610:# estado, es un volcado. Exit 1 si queda algo sin recoger — mismo contrato que
+src/session/wait-jobs.sh:914:    local snapshot; snapshot="$(ps -eo pid=,ppid=,args= 2>/dev/null)"
+src/session/wait-jobs.sh:929:    done <<< "$snapshot"
+src/store/agent_sessions.py:18:- ``connect`` — abre o crea la base con ``journal_mode=WAL`` y
+src/store/agent_sessions.py:28:  con ``COALESCE(?, columna)``, así que un campo omitido conserva su valor.
+src/store/agent_sessions.py:69:- El tablero de tareas multi-repo y sus citas (``cmd_snapshot_tasks``,
+src/store/agent_sessions.py:83:- El truco ``COALESCE(NULLIF(columna, 'desconocido'), ?, columna)`` que
+src/store/agent_sessions.py:87:  ``COALESCE(?, columna)`` sin esa preservación de centinela.
+src/store/agent_sessions.py:92:  dominio (búsqueda de tareas, clasificación de documentos, snapshot de
+src/store/agent_sessions.py:174:    conn.execute("PRAGMA journal_mode = WAL")
+src/store/agent_sessions.py:282:    set_sql = ", ".join(f"{col} = COALESCE(?, {col})" for col in columns)
+src/store/agent_sessions.py:285:    dif_sql = " OR ".join(f"{col} IS NOT COALESCE(?, {col})" for col in columns)
+src/task/agrupar_tareas_por_familia.py:37:    r'^\s*(DECISI[OÓ]N|DECISION|DECIDIDO|DECIDIDA|DIFERIDA|Veredicto|VEREDICTO'
+src/task/board_sync.py:10:``snapshot-tareas`` REHUSA con exit 4 sobre la sesion viva —*«102 id(s) de cita
+src/task/board_sync.py:24:La guarda de ``snapshot-tareas`` es correcta y NO se toca aqui: protege la cita
+src/task/board_sync.py:25:de deslizarse a otro sujeto. Desbloquear el volcado es decision de alcance del
+src/task/board_sync.py:41:``metadata_json`` no puede alojarlo porque el upsert de ``snapshot-tareas`` lo
+src/task/board_sync.py:52:**0 hits** en los hooks del consumidor, y el hook de volcado declara verbatim
+src/task/census_open_tasks.py:88:RENDER_NAME_PARTS = ("tablero", "board", "snapshot")
+src/task/census_open_tasks.py:89:#: `tasks-<sesión>.tsv` es el VOLCADO del tablero. No lo cubría ninguna de las
+src/task/closure_graph.py:411:        delta = sum((a - b) ** 2 for a, b in zip(rank, nxt))
+src/task/closure_graph.py:413:        if delta < precision:
+src/task/closure_graph.py:428:    No es un defecto de pageRank; es que su pregunta —*"¿dónde se acumula el
+src/task/refrescar-tablero.sh:5:# refrescar-tablero.sh — el sucesor de `snapshot-tasks.sh`, en un solo comando.
+src/task/refrescar-tablero.sh:9:# El registro canónico se produce en DOS pasos: `agent_store.py snapshot-tareas`
+src/task/refrescar-tablero.sh:14:# volcado. Ocurrió: dos tareas recién creadas no aparecieron, y el renderizador
+src/task/refrescar-tablero.sh:23:#   (b) volcar ese directorio al store y renderizar desde él         → SÍ
+src/task/refrescar-tablero.sh:24:#   (c) REHUSAR si no hay directorio vivo que volcar                 → SÍ
+src/task/refrescar-tablero.sh:27:# El punto (c) es la diferencia que importa. Un tablero renderizado sin volcar
+src/task/refrescar-tablero.sh:85:en un solo paso. Rehúsa (exit 2) si no hay directorio vivo que volcar.
+src/task/refrescar-tablero.sh:87:  -t, --team         team/sesión a volcar (default: la variable del cliente,
+src/task/refrescar-tablero.sh:117:    echo "  NO se renderiza: un tablero sin volcar es indistinguible de uno" >&2
+src/task/refrescar-tablero.sh:130:python3 "$STORE_CLI" snapshot-tareas \
+src/task/refrescar-tablero.sh:135:        echo "refrescar-tablero.sh: falló el volcado — NO se renderiza" >&2; exit 1; }
+src/task/refresh-board.sh:6:# El deprecado tenía DOS estados: volcar-y-renderizar, o rehusar. Con el guard
+src/task/refresh-board.sh:7:# de reasignación de cita en pie (H-DOCS-1042), «volcar» dejó de ser posible en
+src/task/refresh-board.sh:15:#   1. volcar no reasigna    -> volcar y renderizar            (pleno)
+src/task/refresh-board.sh:16:#   2. volcar reasignaría    -> NO volcar; renderizar DECLARANDO la diferencia
+src/task/refresh-board.sh:23:# volcado que el guard acaba de rechazar.
+src/task/refresh-board.sh:88:  0  pleno       — el volcado no movía citas: se volcó y se renderizó
+src/task/refresh-board.sh:89:  0  declarado   — el volcado movía citas: NO se volcó, y el .rst lo declara
+src/task/refresh-board.sh:90:  2  rehusado    — no hay directorio vivo que volcar
+src/task/refresh-board.sh:92:  -t, --team         team/sesión a volcar (default: la variable del cliente,
+src/task/refresh-board.sh:126:# Se rehúsa igual que antes, y por la misma razón: sin fuente que volcar, un
+src/task/refresh-board.sh:143:# El código 4 es el del guard de reasignación; cualquier otro fallo del volcado
+src/task/refresh-board.sh:145:python3 "$STORE_CLI" snapshot-tareas \
+src/task/refresh-board.sh:150:SNAPSHOT=$?
+src/task/refresh-board.sh:153:case "$SNAPSHOT" in
+src/task/refresh-board.sh:154:    0) echo "refresh-board.sh: estado PLENO — el volcado no movía ninguna cita" ;;
+src/task/refresh-board.sh:156:       echo "refresh-board.sh: estado DECLARADO — el volcado movería citas, así" >&2
+src/task/refresh-board.sh:159:    *) echo "refresh-board.sh: el volcado falló con $SNAPSHOT — NO se renderiza" >&2
+src/task/task_ids.py:70:un volcado renumerado **no reescribe** los ids ya acuñados, asi que ninguna cita
+src/task/task_ids.py:73:El riesgo que queda abierto es el simetrico: si un volcado renumerado se acuña
+src/task/task_ids.py:87:tienen— y divergirian en cuanto alguien volcara sin acuñar. Es el corolario de
+src/task/task_ids.py:264:        y sobrevive al volcado.
+src/task/task_ids.py:412:    #: Los identificadores ya entregados EN ESTA llamada. Un volcado es una
+src/task/task_ids.py:423:        # una persona y sobrevive al volcado: es la identidad.
+src/task/task_ids.py:693:            # semantica de auto-reconciliacion que `snapshot-tareas` ya
+src/task/task_ids.py:1172:    Es el defecto en espejo del que el guard de ``snapshot-tareas`` ya impide.
+src/task/task_ids.py:1174:    contrario: que un sujeto no acumule varios ids. Los dos salen de la misma
+src/task/task_source.py:200:        shown = ('COALESCE(layer_citation_id, citation_id)'
+src/transcript/usage.py:41:acumular, no un precio (DEC-04 — thyrox exporta el mecanismo, el consumidor
+src/transcript/usage.py:82:    """El uso acumulado de un transcript, en los cuatro componentes."""
+src/transcript/usage.py:88:    messages: int  # cuántos ids únicos de message.id aportaron al acumulado
+src/transcript/usage.py:129:    """Acumula el uso de un transcript, deduplicando por ``message.id``.
+src/verify/check_finding_id_unique.py:22:esta mitad el store puede acumular ids que ningún artefacto de gobierno respalda,
+tests/agents/test-agent-store-auto-recall-limit.sh:6:# Sin la cota, un `--limit` negativo volcaría el índice completo de
+tests/agents/test-agent-store-buscar-tareas.sh:9:# (``volcar-tarea-al-store.sh``, matcher ``TaskCreate|TaskUpdate``) escribe la
+tests/agents/test-agent-store-compara-antes-de-escribir.sh:9:# columnas en `COALESCE(?, col)`, un pase que no aportaba ningún dato nuevo
+tests/agents/test-agent-store-compara-antes-de-escribir.sh:27:# patrón que el caso 4 de `test-reconciliar-store-journal.sh`.
+tests/agents/test-agent-store-fecha-apertura.sh:237:# mejora. Cuando el volcado viene del hook PostToolUse —segundos después del
+tests/agents/test-agent-store-fecha-apertura.sh:241:# Discrimina contra un ingestión masiva: ese mismo `snapshot-tareas` corrió el
+tests/agents/test-agent-store-fecha-apertura.sh:247:python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR" --tasks-dir "$VIVAS" \
+tests/agents/test-agent-store-fecha-apertura.sh:257:python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR" --tasks-dir "$VIVAS" \
+tests/agents/test-agent-store-reassignment-guard.sh:2:# Pruebas del guard de reasignación de cita en `agent_store.py::snapshot-tareas`
+tests/agents/test-agent-store-reassignment-guard.sh:8:# bajo él: el upsert lo reescribe sin tocar la cita. Volcar un directorio vivo
+tests/agents/test-agent-store-reassignment-guard.sh:19:# Sin un caso que EXIJA el volcado normal, un guard que rehusara siempre
+tests/agents/test-agent-store-reassignment-guard.sh:84:python3 "$STORE" snapshot-tareas --claude-dir "$DIR" --tasks-dir "$VIVO" \
+tests/agents/test-agent-store-reassignment-guard.sh:98:SALIDA=$(python3 "$STORE" snapshot-tareas --claude-dir "$DIR" --tasks-dir "$VIVO" \
+tests/agents/test-agent-store-reassignment-guard.sh:107:# La escotilla: con la bandera explícita el volcado procede.
+tests/agents/test-agent-store-reassignment-guard.sh:108:python3 "$STORE" snapshot-tareas --claude-dir "$DIR" --tasks-dir "$VIVO" \
+tests/agents/test-agent-store-reassignment-guard.sh:114:# CONTROL POSITIVO: un volcado legítimo NO debe tropezar con el guard. Sin
+tests/agents/test-agent-store-reassignment-guard.sh:118:python3 "$STORE" snapshot-tareas --claude-dir "$DIR" --tasks-dir "$VIVO" \
+tests/agents/test-agent-store-reassignment-guard.sh:120:afirmar "un volcado sin reasignación pasa (exit 0)" "0" "$?"
+tests/agents/test-agent-store-reassignment-guard.sh:131:python3 "$STORE" snapshot-tareas --claude-dir "$DIR" --tasks-dir "$VIVO" \
+tests/agents/test-agent-store-reassignment-guard.sh:152:volcar5() {  # volcar5 <source> [flags...]
+tests/agents/test-agent-store-reassignment-guard.sh:154:    python3 "$STORE" snapshot-tareas --claude-dir "$DIR" --tasks-dir "$VIVO5" \
+tests/agents/test-agent-store-reassignment-guard.sh:169:volcar5 preparacion-5
+tests/agents/test-agent-store-reassignment-guard.sh:185:volcar5 caso-5
+tests/agents/test-agent-store-reassignment-guard.sh:228:python3 "$MUTANT_PATH" snapshot-tareas --claude-dir "$DIR" --tasks-dir "$VIVO5" \
+tests/agents/test-agent-store-render-tablero.sh:6:# Hasta hoy `pm/reportes/tablero-de-tareas.rst` lo generaba `snapshot-tasks.sh`
+tests/agents/test-agent-store-render-tablero.sh:49:SNAPSHOT=src/task/snapshot-tasks.sh
+tests/agents/test-agent-store-render-tablero.sh:52:# thyrox — sólo snapshot-tasks.sh (hoy DEPRECATED) y agent_store.py
+tests/agents/test-agent-store-render-tablero.sh:95:python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR" \
+tests/agents/test-agent-store-render-tablero.sh:108:python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR" \
+tests/agents/test-agent-store-render-tablero.sh:132:# definición que snapshot-tasks.sh y que el hook» — y no lo era: concatenaba
+tests/agents/test-agent-store-render-tablero.sh:143:extraer_firma "$SNAPSHOT" firma_snap  > "$FUENTES"
+tests/agents/test-agent-store-render-tablero.sh:148:afirmar "la firma emitida es la del directorio VIVO, idéntica a la de snapshot-tasks.sh" \
+tests/agents/test-agent-store-sessions.sh:5:# Adaptación del PRINCIPIO de TencentDB Agent Memory: src/utils/checkpoint.ts
+tests/agents/test-agent-store-tareas.sh:2:# Pruebas del snapshot de TASK al store (H-DOCS-180).
+tests/agents/test-agent-store-tareas.sh:82:echo "== 3. snapshot de un directorio de TASK: 3 archivos -> 3 filas =="
+tests/agents/test-agent-store-tareas.sh:95:python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR" \
+tests/agents/test-agent-store-tareas.sh:97:afirmar "el snapshot reporta 3 tareas" "3" \
+tests/agents/test-agent-store-tareas.sh:117:python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR" \
+tests/agents/test-agent-store-tareas.sh:128:python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR" \
+tests/agents/test-agent-store-tareas.sh:140:python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR" \
+tests/agents/test-agent-store-tareas.sh:160:python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR" \
+tests/agents/test-agent-store-tareas.sh:178:python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR" \
+tests/agents/test-agent-store-tareas.sh:180:afirmar "un directorio ausente sale 0 (nada que snapshotear)" "0" "$?"
+tests/agents/test-agent-store-tareas.sh:188:python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR" \
+tests/agents/test-agent-store-tareas.sh:191:SALIDA=$(python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR" \
+tests/agents/test-agent-store-tareas.sh:205:SALIDA=$(python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR" \
+tests/agents/test-agent-store-tareas.sh:219:python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR" \
+tests/agents/test-agent-store-tareas.sh:222:SALIDA=$(python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR" \
+tests/agents/test-agent-store-tareas.sh:223:    --tasks-dir "$TASKS" --session-id SES1 2>&1)          # default: `snapshot`
+tests/agents/test-agent-store-tareas.sh:236:SALIDA=$(python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR" \
+tests/agents/test-agent-store-tareas.sh:250:python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR" \
+tests/agents/test-agent-store-tareas.sh:289:python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR"     --tasks-dir "$TASKS15" --session-id SES15 >/dev/null 2>&1
+tests/agents/test-agent-store-tareas.sh:291:afirmar "y su procedencia dice que es el respaldo, no una clasificacion"         "respaldo al volcar el board: nadie declaro la capa"         "$(leer_tarea "$DB" 70 submodule_source)"
+tests/agents/test-agent-store-tareas.sh:293:echo "== 16. una capa ya clasificada SOBREVIVE al siguiente volcado =="
+tests/agents/test-agent-store-tareas.sh:295:# id es identidad y la columna es clasificacion; si el volcado reescribiera
+tests/agents/test-agent-store-tareas.sh:296:# `submodule` en el camino de conflicto, cada snapshot borraria el trabajo de
+tests/agents/test-agent-store-tareas.sh:310:python3 "$STORE" snapshot-tareas --claude-dir "$CLAUDE_DIR" \
+tests/agents/test-agent-store-tareas.sh:316:afirmar "y el contenido SI se actualiza — el volcado sigue haciendo su trabajo" \
+tests/agents/test-agent-store-type-source.sh:169:            '(\"type_source\", \"COALESCE(?, type_source)\", args.type_source),',
+tests/agents/test-carrete-store.sh:220:# Falla si: `_spool` corre en el camino de exito. Un carrete que acumula
+tests/agents/test-reconciliar-store-journal.sh:2:# Prueba del veredicto por journal (#653) — el desenlace del canal Workflow.
+tests/agents/test-reconciliar-store-journal.sh:7:# journal, ese agente entra al store como nivel 4 («murio sin entregar») aunque
+tests/agents/test-reconciliar-store-journal.sh:12:# El caso 4 es el CONTROL ANULADO — retira el lector de journal y comprueba que
+tests/agents/test-reconciliar-store-journal.sh:40:# Arbol sintetico: un journal con un agente que entrego (`result`) y otro que
+tests/agents/test-reconciliar-store-journal.sh:42:# journal — el canal `Agent`, que debe seguir decidiendose por la firma.
+tests/agents/test-reconciliar-store-journal.sh:66:  > "$SESION/workflows/wf_prueba/journal.jsonl"
+tests/agents/test-reconciliar-store-journal.sh:77:mod._JOURNAL_CACHE = None
+tests/agents/test-reconciliar-store-journal.sh:83:echo "== caso 1: el journal declara result -> completed/journal =="
+tests/agents/test-reconciliar-store-journal.sh:84:# Falla si: el lector de journal no existe, no indexa por agentId, o el
+tests/agents/test-reconciliar-store-journal.sh:88:[[ "$got" == "completed|journal" ]] || fallar "esperaba completed|journal, obtuve '$got'"
+tests/agents/test-reconciliar-store-journal.sh:90:echo "== caso 2: el journal declara solo started -> failed/journal =="
+tests/agents/test-reconciliar-store-journal.sh:95:[[ "$got" == "failed|journal" ]] || fallar "esperaba failed|journal, obtuve '$got'"
+tests/agents/test-reconciliar-store-journal.sh:97:echo "== caso 3: con sidecar manda la firma del transcript, no el journal =="
+tests/agents/test-reconciliar-store-journal.sh:98:# Falla si: el journal se consulta para el canal `Agent`. La separacion de
+tests/agents/test-reconciliar-store-journal.sh:99:# canales es la premisa de H-DOCS-181 y no debe borrarse al añadir el journal.
+tests/agents/test-reconciliar-store-journal.sh:104:echo "== caso 4: CONTROL ANULADO — sin lector de journal caen 1 y 2, no el 3 =="
+tests/agents/test-reconciliar-store-journal.sh:106:# `_journal_index` por un mapa vacio (la conducta anterior a #653) y se exige
+tests/agents/test-reconciliar-store-journal.sh:113:mod._journal_index = lambda: {}          # <- la guarda retirada
+tests/agents/test-reconciliar-store-status.sh:13:# journal de la corrida, no por el texto final, así que terminar sin texto es
+tests/agents/test-reconciliar-store-status.sh:25:# citados en el journal de algún workflow; de 88 con sidecar, 0 lo están.
+tests/agents/test_measure_delta.py:1:"""Pruebas de ``agents.measure_delta`` — el delta de símbolos que deja un subagente.
+tests/agents/test_measure_delta.py:3:Porta el mecanismo de ``kaupamex-docs: .claude/hooks/medir_delta_subagente.py``.
+tests/agents/test_measure_delta.py:20:from agents import measure_delta  # noqa: E402
+tests/agents/test_measure_delta.py:38:simbolos = measure_delta.symbols(codigo)
+tests/agents/test_measure_delta.py:48:      set(), measure_delta.symbols("def roto( :\n"))
+tests/agents/test_measure_delta.py:50:print("== B. El delta discrimina en los dos sentidos ==")
+tests/agents/test_measure_delta.py:53:ganados, perdidos = measure_delta.diff_symbols(antes, despues)
+tests/agents/test_measure_delta.py:57:# CONTROL DE ANULACIÓN: sin cambios, el delta es vacío en ambos lados. Si no
+tests/agents/test_measure_delta.py:59:g, p = measure_delta.diff_symbols(antes, antes)
+tests/agents/test_measure_delta.py:64:      None, measure_delta.resolve_log(None))
+tests/agents/test_measure_delta.py:67:    ruta = measure_delta.resolve_log(destino)
+tests/agents/test_measure_delta.py:70:          "delta-de-agentes.md", ruta.name)
+tests/agents/test_measure_delta.py:77:    check("sin la raíz del consumidor, no hay log", None, measure_delta.resolve_log(destino))
+tests/agents/test_measure_delta.py:78:    measure_delta.arrancar({"agent_id": "x"}, {}, str(destino))
+tests/agents/test_measure_delta.py:81:    ruta = measure_delta.resolve_log(destino)
+tests/agents/test_stop_reason_provenance.py:15:  propio docstring de esquema, cuyo vocabulario ``hook``/``journal``/
+tests/hooks/test_task_lifecycle.py:6:lo llaman su propia suite y un volcado de banco. La capacidad esta escrita y
+tests/repo/test_pending_work_telemetry.py:9:contaba como trabajo pendiente y disparaba por él solo; el historial acumuló
+tests/session/test-store-faucet.sh:30:# no cambia hasta el checkpoint. Por eso la huella cubre los dos, el respaldo
+tests/session/test-store-faucet.sh:31:# se toma tras un checkpoint, y al restaurar se retiran `-wal` y `-shm`:
+tests/session/test-store-faucet.sh:34:checkpoint() { python3 -c 'import sqlite3,sys; sqlite3.connect(sys.argv[1]).execute("pragma wal_checkpoint(TRUNCATE)")' "$STORE"; }
+tests/session/test-store-faucet.sh:36:checkpoint
+tests/session/test_user_wiring.py:437:check("15.1 mismo advisor -> delta vacio", [],
+tests/session/test_user_wiring.py:438:      w.cache_key_delta(_igual, _declarado15))
+tests/session/test_user_wiring.py:439:check("15.2 otro advisor -> delta lo nombra", ["advisorModel"],
+tests/session/test_user_wiring.py:440:      w.cache_key_delta(_otro, _declarado15))
+tests/session/test_user_wiring.py:442:check("15.3 hooks distintos, advisor igual -> delta vacio", [],
+tests/session/test_user_wiring.py:443:      w.cache_key_delta({**_igual, "hooks": {"Stop": []}}, _declarado15))
+tests/session/test_user_wiring.py:462:check("15.7 y declara el delta vacio en el acta", [], _r16["cache_key_delta"])
+tests/session/test_user_wiring.py:508:# `volcar-tarea-al-store.sh:60,97`. Un incumplidor escrito por quien escribe el
+tests/session/test_user_wiring.py:513:    '        ejecutar_con_registro tablero-snapshot-tareas \\\n'
+tests/session/test_user_wiring.py:514:    '            python3 "$STORE_CLI" snapshot-tareas \\\n'
+tests/session/test_user_wiring.py:519:    'python3 "$STORE_CLI" snapshot-tareas \\\n'
+tests/session/test_user_wiring.py:535:    'python3 "$STORE_CLI" snapshot-tareas "${DESTINO[@]}" --tasks-dir "$D"\n')
+tests/store/test_agent_sessions.py:7:con upsert protegido en estado terminal, actualizarla con COALESCE por campo
+tests/store/test_agent_sessions.py:25:- El truco ``COALESCE(NULLIF(col, 'desconocido'), ?, col)`` que preserva un
+tests/store/test_agent_sessions.py:28:  mecanismo mínimo portado usa ``COALESCE(?, col)`` sin esa preservación.
+tests/store/test_agent_sessions.py:170:print("== 6. update_session — COALESCE por campo: sólo toca lo que se pasa ==")
+tests/task/test-refresh-board.sh:54:echo "caso 1 — estado PLENO: sin citas acuñadas, el volcado no mueve nada"
+tests/task/test_board_ordinal_identity.py:11:parcial, `ingest_board`, `link_board_ordinal`, `snapshot-tareas`) se miden
+tests/task/test_board_ordinal_identity.py:142:#     el fixture minimo) — snapshot-tareas escribe el ordinal, y una tarjeta
+tests/task/test_board_ordinal_identity.py:161:ag.cmd_snapshot_tasks(_Args(
+tests/task/test_board_ordinal_identity.py:170:check(written_ordinal == 7, "2a: snapshot-tareas escribe board_ordinal = id de la tarjeta")
+tests/task/test_board_ordinal_identity.py:369:# --- D. Retirar la escritura de `board_ordinal` en `snapshot-tareas` — la
+tests/task/test_board_ordinal_identity.py:388:ag_without_ordinal.cmd_snapshot_tasks(_Args(
+tests/task/test_board_ordinal_identity.py:397:      "D: SIN la escritura, snapshot-tareas deja board_ordinal NULO (1 "
+tests/task/test_task_ids.py:403:#     `snapshot-tareas`) recibe su cita sin duplicarse.
