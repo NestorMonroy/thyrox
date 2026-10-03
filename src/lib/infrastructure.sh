@@ -221,7 +221,7 @@ _thyrox_infrastructure_desired_postgres() {
     --arg target "$_INFRASTRUCTURE_POSTGRES_SECRET_TARGET" --arg secretDir "$_INFRASTRUCTURE_SECRET_MOUNT_DIR" \
     '.image = $image | .network = {mode: "named", name: $network}
      | .publishedPorts = [{hostAddress: "127.0.0.1", hostPort: $port, containerPort: 5432}]
-     | .namedVolumes = [{volume: $volume, destination: $dataDir}]
+     | .namedVolumes = [{volume: $volume, destination: $dataDir, durable: true}]
      | .environment = {POSTGRES_USER: $user, POSTGRES_DB: $db, POSTGRES_PASSWORD_FILE: ($secretDir + "/" + $target)}
      | .secrets = [{secret: $secret, target: $target, valueFrom: "THYROX_INFRA_POSTGRES_PASSWORD"}]
      | .provision = [["psql", "-v", "ON_ERROR_STOP=1", "-U", $user, "-d", $db, "-c", "CREATE EXTENSION IF NOT EXISTS vector"]]'

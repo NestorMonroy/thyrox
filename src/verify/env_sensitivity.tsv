@@ -367,6 +367,7 @@ THYROX_INFRA_HEALTH_TIMEOUT	config	env	revisado 2026-10-02: ruta, umbral, bander
 THYROX_INFRA_OLLAMA_IMAGE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
 THYROX_INFRA_OLLAMA_PORT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
 THYROX_INFRA_OLLAMA_VOLUME	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_DURABLE_VOLUMES_DIR	config	env	revisado 2026-10-03: ruta del libro de volúmenes durables; sin valor secreto
 THYROX_INFRA_PODMAN_NUM_LOCKS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
 THYROX_INFRA_POSTGRES_DB	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
 THYROX_INFRA_POSTGRES_IMAGE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto

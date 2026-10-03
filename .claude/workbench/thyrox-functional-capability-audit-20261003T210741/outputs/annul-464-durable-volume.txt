@@ -1,0 +1,10 @@
+## A: no rehúsa el durable perdido
+replace_literal: 1 reemplazo(s) en src/packages/podman-execution/resourceMaterialization.ts
+(fail) ensureResource — un volumen durable que falta no se recrea vacío > registrado y ausente: rehúsa en la etapa volume, sin crear nada, nombrando la pérdida [0.76ms]
+ 34 pass
+ 1 fail
+## B: no adopta el existente
+replace_literal: 1 reemplazo(s) en src/packages/podman-execution/resourceMaterialization.ts
+(fail) ensureResource — un volumen durable que falta no se recrea vacío > uno que ya existía sin registro se adopta: una pérdida futura se detecta [5.00ms]
+ 34 pass
+ 1 fail

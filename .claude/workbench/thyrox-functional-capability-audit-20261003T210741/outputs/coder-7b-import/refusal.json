@@ -1,0 +1,4 @@
+{
+  "refusedAt": "2026-10-03T22:30:33.495Z",
+  "reason": "admisión de memoria: resource_admission admit-ram: no cabe la necesidad 8388608 kB; libre 8106068 kB, reservado por otros 0 kB"
+}

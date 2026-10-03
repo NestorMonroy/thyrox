@@ -41,7 +41,9 @@ expect_jq "postgres: nombre fijo" "$pg" '.name == "thyrox-postgres"'
 expect_jq "postgres: imagen por defecto" "$pg" '.image == "docker.io/pgvector/pgvector:0.8.0-pg16"'
 expect_jq "postgres: red con nombre thyrox-infra" "$pg" '.network == {mode: "named", name: "thyrox-infra"}'
 expect_jq "postgres: puerto sólo en loopback" "$pg" '.publishedPorts == [{hostAddress: "127.0.0.1", hostPort: 55432, containerPort: 5432}]'
-expect_jq "postgres: volumen durable con nombre" "$pg" '.namedVolumes == [{volume: "thyrox-postgres-data", destination: "/var/lib/postgresql/data"}]'
+# H-THYROX-464: el volumen de PostgreSQL se declara durable; si falta tras
+# haber existido, la primitiva no lo crea vacío.
+expect_jq "postgres: volumen durable con nombre" "$pg" '.namedVolumes == [{volume: "thyrox-postgres-data", destination: "/var/lib/postgresql/data", durable: true}]'
 expect_jq "postgres: el contenedor recibe la RUTA del secreto" "$pg" '.environment.POSTGRES_PASSWORD_FILE == "/run/secrets/postgres-password"'
 expect_jq "postgres: nunca POSTGRES_PASSWORD en el entorno" "$pg" '.environment | has("POSTGRES_PASSWORD") | not'
 expect_jq "postgres: provisiona pgvector en su base, idempotente" "$pg" \

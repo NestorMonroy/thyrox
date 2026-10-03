@@ -7,6 +7,8 @@
  */
 
 import { createPodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
+
+import { durableVolumeLedgerPath, fileDurableVolumeLedger } from './durableVolumeLedger.ts'
 import type { ResourceMaterializationDeps } from '@thyrox/podman-execution/resourceMaterialization.ts'
 
 import { EXIT_REFUSED, bootstrapInfrastructure, parseInfrastructureDeclarations } from './infrastructureBootstrap.ts'
@@ -30,11 +32,18 @@ function processAlive(pid: number): boolean {
   }
 }
 
-function realDeps(): ResourceMaterializationDeps {
+/**
+ * Las dependencias reales de la primitiva, con el libro de volúmenes durables
+ * del hogar de datos: un volumen durable que falta tras haber existido se
+ * rehúsa en lugar de crearse vacío (H-THYROX-464).
+ */
+export function bootstrapDeps(environment: Readonly<Record<string, string | undefined>>): ResourceMaterializationDeps {
   return {
     podman: createPodmanExecutor(),
     isProcessAlive: processAlive,
     sleep: milliseconds => new Promise(resolve => setTimeout(resolve, milliseconds)),
+    durableVolumes: fileDurableVolumeLedger(durableVolumeLedgerPath({ ...environment })),
+    now: () => new Date(),
   }
 }
 
@@ -46,7 +55,7 @@ export async function runBootstrapCommand(context: BootstrapCommandContext): Pro
     context.output.stderr(`infrastructure-bootstrap: la entrada no es un arreglo de declaraciones válido: ${error instanceof Error ? error.message : String(error)}`)
     return EXIT_REFUSED
   }
-  const report = await bootstrapInfrastructure(context.deps ?? realDeps(), declarations, context.environment, context.ownerPid)
+  const report = await bootstrapInfrastructure(context.deps ?? bootstrapDeps(context.environment), declarations, context.environment, context.ownerPid)
   report.lines.forEach(line => context.output.stdout(line))
   report.problems.forEach(problem => context.output.stderr(`infrastructure-bootstrap: ${problem}`))
   return report.exitCode

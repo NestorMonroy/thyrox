@@ -365,3 +365,54 @@ describe('ensureResource — provisión tras la salud', () => {
     expect(outcome.action).toBe('kept')
   })
 })
+
+// H-THYROX-464: el volumen del corpus desapareció y la reconciliación creó uno
+// vacío informando sólo `created`. Un volumen durable que ya existió y falta es
+// una pérdida de datos: se rehúsa crearlo vacío y se nombra cuándo existió.
+describe('ensureResource — un volumen durable que falta no se recrea vacío', () => {
+  const durable = () => desired({ namedVolumes: [{ volume: VOLUME, destination: '/var/lib/postgresql/data', durable: true }] })
+
+  function memoryLedger(initial: Record<string, string> = {}) {
+    const entries = new Map(Object.entries(initial))
+    return {
+      entries,
+      async createdAt(volume: string) { return entries.get(volume) },
+      async record(volume: string, at: string) { if (!entries.has(volume)) entries.set(volume, at) },
+    }
+  }
+
+  test('la primera vez lo crea y registra que existe', async () => {
+    const ledger = memoryLedger()
+    deps = { ...deps, durableVolumes: ledger, now: () => new Date('2026-10-03T10:04:25Z') }
+    const outcome = await ensureHealthy(durable())
+    expect(outcome.volumes).toEqual([{ volume: VOLUME, state: 'created' }])
+    expect(ledger.entries.get(VOLUME)).toBe('2026-10-03T10:04:25.000Z')
+  })
+
+  test('registrado y ausente: rehúsa en la etapa volume, sin crear nada, nombrando la pérdida', async () => {
+    const ledger = memoryLedger({ [VOLUME]: '2026-10-01T00:00:00.000Z' })
+    deps = { ...deps, durableVolumes: ledger }
+    const outcome = await ensureHealthy(durable())
+    expect(outcome.action).toBe('failed')
+    expect(outcome.failure?.stage).toBe('volume')
+    expect(outcome.failure?.message).toMatch(/durable.*2026-10-01T00:00:00.000Z/)
+    expect(host.volumes.has(VOLUME)).toBe(false)
+    expect(host.calls.filter(argv => argv[0] === 'volume' && argv[1] === 'create')).toEqual([])
+  })
+
+  test('uno que ya existía sin registro se adopta: una pérdida futura se detecta', async () => {
+    host.volumes.add(VOLUME)
+    const ledger = memoryLedger()
+    deps = { ...deps, durableVolumes: ledger, now: () => new Date('2026-10-03T21:13:39Z') }
+    const outcome = await ensureHealthy(durable())
+    expect(outcome.volumes).toEqual([{ volume: VOLUME, state: 'preserved' }])
+    expect(ledger.entries.get(VOLUME)).toBe('2026-10-03T21:13:39.000Z')
+  })
+
+  test('uno no durable registrado y ausente se crea como siempre', async () => {
+    const ledger = memoryLedger({ [VOLUME]: '2026-10-01T00:00:00.000Z' })
+    deps = { ...deps, durableVolumes: ledger }
+    const outcome = await ensureHealthy(desired())
+    expect(outcome.volumes).toEqual([{ volume: VOLUME, state: 'created' }])
+  })
+})

@@ -1,0 +1,5 @@
+(fail) ensureResource — un volumen durable que falta no se recrea vacío > la primera vez lo crea y registra que existe [0.44ms]
+(fail) ensureResource — un volumen durable que falta no se recrea vacío > registrado y ausente: rehúsa en la etapa volume, sin crear nada, nombrando la pérdida [0.47ms]
+(fail) ensureResource — un volumen durable que falta no se recrea vacío > uno que ya existía sin registro se adopta: una pérdida futura se detecta [0.53ms]
+ 32 pass
+ 3 fail

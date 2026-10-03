@@ -34,7 +34,21 @@ import {
 /** Tipo de recurso: decide la política de nombre, no el mecanismo. */
 export type ResourceKind = 'worker' | 'infrastructure'
 
-export type NamedVolumeMount = { volume: string; destination: string; readOnly?: boolean }
+/**
+ * `durable`: el volumen guarda datos que no se reconstruyen (la base de datos).
+ * Si falta después de haber existido, la primitiva no lo crea vacío (H-THYROX-464).
+ */
+export type NamedVolumeMount = { volume: string; destination: string; readOnly?: boolean; durable?: boolean }
+
+/**
+ * Qué volúmenes durables existieron alguna vez, y desde cuándo, fuera de
+ * Podman: sobrevive a que se pierda el almacenamiento de contenedores.
+ */
+export interface DurableVolumeLedger {
+  createdAt(volume: string): Promise<string | undefined>
+  /** Registra el volumen si no lo estaba; nunca reescribe la fecha original. */
+  record(volume: string, at: string): Promise<void>
+}
 export type BindMount = { source: string; destination: string; readOnly: boolean }
 /** Un secreto de Podman montado como archivo en `/run/secrets/<target>`. */
 export type SecretFileMount = { secret: string; target: string }
@@ -120,6 +134,9 @@ export interface ResourceMaterializationDeps {
   /** La vida se mide sobre el PID real, nunca sobre el estado que reporta Podman. */
   isProcessAlive: (pid: number) => boolean
   sleep: (milliseconds: number) => Promise<void>
+  /** Sin él, un volumen durable que falta se crea como cualquier otro. */
+  durableVolumes?: DurableVolumeLedger
+  now?: () => Date
 }
 
 /** La declaración no es materializable; nombra el campo y no toca Podman. */
@@ -405,15 +422,36 @@ function volumeLabelArgv(desired: DesiredResource): string[] {
 async function ensureVolumes(deps: ResourceMaterializationDeps, desired: DesiredResource): Promise<VolumeState[]> {
   const states: VolumeState[] = []
   for (const mount of desired.namedVolumes ?? []) {
+    const ledger = mount.durable ? deps.durableVolumes : undefined
     const exists = await deps.podman.run(['volume', 'exists', mount.volume])
     if (exists.exitCode === 0) {
+      // Uno que ya existía sin registro se adopta: una pérdida futura se detecta.
+      await ledger?.record(mount.volume, nowOf(deps))
       states.push({ volume: mount.volume, state: 'preserved' })
       continue
     }
+    await refuseLostDurableVolume(ledger, mount.volume)
     await step(deps, 'volume', ['volume', 'create', ...volumeLabelArgv(desired), mount.volume])
+    await ledger?.record(mount.volume, nowOf(deps))
     states.push({ volume: mount.volume, state: 'created' })
   }
   return states
+}
+
+/** Un volumen durable registrado que falta se perdió: crearlo vacío ocultaría la pérdida. */
+async function refuseLostDurableVolume(ledger: DurableVolumeLedger | undefined, volume: string): Promise<void> {
+  const createdAt = await ledger?.createdAt(volume)
+  if (createdAt === undefined) return
+  throw new MaterializationStepError('volume', {
+    exitCode: 1,
+    stdout: '',
+    stderr: `el volumen durable ${volume} existía desde ${createdAt} y falta: su contenido se perdió y no se crea vacío. `
+      + 'Recupéralo de una copia, o retira su registro del libro de volúmenes durables para inicializarlo de nuevo.',
+  })
+}
+
+function nowOf(deps: ResourceMaterializationDeps): string {
+  return (deps.now?.() ?? new Date()).toISOString()
 }
 
 export type SecretOutcome = 'created' | 'replaced' | 'unchanged'

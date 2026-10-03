@@ -1,0 +1,15 @@
+local-models-import: la imagen del laboratorio localhost/thyrox-model-quantizer:dev no está: Error: localhost/thyrox-model-quantizer:dev: image not known
+129 | 
+130 | /** El ID inmutable de la imagen del laboratorio y su digest, para fijarla en la procedencia. */
+131 | export async function resolveLabImage(podman: PodmanExecutor, reference: string): Promise<{ id: string; digest: string }> {
+132 |   const result = await podman.run(['image', 'inspect', reference, '--format', '{{.Id}} {{.Digest}}'])
+133 |   const [id, digest] = result.stdout.trim().split(/\s+/)
+134 |   if (result.exitCode !== 0 || !id || !digest) throw new Error(`la imagen del laboratorio ${reference} no está: ${result.stderr.trim()}`)
+                                                               ^
+error: la imagen del laboratorio localhost/thyrox-model-quantizer:dev no está: Error: localhost/thyrox-model-quantizer:dev: image not known
+      at resolveLabImage (/home/user/thyrox/src/packages/local-models/quantizationLab.ts:134:58)
+      at async acquire (/home/user/thyrox/src/packages/local-models/importCommand.ts:74:23)
+      at async runImportCommand (/home/user/thyrox/src/packages/local-models/importCommand.ts:58:20)
+
+Bun v1.3.14 (Linux x64)
+__BG_EXIT__=1
