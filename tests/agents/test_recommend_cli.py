@@ -228,6 +228,16 @@ def check_policy(home: LocalHome) -> None:
     r = run(home, "mecanica", "--policy", str(policy), "--runtime", "claude-cli")
     check("--runtime claude-cli contra una política sin respaldo rehúsa con 2", r.returncode == 2, str(r.returncode))
     check("y no nombra ningún claude- como recomendación", "→ claude-" not in r.stdout, r.stdout[:120])
+    # TASK-THYROX-0920: el interruptor abierto no basta; claude-cli tiene que estar en la cadena.
+    local_only = home.root / "policy-local-chain.json"
+    selector = {"runtime": "ollama", "repository": "Qwen/Qwen2.5-7B-Instruct-GGUF"}
+    local_only.write_text(json.dumps({"allowed": [selector], "fallback": {"enabled": True, "chain": [selector]}}))
+    r = run(home, "mecanica", "--policy", str(local_only), "--runtime", "claude-cli")
+    check("--runtime claude-cli contra una cadena sin claude-cli rehúsa con 2", r.returncode == 2, str(r.returncode))
+    r = run(home, "mecanica", "--policy", str(local_only), "--json")
+    body = parse_json(r.stdout)
+    check("cadena local agotada: bloqueada con no_usable_fallback",
+          r.returncode == 3 and body.get("trigger") == "no_usable_fallback", f"{r.returncode} {r.stdout[:160]}")
 
 
 def check_declared_policy(home: LocalHome) -> None:

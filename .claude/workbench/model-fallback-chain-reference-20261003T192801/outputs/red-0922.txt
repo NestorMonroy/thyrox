@@ -1,0 +1,11 @@
+  FALLA no existe src/packages/agent/tsconfig.json: ../@ant/ink/src/types/ink-jsx.d.ts
+  FALLA no existe src/packages/agent/tsconfig.json: ../@ant/ink/src/types/ink-elements.d.ts
+  FALLA no existe src/packages/permission/tsconfig.json: ../@ant/ink/src/types/ink-jsx.d.ts
+  FALLA no existe src/packages/permission/tsconfig.json: ../@ant/ink/src/types/ink-elements.d.ts
+  FALLA no existe src/packages/provider/tsconfig.json: ../@ant/ink/src/types/ink-jsx.d.ts
+  FALLA no existe src/packages/provider/tsconfig.json: ../@ant/ink/src/types/ink-elements.d.ts
+  FALLA no existe src/packages/swarm/tsconfig.json: ../@ant/ink/src/types/ink-jsx.d.ts
+  FALLA no existe src/packages/swarm/tsconfig.json: ../@ant/ink/src/types/ink-elements.d.ts
+  FALLA no existe src/packages/tools/tsconfig.json: ../@ant/ink/src/types/ink-jsx.d.ts
+  FALLA no existe src/packages/tools/tsconfig.json: ../@ant/ink/src/types/ink-elements.d.ts
+10 ruta(s) ausente(s) (alcance medido: 144 tsconfig versionado(s))

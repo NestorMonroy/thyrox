@@ -1,0 +1,28 @@
+== no-advance
+(fail) startAdmittedUpstream con fallbackModels (TASK-THYROX-0921) > una admisión rehusada por recursos avanza al respaldo como overloaded y lo registra [2.51ms]
+(fail) startAdmittedUpstream con fallbackModels (TASK-THYROX-0921) > un modelo que el coordinador no resuelve avanza como model_not_found [1.98ms]
+(fail) startAdmittedUpstream con fallbackModels (TASK-THYROX-0921) > una unidad que falla al establecerse avanza como server_error [1.99ms]
+(fail) startAdmittedUpstream con fallbackModels (TASK-THYROX-0921) > un 5xx del runtime suelta la admisión y avanza como server_error [3.54ms]
+(fail) startAdmittedUpstream con fallbackModels (TASK-THYROX-0921) > agotada la cadena responde el último rechazo, tras recorrerla en orden [1.12ms]
+(fail) startAdmittedUpstream con fallbackModels (TASK-THYROX-0921) > el salto es de una petición: la siguiente vuelve a pedir el modelo original [2.22ms]
+(fail) startAdmittedUpstream con fallbackModels (TASK-THYROX-0921) > el propio modelo pedido en la cadena no se reintenta como respaldo [1.37ms]
+ 15 pass
+ 7 fail
+== resolve-trigger
+(fail) startAdmittedUpstream con fallbackModels (TASK-THYROX-0921) > un modelo que el coordinador no resuelve avanza como model_not_found [2.64ms]
+ 21 pass
+ 1 fail
+== server-status
+(fail) startAdmittedUpstream con fallbackModels (TASK-THYROX-0921) > un 5xx del runtime suelta la admisión y avanza como server_error [2.99ms]
+ 21 pass
+ 1 fail
+== dedupe-primary
+(fail) startAdmittedUpstream con fallbackModels (TASK-THYROX-0921) > el propio modelo pedido en la cadena no se reintenta como respaldo [1.54ms]
+ 21 pass
+ 1 fail
+== cancel-on-advance
+(fail) startAdmittedUpstream con fallbackModels (TASK-THYROX-0921) > un 5xx del runtime suelta la admisión y avanza como server_error [3.84ms]
+ 21 pass
+ 1 fail
+ .../src/proxy/openaiCompat/admittedUpstream.ts     | 110 +++++++++++++++++++--
+ 1 file changed, 100 insertions(+), 10 deletions(-)

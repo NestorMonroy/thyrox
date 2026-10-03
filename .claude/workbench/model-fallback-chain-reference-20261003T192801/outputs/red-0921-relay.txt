@@ -1,0 +1,160 @@
+bun test v1.3.14 (0d9b296a)
+
+src/proxy/__tests__/admittedUpstream.test.ts:
+262 |   test('una admisión rehusada por recursos avanza al respaldo como overloaded y lo registra', async () => {
+263 |     const runtime = fakeRuntime()
+264 |     const source = new FakeSource(byModel(refusedAt('reserve'), endpointOf(runtime)))
+265 |     const events: ModelFallbackEvent[] = []
+266 |     const response = await chat(chainRelay(source, [FALLBACK], events), HELLO)
+267 |     expect([response.status, admittedModels(source)]).toEqual([200, [MODEL, FALLBACK]])
+                                                            ^
+error: expect(received).toEqual(expected)
+
+@@ -1,6 +1,6 @@
+  [
+-   200,
++   503,
+    [
+      "thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf",
+-     "thyrox-fallback-b",
+    ],
+
+- Expected  - 2
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/proxy/__tests__/admittedUpstream.test.ts:267:55)
+(fail) startAdmittedUpstream con fallbackModels (TASK-THYROX-0921) > una admisión rehusada por recursos avanza al respaldo como overloaded y lo registra [3.13ms]
+271 | 
+272 |   test('un modelo que el coordinador no resuelve avanza como model_not_found', async () => {
+273 |     const runtime = fakeRuntime()
+274 |     const events: ModelFallbackEvent[] = []
+275 |     await chat(chainRelay(new FakeSource(byModel(refusedAt('resolve'), endpointOf(runtime))), [FALLBACK], events), HELLO)
+276 |     expect(events.map(event => event.trigger)).toEqual(['model_not_found'])
+                                                     ^
+error: expect(received).toEqual(expected)
+
+- [
+-   "model_not_found",
+- ]
++ []
+
+- Expected  - 3
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/proxy/__tests__/admittedUpstream.test.ts:276:48)
+(fail) startAdmittedUpstream con fallbackModels (TASK-THYROX-0921) > un modelo que el coordinador no resuelve avanza como model_not_found [2.06ms]
+279 |   test('una unidad que falla al establecerse avanza como server_error', async () => {
+280 |     const runtime = fakeRuntime()
+281 |     const failed = (): CoordinatorAdmission => ({ status: 'failed', stage: 'load', reason: 'el runtime no cargó' })
+282 |     const events: ModelFallbackEvent[] = []
+283 |     await chat(chainRelay(new FakeSource(byModel(failed, endpointOf(runtime))), [FALLBACK], events), HELLO)
+284 |     expect(events.map(event => event.trigger)).toEqual(['server_error'])
+                                                     ^
+error: expect(received).toEqual(expected)
+
+- [
+-   "server_error",
+- ]
++ []
+
+- Expected  - 3
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/proxy/__tests__/admittedUpstream.test.ts:284:48)
+(fail) startAdmittedUpstream con fallbackModels (TASK-THYROX-0921) > una unidad que falla al establecerse avanza como server_error [2.50ms]
+290 |     const healthy = fakeRuntime()
+291 |     const source = new FakeSource(byModel(admitTo(endpointOf(broken)), endpointOf(healthy)))
+292 |     const events: ModelFallbackEvent[] = []
+293 |     const response = await chat(chainRelay(source, [FALLBACK], events), HELLO)
+294 |     expect([response.status, source.finished.includes('admission-1'), events.map(event => event.trigger)])
+295 |       .toEqual([200, true, ['server_error']])
+             ^
+error: expect(received).toEqual(expected)
+
+  [
+-   200,
+-   true,
+-   [
+-     "server_error",
+-   ],
++   503,
++   false,
++   [],
+  ]
+
+- Expected  - 5
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/proxy/__tests__/admittedUpstream.test.ts:295:8)
+(fail) startAdmittedUpstream con fallbackModels (TASK-THYROX-0921) > un 5xx del runtime suelta la admisión y avanza como server_error [4.82ms]
+314 |   test('agotada la cadena responde el último rechazo, tras recorrerla en orden', async () => {
+315 |     const source = new FakeSource(refusedAt('reserve'))
+316 |     const events: ModelFallbackEvent[] = []
+317 |     const response = await chat(chainRelay(source, [FALLBACK, SECOND], events), HELLO)
+318 |     expect([response.status, (await errorOf(response)).type, admittedModels(source), events.map(event => event.chainIndex)])
+319 |       .toEqual([ADMISSION_REFUSED_STATUS, 'admission_refused', [MODEL, FALLBACK, SECOND], [1, 2]])
+             ^
+error: expect(received).toEqual(expected)
+
+@@ -5,9 +5,5 @@
+      "thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf",
+-     "thyrox-fallback-b",
+-     "thyrox-fallback-c",
+    ],
+-   [
+-     1,
+-     2,
+-   ],
++   [],
+  ]
+
+- Expected  - 6
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/proxy/__tests__/admittedUpstream.test.ts:319:8)
+(fail) startAdmittedUpstream con fallbackModels (TASK-THYROX-0921) > agotada la cadena responde el último rechazo, tras recorrerla en orden [2.79ms]
+323 |     const runtime = fakeRuntime()
+324 |     const source = new FakeSource(byModel(refusedAt('reserve'), endpointOf(runtime)))
+325 |     const upstream = chainRelay(source, [FALLBACK], [])
+326 |     await (await chat(upstream, HELLO)).text()
+327 |     await (await chat(upstream, HELLO)).text()
+328 |     expect(admittedModels(source)).toEqual([MODEL, FALLBACK, MODEL, FALLBACK])
+                                         ^
+error: expect(received).toEqual(expected)
+
+@@ -2,5 +2,5 @@
+    "thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf",
+-   "thyrox-fallback-b",
+    "thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf",
+-   "thyrox-fallback-b",
+  ]
+
+- Expected  - 2
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/proxy/__tests__/admittedUpstream.test.ts:328:36)
+(fail) startAdmittedUpstream con fallbackModels (TASK-THYROX-0921) > el salto es de una petición: la siguiente vuelve a pedir el modelo original [2.38ms]
+329 |   })
+330 | 
+331 |   test('el propio modelo pedido en la cadena no se reintenta como respaldo', async () => {
+332 |     const source = new FakeSource(refusedAt('reserve'))
+333 |     await chat(chainRelay(source, [MODEL, FALLBACK], []), HELLO)
+334 |     expect(admittedModels(source)).toEqual([MODEL, FALLBACK])
+                                         ^
+error: expect(received).toEqual(expected)
+
+@@ -2,3 +2,3 @@
+    "thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf",
+-   "thyrox-fallback-b",
+  ]
+
+- Expected  - 1
++ Received  + 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/src/proxy/__tests__/admittedUpstream.test.ts:334:36)
+(fail) startAdmittedUpstream con fallbackModels (TASK-THYROX-0921) > el propio modelo pedido en la cadena no se reintenta como respaldo [1.93ms]
+
+ 15 pass
+ 7 fail
+ 46 expect() calls
+Ran 22 tests across 1 file. [284.00ms]

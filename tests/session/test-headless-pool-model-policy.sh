@@ -92,5 +92,15 @@ check "caso 10: la política declarada sin --model-policy rechaza un proveedor c
 OUTPUT="$(THYROX_EXECUTION_POLICY="$F/policy.json" pool)"; CODE=$?
 check "caso 10: y el recomendador recibe esa política" "$(grep -c -- "--policy $F/policy.json" "$F/recommend.log")" "1"
 
+# TASK-THYROX-0920: el interruptor abierto no basta. Una cadena sin claude-cli
+# no deja llegar al proveedor ni por Ollama caído ni por un selector que lo devuelva.
+printf '{"allowed":[{"runtime":"ollama","repository":"Qwen/Qwen2.5-7B-Instruct-GGUF"}],"fallback":{"enabled":true,"chain":[{"runtime":"ollama","repository":"Qwen/Qwen2.5-7B-Instruct-GGUF"}]}}\n' > "$F/cadena-local.json"
+OUTPUT="$(ENSURE_EXIT=1 pool --model-policy "$F/cadena-local.json")"; CODE=$?
+check "caso 11: Ollama caído y cadena sin claude-cli rehúsa con 2" "$CODE" "2"
+check "caso 11: no pide claude-cli al recomendador" "$(grep -c -- '--runtime claude-cli' "$F/recommend.log")" "0"
+OUTPUT="$(RECOMMEND_MODE=provider pool --model-policy "$F/cadena-local.json")"; CODE=$?
+check "caso 12: un proveedor devuelto contra una cadena sin claude-cli rehúsa con 2" "$CODE" "2"
+check "caso 12: ningún ítem se lanza" "$(wc -l < "$F/runner.log" | tr -d ' ')" "0"
+
 echo; echo "$PASS ok · $FAIL falla(s) (alcance medido: headless-pool --model-policy)"
 [[ $FAIL -eq 0 ]]

@@ -5,7 +5,13 @@
  *
  *   { "allowed": [{ "runtime": "ollama", "repository": "Qwen/Qwen2.5-7B-Instruct-GGUF",
  *                   "quantization": "q4_k_m" }],
- *     "fallback": { "enabled": false } }
+ *     "fallback": { "enabled": true,
+ *                   "chain": [{ "runtime": "ollama", "repository": "Qwen/Qwen2.5-7B-Instruct-GGUF",
+ *                               "quantization": "q4_k_m" },
+ *                             { "runtime": "claude-cli" }] } }
+ *
+ * `fallback.enabled` es el interruptor; `fallback.chain`, el orden de los
+ * respaldos (TASK-THYROX-0920). Sin `chain` declarada rige `[claude-cli]`.
  *
  * Un modelo local se permite por su repositorio de origen (y su cuantización,
  * si se declara), no por su nombre contractual: el nombre lleva la revisión y
@@ -49,13 +55,31 @@ export interface ControllerPolicy {
   readonly implementation: ControllerImplementation
 }
 
+/** El proveedor ejecutado por `claude -p`: sólo se alcanza como eslabón de la cadena. */
+export interface ProviderTarget {
+  readonly runtime: 'claude-cli'
+}
+
+export type FallbackTarget = LocalModelSelector | ProviderTarget
+
+/**
+ * El respaldo, en la forma de la referencia `claude-code-bin` (`rre`/`$a`): `enabled` es el
+ * interruptor (`CLAUDE_CODE_NO_MODEL_FALLBACK` invertido) y `chain` el orden en
+ * que se prueban los respaldos, cada uno dentro de lo permitido.
+ */
+export interface FallbackPolicy {
+  readonly enabled: boolean
+  readonly chain: readonly FallbackTarget[]
+}
+
 export interface ExecutionPolicy {
   readonly allowed: readonly LocalModelSelector[]
-  readonly fallback: { readonly enabled: boolean }
+  readonly fallback: FallbackPolicy
   readonly controller?: ControllerPolicy
 }
 
 const LOCAL_RUNTIME = 'ollama'
+const PROVIDER_RUNTIME = 'claude-cli'
 const CONTROLLER_IMPLEMENTATIONS: readonly ControllerImplementation[] = ['bootstrap-exception', 'managed-only']
 const MODEL_SOURCES: readonly ModelSource[] = ['hf', 'ollama']
 
@@ -73,7 +97,9 @@ export function parseExecutionPolicy(text: string): ExecutionPolicy {
   if (typeof enabled !== 'boolean') {
     throw new ExecutionPolicyError('`fallback.enabled` se declara (true o false): el respaldo al proveedor no tiene valor por defecto')
   }
-  const parsed = { allowed: allowed.map(selectorOf), fallback: { enabled } }
+  const selectors = allowed.map(selectorOf)
+  const chain = chainOf((fallback as { chain?: unknown }).chain, selectors)
+  const parsed = { allowed: selectors, fallback: { enabled, chain } }
   return controller === undefined ? parsed : { ...parsed, controller: controllerOf(controller) }
 }
 
@@ -93,7 +119,7 @@ function selectorOf(value: unknown, index: number): LocalModelSelector {
   const selector = (value ?? {}) as Record<string, unknown>
   if (selector.runtime !== LOCAL_RUNTIME) {
     throw new ExecutionPolicyError(`allowed[${index}]: sólo se permiten modelos locales (runtime ${LOCAL_RUNTIME}); `
-      + 'el proveedor no se lista, se alcanza sólo con fallback.enabled')
+      + 'el proveedor no se lista, se alcanza sólo como eslabón de fallback.chain')
   }
   if (typeof selector.repository !== 'string' || selector.repository === '') {
     throw new ExecutionPolicyError(`allowed[${index}]: falta el repositorio de origen del modelo`)
@@ -124,10 +150,11 @@ function sourceOf(value: unknown, index: number): ModelSource | undefined {
 
 /** ¿La política permite esta entrada del catálogo? Repositorio y cuantización sin distinguir mayúsculas. */
 export function allowsEntry(policy: ExecutionPolicy, entry: ModelCatalogEntry): boolean {
-  return policy.allowed.some(selector => selectorMatches(selector, entry))
+  return policy.allowed.some(selector => matchesSelector(selector, entry))
 }
 
-function selectorMatches(selector: LocalModelSelector, entry: ModelCatalogEntry): boolean {
+/** ¿Esta entrada del catálogo cumple el selector? */
+export function matchesSelector(selector: LocalModelSelector, entry: ModelCatalogEntry): boolean {
   return sameText(selector.repository, entry.repository)
     && (selector.quantization === undefined || sameText(selector.quantization, entry.quantization))
     && (selector.source === undefined || selector.source === entry.source)
@@ -135,4 +162,44 @@ function selectorMatches(selector: LocalModelSelector, entry: ModelCatalogEntry)
 
 function sameText(left: string, right: string): boolean {
   return left.toLowerCase() === right.toLowerCase()
+}
+
+/** ¿La política deja llegar al proveedor? Interruptor abierto y `claude-cli` en la cadena. */
+export function allowsProvider(policy: ExecutionPolicy): boolean {
+  return policy.fallback.enabled && policy.fallback.chain.some(isProviderTarget)
+}
+
+export function isProviderTarget(target: FallbackTarget): target is ProviderTarget {
+  return target.runtime === PROVIDER_RUNTIME
+}
+
+/**
+ * La cadena declarada. Sin declararla rige `[claude-cli]`, el respaldo que
+ * `enabled` daba antes de existir la cadena. Una entrada local tiene que estar
+ * en `allowed` (el `Hr` de la referencia): un respaldo no amplía lo permitido,
+ * y aquí se rehúsa en vez de filtrarse en silencio.
+ */
+function chainOf(value: unknown, allowed: readonly LocalModelSelector[]): readonly FallbackTarget[] {
+  if (value === undefined) return [{ runtime: PROVIDER_RUNTIME }]
+  if (!Array.isArray(value)) throw new ExecutionPolicyError('`fallback.chain` es la lista ordenada de respaldos')
+  return value.map((item, index) => chainTargetOf(item, index, allowed))
+}
+
+function chainTargetOf(value: unknown, index: number, allowed: readonly LocalModelSelector[]): FallbackTarget {
+  const runtime = (value as { runtime?: unknown } | null | undefined)?.runtime
+  if (runtime === PROVIDER_RUNTIME) return { runtime: PROVIDER_RUNTIME }
+  if (runtime !== LOCAL_RUNTIME) {
+    throw new ExecutionPolicyError(`fallback.chain[${index}]: el runtime es ${LOCAL_RUNTIME} o ${PROVIDER_RUNTIME}`)
+  }
+  const selector = selectorOf(value, index)
+  if (!allowed.some(candidate => sameSelector(candidate, selector))) {
+    throw new ExecutionPolicyError(`fallback.chain[${index}]: ${selector.repository} no está en allowed; un respaldo no amplía lo permitido`)
+  }
+  return selector
+}
+
+function sameSelector(left: LocalModelSelector, right: LocalModelSelector): boolean {
+  return sameText(left.repository, right.repository)
+    && (left.quantization ?? '').toLowerCase() === (right.quantization ?? '').toLowerCase()
+    && left.source === right.source
 }

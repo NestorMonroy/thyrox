@@ -7,7 +7,7 @@ import { attentionShapeOf } from '@thyrox/model-artifacts/memoryEstimate.ts'
 import type { ModelQualification } from '@thyrox/model-artifacts/modelQualification.ts'
 import { thyroxModelName } from '@thyrox/model-artifacts/modelName.ts'
 import { recommend, recommendExecution } from '../src/cost/policy.ts'
-import { ExecutionPolicyError, allowsEntry, parseExecutionPolicy } from '../src/cost/executionPolicy.ts'
+import { ExecutionPolicyError, allowsEntry, allowsProvider, parseExecutionPolicy } from '../src/cost/executionPolicy.ts'
 
 const CONTEXT_TOKENS = 32_000
 const ATTENTION = attentionShapeOf({
@@ -282,5 +282,81 @@ describe('la política canónica y el Qwen3-4B instalado en el clon (TASK-THYROX
 
   test('el respaldo sigue cerrado', () => {
     expect(CANONICAL.fallback.enabled).toBe(false)
+  })
+})
+
+// TASK-THYROX-0920: el respaldo como cadena ordenada con motivos tipados, en la
+// forma de la referencia `claude-code-bin/2.1.286` (`rre`/`$a`/`Hr`, banco
+// model-fallback-chain-reference-20261003T192801): `enabled` es el interruptor,
+// `chain` el orden, y cada entrada local tiene que estar permitida.
+describe('fallback.chain — cadena ordenada con motivos tipados (TASK-THYROX-0920)', () => {
+  const PROFILE = { contextTokens: CONTEXT_TOKENS }
+  const QWEN_SELECTOR = { runtime: 'ollama', repository: 'Qwen/Qwen2.5-7B-Instruct-GGUF', quantization: 'q4_k_m' }
+  const FAST_SELECTOR = { runtime: 'ollama', repository: 'qwen/fast' }
+  const QWEN = catalogEntry('Qwen/Qwen2.5-7B-Instruct-GGUF', '3')
+  const policyWith = (fallback: unknown) => parseExecutionPolicy(JSON.stringify({ allowed: [QWEN_SELECTOR, FAST_SELECTOR], fallback }))
+  const qualifiedBoth = {
+    entries: [QWEN, FAST],
+    qualifications: [protocol(QWEN.name), qualification(QWEN.name), protocol(FAST.name), qualification(FAST.name, { tokensPerSecond: 99 })],
+  }
+  const unqualified = { entries: [QWEN], qualifications: [] }
+
+  test('enabled sin cadena declarada conserva el respaldo de hoy: la cadena es [claude-cli]', () => {
+    expect(policyWith({ enabled: true }).fallback.chain).toEqual([{ runtime: 'claude-cli' }])
+  })
+
+  test('una entrada local de la cadena que no está en allowed se rehúsa', () => {
+    expect(() => policyWith({ enabled: true, chain: [{ runtime: 'ollama', repository: 'otro/modelo' }] }))
+      .toThrow(/chain\[0\].*allowed/)
+  })
+
+  test('una entrada de runtime desconocido se rehúsa', () => {
+    expect(() => policyWith({ enabled: true, chain: [{ runtime: 'deepseek' }] })).toThrow(/chain\[0\]/)
+  })
+
+  test('enabled false es el interruptor: con claude-cli en la cadena, sigue bloqueada', () => {
+    const result = recommendExecution('mecanica', PROFILE, unqualified, policyWith({ enabled: false, chain: [{ runtime: 'claude-cli' }] }))
+    expect(result.runtime).toBe('blocked')
+  })
+
+  test('cae a claude-cli nombrando el motivo tipado y su posición en la cadena', () => {
+    const result = recommendExecution('mecanica', PROFILE, unqualified, policyWith({ enabled: true, chain: [FAST_SELECTOR, { runtime: 'claude-cli' }] }))
+    expect([result.runtime, result.runtime === 'claude-cli' ? result.fallback : undefined])
+      .toEqual(['claude-cli', { trigger: 'unqualified', chainIndex: 1 }])
+  })
+
+  test('una cadena sin claude-cli agotada: bloqueada con no_usable_fallback, nunca el proveedor', () => {
+    const result = recommendExecution('mecanica', PROFILE, unqualified, policyWith({ enabled: true, chain: [FAST_SELECTOR] }))
+    expect([result.runtime, result.runtime === 'blocked' ? result.trigger : undefined]).toEqual(['blocked', 'no_usable_fallback'])
+  })
+
+  test('el modelo local elegido lleva sus respaldos locales cualificados, en el orden de la cadena', () => {
+    const result = recommendExecution('mecanica', PROFILE, qualifiedBoth, policyWith({ enabled: true, chain: [QWEN_SELECTOR, FAST_SELECTOR, { runtime: 'claude-cli' }] }))
+    expect([result.runtime === 'ollama' ? result.model : '', result.runtime === 'ollama' ? result.fallbackModels : undefined])
+      .toEqual([FAST.name, [QWEN.name]])
+  })
+
+  test('un respaldo local sin cualificación no entra en fallbackModels', () => {
+    const onlyFast = { entries: [QWEN, FAST], qualifications: [protocol(FAST.name), qualification(FAST.name)] }
+    const result = recommendExecution('mecanica', PROFILE, onlyFast, policyWith({ enabled: true, chain: [QWEN_SELECTOR] }))
+    expect(result.runtime === 'ollama' ? result.fallbackModels : undefined).toEqual([])
+  })
+
+  test('los motivos son una enumeración: perfil de razonamiento distinto y contexto insuficiente', () => {
+    const closed = policyWith({ enabled: false })
+    const legacy = { entries: [QWEN], qualifications: [{ ...protocol(QWEN.name), reasoningEffort: 'model-default' as const }, qualification(QWEN.name, { reasoningEffort: 'model-default' })] }
+    const narrow = { entries: [QWEN], qualifications: [protocol(QWEN.name), qualification(QWEN.name, { contextTokens: 8_192 })] }
+    const triggers = [legacy, narrow, { entries: [], qualifications: [] }]
+      .map(inventory => recommendExecution('mecanica', PROFILE, inventory, closed))
+      .map(result => (result.runtime === 'blocked' ? result.trigger : undefined))
+    expect(triggers).toEqual(['unqualified_profile', 'insufficient_context', 'empty_catalog'])
+  })
+
+  test('allowsProvider: sólo con el interruptor abierto y claude-cli en la cadena', () => {
+    expect([
+      allowsProvider(policyWith({ enabled: true })),
+      allowsProvider(policyWith({ enabled: true, chain: [FAST_SELECTOR] })),
+      allowsProvider(policyWith({ enabled: false })),
+    ]).toEqual([true, false, false])
   })
 })

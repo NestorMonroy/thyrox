@@ -37,6 +37,7 @@ import { loadModelCatalog } from '@thyrox/model-artifacts/modelCatalog.ts'
 import { parseQualifications, type ModelQualification } from '@thyrox/model-artifacts/modelQualification.ts'
 import {
   ExecutionPolicyError,
+  allowsProvider,
   parseExecutionPolicy,
   providerExecution,
   recommendExecution,
@@ -196,8 +197,8 @@ async function chooseExecution(kind: TaskKind, contextTokens: number, runtime: s
   policy: ExecutionPolicy | undefined): Promise<ExecutionRecommendation & { runtimeDeclared?: true }> {
   if (runtime !== undefined) {
     requireDeclarableRuntime(runtime)
-    if (policy !== undefined && !policy.fallback.enabled) {
-      throw new RefusalError(`--runtime ${runtime} contra una política que no permite el proveedor: no se declara`)
+    if (policy !== undefined && !allowsProvider(policy)) {
+      throw new RefusalError(`--runtime ${runtime} contra una política cuyo respaldo no llega al proveedor (interruptor o fallback.chain): no se declara`)
     }
     return { ...providerExecution(kind, { contextTokens }), runtimeDeclared: true }
   }

@@ -1,0 +1,22 @@
+==== Tx: 1 definicion(es) de nivel superior
+---- chunk-kt4703ww.js class Tx [1842992,1843294)
+class Tx extends Error{originalModel;fallbackModel;reason;originalError;blockMessage;constructor(e,n,r="overloaded",s,g){super(`Model fallback triggered: ${e} -> ${n}`);this.originalModel=e;this.fallbackModel=n;this.reason=r;this.originalError=s;this.blockMessage=g;this.name="FallbackTriggeredError"}}
+==== iOe: 1 definicion(es) de nivel superior
+---- chunk-kt4703ww.js function iOe [2012334,2012449)
+function iOe({accessFallbackModel:e,toolFreeHelper:n}){return e!==void 0&&!d9e()&&Hr(e)&&(n===!0||OTe(e))?e:void 0}
+==== tOe: 1 definicion(es) de nivel superior
+---- chunk-kt4703ww.js function tOe [2012248,2012334)
+function tOe(e){let n=e.fallbackModel??iOe(e);return n!==void 0&&n!==e.model?n:void 0}
+==== VBn: 1 definicion(es) de nivel superior
+---- chunk-kt4703ww.js function VBn [1849658,1849732)
+function VBn(e,n){return e!==void 0&&n instanceof Tx&&n.fallbackModel===e}
+==== LK: 1 definicion(es) de nivel superior
+---- chunk-kt4703ww.js variable LK [1996636,1996640)
+LK=3
+==== Qre: 1 definicion(es) de nivel superior
+---- chunk-kt4703ww.js function Qre [1843437,1843488)
+function Qre(e){return e==="refusal"||e==="sticky"}
+==== OTo: 1 definicion(es) de nivel superior
+---- chunk-kt4703ww.js function OTo [1843488,1843549)
+function OTo(e){return e==="refusal"||e==="sticky"?e:"other"}
+symbol: 7 de 7 nombre(s) resueltos

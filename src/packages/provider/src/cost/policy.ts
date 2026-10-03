@@ -22,9 +22,9 @@ import type { AgentDefinition, CacheTtl } from '@thyrox/agent/types'
 import type { ModelCatalogEntry } from '@thyrox/model-artifacts/catalogEntry.ts'
 import { LOCAL_REASONING_EFFORT, qualifiedModels, type ModelQualification } from '@thyrox/model-artifacts/modelQualification.ts'
 import { promptCacheKey } from './cacheBreak.ts'
-import { allowsEntry, type ExecutionPolicy } from './executionPolicy.ts'
+import { allowsEntry, isProviderTarget, matchesSelector, type ExecutionPolicy } from './executionPolicy.ts'
 
-export { ExecutionPolicyError, parseExecutionPolicy, type ExecutionPolicy } from './executionPolicy.ts'
+export { ExecutionPolicyError, allowsProvider, parseExecutionPolicy, type ExecutionPolicy } from './executionPolicy.ts'
 
 function pricingOf(modelId: string): PricingTier {
   const p = MODELS[modelId]?.pricing
@@ -360,26 +360,53 @@ export type LocalExecution = {
   /** Contexto que el perfil exige; la cualificación midió al menos esto. */
   contextTokens: number
   qualification: ModelQualification
+  /**
+   * Los respaldos locales cualificados para la clase y el contexto, en el orden
+   * de `fallback.chain`: a dónde avanza la ejecución si el elegido no se puede
+   * servir (el `$a` de la referencia). Vacío sin política o sin cadena local.
+   */
+  fallbackModels: readonly string[]
 }
 
 /**
- * El catálogo del proveedor ejecutado por `claude -p`. `fallbackReason` existe
- * sólo cuando se llegó aquí porque ningún modelo local cumplió.
+ * Por qué ningún modelo local cumple, como enumeración cerrada: lo que la
+ * referencia llama `trigger`. `no_usable_fallback` es la cadena agotada.
+ */
+export type FallbackTrigger =
+  | 'empty_catalog'
+  | 'policy_excludes_catalog'
+  | 'unqualified_profile'
+  | 'unqualified'
+  | 'insufficient_context'
+  | 'no_usable_fallback'
+
+/** El salto que llevó al proveedor: el motivo y la posición del eslabón en `fallback.chain`. */
+export type FallbackStep = {
+  trigger: FallbackTrigger
+  chainIndex: number
+}
+
+/**
+ * El catálogo del proveedor ejecutado por `claude -p`. `fallback` y
+ * `fallbackReason` existen sólo cuando se llegó aquí porque ningún modelo
+ * local cumplió.
  */
 export type ProviderExecution = Recommendation & {
   runtime: 'claude-cli'
   taskClass: TaskKind
+  fallback?: FallbackStep
   fallbackReason?: string
 }
 
 /**
- * Ningún modelo que la política permite cumple, y la política no permite el
- * respaldo: no hay ejecución que recomendar. No lleva modelo a propósito.
+ * Ningún modelo que la política permite cumple y ningún eslabón de la cadena
+ * es utilizable: no hay ejecución que recomendar. No lleva modelo a propósito.
  */
 export type BlockedExecution = {
   runtime: 'blocked'
   taskClass: TaskKind
   contextTokens: number
+  trigger: FallbackTrigger
   blockedReason: string
 }
 
@@ -390,22 +417,31 @@ export function providerExecution(kind: TaskKind, profile: TurnProfile): Provide
   return { ...recommend(kind, profile), runtime: 'claude-cli', taskClass: kind }
 }
 
+/** La causa de que ningún modelo local cumpla: su motivo tipado y el texto que lo explica. */
+type LocalShortfall = {
+  trigger: FallbackTrigger
+  reason: string
+}
+
 /**
  * Por qué ningún modelo local cumple: catálogo vacío, ninguna cualificación
  * aprobada vigente de la clase, o aprobadas con menos contexto medido del que
  * el perfil exige (se nombra la mayor medida).
  */
-function localFallbackReason(kind: TaskKind, profile: TurnProfile, local: LocalModelInventory): string {
-  if (local.entries.length === 0) return 'catálogo local vacío: ningún modelo declarado'
+function localShortfall(kind: TaskKind, profile: TurnProfile, local: LocalModelInventory): LocalShortfall {
+  if (local.entries.length === 0) return { trigger: 'empty_catalog', reason: 'catálogo local vacío: ningún modelo declarado' }
   const approvedAtAnyContext = qualifiedModels(local.entries, local.qualifications, kind, 0)
   if (approvedAtAnyContext.length === 0 && measuredWithOtherProfile(local, kind)) {
-    return `hay medidas aprobadas de la clase ${kind}, pero con otro razonamiento: falta cualificar con el perfil del worker (reasoningEffort ${LOCAL_REASONING_EFFORT})`
+    return { trigger: 'unqualified_profile',
+      reason: `hay medidas aprobadas de la clase ${kind}, pero con otro razonamiento: falta cualificar con el perfil del worker (reasoningEffort ${LOCAL_REASONING_EFFORT})` }
   }
   if (approvedAtAnyContext.length === 0) {
-    return `sin cualificación aprobada vigente de la clase ${kind} entre los ${local.entries.length} modelo(s) del catálogo local`
+    return { trigger: 'unqualified',
+      reason: `sin cualificación aprobada vigente de la clase ${kind} entre los ${local.entries.length} modelo(s) del catálogo local` }
   }
   const widest = Math.max(...approvedAtAnyContext.map((candidate) => candidate.qualification.contextTokens))
-  return `contexto medido insuficiente: el mayor aprobado para ${kind} midió ${widest} tokens < ${profile.contextTokens} exigidos`
+  return { trigger: 'insufficient_context',
+    reason: `contexto medido insuficiente: el mayor aprobado para ${kind} midió ${widest} tokens < ${profile.contextTokens} exigidos` }
 }
 
 /** Hay una cualificación aprobada de la clase, pero medida con otro razonamiento que el del worker local. */
@@ -419,11 +455,53 @@ function excludesWholeCatalog(local: LocalModelInventory, permitted: LocalModelI
   return local.entries.length > 0 && permitted.entries.length === 0
 }
 
+function shortfallOf(kind: TaskKind, profile: TurnProfile, local: LocalModelInventory, permitted: LocalModelInventory): LocalShortfall {
+  if (excludesWholeCatalog(local, permitted)) {
+    return { trigger: 'policy_excludes_catalog', reason: `la política no permite ninguna de las ${local.entries.length} entrada(s) del catálogo local` }
+  }
+  return localShortfall(kind, profile, permitted)
+}
+
+/**
+ * Los respaldos locales de `fallback.chain`, en su orden: cada eslabón local
+ * aporta sus entradas cualificadas para la clase y el contexto, sin repetir el
+ * elegido ni un modelo ya aportado.
+ */
+function localFallbackModels(kind: TaskKind, profile: TurnProfile, permitted: LocalModelInventory,
+  policy: ExecutionPolicy | undefined, chosen: string): string[] {
+  const qualified = qualifiedModels(permitted.entries, permitted.qualifications, kind, profile.contextTokens)
+  const ordered = (policy?.fallback.chain ?? []).flatMap(target => (isProviderTarget(target)
+    ? []
+    : qualified.filter(candidate => matchesSelector(target, candidate.entry)).map(candidate => candidate.entry.name)))
+  return [...new Set(ordered)].filter(name => name !== chosen)
+}
+
+/**
+ * Sin modelo local: el primer eslabón utilizable de la cadena. Hoy sólo el
+ * proveedor lo es aquí —un eslabón local cualificado ya habría ganado la
+ * selección—; los locales cuentan en ejecución (`fallbackModels`).
+ */
+function providerFallback(kind: TaskKind, profile: TurnProfile, policy: ExecutionPolicy | undefined,
+  shortfall: LocalShortfall): ExecutionRecommendation {
+  const step = { trigger: shortfall.trigger, chainIndex: 0 }
+  if (policy === undefined) return { ...providerExecution(kind, profile), fallback: step, fallbackReason: shortfall.reason }
+  if (!policy.fallback.enabled) {
+    return { runtime: 'blocked', taskClass: kind, contextTokens: profile.contextTokens, trigger: shortfall.trigger,
+      blockedReason: `la política no permite respaldo y ningún modelo permitido cumple: ${shortfall.reason}` }
+  }
+  const chainIndex = policy.fallback.chain.findIndex(isProviderTarget)
+  if (chainIndex < 0) {
+    return { runtime: 'blocked', taskClass: kind, contextTokens: profile.contextTokens, trigger: 'no_usable_fallback',
+      blockedReason: `ningún eslabón de fallback.chain es utilizable (${policy.fallback.chain.length} declarado(s)): ${shortfall.reason}` }
+  }
+  return { ...providerExecution(kind, profile), fallback: { ...step, chainIndex }, fallbackReason: shortfall.reason }
+}
+
 /**
  * Elige dónde se ejecuta una clase de tarea: el modelo local más rápido de los
- * que una medición aprobó para la clase con contexto suficiente; si no hay
- * ninguno, la recomendación del catálogo del proveedor por `claude-cli`, con
- * la causa concreta en `fallbackReason`.
+ * que una medición aprobó para la clase con contexto suficiente, con sus
+ * respaldos locales en orden; si no hay ninguno, el primer eslabón utilizable
+ * de `fallback.chain`, con el motivo tipado del salto.
  */
 export function recommendExecution(
   kind: TaskKind,
@@ -441,16 +519,10 @@ export function recommendExecution(
       taskClass: kind,
       contextTokens: profile.contextTokens,
       qualification: fastest.qualification,
+      fallbackModels: localFallbackModels(kind, profile, permitted, policy, fastest.entry.name),
     }
   }
-  const reason = excludesWholeCatalog(local, permitted)
-    ? `la política no permite ninguna de las ${local.entries.length} entrada(s) del catálogo local`
-    : localFallbackReason(kind, profile, permitted)
-  if (policy !== undefined && !policy.fallback.enabled) {
-    return { runtime: 'blocked', taskClass: kind, contextTokens: profile.contextTokens,
-      blockedReason: `la política no permite respaldo y ningún modelo permitido cumple: ${reason}` }
-  }
-  return { ...providerExecution(kind, profile), fallbackReason: reason }
+  return providerFallback(kind, profile, policy, shortfallOf(kind, profile, local, permitted))
 }
 
 // ---------------------------------------------------------------------------

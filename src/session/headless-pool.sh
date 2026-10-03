@@ -224,7 +224,7 @@ RUNNER_KIND=thyrox
 PROMPT=""; OUT=""; MODEL=""; TASK_CLASS=""
 WIDTH="$(nproc 2>/dev/null || echo 4)"
 TIMEOUT=600; TOOLS="Read"; TOOLS_SET=""; ISOLATION=""; VERIFY=""; MAX_TURNS=""; WORKDIR="$PWD"; MEMFREE_SPEC=""; CACHE_TTL=""; CREDENTIAL_PROXY=""; STORE_CREDENTIAL_PROXY=""; CREDENTIAL_SOURCE=""
-EXECUTION=host; WORK_REFERENCE=""; MODEL_POLICY=""; POLICY_FALLBACK=""; CONTEXT_TOKENS=""; SYSTEM_BUDGET=""
+EXECUTION=host; WORK_REFERENCE=""; MODEL_POLICY=""; POLICY_FALLBACK=""; POLICY_PROVIDER=""; CONTEXT_TOKENS=""; SYSTEM_BUDGET=""
 
 rehusa() { echo "headless-pool: REHUSA — $*" >&2; exit 2; }
 
@@ -282,6 +282,9 @@ if [[ -n "$MODEL_POLICY" ]]; then
     POLICY_FALLBACK="$(jq -r '.fallback.enabled | if type == "boolean" then tostring else "" end' "$MODEL_POLICY" 2>/dev/null)"
     [[ "$POLICY_FALLBACK" == true || "$POLICY_FALLBACK" == false ]] \
         || rehusa "--model-policy declara fallback.enabled (true o false); el respaldo no tiene valor por defecto: $MODEL_POLICY"
+    # Llegar al proveedor exige el interruptor abierto y claude-cli en la cadena;
+    # sin cadena declarada rige [claude-cli] (TASK-THYROX-0920, `allowsProvider`).
+    POLICY_PROVIDER="$(jq -r '.fallback.enabled and ((.fallback.chain // [{"runtime":"claude-cli"}]) | any(.runtime == "claude-cli"))' "$MODEL_POLICY" 2>/dev/null)"
 fi
 
 command -v "$PARALLEL_BIN" >/dev/null 2>&1 \
@@ -329,7 +332,7 @@ derive_recommendation() {
         "$LOCAL_RUNTIME":thyrox-*|"$PROVIDER_RUNTIME":claude-*) ;;
         *) rehusa "no se pudo derivar el modelo de --task-class $TASK_CLASS con $RECOMMEND_BIN: runtime ${RUNTIME:-(sin respuesta)}, modelo ${MODEL:-(sin respuesta)}" ;;
     esac
-    [[ "$POLICY_FALLBACK" != false || "$RUNTIME" == "$LOCAL_RUNTIME" ]] \
+    [[ "${POLICY_PROVIDER:-}" != false || "$RUNTIME" == "$LOCAL_RUNTIME" ]] \
         || rehusa "la política de modelo no permite el proveedor y el selector devolvió $RUNTIME ($MODEL)"
 }
 derive_recommendation
@@ -340,7 +343,7 @@ ensure_local_runtime() {
     local ensure_exit=0
     bash "$CONTROL_PLANE_READY_BIN" "$MANAGED_OLLAMA_SERVICE" >&2 || ensure_exit=$?
     [[ "$ensure_exit" -ne 0 ]] || return 0
-    [[ "$POLICY_FALLBACK" != false ]] \
+    [[ "${POLICY_PROVIDER:-}" != false ]] \
         || rehusa "$MANAGED_OLLAMA_SERVICE no arrancó (local_control_plane_ready salió $ensure_exit) y la política de modelo no permite respaldo"
     derive_recommendation --runtime "$PROVIDER_RUNTIME"
     FALLBACK_REASON="$MANAGED_OLLAMA_SERVICE no arrancó (local_control_plane_ready salió $ensure_exit)"

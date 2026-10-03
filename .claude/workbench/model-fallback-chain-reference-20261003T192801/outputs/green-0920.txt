@@ -1,0 +1,135 @@
+== tests/hooks/test_execution_policy_enforcement.py
+  ok    1 subagentes prohibidos: Agent deny
+  ok    2 payload del episodio en segundo plano: deny
+  ok    2 el MISMO payload en primer plano: deny
+  ok    2 el mismo payload desde Monitor: deny
+  ok    3 una suite en primer plano es payload: deny
+  ok    3 bun test en primer plano: deny
+  ok    3 una cualificación en primer plano: deny
+  ok    4 thyrox-bg gestionado no se niega
+  ok    4 la espera de un trabajo del ledger no se niega
+  ok    4 una espera de observación no se niega
+  ok    4 una entrada del plano de control no se niega
+  ok    4 leer y buscar en primer plano no es payload
+  ok    4 nombrar una suite como argumento no la ejecuta
+  ok    8 respaldo admitido NO admite subagentes
+  ok    8 y el payload se rige por su propio campo
+  ok    8 respaldo prohibido NO prohíbe subagentes admitidos
+  ok    8 y el payload sigue negado por su campo
+  ok    9 un override sin controller no borra la restricción del repositorio
+  ok    9 ni la del payload
+  ok    9 un override que declara lo contrario no abre
+  ok    9 un override sí puede endurecer
+  ok    10 un override declarado que no existe niega
+  ok    10 también el payload
+  ok    10 una capa ilegible niega
+  ok    10 una sección controller incompleta niega lo que no declara
+  ok    11 sin ninguna capa no hay nada que restringir
+  ok    12 durante la excepción el controlador escribe el producto
+  ok    12 cerrada la excepción: Edit en src/ deny
+  ok    12 y en tests/ de un worktree
+  ok    12 sed -i sobre el producto deny
+  ok    12 replace_literal sobre el producto deny
+  ok    12 el estado (.claude/) no es producto
+  ok    12 leer el producto no es escribirlo
+  ok    12 /usr/bin no es bin/ del producto
+  ok    12 un override puede cerrar la excepción
+  ok    12 un override no puede reabrirla
+  ok    13 versionada: Agent deny
+  ok    13 versionada: payload en primer plano deny
+  ok    13 la versionada declara los tres permisos y la excepción vigente
+  ok    14 el cuerpo de un heredoc de datos no es payload
+  ok    14 el cuerpo de un heredoc que lee bash sí se ejecuta: deny
+  ok    14 y el de sh -s también: deny
+  ok    14 una cadena de datos no es payload
+  ok    14 un separador dentro de una comilla de datos no abre un comando
+  ok    14 el argumento de bash -c sí es código: deny
+  ok    14 el texto tras el marcador del heredoc se ejecuta: deny
+  ok    15 .env.example es producto: deny
+  ok    15 package.json relativo al cwd es producto: deny
+  ok    15 .githooks/ es producto: deny
+  ok    15 el estado .thyrox/ no es producto
+  ok    15 agent-results/ no es producto
+  ok    15 fuera del árbol no es producto
+  ok    15 commitear lo integrado con salida a un log no es escribir el producto
+  ok    15 2>&1 no es un destino
+  ok    15 cp hacia el producto: deny
+  ok    15 copiar DESDE el producto no lo escribe
+  ok    15 rm del producto: deny
+  ok    15 git apply en el árbol: deny
+  ok    15 git apply en un worktree del árbol también: deny
+  ok    15 un worker escribe en su worktree
+  ok    15 y por Bash
+  ok    15 el controlador en el worktree de un ítem: deny
+  ok    15 un worker fuera de su worktree: deny
+  ok    15 media identidad no es un worker: deny
+  ok    15 durante la excepción el worker tampoco se niega fuera
+execution_policy: 65 ok, 0 fallas
+exit=0
+== tests/session/test-headless-pool-model-policy.sh
+  ok   caso 1: con la política y un Qwen permitido, el pool sale 0
+  ok   caso 1: la política llega al recomendador
+  ok   caso 2: una recomendación bloqueada rehúsa con 2
+  ok   caso 2: y nombra la causa de la política
+  ok   caso 2: ningún ítem se lanza
+  ok   caso 3: Ollama caído y política sin respaldo rehúsa con 2
+  ok   caso 3: no pide claude-cli al recomendador
+  ok   caso 3: ningún ítem se lanza
+  ok   caso 4: con respaldo admitido, el respaldo de hoy no cambia (pide claude-cli)
+  ok   caso 5: un proveedor devuelto contra una política sin respaldo rehúsa con 2
+  ok   caso 5: ningún ítem se lanza
+  ok   caso 6: una política sin fallback.enabled declarado rehúsa con 2
+  ok   caso 7: con --context-tokens el pool sale 0
+  ok   caso 7: el recomendador recibe --context 32768
+  ok   caso 8: sin --context-tokens el recomendador no recibe --context
+  ok   caso 9: un --context-tokens que no es entero positivo rehúsa con 2
+  ok   caso 9: y dice que exige un entero positivo
+  ok   caso 9: sin preguntar al recomendador
+  ok   caso 10: la política declarada sin --model-policy rechaza un proveedor con 2
+  ok   caso 10: y el recomendador recibe esa política
+
+20 ok · 0 falla(s) (alcance medido: headless-pool --model-policy)
+exit=0
+== tests/session/test-headless-pool-runtime.sh
+OK   ollama: exit 0
+OK   ollama: asegura el servicio gestionado
+OK   ollama: el ítem recibe el modelo y ningún upstream por entorno
+OK   ollama: la línea modelo dice el runtime
+OK   puerto declarado: tampoco viaja al ítem
+OK   respaldo por servicio: exit 0
+OK   respaldo por servicio: pide el proveedor forzado
+OK   respaldo por servicio: el ítem va a claude sin upstream abierto
+OK   respaldo por servicio: la línea nombra runtime y motivo
+OK   P0d: por defecto llama a local_control_plane_ready con el servicio
+OK   P0d: por defecto el ítem corre en ollama
+OK   respaldo del selector: exit 0
+OK   respaldo del selector: no asegura el servicio
+OK   respaldo del selector: la línea lleva su motivo
+OK   respaldo del selector: sin upstream abierto
+OK   ollama con id claude: exit 2
+OK   ollama con id claude: no asegura el servicio
+OK   claude-cli con nombre thyrox: exit 2
+OK   runtime desconocido: exit 2
+OK   runtime desconocido: lo nombra
+OK   sin runtime: exit 0
+OK   sin runtime: claude-cli sin motivo
+OK   runner claude con ollama: exit 2
+OK   runner claude con ollama: no asegura el servicio
+24/24 aserciones
+exit=0
+== typecheck provider
+error TS6053: File '/home/user/thyrox/src/packages/@ant/ink/src/types/ink-elements.d.ts' not found.
+  The file is in the program because:
+    Part of 'files' list in tsconfig.json
+error TS6053: File '/home/user/thyrox/src/packages/@ant/ink/src/types/ink-jsx.d.ts' not found.
+  The file is in the program because:
+    Part of 'files' list in tsconfig.json
+exit=2
+== typecheck agent
+error TS6053: File '/home/user/thyrox/src/packages/@ant/ink/src/types/ink-elements.d.ts' not found.
+  The file is in the program because:
+    Part of 'files' list in tsconfig.json
+error TS6053: File '/home/user/thyrox/src/packages/@ant/ink/src/types/ink-jsx.d.ts' not found.
+  The file is in the program because:
+    Part of 'files' list in tsconfig.json
+exit=2

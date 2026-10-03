@@ -1,0 +1,32 @@
+== allowed-check
+(fail) fallback.chain — cadena ordenada con motivos tipados (TASK-THYROX-0920) > una entrada local de la cadena que no está en allowed se rehúsa [0.22ms]
+ 36 pass
+ 1 fail
+== default-chain
+(fail) recommendExecution con una política de ejecución declarada (TASK-THYROX-0773) > con el respaldo declarado, cae a claude-cli y lo nombra [0.23ms]
+(fail) fallback.chain — cadena ordenada con motivos tipados (TASK-THYROX-0920) > enabled sin cadena declarada conserva el respaldo de hoy: la cadena es [claude-cli] [0.14ms]
+(fail) fallback.chain — cadena ordenada con motivos tipados (TASK-THYROX-0920) > allowsProvider: sólo con el interruptor abierto y claude-cli en la cadena [0.18ms]
+ 34 pass
+ 3 fail
+== exhausted-chain
+(fail) fallback.chain — cadena ordenada con motivos tipados (TASK-THYROX-0920) > una cadena sin claude-cli agotada: bloqueada con no_usable_fallback, nunca el proveedor [0.26ms]
+ 36 pass
+ 1 fail
+== local-fallbacks
+(fail) fallback.chain — cadena ordenada con motivos tipados (TASK-THYROX-0920) > el modelo local elegido lleva sus respaldos locales cualificados, en el orden de la cadena [0.31ms]
+ 36 pass
+ 1 fail
+== typed-trigger
+(fail) fallback.chain — cadena ordenada con motivos tipados (TASK-THYROX-0920) > los motivos son una enumeración: perfil de razonamiento distinto y contexto insuficiente [0.37ms]
+ 36 pass
+ 1 fail
+ src/packages/provider/src/cost/executionPolicy.ts |  79 +++++++++++++--
+ src/packages/provider/src/cost/policy.ts          | 114 ++++++++++++++++++----
+ 2 files changed, 166 insertions(+), 27 deletions(-)
+  FAIL --runtime claude-cli contra una cadena sin claude-cli rehúsa con 2 — 0
+== anulación pool: POLICY_PROVIDER = enabled
+  FALLA caso 11: Ollama caído y cadena sin claude-cli rehúsa con 2 — esperado [2] obtenido [0]
+  FALLA caso 11: no pide claude-cli al recomendador — esperado [0] obtenido [1]
+  FALLA caso 12: un proveedor devuelto contra una cadena sin claude-cli rehúsa con 2 — esperado [2] obtenido [0]
+  FALLA caso 12: ningún ítem se lanza — esperado [0] obtenido [1]
+20 ok · 4 falla(s) (alcance medido: headless-pool --model-policy)

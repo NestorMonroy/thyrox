@@ -1,0 +1,203 @@
+bun test v1.3.14 (0d9b296a)
+
+__tests__/recommendExecution.test.ts:
+300 |     qualifications: [protocol(QWEN.name), qualification(QWEN.name), protocol(FAST.name), qualification(FAST.name, { tokensPerSecond: 99 })],
+301 |   }
+302 |   const unqualified = { entries: [QWEN], qualifications: [] }
+303 | 
+304 |   test('enabled sin cadena declarada conserva el respaldo de hoy: la cadena es [claude-cli]', () => {
+305 |     expect(policyWith({ enabled: true }).fallback.chain).toEqual([{ runtime: 'claude-cli' }])
+                                                               ^
+error: expect(received).toEqual(expected)
+
+- [
+-   {
+-     "runtime": "claude-cli",
+-   },
+- ]
++ undefined
+
+- Expected  - 5
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/recommendExecution.test.ts:305:58)
+(fail) fallback.chain — cadena ordenada con motivos tipados (TASK-THYROX-0920) > enabled sin cadena declarada conserva el respaldo de hoy: la cadena es [claude-cli] [0.25ms]
+305 |     expect(policyWith({ enabled: true }).fallback.chain).toEqual([{ runtime: 'claude-cli' }])
+306 |   })
+307 | 
+308 |   test('una entrada local de la cadena que no está en allowed se rehúsa', () => {
+309 |     expect(() => policyWith({ enabled: true, chain: [{ runtime: 'ollama', repository: 'otro/modelo' }] }))
+310 |       .toThrow(/chain\[0\].*allowed/)
+             ^
+error: expect(received).toThrow(expected)
+
+Expected pattern: /chain\[0\].*allowed/
+
+Received function did not throw
+Received value: {
+  allowed: [
+    {
+      runtime: "ollama",
+      repository: "Qwen/Qwen2.5-7B-Instruct-GGUF",
+      quantization: "q4_k_m",
+    }, {
+      runtime: "ollama",
+      repository: "qwen/fast",
+    }
+  ],
+  fallback: {
+    enabled: true,
+  },
+}
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/recommendExecution.test.ts:310:8)
+(fail) fallback.chain — cadena ordenada con motivos tipados (TASK-THYROX-0920) > una entrada local de la cadena que no está en allowed se rehúsa [0.43ms]
+309 |     expect(() => policyWith({ enabled: true, chain: [{ runtime: 'ollama', repository: 'otro/modelo' }] }))
+310 |       .toThrow(/chain\[0\].*allowed/)
+311 |   })
+312 | 
+313 |   test('una entrada de runtime desconocido se rehúsa', () => {
+314 |     expect(() => policyWith({ enabled: true, chain: [{ runtime: 'deepseek' }] })).toThrow(/chain\[0\]/)
+                                                                                        ^
+error: expect(received).toThrow(expected)
+
+Expected pattern: /chain\[0\]/
+
+Received function did not throw
+Received value: {
+  allowed: [
+    {
+      runtime: "ollama",
+      repository: "Qwen/Qwen2.5-7B-Instruct-GGUF",
+      quantization: "q4_k_m",
+    }, {
+      runtime: "ollama",
+      repository: "qwen/fast",
+    }
+  ],
+  fallback: {
+    enabled: true,
+  },
+}
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/recommendExecution.test.ts:314:83)
+(fail) fallback.chain — cadena ordenada con motivos tipados (TASK-THYROX-0920) > una entrada de runtime desconocido se rehúsa [0.11ms]
+320 |   })
+321 | 
+322 |   test('cae a claude-cli nombrando el motivo tipado y su posición en la cadena', () => {
+323 |     const result = recommendExecution('mecanica', PROFILE, unqualified, policyWith({ enabled: true, chain: [FAST_SELECTOR, { runtime: 'claude-cli' }] }))
+324 |     expect([result.runtime, result.runtime === 'claude-cli' ? result.fallback : undefined])
+325 |       .toEqual(['claude-cli', { trigger: 'unqualified', chainIndex: 1 }])
+             ^
+error: expect(received).toEqual(expected)
+
+@@ -2,6 +2,3 @@
+    "claude-cli",
+-   {
+-     "chainIndex": 1,
+-     "trigger": "unqualified",
+-   },
++   undefined,
+  ]
+
+- Expected  - 4
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/recommendExecution.test.ts:325:8)
+(fail) fallback.chain — cadena ordenada con motivos tipados (TASK-THYROX-0920) > cae a claude-cli nombrando el motivo tipado y su posición en la cadena [0.20ms]
+325 |       .toEqual(['claude-cli', { trigger: 'unqualified', chainIndex: 1 }])
+326 |   })
+327 | 
+328 |   test('una cadena sin claude-cli agotada: bloqueada con no_usable_fallback, nunca el proveedor', () => {
+329 |     const result = recommendExecution('mecanica', PROFILE, unqualified, policyWith({ enabled: true, chain: [FAST_SELECTOR] }))
+330 |     expect([result.runtime, result.runtime === 'blocked' ? result.trigger : undefined]).toEqual(['blocked', 'no_usable_fallback'])
+                                                                                              ^
+error: expect(received).toEqual(expected)
+
+  [
+-   "blocked",
+-   "no_usable_fallback",
++   "claude-cli",
++   undefined,
+  ]
+
+- Expected  - 2
++ Received  + 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/recommendExecution.test.ts:330:89)
+(fail) fallback.chain — cadena ordenada con motivos tipados (TASK-THYROX-0920) > una cadena sin claude-cli agotada: bloqueada con no_usable_fallback, nunca el proveedor [0.29ms]
+331 |   })
+332 | 
+333 |   test('el modelo local elegido lleva sus respaldos locales cualificados, en el orden de la cadena', () => {
+334 |     const result = recommendExecution('mecanica', PROFILE, qualifiedBoth, policyWith({ enabled: true, chain: [QWEN_SELECTOR, FAST_SELECTOR, { runtime: 'claude-cli' }] }))
+335 |     expect([result.runtime === 'ollama' ? result.model : '', result.runtime === 'ollama' ? result.fallbackModels : undefined])
+336 |       .toEqual([FAST.name, [QWEN.name]])
+             ^
+error: expect(received).toEqual(expected)
+
+@@ -2,5 +2,3 @@
+    "thyrox-qwen--fast:q4_k_m-hf-cccccccccccc",
+-   [
+-     "thyrox-qwen--qwen2.5-7b-instruct-gguf:q4_k_m-hf-333333333333",
+-   ],
++   undefined,
+  ]
+
+- Expected  - 3
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/recommendExecution.test.ts:336:8)
+(fail) fallback.chain — cadena ordenada con motivos tipados (TASK-THYROX-0920) > el modelo local elegido lleva sus respaldos locales cualificados, en el orden de la cadena [0.21ms]
+337 |   })
+338 | 
+339 |   test('un respaldo local sin cualificación no entra en fallbackModels', () => {
+340 |     const onlyFast = { entries: [QWEN, FAST], qualifications: [protocol(FAST.name), qualification(FAST.name)] }
+341 |     const result = recommendExecution('mecanica', PROFILE, onlyFast, policyWith({ enabled: true, chain: [QWEN_SELECTOR] }))
+342 |     expect(result.runtime === 'ollama' ? result.fallbackModels : undefined).toEqual([])
+                                                                                  ^
+error: expect(received).toEqual(expected)
+
+Expected: []
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/recommendExecution.test.ts:342:77)
+(fail) fallback.chain — cadena ordenada con motivos tipados (TASK-THYROX-0920) > un respaldo local sin cualificación no entra en fallbackModels [0.14ms]
+347 |     const legacy = { entries: [QWEN], qualifications: [{ ...protocol(QWEN.name), reasoningEffort: 'model-default' as const }, qualification(QWEN.name, { reasoningEffort: 'model-default' })] }
+348 |     const narrow = { entries: [QWEN], qualifications: [protocol(QWEN.name), qualification(QWEN.name, { contextTokens: 8_192 })] }
+349 |     const triggers = [legacy, narrow, { entries: [], qualifications: [] }]
+350 |       .map(inventory => recommendExecution('mecanica', PROFILE, inventory, closed))
+351 |       .map(result => (result.runtime === 'blocked' ? result.trigger : undefined))
+352 |     expect(triggers).toEqual(['unqualified_profile', 'insufficient_context', 'empty_catalog'])
+                           ^
+error: expect(received).toEqual(expected)
+
+  [
+-   "unqualified_profile",
+-   "insufficient_context",
+-   "empty_catalog",
++   undefined,
++   undefined,
++   undefined,
+  ]
+
+- Expected  - 3
++ Received  + 3
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/recommendExecution.test.ts:352:22)
+(fail) fallback.chain — cadena ordenada con motivos tipados (TASK-THYROX-0920) > los motivos son una enumeración: perfil de razonamiento distinto y contexto insuficiente [0.26ms]
+136 | function sameText(left: string, right: string): boolean {
+137 |   return left.toLowerCase() === right.toLowerCase()
+138 | }
+139 | 
+140 | export function allowsProvider(_policy: ExecutionPolicy): boolean {
+141 |   throw new Error('pendiente: TASK-THYROX-0920')
+                                                     ^
+error: pendiente: TASK-THYROX-0920
+      at allowsProvider (/home/user/thyrox/src/packages/provider/src/cost/executionPolicy.ts:141:48)
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/recommendExecution.test.ts:357:7)
+(fail) fallback.chain — cadena ordenada con motivos tipados (TASK-THYROX-0920) > allowsProvider: sólo con el interruptor abierto y claude-cli en la cadena [0.08ms]
+
+ 28 pass
+ 9 fail
+ 53 expect() calls
+Ran 37 tests across 1 file. [152.00ms]
