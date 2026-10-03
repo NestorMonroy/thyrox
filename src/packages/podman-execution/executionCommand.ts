@@ -285,16 +285,45 @@ async function buildImageCommand(argv: string[], deps: ExecutionCommandDeps): Pr
     },
   })
   // Un consumidor construye su imagen de ejecución bajo su propia referencia de trabajo.
-  const reference = referenceOf(values.task, values.work)
-  const network = parseNetwork(values.network)
-  const lifecycle = parseLifecycle(values.lifecycle)
-  const ca = deps.env[PROXY_CA_KEY]
-  const egress = network === 'host'
-  const id = await buildImage(deps.podman, {
+  const id = await buildManagedImage(deps, {
+    reference: referenceOf(values.task, values.work),
     context: requireValue(values.context, 'context'),
     containerfile: values.containerfile,
     tag: requireValue(values.tag, 'tag'),
-    labels: { ...imageReferenceLabels(reference), [IMAGE_LIFECYCLE_LABEL]: lifecycle },
+    network: parseNetwork(values.network),
+    lifecycle: parseLifecycle(values.lifecycle),
+  })
+  deps.output.stdout(`${id}\n`)
+  return 0
+}
+
+/** Una construcción ya decidida: quién la pide, qué definición, con qué red y ciclo de vida. */
+export type ManagedImageBuild = {
+  reference: ExecutionReference
+  context: string
+  containerfile?: string
+  tag: string
+  network: WorkerNetworkMode
+  lifecycle: (typeof BUILD_LIFECYCLES)[number]
+  /** Etiquetas que el solicitante declara además de la referencia y el ciclo de vida. */
+  labels?: Readonly<Record<string, string>>
+}
+
+/**
+ * Construye una imagen por la primitiva: la referencia y el ciclo de vida van
+ * como etiquetas, y el egreso sólo por el proxy del anfitrión. No valida de
+ * dónde salen el contexto ni la red: eso lo decide quien llama, sea la orden
+ * genérica `build-image` o una frontera que sólo admite definiciones
+ * declaradas.
+ */
+export async function buildManagedImage(deps: Pick<ExecutionCommandDeps, 'env' | 'podman'>, build: ManagedImageBuild): Promise<string> {
+  const ca = deps.env[PROXY_CA_KEY]
+  const egress = build.network === 'host'
+  return buildImage(deps.podman, {
+    context: build.context,
+    containerfile: build.containerfile,
+    tag: build.tag,
+    labels: { ...build.labels, ...imageReferenceLabels(build.reference), [IMAGE_LIFECYCLE_LABEL]: build.lifecycle },
     network: egress ? 'host' : undefined,
     // El proxy no va como argumento de build: Podman lo grabaría con su valor en
     // la historia de cada RUN. `podman build` reenvía por defecto (--http-proxy)
@@ -302,8 +331,6 @@ async function buildImageCommand(argv: string[], deps: ExecutionCommandDeps): Pr
     buildArgs: egress && ca ? { PROXY_CA: PROXY_CA_BUILD_PATH } : undefined,
     readOnlyMounts: egress && ca ? [{ source: ca, destination: PROXY_CA_BUILD_PATH }] : undefined,
   })
-  deps.output.stdout(`${id}\n`)
-  return 0
 }
 
 /**
