@@ -579,3 +579,41 @@ primeras publicaciones van como `docker.io/th3rox/kaupamex-ai-*` (imágenes prop
 `docker.io/th3rox/kaupamex-*` (espejos y caché, según su dueño). El host sigue siendo
 configurable (`THYROX_REGISTRY_PUBLISHER_REGISTRY`), así que cambiar de namespace o de
 proveedor después es cambiar una ubicación, no la identidad lógica (sección 1, resp. 10).
+
+## 9. Declaración de identidad (ejecutor, 2026-10-03) — antes de la ingesta
+
+**Declarado:** `ecosystem = kaupamex`, `canonical_project = kaupamex-ai`,
+`legacy_projects = [thyrox]`.
+
+- **Registro legible por máquina:** `outputs/identity-declaration.json`, versión 1.0.0.
+- **Decisión indexada en el store:** **H-THYROX-443** (tipo `decision`).
+
+Reglas declaradas:
+
+- las identidades históricas son inmutables;
+- la normalización va en metadata, nunca reescribe el contenido ni el `domain_id`;
+- las primeras publicaciones van bajo Kaupamex;
+- lo ya publicado se conserva.
+
+Fuera de alcance por ahora: renombrar `@thyrox/*`, `THYROX_*`, contenedores, volúmenes y
+bases de datos.
+
+**Por qué no está todavía en el código:** la directiva vigente del ejecutor es que el
+controlador no modifica producto y que implementa el worker local. Llevar esta declaración
+a una autoridad de producto, leída por la ingesta, es **TASK-THYROX-0918**. El worker
+`qwen3-4b` está bloqueado por la reparación de Podman, igual que A6.
+
+Orden que garantiza «identidad antes de la ingesta»:
+
+1. reparación de Podman (operador) → PostgreSQL y Ollama arriba;
+2. TASK-THYROX-0918 por el worker:
+   - autoridad única de identidad en producto, junto a `PRODUCT_NAME` o donde
+     Search Existing indique;
+   - la ingesta estampa `ecosystem`, `canonical_project`, `legacy_project` y
+     `observed_project` en `documents.metadata`;
+   - EXTEND de `ingestDocument` para refrescar la metadata cuando el contenido no
+     cambia;
+   - RED/GREEN y anulación;
+3. sólo entonces, la ingesta masiva y la re-estampa de los 1 675 documentos existentes.
+
+Mientras TASK-THYROX-0918 no esté integrada, **no se lanza ninguna ingesta masiva**.

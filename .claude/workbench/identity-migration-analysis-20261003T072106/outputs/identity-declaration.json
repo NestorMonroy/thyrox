@@ -1,0 +1,42 @@
+{
+  "declaration": "project-identity",
+  "version": "1.0.0",
+  "declaredAt": "2026-10-03",
+  "declaredBy": "ejecutor",
+  "ecosystem": "kaupamex",
+  "canonicalProject": "kaupamex-ai",
+  "legacyProjects": ["thyrox"],
+  "rules": {
+    "historicalIdentitiesAreImmutable": true,
+    "normalizeInMetadataNeverRewriteContent": true,
+    "firstPublicationsUnderCanonical": true,
+    "alreadyPublishedArePreserved": true
+  },
+  "immutableHistoricalForms": [
+    "TASK-THYROX-NNNN",
+    "H-THYROX-NNN",
+    "io.thyrox.* image labels",
+    "thyrox.task image label",
+    "thyrox-* names already published or in use",
+    ".thyrox/ paths in existing evidence",
+    "THYROX_* names in existing evidence"
+  ],
+  "ingestionMetadata": {
+    "ecosystem": "kaupamex",
+    "canonical_project": "kaupamex-ai",
+    "legacy_project": "thyrox",
+    "observed_project": "<the project name the source used when it was written>"
+  },
+  "registry": {
+    "namespace": "th3rox",
+    "namespaceStatus": "provisional (ejecutor 2026-10-03)",
+    "ownImagePrefix": "kaupamex-ai-",
+    "mirrorAndCachePrefix": "kaupamex-"
+  },
+  "outOfScope": [
+    "renaming @thyrox/* packages",
+    "renaming THYROX_* variables",
+    "renaming containers, volumes or databases",
+    "rewriting any historical record"
+  ]
+}
