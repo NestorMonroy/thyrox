@@ -513,6 +513,11 @@ finalize() {
         # TASK-THYROX-0930: bajo --local-only, una respuesta que no se declaró
         # servida en el anfitrión no es evidencia, pase o no su verify.
         verdict=no-local
+    elif [[ -s "$out/$n.watchdog" ]]; then
+        # TASK-THYROX-0931 (F7): el vigilante detuvo un worker que giraba; lo
+        # que dejó en el worktree no es un resultado, pase o no su verify.
+        { printf 'vigilante: '; cat "$out/$n.watchdog"; } >> "$out/$n.err"
+        verdict=detenido
     elif [[ "$rc" -ne 0 ]]; then
         verdict=fallido
     elif [[ ! -s "$out/$n.patch" ]]; then

@@ -936,8 +936,14 @@ _headless_item_run() {
         _headless_item_periodic_snapshots "$n" "$workdir" "$pid" "$HP_SNAPSHOT_INTERVAL" &
         snapshot_loop=$!
     fi
+    local watchdog=""
+    bash "$HP_ITEM_WATCHDOG" watch "$pid" "$HP_LIVE/$n.stream.jsonl" "$HP_LIVE/$n.watchdog" 2>> "$HP_LIVE/$n.err" &
+    watchdog=$!
     wait "$pid"
     local rc=$?
+    # El vigilante sale solo cuando el ítem termina; se espera antes del
+    # drenaje para que no cuente como escritor de las salidas del ítem.
+    wait "$watchdog"
     # El bucle sale solo en cuanto el ítem terminó; se espera antes de la foto
     # final para que ninguna foto periódica la adelante ni la reemplace.
     [[ -z "$snapshot_loop" ]] || wait "$snapshot_loop"
@@ -1067,6 +1073,10 @@ export HP_SNAPSHOT_INTERVAL
     || rehusa "HEADLESS_POOL_ITEM_DRAIN_SECONDS va en segundos, no: $HP_DRAIN_SECONDS"
 export HP_DRAIN_SECONDS
 export HP_PROCESS_OWNERSHIP="$HP_BIN/process_ownership" HP_WRITER_INSPECTOR="$HP_BIN/writer_inspector"
+# El vigilante de cada ítem (TASK-THYROX-0931, F7): detiene un worker que repite
+# la misma llamada a herramienta o deja de producir eventos; `--max-turns` y
+# `--timeout` no ven ninguno de los dos.
+export HP_ITEM_WATCHDOG="$HP_BIN/item_watchdog"
 export HP_SNAPSHOT="$HP_BIN/snapshot_store"
 export HP_ITEM_GIT_GUARD_DIR="${HEADLESS_POOL_ITEM_GIT_GUARD_DIR:-$HP_HERE/item_git_guard}"
 # El pool retiene el candado de su ejecución hasta salir: lo heredan los ítems,
@@ -1184,6 +1194,7 @@ if [[ "$ISOLATION" == worktree ]]; then
         printf "verificados=%d rechazados=%d sin-cambios=%d fallidos=%d", c["verificado"], c["rechazado"], c["sin-cambios"], c["fallido"]
         if (c["sin-verificar"]) printf " sin-verificar=%d", c["sin-verificar"]
         if (c["no-local"]) printf " no-local=%d", c["no-local"]
+        if (c["detenido"]) printf " detenidos=%d", c["detenido"]
         if (c["con-stash"]) printf " con-stash=%d", c["con-stash"]
         print "" }'
     bash "$HP_ITEM_WORKTREE" sweep "$WORKDIR" "$HP_OUT" "$HP_LIVE"

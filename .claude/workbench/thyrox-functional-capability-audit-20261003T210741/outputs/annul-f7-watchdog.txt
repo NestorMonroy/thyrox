@@ -1,0 +1,17 @@
+## A: el pool no lanza el vigilante
+replace_literal: 1 reemplazo(s) en src/session/headless-pool.sh
+  FALLA el trabajo aparece bajo la salida del ítem: esperado «1», obtenido «0»
+  FALLA veredicto detenido aunque su verify pasaría: esperado «detenido», obtenido «verificado»
+  FALLA lo detuvo el vigilante, no el plazo de 120 s: esperado «1», obtenido «0»
+  FALLA el motivo queda en el .err: esperado «1», obtenido «0»
+  FALLA el resumen cuenta los detenidos: esperado «1», obtenido «0»
+test-headless-pool-worktree: 50 aserciones — 45 ok, 5 falla(s)
+## B: finalize ignora el informe
+replace_literal: 1 reemplazo(s) en src/session/item_worktree.sh
+  FALLA detenido por llamada idéntica: detenido aunque el verify pase: esperado «detenido», obtenido «verificado»
+  FALLA el motivo queda en el .err del ítem: esperado «1», obtenido «0»
+2 ok, 2 falla(s) (alcance medido: item_worktree finalize con vigilante)
+## C: la racha no se reinicia con otra llamada
+replace_literal: 1 reemplazo(s) en src/session/item_watchdog.py
+FAILED tests/session/test_item_watchdog.py::test_a_different_call_resets_the_streak_but_not_the_total
+1 failed, 6 passed in 1.39s

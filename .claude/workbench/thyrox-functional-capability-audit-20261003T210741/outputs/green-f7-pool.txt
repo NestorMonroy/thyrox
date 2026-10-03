@@ -1,0 +1,2 @@
+  FALLA el trabajo aparece bajo la salida del ítem: esperado «1», obtenido «0»
+test-headless-pool-worktree: 50 aserciones — 49 ok, 1 falla(s)

@@ -53,6 +53,11 @@ case "$verb" in
   # los worktrees del pool de un barrido de huérfanos.
   # Registra la raíz y el node_modules que el ítem entrega a sus herramientas.
   root) printf '%s\t%s\n' "$THYROX_ROOT" "${THYROX_TOOLCHAIN_NODE_MODULES_HOME:-}" > "$PROBE_LOG" ;;
+  # Un worker que gira: escribe un cambio, repite la misma llamada y se queda
+  # sin salir; sólo el vigilante del pool lo detiene (TASK-THYROX-0931, F7).
+  loop) printf '%s\n' "${text:-hola}" > "$path"
+        call='{"type":"assistant","message":{"content":[{"type":"tool_use","name":"Bash","input":{"command":"python3 -m unittest"}}]}}'
+        printf '%s\n%s\n%s\n' "$call" "$call" "$call"; sleep 60 ;;
   probe-lock) lock="$(bash "$HEADLESS_POOL_ITEM_WORKTREE" lock-path "$HP_WORKDIR" "$HP_OUT")"
               flock -n "$lock" true; printf '%s\n' "$?" > "$PROBE_LOG" ;;
 esac
@@ -237,6 +242,14 @@ check "control: el bloque se retiró" "$(grep -c 'item-root' "$F/pool-copy/src/s
     bash "$F/pool-copy/src/session/headless-pool.sh" --prompt "$F/prompt.md" --task-class analisis \
     --isolation worktree --out "$F/out15" --verify true >/dev/null 2>&1)
 check "control: sin el bloque, THYROX_ROOT es el árbol principal" "$(cut -f1 "$F/root-c.log")" "$RAIZ"
+
+echo "caso 16 — el vigilante detiene un ítem que repite la misma llamada (TASK-THYROX-0931, F7)"
+started=$SECONDS
+output16="$(printf '%s\n' 'loop d.txt' | pool --out "$F/out16" --verify true --timeout 120)"
+check "veredicto detenido aunque su verify pasaría" "$(cat "$F/out16/1.verdict")" "detenido"
+check "lo detuvo el vigilante, no el plazo de 120 s" "$(( SECONDS - started < 60 ))" "1"
+check "el motivo queda en el .err" "$(grep -c 'identical-tool-call' "$F/out16/1.err")" "1"
+check "el resumen cuenta los detenidos" "$(printf '%s\n' "$output16" | grep -c 'detenidos=1')" "1"
 
 echo "test-headless-pool-worktree: $total aserciones — $((total - failures)) ok, $failures falla(s)"
 [[ $failures -eq 0 ]]

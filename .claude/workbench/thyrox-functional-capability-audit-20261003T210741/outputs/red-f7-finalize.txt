@@ -1,0 +1,6 @@
+  FALLA detenido por llamada idéntica: detenido aunque el verify pase: esperado «detenido», obtenido «verificado»
+  FALLA el motivo queda en el .err del ítem: esperado «1», obtenido «0»
+  ok    sin informe: el veredicto de siempre
+  ok    informe vacío: no cuenta como detención
+
+2 ok, 2 falla(s) (alcance medido: item_worktree finalize con vigilante)
