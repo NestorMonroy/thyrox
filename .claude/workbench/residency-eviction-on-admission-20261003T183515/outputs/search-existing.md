@@ -64,3 +64,11 @@ del GGUF real; la caché KV salía al 62.5 %.
 - Aplicado con `probes/rederive_catalog_attention.ts` (la misma `catalogEntryFromGguf`): `headDimension 80 → 128`, ningún
   otro campo cambia (diff del catálogo sin `attention`: vacío). Plan de `ctx32768`: 7 246 MiB.
 Suites: model-artifacts 222/222, model-scheduling 136/136, local-models 259/5 (los 5 de HEAD).
+
+## Control real 3 — PASS (`probes/headroom_timeline.run4.tsv`)
+
+Con la estimación corregida y el piso de 2 GiB: antes de `ctx32768` holgura 1 658 640 kB; el coordinador desalojó
+`ctx16384` **y** `ctx24576` (la holgura subió a 8 846 604 kB sin unidades) y cargó la nueva. Final: **una sola
+residencia** (`ctx32768`), holgura 5 275 616 kB sobre el piso. Holgura mínima de toda la secuencia 1 646 164 kB (> 0:
+el piso no se invadió), alcanzada con las dos primeras residencias admitidas sin necesidad de desalojo.
+Resultado: «un modelo generativo grande residente» en este anfitrión, como consecuencia de la admisión medida.
