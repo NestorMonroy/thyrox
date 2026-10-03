@@ -80,3 +80,16 @@ describe('poolCaseRunner (TASK-THYROX-0931)', () => {
     await expect(runCase(SUITE.cases[0]!)).rejects.toThrow(new WorkflowPoolError('title-slug', 2, 'rehusa: sin modelo'))
   })
 })
+
+describe('poolCaseRunner — presupuesto de sistema', () => {
+  test('con presupuesto declarado, el pool lo recibe; sin él, no se inventa', async () => {
+    const pool = fakePool('verificado', RESULT)
+    const options = { artifact: ARTIFACT, contextTokens: 8192, thyroxRoot: directory as string, outDir: join(directory as string, 'out'), poolBin: pool }
+    await poolCaseRunner({ ...options, suite: { ...SUITE, systemBudgetTokens: 2000 } })(SUITE.cases[0]!)
+    let argv = readFileSync(join(directory as string, 'argv'), 'utf8').trim().split('\n')
+    expect(argv[argv.indexOf('--system-budget-tokens') + 1]).toBe('2000')
+    await poolCaseRunner({ ...options, suite: SUITE })(SUITE.cases[0]!)
+    argv = readFileSync(join(directory as string, 'argv'), 'utf8').trim().split('\n')
+    expect(argv).not.toContain('--system-budget-tokens')
+  })
+})

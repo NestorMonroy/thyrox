@@ -1,0 +1,4 @@
+served-by {"model":"thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e","route":"launch-proxy","local":true}
+thyrox -p: 400 {"type":"error","request_id":"c18e0c8f-2170-4f69-b716-dce306d3193f","error":{"type":"invalid_request_error","message":"upstream \"local-admitted\" (http://127.0.0.1:38869/v1/chat/completions) respondió 400: {\"error\":{\"message\":\"{\\\"error\\\":{\\\"code\\\":400,\\\"message\\\":\\\"request (26085 tokens) exceeds the available context size (8192 tokens), try increasing it\\\",\\\"type\\\":\\\"exceed_context_size_error\\\",\\\"n_prompt_tokens\\\":26085,\\\"n_ctx\\\":8192}}\",\"type\":\"invalid_request_error\",\"param\":null,\"code\":null}}\n"}}
+execution thyrox-worker-maintenance-musx56c7-8782 kind=maintenance work=thyrox:qualification/repo-code-change-1/title-slug/1 exit=1
+drenaje: la sesión quedó vacía sola

@@ -148,7 +148,7 @@ export async function runEmbeddingQualification(request: EmbeddingQualificationR
   for (const embeddingCase of request.suite.cases) replies.push(await admittedEmbed(request.ticket, textsOf(embeddingCase)))
   const outcomes = request.suite.cases.map((embeddingCase, index) => embeddingOutcome(embeddingCase, replies[index] as EmbedReply))
   const speed = ratePerSecond(model, replies.map(reply => ({ tokens: reply.promptEvalCount, nanoseconds: reply.totalDurationNs })))
-  return qualificationRun(request, { kind: 'embedding', suite: request.suite.id }, outcomes, speed, [])
+  return qualificationRun(request, { kind: 'embedding', suite: request.suite.id }, outcomes, speed, { tools: [], systemBudgetTokens: null })
 }
 
 /**
@@ -163,10 +163,21 @@ export async function runWorkflowQualification(request: WorkflowQualificationReq
   const results: WorkflowCaseResult[] = []
   for (const workflowCase of request.suite.cases) results.push(await request.runCase(workflowCase))
   const outcomes = request.suite.cases.map((workflowCase, index) => workflowOutcome(workflowCase, results[index] as WorkflowCaseResult))
-  const speed = ratePerSecond(request.ticket.grant.artifact.modelId,
-    results.map(result => ({ tokens: result.outputTokens, nanoseconds: result.durationMs / MILLISECONDS_PER_SECOND * NANOSECONDS_PER_SECOND })))
   const identity = { kind: 'workflow', taskClass: request.suite.taskClass, suite: request.suite.id } as const
-  return qualificationRun(request, identity, outcomes, speed, request.suite.tools)
+  return qualificationRun(request, identity, outcomes, workflowSpeed(request, results, outcomes),
+    { tools: request.suite.tools, systemBudgetTokens: request.suite.systemBudgetTokens ?? null })
+}
+
+/**
+ * Tokens generados entre segundos de pared. Un flujo suspendido puede no haber
+ * generado nada —el primer turno excedió el contexto—: se escribe con 0 para
+ * retirar la aprobación anterior. Uno aprobado sin tokens no es una medida.
+ */
+function workflowSpeed(request: WorkflowQualificationRequest, results: readonly WorkflowCaseResult[], outcomes: readonly CaseOutcome[]): number {
+  const generated = results.some(result => result.outputTokens > 0 && result.durationMs > 0)
+  if (!generated && outcomes.some(outcome => !outcome.passed)) return 0
+  return ratePerSecond(request.ticket.grant.artifact.modelId,
+    results.map(result => ({ tokens: result.outputTokens, nanoseconds: result.durationMs / MILLISECONDS_PER_SECOND * NANOSECONDS_PER_SECOND })))
 }
 
 function workflowOutcome(workflowCase: WorkflowCase, result: WorkflowCaseResult): CaseOutcome {
@@ -188,7 +199,7 @@ async function measure(settings: MeasurementSettings, cases: readonly MeasuredCa
     replies.push(await admittedChat(settings.ticket, chatBody(settings, measuredCase), { deadlineMs: CASE_DEADLINE_MS }))
   }
   const outcomes = cases.map((measuredCase, index) => measuredCase.outcome(replies[index] as ChatReply))
-  return qualificationRun(settings, identity, outcomes, tokensPerSecond(model, replies), offeredTools(cases))
+  return qualificationRun(settings, identity, outcomes, tokensPerSecond(model, replies), { tools: offeredTools(cases), systemBudgetTokens: null })
 }
 
 function requireContextWithinGrant(settings: MeasurementSettings): void {
@@ -199,9 +210,15 @@ function requireContextWithinGrant(settings: MeasurementSettings): void {
 /**
  * El perfil de runtime de la medida: la identidad del artefacto y el KV del
  * grant, y la imagen, CPU, memoria y caché de prompt de la unidad. Los hilos y
- * el presupuesto de sistema quedan en `null`: esta medición no los fija.
+ * el presupuesto de sistema, si la medición no lo acotó, quedan en `null`.
  */
-function runtimeProfileOf(settings: MeasurementSettings, tools: readonly string[]): QualificationRuntimeProfile {
+/** Lo que la medición ofreció al modelo: sus herramientas y, si lo acotó, el presupuesto del prompt de sistema. */
+interface OfferedSurface {
+  readonly tools: readonly string[]
+  readonly systemBudgetTokens: number | null
+}
+
+function runtimeProfileOf(settings: MeasurementSettings, surface: OfferedSurface): QualificationRuntimeProfile {
   const { grant } = settings.ticket
   const profile = requireUnitProfile(settings)
   const promptCacheOff = profile.environment[PROMPT_CACHE_OFF.variable] === PROMPT_CACHE_OFF.value
@@ -215,8 +232,8 @@ function runtimeProfileOf(settings: MeasurementSettings, tools: readonly string[
     cpus: profile.cpus,
     memoryMib: profile.memoryMib,
     threads: null,
-    tools: [...tools],
-    systemBudgetTokens: null,
+    tools: [...surface.tools],
+    systemBudgetTokens: surface.systemBudgetTokens,
   }
 }
 
@@ -232,7 +249,7 @@ function offeredTools(cases: readonly MeasuredCase[]): string[] {
   return [...new Set(cases.flatMap(measuredCase => measuredCase.tools))].sort()
 }
 
-function qualificationRun(settings: MeasurementSettings, identity: QualificationIdentity, outcomes: readonly CaseOutcome[], speed: number, tools: readonly string[]): QualificationRun {
+function qualificationRun(settings: MeasurementSettings, identity: QualificationIdentity, outcomes: readonly CaseOutcome[], speed: number, surface: OfferedSurface): QualificationRun {
   const casesPassed = outcomes.filter(outcome => outcome.passed).length
   return {
     outcomes,
@@ -247,7 +264,7 @@ function qualificationRun(settings: MeasurementSettings, identity: Qualification
       measurementCondition: settings.measurementCondition,
       measuredAt: settings.now().toISOString(),
       reasoningEffort: LOCAL_REASONING_EFFORT,
-      runtimeProfile: runtimeProfileOf(settings, tools),
+      runtimeProfile: runtimeProfileOf(settings, surface),
     },
   }
 }

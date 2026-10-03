@@ -54,3 +54,12 @@ describe('loadWorkflowSuite (TASK-THYROX-0931)', () => {
     await expect(loadWorkflowSuite(path)).rejects.toThrow(new InvalidWorkflowSuiteError(path, 'tools', 'se espera una lista no vacía de nombres'))
   })
 })
+
+describe('systemBudgetTokens de la suite de flujo', () => {
+  test('es opcional; declarado, es un entero positivo que viaja al worker', async () => {
+    expect((await loadWorkflowSuite(suiteFile(VALID))).systemBudgetTokens).toBeUndefined()
+    expect((await loadWorkflowSuite(suiteFile({ ...VALID, systemBudgetTokens: 2000 }))).systemBudgetTokens).toBe(2000)
+    const path = suiteFile({ ...VALID, systemBudgetTokens: 0 })
+    await expect(loadWorkflowSuite(path)).rejects.toThrow(new InvalidWorkflowSuiteError(path, 'systemBudgetTokens', 'se espera un entero positivo de tokens'))
+  })
+})

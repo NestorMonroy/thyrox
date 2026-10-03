@@ -35,6 +35,8 @@ export interface WorkflowSuite {
   readonly promptPath: string
   /** Las herramientas que el worker recibe; las registra el perfil de runtime. */
   readonly tools: readonly string[]
+  /** El tope del prompt de sistema del worker (`--system-budget-tokens`); ausente, el completo. */
+  readonly systemBudgetTokens?: number
   readonly cases: readonly WorkflowCase[]
 }
 
@@ -62,6 +64,7 @@ export async function loadWorkflowSuite(path: string): Promise<WorkflowSuite> {
     taskClass: document.taskClass,
     promptPath,
     tools: requireToolNames(path, document.tools),
+    ...optionalBudget(path, document.systemBudgetTokens),
     cases: cases.map((value, index) => workflowCase(path, value, index)),
   }
 }
@@ -80,6 +83,14 @@ function requireToolNames(path: string, value: unknown): string[] {
   const valid = Array.isArray(value) && value.length > 0 && value.every(name => typeof name === 'string' && name !== '')
   if (!valid) throw new InvalidWorkflowSuiteError(path, 'tools', 'se espera una lista no vacía de nombres')
   return [...value]
+}
+
+function optionalBudget(path: string, value: unknown): { readonly systemBudgetTokens?: number } {
+  if (value === undefined) return {}
+  if (typeof value !== 'number' || !Number.isSafeInteger(value) || value <= 0) {
+    throw new InvalidWorkflowSuiteError(path, 'systemBudgetTokens', 'se espera un entero positivo de tokens')
+  }
+  return { systemBudgetTokens: value }
 }
 
 function requireText(path: string, record: JsonObject, key: string, parent?: string): string {

@@ -82,6 +82,7 @@ function poolArguments(options: PoolCaseRunnerOptions, workflowCase: WorkflowCas
     '--tools', options.suite.tools.join(','),
     '--model-policy', policyPath,
     '--context-tokens', String(options.contextTokens),
+    ...(options.suite.systemBudgetTokens === undefined ? [] : ['--system-budget-tokens', String(options.suite.systemBudgetTokens)]),
   ]
 }
 

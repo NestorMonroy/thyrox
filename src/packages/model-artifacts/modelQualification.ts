@@ -162,8 +162,12 @@ export function validateQualification(value: unknown, path = 'qualification'): M
   }
   if (typeof record.passed !== 'boolean') throw new InvalidQualificationError(`${path}.passed`, 'se espera un booleano')
   const tokensPerSecond = record.tokensPerSecond
-  if (typeof tokensPerSecond !== 'number' || !Number.isFinite(tokensPerSecond) || tokensPerSecond <= 0) {
-    throw new InvalidQualificationError(`${path}.tokensPerSecond`, 'se espera un número positivo')
+  // Una suspendida puede no haber generado nada (un flujo que excede el
+  // contexto en su primer turno): su 0 se escribe para retirar la aprobación
+  // anterior, y no ordena candidatos porque sólo las aprobadas compiten.
+  const lowestSpeed = record.passed ? Number.MIN_VALUE : 0
+  if (typeof tokensPerSecond !== 'number' || !Number.isFinite(tokensPerSecond) || tokensPerSecond < lowestSpeed) {
+    throw new InvalidQualificationError(`${path}.tokensPerSecond`, record.passed ? 'se espera un número positivo' : 'se espera un número no negativo')
   }
   const measuredAt = requireString(record, 'measuredAt', path)
   if (!ISO_UTC_INSTANT.test(measuredAt)) throw new InvalidQualificationError(`${path}.measuredAt`, 'se espera un instante ISO 8601 en UTC')

@@ -304,3 +304,22 @@ describe('cualificación de flujo (workflow)', () => {
     expect(qualifiedModels([FAST], qualifications, 'mecanica', 1).map((q) => q.entry.name)).toEqual([FAST.name])
   })
 })
+
+// TASK-THYROX-0931, medido: un flujo que excedió el contexto en su primer turno
+// no generó ni un token y su suspensión no se pudo escribir, así que no podía
+// retirar una aprobación anterior. Sin tokens no hay velocidad que medir; una
+// suspendida no ordena candidatos, así que su 0 no compite.
+describe('velocidad de una cualificación suspendida', () => {
+  test('una suspendida admite 0 tokens/s', () => {
+    const failed = measured(FAST.name, { passed: false, casesPassed: 0, tokensPerSecond: 0 })
+    expect(validateQualification(failed)).toEqual(failed)
+  })
+
+  test('una aprobada no: aprobar sin generar nada no es una medida', () => {
+    expect(() => validateQualification(measured(FAST.name, { tokensPerSecond: 0 }))).toThrow(/qualification\.tokensPerSecond/)
+  })
+
+  test('ninguna admite una velocidad negativa', () => {
+    expect(() => validateQualification(measured(FAST.name, { passed: false, casesPassed: 0, tokensPerSecond: -1 }))).toThrow(/qualification\.tokensPerSecond/)
+  })
+})

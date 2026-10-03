@@ -287,10 +287,24 @@ describe('runWorkflowQualification — repo-code-change@1 por el pool (TASK-THYR
     }
   })
 
-  test('sin tokens generados no hay velocidad: no se registra', async () => {
+  // Medido el 2026-10-03: el primer turno excedió el contexto, no hubo tokens y
+  // la suspensión no se escribía. Se escribe con 0 tokens/s.
+  test('suspendida sin tokens generados: se escribe con velocidad 0', async () => {
     const runCase = results({ 'title-slug': { verdict: 'fallido', outputTokens: 0, durationMs: 0 }, second: { verdict: 'fallido', outputTokens: 0, durationMs: 0 } })
+    const { qualification } = await runWorkflowQualification({ ticket: ticket(), suite: SUITE, runCase, measurementCondition: 'isolated', contextTokens: CONTEXT_TOKENS, now: () => NOW })
+    expect([qualification.passed, qualification.tokensPerSecond]).toEqual([false, 0])
+  })
+
+  test('aprobada sin tokens generados no es una medida: se rehúsa', async () => {
+    const runCase = results({ 'title-slug': { verdict: 'verificado', outputTokens: 0, durationMs: 0 }, second: { verdict: 'verificado', outputTokens: 0, durationMs: 0 } })
     await expect(runWorkflowQualification({ ticket: ticket(), suite: SUITE, runCase, measurementCondition: 'isolated', contextTokens: CONTEXT_TOKENS, now: () => NOW }))
       .rejects.toBeInstanceOf(UnmeasuredSpeedError)
+  })
+
+  test('el presupuesto de sistema de la suite queda en el perfil', async () => {
+    const runCase = results({ 'title-slug': { verdict: 'verificado', outputTokens: 10, durationMs: 1000 }, second: { verdict: 'verificado', outputTokens: 10, durationMs: 1000 } })
+    const { qualification } = await runWorkflowQualification({ ticket: ticket(), suite: { ...SUITE, systemBudgetTokens: 2000 }, runCase, measurementCondition: 'isolated', contextTokens: CONTEXT_TOKENS, now: () => NOW })
+    expect(qualification.runtimeProfile?.systemBudgetTokens).toBe(2000)
   })
 
   test('el contexto pedido no excede el concedido, y la unidad sin perfil se rehúsa antes de correr ningún caso', async () => {

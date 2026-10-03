@@ -1,0 +1,6 @@
+(fail) poolCaseRunner — presupuesto de sistema > con presupuesto declarado, el pool lo recibe; sin él, no se inventa [8.69ms]
+(fail) systemBudgetTokens de la suite de flujo > es opcional; declarado, es un entero positivo que viaja al worker [1.00ms]
+(fail) runWorkflowQualification — repo-code-change@1 por el pool (TASK-THYROX-0931) > suspendida sin tokens generados: se escribe con velocidad 0 [0.21ms]
+(fail) runWorkflowQualification — repo-code-change@1 por el pool (TASK-THYROX-0931) > el presupuesto de sistema de la suite queda en el perfil [0.15ms]
+ 30 pass
+ 4 fail

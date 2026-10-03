@@ -1,0 +1,15 @@
+## A: la suspendida sin tokens vuelve a rehusarse
+replace_literal: 1 reemplazo(s) en src/packages/local-models/qualifyModel.ts
+(fail) runWorkflowQualification — repo-code-change@1 por el pool (TASK-THYROX-0931) > suspendida sin tokens generados: se escribe con velocidad 0 [0.23ms]
+ 22 pass
+ 1 fail
+## B: el pool no recibe el presupuesto
+replace_literal: 1 reemplazo(s) en src/packages/local-models/workflowPool.ts
+(fail) poolCaseRunner — presupuesto de sistema > con presupuesto declarado, el pool lo recibe; sin él, no se inventa [10.28ms]
+ 4 pass
+ 1 fail
+## C: el validador vuelve a exigir velocidad positiva siempre
+replace_literal: 1 reemplazo(s) en src/packages/model-artifacts/modelQualification.ts
+(fail) velocidad de una cualificación suspendida > una suspendida admite 0 tokens/s [0.12ms]
+ 38 pass
+ 1 fail

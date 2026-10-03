@@ -1,0 +1,2 @@
+local-models-qualify: Ollama no declaró eval_duration para thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e: sin tokens/s no hay cualificación
+__BG_EXIT__=2
