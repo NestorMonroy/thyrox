@@ -89,3 +89,6 @@ de una unidad nueva que lo confirme.
 - Streaming (`probes/heredoc-short.sse`): los `arguments` llegan completos en un fragmento, y
   `probes/translate_sse.ts` —nuestra traducción `messagesEventsFromOpenAISse`— los conserva.
 - Falta el caso largo (un programa de ~40 líneas, como en r3): `heredoc-long.sse`.
+- Caso largo **con** `&& chmod` en la primera línea (`probes/heredoc-long-chained.sse`): Ollama devuelve sólo esa
+  línea. **Sin** el encadenado (`probes/heredoc-long-plain.sse`): el programa completo. Causa: la forma que pedía el
+  prompt del controlador (H-THYROX-450). `prompt.md` pide ahora un heredoc sin nada tras `<<'PY'`; sin `chmod`.

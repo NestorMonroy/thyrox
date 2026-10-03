@@ -1,0 +1,6 @@
+data: {"id":"chatcmpl-434","object":"chat.completion.chunk","created":1791042737,"model":"thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{"role":"assistant","content":"","tool_calls":[{"id":"RZUlIa7i3ph0diPZkzlleHPARcTt7ySV","index":0,"type":"function","function":{"name":"Bash","arguments":"{\"command\":\"cat \\u003e src/verify/search_existing_mechanisms.py \\u003c\\u003c'PY' \\u0026\\u0026 chmod +x src/verify/search_existing_mechanisms.py\"}"}}]},"finish_reason":null}]}
+
+data: {"id":"chatcmpl-434","object":"chat.completion.chunk","created":1791042737,"model":"thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e","system_fingerprint":"fp_ollama","choices":[{"index":0,"delta":{},"finish_reason":"tool_calls"}]}
+
+data: [DONE]
+

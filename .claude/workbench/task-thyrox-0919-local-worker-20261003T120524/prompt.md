@@ -18,7 +18,7 @@ Then print exactly this block, filled in:
     decision: REUSE | EXTEND | MISSING
     reason: <one line>
 
-Step 2 — Implement. Write the file with a heredoc (`cat > src/verify/search_existing_mechanisms.py <<'PY' ... PY`). Contract, from the test docstring:
+Step 2 — Implement. Write the file with ONE heredoc whose first line is exactly `cat > src/verify/search_existing_mechanisms.py <<'PY'` — nothing after `<<'PY'` on that line, no `&&`, no `chmod` — then the program, then `PY` alone on the last line. The file does not need to be executable: the test runs it with python3. Contract, from the test docstring:
 
 - usage: `search_existing_mechanisms.py --registry PATH QUERY...`
 - the registry is a TSV; lines starting with `#` are comments; the first non-comment line is the header `id concept authority symbol public_entry tests consumers keywords`.
