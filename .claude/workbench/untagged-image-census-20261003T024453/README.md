@@ -90,3 +90,30 @@ nuevas.
 5. Ninguna se borra mientras no cumpla: copia remota durable, procedencia,
    representación semántica, sin consumidor, sin contenido único y
    reemplazo reproducible.
+
+## Corrección del ejecutor (2026-10-03) y lo medido después
+
+Preservar los bytes y hacer buscable el conocimiento son dos objetivos;
+`uniqueBytes = 0` mide el valor de reclamo, no el de preservación. El destino
+público `docker.io/th3rox` es válido si cada imagen pasa la inspección de
+fugas. `promoteCandidate` sigue siendo sólo `permanent`.
+
+- **Bytes únicos de hoy** (`observe snapshot`, dueño): `9ace0117e8ff` = 0,
+  `a3327b102032` = 53 (sólo su config). Comparten las capas de llama.cpp;
+  la cifra de T005 (2.958 GB) está caduca. Suma de únicos de las 33 = 53.
+- **Proxy en la historia de `26af4d189984` y 3 intermedias:** los cuatro
+  valores de `HTTPS_PROXY`/`https_proxy` tienen la forma
+  `http://127.0.0.1:<puerto>` (22 caracteres), sin userinfo ni token: es
+  configuración, no credencial (medido sobre
+  `container-image-distribution-20261002T234933/outputs/census/inspect.json`,
+  sin imprimir valores).
+  `assertImageFreeOf` (`promotion.ts:73`) rehúsa por **nombre** de variable
+  con cualquier valor, así que la ruta de preservación necesita un control
+  por **forma de credencial**, no ése.
+- **Search Existing de la publicación:** `RegistryWriter.push` es la
+  primitiva; su único llamador es `publishPromotedImage`. La preservación es
+  un segundo llamador junto a la promoción (EXTEND), no una relajación de
+  ella: TASK-THYROX-0915.
+- **Inspección de las 2 nuevas:** `observe` no tiene verbo de imagen
+  (inspect/history); `inspectImage`/`imageHistory` existen en
+  `podmanObservation.ts` y se exponen en la misma tarea.

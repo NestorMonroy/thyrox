@@ -57,3 +57,27 @@ exclusiva, `safe_to_delete`). Siguiente nodo ejecutable:
 2. Cohorte de worktrees de continuación: requiere la prueba de que sus
    commits están en git remoto y su autoridad (`task_continuation`) los
    declara terminados — Search Existing pendiente sobre su retiro.
+
+## R4 — primera cohorte: copia huérfana de `.claude/` (medido, sin borrar)
+
+`.thyrox/runtime/continuation/worktrees/local-models-publication-20261002T114251/L0-1790945810848326`
+no tiene `.git` ni figura en `git worktree list`: es lo que dejó la retirada
+del árbol por `task_continuation` (`git worktree remove --force`,
+`src/session/task_continuation.py:890`). Contiene sólo `.claude/`, 774 MB en
+disco.
+
+- `probes/orphan_copy_redundancy.py` (job `reclaim-v2-orphan-copy`, exit 0):
+  37 068 archivos — 37 055 con el mismo blob en el árbol principal, 13 con
+  su blob en el almacén de git, **0 únicos**, 0 bytes con inodo compartido
+  (`outputs/R4-orphan-copy-redundancy.json`).
+- `probes/orphan_copy_originals_pushed.py`: 37 054 con el mismo blob en
+  `origin/feature/complete-orm-root`; los 14 restantes son 13 versiones
+  anteriores alcanzables desde ese ref (`outputs/R4-older-blobs-reachability.txt`:
+  `29a594c79`, `6bd918b6c`, `6a7201165`) y 1 camino no ASCII que sí está en
+  el ref (`ls-tree -z`).
+- Ningún proceso tiene el directorio como cwd.
+
+Conclusión: todo su contenido está preservado en el remoto; su borrado
+liberaría ~774 MB. **El borrado lo rehusó el clasificador de permisos del
+cliente** (destrucción local irreversible): queda para decisión del
+ejecutor. Libre antes: `outputs/R4-free-before.txt` (2 429 546 496).
