@@ -1,0 +1,45 @@
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /home/user/thyrox/bin/cli en esta plantilla; ninguna con el modelo claude-fable-5-1: nada que derivar
+-- SIN VEREDICTO TASK-THYROX-0319 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p4-repl-runtime-ports.md
+-- SIN VEREDICTO TASK-THYROX-0474 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p4-repl-runtime-ports.md
+-- SIN VEREDICTO TASK-THYROX-0636 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p4-repl-runtime-ports.md
+-- SIN VEREDICTO TASK-THYROX-0494 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p5-credentials.md
+-- SIN VEREDICTO TASK-THYROX-0495 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p5-credentials.md
+-- SIN VEREDICTO TASK-THYROX-0496 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p5-credentials.md
+-- SIN VEREDICTO TASK-THYROX-0497 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p5-credentials.md
+-- SIN VEREDICTO TASK-THYROX-0498 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p5-credentials.md
+-- SIN VEREDICTO TASK-THYROX-0499 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p5-credentials.md
+-- SIN VEREDICTO TASK-THYROX-0500 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p5-credentials.md
+-- SIN VEREDICTO TASK-THYROX-0508 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p5-credentials.md
+-- SIN VEREDICTO TASK-THYROX-0453 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p6-data-semantic-search.md
+-- SIN VEREDICTO TASK-THYROX-0539 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p6-data-semantic-search.md
+-- SIN VEREDICTO TASK-THYROX-0538 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p6-data-semantic-search.md
+-- SIN VEREDICTO TASK-THYROX-0455 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p6-data-semantic-search.md
+-- SIN VEREDICTO TASK-THYROX-0562 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p6-data-semantic-search.md
+-- SIN VEREDICTO TASK-THYROX-0456 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p6-data-semantic-search.md
+-- SIN VEREDICTO TASK-THYROX-0627 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p6-data-semantic-search.md
+-- SIN VEREDICTO TASK-THYROX-0556 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p7-podman-workers.md
+-- SIN VEREDICTO TASK-THYROX-0557 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p7-podman-workers.md
+-- SIN VEREDICTO TASK-THYROX-0605 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p7-podman-workers.md
+-- SIN VEREDICTO TASK-THYROX-0606 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p7-podman-workers.md
+-- SIN VEREDICTO TASK-THYROX-0607 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p7-podman-workers.md
+-- SIN VEREDICTO TASK-THYROX-0558 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p7-podman-workers.md
+-- SIN VEREDICTO TASK-THYROX-0617 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p7-podman-workers.md
+-- SIN VEREDICTO TASK-THYROX-0360 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p8-packaging.md
+-- SIN VEREDICTO TASK-THYROX-0361 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p8-packaging.md
+-- SIN VEREDICTO TASK-THYROX-0362 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p8-packaging.md
+-- SIN VEREDICTO TASK-THYROX-0363 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p8-packaging.md
+-- SIN VEREDICTO TASK-THYROX-0364 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p8-packaging.md
+-- SIN VEREDICTO TASK-THYROX-0365 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p8-packaging.md
+-- SIN VEREDICTO TASK-THYROX-0366 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p8-packaging.md
+-- SIN VEREDICTO TASK-THYROX-0381 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p9-quality-sweeps.md
+-- SIN VEREDICTO TASK-THYROX-0439 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p9-quality-sweeps.md
+-- SIN VEREDICTO TASK-THYROX-0248 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p9-quality-sweeps.md
+-- SIN VEREDICTO TASK-THYROX-0330 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p9-quality-sweeps.md
+-- SIN VEREDICTO TASK-THYROX-0303 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p9-quality-sweeps.md
+-- SIN VEREDICTO TASK-THYROX-0336 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p9-quality-sweeps.md
+-- SIN VEREDICTO TASK-THYROX-0356 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p9-quality-sweeps.md
+-- SIN VEREDICTO TASK-THYROX-0262 — fuente: /home/user/thyrox/.claude/workbench/packages-20260930T052338/p9-quality-sweeps.md
+items=70 ok=30 fallidos=0 sin-veredicto=40
+verificados=0 rechazados=0 sin-cambios=30 fallidos=0
+__BG_EXIT__=1

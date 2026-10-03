@@ -1,0 +1,42 @@
+== anulación: bg.sh no pasa THYROX_EXECUTION_ENTRY como --env
+== tests/session/test-bg-managed-execution.sh
+  ok    caso 4: una entrada declarada del plano de control corre
+  ok    caso 4: su salida llega al log
+  ok    caso 5: un envoltorio que no apunta a su módulo declarado se rehúsa
+  ok    caso 5: no corrió nada
+  FALLO caso 6: el runner no recibió --secret-from-env: [run --task TASK-THYROX-0001 --kind probe --secret-from-env THYROX_TEST_CREDENTIAL -- true]
+  ok    caso 6: el valor no aparece en el argv
+  ok    caso 7: --work se acepta en lugar de --task
+  FALLO caso 7: el runner no recibió --work: [run --work ai-course-notes:cs224r/n/001 --kind test -- true]
+  ok    caso 8: --task y --work juntos se rehúsan con 2
+  FALLO caso 9: el runner no recibió --attest: [run --task TASK-THYROX-0001 --kind probe --attest /e/n.jsonl -- true]
+  ok    caso 10: el payload corre y vuelve su código
+  ok    caso 10: el payload ve la entrada por la que se materializó
+  FALLO caso 10: falta --env THYROX_EXECUTION_ENTRY: [run --task TASK-THYROX-0001 --kind probe -- /tmp/tmp.BF1lX0IdUX/ver-entrada]
+
+20 casos: 15 ok, 5 fallos
+exit=1
+== test_manifest_identity.py
+0 violación(es) (alcance medido: 63 línea(s) de manifest.jsonl)
+exit=0
+== anulación: managed_execution.sh sin valor por defecto
+== tests/session/test-bg-managed-execution.sh
+  ok    caso 6: --secret-from-env llega al runner por nombre
+  ok    caso 6: el valor no aparece en el argv
+  ok    caso 7: --work se acepta en lugar de --task
+  ok    caso 7: el runner recibe la referencia de trabajo del consumidor, no una TASK
+  ok    caso 8: --task y --work juntos se rehúsan con 2
+  ok    caso 9: --attest llega al runner
+  ok    caso 10: el payload corre y vuelve su código
+  FALLO caso 10: el payload no vio THYROX_EXECUTION_ENTRY: [PID=11035
+LOG=/tmp/tmp.apXt0wj0If/jobs/con-entrada-20261002T185410/outputs/salida.log
+LIVE=/home/user/thyrox/.thyrox/runtime/jobs/con-entrada-20261002T185410/salida.log
+RUN=/tmp/tmp.apXt0wj0If/jobs/con-entrada-20261002T185410
+SIN_ENTRADA]
+  ok    caso 10: la autorización pide el envío de la entrada a la unidad
+
+20 casos: 19 ok, 1 fallos
+exit=1
+== test_manifest_identity.py
+0 violación(es) (alcance medido: 63 línea(s) de manifest.jsonl)
+exit=0

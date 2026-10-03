@@ -1,0 +1,1 @@
+bash bin/check_package_typecheck --strict provider cli

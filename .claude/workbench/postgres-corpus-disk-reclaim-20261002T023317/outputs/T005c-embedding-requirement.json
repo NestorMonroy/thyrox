@@ -1,0 +1,53 @@
+{
+  "required_bytes": 5510471156,
+  "terms": {
+    "embedding_model_bytes": {
+      "bytes": 548257603,
+      "formula": "suma de onnx/model.onnx, tokenizer.json, config.json, tokenizer_config.json, special_tokens_map.json, vocab.txt",
+      "source": "T005c-model-declared.json (nomic-ai/nomic-embed-text-v1.5@e9b6763023c676ca8431644204f50c2b100d9aab); T008 lo sustituye al medir"
+    },
+    "runtime_bytes": {
+      "bytes": 175529784,
+      "formula": "bytes instalados + rueda descargada durante la instalación, por paquete",
+      "source": "T005c-runtime-measured.json (ruedas verificadas por sha256)"
+    },
+    "estimated_new_postgres_text_bytes": {
+      "bytes": 1066676938,
+      "formula": "(semantic_bytes + durable_evidence_bytes) × 1.661 B almacenado por B de texto",
+      "source": "T005b totales; razón medida: crecimiento 13320192 B (T001 vacío → hoy) / 8018722 B de texto de chunk"
+    },
+    "estimated_embedding_bytes": {
+      "bytes": 1256460300,
+      "formula": "chunks × (halfvec(768) 1544 B + fila 28 B); chunks = texto indexable / 803 B medio por chunk",
+      "source": "formato de almacenamiento de pgvector 0.8.0; media de chunk medida en document_chunks"
+    },
+    "estimated_index_bytes": {
+      "bytes": 258965100,
+      "formula": "chunks × (bit(768) 104 B + tupla 28 B + capa 0 32×6 B); los índices de texto ya están en la razón medida",
+      "source": "HNSW de pgvector, m = 16"
+    },
+    "postgres_operational_headroom": {
+      "bytes": 1590162292,
+      "formula": "max_wal_size + 20% de lo que se añade (MVCC, páginas a medio llenar)",
+      "source": "pg_settings medido en T005c-pg-measured.json"
+    },
+    "ingestion_temporary_headroom": {
+      "bytes": 614419139,
+      "formula": "una descarga del modelo en curso + un lote de ingesta en memoria volcado a disco",
+      "source": "declarado del artefacto; lote de 64 MiB"
+    }
+  },
+  "free_bytes_observed": 498470912,
+  "t005a_expected_reclaim_bytes": 3080751953,
+  "free_after_T005a": 3579222865,
+  "fits_now": false,
+  "fits_after_T005a": false,
+  "deficit_after_T005a_bytes": 1931248291,
+  "chunk_estimate_correction": {
+    "t005b_estimated_chunks": 342174,
+    "measured_average_chunk_text_bytes": 803,
+    "estimated_chunks_with_measured_average": 799275,
+    "note": "T005b supuso chunks llenos de 2000 caracteres; la media medida es menor, así que hay más chunks"
+  },
+  "scope_note": "el texto indexable incluye durable_evidence (§22.5: semantic_value o durable_evidence recuperable); durable_evidence versionado en git no se libera al ingerirlo"
+}

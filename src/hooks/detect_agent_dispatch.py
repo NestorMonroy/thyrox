@@ -47,6 +47,10 @@ from __future__ import annotations
 
 import re
 
+#: La política de ejecución declarada, la misma que leen `agent-recommend` y
+#: `headless-pool`.
+from session.execution_policy import subagents_allowed  # noqa: E402
+
 #: Familias de trabajo cuyo resultado es un ``exit code`` o un conteo: no
 #: depende de decidir nada, así que su ejecutor natural es un proceso. La
 #: etiqueta se cita en el aviso para que el lector sepa qué lo disparó.
@@ -87,7 +91,7 @@ HEADLESS_POOL_NOTICE = (
     "ocupando su anchura; una conversacion `thyrox -p` por item no hereda "
     "nada y queda en disco por item. `.claude/rules/trabajo-en-segundo-plano.md`: "
     "`printf '%s\\n' <items> | bash bin/headless-pool --prompt <plantilla> "
-    "--out <dir> --model <claude-…>`, reparte con GNU Parallel. Si los items no "
+    "--out <dir> --task-class <clase>`, reparte con GNU Parallel. Si los items no "
     "son independientes —uno necesita lo que otro concluye— ignora este aviso."
 )
 
@@ -113,8 +117,19 @@ def needs_judgment(text: str) -> bool:
     return bool(JUDGMENT_ROOTS.search(text))
 
 
-def detect(payload: dict) -> str | None:
-    """El aviso de despacho si el trabajo es un proceso, o ``None``."""
+#: La negación cuando la política de ejecución declarada no admite subagentes.
+POLICY_DENY_NOTICE = (
+    "POLÍTICA DE EJECUCIÓN — la política declarada (`src/session/execution_policy.json`, "
+    "o la de `THYROX_EXECUTION_POLICY`) no admite subagentes del cliente "
+    "(`controller.subagents: false`): un subagente es una conversación con el modelo "
+    "del cliente, así que no se despacha. La búsqueda determinista va por proceso (`rg`, "
+    "`git grep`, `bin/agent_store buscar-hallazgos`); el juicio por ítem, por `bin/headless-pool` "
+    "con un modelo local cualificado. Sin ninguno, la rama queda en espera."
+)
+
+
+def detect(payload: dict) -> str | dict | None:
+    """La negación si la política lo prohíbe; si no, el aviso de despacho, o ``None``."""
     tool_input = payload.get("tool_input") or {}
     if not isinstance(tool_input, dict):
         return None
@@ -124,6 +139,10 @@ def detect(payload: dict) -> str | None:
     # saldria sobre el.
     if payload.get("tool_name") not in DISPATCH_TOOLS:
         return None
+
+    # Lo que decide es la acción (un despacho) más la política, no el texto.
+    if not subagents_allowed():
+        return {"notice": POLICY_DENY_NOTICE, "decision": "deny"}
 
     text = dispatched_text(tool_input)
     if not text.strip():

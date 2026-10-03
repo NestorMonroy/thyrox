@@ -152,14 +152,17 @@
     "@thyrox/bridge": "0.1.0",
     "@thyrox/command-runtime": "0.1.0",
     "@thyrox/config": "0.1.0",
+    "@thyrox/coordination": "0.1.0",
     "@thyrox/daemon": "0.1.0",
     "@thyrox/headless-sdk": "0.1.0",
     "@thyrox/local-observability": "0.1.0",
     "@thyrox/mcp-runtime": "0.1.0",
     "@thyrox/memory": "0.1.0",
     "@thyrox/mitm": "0.1.0",
+    "@thyrox/model-artifacts": "0.1.0",
     "@thyrox/observability": "0.1.0",
     "@thyrox/output": "0.1.0",
+    "@thyrox/paths": "0.1.0",
     "@thyrox/permission": "0.1.0",
     "@thyrox/provider": "0.1.0",
     "@thyrox/repl": "0.0.0",
@@ -169,13 +172,11 @@
     "@thyrox/stdin-napi": "1.0.0",
     "@thyrox/storage": "0.1.0",
     "@thyrox/swarm": "0.1.0",
+    "@thyrox/task": "0.1.0",
     "@thyrox/teleport": "0.1.0",
     "@thyrox/tool-registry": "0.1.0",
     "@thyrox/tools": "0.1.0",
     "@thyrox/updater": "0.1.0",
-    "@thyrox/paths": "0.1.0",
-    "@thyrox/task": "0.1.0",
-    "@thyrox/workbench": "0.1.0",
-    "@thyrox/coordination": "0.1.0"
+    "@thyrox/workbench": "0.1.0"
   }
 }

@@ -1,0 +1,111 @@
+# p2a-ro diff — git diff de los cuatro archivos del tramo, en el estado final GREEN
+# medido: git diff -- <los cuatro pathspec>, con el árbol restaurado por sha256sum -c
+
+$ git status --porcelain -- src/
+ M src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts
+ M src/packages/artifact-registry/podmanJobVerifier.ts
+ M src/packages/podman-execution/__tests__/executionAuthorization.test.ts
+ M src/packages/podman-execution/executionAuthorization.ts
+
+$ sha256sum -c /tmp/green-sha.txt
+src/packages/podman-execution/executionAuthorization.ts: OK
+src/packages/podman-execution/__tests__/executionAuthorization.test.ts: OK
+src/packages/artifact-registry/podmanJobVerifier.ts: OK
+src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts: OK
+
+$ git diff --stat -- src/packages/podman-execution/executionAuthorization.ts src/packages/podman-execution/__tests__/executionAuthorization.test.ts src/packages/artifact-registry/podmanJobVerifier.ts src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts
+ .../artifact-registry/__tests__/podmanJobVerifier.test.ts     |  3 +++
+ src/packages/artifact-registry/podmanJobVerifier.ts           |  5 ++++-
+ .../podman-execution/__tests__/executionAuthorization.test.ts | 11 +++++++++++
+ src/packages/podman-execution/executionAuthorization.ts       | 11 ++++++++++-
+ 4 files changed, 28 insertions(+), 2 deletions(-)
+
+$ git diff -- <los cuatro archivos>
+diff --git a/src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts b/src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts
+index ad8281fae..c30a8b849 100644
+--- a/src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts
++++ b/src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts
+@@ -82,6 +82,9 @@ describe('la composición del trabajo', () => {
+     expect(argv).toContain('--env NODE_EXTRA_CA_CERTS=/certs/ca-bundle.crt')
+     expect(argv).toContain('-v /host/ca.crt:/certs/ca-bundle.crt:ro')
+     expect(argv).toContain(`-v ${REPOSITORY_ROOT}:/w:ro`)
++    // El raíz de sólo lectura es lo que la migración a la autorización canónica perdió (p2a-findings).
++    expect(argv).toContain('--read-only')
++    expect(argv).toContain('--read-only-tmpfs=false')
+   })
+ 
+   test('sin proxy la red es bridge y no se monta ningún CA', async () => {
+diff --git a/src/packages/artifact-registry/podmanJobVerifier.ts b/src/packages/artifact-registry/podmanJobVerifier.ts
+index 5398b7b75..cbda37ea1 100644
+--- a/src/packages/artifact-registry/podmanJobVerifier.ts
++++ b/src/packages/artifact-registry/podmanJobVerifier.ts
+@@ -57,7 +57,9 @@ export interface PodmanJobVerifierOptions {
+  * La verificación compuesta en la autorización canónica: clase
+  * `registry-operation` con la cita de su tarea, la red que decide el egress y
+  * los montajes de siempre —intérprete y repositorio de sólo lectura, scratch
+- * de escritura—.
++ * de escritura—. El raíz se declara de sólo lectura: lo que el trabajo escribe
++ * vive en el montaje, y HOME y TMPDIR apuntan a él para que no necesite
++ * escribir en la imagen.
+  */
+ export function verificationAuthorization(options: PodmanJobVerifierOptions, pinned: PinnedArtifact, location: ArtifactLocation): ExecutionAuthorization {
+   const network = jobNetworkProfile(options.egress)
+@@ -84,6 +86,7 @@ export function verificationAuthorization(options: PodmanJobVerifierOptions, pin
+     ],
+     resources: options.limits,
+     network: network.network,
++    readOnlyRootfs: true,
+     environment: { ...network.environment, HOME: `${CONTAINER_SCRATCH}/home`, TMPDIR: `${CONTAINER_SCRATCH}/tmp` },
+   }
+ }
+diff --git a/src/packages/podman-execution/__tests__/executionAuthorization.test.ts b/src/packages/podman-execution/__tests__/executionAuthorization.test.ts
+index 9a193aa03..ccf19ed49 100644
+--- a/src/packages/podman-execution/__tests__/executionAuthorization.test.ts
++++ b/src/packages/podman-execution/__tests__/executionAuthorization.test.ts
+@@ -158,6 +158,17 @@ describe('el contenedor que materializa una autorización', () => {
+     expect(argv.join(' ')).toContain('--secret thyrox-x,type=mount,target=x')
+   })
+ 
++  test('un raíz de sólo lectura declarado se traduce a --read-only en el argv de create', () => {
++    const argv = createWorkerContainerArgv(executionContainerSpec(authorization({ readOnlyRootfs: true }))).join(' ')
++    expect(argv).toContain('--read-only')
++    expect(argv).toContain('--read-only-tmpfs=false')
++  })
++
++  test('sin declarar el raíz, la materialización conserva el comportamiento de hoy: escribible', () => {
++    const argv = createWorkerContainerArgv(executionContainerSpec(authorization())).join(' ')
++    expect(argv).not.toContain('--read-only')
++  })
++
+   test('runExecution corre el contenedor hasta que termina y lo retira', async () => {
+     const calls: string[][] = []
+     const result = await runExecution(recordingPodman(calls), authorization())
+diff --git a/src/packages/podman-execution/executionAuthorization.ts b/src/packages/podman-execution/executionAuthorization.ts
+index 3ef77cd8d..8b6c02c9c 100644
+--- a/src/packages/podman-execution/executionAuthorization.ts
++++ b/src/packages/podman-execution/executionAuthorization.ts
+@@ -88,6 +88,12 @@ export type ExecutionAuthorization = {
+   mounts: readonly WorkerResourceMount[]
+   resources: ExecutionResources
+   network: WorkerNetworkMode
++  /**
++   * El sistema de archivos raíz. Sin declarar queda escribible —el
++   * comportamiento de siempre—; declarado verdadero, la materialización emite
++   * `--read-only` y el trabajo sólo escribe bajo sus montajes declarados.
++   */
++  readOnlyRootfs?: boolean
+   /** Sólo valores públicos: quedan en `podman inspect`. */
+   environment?: Readonly<Record<string, string>>
+   secrets?: readonly ExecutionSecret[]
+@@ -204,7 +210,10 @@ function resourceArgv(authorization: ExecutionAuthorization): string[] {
+     return workerResourceLimitArgv({
+       ...authorization.resources,
+       network: authorization.network,
+-      readOnlyRootfs: false,
++      // Sin declarar, el raíz queda escribible: es el comportamiento de los callers que ya
++      // existían. El default del *perfil* es más restrictivo, pero cerrar el raíz de una
++      // autorización lo pide quien la compone, nunca la forma del tipo.
++      readOnlyRootfs: authorization.readOnlyRootfs ?? false,
+       mounts: [...authorization.mounts],
+       environment: authorization.environment,
+       publishedPorts: authorization.publishedPorts,

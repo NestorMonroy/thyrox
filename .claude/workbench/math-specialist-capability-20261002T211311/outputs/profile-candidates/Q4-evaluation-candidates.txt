@@ -1,0 +1,531 @@
+== [eval] src/learning/experience.py
+-- responsabilidad:
+"""El registro de experiencia (S, A, R, S') de un intento, versionado y sin secretos.
+"""
+#: Nombres de variable de entorno que declaran una credencial; una clave camelCase
+#: como ``billableTokens`` no es un nombre de variable y no cuenta.
+#: Valores con forma de clave de API o de token de registro.
+    """Una experiencia lleva algo con forma de credencial."""
+-- entradas:
+106:def assert_secret_free(value, path: str = "") -> None:
+-- salidas/persistencia:
+-- consumidores: 11 · pruebas: 1
+   consumer: src/packages/agent/claudeInChrome/mcpServer.ts
+   consumer: src/packages/command-runtime/src/skills/bundled/dream.ts
+   consumer: src/packages/config/migrations/migrateOpusToOpus1m.ts
+   consumer: src/packages/config/migrations/migrateSonnet45ToSonnet46.ts
+
+== [eval] src/learning/reward.py
+-- responsabilidad:
+"""El contrato de recompensa de un intento.
+"""
+    """La recompensa de un intento a partir de sus compuertas y del veredicto del verificador."""
+-- entradas:
+49:def reward_for(gates: Mapping[str, bool | None], verifier_accepted: bool, costs: Mapping | None = None,
+71:def _known_or_last(value: float | None) -> float:
+75:def ranking_key(stats: CandidateStats) -> tuple[float, ...]:
+-- salidas/persistencia:
+-- consumidores: 8 · pruebas: 3
+   consumer: src/learning/experience.py
+   consumer: src/packages/provider/src/referral.ts
+   consumer: src/packages/repl/src/commands/passes/index.ts
+   consumer: src/packages/repl/src/components/LogoV2/GuestPassesUpsell.tsx
+
+== [eval] src/learning/token_usage.py
+-- responsabilidad:
+"""El uso de tokens de un intento delegado, con su procedencia.
+"""
+-- entradas:
+69:def _read_rows(path: Path) -> list[dict]:
+81:def _usage_from_counts(source: str, usage: dict, tool_calls: int | None, turns: int | None) -> AttemptUsage:
+93:def usage_from_stream(stream: Path) -> AttemptUsage | None:
+105:def usage_from_transcripts(directory: Path, since_epoch: float) -> AttemptUsage | None:
+139:def attempt_usage(stream: Path, transcripts: Path, since_epoch: float) -> AttemptUsage:
+-- salidas/persistencia:
+-- consumidores: 4 · pruebas: 1
+   consumer: src/packages/agent/attachments.ts
+   consumer: src/packages/agent/messages.ts
+   consumer: src/packages/repl/src/components/messages/nullRenderingAttachments.ts
+   consumer: src/session/task_continuation.py
+
+== [eval] src/measurement/change_point.py
+-- responsabilidad:
+"""¿Hubo un cambio de regimen en la serie, y donde?
+**0 de 32 y 0 de 9**. El instrumento no estaba ciego: su control positivo
+**siempre**: ``argmax`` devuelve un indice sobre ruido blanco, sobre una
+"""
+-- entradas:
+97:def _cumulative_range(values: list[float]) -> tuple[float, int]:
+112:def locate(s: series_mod.Series, iterations: int = DEFAULT_ITERATIONS,
+137:def report(reading: Reading) -> str:
+-- salidas/persistencia:
+-- consumidores: 2 · pruebas: 1
+   consumer: src/measurement/residual_structure.py
+   consumer: src/measurement/trend.py
+
+== [eval] src/measurement/deviation.py
+-- responsabilidad:
+"""Cuanto se desvia un dato de su centro, y por tanto cuanto vale su media.
+**numericamente no siempre**: sobre valores grandes y proximos entre si la 2
+"""
+-- entradas:
+62:def center(values: Sequence[float], weights: Sequence[float]) -> float:
+73:def squared_deviation(values: Sequence[float], weights: Sequence[float]) -> float:
+93:def squared_deviation_in_one_pass(values: Sequence[float],
+115:def typical_deviation(values: Sequence[float], weights: Sequence[float]) -> float:
+-- salidas/persistencia:
+-- consumidores: 8 · pruebas: 2
+   consumer: src/agents/agent_store.py
+   consumer: src/packages/agent/commands/security-review.ts
+   consumer: src/packages/app-host/src/commands/initPrompts.ts
+   consumer: src/packages/computer-use-mcp/src/legacy/executor.ts
+
+== [eval] src/measurement/distribution.py
+-- responsabilidad:
+"""¿Estos pesos son una distribucion de probabilidad, y como convertir una muestra.
+"""
+#: Tolerancia absoluta al comprobar que los pesos suman 1. No es holgura
+#: arbitraria: ``0.1 + 0.2 + 0.4 + 0.2 + 0.1`` en coma flotante binaria da
+#: 1.0000000000000002, asi que exigir igualdad exacta rechazaria una
+#: distribucion legitima. El margen acota el error de representacion, no un
+-- entradas:
+42:def require(values: Sequence[float], weights: Sequence[float]) -> None:
+65:def from_sample(
+-- salidas/persistencia:
+-- consumidores: 13 · pruebas: 9
+   consumer: src/agents/agent_store.py
+   consumer: src/measurement/deviation.py
+   consumer: src/measurement/rejection_sampling.py
+   consumer: src/packages/command-runtime/src/skills/bundled/dataviz.ts
+
+== [eval] src/measurement/normalizer_magnitude.py
+-- responsabilidad:
+"""¿Que tan grande es el normalizador, y cuanto cuesta que lo sea?
+**postura**: en vez de esperar que ``log Z`` se quede pequeño, se penaliza
+**Primero: exponenciar sin restar el maximo.** ``sum(exp(v))`` directo
+**Segundo: leer un cero de impresion como un cero de float64.** El brief que
+* ese valor es ``log(2.225e-308)`` — el logaritmo de la constante
+  **redondeada**. El piso normalizado real de este float64 es
+-- entradas:
+113:def log_sum_exp(logits):
+130:def softmax(logits):
+146:def z_loss(logits, alpha=DEFAULT_ALPHA):
+157:def z_loss_gradient(logits, alpha=DEFAULT_ALPHA):
+170:def descend(logits, learning_rate, alpha=DEFAULT_ALPHA):
+-- salidas/persistencia:
+-- consumidores: 1 · pruebas: 2
+   consumer: src/measurement/rejection_sampling.py
+
+== [eval] src/measurement/perplexity.py
+-- responsabilidad:
+"""Perplexity y bits por byte de un modelo sobre un texto.
+"""
+    """Cada probabilidad en ``(0, 1]``, y al menos una.
+    """
+-- entradas:
+51:def validate_probabilities(probabilities: Sequence[float]) -> bool:
+65:def perplexity(probabilities: Sequence[float]) -> float:
+72:def perplexity_from_product(probabilities: Sequence[float]) -> float:
+87:def bits_per_token(perplexity_value: float) -> float:
+94:def model_bits_per_byte(probabilities: Sequence[float], byte_count: int) -> float:
+106:def model_bits_per_byte_from_perplexity(perplexity_value: float,
+-- salidas/persistencia:
+-- consumidores: 12 · pruebas: 6
+   consumer: src/packages/computer-use-mcp/src/deniedApps.ts
+   consumer: src/packages/local-models/ggufValidation.ts
+   consumer: src/packages/mitm/src/inspector/kindDetector.ts
+   consumer: src/packages/mitm/src/inspector/llmMetadataExtractor.ts
+
+== [eval] src/measurement/rejection_sampling.py
+-- responsabilidad:
+"""Muestrear de ``q`` teniendo un borrador barato que muestrea de ``p``.
+**exactamente** ``q``, sin que el borrador la sesgue.
+**Primero: el residuo NO se calcula al construir.** Cuando ``p == q`` la suma
+**Segundo: pedir el residuo cuando no hay exceso REHUSA.** Devolver un vector
+**Tercero: el ``max(0, ·)`` no es cosmetico.** Sin el, la masa negativa de los
+-- entradas:
+105:def _validate(draft, target):
+119:def acceptance_probabilities(draft, target):
+131:def residual_excess(draft, target):
+143:def residual_distribution(draft, target):
+161:def acceptance_rate(draft, target):
+175:def expected_tokens_per_call(alpha, gamma):
+197:def _draw(weights, uniform):
+215:def sample(draft, target, rng=None, trace=False):
+-- salidas/persistencia:
+-- consumidores: 2 · pruebas: 3
+   consumer: bin/rejection_sampling
+   consumer: src/verify/batch_verification.py
+
+== [eval] src/measurement/residual_structure.py
+-- responsabilidad:
+"""¿El ajuste dejó estructura sin capturar en lo que sobró?
+**Un R2 alto convive con residuos llenos de memoria**, y entonces el ajuste
+**«Sin evidencia» no es «aleatorio»** — por eso el veredicto se llama asi.
+"""
+    """Lo que se concluye de los residuos."""
+-- entradas:
+90:def autocorrelation(values: list[float], lag: int) -> float:
+102:def _chi_squared_critical(degrees: int, alpha: float) -> float:
+113:def _standard_normal_quantile(p: float) -> float:
+125:def inspect(residuals, lags: int = DEFAULT_LAGS,
+149:def report(reading: Reading) -> str:
+-- salidas/persistencia:
+-- consumidores: 1 · pruebas: 1
+   consumer: src/measurement/trend.py
+
+== [eval] src/measurement/series.py
+-- responsabilidad:
+"""Una serie, y la conversion de un proceso de llegada en una.
+"""
+    """De que tipo es la serie. Decide que instrumento puede leerla."""
+    """Lo que se paso no puede analizarse como serie.
+-- entradas:
+92:def level(points, label: str = "") -> Series:
+104:def bin_arrivals(stamps, window_seconds: float, label: str = "") -> Series:
+132:def residuals(fitted_over: Series, fitted) -> list[float]:
+-- salidas/persistencia:
+-- consumidores: 18 · pruebas: 11
+   consumer: bin/bie_series
+   consumer: pyproject.toml
+   consumer: src/agents/agent_store.py
+   consumer: src/agents/store_field_classes.py
+
+== [eval] src/measurement/trend.py
+-- responsabilidad:
+"""¿La serie crece, a que ritmo, y que forma la describe?
+**transformacion** y no el ajuste: es media pieza.
+**Los dos R2 no son comparables tal cual**, y ese es el defecto que este
+"""
+    """La forma que se le supuso a la serie."""
+    """La forma pedida no es aplicable a esta serie.
+-- entradas:
+86:def _least_squares(xs: list[float], ys: list[float]) -> tuple[float, float]:
+99:def _r_squared(observed: list[float], predicted: list[float]) -> float:
+111:def _days_from_origin(s: series_mod.Series) -> list[float]:
+121:def fit_linear(s: series_mod.Series) -> Fit:
+131:def fit_exponential(s: series_mod.Series) -> Fit:
+154:def better_fit(s: series_mod.Series) -> Fit:
+170:def report(fit: Fit, count: int) -> str:
+-- salidas/persistencia:
+-- consumidores: 6 · pruebas: 2
+   consumer: src/measurement/deviation.py
+   consumer: src/measurement/distribution.py
+   consumer: src/measurement/residual_structure.py
+   consumer: src/packages/command-runtime/src/skills/bundled/dataviz.ts
+
+== [eval] src/testing/clone_tree.py
+-- responsabilidad:
+"""Un arbol sintetico de varios clones, para suites que componen rutas por clon.
+"""
+#: Prefijos de variables que gobiernan la resolucion de rutas. Se retiran
+#: dentro de la fixture para que ninguna declaracion del host decida por ella.
+    """Construye `<base>/<prefix><clon>` por clon y un proveedor en `<base>/thyrox`.
+    """
+-- entradas:
+35:def synthetic_clone_tree(clones: Sequence[str] = ("api", "db", "docs", "server", "ui"),
+-- salidas/persistencia:
+55:        (provider / "src" / "paths" / "reach.py").write_text("")
+-- consumidores: 0 · pruebas: 7
+
+== [eval] src/workbench/manifest.py
+-- responsabilidad:
+"""El manifiesto del banco de trabajo y el ciclo de vida de un *run*.
+**NO se porta ``checkWorkbench``, y es deliberado.** El gate esta cableado una
+"""
+#: Las cinco claves obligatorias. El orden es el del reporte.
+#: El nombre del archivo del manifiesto. Uno, en ingles, como todo en THYROX.
+#: Es JSONL: un registro por linea, cada uno etiquetado por lo que DICE.
+-- entradas:
+112:def manifest_line(kind: str, payload: dict) -> str:
+122:def split_into_records(document: dict) -> list[tuple[str, dict]]:
+151:def render_manifest(document: dict) -> str:
+160:def read_manifest_lines(lines: Iterable[str]) -> dict:
+189:def read_manifest_file(path: str | Path) -> dict:
+207:def resolve_manifest(run_dir: str | Path) -> Path | None:
+225:def run_id_date(run_id: str) -> str | None:
+244:def run_id_for(slug: str, now: datetime | None = None) -> str:
+-- salidas/persistencia:
+119:    return json.dumps({KIND_KEY: kind, **payload}, ensure_ascii=False)
+307:    (run_dir / MANIFEST_FILE_NAME).write_text("", encoding="utf-8")
+308:    (run_dir / "README.md").write_text("\n".join([
+338:    with (run / MANIFEST_FILE_NAME).open("a", encoding="utf-8") as handle:
+-- consumidores: 118 · pruebas: 53
+   consumer: bin/check_manifest_language
+   consumer: bin/manifest
+   consumer: package.json
+   consumer: src/agents/definitions/workbench-instrumenter.md
+
+== [eval] src/workbench/paths.py
+-- responsabilidad:
+"""Los dos hogares, del lado Python — y son DOS, no uno.
+-- entradas:
+111:def workbench_home_name(repo: str) -> str:
+132:def repo_of(path: str | Path) -> str | None:
+155:def state_dir(start: str | Path | None = None) -> str:
+167:def evidence_dir(start: str | Path | None = None) -> str:
+188:def workbench_dir(start: str | Path | None = None) -> Path:
+278:def is_evidence_path(path: str | Path, start: str | Path | None = None) -> bool:
+295:def is_workbench_path(path: str | Path, start: str | Path | None = None) -> bool:
+326:def is_measurement_artifact(path: str | Path,
+-- salidas/persistencia:
+-- consumidores: 670 · pruebas: 411
+   consumer: .env.example
+   consumer: .githooks/post-commit
+   consumer: .githooks/pre-commit
+   consumer: .githooks/pre-push
+
+== [eval:bin/batch_verification] src/verify/batch_verification.py
+-- responsabilidad:
+"""Verificar N arreglos de `TS2305` con UNA pasada de `tsc`, y juzgar cada uno.
+"""
+-- entradas:
+104:def _edges_by_provider(lines) -> Counter:
+111:def diagnostic_key_from_line(raw: str) -> str:
+118:def _diagnostic_keys(lines) -> Counter[str]:
+127:def _new_diagnostics(before_lines, after_lines) -> tuple[list[str], dict[str, list[str]]]:
+146:def _outcome(before: int, after: int) -> str:
+154:def verify_batch(before_lines, after_lines, providers) -> BatchReport:
+167:def verify_proposals(before_lines, after_lines, proposals: list[Proposal]) -> BatchReport:
+221:def ledger_rows(report: BatchReport) -> list[dict]:
+-- salidas/persistencia:
+308:        with args.verdicts_out.open("a", encoding="utf-8") as ledger:
+310:                ledger.write(json.dumps(row, ensure_ascii=False) + "\n")
+-- consumidores: 7 · pruebas: 4
+   consumer: bin/batch_verification
+   consumer: src/verify/source_copy_step.py
+   consumer: src/verify/tscProposers.ts
+   consumer: src/verify/tsc_cycle.py
+
+== [eval:bin/rejection_sampling] src/measurement/rejection_sampling.py
+-- responsabilidad:
+"""Muestrear de ``q`` teniendo un borrador barato que muestrea de ``p``.
+**exactamente** ``q``, sin que el borrador la sesgue.
+**Primero: el residuo NO se calcula al construir.** Cuando ``p == q`` la suma
+**Segundo: pedir el residuo cuando no hay exceso REHUSA.** Devolver un vector
+**Tercero: el ``max(0, ·)`` no es cosmetico.** Sin el, la masa negativa de los
+-- entradas:
+105:def _validate(draft, target):
+119:def acceptance_probabilities(draft, target):
+131:def residual_excess(draft, target):
+143:def residual_distribution(draft, target):
+161:def acceptance_rate(draft, target):
+175:def expected_tokens_per_call(alpha, gamma):
+197:def _draw(weights, uniform):
+215:def sample(draft, target, rng=None, trace=False):
+-- salidas/persistencia:
+-- consumidores: 2 · pruebas: 3
+   consumer: bin/rejection_sampling
+   consumer: src/verify/batch_verification.py
+
+== [eval:bin/annulment_control] src/verify/annulment_control.py
+-- responsabilidad:
+"""Ejecuta un control de anulación y deja su evidencia en el banco.
+"""
+-- entradas:
+44:def _git(repo: Path, *args: str, check: bool = True) -> subprocess.CompletedProcess:
+49:def _blob(repo: Path, subject: Path) -> str:
+53:def _is_committed(repo: Path, relative: str) -> bool:
+60:def _run(command: list[str], cwd: Path, output: Path) -> int:
+73:def run_annulment(repo: Path, bench: Path, name: str, subject: Path,
+120:def run_substitution(repo: Path, bench: Path, name: str, subject: Path,
+149:def main(argv: list[str] | None = None) -> int:
+156:    parser.add_argument("--bench", type=Path, required=True)
+-- salidas/persistencia:
+62:    # `open("a")` → `open("w")` —mismo tamaño— en un módulo compilado en el
+69:    output.write_text(result.stdout + result.stderr + f"\n[exit={result.returncode}]\n")
+115:    with (bench / "annulment.jsonl").open("a") as manifest:
+116:        manifest.write(json.dumps(report, ensure_ascii=False) + "\n")
+176:    print(json.dumps(report, ensure_ascii=False))
+-- consumidores: 1 · pruebas: 2
+   consumer: bin/annulment_control
+
+== [eval:bin/bie_series] src/corpus/bie_series.py
+-- responsabilidad:
+"""La nota de una serie del Banco de Informacion Economica se LEE, no se
+**Dos series del mismo organismo, del mismo dia y del mismo banco no
+*Metrica:* patrones de la nota normalizada que resuelven a un trimestre o a
+*Ciega a:* una advertencia que la nota exprese sin ninguno de esos patrones
+-- entradas:
+126:def normalize(text: str) -> str:
+136:def note_text(rows: list[list[str]]) -> str:
+156:def parse_note(text: str) -> Note:
+185:def as_quarter(period: str) -> tuple[int, int]:
+192:def is_comparable(period: str, note: Note) -> bool:
+208:def summarize(series: list[tuple[str, float]], note: Note) -> dict:
+248:def detect_encoding(raw: bytes) -> str:
+267:def read_rows(source) -> list[list[str]]:
+-- salidas/persistencia:
+345:        print(json.dumps({
+-- consumidores: 1 · pruebas: 1
+   consumer: bin/bie_series
+
+== [eval:bin/measure_delta] src/agents/measure_delta.py
+-- responsabilidad:
+"""measure_delta — qué símbolos ganó o perdió el disco durante un subagente.
+"""
+    """Dónde se apenda el delta. Es PARÁMETRO del consumidor.
+    """
+    """El destino, o ``None`` si su consumidor no está en disco.
+    """
+-- entradas:
+30:def resolve_log(results_dir) -> Path | None:
+45:def consumer_results_dir(results_dir) -> Path | None:
+65:def diff_symbols(before: set, after: set) -> tuple[set, set]:
+70:def git(repo, *args):
+80:def symbols(texto):
+100:def estado(repo):
+105:def archivos_python(porcelain):
+123:def arrancar(payload, repos, results_dir):
+-- salidas/persistencia:
+135:        json.dump(base, fh)
+-- consumidores: 2 · pruebas: 1
+   consumer: bin/measure_delta
+   consumer: src/session/user_wiring.py
+
+== [eval:bin/step_report] src/verify/step_report.py
+-- responsabilidad:
+"""El informe de un paso del lazo, por capas separadas.
+"""
+#: La etiqueta de una salida que no declara su modelo.
+    """(modelo, tokens equivalentes, base) de una salida de ``thyrox -p``.
+    """(Seq, inicio, duración, código) por fila. El joblog registra los ítems
+-- entradas:
+42:def _item_costs(result: dict, catalog: dict | None) -> list[tuple[str, float, str]]:
+59:def _joblog(bench: Path) -> list[tuple[int, float, float, int]]:
+71:def _system(bench: Path, batches: list[dict]) -> dict:
+99:def _memory(bench: Path) -> dict:
+119:def _gpu(bench: Path) -> dict:
+137:def _first_request(path: Path) -> tuple[int, int] | None:
+152:def _cache_prefix(bench: Path) -> dict:
+179:def step_report(bench: Path, pipeline: Path) -> dict:
+-- salidas/persistencia:
+218:    print(json.dumps(report, ensure_ascii=False, indent=2))
+-- consumidores: 2 · pruebas: 2
+   consumer: bin/step_report
+   consumer: src/verify/step_close.py
+
+== [eval:bin/runner] src/verify/runner.py
+-- responsabilidad:
+"""El corredor de gates de thyrox — un registro declarativo, no bloques a mano.
+"""
+    """El filtro no seleccionó ningún gate.
+    """
+    """Una regla que sabemos verificar, y el guion que la mide."""
+-- entradas:
+88:def select(checks, only=None):
+98:def resolve_consumer(declared=None):
+117:def run_one(check, gates_dir, consumer):
+143:def run(checks, gates_dir=None, consumer=None):
+149:def verdict(results):
+162:def _print_human(results, verbose=False):
+177:def main(argv=None):
+181:    p.add_argument('--only', help='subcadena del id')
+-- salidas/persistencia:
+198:            print(json.dumps([dataclasses.asdict(c) for c in checks], indent=2, ensure_ascii=False))
+209:        print(json.dumps({
+-- consumidores: 76 · pruebas: 71
+   consumer: .env.example
+   consumer: bin/runner
+   consumer: src/agents/agent_store.py
+   consumer: src/agents/definitions/agentic-validator.md
+
+== [eval:bin/manifest]  — AUSENTE
+
+== [eval:qualification] src/packages/local-models/qualifyModel.ts
+-- responsabilidad:
+/**
+ * Cualifica un modelo local: corre cada caso de una suite contra `/api/chat` de
+ * la unidad admitida, con `options.num_ctx`, puntúa cada respuesta y mide
+ * tokens/s como lo declara el propio Ollama (suma de `eval_count` entre suma de
+ * `eval_duration`). Aprueba sólo si acierta todos.
+ *
+-- entradas:
+90:export async function runQualification(request: QualificationRequest): Promise<QualificationRun> {
+96:export async function runTaskQualification(request: TaskQualificationRequest): Promise<QualificationRun> {
+107:export async function runEmbeddingQualification(request: EmbeddingQualificationRequest): Promise<QualificationRun> {
+-- salidas/persistencia:
+-- consumidores: 1 · pruebas: 1
+   consumer: src/packages/local-models/qualifyCommand.ts
+
+== [eval:qualification] src/packages/local-models/taskSuite.ts
+-- responsabilidad:
+/**
+ * Suite de cualificación de TAREA (TASK-THYROX-0780): mide que un modelo
+ * resuelve el trabajo de una clase con ítems reales del consumidor, no que
+ * emite llamadas a herramienta (eso es `toolCallingSuite.ts`).
+ *
+ * La escribe el consumidor —su trabajo, sus casos— y la puntúa thyrox con
+-- entradas:
+58:export async function loadTaskSuite(path: string): Promise<TaskSuite> {
+70:export function scoreTaskReply(checks: readonly TaskCheck[], content: string): TaskScore {
+-- salidas/persistencia:
+-- consumidores: 3 · pruebas: 3
+   consumer: src/packages/local-models/embeddingSuite.ts
+   consumer: src/packages/local-models/qualifyCommand.ts
+   consumer: src/packages/local-models/qualifyModel.ts
+
+== [eval:qualification] src/packages/local-models/qualifyCommand.ts
+-- responsabilidad:
+/**
+ * `local-models-qualify <nombre-contractual> [--context N] [--isolated] [--suite SUITE.json]`:
+ * pide el modelo al coordinador del anfitrión por su socket, corre la suite
+ * sólo contra la unidad del ticket, suelta la admisión y añade la medición al
+ * archivo de cualificaciones (ADR-007 1.14.0, M8). Sin `--suite` corre
+ * `tool-calling@1`, una cualificación de **protocolo**: prueba llamadas a
+-- entradas:
+63:export async function runQualifyCommand(argv: readonly string[], context: CommandContext): Promise<number> {
+-- salidas/persistencia:
+-- consumidores: 1 · pruebas: 2
+   consumer: src/packages/local-models/bin/qualify.ts
+
+== [eval:qualification] src/packages/local-models/embeddingSuite.ts
+-- responsabilidad:
+/**
+ * Suite de cualificación de EMBEDDINGS: mide que un modelo sirve para
+ * recuperar, no que carga (eso lo valida `llama-embedding` al importar) ni
+ * que conversa (eso es `toolCallingSuite.ts` y `taskSuite.ts`).
+ *
+ * Cada caso declara una consulta, su documento relevante y al menos un
+-- entradas:
+62:export async function loadEmbeddingSuite(path: string): Promise<EmbeddingSuite> {
+70:export function scoreEmbeddingCase(vectors: EmbeddingCaseVectors): EmbeddingScore {
+-- salidas/persistencia:
+-- consumidores: 3 · pruebas: 4
+   consumer: src/packages/local-models/embeddingSuiteFromCorpus.ts
+   consumer: src/packages/local-models/qualifyCommand.ts
+   consumer: src/packages/local-models/qualifyModel.ts
+
+== [eval:qualification] src/packages/local-models/embeddingSuiteFromCorpus.ts
+-- responsabilidad:
+/**
+ * Deriva una suite de embeddings de un corpus propio en vez de casos escritos
+ * a mano: el corpus de hallazgos de thyrox es el trabajo real que la
+ * búsqueda semántica tiene que recuperar. Cada registro aporta su resumen
+ * como consulta y su contenido como documento relevante; los distractores
+ * son contenidos de otros registros.
+-- entradas:
+42:export function buildEmbeddingSuiteFromCorpus(records: readonly CorpusRecord[], options: CorpusSuiteOptions): EmbeddingSuite {
+-- salidas/persistencia:
+-- consumidores: 0 · pruebas: 1
+
+== suites versionadas
+src/packages/local-models/suites/batch-worker-mecanica-1.json
+src/packages/local-models/suites/tool-calling-1.json
+
+== src/verify con vocabulario de evaluación (suite|score|verdict|case|held)
+src/verify/check_suite_discrimina.py:73
+src/verify/batch_verification.py:14
+src/verify/tsc_zero_step.py:10
+src/verify/check_test_home_isolation.py:9
+src/verify/check_gitattributes.py:7
+src/verify/check_hook_script_token.py:7
+src/verify/check_unreachable_rules.py:7
+src/verify/check_rule_divergence.py:6
+src/verify/gitattributes.py:6
+src/verify/step_setup.py:6
+src/verify/tree_fingerprint.py:6
+src/verify/annulment_control.py:5
+src/verify/check_mutante_en_staging.py:5
+src/verify/verificar_premisa.py:5
+src/verify/check_cifra_de_artefacto_vivo.py:4

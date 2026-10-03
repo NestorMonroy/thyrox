@@ -1,0 +1,1 @@
+{"database":"thyrox","postgres":"16.10 (Debian 16.10-1.pgdg12+1)","pgvector":"0.8.0","schema":"semantic_search","databaseBytes":21189091,"counts":{"analysis_candidates":0,"analysis_runs":0,"document_chunks":9981,"documents":1675,"embedding_spaces":0,"semantic_search_migrations":3}}

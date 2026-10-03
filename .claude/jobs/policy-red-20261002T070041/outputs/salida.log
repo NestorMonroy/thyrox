@@ -1,0 +1,14 @@
+(pass) parseExecutionPolicy > el respaldo no tiene valor por defecto: sin declararlo se rehúsa [2.34ms]
+(pass) parseExecutionPolicy > sólo se permiten modelos locales por su repositorio; un proveedor no se lista [0.16ms]
+(pass) parseExecutionPolicy > un JSON ilegible se rehúsa con su causa [0.27ms]
+error: expect(received).toMatch(expected)
+(fail) la política nombra lo que excluye y distingue la fuente (TASK-THYROX-0763) > si la política excluye todo el catálogo, la causa lo dice y no habla de un catálogo vacío [2.75ms]
+error: expect(received).toBe(expected)
+(fail) la política nombra lo que excluye y distingue la fuente (TASK-THYROX-0763) > un selector con fuente admite la entrada de esa fuente y no a su homónima de otra [0.56ms]
+(pass) la política nombra lo que excluye y distingue la fuente (TASK-THYROX-0763) > un selector sin fuente sigue admitiendo cualquier fuente [0.10ms]
+error: expect(received).toThrow(expected)
+(fail) la política nombra lo que excluye y distingue la fuente (TASK-THYROX-0763) > una fuente desconocida se rehúsa al leer la política [1.08ms]
+ 13 pass
+ 3 fail
+execution thyrox-worker-test-muqm67lv-1650 kind=test task=TASK-THYROX-0763 exit=0
+__BG_EXIT__=0

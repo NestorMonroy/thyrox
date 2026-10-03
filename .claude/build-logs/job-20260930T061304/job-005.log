@@ -1,0 +1,14 @@
+caso 1 — si no cabe, rehúsa sin crear el worktree y dice cuánto falta
+  ok    sale 3 (no admitido)
+  ok    no imprime ruta
+  ok    no crea worktree
+  ok    el motivo nombra el disco
+caso 2 — si cabe, lo crea
+  ok    sale 0
+  ok    crea un worktree más
+item_worktree: se conserva el worktree del ítem 1, sin cerrar: /root/.cache/thyrox-disk-test.xHLlJX/root/26e3754ecd33/1
+caso 3 — las variables inválidas se rechazan
+  ok    reserva inválida: exit 2
+  ok    plazo inválido: exit 2
+item_worktree disk: 8/8
+EXIT=0

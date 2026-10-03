@@ -1,0 +1,4 @@
+==== i1: 1 definicion(es) de nivel superior
+---- chunk-7y2gzc5g.js function i1 [25187,25430)
+function i1(){let e=h();if(e.tunnelSocket===void 0){let n=a.ANTHROPIC_UNIX_SOCKET,i=a.CLAUDE_CODE_OAUTH_TOKEN,r=a.ANTHROPIC_API_KEY,s=!a.ANTHROPIC_AUTH_TOKEN&&(i===nRe&&!r||r===nRe&&!i);e.tunnelSocket=n&&s?n:null}return e.tunnelSocket??void 0}
+symbol: 1 de 1 nombre(s) resueltos

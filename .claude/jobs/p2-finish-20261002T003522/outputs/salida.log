@@ -1,0 +1,5 @@
+9ee5cb5f5 Nestor Monroy / jcg-admin Run headless-pool items inside execution units
+no se pudo resolver el corpus del consumidor (docs): no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.
+push=0
+execution thyrox-worker-test-muq8eod0-10146 kind=test task=TASK-THYROX-0757 exit=0
+__BG_EXIT__=0

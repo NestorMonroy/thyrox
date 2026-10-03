@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
-# test-infrastructure-ensure.sh — contrato del bootstrap idempotente de
-# infraestructura gestionada (TASK-THYROX-0606, ADR-THYROX-007 v1.2.0 Regla 4).
+# test-infrastructure-ensure.sh — contrato del bootstrap de la infraestructura
+# gestionada (ADR-007 Regla 4, enmienda 1.15.0; TASK-THYROX-0606, 0740).
 #
-# `src/session/infrastructure_ensure.sh` consume la DECLARACION de
-# `src/lib/infrastructure.sh` (argv puro, sin ejecutar nada) y es quien
-# efectivamente corre `podman`. Aqui `podman` es siempre un binario FALSO
-# —nunca se crea un contenedor real— que modela su estado con archivos en un
-# directorio de trabajo, y cuyo `start` deja un proceso `sleep` real y vivo en
-# el anfitrion para representar el PID que un `podman inspect` real reportaria.
-# Eso es lo que permite probar, sin systemd ni Podman real, la mitad de juicio
-# central del ADR: `running` con el PID muerto es STALE y se recrea; `running`
-# con el PID vivo se CONSERVA.
+# `src/session/infrastructure_ensure.sh` orquesta y declara: valida la
+# selección y la credencial, mide el balance de locks de Podman, admite el
+# disco de las imágenes que faltan y entrega el estado deseado a
+# `bin/infrastructure-bootstrap`, que lo materializa por la primitiva Podman.
+# El ensure no crea, no arranca, no retira ni ejecuta contenedores: cada caso lo
+# comprueba sobre el argv real que recibe el `podman` falso.
+#
+# `podman`, el bootstrap y la admisión de disco son dobles que registran su
+# argv en el mismo calls.log, para medir el orden.
 set -uo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -29,263 +29,280 @@ fi
 
 WORK="$(mktemp -d)"
 MARKER="fake-podman-container-$$"
-cleanup() { pkill -f "$MARKER" 2>/dev/null; rm -rf "$WORK"; }
+cleanup() { pkill -f "$MARKER" 2>/dev/null; rm -rf "${WORK:?}"; }
 trap cleanup EXIT
-
 STATE="$WORK/state"
 mkdir -p "$STATE"
+readonly EXIT_LOCK_COLLISION=3
 
-# --- el podman falso ---
-#
-# Modela: info, network exists/create, inspect, create, start, rm, exec.
-# Cada invocacion se registra en calls.log (una linea = argv completo), para
-# que la prueba de "nunca borra el volumen" mida el argv real y no una
-# promesa. `start` deja un `sleep 999` real, marcado con MARKER, y guarda su
-# PID — asi un `kill -0` posterior lo ve vivo de verdad.
+# --- el podman falso: sólo lo que el ensure puede invocar sin materializar ---
 cat > "$WORK/podman-fake" <<STUB
 #!/usr/bin/env bash
 STATE="$STATE"
-MARKER="$MARKER"
 printf '%s\n' "\$*" >> "\$STATE/calls.log"
 case "\$1" in
-  info) exit 0 ;;
-  network)
-    case "\$2" in
-      exists) [[ -f "\$STATE/network-\${3}" ]] && exit 0 || exit 1 ;;
-      create) touch "\$STATE/network-\${3}"; exit 0 ;;
-    esac
-    exit 1
-    ;;
+  info)
+    [[ "\$*" == *FreeLocks* && -f "\$STATE/free-locks" ]] && cat "\$STATE/free-locks"
+    [[ "\$*" == *DatabaseBackend* && -f "\$STATE/backend" ]] && cat "\$STATE/backend"
+    exit 0 ;;
+  version)
+    [[ -f "\$STATE/version" ]] && cat "\$STATE/version"
+    exit 0 ;;
+  ps)
+    for f in "\$STATE"/*.status; do [[ -e "\$f" ]] && basename "\$f" .status; done
+    exit 0 ;;
+  container)
+    shift 3
+    for name in "\$@"; do cat "\$STATE/\${name}.lock" 2>/dev/null || echo 0; done
+    exit 0 ;;
+  pod|volume)
+    file="\$STATE/\${1}s"
+    [[ "\$2" == inspect ]] && { cut -d' ' -f2 "\$file" 2>/dev/null; exit 0; }
+    [[ "\$2" == ls ]] && { cut -d' ' -f1 "\$file" 2>/dev/null; exit 0; }
+    exit 0 ;;
+  system)
+    if [[ "\$2" == renumber && -f "\$STATE/renumber-fails" ]]; then
+      cat "\$STATE/renumber-fails"
+      exit 125
+    fi
+    if [[ "\$2" == renumber && ! -f "\$STATE/renumber-noop" ]]; then
+      referenced=\$(cat "\$STATE"/*.lock 2>/dev/null; cut -d' ' -f2 "\$STATE/pods" "\$STATE/volumes" 2>/dev/null)
+      echo \$(( 2048 - \$(printf '%s\n' "\$referenced" | grep . | sort -u | wc -l) )) > "\$STATE/free-locks"
+    fi
+    exit 0 ;;
   inspect)
     name="\${@: -1}"
-    if [[ ! -f "\$STATE/\${name}.status" ]]; then
-      echo "Error: no such container \$name" >&2
-      exit 1
-    fi
-    status="\$(cat "\$STATE/\${name}.status")"
-    pid="\$(cat "\$STATE/\${name}.pid" 2>/dev/null || echo 0)"
-    printf '%s\t%s\n' "\$status" "\$pid"
-    exit 0
-    ;;
-  create)
-    name=""
-    prev=""
-    for a in "\$@"; do
-      [[ "\$prev" == "--name" ]] && name="\$a"
-      prev="\$a"
-    done
-    echo created > "\$STATE/\${name}.status"
-    echo 0 > "\$STATE/\${name}.pid"
-    exit 0
-    ;;
-  start)
-    name="\$2"
-    nohup bash -c "exec -a \${MARKER}-\${name} sleep 999" >/dev/null 2>&1 &
-    newpid=\$!
-    disown "\$newpid" 2>/dev/null || true
-    echo running > "\$STATE/\${name}.status"
-    echo "\$newpid" > "\$STATE/\${name}.pid"
-    exit 0
-    ;;
-  rm)
-    name="\${@: -1}"
-    rm -f "\$STATE/\${name}.status" "\$STATE/\${name}.pid"
-    exit 0
-    ;;
-  exec)
-    name="\$2"
-    result="\$(cat "\$STATE/\${name}.health" 2>/dev/null || echo fail)"
-    if [[ "\$result" == ok ]]; then
-      echo "healthy (fake)"
-      exit 0
-    fi
-    echo "unhealthy (fake)"
-    exit 1
-    ;;
+    [[ -f "\$STATE/\${name}.status" ]] || exit 1
+    printf '%s\t%s\n' "\$(cat "\$STATE/\${name}.status")" "\$(cat "\$STATE/\${name}.pid" 2>/dev/null || echo 0)"
+    exit 0 ;;
+  image)
+    [[ "\$2" == exists && -f "\$STATE/image-present" ]] && exit 0
+    exit 1 ;;
 esac
 exit 1
 STUB
 chmod +x "$WORK/podman-fake"
 
-# `sleep` falso: instantaneo, para que el bucle de salud no duerma de verdad.
-cat > "$WORK/sleep-fake" <<'STUB'
+# --- el bootstrap falso: guarda su stdin, su argv y el secreto que recibió por entorno ---
+cat > "$WORK/bootstrap-fake" <<STUB
 #!/usr/bin/env bash
+STATE="$STATE"
+printf 'bootstrap %s\n' "\$*" >> "\$STATE/calls.log"
+cat > "\$STATE/bootstrap.stdin"
+printf '%s' "\${THYROX_INFRA_POSTGRES_PASSWORD-<unset>}" > "\$STATE/bootstrap.password"
+cat "\$STATE/bootstrap.stdout" 2>/dev/null
+exit "\$(cat "\$STATE/bootstrap.exit" 2>/dev/null || echo 0)"
+STUB
+chmod +x "$WORK/bootstrap-fake"
+
+cat > "$WORK/admission-fake" <<STUB
+#!/usr/bin/env bash
+printf 'admission %s\n' "\$*" >> "$STATE/calls.log"
+if [[ "\$1" == disk-admit && -f "$STATE/disk-full" ]]; then
+  echo "resource_admission disk-admit: no cabe la necesidad; techo 1000 bytes, piso 0 bytes" >&2
+  exit 3
+fi
 exit 0
 STUB
-chmod +x "$WORK/sleep-fake"
+chmod +x "$WORK/admission-fake"
 
-reset_state() { rm -rf "$STATE"; mkdir -p "$STATE"; }
+reset_state() { rm -rf "${STATE:?}"; mkdir -p "$STATE"; touch "$STATE/image-present"; }
+: > "$WORK/empty.env"
 run_ensure() {
+  THYROX_ENV_FILE="${TEST_ENV_FILE:-$WORK/empty.env}" \
   THYROX_TOOLCHAIN_PODMAN_BIN="$WORK/podman-fake" \
-  THYROX_INFRA_ENSURE_SLEEP_BIN="$WORK/sleep-fake" \
-  THYROX_INFRA_HEALTH_TIMEOUT="${TEST_HEALTH_TIMEOUT:-6}" \
-  THYROX_INFRA_HEALTH_INTERVAL="${TEST_HEALTH_INTERVAL:-2}" \
+  THYROX_INFRA_BOOTSTRAP_BIN="$WORK/bootstrap-fake" \
+  THYROX_INFRA_DISK_ADMISSION_BIN="$WORK/admission-fake" \
   THYROX_INFRA_POSTGRES_PASSWORD="${TEST_PASSWORD-secret123}" \
-    bash "$SUBJECT"
+  THYROX_INFRA_PODMAN_NUM_LOCKS=2048 \
+    bash "$SUBJECT" "$@"
 }
 
+# El ensure nunca materializa: ni create, ni start, ni rm, ni exec, ni run.
+expect_no_materialization() {
+  if [[ -f "$STATE/calls.log" ]] && grep -qE '^(create|start|rm|exec|run|stop|network create|volume create|secret) ' "$STATE/calls.log"; then
+    bad "$1: el ensure invocó podman para materializar: $(grep -E '^(create|start|rm|exec|run|stop|network|volume create|secret)' "$STATE/calls.log" | head -3 | tr '\n' ';')"
+  else
+    ok "$1: ningún podman create/start/rm/exec/run desde el ensure"
+  fi
+}
+
+declared_names() { jq -r '[.[].name] | join(",")' "$STATE/bootstrap.stdin" 2>/dev/null; }
+
 # =====================================================================
-# Caso 1 — ausente: se crea y se arranca, y queda sano.
+# Caso 1 — los tres: el estado deseado llega al bootstrap, en orden.
 # =====================================================================
 reset_state
-echo ok > "$STATE/thyrox-postgres.health"
-echo ok > "$STATE/thyrox-redis.health"
+printf 'thyrox-postgres action=created\nthyrox-redis action=created\nthyrox-ollama action=created\n' > "$STATE/bootstrap.stdout"
 out="$(run_ensure)"; rc=$?
-thyrox_check "caso 1: ausente -> exit 0" "0" "$rc"
-if [[ "$out" == *"thyrox-postgres"*"action=created"* ]]; then
-  ok "caso 1: postgres ausente se reporta con action=created"
+thyrox_check "caso 1: los tres -> exit 0" "0" "$rc"
+thyrox_check "caso 1: el bootstrap recibe los tres, en orden" "thyrox-postgres,thyrox-redis,thyrox-ollama" "$(declared_names)"
+thyrox_check "caso 1: el bootstrap se invoca una vez" "1" "$(grep -c '^bootstrap' "$STATE/calls.log")"
+if [[ "$out" == *"thyrox-postgres action=created"*"thyrox-ollama action=created"* ]]; then
+  ok "caso 1: las líneas del bootstrap llegan a stdout"
 else
-  bad "caso 1: no se vio action=created para postgres: [$out]"
+  bad "caso 1: no se vieron las líneas del bootstrap: [$out]"
 fi
-if [[ "$out" == *"thyrox-redis"*"action=created"* ]]; then
-  ok "caso 1: redis ausente se reporta con action=created"
+expect_no_materialization "caso 1"
+
+# =====================================================================
+# Caso 2 — la credencial llega al bootstrap por su entorno, nunca por argv ni stdin.
+# =====================================================================
+reset_state
+printf 'THYROX_INFRA_POSTGRES_PASSWORD=from-env-file-77\n' > "$WORK/declared.env"
+TEST_ENV_FILE="$WORK/declared.env" TEST_PASSWORD='' run_ensure thyrox-postgres >/dev/null; rc=$?
+thyrox_check "caso 2: credencial en el .env -> exit 0" "0" "$rc"
+thyrox_check "caso 2: el bootstrap recibe la credencial por su entorno" "from-env-file-77" "$(cat "$STATE/bootstrap.password")"
+if grep -q 'from-env-file-77' "$STATE/calls.log" "$STATE/bootstrap.stdin"; then
+  bad "caso 2: la credencial viajó en argv o en la declaración"
 else
-  bad "caso 1: no se vio action=created para redis: [$out]"
-fi
-if grep -q '^network create thyrox-infra$' "$STATE/calls.log"; then
-  ok "caso 1: la red thyrox-infra se crea cuando falta"
-else
-  bad "caso 1: no se creo la red thyrox-infra"
+  ok "caso 2: la credencial no viaja en argv ni en la declaración"
 fi
 
 # =====================================================================
-# Caso 2 — running + PID vivo + sano: se conserva, sin create ni start ni rm.
+# Caso 3 — sólo ollama: no exige la credencial ni la entrega.
 # =====================================================================
 reset_state
-touch "$STATE/network-thyrox-infra"
-( exec -a "${MARKER}-alive" sleep 999 ) &
-alive_pid=$!
-disown "$alive_pid" 2>/dev/null || true
-for n in thyrox-postgres thyrox-redis; do
-  echo running > "$STATE/$n.status"
-  echo "$alive_pid" > "$STATE/$n.pid"
-  echo ok > "$STATE/$n.health"
+TEST_PASSWORD='' run_ensure thyrox-ollama >/dev/null; rc=$?
+thyrox_check "caso 3: sólo ollama, sin credencial -> exit 0" "0" "$rc"
+thyrox_check "caso 3: el bootstrap recibe sólo ollama" "thyrox-ollama" "$(declared_names)"
+thyrox_check "caso 3: sin postgres, el bootstrap no recibe la credencial" "<unset>" "$(cat "$STATE/bootstrap.password")"
+
+# =====================================================================
+# Caso 4 — postgres sin credencial: exit 2 sin invocar nada.
+# =====================================================================
+reset_state
+out="$(TEST_PASSWORD='' run_ensure thyrox-postgres 2>&1)"; rc=$?
+thyrox_check "caso 4: postgres sin credencial -> exit 2" "2" "$rc"
+[[ "$out" == *THYROX_INFRA_POSTGRES_PASSWORD* ]] && ok "caso 4: nombra la variable" || bad "caso 4: no nombra la variable: [$out]"
+[[ ! -f "$STATE/calls.log" ]] && ok "caso 4: ni podman ni el bootstrap se invocan" || bad "caso 4: se invocó algo: $(cat "$STATE/calls.log")"
+
+# =====================================================================
+# Caso 5 — nombre desconocido: exit 2 sin invocar nada.
+# =====================================================================
+reset_state
+run_ensure thyrox-mongo >/dev/null 2>&1; rc=$?
+thyrox_check "caso 5: nombre desconocido -> exit 2" "2" "$rc"
+[[ ! -f "$STATE/calls.log" ]] && ok "caso 5: no se invoca nada" || bad "caso 5: se invocó algo: $(cat "$STATE/calls.log")"
+
+# =====================================================================
+# Caso 6 — el exit del bootstrap es el del ensure.
+# =====================================================================
+for code in 1 2 3; do
+  reset_state
+  echo "$code" > "$STATE/bootstrap.exit"
+  run_ensure thyrox-redis >/dev/null 2>&1; rc=$?
+  thyrox_check "caso 6: el bootstrap sale $code -> el ensure sale $code" "$code" "$rc"
 done
-out="$(run_ensure)"; rc=$?
-thyrox_check "caso 2: running+pid vivo+sano -> exit 0" "0" "$rc"
-if [[ "$out" == *"thyrox-postgres"*"pid_alive=yes"*"action=kept"* ]]; then
-  ok "caso 2: postgres vivo y sano se conserva (kept)"
-else
-  bad "caso 2: postgres no se conservo: [$out]"
-fi
-if grep -qE '^(create|start|rm) ' "$STATE/calls.log" 2>/dev/null; then
-  bad "caso 2: se llamo create/start/rm sobre un contenedor que debia conservarse"
-else
-  ok "caso 2: ningun create/start/rm se invoco al conservar"
-fi
-kill "$alive_pid" 2>/dev/null; wait "$alive_pid" 2>/dev/null
 
 # =====================================================================
-# Caso 3 — running + PID MUERTO: stale, se recrea (rm -f + create + start).
+# Casos 7-10 — admisión de disco antes de que el bootstrap baje una imagen.
 # =====================================================================
 reset_state
-touch "$STATE/network-thyrox-infra"
-( exit 0 ) & dead_pid=$!
-wait "$dead_pid" 2>/dev/null
-for n in thyrox-postgres thyrox-redis; do
-  echo running > "$STATE/$n.status"
-  echo "$dead_pid" > "$STATE/$n.pid"
-  echo ok > "$STATE/$n.health"
+rm -f "$STATE/image-present"
+need_pg="$(bash -c "source '$ROOT/src/lib/infrastructure.sh'; thyrox_infrastructure_disk_need_bytes thyrox-postgres")"
+need_redis="$(bash -c "source '$ROOT/src/lib/infrastructure.sh'; thyrox_infrastructure_disk_need_bytes thyrox-redis")"
+run_ensure thyrox-postgres thyrox-redis >/dev/null; rc=$?
+thyrox_check "caso 7: cabe -> exit 0" "0" "$rc"
+if grep -q "^admission disk-admit --need-bytes $(( need_pg + need_redis )) --owner [0-9]" "$STATE/calls.log"; then
+  ok "caso 7: reserva la suma de las imágenes que faltan, a nombre de un pid"
+else
+  bad "caso 7: no se vio la reserva de la suma: $(cat "$STATE/calls.log")"
+fi
+order="$(grep -E '^(admission disk-admit|bootstrap|admission disk-release)' "$STATE/calls.log" | sed -E 's/^(admission )?//; s/ .*//' | tr '\n' ' ')"
+thyrox_check "caso 7: el orden es admitir, materializar y soltar" "disk-admit bootstrap disk-release " "$order"
+
+reset_state
+rm -f "$STATE/image-present"
+touch "$STATE/disk-full"
+err="$(run_ensure thyrox-postgres 2>&1 >/dev/null)"; rc=$?
+thyrox_check "caso 8: no cabe -> exit 2" "2" "$rc"
+thyrox_check "caso 8: sin disco admitido no se invoca el bootstrap" "0" "$(grep -c '^bootstrap' "$STATE/calls.log")"
+for piece in thyrox-postgres "$need_pg" techo disk-reserve-reach-20260930T191002; do
+  [[ "$err" == *"$piece"* ]] && ok "caso 8: el rehúso nombra $piece" || bad "caso 8: el rehúso no nombra $piece: [$err]"
 done
-out="$(run_ensure)"; rc=$?
-thyrox_check "caso 3: running+pid muerto -> exit 0 tras recrear" "0" "$rc"
-if [[ "$out" == *"thyrox-postgres"*"pid_alive=no"*"action=recreated"* ]]; then
-  ok "caso 3: postgres con PID muerto se recrea (recreated)"
-else
-  bad "caso 3: postgres no se recreo: [$out]"
-fi
-if grep -q '^rm -f thyrox-postgres$' "$STATE/calls.log"; then
-  ok "caso 3: se invoco rm -f sobre el contenedor stale"
-else
-  bad "caso 3: no se vio 'rm -f thyrox-postgres' en calls.log"
-fi
-if grep -E '^rm ' "$STATE/calls.log" | grep -q 'thyrox-postgres-data'; then
-  bad "caso 3: el volumen thyrox-postgres-data aparece en una linea de rm"
-else
-  ok "caso 3: ningun rm -f toca el volumen thyrox-postgres-data"
-fi
+
+reset_state
+touch "$STATE/disk-full"
+run_ensure >/dev/null 2>&1; rc=$?
+thyrox_check "caso 9: imágenes presentes -> exit 0 aunque el disco no admita" "0" "$rc"
+thyrox_check "caso 9: con las imágenes presentes no se pide disco" "0" "$(grep -c '^admission' "$STATE/calls.log")"
+
+reset_state
+rm -f "$STATE/image-present"
+echo 1 > "$STATE/bootstrap.exit"
+run_ensure thyrox-redis >/dev/null 2>&1
+thyrox_check "caso 10: con el bootstrap fallido, la reserva se suelta" "1" "$(grep -c '^admission disk-release --owner [0-9]' "$STATE/calls.log")"
 
 # =====================================================================
-# Caso 4 — exited: se arranca (start), sin create ni rm.
+# Caso 11 — las variables de inyección están declaradas en .env.example.
 # =====================================================================
-reset_state
-touch "$STATE/network-thyrox-infra"
-for n in thyrox-postgres thyrox-redis; do
-  echo exited > "$STATE/$n.status"
-  echo 0 > "$STATE/$n.pid"
-  echo ok > "$STATE/$n.health"
+for key in THYROX_INFRA_DISK_ADMISSION_BIN THYROX_INFRA_BOOTSTRAP_BIN; do
+  grep -q "^${key}=$" "$ROOT/.env.example" && ok "caso 11: .env.example declara $key" || bad "caso 11: .env.example no declara $key"
 done
-out="$(run_ensure)"; rc=$?
-thyrox_check "caso 4: exited -> exit 0 tras arrancar" "0" "$rc"
-if [[ "$out" == *"thyrox-postgres"*"action=started"* ]]; then
-  ok "caso 4: postgres exited se arranca (started)"
-else
-  bad "caso 4: postgres no se arranco: [$out]"
-fi
-if grep -qE '^create ' "$STATE/calls.log" 2>/dev/null; then
-  bad "caso 4: se llamo create sobre un contenedor exited (solo debia arrancar)"
-else
-  ok "caso 4: exited no dispara create, solo start"
-fi
 
 # =====================================================================
-# Caso 5 — nunca sano: exit 1, nombrando el contenedor y su salud.
+# Casos 12-17 — gate de locks: el balance se mide antes de invocar el
+# bootstrap. El ensure DETECTA y DIAGNOSTICA; nunca repara el runtime de
+# Podman (decisión del ejecutor 2026-10-02): sin `podman system renumber`, un
+# desfase sale con exit 3 y nombra bin/podman_lock_recovery.
 # =====================================================================
-reset_state
-echo fail > "$STATE/thyrox-postgres.health"
-echo ok > "$STATE/thyrox-redis.health"
-err="$(TEST_HEALTH_TIMEOUT=4 TEST_HEALTH_INTERVAL=2 run_ensure 2>&1 >/dev/null)"; rc=$?
-thyrox_check "caso 5: nunca sano -> exit 1" "1" "$rc"
-if [[ "$err" == *"thyrox-postgres"* ]]; then
-  ok "caso 5: el fallo nombra el contenedor que nunca sano"
-else
-  bad "caso 5: el stderr no nombro thyrox-postgres: [$err]"
-fi
+seed_stale_base() {
+  reset_state
+  echo running > "$STATE/thyrox-postgres.status"
+  echo 999999 > "$STATE/thyrox-postgres.pid"
+  echo 0 > "$STATE/thyrox-postgres.lock"
+  printf 'vol-a 1\nvol-b 1\n' > "$STATE/volumes"
+  echo 2048 > "$STATE/free-locks"
+}
 
-# =====================================================================
-# Caso 6 — sin contraseña: exit 2, SIN llamar a podman.
-# =====================================================================
-reset_state
-out="$(TEST_PASSWORD='' run_ensure 2>&1)"; rc=$?
-thyrox_check "caso 6: sin contraseña -> exit 2" "2" "$rc"
-if [[ "$out" == *THYROX_INFRA_POSTGRES_PASSWORD* ]]; then
-  ok "caso 6: el rehuso nombra THYROX_INFRA_POSTGRES_PASSWORD"
-else
-  bad "caso 6: el rehuso no nombro la variable: [$out]"
-fi
-if [[ ! -f "$STATE/calls.log" ]]; then
-  ok "caso 6: podman jamas se invoco (calls.log no existe)"
-else
-  bad "caso 6: podman se invoco pese a la contraseña faltante: $(cat "$STATE/calls.log")"
-fi
+seed_stale_base
+out="$(run_ensure thyrox-postgres 2>&1)"; rc=$?
+thyrox_check "caso 12: locks desfasados con todo parado -> exit $EXIT_LOCK_COLLISION" "$EXIT_LOCK_COLLISION" "$rc"
+thyrox_check "caso 12: el ensure no ejecuta ningún podman system" "0" "$(grep -c '^system ' "$STATE/calls.log")"
+thyrox_check "caso 12: sin locks sanos no se invoca el bootstrap" "0" "$(grep -c '^bootstrap' "$STATE/calls.log")"
+[[ "$out" == *"asignados 0"*"referenciados 2"* ]] && ok "caso 12: publica la medida" || bad "caso 12: no publica la medida: [$out]"
+[[ "$out" == *"bin/podman_lock_recovery"* ]] && ok "caso 12: nombra la reparación explícita" || bad "caso 12: no nombra la reparación: [$out]"
+expect_no_materialization "caso 12"
 
-# =====================================================================
-# Caso 7 — idempotencia: dos invocaciones seguidas, la segunda conserva.
-# =====================================================================
 reset_state
-echo ok > "$STATE/thyrox-postgres.health"
-echo ok > "$STATE/thyrox-redis.health"
-first_out="$(run_ensure)"; first_rc=$?
-calls_after_first="$(wc -l < "$STATE/calls.log")"
-second_out="$(run_ensure)"; second_rc=$?
-thyrox_check "caso 7: primera invocacion -> exit 0" "0" "$first_rc"
-if [[ "$first_out" == *"thyrox-postgres"*"action=created"* && \
-      "$first_out" == *"thyrox-redis"*"action=created"* ]]; then
-  ok "caso 7: la primera invocacion crea los dos contenedores (created)"
-else
-  bad "caso 7: la primera invocacion no creo los dos: [$first_out]"
-fi
-thyrox_check "caso 7: segunda invocacion -> exit 0" "0" "$second_rc"
-if [[ "$second_out" == *"thyrox-postgres"*"action=kept"* && \
-      "$second_out" == *"thyrox-redis"*"action=kept"* ]]; then
-  ok "caso 7: la segunda invocacion conserva los dos contenedores (kept)"
-else
-  bad "caso 7: la segunda invocacion no conservo: [$second_out]"
-fi
-if tail -n +$((calls_after_first + 1)) "$STATE/calls.log" | grep -qE '^(create|rm) '; then
-  bad "caso 7: la segunda invocacion volvio a crear o borrar algo"
-else
-  ok "caso 7: la segunda invocacion no recrea nada"
-fi
+printf 'vol-a 1\nvol-b 1\n' > "$STATE/volumes"
+echo 2047 > "$STATE/free-locks"
+run_ensure thyrox-postgres >/dev/null 2>&1; rc=$?
+thyrox_check "caso 13: base coherente -> exit 0" "0" "$rc"
+thyrox_check "caso 13: base coherente -> ningún podman system" "0" "$(grep -c '^system ' "$STATE/calls.log")"
+
+seed_stale_base
+nohup bash -c "exec -a ${MARKER}-live sleep 999" >/dev/null 2>&1 &
+live_pid=$!; disown "$live_pid" 2>/dev/null || true
+echo running > "$STATE/thyrox-redis.status"
+echo "$live_pid" > "$STATE/thyrox-redis.pid"
+err="$(run_ensure thyrox-postgres 2>&1 >/dev/null)"; rc=$?
+thyrox_check "caso 14: desfase con un contenedor vivo -> exit $EXIT_LOCK_COLLISION" "$EXIT_LOCK_COLLISION" "$rc"
+thyrox_check "caso 14: con un contenedor vivo, ningún podman system" "0" "$(grep -c '^system ' "$STATE/calls.log")"
+thyrox_check "caso 14: con un contenedor vivo no se invoca el bootstrap" "0" "$(grep -c '^bootstrap' "$STATE/calls.log")"
+[[ "$err" == *thyrox-redis* && "$err" == *"bin/podman_lock_recovery"* ]] && ok "caso 14: nombra el contenedor vivo y la reparación" || bad "caso 14: no nombra el contenedor ni la reparación: [$err]"
+
+seed_stale_base
+rm -f "$STATE/free-locks"
+run_ensure thyrox-postgres >/dev/null 2>&1; rc=$?
+thyrox_check "caso 15: sin medida de locks -> sigue (exit 0)" "0" "$rc"
+thyrox_check "caso 15: sin medida de locks, ningún podman system" "0" "$(grep -c '^system ' "$STATE/calls.log")"
+
+seed_stale_base
+echo sqlite > "$STATE/backend"
+echo 4.9.3 > "$STATE/version"
+err="$(run_ensure thyrox-postgres 2>&1 >/dev/null)"; rc=$?
+thyrox_check "caso 16: sqlite 4.9 con volúmenes -> exit $EXIT_LOCK_COLLISION" "$EXIT_LOCK_COLLISION" "$rc"
+[[ "$err" == *"H-THYROX-308"* && "$err" == *sqlite* ]] && ok "caso 16: reconoce las precondiciones de H-THYROX-308" || bad "caso 16: no reconoce H-THYROX-308: [$err]"
+[[ "$err" == *"Podman 4.9.3"* && "$err" == *"2 volumen"* ]] && ok "caso 16: publica versión, backend y volúmenes medidos" || bad "caso 16: diagnóstico incompleto: [$err]"
+thyrox_check "caso 16: reconocerlo no ejecuta renumber" "0" "$(grep -c '^system ' "$STATE/calls.log")"
+
+seed_stale_base
+echo boltdb > "$STATE/backend"
+echo 4.9.3 > "$STATE/version"
+err="$(run_ensure thyrox-postgres 2>&1 >/dev/null)"; rc=$?
+thyrox_check "caso 17: otro backend -> exit $EXIT_LOCK_COLLISION" "$EXIT_LOCK_COLLISION" "$rc"
+[[ "$err" != *"H-THYROX-308"* ]] && ok "caso 17: con boltdb no se atribuye a H-THYROX-308" || bad "caso 17: atribuyó H-THYROX-308 sin sus precondiciones: [$err]"
 
 thyrox_summary

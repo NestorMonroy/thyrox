@@ -1,0 +1,15 @@
+  agent: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  binary: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  cli: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  command-runtime: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  config: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  finding: 0 propio(s) · 0 de hermano · 0 fuera (total 0)  <- sin baseline
+  headless-sdk: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  provider: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  shell: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  storage: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  tool-registry: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 11 de 11 paquete(s))
+rc=0
+__BG_EXIT__=0

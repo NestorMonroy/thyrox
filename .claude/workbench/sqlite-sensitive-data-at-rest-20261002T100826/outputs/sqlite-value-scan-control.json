@@ -1,0 +1,17 @@
+[
+  {
+    "store": "/tmp/tmp.tr972KhQjl/control.sqlite3",
+    "table": "t",
+    "column": "note",
+    "matches": {
+      "anthropic_alt": 1,
+      "connection_string": 1,
+      "openai_compatible": 1
+    }
+  },
+  {
+    "store": "/tmp/tmp.tr972KhQjl/control.sqlite3",
+    "textCellsScanned": 2,
+    "tables": 1
+  }
+]

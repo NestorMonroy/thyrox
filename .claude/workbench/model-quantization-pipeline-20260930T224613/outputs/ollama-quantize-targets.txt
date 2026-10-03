@@ -1,0 +1,7 @@
+    217 int8,
+      4 nvfp4,
+      4 mxfp4,
+      4 int4,
+ %wunsupported quantization type
+pert tensor %q uses unsupported quantization mode
+cannot quantize an 

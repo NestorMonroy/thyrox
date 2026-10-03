@@ -1,0 +1,1 @@
+cd src/packages/tool-registry && timeout 600 bun test src/tools/ListAgentsTool > /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0600-listagents.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0600-listagents.log

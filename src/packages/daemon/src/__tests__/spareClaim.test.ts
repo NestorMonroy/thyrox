@@ -6,7 +6,7 @@
  */
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { createServer, type Server, type Socket } from 'node:net'
-import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
@@ -25,6 +25,7 @@ import {
 } from '../sparePool.js'
 import {
   SPARE_CLAIM_AUTH_ENV,
+  SPARE_SOCKET_TOKENS_PATH_ENV,
   SPARE_CLAIM_RETRY_BACKOFF_MS,
   SPARE_CLAIM_SEND_BUDGET_MS,
   buildSpareClaimFrame,
@@ -70,20 +71,45 @@ describe('umbrales-y-estado-de-spare-pool (chunk-92tvramn.js DECL)', () => {
 
 describe('resolveClaimAuth (xt)', () => {
   const original = process.env[SPARE_CLAIM_AUTH_ENV]
+  const originalTokens = process.env[SPARE_SOCKET_TOKENS_PATH_ENV]
   afterEach(() => {
     if (original === undefined) delete process.env[SPARE_CLAIM_AUTH_ENV]
     else process.env[SPARE_CLAIM_AUTH_ENV] = original
+    if (originalTokens === undefined) delete process.env[SPARE_SOCKET_TOKENS_PATH_ENV]
+    else process.env[SPARE_SOCKET_TOKENS_PATH_ENV] = originalTokens
   })
 
-  test('lee el secreto y lo borra del entorno', () => {
+  test('lee el secreto y lo borra del entorno', async () => {
     process.env[SPARE_CLAIM_AUTH_ENV] = 'sekret-123'
-    expect(resolveClaimAuth()).toBe('sekret-123')
+    expect(await resolveClaimAuth()).toBe('sekret-123')
     expect(process.env[SPARE_CLAIM_AUTH_ENV]).toBeUndefined()
   })
 
-  test('undefined cuando no hay env var', () => {
+  test('undefined cuando no hay env var', async () => {
     delete process.env[SPARE_CLAIM_AUTH_ENV]
-    expect(resolveClaimAuth()).toBeUndefined()
+    delete process.env[SPARE_SOCKET_TOKENS_PATH_ENV]
+    expect(await resolveClaimAuth()).toBeUndefined()
+  })
+
+  test('el archivo de tokens gana a la env var, y ambos se limpian tras leerlos', async () => {
+    const tokensPath = join(ISOLATED_DIR, `tokens-${sockSeq++}.json`)
+    writeFileSync(tokensPath, JSON.stringify({ claimAuth: 'from-file', ptyAuth: 'p' }))
+    process.env[SPARE_CLAIM_AUTH_ENV] = 'from-env'
+    process.env[SPARE_SOCKET_TOKENS_PATH_ENV] = tokensPath
+    expect(await resolveClaimAuth()).toBe('from-file')
+    expect(process.env[SPARE_CLAIM_AUTH_ENV]).toBeUndefined()
+    expect(process.env[SPARE_SOCKET_TOKENS_PATH_ENV]).toBeUndefined()
+    expect(existsSync(tokensPath)).toBe(false)
+  })
+
+  test('archivo de tokens ilegible: cae a la env var y limpia ambas', async () => {
+    const tokensPath = join(ISOLATED_DIR, `tokens-${sockSeq++}.json`)
+    writeFileSync(tokensPath, 'no-es-json')
+    process.env[SPARE_CLAIM_AUTH_ENV] = 'from-env'
+    process.env[SPARE_SOCKET_TOKENS_PATH_ENV] = tokensPath
+    expect(await resolveClaimAuth()).toBe('from-env')
+    expect(process.env[SPARE_SOCKET_TOKENS_PATH_ENV]).toBeUndefined()
+    expect(existsSync(tokensPath)).toBe(false)
   })
 })
 

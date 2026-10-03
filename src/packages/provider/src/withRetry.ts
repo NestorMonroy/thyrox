@@ -49,14 +49,15 @@ import {
 import { REPEATED_529_ERROR_MESSAGE } from './errors.js'
 import { extractConnectionErrorDetails } from './errorUtils.js'
 import { readEnv } from '@thyrox/config/env'
+import { BASE_DELAY_MS, getDefaultMaxRetries, getRetryDelay } from './retryPolicy.ts'
+
+export { BASE_DELAY_MS, getDefaultMaxRetries, getRetryDelay } from './retryPolicy.ts'
 import { parseMediaBlockStripError } from './imageDimensionStrip.js'
 
 const abortError = () => new APIUserAbortError()
 
-const DEFAULT_MAX_RETRIES = 10
 const FLOOR_OUTPUT_TOKENS = 3000
 const MAX_529_RETRIES = 3
-export const BASE_DELAY_MS = 500
 
 // Foreground query sources where the user IS blocking on the result — these
 // retry on 529. Everything else (summaries, titles, suggestions, classifiers)
@@ -553,25 +554,6 @@ function getRetryAfter(error: unknown): string | null {
   )
 }
 
-export function getRetryDelay(
-  attempt: number,
-  retryAfterHeader?: string | null,
-  maxDelayMs = 32000,
-): number {
-  if (retryAfterHeader) {
-    const seconds = parseInt(retryAfterHeader, 10)
-    if (!isNaN(seconds)) {
-      return seconds * 1000
-    }
-  }
-
-  const baseDelay = Math.min(
-    BASE_DELAY_MS * 2 ** (attempt - 1),
-    maxDelayMs,
-  )
-  const jitter = Math.random() * 0.25 * baseDelay
-  return baseDelay + jitter
-}
 
 export function parseMaxTokensContextOverflowError(error: APIError):
   | {
@@ -812,14 +794,6 @@ function shouldRetry(error: APIError): boolean {
   return false
 }
 
-export function getDefaultMaxRetries(): number {
-  const maxRetriesEnv = readEnv('THYROX_CODE_MAX_RETRIES')
-  if (maxRetriesEnv) {
-    return parseInt(maxRetriesEnv, 10)
-  }
-  if (isEnvTruthy(readEnv('THYROX_CODE_RETRY_WATCHDOG'))) return 300
-  return DEFAULT_MAX_RETRIES
-}
 function getMaxRetries(options: RetryOptions): number {
   return options.maxRetries ?? getDefaultMaxRetries()
 }

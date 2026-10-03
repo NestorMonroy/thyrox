@@ -322,15 +322,34 @@ cmd_start() {
     if [[ "$name" == -* ]]; then
         echo "bg.sh start: '$name' es una bandera, no un nombre de trabajo." >&2
         echo "  uso: start <nombre> [--grace N] [--dir D] -- <comando...>" >&2
-        echo "  banderas admitidas aqui: --grace, --dir, --memfree, --memfree-wait. '--label' no existe." >&2
+        echo "  banderas admitidas aqui: --grace, --dir, --memfree, --memfree-wait, --stdin. '--label' no existe." >&2
         exit 2
     fi
     local grace="$_GRACE_DEFAULT" memfree_spec="" memfree_wait=1800 memfree=0
+    local task="" work="" kind="" network="" workdir="" attest="" stdin_source="/dev/null" mounts=() environment=() secrets=() limits=()
     while [[ "${1:-}" == --* ]]; do
         case "$1" in
             --grace) grace="${2:-}"; shift 2 ;;
+            --task) task="${2:-}"; shift 2 ;;
+            --work) work="${2:-}"; shift 2 ;;
+            --kind) kind="${2:-}"; shift 2 ;;
+            --network) network="${2:-}"; shift 2 ;;
+            --workdir) workdir="${2:-}"; shift 2 ;;
+            # La atestación del primitivo: el runner escribe en ella la unidad que materializó.
+            --attest) attest="${2:-}"; shift 2 ;;
+            --mount) mounts+=("${2:-}"); shift 2 ;;
+            --env) environment+=("${2:-}"); shift 2 ;;
+            --secret-from-env) secrets+=("${2:-}"); shift 2 ;;
+            # Los límites de la unidad: los valida la primitiva, no bg.
+            --cpus|--memory-mib|--pids) limits+=("$1" "${2:-}"); shift 2 ;;
             --memfree) memfree_spec="${2:-}"; shift 2 ;;
             --memfree-wait) memfree_wait="${2:-}"; shift 2 ;;
+            # La fuente del stdin del trabajo se declara: en segundo plano sin
+            # control de trabajos sería /dev/null, y el stdin del llamador puede
+            # ser un socket que no se cierra.
+            --stdin)
+                [[ $# -ge 2 ]] || { echo "bg.sh start: --stdin pide un archivo" >&2; exit 2; }
+                stdin_source="$2"; shift 2 ;;
             --dir)   BG_DIR="${2:-}"; shift 2 ;;
             --)      shift; break ;;
             *)       echo "bg.sh start: bandera desconocida '$1'" >&2; exit 2 ;;
@@ -339,6 +358,37 @@ cmd_start() {
     [[ "$grace" =~ ^[0-9]+$ ]] || { echo "bg.sh start: --grace pide segundos" >&2; exit 2; }
     (( grace > _GRACE_MAX )) && grace="$_GRACE_MAX"
     [[ $# -gt 0 ]] || { echo "bg.sh start: falta el comando tras --" >&2; exit 2; }
+    [[ -n "$stdin_source" && -r "$stdin_source" ]] \
+        || { echo "bg.sh start: --stdin pide un archivo legible, no: ${stdin_source:-<vacío>}" >&2; exit 2; }
+    # bg orquesta; dónde corre el trabajo lo decide la primitiva. Con --task el
+    # comando se entrega como argv al runner y el anfitrión sólo lo supervisa.
+    # Sin él, sólo una entrada declarada del plano de control.
+    source "$_SRC_DIR/lib/managed_execution.sh"
+    # --work cita el trabajo de un consumidor con su propia identidad; --task, una tarea de thyrox.
+    if [[ -n "$task" && -n "$work" ]]; then echo "bg.sh start: --task y --work van por separado." >&2; exit 2; fi
+    if [[ -n "$task" || -n "$work" ]]; then
+        [[ -n "$kind" ]] || { echo "bg.sh start: --task/--work exige --kind (el tipo de ejecución de la autorización)." >&2; exit 2; }
+        local runner=() authorization=(run) item
+        if [[ -n "$task" ]]; then authorization+=(--task "$task"); else authorization+=(--work "$work"); fi
+        authorization+=(--kind "$kind")
+        mapfile -t runner < <(thyrox_managed_execution_runner_argv)
+        [[ -n "$network" ]] && authorization+=(--network "$network")
+        [[ -n "$workdir" ]] && authorization+=(--workdir "$workdir")
+        [[ -n "$attest" ]] && authorization+=(--attest "$attest")
+        for item in "${mounts[@]}"; do authorization+=(--mount "$item"); done
+        # La identidad de la entrada viaja como un --env más: la unidad la hereda
+        # del runner y su payload la firma en cada línea del manifiesto.
+        environment+=("THYROX_EXECUTION_ENTRY")
+        for item in "${environment[@]}"; do authorization+=(--env "$item"); done
+        # Una credencial se pasa por su nombre: el runner la monta como secreto.
+        for item in "${secrets[@]}"; do authorization+=(--secret-from-env "$item"); done
+        authorization+=("${limits[@]}")
+        set -- "${runner[@]}" "${authorization[@]}" -- "$@"
+    elif ! thyrox_control_plane_entry "$1"; then
+        echo "bg.sh start: '$1' no es una entrada declarada del plano de control (src/session/control_plane_entries.tsv)." >&2
+        echo "  el trabajo gestionado corre en una unidad: start <nombre> --task TASK-<CAPA>-NNNN --kind <tipo> -- <comando>" >&2
+        exit 2
+    fi
     if [[ -n "$memfree_spec" ]]; then
         source "$(dirname "${BASH_SOURCE[0]}")/../lib/reach.sh"
         source "$(dirname "${BASH_SOURCE[0]}")/../lib/memory.sh"
@@ -428,7 +478,7 @@ cmd_start() {
         echo "memoria: sin GNU Time, no se mide la de este trabajo (thyrox_toolchain_require_gnu_time)"
     fi
     nohup setsid bash -c "${time_prefix}$(printf '%q ' "$@"); printf '%s%s\n' '$_MARK' \"\$?\"${publish}" \
-        > "$LOG" 2>&1 &
+        < "$stdin_source" > "$LOG" 2>&1 &
     local pid=$!
     disown "$pid" 2>/dev/null || true
     printf '%s\n' "$pid" > "$PIDF"

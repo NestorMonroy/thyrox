@@ -1,0 +1,32 @@
+**Un contenedor de worker es efímero, y su limpieza no depende de que el
+dueño termine bien (enmienda 1.6.3).** Precisado por el ejecutor tras el
+reinicio del contenedor que mató los pools. El éxito o el fallo del trabajo no
+tienen que ver con que el contenedor persista: los resultados viven fuera, en
+el runtime y el banco; el contenedor es infraestructura de ejecución.
+
+- **Etiquetas de propiedad obligatorias** en todo contenedor que thyrox crea:
+  ``thyrox.managed=true``, ``thyrox.role`` (``worker`` · ``infrastructure`` ·
+  ``probe``), ``thyrox.owner-kind`` (``pool`` · ``daemon``),
+  ``thyrox.owner-id``, ``thyrox.owner-pid`` y, para un ítem,
+  ``thyrox.pool`` y ``thyrox.item``. La selección de huérfanos se hace **por
+  etiqueta**, no por prefijo de nombre, y nunca con ``podman rm -f $(podman
+  ps -aq)``.
+- **Dos niveles de limpieza.** El camino normal del dueño: al cerrar el ítem
+  (éxito, fallo o cancelación) recoge resultados y diagnóstico, detiene si
+  sigue vivo y elimina. ``--rm`` es una optimización de ese camino, no la
+  garantía. La garantía es la **reconciliación de huérfanos** al arrancar el
+  pool o el daemon: contenedores ``thyrox.managed`` con ``role=worker`` cuyo
+  dueño no vive se limpian; los de un dueño vivo no se tocan.
+- **La infraestructura gestionada nunca la limpia la limpieza de workers.**
+  ``role=infrastructure`` (PostgreSQL, Redis) tiene su propio ciclo de vida
+  (``bin/infrastructure_ensure``) y ningún barrido de workers la selecciona.
+- **Las sondas también se etiquetan** (``role=probe``) y se limpian por el
+  mismo mecanismo.
+
+Evidencia del mismo día: ``podman ps -a`` tras el reinicio mostró un solo
+contenedor, ``thyrox-ollama-probe-host``, en marcha desde hacía 3 horas, de
+una sonda de red de Ollama cuya limpieza por ``trap`` no llegó a correr, sin
+ninguna etiqueta de propiedad. Ningún ítem de los pools interrumpidos dejó
+contenedores: corren como procesos locales.
+
+GNU Parallel sigue en el anfitrión como planificador de ítems. La imagen

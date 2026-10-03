@@ -22,6 +22,22 @@ cuenta como miembro.
 
 *Ciega a:* un proceso que se escape con su propio ``setsid``; ése deja de ser
 miembro y el drenaje no lo ve. Y a otro espacio de nombres de PID.
+
+Por qué la sesión y no un espacio de nombres de PID ni un cgroup
+----------------------------------------------------------------
+Las dos alternativas están medidas en este anfitrión, no supuestas
+(``.claude/workbench/task-thyrox-0546-unshare-cgroup-pids-20260930T074813/``):
+Podman 4.9.3 sobre cgroups v1 (``src/lib/podman_capabilities.sh``) y
+``unshare --pid --fork`` con un cgroup ``pids`` propio
+(``src/lib/unshare_capabilities.sh``) contienen las dos al escapado con
+``setsid``: el kernel lo mata al salir el init del espacio de nombres, y
+``cgroup.procs`` lo lista mientras vive. La sesión se conserva como frontera
+del pool porque no exige ``CAP_SYS_ADMIN`` ni un cgroup escribible —el ítem
+corre donde corra el pool— y porque su ceguera es un proceso que se escapa a
+propósito, no el caso medido en H-THYROX-255 y H-THYROX-257 (``timeout`` y un
+hijo en segundo plano), que la sesión sí cubre. La condición para cambiar de
+frontera está declarada: un ítem real que llame a ``setsid`` y sobreviva al
+drenaje. Entonces la sonda de ``unshare`` es el mecanismo ya medido.
 """
 from __future__ import annotations
 

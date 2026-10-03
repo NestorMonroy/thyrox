@@ -9,6 +9,10 @@
 # Lo que se mide es el mecanismo —reparto, salida por item, veredicto,
 # rechazos—, no al modelo.
 set -uo pipefail
+# Esta suite mide la mecánica del pool, no la política de ejecución: la declara
+# sin restricción (sin ella regiría la versionada del árbol, que no admite respaldo).
+THYROX_EXECUTION_POLICY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../fixtures" && pwd)/execution_policy_unrestricted.json"
+export THYROX_EXECUTION_POLICY
 RAIZ="$(cd "$(dirname "$0")/../.." && pwd)"
 POOL="$RAIZ/src/session/headless-pool.sh"
 fallos=0; total=0
@@ -28,6 +32,15 @@ ledger_reservation_count() {
 F="$(mktemp -d)"; trap 'rm -rf "$F"' EXIT
 # El pool de prueba abre su runtime aquí, no en el runtime real del árbol.
 export THYROX_RUNTIME_DIR="$F/runtime"
+# El selector de modelo es un doble fijo: las aserciones de abajo leen el
+# modelo que el pool entrega, no cuál elige hoy el catálogo. El selector real
+# se mide aparte, en el caso 4.
+cat > "$F/recommend-fake" <<'EOF'
+#!/usr/bin/env bash
+printf '{"kind":"%s","model":"claude-sonnet-5"}\n' "$1"
+EOF
+chmod +x "$F/recommend-fake"
+export HEADLESS_POOL_RECOMMEND="$F/recommend-fake"
 cat > "$F/claude" <<'SH'
 #!/usr/bin/env bash
 entrada="$(cat)"
@@ -53,7 +66,7 @@ case "$entrada" in *RAMPA*)
   echo "end $(date +%s.%N)" >> "$RAMPA_LOG" ;;
 esac
 ultima="$(printf '%s\n' "$entrada" | tail -1)"
-r="$ultima|modelo=$modelo|persist=$persist|formato=$formato|ttl=${CLAUDE_CODE_PROMPT_CACHE_TTL:-sin}|thx=${THYROX_CODE_PROMPT_CACHE_TTL:-sin}|sock=${ANTHROPIC_UNIX_SOCKET:-sin}|key=${ANTHROPIC_API_KEY:-sin}|auth=${ANTHROPIC_AUTH_TOKEN:-sin}|turns=$turns|sid=$sid"
+r="$ultima|modelo=$modelo|persist=$persist|formato=$formato|ttl=${CLAUDE_CODE_PROMPT_CACHE_TTL:-sin}|thx=${THYROX_CODE_PROMPT_CACHE_TTL:-sin}|sock=${ANTHROPIC_UNIX_SOCKET:-sin}|key=${ANTHROPIC_API_KEY:-sin}|auth=${ANTHROPIC_AUTH_TOKEN:-sin}|turns=$turns|base=${ANTHROPIC_BASE_URL:-sin}|skey=${THYROX_STORAGE_ENCRYPTION_KEY:-sin}|sid=$sid"
 if [[ "$formato" == stream-json ]]; then
   # Como el ejecutable: stream-json en -p exige --verbose.
   [[ "$verbose" == si ]] || { echo "stream-json requires --verbose" >&2; exit 1; }
@@ -78,7 +91,7 @@ export HEADLESS_POOL_RUNNER="$F/claude"
 # hereda del contenedor: heredado, el `/usr/bin/time` de la máquina grababa
 # filas reales en el historial y el resultado dependía del host
 # (H-THYROX-192). Sin declarar, ninguno.
-corre() { SALIDA="$(printf '%s\n' "$@" | HEADLESS_POOL_TIME="${HEADLESS_POOL_TIME:-$F/no-existe}" HEADLESS_POOL_HISTORY_DIR="${HIST:-$(mktemp -d -p "$F")}" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 --width 2 ${EXTRA:-} 2>&1)"; CODE=$?; }
+corre() { SALIDA="$(printf '%s\n' "$@" | HEADLESS_POOL_TIME="${HEADLESS_POOL_TIME:-$F/no-existe}" HEADLESS_POOL_HISTORY_DIR="${HIST:-$(mktemp -d -p "$F")}" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --task-class analisis --width 2 ${EXTRA:-} 2>&1)"; CODE=$?; }
 
 # 1 — tres items: exit 0, una salida por item, y el item llega en el prompt.
 rm -rf "$F/out"; corre alfa beta gamma
@@ -90,6 +103,10 @@ check "sin sesion persistida y en stream-json" "$(cat "$F/out"/*.json | jq -r .r
 check "el .json es la linea result del stream, sola" "$(cat "$F/out"/*.json | jq -r .type | sort -u)" "result"
 check "un stream por item, una linea por peticion" "$(cat "$F/out"/*.stream.jsonl 2>/dev/null | jq -rR 'fromjson? | select(.type=="assistant") | .message.usage.cache_read_input_tokens' | sort | uniq -c | gawk '{print $1"x"$2}' | paste -sd,)" "3x111,3x500"
 check "el indice empareja numero e item" "$(gawk -F'\t' '{print $2}' "$F/out/index.tsv" | paste -sd,)" "alfa,beta,gamma"
+# Sin mensajes, lo único nuevo en la salida es la línea del buzón de la
+# ejecución (TASK-THYROX-0672), que apunta a un directorio que existe.
+mailbox_dir="$(printf '%s\n' "$SALIDA" | gawk 'sub(/^buzón: /, ""){n++; path=$0} END{if (n == 1) print path}')"
+check "sin mensajes: una sola línea buzón, con un directorio real" "$([[ -n "$mailbox_dir" && -d "$mailbox_dir" ]] && echo si || echo no)" "si"
 
 # 2 — un item que falla: exit 1 y se nombra, los demas siguen contando.
 rm -rf "$F/out"; corre alfa FALLA-beta gamma
@@ -102,29 +119,42 @@ rm -rf "$F/out"; EXTRA="--timeout 1" corre LENTO-uno dos
 check "timeout: exit 1" "$CODE" "1"
 check "timeout: nombra al lento" "$(printf '%s' "$SALIDA" | gawk '/^-- FALLIDO LENTO-uno/{n++} END{print n+0}')" "1"
 
-# 4 — un alias no es un modelo: rehusa sin cifra (model-selection-subagents.md).
-rm -rf "$F/out"; SALIDA="$(printf 'alfa\n' | bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model sonnet 2>&1)"; CODE=$?
-check "alias: exit 2" "$CODE" "2"
-check "alias: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}')" "0"
+# 4 — el modelo no se declara: se deriva de la clase de tarea con el selector
+# del árbol (model-selection-subagents.md). `--model` rehúsa sin cifra.
+rm -rf "$F/out"; SALIDA="$(printf 'alfa\n' | bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 2>&1)"; CODE=$?
+check "--model: exit 2" "$CODE" "2"
+check "--model: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}')" "0"
+check "--model: nombra --task-class" "$(printf '%s' "$SALIDA" | gawk 'index($0, "--task-class"){n++} END{print n+0}')" "1"
+rm -rf "$F/out"; SALIDA="$(printf 'alfa\n' | bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --task-class sonnet 2>&1)"; CODE=$?
+check "clase desconocida: exit 2" "$CODE" "2"
+printf '#!/usr/bin/env bash\nexit 1\n' > "$F/recommend-roto"; chmod +x "$F/recommend-roto"
+rm -rf "$F/out"; SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_RECOMMEND="$F/recommend-roto" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --task-class analisis 2>&1)"; CODE=$?
+check "selector roto: exit 2" "$CODE" "2"
+check "selector roto: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}')" "0"
+ESPERADO="$(bash "$RAIZ/bin/agent-recommend" adversarial --json | jq -r .model)"
+rm -rf "$F/out"; SALIDA="$(printf 'alfa\n' | env -u HEADLESS_POOL_RECOMMEND HEADLESS_POOL_TIME="$F/no-existe" HEADLESS_POOL_HISTORY_DIR="$(mktemp -d -p "$F")" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --task-class adversarial 2>&1)"; CODE=$?
+check "selector real: exit 0" "$CODE" "0"
+check "selector real: declara el modelo derivado" "$(printf '%s' "$SALIDA" | gawk -v m="modelo: $ESPERADO (derivado de --task-class adversarial)" 'index($0, m){n++} END{print n+0}')" "1"
+check "selector real: el ítem recibe ese modelo" "$(cat "$F"/out/*.json 2>/dev/null | gawk -v m="modelo=$ESPERADO|" 'index($0, m){n++} END{print n+0}')" "1"
 
 # 5 — sin items no hay verde.
-SALIDA="$(printf '' | bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 2>&1)"; CODE=$?
+SALIDA="$(printf '' | bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --task-class analisis 2>&1)"; CODE=$?
 check "sin items: exit 2" "$CODE" "2"
 
 # 6 — sin GNU parallel, sin claude o sin plantilla: rehusa nombrando la falta.
-SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_PARALLEL=/no/existe/parallel bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 2>&1)"; CODE=$?
+SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_PARALLEL=/no/existe/parallel bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --task-class analisis 2>&1)"; CODE=$?
 check "sin parallel: exit 2" "$CODE" "2"
 check "sin parallel: lo nombra" "$(printf '%s' "$SALIDA" | gawk '/parallel/{n++} END{print (n>0)}')" "1"
-SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_RUNNER=/no/existe/thyrox bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 2>&1)"; CODE=$?
+SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_RUNNER=/no/existe/thyrox bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --task-class analisis 2>&1)"; CODE=$?
 check "sin ejecutor: exit 2" "$CODE" "2"
 # La variable que declaraba `claude` como ejecutor rehúsa entera y nombra la
 # bandera que la reemplaza.
-SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_CLAUDE=claude HEADLESS_POOL_HISTORY_DIR="$F/hist-legacy" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 2>&1)"; CODE=$?
+SALIDA="$(printf 'alfa\n' | HEADLESS_POOL_CLAUDE=claude HEADLESS_POOL_HISTORY_DIR="$F/hist-legacy" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --task-class analisis 2>&1)"; CODE=$?
 check "HEADLESS_POOL_CLAUDE retirada: exit 2" "$CODE" "2"
 check "HEADLESS_POOL_CLAUDE retirada: nombra --runner claude" \
   "$(printf '%s' "$SALIDA" | gawk '/HEADLESS_POOL_CLAUDE/ && /--runner claude/{n++} END{print n+0}')" "1"
 check "HEADLESS_POOL_CLAUDE retirada: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}')" "0"
-SALIDA="$(printf 'alfa\n' | bash "$POOL" --prompt "$F/no-existe.md" --out "$F/out" --model claude-sonnet-5 2>&1)"; CODE=$?
+SALIDA="$(printf 'alfa\n' | bash "$POOL" --prompt "$F/no-existe.md" --out "$F/out" --task-class analisis 2>&1)"; CODE=$?
 check "sin plantilla: exit 2" "$CODE" "2"
 # Sin ejecutor declarado, el ítem corre con `thyrox -p` (`bin/cli`), no con
 # `thyrox -p`: el pool es del proveedor. Un Parallel falso deja ver con qué
@@ -133,7 +163,7 @@ printf '#!/usr/bin/env bash\nprintf "%%s\\n" "$HP_RUNNER" > "%s/runner.txt"\n' "
 chmod +x "$F/parallel-runner"
 rm -rf "$F/out" "$F/runner.txt"
 printf 'alfa\n' | env -u HEADLESS_POOL_RUNNER HEADLESS_POOL_PARALLEL="$F/parallel-runner" HEADLESS_POOL_TIME="$F/no-existe" \
-  HEADLESS_POOL_HISTORY_DIR="$F/historial-runner" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 >/dev/null 2>&1
+  HEADLESS_POOL_HISTORY_DIR="$F/historial-runner" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --task-class analisis >/dev/null 2>&1
 check "sin ejecutor declarado: thyrox -p (bin/cli)" "$(cat "$F/runner.txt" 2>/dev/null)" "$RAIZ/bin/cli"
 
 # --memfree: la cota llega a GNU Parallel, y una ilegible rehusa sin resumen.
@@ -151,14 +181,15 @@ check "memfree ilegible: exit 2" "$CODE" "2"
 check "memfree ilegible: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}')" "0"
 
 # --cache-ttl: el TTL de la caché llega a cada `thyrox -p` por
-# THYROX_CODE_PROMPT_CACHE_TTL; sin la opción no se fija (decide el cliente),
+# THYROX_CODE_PROMPT_CACHE_TTL; sin la opción rige la constante de 1h,
 # y un valor fuera de 5m|1h rehúsa sin resumen.
 ttl_de() { cat "$F/out"/*.json | jq -r .result | gawk -F"|" '{print $6}' | sort -u | paste -sd,; }
 rm -rf "$F/out"; EXTRA="--cache-ttl 5m" corre alfa beta
 check "cache-ttl 5m: exit 0" "$CODE" "0"
 check "cache-ttl 5m: llega a cada item" "$(ttl_de)" "thx=5m"
 rm -rf "$F/out"; EXTRA="" THYROX_CODE_PROMPT_CACHE_TTL='' corre alfa
-check "sin cache-ttl: no se fija" "$(ttl_de)" "thx=sin"
+check "sin cache-ttl: rige la constante de 1h" "$(ttl_de)" "thx=1h"
+check "sin cache-ttl: el pool nombra la constante" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: 1h \(constant\)$/{n++} END{print n+0}')" "1"
 rm -rf "$F/out"; EXTRA="--cache-ttl 2h" corre alfa
 check "cache-ttl ilegible: exit 2" "$CODE" "2"
 check "cache-ttl ilegible: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{n++} END{print n+0}')" "0"
@@ -166,7 +197,8 @@ check "cache-ttl ilegible: sin resumen" "$(printf '%s' "$SALIDA" | gawk '/^items
 # El entorno THYROX_* por encima de --cache-ttl, como `QCt` en 2.1.282: la
 # variable gana a la decisión calculada, y forzar 5m gana a la variable. El
 # ítem la recibe sólo como THYROX_CODE_PROMPT_CACHE_TTL: el pool corre
-# `thyrox -p` y nada más, así que CLAUDE_CODE_* no tiene lector (campo ttl=sin).
+# `thyrox -p` y nada más, así que CLAUDE_CODE_* no tiene lector (campo ttl=sin):
+# si `thyrox -p` delega en `claude -p`, la traduce la máscara (`printDelegation.ts`).
 thx_de() { cat "$F/out"/*.json | jq -r .result | gawk -F"|" '{print $5"|"$6}' | sort -u | paste -sd,; }
 rm -rf "$F/out"; EXTRA="" THYROX_CODE_PROMPT_CACHE_TTL=1h corre alfa
 check "variable sin --cache-ttl: llega sólo como THYROX_*" "$(thx_de)" "ttl=sin|thx=1h"
@@ -192,7 +224,7 @@ rm -rf "$F/out"; EXTRA="" THYROX_ENABLE_PROMPT_CACHING_1H_BEDROCK=1 CLAUDE_CODE_
 check "activar 1h en Bedrock, con Bedrock: 1h" "$(thx_de)" "ttl=sin|thx=1h"
 check "activar 1h en Bedrock: la razón es la misma regla" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: 1h \(enable_1h_env\)$/{n++} END{print n+0}')" "1"
 rm -rf "$F/out"; EXTRA="" THYROX_ENABLE_PROMPT_CACHING_1H_BEDROCK=1 corre alfa
-check "activar 1h en Bedrock sin Bedrock: no decide" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: /{n++} END{print n+0}')" "0"
+check "activar 1h en Bedrock sin Bedrock: no decide, rige la constante" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: 1h \(constant\)$/{n++} END{print n+0}')" "1"
 rm -rf "$F/out"; EXTRA="" THYROX_CODE_PROMPT_CACHE_TTL=30m corre alfa
 check "variable ilegible: exit 2" "$CODE" "2"
 check "variable ilegible: la nombra, sin resumen" "$(printf '%s' "$SALIDA" | gawk '/THYROX_CODE_PROMPT_CACHE_TTL/{v++} /^items=/{n++} END{print (v>0), n+0}')" "1 0"
@@ -219,6 +251,39 @@ rm -rf "$F/out"; EXTRA="--credential-proxy" ANTHROPIC_API_KEY=sk-user HEADLESS_P
 check "proxy que no arranca: exit 2, sin resumen, y lo nombra" "$CODE $(printf '%s' "$SALIDA" | gawk '/^items=/{n++} /proxy de credencial/{p++} END{print n+0, (p>0)}')" "2 0 1"
 rm -rf "$F/out"; EXTRA="" ANTHROPIC_API_KEY=sk-user corre alfa
 check "sin --credential-proxy el item conserva su entorno" "$(cred_de)" "sock=sin|key=sk-user|auth=sin"
+
+# --- el proxy con credenciales del store: los ítems ven una URL y una clave de acceso local, nunca la del store ---
+# El proxy falso anuncia una URL, anota la clave de acceso y el modelo que
+# recibió y su pid, y espera a que lo maten. Los ítems ven ANTHROPIC_BASE_URL
+# apuntando a esa URL, la clave de acceso como ANTHROPIC_API_KEY y ninguna
+# clave de cifrado del store.
+cat > "$F/store-proxy" <<'SH'
+#!/usr/bin/env bash
+model=sin
+while [[ $# -gt 0 ]]; do case "$1" in --model) model="$2"; shift 2 ;; *) shift ;; esac; done
+printf '%s|%s|%s\n' "${THYROX_STORE_PROXY_ACCESS_KEY:-sin}" "$$" "$model" > "$STORE_PROXY_SAW"
+echo "url=http://127.0.0.1:4242"
+exec sleep 300
+SH
+chmod +x "$F/store-proxy"
+export STORE_PROXY_SAW="$F/store-proxy-saw"
+store_de() { cat "$F/out"/*.json | jq -r .result | gawk -F"|" '{print $8"|"$9"|"$11"|"$12}' | sort -u | paste -sd,; }
+rm -rf "$F/out" "$STORE_PROXY_SAW"
+EXTRA="--store-credential-proxy" ANTHROPIC_API_KEY=sk-user THYROX_STORAGE_ENCRYPTION_KEY=clave-secreta ANTHROPIC_BASE_URL=http://heredada.invalid HEADLESS_POOL_STORE_CREDENTIAL_PROXY="$F/store-proxy" corre alfa beta
+check "proxy del store: exit 0" "$CODE" "0"
+saw_key="$(cut -d'|' -f1 "$STORE_PROXY_SAW" 2>/dev/null)"
+check "proxy del store: el ítem ve la URL del proxy y la clave de acceso, sin credencial ni clave de cifrado" "$(store_de)" "key=$saw_key|auth=sin|base=http://127.0.0.1:4242|skey=sin"
+check "proxy del store: la clave de acceso es propia de la ejecución, no la credencial del entorno" "$([[ -n "$saw_key" && "$saw_key" != sk-user && "$saw_key" != sin ]] && echo propia || echo "no:$saw_key")" "propia"
+check "proxy del store: recibe el modelo del pool" "$(cut -d'|' -f3 "$STORE_PROXY_SAW" 2>/dev/null)" "claude-sonnet-5"
+check "proxy del store: el pool declara la fuente de credencial" "$(printf '%s' "$SALIDA" | gawk '/^credencial: proxy-store-url \(derivada de --store-credential-proxy; /{n++} END{print n+0}')" "1"
+check "proxy del store: al terminar el pool el proxy ya no vive" "$(kill -0 "$(cut -d'|' -f2 "$STORE_PROXY_SAW" 2>/dev/null)" 2>/dev/null && echo vive || echo muerto)" "muerto"
+rm -rf "$F/out"; EXTRA="--store-credential-proxy" HEADLESS_POOL_STORE_CREDENTIAL_PROXY="$F/credential-proxy-refuses" corre alfa
+check "proxy del store que no arranca: exit 2, sin resumen, y lo nombra" "$CODE $(printf '%s' "$SALIDA" | gawk '/^items=/{n++} /proxy con credenciales del store/{p++} END{print n+0, (p>0)}')" "2 0 1"
+rm -rf "$F/out" "$STORE_PROXY_SAW" "$F/proxy-saw"
+EXTRA="--store-credential-proxy --credential-proxy" ANTHROPIC_API_KEY=sk-user HEADLESS_POOL_STORE_CREDENTIAL_PROXY="$F/store-proxy" HEADLESS_POOL_CREDENTIAL_PROXY="$F/credential-proxy" corre alfa
+check "los dos proxies a la vez: exit 2 sin lanzar ninguno" "$CODE $(ls "$STORE_PROXY_SAW" "$F/proxy-saw" 2>/dev/null | wc -l)" "2 0"
+rm -rf "$F/out"; EXTRA="" ANTHROPIC_API_KEY=sk-user THYROX_STORAGE_ENCRYPTION_KEY=clave-secreta ANTHROPIC_BASE_URL=http://heredada.invalid corre alfa
+check "sin --store-credential-proxy el ítem conserva su URL y su clave de cifrado" "$(store_de)" "key=sk-user|auth=sin|base=http://heredada.invalid|skey=clave-secreta"
 
 # --- la memoria de cada item, con GNU Time --------------------------------------
 # Un GNU time falso: consume `-f FMT -o ARCHIVO`, escribe una medida fija y
@@ -356,7 +421,7 @@ chmod +x "$F/smi-estado"
 HIST="$F/historial-dos-pools"
 printf 'RAMPA-medida\n' | HEADLESS_POOL_HISTORY_DIR="$HIST" HEADLESS_POOL_TIME="$F/gnu-time" \
   HEADLESS_POOL_NVIDIA_SMI="$F/smi-estado" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out-medida" \
-  --model claude-sonnet-5 --width 2 --timeout 20 > "$F/pool-medida.salida" 2>&1
+  --task-class analisis --width 2 --timeout 20 > "$F/pool-medida.salida" 2>&1
 : > "$RAMPA_LOG"
 check "dos pools: la ejecución de medida deja el pico del ítem" \
   "$(gawk '{print $1}' "$F/out-medida/1.gpu" 2>/dev/null)" "400"
@@ -365,7 +430,7 @@ dos_pools() {
     rm -rf "$F/out-$p"
     printf 'RAMPA-%s\n' "$p" | HEADLESS_POOL_HISTORY_DIR="$HIST" HEADLESS_POOL_TIME="$F/gnu-time" \
       HEADLESS_POOL_NVIDIA_SMI="$F/smi-estado" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out-$p" \
-      --model claude-sonnet-5 --width 2 --timeout 20 > "$F/pool-$p.salida" 2>&1 &
+      --task-class analisis --width 2 --timeout 20 > "$F/pool-$p.salida" 2>&1 &
   done
   wait
 }
@@ -409,12 +474,12 @@ unset HIST
 # --- el historial: cada ejecución deja su medida y la siguiente deriva de ella --
 # `HIST` es el mismo en los cuatro casos: el primero no tiene historial, los
 # siguientes leen la fila que dejó. La medida del GNU time falso es fija
-# (12345 KB, 1.50 s): pared de 1.5 s -> turnos seguidos -> 5m; 12345 KB x 2
-# -> 25M hacia arriba.
+# (12345 KB, 1.50 s): 12345 KB x 2 -> 25M hacia arriba. El TTL no sale del
+# historial: rige la constante de 1h salvo que se declare otro.
 HIST="$F/historial-compartido"
 rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/gnu-time" corre alfa
 check "historial vacío: lo declara" "$(printf '%s' "$SALIDA" | gawk '/sin ejecución previa/{n++} END{print n+0}')" "1"
-check "historial vacío: no inventa TTL" "$(thx_de)" "ttl=sin|thx=sin"
+check "historial vacío: rige la constante de 1h" "$(thx_de)" "ttl=sin|thx=1h"
 check "la ejecución deja una fila" "$(find "$HIST" -name runs.jsonl -exec cat {} + 2>/dev/null | wc -l)" "1"
 check "la fila nombra el binario que corrió los ítems" \
   "$(find "$HIST" -name runs.jsonl -exec cat {} + 2>/dev/null | jq -r .runner)" "$HEADLESS_POOL_RUNNER"
@@ -424,8 +489,8 @@ check "la fila lleva la huella del CONTENIDO de la plantilla" \
   "$(find "$HIST" -name runs.jsonl -exec cat {} + 2>/dev/null | jq -r .template_digest)" \
   "$(sha256sum "$F/prompt.md" | gawk '{print $1}')"
 rm -rf "$F/out"; EXTRA="" HEADLESS_POOL_TIME="$F/gnu-time" corre alfa
-check "con historial: el TTL sale de la pared medida" "$(thx_de)" "ttl=sin|thx=5m"
-check "con historial: declara de dónde salió el TTL" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: 5m \(history\)/{n++} END{print n+0}')" "1"
+check "con historial: el TTL sigue siendo la constante" "$(thx_de)" "ttl=sin|thx=1h"
+check "con historial: el TTL no sale del historial" "$(printf '%s' "$SALIDA" | gawk '/^cache-ttl: [0-9a-z]+ \(history\)/{n++} END{print n+0}')" "0"
 check "con historial: --memfree sale de la memoria medida" "$(printf '%s' "$SALIDA" | gawk '/^memfree: 25M \(history\)/{n++} END{print n+0}')" "1"
 rm -rf "$F/out"; EXTRA="--cache-ttl 1h --memfree 1G" HEADLESS_POOL_TIME="$F/gnu-time" corre alfa
 check "lo declarado gana al historial: TTL" "$(thx_de)" "ttl=sin|thx=1h"
@@ -472,7 +537,7 @@ check "reserva ilegible: exit 2" "$CODE" "2"
 # `claude -p` hijo hereda la sesión de quien lo lanza si no se le da otra
 # (.claude/workbench/claude-p-from-shell-20260928T234121).
 mkdir -p "$F/path-claude"; cp "$F/claude" "$F/path-claude/claude"
-run_with_claude() { SALIDA="$(printf '%s\n' "$@" | env -u HEADLESS_POOL_RUNNER PATH="$F/path-claude:$PATH" HEADLESS_POOL_TIME="$F/no-existe" HEADLESS_POOL_HISTORY_DIR="$(mktemp -d -p "$F")" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 --width 2 --runner claude ${EXTRA:-} 2>&1)"; CODE=$?; }
+run_with_claude() { SALIDA="$(printf '%s\n' "$@" | env -u HEADLESS_POOL_RUNNER PATH="$F/path-claude:$PATH" HEADLESS_POOL_TIME="$F/no-existe" HEADLESS_POOL_HISTORY_DIR="$(mktemp -d -p "$F")" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --task-class analisis --width 2 --runner claude ${EXTRA:-} 2>&1)"; CODE=$?; }
 rm -rf "$F/out"; run_with_claude alfa beta
 check "runner claude: exit 0" "$CODE" "0"
 check "runner claude: resumen" "$(printf '%s' "$SALIDA" | gawk '/^items=/{print}')" "items=2 ok=2 fallidos=0"
@@ -490,7 +555,7 @@ rm -rf "$F/out"; EXTRA="--max-turns 7" corre alfa
 check "--max-turns declarado llega al ítem" "$(turns_of)" "7"
 rm -rf "$F/out"; run_with_claude alfa
 check "runner claude sin --max-turns: sin tope" "$(turns_of)" "sin"
-SALIDA="$(printf 'alfa\n' | env -u HEADLESS_POOL_RUNNER PATH="$F/sin-claude:/usr/bin:/bin" HEADLESS_POOL_HISTORY_DIR="$(mktemp -d -p "$F")" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --model claude-sonnet-5 --runner claude 2>&1)"; CODE=$?
+SALIDA="$(printf 'alfa\n' | env -u HEADLESS_POOL_RUNNER PATH="$F/sin-claude:/usr/bin:/bin" HEADLESS_POOL_HISTORY_DIR="$(mktemp -d -p "$F")" bash "$POOL" --prompt "$F/prompt.md" --out "$F/out" --task-class analisis --runner claude 2>&1)"; CODE=$?
 check "runner claude sin claude en el PATH: exit 2" "$CODE" "2"
 check "runner claude sin claude en el PATH: lo nombra" "$(printf '%s' "$SALIDA" | gawk '/REHUSA/ && /claude/{n++} END{print n+0}')" "1"
 rm -rf "$F/out"; EXTRA="--runner otro" corre alfa
@@ -524,7 +589,17 @@ check "sin filas en el joblog: el total es el del índice" \
 
 # Un pool de prueba vive en su propio runtime: ninguna ejecución del runtime
 # real puede publicar en la salida de esta suite.
-real_runtime="$(env -u THYROX_RUNTIME_DIR THYROX_ROOT="$RAIZ" python3 -c 'import sys; sys.path.insert(0, sys.argv[1]); import pool_lifecycle; print(pool_lifecycle.runtime_root())' "$RAIZ/src/session")"
+# El módulo se importa como paquete (`session.pool_lifecycle`): importado
+# suelto muere en su `from session...` y deja la ruta vacía, con lo que el
+# `grep` de abajo buscaba bajo `/pool` y el cero no medía nada.
+real_runtime="$(env -u THYROX_RUNTIME_DIR THYROX_ROOT="$RAIZ" PYTHONPATH="$RAIZ/src" python3 -c 'from session import pool_lifecycle; print(pool_lifecycle.runtime_root())')"
+# Se exige que la ruta se RESUELVA, no que exista: `.thyrox/runtime` es un
+# hogar ignorado por git, así que un clon o un worktree recién hechos no lo
+# tienen hasta el primer pool (o hasta `bin/ensure_homes`, TASK-THYROX-0675).
+# Exigir el directorio hacía fallar esta suite en todo clon nuevo. Sin
+# directorio, ninguna ejecución de la suite pudo publicar ahí: la aserción de
+# abajo cuenta cero sobre un conjunto vacío, que es su respuesta correcta.
+check "el runtime real se resuelve" "$([[ -n "$real_runtime" ]] && echo si || echo no)" "si"
 check "el runtime real no recibe ejecuciones de la suite" \
   "$(grep -ls "\"out_dir\": \"$F/" "$real_runtime"/pool/*/run.json 2>/dev/null | wc -l)" "0"
 

@@ -1,0 +1,11 @@
+transformers 4.57.6
+torch 2.11.0+cpu
+tokenizers 0.22.2
+safetensors 0.8.0
+huggingface_hub 0.36.2
+trl missing ModuleNotFoundError
+datasets missing ModuleNotFoundError
+accelerate missing ModuleNotFoundError
+peft missing ModuleNotFoundError
+sklearn missing ModuleNotFoundError
+execution thyrox-worker-probe-muqbvd7r-15365 kind=probe task=TASK-THYROX-0755 exit=0

@@ -1,0 +1,40 @@
+{
+  "mediaType": "application/vnd.thyrox.publication-record.v1+json",
+  "status": "verified",
+  "publishedAt": "2026-10-02T12:47:48.519Z",
+  "reference": "docker.io/th3rox/thyrox-quantization-lab-artifacts@sha256:b6c1720d9f839979c4ce0003796b341c1eeaab8719feea15aad724d2c6d84caf",
+  "tag": "qwen2.5-coder-1.5b-instruct-2e1fd39-q4_k_m",
+  "files": [
+    {
+      "path": "/home/user/.thyrox-lab/quantize-scratch/eval.txt",
+      "title": "eval.txt",
+      "mediaType": "text/plain",
+      "size": 16602,
+      "sha256": "f7b352a8ef4f201d9da31fa3c506f2e180fc6f3cb14fe236057148a5c777a8cc"
+    },
+    {
+      "path": "/home/user/.thyrox-lab/quantize-scratch/model-Q4_K_M.gguf",
+      "title": "model-Q4_K_M.gguf",
+      "mediaType": "application/vnd.thyrox.gguf.v1",
+      "size": 986048672,
+      "sha256": "47c034a0322d82f6361df5f1d67497246bed41836ac4daf154c5a19957a8fa17"
+    }
+  ],
+  "verification": {
+    "resolvedDigest": "sha256:b6c1720d9f839979c4ce0003796b341c1eeaab8719feea15aad724d2c6d84caf",
+    "blobsVerified": [
+      {
+        "title": "eval.txt",
+        "digest": "sha256:f7b352a8ef4f201d9da31fa3c506f2e180fc6f3cb14fe236057148a5c777a8cc",
+        "size": 16602
+      },
+      {
+        "title": "model-Q4_K_M.gguf",
+        "digest": "sha256:47c034a0322d82f6361df5f1d67497246bed41836ac4daf154c5a19957a8fa17",
+        "size": 986048672
+      }
+    ],
+    "measuredPeakBytes": 986058752
+  },
+  "localCopy": "cache"
+}

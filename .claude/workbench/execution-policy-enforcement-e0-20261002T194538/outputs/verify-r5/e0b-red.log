@@ -1,0 +1,37 @@
+  ok    1 subagentes prohibidos: Agent deny
+  ok    2 payload del episodio en segundo plano: deny
+  ok    2 el MISMO payload en primer plano: deny
+  ok    2 el mismo payload desde Monitor: deny
+  ok    3 una suite en primer plano es payload: deny
+  ok    3 bun test en primer plano: deny
+  ok    3 una cualificación en primer plano: deny
+  ok    4 thyrox-bg gestionado no se niega
+  ok    4 la espera de un trabajo del ledger no se niega
+  ok    4 una espera de observación no se niega
+  ok    4 una entrada del plano de control no se niega
+  ok    4 leer y buscar en primer plano no es payload
+  ok    4 nombrar una suite como argumento no la ejecuta
+  ok    8 respaldo admitido NO admite subagentes
+  ok    8 y el payload se rige por su propio campo
+  ok    8 respaldo prohibido NO prohíbe subagentes admitidos
+  ok    8 y el payload sigue negado por su campo
+  ok    9 un override sin controller no borra la restricción del repositorio
+  ok    9 ni la del payload
+  ok    9 un override que declara lo contrario no abre
+  ok    9 un override sí puede endurecer
+  ok    10 un override declarado que no existe niega
+  ok    10 también el payload
+  ok    10 una capa ilegible niega
+  ok    10 una sección controller incompleta niega lo que no declara
+  ok    11 sin ninguna capa no hay nada que restringir
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/runtime/worktrees/e0b/tests/hooks/test_execution_policy_enforcement.py", line 249, in <module>
+    raise SystemExit(main())
+                     ^^^^^^
+  File "/home/user/thyrox/.thyrox/runtime/worktrees/e0b/tests/hooks/test_execution_policy_enforcement.py", line 180, in main
+    check("12 durante la excepción el controlador escribe el producto", None, edit(f"{ROOT}/src/session/bg.sh"))
+                                                                              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/.thyrox/runtime/worktrees/e0b/tests/hooks/test_execution_policy_enforcement.py", line 121, in edit
+    return decision(mutation_gate.detect(call, env=env or {}))
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: detect() got an unexpected keyword argument 'env'

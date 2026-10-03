@@ -1,0 +1,42 @@
+# TASK-THYROX-0743 — P2 tramo B — RED
+# Pruebas nuevas en los dos suites existentes, con la producción aún por spec.
+# Orden real de trabajo: primero las pruebas (estado de la producción = HEAD), luego
+# el cambio mínimo. Las cuatro aserciones nuevas caen; las de composición ya pasan
+# porque el spec y la autorización producen el mismo argv salvo por las etiquetas de
+# la autorización — y eso es justo lo que el tramo no podía dar por supuesto.
+
+# Estado de partida de los dos archivos de producción, leído de HEAD (no de memoria):
+$ cd /home/user/thyrox && for f in src/packages/local-models/ollamaModelInstaller.ts src/packages/local-models/podmanArtifactFetcher.ts; do git show HEAD:$f | grep -nE 'runJobWithOutput|materializeContainer|WorkerContainerSpec|workerResourceLimitArgv' | sed "s|^|$f:|"; done
+  src/packages/local-models/ollamaModelInstaller.ts:18:import { runJobWithOutput } from '@thyrox/podman-execution/containerRun.ts'
+  src/packages/local-models/ollamaModelInstaller.ts:20:import type { ContainerOwner, WorkerContainerSpec } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+  src/packages/local-models/ollamaModelInstaller.ts:21:import { workerResourceLimitArgv, type WorkerResourceProfile } from '@thyrox/podman-execution/workerResourceProfile.ts'
+  src/packages/local-models/ollamaModelInstaller.ts:53:export function installJobSpec(options: OllamaModelInstallerOptions, request: ModelInstallRequest): WorkerContainerSpec {
+  src/packages/local-models/ollamaModelInstaller.ts:70:    resourceArgv: workerResourceLimitArgv(profile),
+  src/packages/local-models/ollamaModelInstaller.ts:107:      const job = await runJobWithOutput(this.options.podman, installJobSpec(this.options, request))
+  src/packages/local-models/podmanArtifactFetcher.ts:26:import { ContainerRunError, runJobWithOutput } from '@thyrox/podman-execution/containerRun.ts'
+  src/packages/local-models/podmanArtifactFetcher.ts:28:import type { ContainerOwner, WorkerContainerSpec } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+  src/packages/local-models/podmanArtifactFetcher.ts:29:import { workerResourceLimitArgv, type WorkerResourceProfile } from '@thyrox/podman-execution/workerResourceProfile.ts'
+  src/packages/local-models/podmanArtifactFetcher.ts:66:export function fetchJobSpec(options: PodmanArtifactFetcherOptions, pinned: PinnedModelArtifact, destination: string, scratchDir: string): WorkerContainerSpec {
+  src/packages/local-models/podmanArtifactFetcher.ts:86:    resourceArgv: workerResourceLimitArgv(profile),
+  src/packages/local-models/podmanArtifactFetcher.ts:119:    const job = await runJobWithOutput(options.podman, fetchJobSpec(options, pinned, destination, scratchDir))
+
+# Pruebas nuevas añadidas (sólo en __tests__/):
+#   ollamaModelInstaller.test.ts   describe('la composición del trabajo') + describe('la autorización del trabajo')
+#   podmanArtifactFetcher.test.ts  describe('createPodmanArtifactFetcher: la autorización del trabajo')
+
+$ cd src/packages/local-models && bun test __tests__/ollamaModelInstaller.test.ts __tests__/podmanArtifactFetcher.test.ts
+  (fail) createPodmanArtifactFetcher: la autorización del trabajo > corre como una ejecución autorizada: clase registry-operation y la cita de su tarea
+  (fail) createPodmanArtifactFetcher: la autorización del trabajo > la cita de la tarea que autoriza es declarable por el llamador
+  (fail) la autorización del trabajo > corre como una ejecución autorizada: clase maintenance y la cita de su tarea
+  (fail) la autorización del trabajo > la cita de la tarea que autoriza es declarable por el llamador
+   21 pass
+   2 skip
+   4 fail
+  exit=1
+
+# El typecheck del mismo estado RED confirma que la cita de la tarea aún no es
+# declarable (la salida completa, en p2b-typecheck.txt como «RED»):
+$ cd src/packages/local-models && bun ../../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.test.json 2>&1 | grep -E "ollamaModelInstaller|podmanArtifactFetcher"
+  __tests__/ollamaModelInstaller.test.ts(209,48): error TS2353: Object literal may only specify known properties, and 'taskCitation' does not exist in type 'Partial<OllamaModelInstallerOptions>'.
+  __tests__/podmanArtifactFetcher.test.ts(139,57): error TS2353: Object literal may only specify known properties, and 'taskCitation' does not exist in type 'Partial<PodmanArtifactFetcherOptions>'.
+  exit=2   (6 errores: los 4 preexistentes del paquete + estos 2 del RED)

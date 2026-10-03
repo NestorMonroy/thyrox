@@ -1,0 +1,18 @@
+# anulación: reward_for mira sólo el verificador
+== 1. aceptado: todas las compuertas y el verificador ==
+ok   recompensa 1
+ok   versión del contrato
+ok   costes aparte, sin tocar
+== 2. el verificador rechaza: 0 aunque las compuertas pasen ==
+ok   rechazado por el verificador
+== 3. una compuerta falla o es desconocida: 0 aunque el verificador acepte ==
+FAIL compuerta en False
+FAIL compuerta desconocida
+ok   compuerta ausente cuenta como desconocida
+== 4. sólo las compuertas requeridas cuentan ==
+ok   subconjunto requerido
+== 5. orden lexicográfico de candidatos ==
+ok   P(aceptado) primero; luego tokens; lo desconocido al final
+
+9 casos: 7 ok, 2 fallos
+exit=1

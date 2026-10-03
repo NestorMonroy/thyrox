@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bin/task_continuation run .claude/workbench/postgres-corpus-disk-reclaim-20261002T023317 --task TASK-THYROX-0758", "started_at": "2026-10-02T13:57:52+00:00"}

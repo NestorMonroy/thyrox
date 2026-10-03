@@ -1553,7 +1553,33 @@ export const PluginInstallationEntrySchema = lazySchema(() =>
       .string()
       .optional()
       .describe('Git commit SHA for git-based plugins'),
+    sourceProducerPath: z
+      .string()
+      .optional()
+      .describe('Directory of the command that produced this installation'),
+    previousProducerPaths: ProducerPathListSchema()
+      .optional()
+      .describe('Directories of the commands that produced earlier installations'),
   }),
+)
+
+/** Una lista de rutas productoras: lo que no es string se descarta, no invalida la entrada. */
+const ProducerPathListSchema = lazySchema(() =>
+  z.array(z.unknown()).transform(values => values.filter((value): value is string => typeof value === 'string')),
+)
+
+/**
+ * La proyección de una instalación que sólo lee sus rutas productoras
+ * (≙ `Ue` de 2.1.275): conserva las claves ajenas y un productor mal
+ * formado se lee como ausente, para que una entrada rara no oculte las demás.
+ */
+export const CommandProducerEntrySchema = lazySchema(() =>
+  z
+    .object({
+      sourceProducerPath: z.string().optional().catch(undefined),
+      previousProducerPaths: ProducerPathListSchema().optional().catch(undefined),
+    })
+    .passthrough(),
 )
 
 /**

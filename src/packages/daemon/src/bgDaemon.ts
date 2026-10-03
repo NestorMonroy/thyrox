@@ -30,14 +30,20 @@ import { dirname, join } from 'node:path'
 import { platform as osPlatform, freemem } from 'node:os'
 
 import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
-import { logEvent as logEventFn, spawnPtyHost } from './internal/pendingCrossPackageDeps.js'
+import { logEvent as logEventFn } from '@thyrox/local-observability'
+import { spawnPtyHost } from './internal/pendingCrossPackageDeps.js'
 import { encodeCtrlFrame } from './internal/ptyFrame.js'
 import { adoptFromRoster, adoptRunningPtyRecords } from './bgAdopt.js'
 import {
+  type DaemonStartupThresholds,
   makeIdleActivityCount,
+  resolveStartupThresholds,
+  setupDisplacementWatchdog,
   setupIdleExitWatchdog,
   setupUpgradeWatchdog,
 } from './bgDaemonTimers.js'
+import { daemonRequest } from './daemonClient.js'
+import { getDaemonLockPath, probeLockDisplacement, requestTransientYield } from './daemonLock.js'
 import {
   type WorkerRecord,
   readAllWorkerRecords,
@@ -56,12 +62,20 @@ import {
   shouldPrewarm,
 } from './sparePool.js'
 import { claimSpareWorker, sweepOrphanSpareSockets } from './spareClaim.js'
-import { getDaemonScopeDir } from './socketPaths.js'
+import { getControlSocketPath, getDaemonScopeDir } from './socketPaths.js'
 import { drainSpool, startSpoolWatcher } from './dispatchSpool.js'
 import { type DaemonServer, type OpHandler, err, ok, startSocketServer } from './socketServer.js'
 import type { ProtoOp } from './socketProto.js'
 import { WorkerVm } from './workerVm.js'
 import { getPinnedWorkerShorts } from './workerRegistry.js'
+import {
+  type DaemonPodmanWorkers,
+  type SupervisorLogSink,
+  createDaemonPodmanWorkers,
+  startWorkerSupervision,
+} from './podmanWorkerSupervision.js'
+import { startHostModelCoordinator, startModelCoordinatorSupervision, type ModelCoordinatorStarter } from './modelCoordinatorSupervision.js'
+import { createSupervisorLog } from './supervisorLog.js'
 
 /**
  * Arma un valor con forma de Socket no-op para rutas RPC de dispara-y-
@@ -180,6 +194,9 @@ export function retirePinnedSettledWorkers<W extends RetirableWorker>(
   return retiredShorts
 }
 
+/** Cadencia del sondeo de inactividad (`ant 5170.js` iFK). */
+const IDLE_PROBE_INTERVAL_MS = 2_000
+
 /** Presupuesto de reintentos del dedup de dispatch — `T<30` en `ue`. */
 export const DUPLICATE_DISPATCH_MAX_ATTEMPTS = 30
 
@@ -219,12 +236,69 @@ export function decideDuplicateDispatchOutcome(params: {
   return { action: 'dup-live', escalateToSigkill: false }
 }
 
+/** Dependencias inyectables del daemon; sin ellas se usan las reales. */
+export type BgDaemonDeps = {
+  /** El manager de workers de Podman que el daemon posee, y el ejecutor con que sondea el anfitrión. */
+  podmanWorkers?: DaemonPodmanWorkers
+  /** El log de supervisor; por defecto el de `--log-file`, o stderr sin él. */
+  supervisorLog?: SupervisorLogSink
+  /** El coordinador de model scheduling del anfitrión; por defecto el real (`startHostModelCoordinator`). */
+  modelCoordinator?: ModelCoordinatorStarter
+  /** Umbrales de arranque (`Lr`/`Mt`/`Nr`/`Vr`); los no declarados toman su valor de referencia. */
+  startupThresholds?: Partial<DaemonStartupThresholds>
+}
+
+/**
+ * Workers con un turno a mitad (`tempo === 'active'` en su state.json):
+ * el equivalente de `busyWorkerCount()` que difiere el upgrade en `xt`.
+ */
+function countBusyWorkers(workers: Map<string, WorkerVm>): number {
+  let busy = 0
+  for (const vm of workers.values()) {
+    if (readState(vm.getRecord().short)?.tempo === 'active') busy++
+  }
+  return busy
+}
+
+/**
+ * `chunk-92tvramn.js` `xt` — antes de adquirir el lock, un daemon no
+ * transitorio pide el relevo al transitorio que lo sostiene. Si el relevo
+ * falla, la adquisición posterior rehúsa con su propio mensaje; aquí sólo
+ * queda registrado el desenlace.
+ */
+async function negotiateTransientYield(origin: NonNullable<ParsedArgs['origin']>, lockPath: string): Promise<void> {
+  const result = await requestTransientYield({
+    lockPath,
+    origin,
+    sendYield: () => daemonRequest('yield', {}, { socketPath: getControlSocketPath() }),
+  })
+  if (result.kind !== 'not-needed') logEventFn('tengu_daemon_yield_handshake', { kind: result.kind })
+}
+
+type OwnedSupervisorLog = SupervisorLogSink & { close(): Promise<void> }
+
+const stderrSupervisorLog: OwnedSupervisorLog = {
+  write(label, message) {
+    process.stderr.write(`[${new Date().toISOString()}] [${label}] ${message}\n`)
+  },
+  async close() {},
+}
+
+/** El log de supervisor del daemon; uno inyectado no es suyo y no lo cierra al salir. */
+async function openSupervisorLog(injected: SupervisorLogSink | undefined, logFile: string | undefined): Promise<OwnedSupervisorLog> {
+  if (injected) return { write: (label, message) => injected.write(label, message), close: async () => {} }
+  if (!logFile) return stderrSupervisorLog
+  mkdirSync(dirname(logFile), { recursive: true })
+  return createSupervisorLog(logFile)
+}
+
 /**
  * Arranca el bg daemon. Se resuelve una vez que el daemon se apagó
- * (señal u op de shutdown recibido). Devuelve el código de salida del
- * daemon (0 en apagado ordenado, distinto de cero ante error).
+ * (señal u op de shutdown recibido) y retiró sus workers de Podman.
+ * Devuelve el código de salida del daemon (0 en apagado ordenado,
+ * distinto de cero ante error).
  */
-export async function bgDaemonMain(args: readonly string[]): Promise<number> {
+export async function bgDaemonMain(args: readonly string[], deps: BgDaemonDeps = {}): Promise<number> {
   const parsed = parseArgs(args)
   const state: DaemonState = {
     server: undefined,
@@ -237,6 +311,10 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
   }
 
   process.title = 'ccb daemon'
+  const origin = parsed.origin ?? 'transient'
+  const thresholds = resolveStartupThresholds(deps.startupThresholds)
+  const lockPath = getDaemonLockPath(dirname(getControlSocketPath()))
+  await negotiateTransientYield(origin, lockPath)
 
   // `ant 4639.js` j2() lee esto; ccb lo escribe al arrancar para que el
   // tooling externo (reinicio de zombis, detección de version-skew)
@@ -249,7 +327,7 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
         JSON.stringify({
           pid: process.pid,
           startedAt: state.startedAt,
-          origin: parsed.origin ?? 'transient',
+          origin,
           version: process.env.THYROX_CODE_VERSION ?? 'dev',
           spawnedBy: parsed.spawnedBy,
         }),
@@ -262,7 +340,7 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
   /* adoptFromRoster + adoptRunningPtyRecords viven en ./bgAdopt.ts */
   logEventFn('tengu_bg_daemon_boot', {
     pid: String(process.pid),
-    origin: parsed.origin ?? 'transient',
+    origin,
   })
   // `ant 5170.js` iFK:219 — daemon_start dispara una vez tras que el
   // supervisor ató su socket de control y está listo para aceptar ops.
@@ -271,7 +349,7 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
   logEventFn('tengu_daemon_start', {
     worker_kinds: '0',
     worker_count: '0',
-    origin: parsed.origin ?? 'transient',
+    origin,
   })
   if (process.env.THYROX_CODE_BG_SPARE_POOL === '1') {
     enableSparePool()
@@ -365,15 +443,28 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
   // inactividad + auto-reinicio al actualizar el binario. Las
   // implementaciones viven en ./bgDaemonTimers.ts para mantener este
   // archivo bajo el presupuesto de 800 LOC.
-  const idleExit = setupIdleExitWatchdog({
-    origin: parsed.origin ?? 'transient',
-    abort: state.abort,
-    graceMs: 5_000,
-    countActivity: makeIdleActivityCount(state),
+  // El coordinador arranca más abajo; hasta entonces no aporta actividad.
+  let coordinatorActivity: () => number = () => 0
+  const upgradeWatchdog = setupUpgradeWatchdog(state.abort, {
+    busyWorkerCount: () => countBusyWorkers(state.workers),
+    busyDeferCapMs: thresholds.upgradeBusyDeferCapMs,
   })
-  const idleProbeTimer = setInterval(idleExit.probe, 2_000)
+  const idleExit = setupIdleExitWatchdog({
+    origin,
+    abort: state.abort,
+    idleGraceMs: thresholds.idleGraceMs,
+    startupIdleGraceMs: thresholds.startupIdleGraceMs,
+    countActivity: makeIdleActivityCount(state, () => coordinatorActivity()),
+    isUpgradePending: upgradeWatchdog.isUpgradePending,
+  })
+  const idleProbeTimer = setInterval(idleExit.probe, IDLE_PROBE_INTERVAL_MS)
   idleProbeTimer.unref()
-  const upgradeWatchdog = setupUpgradeWatchdog(state.abort)
+  const displacementWatchdog = setupDisplacementWatchdog({
+    origin,
+    abort: state.abort,
+    intervalMs: thresholds.staleCheckIntervalMs,
+    probeDisplacement: () => probeLockDisplacement(lockPath, process.pid),
+  })
 
   // Cablea los manejadores de op de socket. Capturado en una variable
   // para que el watcher de spool de despacho por archivo (`ant 5165.js`)
@@ -884,7 +975,7 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
      * la liberación de nuestro lock y emite tengu_daemon_yield_takeover.
      */
     yield: async () => {
-      const myOrigin = parsed.origin ?? 'transient'
+      const myOrigin = origin
       if (myOrigin !== 'transient') {
         return ok({ op: 'yield', yielding: false, origin: myOrigin })
       }
@@ -951,7 +1042,7 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
       return undefined
     },
   }
-  state.server = await startSocketServer(opHandlers)
+  state.server = await startSocketServer(opHandlers, { origin })
 
   // `ant 5165.js` — fallback de despacho por spool de archivos. La CLI
   // escribe envoltorios a ~/.claude/daemon/dispatch/ cuando el socket no
@@ -987,6 +1078,17 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
   }
   process.on('SIGHUP', onSighup)
 
+  // Tras las señales: un SIGTERM durante la reconciliación ya aborta, y el
+  // apagado de abajo igual retira lo que el manager gestione.
+  const supervisorLog = await openSupervisorLog(deps.supervisorLog, parsed.logFile)
+  const workerSupervision = await startWorkerSupervision(
+    deps.podmanWorkers ?? createDaemonPodmanWorkers(process.pid), supervisorLog)
+  // El daemon es único por anfitrión: aloja la única autoridad de admisión de
+  // modelos locales (ADR-007 1.14.0). Si no arranca, el daemon sigue.
+  const coordinatorSupervision = await startModelCoordinatorSupervision(
+    deps.modelCoordinator ?? startHostModelCoordinator, supervisorLog)
+  coordinatorActivity = () => coordinatorSupervision.activity()
+
   await new Promise<void>(resolve => {
     if (state.abort.signal.aborted) {
       resolve()
@@ -1005,6 +1107,7 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
   clearInterval(idleProbeTimer)
   idleExit.dispose()
   upgradeWatchdog.dispose()
+  displacementWatchdog.dispose()
 
   // ant tengu_bg_dispatch_stale_drop: despachos en vuelo que el daemon ya
   // no puede ver a través. Marca las entradas pendientes como fallidas
@@ -1034,5 +1137,8 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
   }
   spoolWatcher.close()
   await state.server?.close()
+  await coordinatorSupervision.shutdown()
+  await workerSupervision.shutdown()
+  await supervisorLog.close()
   return 0
 }

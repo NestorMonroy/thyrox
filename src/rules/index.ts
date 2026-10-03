@@ -8,8 +8,9 @@
  */
 import type { RuleDefinition } from './types.ts'
 import { gitAuthorIdentity } from './definitions/gitAuthorIdentity.ts'
+import { measuredPoolFailures } from './definitions/measuredPoolFailures.ts'
 
-export const RULES: RuleDefinition[] = [gitAuthorIdentity]
+export const RULES: RuleDefinition[] = [gitAuthorIdentity, measuredPoolFailures]
 
 export type { RuleDefinition } from './types.ts'
 export { rulesDir, consumerRulesDir, defaultRulesDir, RULES_DIR_VAR, RULES_SEGMENT } from './paths.ts'

@@ -1,0 +1,162 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/coordinationTopology.test.ts:
+(pass) topología de coordinación del scheduler > sin declarar es local [0.12ms]
+(pass) topología de coordinación del scheduler > no se deduce de THYROX_PROXY_MODE ni de THYROX_REDIS_URL [0.05ms]
+(pass) topología de coordinación del scheduler > shared se declara explícitamente [0.03ms]
+(pass) topología de coordinación del scheduler > un valor desconocido se rehúsa nombrándolo [0.26ms]
+(pass) topología de coordinación del scheduler > local abre la coordinación en memoria [0.33ms]
+(pass) topología de coordinación del scheduler > shared sin THYROX_REDIS_URL rehúsa al abrir [0.16ms]
+(pass) topología de coordinación del scheduler > shared con Redis declarado abre la coordinación shared [1.37ms]
+
+__tests__/memoryGrantIssuer.test.ts:
+(pass) MemoryGrantIssuer > el grant lleva la identidad completa, la residencia y su generación, con su plazo [0.67ms]
+(pass) MemoryGrantIssuer > cada grant tiene su propio identificador [0.20ms]
+(pass) MemoryGrantIssuer > una identidad incoherente no recibe grant [0.17ms]
+(pass) MemoryGrantIssuer > vigente al emitirlo; deja de estarlo revocado [0.22ms]
+(pass) MemoryGrantIssuer > deja de estar vigente al caducar [0.11ms]
+(pass) MemoryGrantIssuer > una copia alterada de un grant emitido no está vigente [0.12ms]
+
+__tests__/podmanModelUnitMaterializer.test.ts:
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un grant caducado [0.40ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un grant de una generación que ya no es la vigente [0.10ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > con la coordinación no disponible [0.07ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un runtime sin perfil de contenedor [0.06ms]
+(pass) PodmanModelUnitMaterializer: materializar > crea, arranca e inspecciona; la unidad lleva su identidad completa [2.74ms]
+(pass) PodmanModelUnitMaterializer: materializar > el contenedor va en loopback, con el dispositivo concedido y las etiquetas de la unidad [2.16ms]
+(pass) PodmanModelUnitMaterializer: materializar > en CPU no pide dispositivos [0.52ms]
+(pass) PodmanModelUnitMaterializer: materializar > si create falla no quedó nada: partial false [0.72ms]
+(pass) PodmanModelUnitMaterializer: materializar > si start falla quedó un contenedor: partial true con su unitId [0.48ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > destroy distingue destruido, ausente y fallido [0.38ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > destroy retira sólo el contenedor de la unidad [0.14ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > units reconstruye cada unidad de sus etiquetas e ignora contenedores ajenos [1.28ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > nunca borra imágenes ni volúmenes [0.44ms]
+(pass) PodmanModelUnitMaterializer: identidad completa > una unidad cuya identidad etiquetada está incompleta no es una unidad de esta primitiva [0.33ms]
+
+__tests__/memoryVramLedger.test.ts:
+(pass) FencedVramLedger en memoria > reserva dentro de la capacidad y la lista [0.72ms]
+(pass) FencedVramLedger en memoria > rehúsa lo que no cabe, nombrando dispositivo, libre y pedido [0.21ms]
+(pass) FencedVramLedger en memoria > una generación menor que la mayor vista se rechaza aunque su dueño viva (M19) [0.14ms]
+(pass) FencedVramLedger en memoria > soltar devuelve la VRAM, y soltar dos veces es absent [0.21ms]
+(pass) FencedVramLedger en memoria > soltar la reserva no olvida la generación: una vieja sigue rechazada (M19) [0.17ms]
+(pass) FencedVramLedger en memoria > en CPU no hay VRAM que reservar, pero la generación sigue mandando [0.18ms]
+(pass) FencedVramLedger en memoria > un dispositivo sin capacidad declarada no admite nada [0.12ms]
+
+__tests__/residencyController.test.ts:
+(pass) ResidencyController: establecer > recorre la cadena del adapter en orden y publica resident sólo tras observar la residencia [3.35ms]
+(pass) ResidencyController: establecer > reserva la VRAM de la residencia una vez y la de la petición aparte [0.38ms]
+(pass) ResidencyController: establecer > una residencia resident se reutiliza: tres peticiones son 6 + 3×1, no 3×6 [0.35ms]
+(pass) ResidencyController: establecer > la espera de salud es del controlador: reintenta con su intervalo [0.28ms]
+(pass) ResidencyController: establecer > sin salud tras los reintentos: deshace todo y no toca el artefacto [1.78ms]
+(pass) ResidencyController: establecer > un artefacto que no es el del grant no se carga [0.47ms]
+(pass) ResidencyController: establecer > una carga que el runtime no muestra residente no se publica [0.34ms]
+(pass) ResidencyController: establecer > el lease cambia de generación durante materializing: la unidad no llega a resident [0.52ms]
+(pass) ResidencyController: establecer > el adapter rechaza la carga por generación vieja: no se publica resident [0.34ms]
+(pass) ResidencyController: desalojar > con peticiones activas drena y no destruye; no admite peticiones nuevas [1.66ms]
+(pass) ResidencyController: desalojar > sin peticiones: descarga, destruye, confirma, suelta VRAM, grant y lease, y queda absent [0.53ms]
+(pass) ResidencyController: desalojar > un unloadResidency fallido no impide destruir la unidad [0.64ms]
+(pass) ResidencyController: desalojar > si la unidad no se destruye, la VRAM sigue reservada y queda marcada [0.51ms]
+(pass) ResidencyController: desalojar > destroy que dice destroyed con la unidad aún listada no se da por ausente [0.43ms]
+(pass) ResidencyController: desalojar > una residencia que no existe no se desaloja [0.14ms]
+(pass) ResidencyController: la admisión lleva el grant de su residencia > el grant de la admisión es el de la residencia, con la identidad del plan, y se reutiliza [0.24ms]
+
+__tests__/coordinatorTransport.test.ts:
+(pass) servidor del coordinador > admit, list y finish de ida y vuelta [12.67ms]
+(pass) servidor del coordinador > un ticket vive en la conexión que lo pidió: al cerrarla se suelta [13.95ms]
+(pass) servidor del coordinador > los tickets de otra conexión no se sueltan al cerrar una [16.13ms]
+(pass) servidor del coordinador > uno por anfitrión: un segundo servidor con el primero vivo se rehúsa [2.52ms]
+(pass) servidor del coordinador > el lock de un dueño muerto se reemplaza [4.29ms]
+(pass) servidor del coordinador > el socket sólo lo abre su usuario [1.98ms]
+(pass) servidor del coordinador > una petición malformada recibe un error y el servidor sigue sirviendo [4.43ms]
+(pass) servidor del coordinador > cerrar el servidor retira el socket y el lock [2.23ms]
+(pass) cliente del coordinador > sin coordinador escuchando lo dice con CoordinatorUnavailableError [1.53ms]
+
+__tests__/hostCoordinator.test.ts:
+(pass) ModelSchedulingCoordinator: admitir > el ticket lleva el grant y la unidad de la identidad exacta resuelta [1.49ms]
+(pass) ModelSchedulingCoordinator: admitir > varios clientes del mismo modelo comparten una residencia y una unidad [0.55ms]
+(pass) ModelSchedulingCoordinator: admitir > dos modelos con la misma cuantización no comparten residencia [0.60ms]
+(pass) ModelSchedulingCoordinator: admitir > dos cuantizaciones del mismo modelo no comparten residencia [0.46ms]
+(pass) ModelSchedulingCoordinator: admitir > un modelo que el catálogo no declara se rehúsa sin tomar ningún lease [0.37ms]
+(pass) ModelSchedulingCoordinator: admitir > una identidad que no cabe en ninguna colocación se rehúsa sin tomar ningún lease [0.15ms]
+(pass) ModelSchedulingCoordinator: terminar > finish suelta el ticket una vez; los tickets vigentes se listan [0.63ms]
+(pass) ModelSchedulingCoordinator: terminar > desalojar con un ticket vigente drena; sin tickets, destruye la unidad [0.38ms]
+(pass) residencyKeyOf > deriva de la identidad entera y de la colocación, nunca de la cuantización sola [0.16ms]
+
+__tests__/redisCoordination.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+16 |     ['bash', '-c', 'source "$1" && thyrox_toolchain_require_redis && printf %s "$THYROX_TOOLCHAIN_REDIS_BIN"', 'resolve', TOOLCHAIN],
+17 |     { env: env as Record<string, string>, stdin: 'ignore', stdout: 'pipe', stderr: 'pipe' },
+18 |   )
+19 |   const stdout = result.stdout.toString()
+20 |   if (result.exitCode !== 0 || stdout === '') {
+21 |     throw new Error(
+                   ^
+error: thyrox_toolchain_require_redis no resolvió redis-server (exit 2): thyrox_toolchain: falta 'redis-server' (paquete redis-server) y la instalacion es opt-in.
+                  Reintenta con THYROX_INSTALL_REDIS=1.
+                  NO se emite conteo: un cero aqui no distinguiria
+                  «no hay» de «no pude medir».
+      at resolveRedisServerFromToolchain (/home/user/thyrox/src/packages/shared-state/__tests__/redisServerFromToolchain.ts:21:15)
+      at /home/user/thyrox/src/packages/model-scheduling/__tests__/redisCoordination.test.ts:36:24
+      at loadAndEvaluateModule (2:1)
+-------------------------------
+
+
+__tests__/residencyLedger.test.ts:
+(pass) ResidencyVramLedger en memoria > tres peticiones sobre una residencia son 6 GiB + 3 × 1 GiB, no 3 × 6 GiB [0.73ms]
+(pass) ResidencyVramLedger en memoria > soltar una petición devuelve su VRAM incremental [0.31ms]
+(pass) ResidencyVramLedger en memoria > una petición sobre una reserva soltada es absent [0.19ms]
+(pass) ResidencyVramLedger en memoria > una petición sobre una reserva de generación vieja se rechaza [0.12ms]
+(pass) ResidencyVramLedger en memoria > el ledger de residencias conserva el contrato de FencedVramLedger [0.13ms]
+
+__tests__/hostCoordinatorService.test.ts:
+(pass) startHostCoordinatorService > destruye las unidades de una encarnación anterior antes de abrir el socket [3.34ms]
+(pass) startHostCoordinatorService > sin unidades anteriores arranca sin destruir nada [2.47ms]
+(pass) startHostCoordinatorService > una unidad anterior que no se deja destruir impide arrancar, sin socket [2.01ms]
+(pass) startHostCoordinatorService > una unidad que dice destruirse y sigue listada también impide arrancar [0.68ms]
+(pass) startHostCoordinatorService > al detenerse desaloja cada residencia viva una vez, retira el socket y cierra la coordinación [2.39ms]
+
+__tests__/scheduler.test.ts:
+(pass) ModelScheduler: la cadena > reconcilia antes del primer grant y encadena con una sola generación (M17, M20) [1.14ms]
+(pass) ModelScheduler: la cadena > reconcilia una sola vez mientras la coordinación no cae [0.26ms]
+(pass) ModelScheduler: rehúsa sin crear nada > la residencia la tiene otro coordinador [0.22ms]
+(pass) ModelScheduler: rehúsa sin crear nada > la coordinación no está disponible: no hay admisión [0.19ms]
+(pass) ModelScheduler: rehúsa sin crear nada > tras una caída de la coordinación vuelve a reconciliar antes de admitir [0.48ms]
+(pass) ModelScheduler: rehúsa sin crear nada > una caída de la coordinación no retira ejecuciones ya materializadas [0.22ms]
+(pass) ModelScheduler: compensaciones (M18) > falla la reserva: suelta el lease y no hay grant [0.43ms]
+(pass) ModelScheduler: compensaciones (M18) > falla el grant: suelta la reserva y el lease [0.28ms]
+(pass) ModelScheduler: compensaciones (M18) > falla la materialización con resto parcial: retira la unidad, revoca, suelta reserva y lease [0.76ms]
+(pass) ModelScheduler: compensaciones (M18) > falla la carga en el runtime: retira la unidad, revoca, suelta reserva y lease [0.33ms]
+(pass) ModelScheduler: compensaciones (M18) > una compensación que no se completa queda marcada, nunca callada [0.42ms]
+(pass) ModelScheduler: compensaciones (M18) > una reserva que no se puede soltar queda marcada [0.42ms]
+(pass) ModelScheduler: fencing (M19) > perder el lease entre el grant y la materialización: la primitiva rechaza y nada queda [0.45ms]
+(pass) ModelScheduler: fencing (M19) > una reserva rechazada por generación vieja suelta el lease [0.18ms]
+(pass) ModelScheduler.reconcile (M20) > marca una unidad cuyo runtime no sirve el modelo de su grant [0.18ms]
+(pass) ModelScheduler.reconcile (M20) > una unidad que sobrevivió y sirve su modelo no se marca ni se retira [0.18ms]
+
+__tests__/memoryCoordination.test.ts:
+(pass) contrato de ModelSchedulingCoordination: memoria (local) > la primera adquisición da la generación 1 y otro dueño la ve ocupada [1.56ms]
+(pass) contrato de ModelSchedulingCoordination: memoria (local) > soltar y volver a adquirir sube la generación [0.24ms]
+(pass) contrato de ModelSchedulingCoordination: memoria (local) > renovar el lease vigente conserva la generación [151.34ms]
+(pass) contrato de ModelSchedulingCoordination: memoria (local) > un lease caducado con su dueño vivo queda stale y no se renueva (M19) [151.52ms]
+(pass) contrato de ModelSchedulingCoordination: memoria (local) > un lease caducado sin nadie que lo tome tampoco se renueva: hay que readquirir [150.66ms]
+(pass) contrato de ModelSchedulingCoordination: memoria (local) > el lock de mutación exige la propiedad vigente y es otro lease [0.55ms]
+(pass) contrato de ModelSchedulingCoordination: memoria (local) > una propiedad vieja no obtiene el lock de mutación [151.15ms]
+(pass) contrato de ModelSchedulingCoordination: memoria (local) > una residencia nunca adquirida tiene generación 0 [0.35ms]
+
+__tests__/residency.test.ts:
+(pass) ResidencyRegistry > plan abre planned en la generación del lease, sin peticiones [0.07ms]
+(pass) ResidencyRegistry > recorre planned → materializing → loading → resident y guarda los cambios [0.12ms]
+(pass) ResidencyRegistry > un contenedor arrancado no salta a resident sin cargar [0.13ms]
+(pass) ResidencyRegistry > una generación vieja no mueve la residencia aunque su emisor viva (M19) [0.14ms]
+(pass) ResidencyRegistry > plan no sustituye una residencia viva; sí una absent, con generación nueva [0.09ms]
+(pass) ResidencyRegistry > una residencia desconocida no se mueve [0.07ms]
+
+1 tests failed:
+
+ 108 pass
+ 1 fail
+ 1 error
+ 297 expect() calls
+Ran 109 tests across 13 files. [1032.00ms]

@@ -1,0 +1,26 @@
+esperando: 0 de 1 asentados, 370s; vivos: verify-measure
+asentado: verify-measure -> OK (1 de 1)
+== 1 trabajos asentados ==
+OK     verify-measure exit=1
+       | == tests/session/test-parallel-map.sh exit=1 | parallel_map: 28/34
+       | == tests/session/test_container_measure.py exit=0 | test_container_measure: 21 ok, 0 falla(s)
+       | == tests/session/test_gpu_monitor.py exit=0 | test_gpu_monitor: 51 ok, 0 falla(s)
+       | == tests/session/test_gpu_scenarios.py exit=0 | test_gpu_scenarios: 19 ok, 0 falla(s)
+       | == tests/session/test_parallel_map_history.py exit=1 | test_parallel_map_history: 12 ok, 5 fallos
+       | == tests/session/test_pool_history.py exit=0 | test_pool_history: 107 ok, 0 falla(s)
+       | == tests/session/test_resource_admission.py exit=0 | test_resource_admission: 59 ok, 0 fallos
+       | == tests/verify/test_step_report.py exit=0 | test_step_report: 22 aserciones — 22 ok, 0 falla(s)
+       | == test-gpu-hardware-refusal exit=0
+       | __BG_EXIT__=1
+       memoria pico: 42108 KB (41 MB) · pared 393.44s
+salida distinta de 0: 1 (verify-measure)
+
+[exited with code 0]
+
+## Las dos suites rojas no son de este ítem
+Copia limpia de HEAD (`git archive HEAD`, sin el ítem integrado):
+test_parallel_map_history: 12 ok, 5 fallos · test-parallel-map.sh: 28/34.
+Mismos conteos antes y después. Causa: `pool_history.record` cuenta sólo
+ítems con `<n>.closed` (bfd372978) y `parallel_map` no publica ese cierre,
+así que su historial nunca graba fila y la ejecución siguiente no deriva
+reserva. Sucesor: el arreglo de parallel_map (TASK en el tablero).

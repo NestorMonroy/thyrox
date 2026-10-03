@@ -1,0 +1,3 @@
+src/packages/daemon/src/__tests__/daemonBgGating.test.ts
+src/packages/daemon/src/__tests__/daemonWorkerSet.test.ts
+src/packages/daemon/src/__tests__/supervisorWorkerConfig.test.ts

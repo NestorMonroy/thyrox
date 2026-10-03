@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, test } from 'bun:test'
-import { mkdtempSync, rmSync, symlinkSync, writeFileSync } from 'fs'
+import { mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import {
@@ -10,6 +10,8 @@ import {
   readFileRange,
   readLinesReverse,
   resolveDeepestExistingAncestorSync,
+  resolvePathForPermission,
+  resolvePathForScreen,
   safeResolvePath,
   setFsImplementation,
   setOriginalFsImplementation,
@@ -268,5 +270,168 @@ describe('readFileRange / tailFile / readLinesReverse', () => {
     expect(lines[0]).toBe('tercera')
     expect(lines[1]).toBe(`${filler}segunda-emoji-🎉`)
     expect(lines[2]).toBe('primera')
+  })
+})
+
+describe('resolvePathForPermission (Ua = Rt(e,"permission"), 2.1.283)', () => {
+  let dir: string
+  afterEach(() => {
+    if (dir) rmSync(dir, { recursive: true, force: true })
+  })
+  function realTmp(): string {
+    return realpathSync(makeTmpDir())
+  }
+
+  test('un archivo plano aterriza en si mismo, con una sola grafia y sin hoja simbolica', () => {
+    dir = realTmp()
+    const file = join(dir, 'plano.txt')
+    writeFileSync(file, 'x')
+    expect(resolvePathForPermission(file)).toEqual({
+      unresolved: false,
+      requested: file,
+      spellings: [file],
+      landing: file,
+      leafIsSymlink: false,
+    })
+  })
+
+  test('un enlace de hoja aterriza en su destino y marca leafIsSymlink', () => {
+    dir = realTmp()
+    const target = join(dir, 'destino.txt')
+    writeFileSync(target, 'x')
+    const link = join(dir, 'origen.txt')
+    symlinkSync(target, link)
+    const resolved = resolvePathForPermission(link)
+    expect(resolved).toMatchObject({ unresolved: false, landing: target, leafIsSymlink: true })
+    expect(resolved.spellings).toEqual([link, target])
+  })
+
+  test('un enlace de directorio padre aterriza en el destino real aunque la hoja no exista', () => {
+    dir = realTmp()
+    const realDir = join(dir, 'real')
+    mkdirSync(realDir)
+    symlinkSync(realDir, join(dir, 'linked'))
+    const requested = join(dir, 'linked', 'nuevo.txt')
+    const resolved = resolvePathForPermission(requested)
+    expect(resolved).toMatchObject({ unresolved: false, landing: join(realDir, 'nuevo.txt'), leafIsSymlink: false })
+    expect(resolved.spellings).toEqual([requested, join(realDir, 'nuevo.txt')])
+  })
+
+  test('un enlace colgante aterriza en el destino que no existe', () => {
+    dir = realTmp()
+    const missing = join(dir, 'no-existe.txt')
+    const link = join(dir, 'colgante.txt')
+    symlinkSync(missing, link)
+    expect(resolvePathForPermission(link)).toMatchObject({ unresolved: false, landing: missing, leafIsSymlink: true })
+  })
+
+  test('un ciclo de enlaces es irresoluble y nombra donde se detuvo', () => {
+    dir = realTmp()
+    const a = join(dir, 'a')
+    const b = join(dir, 'b')
+    symlinkSync(b, a)
+    symlinkSync(a, b)
+    const resolved = resolvePathForPermission(a)
+    expect(resolved.unresolved).toBe(true)
+    if (resolved.unresolved) expect([a, b]).toContain(resolved.stoppedAt)
+    expect(resolved.leafIsSymlink).toBe(true)
+    expect(resolved.spellings[0]).toBe(a)
+  })
+
+  test('un enlace cuyo resto ausente lleva `..` es irresoluble: no se sabe por donde sube', () => {
+    dir = realTmp()
+    const link = join(dir, 'sube.txt')
+    symlinkSync('no-existe/../secreto.txt', link)
+    const resolved = resolvePathForPermission(link)
+    expect(resolved.unresolved).toBe(true)
+    if (resolved.unresolved) expect(resolved.stoppedAt).toBe(join(dir, 'no-existe'))
+  })
+
+  test('una ruta UNC no toca el disco: aterriza en si misma', () => {
+    expect(resolvePathForPermission('//host/share/file')).toEqual({
+      unresolved: false,
+      requested: '//host/share/file',
+      spellings: ['//host/share/file'],
+      landing: '//host/share/file',
+      leafIsSymlink: false,
+    })
+  })
+
+  test('un prefijo que el nucleo redirige (/.vol) es irresoluble', () => {
+    expect(resolvePathForPermission('/.vol/1/2/x').unresolved).toBe(true)
+  })
+
+  test('la tilde se expande antes de resolver', () => {
+    const resolved = resolvePathForPermission('~')
+    expect(resolved.requested.startsWith('/')).toBe(true)
+    expect(resolved.requested.includes('~')).toBe(false)
+  })
+})
+
+describe('resolvePathForScreen (H6 = Rt(e,"screen"), 2.1.283)', () => {
+  let dir: string
+  afterEach(() => {
+    if (dir) rmSync(dir, { recursive: true, force: true })
+  })
+
+  /** `link0 → sub/../link1 → … → sub/../linkN`, y `linkN` es un archivo: N textos que suben. */
+  function climbingChain(length: number): string {
+    dir = realpathSync(makeTmpDir())
+    mkdirSync(join(dir, 'sub'))
+    writeFileSync(join(dir, `link${length}`), 'x')
+    for (let index = length - 1; index >= 0; index--) {
+      symlinkSync(`sub/../link${index + 1}`, join(dir, `link${index}`))
+    }
+    return join(dir, 'link0')
+  }
+
+  test('un enlace cuyo texto sube con `..` interior aterriza donde el disco lo lleva, vetted', () => {
+    const link = climbingChain(1)
+    const screened = resolvePathForScreen(link)
+    expect(screened.vetted).toBe(true)
+    expect(screened.paths).toContain(link)
+    expect(screened.paths).toContain(join(dir, 'link1'))
+  })
+
+  test('hasta ocho textos que suben se resuelven aparte y la criba queda vetted', () => {
+    expect(resolvePathForScreen(climbingChain(8)).vetted).toBe(true)
+  })
+
+  test('el noveno texto que sube deja la criba sin vetar', () => {
+    expect(resolvePathForScreen(climbingChain(9)).vetted).toBe(false)
+  })
+
+  test('un ciclo sin readlink fallido queda vetted en la ruta pedida, como en la fuente (c===undefined && !p)', () => {
+    dir = realpathSync(makeTmpDir())
+    const a = join(dir, 'a')
+    symlinkSync(a, a)
+    expect(resolvePathForScreen(a)).toEqual({ paths: [a], vetted: true })
+  })
+
+  test('un prefijo que el nucleo redirige deja la criba sin vetar', () => {
+    expect(resolvePathForScreen('/.vol/1/2/x')).toEqual({ paths: ['/.vol/1/2/x'], vetted: false })
+  })
+})
+
+describe('getPathsForPermissionCheck como adaptador de grafias (To, 2.1.283)', () => {
+  let dir: string
+  afterEach(() => {
+    if (dir) rmSync(dir, { recursive: true, force: true })
+  })
+
+  test('con un ciclo de enlaces devuelve al menos la ruta pedida, sin lanzar', () => {
+    dir = realpathSync(makeTmpDir())
+    const a = join(dir, 'a')
+    symlinkSync(a, a)
+    expect(getPathsForPermissionCheck(a)).toEqual([a])
+  })
+
+  test('openDirNoFollowSync abre un directorio y rehusa un enlace a directorio', () => {
+    dir = realpathSync(makeTmpDir())
+    const real = join(dir, 'real')
+    mkdirSync(real)
+    symlinkSync(real, join(dir, 'link'))
+    expect(() => NodeFsOperations.openDirNoFollowSync(real)).not.toThrow()
+    expect(() => NodeFsOperations.openDirNoFollowSync(join(dir, 'link'))).toThrow()
   })
 })

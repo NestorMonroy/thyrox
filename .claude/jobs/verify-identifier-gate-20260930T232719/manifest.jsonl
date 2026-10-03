@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c for t in tests/verify/test_identifier_language*.py; do printf \"%s \" $t; PYTHONDONTWRITEBYTECODE=1 python3 $t 2>&1 | tail -1; done", "started_at": "2026-09-30T23:27:19+00:00"}

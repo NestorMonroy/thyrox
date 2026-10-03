@@ -91,6 +91,7 @@ import type { BetaMessageStreamParams } from '@anthropic-ai/sdk/resources/beta/m
 import { randomUUID } from 'node:crypto'
 import type { SessionId } from '@thyrox/agent/idTypes'
 import { realpathSync } from 'fs'
+import { resolve } from 'path'
 import { cwd } from 'process'
 import type { ModelSetting } from '@thyrox/provider/model.js'
 import type { ModelStrings } from '@thyrox/provider/modelStrings.js'
@@ -245,6 +246,7 @@ type State = {
   }>
   // Slice N — plugins y canales declarados
   inlinePlugins: Array<string>
+  inlinePluginsNoMcp: Array<string>
   chromeFlagOverride: boolean | undefined
   useCoworkPlugins: boolean
   allowedChannels: ChannelEntry[]
@@ -384,6 +386,7 @@ function getInitialState(): State {
     inMemoryErrorLog: [],
     slowOperations: [],
     inlinePlugins: [],
+    inlinePluginsNoMcp: [],
     chromeFlagOverride: undefined,
     useCoworkPlugins: false,
     allowedChannels: [],
@@ -1623,6 +1626,29 @@ export function setInlinePlugins(plugins: Array<string>): void {
 
 export function getInlinePlugins(): Array<string> {
   return STATE.inlinePlugins
+}
+
+/** Plugins en línea que se cargan sin descubrir sus servidores MCP (`--plugin-dir-no-mcp`). */
+export function setInlinePluginsNoMcp(plugins: Array<string>): void {
+  STATE.inlinePluginsNoMcp = plugins
+}
+
+export function getInlinePluginsNoMcp(): Array<string> {
+  return STATE.inlinePluginsNoMcp
+}
+
+/** Un plugin en línea que vive en disco; una URL no tiene raíz que proteger. */
+function isFilesystemPluginSource(plugin: string): boolean {
+  return !plugin.includes('://')
+}
+
+/**
+ * Las raíces de todos los plugins en línea, con y sin MCP, resueltas contra
+ * el cwd original y sin repetir (≙ `fe` de 2.1.275).
+ */
+export function getInlinePluginRoots(): Array<string> {
+  const declared = [...STATE.inlinePlugins, ...STATE.inlinePluginsNoMcp].filter(isFilesystemPluginSource)
+  return Array.from(new Set(declared.map(plugin => resolve(getOriginalCwd(), plugin))))
 }
 
 export function setChromeFlagOverride(value: boolean | undefined): void {

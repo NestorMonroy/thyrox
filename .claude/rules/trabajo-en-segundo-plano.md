@@ -71,13 +71,32 @@ hallazgo— y que no necesitan ni el contexto del orquestador ni su anchura.
 
 ```bash
 printf '%s\n' <items> | bash bin/headless-pool --prompt <plantilla.md> \
-    --out <banco>/outputs/<dir> --model claude-sonnet-5 [--width N] [--timeout S]
+    --out <banco>/outputs/<dir> --task-class analisis [--width N] [--timeout S]
 ```
 
 Cada ítem recibe sólo la plantilla y su `Item:`, corre sin sesión
 persistida, con `--setting-sources project` y herramientas de lectura, y deja
-`<n>.json` en disco antes de que nadie lo resuma. El modelo va por
-identificador completo; un alias rehúsa con exit 2.
+`<n>.json` en disco antes de que nadie lo resuma.
+
+**El modelo no se escribe: se deriva de la clase de tarea.** `--task-class`
+toma `mecanica`, `analisis`, `adversarial` o `frontera`, y el pool pide el
+modelo a `bin/agent-recommend` —el `recommend(tipo, perfil)` de
+`@thyrox/agent`, que fija rango mínimo y compara los registros del
+catálogo— y lo imprime en su línea `modelo: <id> (derivado de --task-class
+<clase>)`. `--model` rehúsa con exit 2 y nombra la clase a declarar; un
+selector que falla también rehúsa, sin modelo por defecto. La clase describe
+el trabajo del ítem, no un precio: implementar en TDD es `analisis`, revisar
+adversarialmente un cambio de riesgo es `adversarial`.
+
+Episodio (2026-09-30): con `--model` escrito a mano, dos pools se lanzaron en
+`claude-fable-5-1` una y dos horas después de que el ejecutor pidiera
+`claude-opus-5-5`. Nada en el pool podía verlo: el identificador era válido.
+El selector, para `analisis` y `adversarial`, devuelve `claude-opus-5-5`; qué
+devuelve hoy lo publica el propio comando, no esta prosa:
+
+```bash
+bash bin/agent-recommend analisis
+```
 
 **El ítem corre sobre el bucle propio por defecto**: sin declarar nada, el
 pool lanza `thyrox -p` (`bin/cli`), y sólo ése: hablar con Anthropic u otro
@@ -253,7 +272,7 @@ sólo `Bash`, no `Edit` ni `Write`: si el pool se las ofrece, las usa en vez de
 
 ```bash
 printf '%s\n' <items> | bash bin/headless-pool --prompt <plantilla.md> \
-    --out <banco>/outputs/<dir> --model claude-sonnet-5 \
+    --out <banco>/outputs/<dir> --task-class analisis \
     --isolation worktree --verify '<comando que prueba el cambio>'
 bash bin/pool_integrate <banco>/outputs/<dir>     # aplica lo verificado y disjunto
 ```
@@ -362,6 +381,32 @@ mandar en automático»*— tras un `thyrox-bg wait` que retuvo el turno varios
 minutos. El trabajo va al *ledger* con `thyrox-bg`; la espera, al segundo plano
 del cliente, que es lo único que notifica. `detect_foreground_long_command`
 avisa ya sobre una espera sin `run_in_background`.
+
+**Cuando el cliente no ofrece `run_in_background`, la espera va a un
+`Monitor`.** El entorno remoto fija `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1`,
+y el cliente la lee con su `isEnvTruthy` (`1`, `true`, `yes`, `on`; «0» no
+cuenta): con ella omite el parámetro del esquema de Bash y de Agent. La
+llamada que lo pasa se rechaza antes de ejecutarse. La inyecta el lanzador
+remoto en el entorno del proceso, no un `settings` ni el repo, así que desde
+la sesión no se revierte. Se mide, no se recuerda:
+
+```bash
+bash bin/binary literal CLAUDE_CODE_DISABLE_BACKGROUND_TASKS   # la compuerta
+bash bin/binary symbol <chunk> <nombre> --root _references/claude-code-bin/<build>/bunfs-root
+``` Lo que sí notifica sin
+bloquear es la herramienta `Monitor` (diferida: se carga con `ToolSearch`)
+con un comando que **termina** al asentarse el trabajo y emite una sola
+línea:
+
+```bash
+bash bin/thyrox-bg wait <nombre> >/dev/null 2>&1; echo "<nombre>: $(bash bin/thyrox-bg status <nombre>)"
+```
+
+El trabajo sigue en el ledger con `thyrox-bg`; el `Monitor` sólo sustituye
+la espera. `detect_foreground_long_command` lee la misma variable y prescribe
+esta forma en vez del parámetro ausente (episodio del 2026-10-01: el aviso
+pedía `run_in_background`, la llamada falló por esquema y la espera cayó en
+primer plano).
 
 **Y ordenar no exige bloquear.** Si B depende de A, la arista se declara **al
 lanzar** y el primer plano queda libre — la forma de `qsub -W depend=afterok`:

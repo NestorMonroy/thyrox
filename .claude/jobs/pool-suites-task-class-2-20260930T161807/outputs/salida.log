@@ -1,0 +1,21 @@
+== test-headless-pool
+aserciones: 147 de 147 · fallos: 0
+== test-headless-pool-worktree
+test-headless-pool-worktree: 46 aserciones — 46 ok, 0 falla(s)
+== test-headless-pool-thyrox-p
+12 ok · 0 falla(s) (alcance medido: headless-pool con thyrox -p)
+== test-headless-pool-credential-source
+aserciones: 42 de 42 · fallos: 0
+== test-headless-pool-lifecycle
+result: 40 of 40 assertions green
+== test-headless-pool-item-drain
+result: 17 of 17 assertions green
+== test-headless-pool-exit-live-items
+24/24 aserciones
+== test-headless-pool-frozen-launcher
+result: 6 of 6 assertions green
+== test-pool-calibrate
+10 ok · 0 falla(s) (alcance medido: pool-calibrate contra el proxy local)
+test_tsc_cycle: 104 aserciones — 104 ok, 0 falla(s)
+11 caso(s); 0 fallo(s)
+__BG_EXIT__=0

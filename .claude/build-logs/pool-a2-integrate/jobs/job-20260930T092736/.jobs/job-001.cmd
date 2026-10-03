@@ -1,0 +1,1 @@
+PYTHONDONTWRITEBYTECODE=1 timeout 300 python3 tests/session/test_documentation_publisher.py > /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0624-publisher.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0624-publisher.log

@@ -1,0 +1,3 @@
+src/packages/daemon/src/__tests__/daemonCli.test.ts
+src/packages/daemon/src/daemonCli.ts
+src/packages/daemon/src/main.ts

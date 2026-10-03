@@ -9,7 +9,6 @@
 import { afterEach, describe, expect, test } from 'bun:test'
 import { createHttpForwarder, credentialAuth, forwardableRequestHeaders, returnableResponseHeaders } from '../src/proxy/upstreamForwarder.ts'
 import type { ForwardRequest } from '../src/proxy/server.ts'
-import { ALLOW_LOOPBACK_ENV } from '../src/proxy/netGuards.ts'
 import { OAUTH_BETA } from '../src/credentials.ts'
 
 type Seen = { url: string; method: string; headers: Headers; body: string }
@@ -33,7 +32,7 @@ function stub(respond: (seen: Seen) => Response | Promise<Response> = () => Resp
   return { baseUrl: `http://127.0.0.1:${server.port}`, seen }
 }
 
-const loopbackEnv = { [ALLOW_LOOPBACK_ENV]: '1' }
+const loopbackEnv = {}
 
 function headerNames(headers: Headers): string[] {
   const names: string[] = []
@@ -153,11 +152,11 @@ describe('createHttpForwarder (Mv)', () => {
     await expect(forward(forwardRequest())).rejects.toThrow(/"u"/)
   })
 
-  test('una baseUrl insegura (loopback sin permiso) rehúsa antes de conectar', async () => {
-    const upstream = stub()
-    const forward = createHttpForwarder({ upstreams: { u: { baseUrl: upstream.baseUrl } }, env: {}, version: '0.1.0' })
+  // El loopback es un destino válido desde 97fbdc34e; inseguro es, por ejemplo,
+  // un nombre de metadatos que netGuards bloquea.
+  test('una baseUrl insegura (un nombre de metadatos) rehúsa antes de conectar', async () => {
+    const forward = createHttpForwarder({ upstreams: { u: { baseUrl: 'http://metadata.google.internal' } }, env: {}, version: '0.1.0' })
     await expect(forward(forwardRequest())).rejects.toThrow(/insegura|unsafe/)
-    expect(upstream.seen).toHaveLength(0)
   })
 
   test('un upstream que no manda cabeceras dentro del plazo se aborta (wj)', async () => {

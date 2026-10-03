@@ -1,0 +1,7 @@
+ 29 pass
+ 0 fail
+ 69 expect() calls
+Ran 29 tests across 1 file. [168.00ms]
+test-declared-image-build-entry: 13 ok, 0 falla(s)
+execution thyrox-worker-test-murpdsp8-8843 kind=test task=TASK-THYROX-0912 exit=0
+__BG_EXIT__=0

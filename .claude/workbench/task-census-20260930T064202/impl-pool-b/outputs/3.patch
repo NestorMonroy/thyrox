@@ -1,0 +1,612 @@
+diff --git a/.claude/workbench/task-thyrox-0497-anthropic-provider-id-20260930T075231/README.md b/.claude/workbench/task-thyrox-0497-anthropic-provider-id-20260930T075231/README.md
+new file mode 100644
+index 000000000..ff2200b85
+--- /dev/null
++++ b/.claude/workbench/task-thyrox-0497-anthropic-provider-id-20260930T075231/README.md
+@@ -0,0 +1,104 @@
++# TASK-THYROX-0497 — cómo se nombra el proveedor de Anthropic al dar de alta una credencial
++
++Banco de la sesión que implementa el ítem (worktree del pool, 2026-09-30).
++Pregunta: `providers add anthropic --dry-run` guarda `"provider": "anthropic"`
++y `resolveCredential` busca `ANTHROPIC_PROVIDER_ID = 'claude'`
++(`src/packages/provider/src/accounts/imports/anthropicAuthFile.ts:15`). ¿Qué
++nombre gobierna, y qué hace la referencia?
++
++## Lo que la referencia (claude-code 2.1.283) hace
++
++Corpus: `/home/user/thyrox/_references/claude-code-bin/2.1.283/bunfs-root/`,
++sólo lectura (`rg`, `python3` para recortar la línea minificada).
++
++| Símbolo / literal | Chunk:línea | Qué hace | Decisión |
++|---|---|---|---|
++| `Pe()` | `chunk-4h0c4z04.js:11` | Devuelve `"gateway"`, `"bedrock"`, `"foundry"`, `"anthropicAws"`, `"anthropicGoogleCloud"`, `"mantle"`, `"vertex"` o `"firstParty"` según `CLAUDE_CODE_USE_*`. Es el eje de **transporte/despliegue**, no un id de cuenta. | No se porta como id de proveedor: thyrox ya tiene ese eje en `connections.ts` (`protocol: 'anthropic'`). |
++| `"firstParty"` | 11 apariciones en `chunk-csayct82.js`, 1 en cada uno de otros 9 chunks (`rg -c`) | El valor de `Pe()` cuando se habla con `api.anthropic.com` directo. | Divergencia declarada: no es un nombre de proveedor almacenado. |
++| `primaryApiKey` | `chunk-t6pwageh.js:77-79` (`HF()`, `ZF()`, `YLr()`) | La clave de API guardada por `/login`, en la config del usuario; se lee como `{key, source:"/login managed key"}`. **Sin nombre de proveedor**: el binario sólo conoce a Anthropic. | Divergencia: thyrox guarda N proveedores en `provider_connections`, así que la fila necesita un id. |
++| `claudeAiOauth` | `chunk-t6pwageh.js:78`, `chunk-m5drh1xg.js:29`, `chunk-8kctp40x.js:19` | La cuenta OAuth guardada (`accessToken`, `refreshToken`, `expiresAt`, `scopes`), bajo la clave `claudeAiOauth` del archivo de credenciales. Tampoco lleva id de proveedor. | Mismo motivo. `anthropicAuthFile.ts` ya porta esta forma al exportar. |
++| `Fv(e,t)` con `switch(r.provider){case"anthropic": …}` | `chunk-wg7ts4cy.js:234` (offset 5019 de la línea) | Construye los upstreams del gateway desde una config: **cuando la referencia nombra al proveedor, lo llama `"anthropic"`**, con `auth.api_key` → `x-api-key` o `auth.oauth_token` → `Authorization: Bearer` + beta OAuth. | Es el único sitio del binario donde `provider` es un dato con nombre; thyrox lo porta igual en el proxy (`proxy/upstreamRouting.ts:107`, `proxy/modelsList.ts:59`: `upstream.provider === 'anthropic'`). |
++
++Métrica: apariciones del literal en los chunks `.js` del corpus con `rg -c`
++y `rg -o` con contexto; lectura directa de la línea 234 del chunk con Python
++(`str.find` sobre la línea, ventana de 2200+900 caracteres).
++Ciega a: código que construya el nombre por concatenación o lo reciba del
++servidor; a chunks comprimidos (`.zst`) que `rg` no descomprime. La
++cifra de `firstParty` cuenta literales, no llamadas a `Pe()`.
++
++## Lo que el árbol ya decidió (medido, no supuesto)
++
++`rg -n "'claude'|'anthropic'" src/packages/provider/src` (sin tests), agrupado:
++
++- **Id de la cuenta en el store = `claude`**: `credentials.ts` (`ANTHROPIC_PROVIDER_ID`),
++  `oauth/flowRegistry.ts:42` (la clave del flujo es lo que `persistOAuthConnection`
++  guarda como `provider`), `refresh/providerRefreshDispatch.ts:121`,
++  `refresh/providerCredentials.ts:24`, `refresh/health/refreshCircuit.ts:21,26`,
++  `claudeExtraUsage.ts:78,168`, `oauthPersistence.ts` (`SAME_ACCOUNT_BY_PROVIDER.claude`).
++  Y `imports/cliProxyAuthImport.ts:18-19` ya traduce **`anthropic → claude`** al importar.
++- **`anthropic` como nombre del upstream / de la receta de sonda**:
++  `accounts/apiKeyProbe.ts` (`PROBE_RECIPES.anthropic`), `proxy/upstreamRouting.ts:107`,
++  `proxy/modelsList.ts:59`, `connections.ts` (`protocol: 'anthropic'`).
++- `proxy/session/affinitySelector.ts:324` los declara **alias del mismo
++  espacio**: `canonicalLcpProvider('anthropic') === 'claude'`.
++
++Métrica: conteo de sitios por literal en `src/packages/provider/src`, sin `__tests__`.
++Ciega a: consumidores fuera de `provider` (p. ej. `cli`) y a filas ya
++guardadas en un store real con `provider: 'anthropic'` por el defecto que
++esta tarea cierra.
++
++## Decisión
++
++1. **El id de la conexión de Anthropic en el store es `claude`**, porque es lo
++   que ya escriben `providers login claude` y leen `resolveCredential` y el
++   refresco. Cambiar `ANTHROPIC_PROVIDER_ID` está fuera de los archivos del
++   ítem y rompería las filas OAuth existentes.
++2. **La CLI acepta las dos grafías** —`anthropic` (la de la referencia y de la
++   receta de sonda) y `claude`— y guarda una: `canonicalProviderId` en
++   `cli/src/commands/providers/providerId.ts`. Es la misma traducción de
++   `cliProxyAuthImport.ts`, ahora también en `add`, `import`, el selector y
++   `login`.
++3. **La sonda de clave recibe el nombre de su receta**: `apiKeyProbeProvider('claude') === 'anthropic'`.
++   `testVerbs.ts` traduce antes de llamar a `testDeps.probe`; así `providers test`
++   sobre una fila `claude`/`apikey` llega al `/messages` del proxy local en
++   vez de «Provider test not supported».
++4. **Divergencia declarada**: la referencia no nombra su propia credencial
++   (`primaryApiKey`, `claudeAiOauth`); cuando nombra un proveedor en config
++   dice `anthropic`. Thyrox conserva `anthropic` para upstreams del proxy y
++   `claude` para cuentas del store; el puente entre ambos vive en un solo
++   módulo de la CLI.
++5. **`providers login claude` exige `THYROX_CLAUDE_OAUTH_CLIENT_ID` antes de
++   abrir nada**: `oauthLogin.ts` comprueba el `clientId` del flujo antes de
++   `runOAuthLogin`; hoy el flujo ya rehusaba, pero después de abrir el
++   servidor de callback (`loginRunner.ts: runCodeLogin` arranca el servidor y
++   luego llama a `generateAuthData`).
++
++## Lo que queda fuera de este ítem
++
++- `ANTHROPIC_PROVIDER_ID` no está exportado por `@thyrox/provider/package.json`
++  (`rg '"./accounts/imports/anthropicAuthFile"'` → 0). La CLI declara el
++  literal en `providerId.ts` y lo fija por conducta: la prueba de extremo a
++  extremo guarda con `providers add anthropic` y lee con `resolveCredential`
++  sobre el mismo store cifrado. Añadir el export es un cambio en
++  `provider/package.json`, fuera de la lista.
++- La sonda contra el proxy local con credencial del store (C3) no existe
++  todavía; aquí la prueba apunta `providerSpecificData.baseUrl` al servidor
++  de loopback `startAnthropicMockServer`, que es el mismo mecanismo que
++  usará el proxy de C3.
++
++## Controles de anulación (medidos sobre 67 casos de los cinco archivos de prueba de `providers`)
++
++| Rama retirada | Caen | Sobreviven |
++|---|---|---|
++| `canonicalProviderId` → identidad | 10 (alta ×2 grafías, import, sonda, unidad, e2e ×4, login alias, selector) | 57 |
++| `apiKeyProbeProvider` → identidad | 3 (unidad, sonda en `testVerbs`, e2e `providers test`) | 64 |
++| `testVerbs` sin `probeByRecipeName` | 2 (sonda en `testVerbs`, e2e `providers test`) | 65 |
++| selector sin alias de proveedor | 3 (selector, sonda por selector `anthropic`, e2e `providers test`) | 64 |
++| `oauthLogin` sin comprobación previa del client id | 1 (rehúsa antes de abrir servidor: el doble cuenta 1 servidor) | 66 |
++| `loginVerb` sin grafía canónica | 1 (`login anthropic` → `claude`) | 66 |
++
++Métrica: `(fail)` de `bun test` sobre los cinco archivos, con el archivo
++original copiado a `mktemp`, la rama sustituida con `bin/replace_literal`, y
++el archivo restaurado desde la copia. Ciega a: las pruebas de otros paquetes
++que importen estos módulos (ninguna medida: `rg` de `commands/providers/`
++fuera de `cli` → 0).
+diff --git a/src/packages/cli/__tests__/providersAnthropicCredential.test.ts b/src/packages/cli/__tests__/providersAnthropicCredential.test.ts
+new file mode 100644
+index 000000000..7f40c862c
+--- /dev/null
++++ b/src/packages/cli/__tests__/providersAnthropicCredential.test.ts
+@@ -0,0 +1,143 @@
++/**
++ * Alta de una credencial de Anthropic desde la CLI y su lectura por la cadena
++ * de credenciales, sobre el mismo store cifrado: `providers add anthropic`
++ * guarda la fila bajo el id que `resolveCredential` busca, la clave queda
++ * cifrada en disco, `providers test` la prueba contra un servidor de loopback
++ * con el nombre de su receta, y `providers login claude` rehúsa sin
++ * `THYROX_CLAUDE_OAUTH_CLIENT_ID` antes de abrir un servidor o un navegador.
++ *
++ * Nunca una credencial real: el store vive en un directorio temporal
++ * (`THYROX_PROVIDERS_DATA_DIR`) con una clave de cifrado de prueba.
++ */
++import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
++import { mkdtempSync, rmSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import { testProviderApiKey } from '@thyrox/provider/accounts/apiKeyProbe'
++import { openConnectionStore, type OpenedConnectionStore } from '@thyrox/provider/accounts/connectionStoreHome'
++import type { CallbackServer } from '@thyrox/provider/accounts/oauth/callbackServer'
++import { type AnthropicMockServer, startAnthropicMockServer } from '@thyrox/provider/anthropicMockServer'
++import { resolveCredential } from '@thyrox/provider/credentials'
++
++import { providersCommand, type ProvidersCommandDeps } from '../src/commands/providers-commands.ts'
++import { createOAuthLogin } from '../src/commands/providers/oauthLogin.ts'
++import { ANTHROPIC_STORE_PROVIDER_ID, apiKeyProbeProvider, canonicalProviderId } from '../src/commands/providers/providerId.ts'
++
++const SECRET = 'sk-ant-test-only-0123456789'
++const CLIENT_ID_VARIABLE = 'THYROX_CLAUDE_OAUTH_CLIENT_ID'
++
++describe('the spelling of the Anthropic provider', () => {
++  test('anthropic and claude are the same store id, in any case; other providers keep their spelling', () => {
++    expect(canonicalProviderId('anthropic')).toBe(ANTHROPIC_STORE_PROVIDER_ID)
++    expect(canonicalProviderId(' Anthropic ')).toBe(ANTHROPIC_STORE_PROVIDER_ID)
++    expect(canonicalProviderId('claude')).toBe(ANTHROPIC_STORE_PROVIDER_ID)
++    expect(canonicalProviderId('openai')).toBe('openai')
++    expect(canonicalProviderId(' OpenAI ')).toBe('OpenAI')
++  })
++
++  test('the API-key probe is asked with the name of its recipe', () => {
++    expect(apiKeyProbeProvider(ANTHROPIC_STORE_PROVIDER_ID)).toBe('anthropic')
++    expect(apiKeyProbeProvider('openai')).toBe('openai')
++  })
++})
++
++describe('an Anthropic API key from providers add to resolveCredential', () => {
++  let home: string
++  let opened: OpenedConnectionStore
++  let server: AnthropicMockServer
++  const out: string[] = []
++  let deps: ProvidersCommandDeps
++
++  beforeAll(async () => {
++    home = mkdtempSync(join(tmpdir(), 'thyrox-anthropic-credential-'))
++    const env = { THYROX_PROVIDERS_DATA_DIR: home, THYROX_STORAGE_ENCRYPTION_KEY: 'test-key-never-real', ANTHROPIC_TEST_KEY: SECRET }
++    opened = openConnectionStore({ env, declared: () => null })
++    server = await startAnthropicMockServer({ host: '127.0.0.1', port: 0 })
++    deps = {
++      openStore: () => ({ store: opened.store, close: () => {} }),
++      write: text => void out.push(text),
++      interactive: false,
++      confirm: async () => false,
++      testDeps: { probe: input => testProviderApiKey(input, { env: {} }) },
++      now: () => '2026-09-30T00:00:00.000Z',
++      env,
++      readStdin: async () => '',
++      promptSecret: async () => '',
++      readFile: () => '',
++      login: async () => ({ ok: false, error: 'not under test' }),
++    }
++  })
++
++  afterAll(async () => {
++    await server.close()
++    opened.close()
++    rmSync(home, { recursive: true, force: true })
++  })
++
++  test('add anthropic stores the row under the id the credential chain reads, with the key encrypted at rest', async () => {
++    const baseUrl = `${server.url}/v1`
++    expect(await providersCommand(['providers', 'add', 'anthropic', '--credential-env', 'ANTHROPIC_TEST_KEY', '--provider-specific-data', JSON.stringify({ baseUrl })], deps)).toBe(0)
++    const raw = opened.store.listRaw()
++    expect(raw).toHaveLength(1)
++    expect(raw[0]).toMatchObject({ provider: ANTHROPIC_STORE_PROVIDER_ID, name: ANTHROPIC_STORE_PROVIDER_ID, authType: 'apikey' })
++    expect(String(raw[0]!.apiKey)).not.toContain(SECRET)
++    expect(opened.store.getById(String(raw[0]!.id))?.apiKey).toBe(SECRET)
++    expect(out.join('')).not.toContain(SECRET)
++  })
++
++  test('resolveCredential reads that same row when the environment has no credential', () => {
++    const credential = resolveCredential({}, () => '', opened.store)
++    expect(credential).toEqual({ source: 'PROVIDER_CONNECTION', kind: 'api_key', secret: SECRET })
++  })
++
++  test('providers test anthropic sends the key to the local server as x-api-key and records the verdict', async () => {
++    out.length = 0
++    expect(await providersCommand(['providers', 'test', 'anthropic'], deps)).toBe(0)
++    expect(out.join('')).toBe(`OK ${ANTHROPIC_STORE_PROVIDER_ID}: provider test passed\n`)
++    expect(server.requests).toHaveLength(1)
++    expect(server.requests[0]).toMatchObject({ method: 'POST', path: '/v1/messages' })
++    expect(server.requests[0]!.headers['x-api-key']).toBe(SECRET)
++    const tested = opened.store.list()[0]!
++    expect(tested).toMatchObject({ testStatus: 'active', lastTested: '2026-09-30T00:00:00.000Z' })
++    expect(tested.lastError).toBeFalsy()
++  })
++
++  test('providers validate sees a usable row', async () => {
++    out.length = 0
++    expect(await providersCommand(['providers', 'validate'], deps)).toBe(0)
++    expect(out.join('')).toBe(`OK ${ANTHROPIC_STORE_PROVIDER_ID}\n`)
++  })
++})
++
++describe('providers login claude and its client id', () => {
++  const io = { write: () => {}, interactive: false, promptSecret: async () => '', readStdin: async () => '' }
++  const store = { list: () => [], create: () => null, update: () => null }
++
++  function loginWith(env: Record<string, string | undefined>) {
++    const calls = { browser: [] as string[], servers: 0 }
++    const callbackServer: CallbackServer = { host: '127.0.0.1', port: 1, callback: Promise.resolve({ error: 'access_denied' }), close: () => {} }
++    const login = createOAuthLogin(io, {
++      env,
++      openBrowser: async url => void calls.browser.push(url),
++      startCallbackServer: async () => (calls.servers++, callbackServer),
++    })
++    return { calls, login }
++  }
++
++  test('without THYROX_CLAUDE_OAUTH_CLIENT_ID it refuses naming the variable, before any server or browser', async () => {
++    const { calls, login } = loginWith({})
++    const outcome = await login(store, { provider: 'claude' })
++    expect(outcome).toEqual({ ok: false, error: `${CLIENT_ID_VARIABLE} is not set: declare the OAuth client id of this provider to log in.` })
++    expect(calls).toEqual({ browser: [], servers: 0 })
++  })
++
++  test('with the variable declared the flow starts, and the client id travels in the URL, never a published one', async () => {
++    const { calls, login } = loginWith({ [CLIENT_ID_VARIABLE]: 'consumer-client-id' })
++    const outcome = await login(store, { provider: 'claude' })
++    expect(outcome).toEqual({ ok: false, error: 'access_denied' })
++    expect(calls.servers).toBe(1)
++    expect(calls.browser).toHaveLength(1)
++    expect(new URL(calls.browser[0]!).searchParams.get('client_id')).toBe('consumer-client-id')
++  })
++})
+diff --git a/src/packages/cli/__tests__/providersCommands.test.ts b/src/packages/cli/__tests__/providersCommands.test.ts
+index 973d83fbd..d16c199d5 100644
+--- a/src/packages/cli/__tests__/providersCommands.test.ts
++++ b/src/packages/cli/__tests__/providersCommands.test.ts
+@@ -71,6 +71,11 @@ describe('resolving a connection selector', () => {
+     expect(resolveConnection([{ id: 'ID-1', provider: 'OpenAI', name: 'Main' }], 'main')?.id).toBe('ID-1')
+   })
+ 
++  test('anthropic and claude select the same provider, whichever spelling the row carries', () => {
++    expect(resolveConnection(rows(), 'claude')?.id).toBe('aaab2222-y')
++    expect(resolveConnection([{ id: 'c-1', provider: 'claude', name: 'own' }], 'Anthropic')?.id).toBe('c-1')
++  })
++
+   test('an ambiguous selector names every candidate instead of picking one', () => {
+     expect(() => resolveConnection(rows(), 'aaa')).toThrow("Provider connection selector 'aaa' is ambiguous: aaaa1111-x, aaab2222-y")
+   })
+diff --git a/src/packages/cli/__tests__/providersLoginVerb.test.ts b/src/packages/cli/__tests__/providersLoginVerb.test.ts
+index 2ebf18fa9..06c9ee6e6 100644
+--- a/src/packages/cli/__tests__/providersLoginVerb.test.ts
++++ b/src/packages/cli/__tests__/providersLoginVerb.test.ts
+@@ -38,6 +38,12 @@ describe('thyrox providers login', () => {
+     expect(out.join('')).toBe('')
+   })
+ 
++  test('anthropic is the spelling of the claude flow', async () => {
++    const { d, calls } = deps()
++    expect(await runLoginVerb(['anthropic'], d)).toBe(0)
++    expect(calls).toEqual([{ provider: 'claude', browser: true }])
++  })
++
+   test('--no-browser and --timeout reach the runner', async () => {
+     const { d, calls } = deps()
+     await runLoginVerb(['--timeout', '60000', 'codex', '--no-browser'], d)
+diff --git a/src/packages/cli/__tests__/providersTestVerbs.test.ts b/src/packages/cli/__tests__/providersTestVerbs.test.ts
+index 965a7bb4c..fc73cad6c 100644
+--- a/src/packages/cli/__tests__/providersTestVerbs.test.ts
++++ b/src/packages/cli/__tests__/providersTestVerbs.test.ts
+@@ -49,6 +49,15 @@ describe('thyrox providers test', () => {
+     expect(updates).toEqual([['k1', { testStatus: 'active', lastError: null, lastErrorAt: null, lastErrorType: null, lastErrorSource: null, errorCode: null, lastTested: 'NOW' }]])
+   })
+ 
++  test('a claude API-key row is probed under the name of its recipe, anthropic', async () => {
++    const seen: string[] = []
++    const { d, out } = deps([{ id: 'a1', provider: 'claude', name: 'ant', authType: 'apikey', isActive: true, apiKey: 'sk-good', testStatus: null, lastTested: null, lastError: null, defaultModel: null }])
++    d.testDeps = { probe: async input => (seen.push(input.provider), { valid: true, error: null, statusCode: 200 }) }
++    expect(await providersCommand(['providers', 'test', 'anthropic'], d)).toBe(0)
++    expect(seen).toEqual(['anthropic'])
++    expect(out.join('')).toBe('OK ant: provider test passed\n')
++  })
++
+   test('a failing connection prints FAIL with the reason, persists the error and exits 1', async () => {
+     const { d, out, updates } = deps()
+     expect(await providersCommand(['providers', 'test', 'bad'], d)).toBe(1)
+diff --git a/src/packages/cli/__tests__/providersWriteVerbs.test.ts b/src/packages/cli/__tests__/providersWriteVerbs.test.ts
+index e4252e45f..a805cf751 100644
+--- a/src/packages/cli/__tests__/providersWriteVerbs.test.ts
++++ b/src/packages/cli/__tests__/providersWriteVerbs.test.ts
+@@ -123,6 +123,16 @@ describe('thyrox providers add', () => {
+     expect(prompts).toEqual([])
+   })
+ 
++  test('anthropic and claude are stored under the one id the credential chain reads', async () => {
++    for (const spelling of ['anthropic', 'claude']) {
++      const { d, out, created } = deps()
++      expect(await providersCommand(['providers', 'add', spelling, '--credential-env', 'SECRET_VAR', '--dry-run'], d)).toBe(0)
++      expect(out.join('')).toBe('dry-run: would add claude/claude\n')
++      expect(await providersCommand(['providers', 'add', spelling, '--credential-env', 'SECRET_VAR'], d)).toBe(0)
++      expect(created[0]).toMatchObject({ provider: 'claude', name: 'claude', apiKey: 'sk-from-env' })
++    }
++  })
++
+   test('--dry-run previews the shape of the credential, never its value, and writes nothing', async () => {
+     const { d, out, created } = deps()
+     expect(await providersCommand(['providers', 'add', 'openai', '--credential-env', 'SECRET_VAR', '--provider-specific-data', '{"baseUrl":"u","clientSecret":"s"}', '--dry-run', '--json'], d)).toBe(0)
+@@ -199,6 +209,14 @@ describe('thyrox providers import', () => {
+     ] })
+   })
+ 
++  test('an anthropic entry is the claude row: it skips an existing one and is created under that id', async () => {
++    const rows: Row[] = [{ id: 'c1', provider: 'claude', name: 'claude', authType: 'apikey' }]
++    const { d, out, created } = deps(file([{ provider: 'anthropic', apiKey: 'k1' }, { provider: 'Anthropic', name: 'second', apiKey: 'k2' }]), rows)
++    expect(await providersCommand(['providers', 'import', 'f.json', '--json'], d)).toBe(0)
++    expect(created.map(row => [row.provider, row.name])).toEqual([['claude', 'second']])
++    expect(JSON.parse(out.join('')).results.map((result: Row) => [result.provider, result.status])).toEqual([['claude', 'skipped_existing'], ['claude', 'created']])
++  })
++
+   test('an entry cannot bring anything but provider data', async () => {
+     const { d, created } = deps(file([{ provider: 'groq', credential: 'k', isActive: false, id: 'forced', authType: 'oauth' }]))
+     expect(await providersCommand(['providers', 'import', 'f.json'], d)).toBe(0)
+diff --git a/src/packages/cli/src/commands/providers/connectionPayload.ts b/src/packages/cli/src/commands/providers/connectionPayload.ts
+index da6fcb529..b2fd311b9 100644
+--- a/src/packages/cli/src/commands/providers/connectionPayload.ts
++++ b/src/packages/cli/src/commands/providers/connectionPayload.ts
+@@ -1,10 +1,13 @@
+ /**
+- * Los datos de una conexión de clave de API nueva. El nombre, si falta, es el
+- * proveedor; la prioridad es un entero positivo; los datos propios del
+- * proveedor, un objeto JSON.
++ * Los datos de una conexión de clave de API nueva. El proveedor se guarda por
++ * su id canónico (`providerId.ts`: `anthropic` y `claude` son uno); el
++ * nombre, si falta, es ese id; la prioridad es un entero positivo; los datos
++ * propios del proveedor, un objeto JSON.
+  *
+  * Porte de `buildProviderPayload` en `omniroute: bin/cli/commands/provider-crud.mjs` (MIT).
+  */
++import { canonicalProviderId } from './providerId.ts'
++
+ type Row = Record<string, unknown>
+ 
+ export interface ConnectionPayloadOptions {
+@@ -34,7 +37,8 @@ function parseProviderData(value: unknown): Row {
+ }
+ 
+ export function buildConnectionPayload(provider: string, options: ConnectionPayloadOptions, credential: string | undefined): Row {
+-  const payload: Row = { provider: provider.trim(), name: String(isBlank(options.name) ? provider : options.name).trim(), authType: 'apikey' }
++  const providerId = canonicalProviderId(provider)
++  const payload: Row = { provider: providerId, name: String(isBlank(options.name) ? providerId : options.name).trim(), authType: 'apikey' }
+   if (!isBlank(credential)) payload.apiKey = credential
+   if (!isBlank(options.defaultModel)) payload.defaultModel = String(options.defaultModel).trim()
+   if (!isBlank(options.priority)) payload.priority = parsePriority(options.priority)
+diff --git a/src/packages/cli/src/commands/providers/connectionSelector.ts b/src/packages/cli/src/commands/providers/connectionSelector.ts
+index dcd2f1b09..2159d2b99 100644
+--- a/src/packages/cli/src/commands/providers/connectionSelector.ts
++++ b/src/packages/cli/src/commands/providers/connectionSelector.ts
+@@ -1,15 +1,20 @@
+ /**
+  * Resuelve el selector con que el usuario nombra una conexión: id exacto,
+  * prefijo de id, nombre exacto y proveedor, en ese orden, sin distinguir
+- * mayúsculas. Un nivel con más de una coincidencia es ambiguo y lo dice,
+- * nombrando los candidatos, en vez de elegir uno.
++ * mayúsculas; el proveedor se compara por su id canónico, así que `anthropic`
++ * encuentra una fila `claude` (`providerId.ts`). Un nivel con más de una
++ * coincidencia es ambiguo y lo dice, nombrando los candidatos, en vez de
++ * elegir uno.
+  *
+  * Porte de `findConnectionFromResponse` en
+  * `omniroute: bin/cli/commands/provider-crud.mjs` (MIT).
+  */
++import { canonicalProviderId } from './providerId.ts'
++
+ type Row = Record<string, unknown>
+ 
+ const text = (value: unknown): string => String(value ?? '').toLowerCase()
++const sameProvider = (stored: unknown, needle: string): boolean => canonicalProviderId(text(stored)) === canonicalProviderId(needle)
+ 
+ export function resolveConnection<T extends Row>(rows: readonly T[], selector: string): T | null {
+   const needle = selector.trim().toLowerCase()
+@@ -23,6 +28,6 @@ export function resolveConnection<T extends Row>(rows: readonly T[], selector: s
+     selectUnique(rows.filter(row => text(row.id) === needle)) ??
+     selectUnique(rows.filter(row => text(row.id).startsWith(needle))) ??
+     selectUnique(rows.filter(row => text(row.name) === needle)) ??
+-    selectUnique(rows.filter(row => text(row.provider) === needle))
++    selectUnique(rows.filter(row => sameProvider(row.provider, needle)))
+   )
+ }
+diff --git a/src/packages/cli/src/commands/providers/loginVerb.ts b/src/packages/cli/src/commands/providers/loginVerb.ts
+index 16dbaf932..c9820b193 100644
+--- a/src/packages/cli/src/commands/providers/loginVerb.ts
++++ b/src/packages/cli/src/commands/providers/loginVerb.ts
+@@ -14,6 +14,7 @@ import { flag, hasFlag } from '../../entry/flags.ts'
+ import { EXIT_FAIL, EXIT_OK, EXIT_USAGE } from '../../exitCodes.ts'
+ import { firstPositional } from './commandArgs.ts'
+ import { resolveConnection } from './connectionSelector.ts'
++import { canonicalProviderId } from './providerId.ts'
+ import { publicConnection } from './publicConnection.ts'
+ 
+ type Row = Record<string, unknown>
+@@ -31,7 +32,8 @@ export interface LoginVerbDeps {
+ 
+ export async function runLoginVerb(args: string[], deps: LoginVerbDeps): Promise<number> {
+   const available = deps.providers.join(', ')
+-  const provider = firstPositional(args, VALUE_FLAGS)
++  const spelled = firstPositional(args, VALUE_FLAGS)
++  const provider = spelled && canonicalProviderId(spelled)
+   if (!provider) {
+     deps.write(`Provider id is required. Available: ${available}\n`)
+     return EXIT_USAGE
+diff --git a/src/packages/cli/src/commands/providers/oauthLogin.ts b/src/packages/cli/src/commands/providers/oauthLogin.ts
+index 85ee53cbf..c0548964b 100644
+--- a/src/packages/cli/src/commands/providers/oauthLogin.ts
++++ b/src/packages/cli/src/commands/providers/oauthLogin.ts
+@@ -3,12 +3,18 @@
+  * (`@thyrox/provider/accounts/oauth/loginRunner`) con los flujos de los
+  * proveedores, el servidor de retorno local, el navegador del sistema y la
+  * lectura del token importado —oculta en una terminal, por stdin si no la
+- * hay—. Los dobles de las pruebas sustituyen esta pieza entera.
++ * hay—. Los dobles de las pruebas sustituyen el entorno, el servidor y el
++ * navegador.
++ *
++ * Un flujo cuyo client id sale de una variable la exige ANTES de correr: el
++ * consumidor la declara (`THYROX_CLAUDE_OAUTH_CLIENT_ID` para `claude`) y
++ * nunca se publica una. El corredor ya rehusaba sin ella, pero después de
++ * abrir el servidor de retorno; aquí no se abre nada.
+  */
+-import { startCallbackServer } from '@thyrox/provider/accounts/oauth/callbackServer'
++import { type CallbackServer, type CallbackServerOptions, startCallbackServer } from '@thyrox/provider/accounts/oauth/callbackServer'
+ import { createOAuthFlowRegistry } from '@thyrox/provider/accounts/oauth/flowRegistry'
+ import { type LoginOptions, type LoginOutcome, type LoginRunnerDeps, runOAuthLogin } from '@thyrox/provider/accounts/oauth/loginRunner'
+-import { createOAuthFlows } from '@thyrox/provider/accounts/oauth/oauthFlows'
++import { createOAuthFlows, type OAuthProviderFlow } from '@thyrox/provider/accounts/oauth/oauthFlows'
+ import { openBrowser } from '@thyrox/storage/browser.js'
+ 
+ export interface OAuthLoginIo {
+@@ -18,16 +24,35 @@ export interface OAuthLoginIo {
+   readStdin: () => Promise<string>
+ }
+ 
+-export function createOAuthLogin(io: OAuthLoginIo): (store: LoginRunnerDeps['store'], options: LoginOptions) => Promise<LoginOutcome> {
+-  return (store, options) =>
+-    runOAuthLogin(options, {
+-      flows: createOAuthFlows(createOAuthFlowRegistry()),
++export interface OAuthLoginDeps {
++  env?: Record<string, string | undefined>
++  openBrowser?: (url: string) => Promise<void>
++  startCallbackServer?: (options: CallbackServerOptions) => Promise<CallbackServer>
++}
++
++type ClientIdConfig = { clientId?: string | null; clientIdVariable?: string }
++
++/** La variable del client id que el flujo espera y nadie declaró, o `undefined` si no falta ninguna. */
++function undeclaredClientIdVariable(flow: OAuthProviderFlow | undefined): string | undefined {
++  const config = (flow?.config ?? {}) as ClientIdConfig
++  const requiresClientId = typeof config.clientIdVariable === 'string'
++  return requiresClientId && !config.clientId ? config.clientIdVariable : undefined
++}
++
++export function createOAuthLogin(io: OAuthLoginIo, deps: OAuthLoginDeps = {}): (store: LoginRunnerDeps['store'], options: LoginOptions) => Promise<LoginOutcome> {
++  const registry = createOAuthFlowRegistry({ env: deps.env })
++  return async (store, options) => {
++    const missing = undeclaredClientIdVariable(registry[options.provider])
++    if (missing) return { ok: false, error: `${missing} is not set: declare the OAuth client id of this provider to log in.` }
++    return runOAuthLogin(options, {
++      flows: createOAuthFlows(registry),
+       store,
+       write: io.write,
+-      openBrowser: async url => void (await openBrowser(url)),
++      openBrowser: deps.openBrowser ?? (async url => void (await openBrowser(url))),
+       readToken: async () => (io.interactive ? io.promptSecret('Paste the access token: ') : (await io.readStdin()).trim()),
+-      startCallbackServer,
++      startCallbackServer: deps.startCallbackServer ?? startCallbackServer,
+       sleep: ms => Bun.sleep(ms),
+       now: () => Date.now(),
+     })
++  }
+ }
+diff --git a/src/packages/cli/src/commands/providers/providerId.ts b/src/packages/cli/src/commands/providers/providerId.ts
+new file mode 100644
+index 000000000..55ef0b8b4
+--- /dev/null
++++ b/src/packages/cli/src/commands/providers/providerId.ts
+@@ -0,0 +1,36 @@
++/**
++ * Las dos grafías del proveedor de Anthropic y el id con que se guarda.
++ *
++ * El store de conexiones lo nombra `claude`: es la clave del flujo de
++ * `providers login`, y lo que leen `resolveCredential`
++ * (`@thyrox/provider/credentials`), el refresco y la importación de
++ * CLIProxyAPI, que ya traduce `anthropic → claude`. La referencia (2.1.283,
++ * `Fv` en chunk-wg7ts4cy.js) nombra al upstream `anthropic`, y ése es
++ * también el nombre de la receta de la sonda de clave de API. Un usuario
++ * escribe cualquiera de las dos; la fila lleva una, y la sonda recibe la suya.
++ *
++ * El literal repite `ANTHROPIC_PROVIDER_ID` de
++ * `provider/src/accounts/imports/anthropicAuthFile.ts`, que el paquete no
++ * exporta; la coincidencia la fija por conducta
++ * `__tests__/providersAnthropicCredential.test.ts`.
++ */
++export const ANTHROPIC_STORE_PROVIDER_ID = 'claude'
++
++const ANTHROPIC_API_KEY_PROBE_ID = 'anthropic'
++
++const ANTHROPIC_SPELLINGS: ReadonlySet<string> = new Set([ANTHROPIC_STORE_PROVIDER_ID, ANTHROPIC_API_KEY_PROBE_ID])
++
++function namesAnthropic(provider: string): boolean {
++  return ANTHROPIC_SPELLINGS.has(provider.toLowerCase())
++}
++
++/** El id con que una grafía de proveedor se guarda y se compara; otro proveedor sólo se recorta. */
++export function canonicalProviderId(provider: string): string {
++  const trimmed = provider.trim()
++  return namesAnthropic(trimmed) ? ANTHROPIC_STORE_PROVIDER_ID : trimmed
++}
++
++/** El nombre bajo el que la sonda de clave de API conoce a un proveedor del store. */
++export function apiKeyProbeProvider(storeProvider: string): string {
++  return storeProvider === ANTHROPIC_STORE_PROVIDER_ID ? ANTHROPIC_API_KEY_PROBE_ID : storeProvider
++}
+diff --git a/src/packages/cli/src/commands/providers/testVerbs.ts b/src/packages/cli/src/commands/providers/testVerbs.ts
+index 0b4024c9a..0f540e41e 100644
+--- a/src/packages/cli/src/commands/providers/testVerbs.ts
++++ b/src/packages/cli/src/commands/providers/testVerbs.ts
+@@ -13,6 +13,7 @@ import { testConnection, testResultUpdate, validateConnection, type ConnectionTe
+ import { hasFlag } from '../../entry/flags.ts'
+ import { EXIT_FAIL, EXIT_OK } from '../../exitCodes.ts'
+ import { resolveConnection } from './connectionSelector.ts'
++import { apiKeyProbeProvider } from './providerId.ts'
+ import { publicConnection } from './publicConnection.ts'
+ 
+ type Row = Record<string, unknown>
+@@ -26,8 +27,13 @@ export interface TestVerbDeps {
+ 
+ type TestReport = { connection: Row; valid: boolean; error: string | null; statusCode?: number | null; skipped: boolean }
+ 
++/** La sonda de clave conoce a Anthropic por el nombre de su receta, no por el id del store. */
++function probeByRecipeName(testDeps: ConnectionTestDeps): ConnectionTestDeps {
++  return { ...testDeps, probe: input => testDeps.probe({ ...input, provider: apiKeyProbeProvider(input.provider) }) }
++}
++
+ async function testAndRecord(row: Row, deps: TestVerbDeps): Promise<TestReport> {
+-  const { persist, ...outcome }: ConnectionTestOutcome = await testConnection(row, deps.testDeps)
++  const { persist, ...outcome }: ConnectionTestOutcome = await testConnection(row, probeByRecipeName(deps.testDeps))
+   if (persist) deps.store.update(String(row.id), testResultUpdate(outcome, deps.now()))
+   return { connection: publicConnection(row), ...outcome }
+ }
+diff --git a/src/packages/cli/src/commands/providers/writeVerbs.ts b/src/packages/cli/src/commands/providers/writeVerbs.ts
+index 357ee8e53..002418123 100644
+--- a/src/packages/cli/src/commands/providers/writeVerbs.ts
++++ b/src/packages/cli/src/commands/providers/writeVerbs.ts
+@@ -2,8 +2,9 @@
+  * Los verbos que escriben conexiones: `add` da de alta una de clave de API,
+  * `edit` cambia sólo los campos declarados de una existente e `import` da de
+  * alta las de un archivo JSON, saltando las que ya existen por proveedor y
+- * nombre. Un archivo aporta datos de proveedor y nada más: su id, su estado o
+- * su tipo de autenticación no llegan a la fila.
++ * nombre, con el proveedor por su id canónico (`providerId.ts`). Un archivo
++ * aporta datos de proveedor y nada más: su id, su estado o su tipo de
++ * autenticación no llegan a la fila.
+  *
+  * Ninguna salida lleva el secreto; el ensayo (`--dry-run`) muestra su forma.
+  *
+@@ -18,6 +19,7 @@ import { firstPositional } from './commandArgs.ts'
+ import { buildConnectionPayload, parsePriority, type ConnectionPayloadOptions } from './connectionPayload.ts'
+ import { resolveConnection } from './connectionSelector.ts'
+ import { CREDENTIAL_ARGUMENT_REFUSED, passesCredentialAsArgument, resolveCredential, type CredentialSources } from './credentialInput.ts'
++import { canonicalProviderId } from './providerId.ts'
+ import { publicConnection } from './publicConnection.ts'
+ import { credentialShape, redactSecrets } from './secretShape.ts'
+ 
+@@ -124,12 +126,12 @@ export async function runEditVerb(args: string[], deps: WriteVerbDeps): Promise<
+ 
+ type ImportResult = { provider?: string; name?: string; ok: boolean; status?: string; connectionId?: unknown; error?: string }
+ 
+-const identityKey = (provider: unknown, name: unknown) => `${String(provider ?? '').toLowerCase()}\0${String(name ?? provider ?? '').toLowerCase()}`
++const identityKey = (provider: unknown, name: unknown) => `${canonicalProviderId(String(provider ?? '')).toLowerCase()}\0${String(name ?? provider ?? '').toLowerCase()}`
+ 
+ function importEntry(entry: unknown, existing: Map<string, Row>, dryRun: boolean, deps: WriteVerbDeps): ImportResult {
+   if (!entry || typeof entry !== 'object' || !(entry as Row).provider) return { ok: false, error: 'entry.provider is required' }
+   const fields = entry as Row
+-  const provider = String(fields.provider).trim()
++  const provider = canonicalProviderId(String(fields.provider))
+   const name = String(fields.name || provider).trim()
+   const found = existing.get(identityKey(provider, name))
+   if (found) return { provider, name, ok: true, status: 'skipped_existing', connectionId: found.id }

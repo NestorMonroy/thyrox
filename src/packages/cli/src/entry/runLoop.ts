@@ -7,8 +7,9 @@
  *
  * `--provider recorded` corre contra turnos grabados en un JSON: es la unica
  * via ejecutable en este contenedor, que no tiene credencial de modelo.
- * `--provider http` exige `ANTHROPIC_API_KEY` y falla diciendo por que si no
- * esta — nunca en silencio.
+ * `--provider http` exige una credencial de la cadena de `credentials.ts` —o
+ * el túnel de un proxy local— y falla diciendo por qué si no hay: nunca en
+ * silencio.
  *
  * Extraido de `bin/harness.ts` en #205. Es el UNICO modo que no vive en
  * `commands/`, y por una razon medida: los siete comandos son autocontenidos
@@ -37,9 +38,13 @@ import { settingsFor } from './settings.ts'
 import { systemPromptFor } from './systemPrompt.ts'
 import { flag, hasFlag } from './flags.ts'
 import { resolveMaxTurnsFromEnv } from './maxTurnsEnv.ts'
+import { openExistingConnectionStore } from '@thyrox/provider/accounts/connectionStoreHome'
 import { getConnection, getConnectionContextOptions, type ConnectionRecord } from '@thyrox/provider/connections'
 import { adoptLoopSessionId, registerSessionAtLaunch, renameCurrentSession } from '@thyrox/app-host/runtime/sessionRegistryAtLaunch.js'
 import { startMessagingInboxAtLaunch } from '@thyrox/app-host/runtime/messagingInboxAtLaunch.js'
+import { peerMessagingTools } from './peerMessagingTools.ts'
+
+type Env = Record<string, string | undefined>
 
 /**
  * `connection` es la misma que `runLoop` resuelve para `compressToolResults`
@@ -55,11 +60,18 @@ import { startMessagingInboxAtLaunch } from '@thyrox/app-host/runtime/messagingI
  * THYROX_CODE_OAUTH_TOKEN, su descriptor, ANTHROPIC_API_KEY y el transporte
  * ANTHROPIC_UNIX_SOCKET).
  */
-function providerFor(argv: string[], connection: ConnectionRecord | undefined): Provider {
+function providerFor(argv: string[], connection: ConnectionRecord | undefined, env: Env): Provider {
   const cual = flag(argv, 'provider') ?? 'recorded'
   if (cual === 'http') {
     const apiKey = connection?.auth.type === 'api_key' ? connection.auth.key : undefined
-    return new AnthropicHttpProvider({ baseUrl: connection?.endpoint, apiKey })
+    // El proveedor resuelve su credencial al construirse: el store se abre sólo
+    // para esa resolución, y sólo si existe.
+    const opened = openExistingConnectionStore({ env })
+    try {
+      return new AnthropicHttpProvider({ baseUrl: connection?.endpoint, apiKey, store: opened?.store, env })
+    } finally {
+      opened?.close()
+    }
   }
   const ruta = flag(argv, 'grabacion')
   if (!ruta) throw new Error('--provider recorded exige --grabacion <ruta a JSON con los turnos>')
@@ -124,19 +136,6 @@ async function* stdinLines(): AsyncGenerator<string> {
 }
 
 /**
- * Corre el modo bucle. `transcriptDir` llega resuelto desde el arranque: quien
- * lo resuelve es `runCli`, y hacerlo dos veces daria dos respuestas el dia que
- * la regla cambie.
- */
-/**
- * Lo que el bucle necesita para correr, resuelto de `argv`: proveedor,
- * herramientas, hooks, permisos y transcript. Lo comparten el modo bucle y el
- * modo print (`print.ts`), que sólo difiere en cómo dibuja el resultado.
- *
- * `toolAllow` acota las herramientas por nombre (el `--tools` de `thyrox -p`);
- * `null` deja todas.
- */
-/**
  * Tope de turnos del bucle: la bandera, luego THYROX_CODE_MAX_TURNS, y si no
  * hay ninguna, ninguno. Un ítem del pool lo acota su plazo, no un conteo.
  */
@@ -145,8 +144,21 @@ export function loopMaxTurns(argv: string[], env: Record<string, string | undefi
   return resolveMaxTurnsFromEnv(declared === undefined ? undefined : Number(declared), env) ?? Infinity
 }
 
-export function loopSetup(argv: string[], cwd: string, transcriptDir: string,
-                          toolAllow: readonly string[] | null = null) {
+export type LoopSetupOptions = {
+  /** Las herramientas permitidas por nombre (el `--tools` de `thyrox -p`); sin declarar o `null`, todas. */
+  toolAllow?: readonly string[] | null
+  /** El entorno del que el proveedor http resuelve su credencial; por defecto, el del proceso. */
+  env?: Env
+}
+
+/**
+ * Lo que el bucle necesita para correr, resuelto de `argv`: proveedor,
+ * herramientas, hooks, permisos y transcript. Lo comparten el modo bucle y el
+ * modo print (`print.ts`), que sólo difiere en cómo dibuja el resultado y en
+ * el entorno del que sale la credencial: el del túnel, cuando pasa por el
+ * proxy local.
+ */
+export function loopSetup(argv: string[], cwd: string, transcriptDir: string, options: LoopSetupOptions = {}) {
   const conf = settingsFor(argv, cwd)
   // `--connection <id>` es opcional: sin él, ningún ajuste por conexión
   // aplica y el comportamiento es idéntico al de antes de este cambio. Se
@@ -154,7 +166,7 @@ export function loopSetup(argv: string[], cwd: string, transcriptDir: string,
   // transporte http depende de ella.
   const connectionId = flag(argv, 'connection')
   const connection = connectionId ? getConnection(connectionId) : undefined
-  const provider = providerFor(argv, connection)
+  const provider = providerFor(argv, connection, options.env ?? process.env)
   const connectionContext = connection ? getConnectionContextOptions(connection) : {}
   const modelo = flag(argv, 'model') ?? 'claude-opus-5'
   // La herramienta `Agent` se cablea AQUÍ, no en `CORE_TOOLS`: necesita datos de
@@ -185,7 +197,11 @@ export function loopSetup(argv: string[], cwd: string, transcriptDir: string,
       storePath,
     }),
     skillTool(buildSkillRegistry()),
+    // `SendMessage` y `ListAgents` sólo si el buzón de esta sesión ya arrancó
+    // (`print.ts` lo arranca antes de llamar aquí); si no, la lista no cambia.
+    ...peerMessagingTools(),
   ]
+  const toolAllow = options.toolAllow
   const tools = toolAllow ? allTools.filter((t) => toolAllow.includes(t.name)) : allTools
   const shared = {
     provider,
@@ -216,6 +232,11 @@ export function loopSetup(argv: string[], cwd: string, transcriptDir: string,
   return { shared, modelo }
 }
 
+/**
+ * Corre el modo bucle. `transcriptDir` llega resuelto desde el arranque: quien
+ * lo resuelve es `runCli`, y hacerlo dos veces daria dos respuestas el dia que
+ * la regla cambie.
+ */
 export async function runLoop(argv: string[], cwd: string, transcriptDir: string): Promise<number> {
   const chat = hasFlag(argv, 'chat')
   const prompt = flag(argv, 'prompt')

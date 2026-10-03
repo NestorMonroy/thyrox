@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/modelResolver.test.ts:
+(pass) resolveModel — por nombre exacto > devuelve esa entrada y su artefacto [0.40ms]
+(pass) resolveModel — por nombre exacto > un nombre no declarado se rehúsa nombrándolo [0.29ms]
+(pass) resolveModel — por repositorio > una sola variante se resuelve sin más filtros [0.14ms]
+(pass) resolveModel — por repositorio > el repositorio se compara sin mayúsculas, como el nombre [0.05ms]
+(pass) resolveModel — por repositorio > un repositorio sin entradas se rehúsa nombrándolo [0.07ms]
+(pass) resolveModel — por repositorio > dos variantes sin filtro: rehúsa listando los candidatos, no elige [0.30ms]
+(pass) resolveModel — por repositorio > la cuantización filtra, normalizada [0.10ms]
+(pass) resolveModel — por repositorio > una cuantización sin coincidencia se rehúsa nombrándola, no cambia de nivel [0.11ms]
+(pass) resolveModel — por repositorio > el prefijo de revisión filtra [0.09ms]
+(pass) resolveModel — por repositorio > el prefijo de un digest se acepta con sha256: y en mayúsculas [0.08ms]
+(pass) resolveModel — por repositorio > una revisión sin coincidencia se rehúsa nombrándola [0.14ms]
+(pass) resolveModel — capacidades > una capacidad ausente se rehúsa nombrándola [0.14ms]
+(pass) resolveModel — capacidades > las capacidades filtran candidatos por repositorio [2.45ms]
+(pass) resolveModel — capacidades > por repositorio sin candidato capaz: rehúsa con la capacidad [0.18ms]
+(pass) resolveModel — contexto, caché KV y perfil de memoria > sin contexto pedido, el efectivo es el máximo del modelo [0.03ms]
+(pass) resolveModel — contexto, caché KV y perfil de memoria > un contexto pedido dentro del máximo se respeta [0.03ms]
+(pass) resolveModel — contexto, caché KV y perfil de memoria > un contexto mayor que el máximo se rehúsa con los dos números [0.12ms]
+(pass) resolveModel — contexto, caché KV y perfil de memoria > el tipo de caché KV efectivo es el pedido o el de la entrada [0.04ms]
+(pass) resolveModel — contexto, caché KV y perfil de memoria > el perfil coincide con estimateServingMemory sobre la metadata equivalente [0.08ms]
+(pass) resolveModel — contexto, caché KV y perfil de memoria > el perfil por defecto usa el contexto máximo [0.27ms]
+
+ 20 pass
+ 0 fail
+ 31 expect() calls
+Ran 20 tests across 1 file. [224.00ms]

@@ -1,0 +1,12 @@
+  provider swarm: la reconstruccion no emitio: sin salida
+  provider teleport: la reconstruccion no emitio: sin salida
+  provider tool-registry: la reconstruccion no emitio: sin salida
+  provider tools: la reconstruccion no emitio: sin salida
+  provider updater: la reconstruccion no emitio: sin salida
+  SIN TIPAR por un provider roto: local-models, model-scheduling, provider
+  NO se emite veredicto: un consumidor bloqueado por un provider roto
+  tiparia contra un contrato que no corresponde a su fuente.
+check-package-typecheck: 29 provider(s) reconstruido(s) por viejos: artifact-registry, audio-capture-napi, claude-for-chrome-mcp, color-diff-napi, computer-use-input, computer-use-swift, context-compression, coordination, headless-sdk, image-processor-napi, ink, local-models, model-artifacts, model-scheduling, modifiers-napi, observability, paths, plan, podman-execution, registry-credentials, shared-state, skills, stdin-napi, store, task, transparent-napi, url-handler-napi, voice, workbench
+  podman-execution: 0 propio(s) · 0 de hermano · 0 fuera (total 0)  <- sin baseline
+execution thyrox-worker-test-muqn05ro-17608 kind=test task=TASK-THYROX-0779 exit=0
+__BG_EXIT__=0

@@ -1,0 +1,17 @@
+{
+  "measuredAt": "2026-10-02T09:17:36Z",
+  "removed": ".thyrox/runtime/continuation/worktrees/mechanism-registry-20261002T061646/T001-1790922496623420",
+  "mechanism": "git worktree remove --force (la retirada del controlador, task_continuation.py integrate_worktree)",
+  "preconditions": {
+    "runFinished": "thyrox-bg status mechanism-registry-run3 = done:3",
+    "worktreeHead": "9a7d0cd94, ancestro de feature/complete-orm-root",
+    "uniqueContent": [
+      ".entry-plan.txt (5974 B), preservado byte a byte en outputs/T001-retained-worktree-entry-plan.txt"
+    ],
+    "liveProcesses": 0
+  },
+  "replacedBy": "git HEAD 9a7d0cd94 + el archivo preservado",
+  "freeBytesBefore": 547864576,
+  "freeBytesAfter": 2904215552,
+  "reclaimedBytesObserved": 2356350976
+}

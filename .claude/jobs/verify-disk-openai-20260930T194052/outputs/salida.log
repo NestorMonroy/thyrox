@@ -1,0 +1,34 @@
+== bash tests/repo/test-disk-headroom.sh
+
+ok=43 fallo=0
+exit=0
+== python3 tests/session/test_resource_admission.py
+  ok    THYROX_DISK_ADMISSION_HEADROOM figura en .env.example
+test_resource_admission: 49 ok, 0 fallos
+exit=0
+== bash tests/lib/test-infrastructure.sh
+
+33 casos: 33 ok, 0 fallos
+exit=0
+== bash tests/session/test-infrastructure-ensure.sh
+
+39 casos: 39 ok, 0 fallos
+exit=0
+== bash -c cd src/packages/provider && bun test src/proxy/__tests__/openaiCompatDeclaration.test.ts src/proxy/__tests__/openaiCompatForwarder.test.ts src/proxy/__tests__/openaiCompatLocalProxy.test.ts src/proxy/__tests__/openaiCompatUpstream.test.ts src/proxy/__tests__/claudeCliUpstream.test.ts src/proxy/__tests__/startServerSharedState.test.ts
+.claude/workbench/disk-reserve-reach-20260930T191002/probes/verify_integrated.sh: line 7: /tmp/tmp.zKQTkWmoTh/bash_-c_cd_src_packages_provider_&&_bun_test_src_proxy___tests___openaiCompatDeclaration.test.ts_src_proxy___tests___openaiCompatForwarder.test.ts_src_proxy___tests___openaiCompatLocalProxy.test.ts_src_proxy___tests___openaiCompatUpstream.test.ts_src_proxy___tests___claudeCliUpstream.test.ts_src_proxy___tests___startServerSharedState.test.ts.log: File name too long
+tail: cannot open '/tmp/tmp.zKQTkWmoTh/bash_-c_cd_src_packages_provider_&&_bun_test_src_proxy___tests___openaiCompatDeclaration.test.ts_src_proxy___tests___openaiCompatForwarder.test.ts_src_proxy___tests___openaiCompatLocalProxy.test.ts_src_proxy___tests___openaiCompatUpstream.test.ts_src_proxy___tests___claudeCliUpstream.test.ts_src_proxy___tests___startServerSharedState.test.ts.log' for reading: File name too long
+exit=1
+== bash bin/check_lint_zero src/repo/disk-headroom.sh src/session/resource_admission.py src/lib/infrastructure.sh src/session/infrastructure_ensure.sh tests/repo/test-disk-headroom.sh tests/session/test_resource_admission.py tests/lib/test-infrastructure.sh tests/session/test-infrastructure-ensure.sh
+.claude/workbench/disk-reserve-reach-20260930T191002/probes/verify_integrated.sh: line 7: /tmp/tmp.zKQTkWmoTh/bash_bin_check_lint_zero_src_repo_disk-headroom.sh_src_session_resource_admission.py_src_lib_infrastructure.sh_src_session_infrastructure_ensure.sh_tests_repo_test-disk-headroom.sh_tests_session_test_resource_admission.py_tests_lib_test-infrastructure.sh_tests_session_test-infrastructure-ensure.sh.log: File name too long
+tail: cannot open '/tmp/tmp.zKQTkWmoTh/bash_bin_check_lint_zero_src_repo_disk-headroom.sh_src_session_resource_admission.py_src_lib_infrastructure.sh_src_session_infrastructure_ensure.sh_tests_repo_test-disk-headroom.sh_tests_session_test_resource_admission.py_tests_lib_test-infrastructure.sh_tests_session_test-infrastructure-ensure.sh.log' for reading: File name too long
+exit=1
+== bash bin/check_package_typecheck --strict provider
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 1 de 1 paquete(s))
+exit=0
+.claude/workbench/disk-reserve-reach-20260930T191002/probes/verify_integrated.sh: line 17: heck: command not found
+== python3 src/verify/check_env_example_coverage.py
+check_env_example_coverage: 0 clave(s) sin declarar (alcance medido: 15 clave(s) en 1 archivo(s) ignorado(s), 529 declarada(s) en .env.example)
+exit=0
+suites-fallidas=2
+__BG_EXIT__=2

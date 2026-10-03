@@ -34,13 +34,24 @@ check "sale 2" "$rc_a" "2"
 check "no imprime salida" "$(wc -c < "$F/out-a")" "0"
 check "una línea en el archivo de intentos" "$(wc -l < "$ATTEMPTS_A")" "1"
 
-echo "caso b — otras formas de stash, tras opciones globales, también rehúsan"
-THYROX_POOL_STASH_ATTEMPTS_FILE="$F/attempts-b1" "$GIT_GUARD" -C "$REPO" --no-pager stash list > /dev/null 2> "$F/err-b1"; rc_b1=$?
-check "-C --no-pager stash list rehúsa" "$rc_b1" "2"
+echo "caso b — las formas que escriben refs/stash rehúsan tras opciones globales"
 THYROX_POOL_STASH_ATTEMPTS_FILE="$F/attempts-b2" "$GIT_GUARD" -C "$REPO" stash create > /dev/null 2> "$F/err-b2"; rc_b2=$?
 check "stash create rehúsa" "$rc_b2" "2"
-THYROX_POOL_STASH_ATTEMPTS_FILE="$F/attempts-b3" "$GIT_GUARD" --git-dir "$REPO/.git" --work-tree "$REPO" stash list > /dev/null 2> "$F/err-b3"; rc_b3=$?
-check "--git-dir y --work-tree con valor separado: stash list rehúsa" "$rc_b3" "2"
+THYROX_POOL_STASH_ATTEMPTS_FILE="$F/attempts-b3" "$GIT_GUARD" --git-dir "$REPO/.git" --work-tree "$REPO" stash push > /dev/null 2> "$F/err-b3"; rc_b3=$?
+check "--git-dir y --work-tree con valor separado: stash push rehúsa" "$rc_b3" "2"
+for form in pop apply drop clear store branch save; do
+    THYROX_POOL_STASH_ATTEMPTS_FILE="$F/attempts-b-$form" "$GIT_GUARD" -C "$REPO" stash "$form" > /dev/null 2>&1; rc=$?
+    check "stash $form rehúsa" "$rc" "2"
+done
+
+echo "caso b2 — las formas de sólo lectura pasan al git real y no cuentan como intento"
+# `item_worktree.sh` lee la pila con `git stash list` para su línea base: un
+# ítem que ejecuta las pruebas del pool no debe salir con-stash por leerla.
+THYROX_POOL_STASH_ATTEMPTS_FILE="$F/attempts-b1" "$GIT_GUARD" -C "$REPO" --no-pager stash list > /dev/null 2> "$F/err-b1"; rc_b1=$?
+check "-C --no-pager stash list pasa" "$rc_b1" "0"
+check "stash list no registra intento" "$([[ -e "$F/attempts-b1" ]] && echo registrado || echo limpio)" "limpio"
+THYROX_POOL_STASH_ATTEMPTS_FILE="$F/attempts-b4" "$GIT_GUARD" -C "$REPO" stash show > /dev/null 2>&1
+check "stash show no registra intento" "$([[ -e "$F/attempts-b4" ]] && echo registrado || echo limpio)" "limpio"
 
 echo "caso c — cualquier otro subcomando pasa al git real"
 "$GIT_GUARD" -C "$REPO" status > "$F/out-c" 2> "$F/err-c"; rc_c=$?
@@ -100,6 +111,26 @@ bash "$INTEGRATE" "$F/outg" --repo "$REPO" > "$F/outg.log" 2>&1
 check "item1 (con-stash) no se aplica" "$(gawk -F'\t' '$1 == 1 {print $2}' "$F/outg/integration.tsv")" "con-stash"
 check "item2 (anomalía) no se aplica" \
     "$(gawk -F'\t' '$1 == 2 {print $2}' "$F/outg/integration.tsv")" "anomalia-stash-compartido: deadbeef"
+
+echo "caso h — con el repositorio guardado declarado, un stash en OTRO repositorio pasa"
+# El pool declara el directorio común del repositorio del ítem: sólo un stash
+# que comparte ese `refs/stash` le afecta. Una suite que stashea en su propio
+# repositorio temporal —la de este archivo, caso e— no es un stash del ítem
+# (TASK-THYROX-0647: el pool D dio con-stash a 0645 por eso).
+OTHER="$F/other"
+git init -q "$OTHER" && git -C "$OTHER" -c user.email=t@t -c user.name=t commit -q --allow-empty -m base
+echo otro > "$OTHER/cambio.txt"
+GUARDED="$(git -C "$REPO" rev-parse --path-format=absolute --git-common-dir)"
+THYROX_POOL_GUARDED_GIT_COMMON_DIR="$GUARDED" THYROX_POOL_STASH_ATTEMPTS_FILE="$F/attempts-h1" \
+    "$GIT_GUARD" -C "$OTHER" stash push -u -m ajeno > /dev/null 2>&1; rc_h1=$?
+check "stash en otro repositorio: sale 0" "$rc_h1" "0"
+check "y no cuenta como intento" "$([[ -s "$F/attempts-h1" ]] && echo si || echo no)" "no"
+check "y llegó al git real" "$(git -C "$OTHER" stash list | wc -l)" "1"
+wth="$F/wt-h"; git -C "$REPO" worktree add -q --detach "$wth" 2>/dev/null
+THYROX_POOL_GUARDED_GIT_COMMON_DIR="$GUARDED" THYROX_POOL_STASH_ATTEMPTS_FILE="$F/attempts-h2" \
+    "$GIT_GUARD" -C "$wth" stash push > /dev/null 2>&1; rc_h2=$?
+check "stash en un worktree del repositorio guardado: rehúsa" "$rc_h2" "2"
+check "y cuenta como intento" "$(wc -l < "$F/attempts-h2")" "1"
 
 echo "item_worktree stash guard: $((total - fallos))/$total"
 [[ "$fallos" -eq 0 ]]

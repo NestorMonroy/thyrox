@@ -1,0 +1,16 @@
+# commit-locks2
+
+## Qué se lanzó
+
+```
+git commit -F /tmp/claude-0/-home-user/333534ce-407f-55f0-b451-e1feb02581ab/scratchpad/msg.txt -- .env.example src/session/infrastructure_ensure.sh src/lib/infrastructure.sh src/packages/podman-execution/podmanLockCollision.ts src/packages/podman-execution/__tests__/podmanLockCollision.test.ts tests/session/test-infrastructure-ensure.sh tests/lib/test-infrastructure.sh
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

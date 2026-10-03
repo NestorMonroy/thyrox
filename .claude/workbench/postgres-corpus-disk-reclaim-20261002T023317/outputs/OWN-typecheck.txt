@@ -1,0 +1,5 @@
+src/packages/podman-execution/__tests__/containerRun.test.ts(26,24): error TS2538: Type 'undefined' cannot be used as an index type.
+src/packages/podman-execution/__tests__/executionCommand.test.ts(138,11): error TS2741: Property 'isProcessAlive' is missing in type '{ env: Record<string, string>; readStdin: () => Promise<string>; pid: number; now: () => number; podman: PodmanExecutor; repositoryRoot: string; output: { stdout: (text: string) => void; stderr: (text: string) => void; }; }' but required in type 'ExecutionCommandDeps'.
+src/packages/podman-execution/__tests__/workerContainerLifecycle.test.ts(46,24): error TS2538: Type 'undefined' cannot be used as an index type.
+done
+execution thyrox-worker-test-muqelu16-10097 kind=test task=TASK-THYROX-0758 exit=0

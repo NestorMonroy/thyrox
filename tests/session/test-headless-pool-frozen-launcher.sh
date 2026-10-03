@@ -18,6 +18,10 @@
 # congelado retirado de la copia: la reescritura tiene que llegar entonces al
 # pool vivo, lo que prueba que el caso ve el defecto contra el que protege.
 set -uo pipefail
+# Esta suite mide la mecánica del pool, no la política de ejecución: la declara
+# sin restricción (sin ella regiría la versionada del árbol, que no admite respaldo).
+THYROX_EXECUTION_POLICY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../fixtures" && pwd)/execution_policy_unrestricted.json"
+export THYROX_EXECUTION_POLICY
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
 failures=0; total=0
 check() { total=$((total+1)); if [[ "$2" == "$3" ]]; then echo "OK   $1"; else echo "FAIL $1 — expected '$3', got '$2'"; failures=$((failures+1)); fi; }
@@ -51,7 +55,7 @@ run_case() {
       HEADLESS_POOL_RUNNER="$F/runner" HEADLESS_POOL_TIME="$F/no-time" \
       HEADLESS_POOL_HISTORY_DIR="$F/$label.history" \
       bash "$pool" --prompt "$F/prompt.md" --out "$F/$label.out" \
-          --model claude-sonnet-5 --width 1 > "$F/$label.log" 2>&1 &
+          --task-class analisis --width 1 > "$F/$label.log" 2>&1 &
   pid=$!
   # Se abre en lectura y escritura para que un pool que muere antes de que el
   # ítem arranque no deje la prueba bloqueada en la FIFO; el plazo acota la
@@ -64,9 +68,12 @@ run_case() {
   # Mientras el ítem corre, bajo el runtime existe una copia del lanzador.
   find "$F/$label.runtime" -name headless-pool.sh 2>/dev/null | wc -l > "$F/$label.live-copies"
   # Reescritura en su sitio: `cat >` conserva el inodo, así que un pool que lee
-  # este archivo ve los bytes nuevos. El reemplazo tiene la misma longitud.
+  # este archivo ve los bytes nuevos. El reemplazo tiene la misma longitud y
+  # cae DESPUÉS de una bifurcación del pool (`close-run`): bash relee el
+  # archivo al bifurcar, no al ejecutar un builtin, así que sólo una línea
+  # posterior a un comando externo puede medir si la reescritura llega.
   content="$(cat "$pool")"
-  printf '%s\n' "${content//items=%d ok=/ITEMS=%d ok=}" > "$pool"
+  printf '%s\n' "${content//memoria: sin GNU time/MEMORIA: sin GNU time}" > "$pool"
   exec {release_fd}<> "$F/$label.release"
   echo go >&"$release_fd"
   exec {release_fd}>&-
@@ -78,9 +85,9 @@ run_case() {
 scratch_tree "$F/frozen"
 out="$(run_case "$F/frozen" frozen)"; printf "%s\n" "$out" | sed "s/^/  | /"
 check "the live pool keeps the summary of the copy it started with" \
-  "$(grep -c '^items=1 ok=1' <<< "$out")" 1
+  "$(grep -c '^memoria: sin GNU time' <<< "$out")" 1
 check "the rewritten source does not reach the live pool" \
-  "$(grep -c '^ITEMS=' <<< "$out")" 0
+  "$(grep -c '^MEMORIA:' <<< "$out")" 0
 check "a frozen copy of the launcher exists while the item runs" \
   "$([[ "$(cat "$F/frozen.live-copies")" -ge 1 ]] && echo yes || echo no)" yes
 check "the frozen copy is removed when the pool exits" \
@@ -96,7 +103,7 @@ check "control: the freeze block was removed from the unfrozen copy" \
   "$(grep -c 'frozen-launcher' "$F/unfrozen/src/session/headless-pool.sh")" 0
 out="$(run_case "$F/unfrozen" unfrozen)"
 check "control: without the freeze, the rewrite reaches the live pool" \
-  "$(grep -c '^ITEMS=1 ok=1' <<< "$out")" 1
+  "$(grep -c '^MEMORIA: sin GNU time' <<< "$out")" 1
 
 echo "result: $((total - failures)) of $total assertions green"
 [[ "$failures" -eq 0 ]]

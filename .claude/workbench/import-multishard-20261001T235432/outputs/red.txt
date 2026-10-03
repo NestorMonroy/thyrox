@@ -1,0 +1,106 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/externalArtifact.test.ts:
+88 | 
+89 | describe('external artifact import', () => {
+90 |   test('validates and registers with external provenance', async () => {
+91 |     const hub = fakeHub()
+92 |     const outcome = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: fakeLab(() => request.scratchDir).runInLab }))
+93 |     expect(outcome.kind).toBe('completed')
+                              ^
+error: expect(received).toBe(expected)
+
+Expected: "completed"
+Received: "refused"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/externalArtifact.test.ts:93:26)
+(fail) external artifact import > validates and registers with external provenance [3.33ms]
+112 |     const hub = fakeHub()
+113 |     const lab = fakeLab(() => request.scratchDir)
+114 |     await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab }))
+115 |     const [downloads, commands] = [hub.downloads.length, lab.commands.length]
+116 |     const second = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab }))
+117 |     expect(second.kind).toBe('completed')
+                              ^
+error: expect(received).toBe(expected)
+
+Expected: "completed"
+Received: "refused"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/externalArtifact.test.ts:117:25)
+(fail) external artifact import > a rerun neither downloads nor validates again [1.75ms]
+123 |     const hub = fakeHub()
+124 |     const lab = fakeLab(() => request.scratchDir)
+125 |     await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab }))
+126 |     const almostFull = async () => SCRATCH_METADATA_MARGIN_BYTES + 1
+127 |     const second = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab, freeBytes: almostFull }))
+128 |     expect(second.kind).toBe('completed')
+                              ^
+error: expect(received).toBe(expected)
+
+Expected: "completed"
+Received: "refused"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/externalArtifact.test.ts:128:25)
+(fail) external artifact import > a rerun asks only for the bytes still missing from the scratch [3.08ms]
+133 |     const lab = fakeLab(() => request.scratchDir)
+134 |     await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab }))
+135 |     const [downloads, commands] = [hub.downloads.length, lab.commands.length]
+136 |     await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab, labImageDigest: `sha256:${'f'.repeat(64)}` }))
+137 |     expect(hub.downloads.length).toBe(downloads)
+138 |     expect(lab.commands.length).toBeGreaterThan(commands)
+                                      ^
+error: expect(received).toBeGreaterThan(expected)
+
+Expected: > 0
+Received: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/externalArtifact.test.ts:138:33)
+(fail) external artifact import > another lab image revalidates without downloading again [1.81ms]
+199 | 
+200 |   test('merges the shards in the lab and registers the merged GGUF with each official shard in its provenance', async () => {
+201 |     const hub = fakeShardedHub()
+202 |     const lab = fakeMergingLab(() => request.scratchDir)
+203 |     const outcome = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab }))
+204 |     expect(outcome.kind).toBe('completed')
+                               ^
+error: expect(received).toBe(expected)
+
+Expected: "completed"
+Received: "refused"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/externalArtifact.test.ts:204:26)
+(fail) external artifact import from official shards > merges the shards in the lab and registers the merged GGUF with each official shard in its provenance [1.47ms]
+231 | 
+232 |   test('a merge that still declares a split fails instead of registering', async () => {
+233 |     const hub = fakeShardedHub()
+234 |     const lab = fakeMergingLab(() => request.scratchDir, STILL_SPLIT)
+235 |     const outcome = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab }))
+236 |     expect(outcome.kind).toBe('failed')
+                               ^
+error: expect(received).toBe(expected)
+
+Expected: "failed"
+Received: "refused"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/externalArtifact.test.ts:236:26)
+(fail) external artifact import from official shards > a merge that still declares a split fails instead of registering [2.20ms]
+241 |     const hub = fakeShardedHub()
+242 |     const lab = fakeMergingLab(() => request.scratchDir)
+243 |     await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab }))
+244 |     const [downloads, steps] = [hub.downloads.length, lab.steps.length]
+245 |     const second = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: lab.runInLab }))
+246 |     expect(second.kind).toBe('completed')
+                              ^
+error: expect(received).toBe(expected)
+
+Expected: "completed"
+Received: "refused"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/externalArtifact.test.ts:246:25)
+(fail) external artifact import from official shards > a rerun neither downloads, merges nor validates again [2.66ms]
+
+ 4 pass
+ 7 fail
+ 17 expect() calls
+Ran 11 tests across 1 file. [191.00ms]

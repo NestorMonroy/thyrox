@@ -10,6 +10,13 @@ fuera de él. Este módulo lo lleva al pool:
   ``choose_cache_ttl`` —la pared máxima de un ítem es el mayor hueco que la
   caché tiene que atravesar— y ``--memfree`` como la memoria pico por un margen.
 
+Cada fila declara su fuente de medida, ``measurement_source``: ``host-tree``
+(el árbol ``/proc`` del ítem) o ``container-cgroup`` (el cgroup de su
+contenedor). En contenedor el árbol del ítem es el cliente ``podman run``, no
+el trabajo (H-THYROX-294): una fila ``host-tree`` de ese pool mide ~40 MB y VRAM
+0, y calibrarla pediría ``admit(0)``. Por eso sólo cuentan las filas de la
+fuente del lanzamiento, y una fila sin el campo cuenta como ``host-tree``.
+
 Sin historial no inventa: devuelve ``None`` y lo dice. Lo declarado a mano
 gana siempre; esa precedencia la aplica el pool, no este módulo.
 
@@ -39,6 +46,9 @@ HISTORY_FILE = "runs.jsonl"
 DEFAULT_MARGIN = 2.0
 #: El intervalo de muestreo de VRAM del pool, el mismo de `gpu_monitor watch`.
 DEFAULT_GPU_INTERVAL_S = gpu_monitor.DEFAULT_INTERVAL_S
+HOST_TREE = "host-tree"
+CONTAINER_CGROUP = "container-cgroup"
+MEASUREMENT_SOURCES = (HOST_TREE, CONTAINER_CGROUP)
 _MEASURE = re.compile(r"^\s*(\d+)\s+([0-9.]+)\s+[0-9.]+\s+[0-9.]+\s*$")
 
 
@@ -122,9 +132,14 @@ def _nearest_rank(values: list[int], fraction: float) -> int:
     return ordered[max(math.ceil(fraction * len(ordered)), 1) - 1]
 
 
+def row_source(row: dict) -> str:
+    """La fuente de medida de una fila; las anteriores al campo son ``host-tree``."""
+    return row.get("measurement_source", HOST_TREE)
+
+
 def record(history: Path, out_dir: Path, runner: str | None = None,
            item_model: str | None = None, template_digest: str | None = None,
-           now: datetime | None = None) -> dict | None:
+           now: datetime | None = None, measurement_source: str = HOST_TREE) -> dict | None:
     """Agrega la fila de la ejecución cuya salida es ``out_dir``; ``None`` si
     ningún ``.time`` fue medible (no se escribe una fila de ceros).
 
@@ -149,6 +164,7 @@ def record(history: Path, out_dir: Path, runner: str | None = None,
         "median_kb": _nearest_rank([kb for kb, _ in measures], 0.5),
         "p90_kb": _nearest_rank([kb for kb, _ in measures], 0.9),
         "recorded_at": (now or datetime.now(UTC)).strftime(RECORDED_AT_FORMAT),
+        "measurement_source": measurement_source,
     }
     if template_digest:
         row["template_digest"] = template_digest
@@ -188,12 +204,12 @@ def _rows(history: Path) -> list[dict]:
     return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
 
 
-def _last_row(history: Path, runner: str | None = None,
-              item_model: str | None = None) -> dict | None:
-    """La última fila; con ``runner`` o ``item_model``, la última que registra
-    ESE binario y ESE modelo. Una fila de otro, o sin el campo registrado, no
-    describe al declarado."""
-    rows = _rows(history)
+def _last_row(history: Path, runner: str | None = None, item_model: str | None = None,
+              measurement_source: str = HOST_TREE) -> dict | None:
+    """La última fila medida con ``measurement_source``; con ``runner`` o
+    ``item_model``, la última que registra ESE binario y ESE modelo. Una fila
+    de otro, o sin el campo registrado, no describe al declarado."""
+    rows = [r for r in _rows(history) if row_source(r) == measurement_source]
     if runner:
         rows = [r for r in rows if r.get("runner") == runner]
     if item_model:
@@ -239,7 +255,8 @@ def _age_s(row: dict, now: datetime | None) -> float | None:
 
 def vram_calibration(row: dict | None, gpu_interval_s: float, min_items: int = 1,
                      template_digest: str | None = None, max_age_s: float | None = None,
-                     now: datetime | None = None) -> tuple[bool, str]:
+                     now: datetime | None = None,
+                     measurement_source: str = HOST_TREE) -> tuple[bool, str]:
     """¿Describe el historial la VRAM de los ítems que se van a lanzar? Sólo
     si la última ejecución midió la VRAM de TODOS sus ítems y cada uno duró lo
     bastante para ser visto. Un 0 medido es una medida; como predicción sólo
@@ -248,9 +265,13 @@ def vram_calibration(row: dict | None, gpu_interval_s: float, min_items: int = 1
     Y sólo si es representativa de lo que se lanza: al menos ``min_items``
     ítems medidos —los que irán a la vez—, la misma plantilla por su huella de
     contenido, y no más vieja que ``max_age_s``. Cada límite se aplica sólo si
-    se declara."""
+    se declara. Y medida con la fuente del lanzamiento: un 0 de VRAM medido
+    sobre el cliente de un contenedor no dice nada del contenedor."""
     if row is None:
         return False, "sin ejecución previa de esta plantilla"
+    if row_source(row) != measurement_source:
+        return False, (f"la fila se midió con {row_source(row)} y se lanza con {measurement_source}: "
+                       f"no describe lo que se va a lanzar")
     if row.get("items_measured", 0) < min_items:
         return False, (f"{row.get('items_measured', 0)} ítems medidos para lanzar {min_items} "
                        f"a la vez: no representa su dispersión")
@@ -321,7 +342,7 @@ def derive(history: Path, model: str, catalog: dict, margin: float = DEFAULT_MAR
            gpu_interval_s: float = DEFAULT_GPU_INTERVAL_S, runner: str | None = None,
            item_model: str | None = None, min_items: int = 1,
            template_digest: str | None = None, max_age_s: float | None = None,
-           now: datetime | None = None) -> Decision:
+           now: datetime | None = None, measurement_source: str = HOST_TREE) -> Decision:
     """TTL y ``--memfree`` desde la última ejecución medida de esta plantilla.
 
     Con ``runner``, sólo cuentan las ejecuciones de ese binario: sin ninguna,
@@ -329,12 +350,15 @@ def derive(history: Path, model: str, catalog: dict, margin: float = DEFAULT_MAR
 
     ``reserve_kb`` es la memoria de un VECINO que corre junto al pool (el
     ``tsc`` del pipeline, en ``tsc_cycle``): se suma a lo medido del ítem,
-    porque la admisión de Parallel tiene que dejar sitio a los dos."""
-    row = _last_row(history, runner, item_model)
+    porque la admisión de Parallel tiene que dejar sitio a los dos.
+
+    ``measurement_source`` es la del lanzamiento: sólo cuentan sus filas."""
+    row = _last_row(history, runner, item_model, measurement_source)
     vram_cap, need, vram_why = _vram_decision(row, free_vram_mib, vram_reserve_mib, margin,
                                               vram_floor_mib, gpu_interval_s,
                                               {"min_items": min_items, "template_digest": template_digest,
-                                               "max_age_s": max_age_s, "now": now})
+                                               "max_age_s": max_age_s, "now": now,
+                                               "measurement_source": measurement_source})
     if row is None:
         others = len(_rows(history))
         missing = "sin ejecución previa de esta plantilla"
@@ -344,6 +368,10 @@ def derive(history: Path, model: str, catalog: dict, margin: float = DEFAULT_MAR
                 missing += f" ({others} fila(s) de otro binario o sin binario registrado)"
         if item_model:
             missing += f"; ninguna con el modelo {item_model}"
+        other_sources = sum(1 for r in _rows(history) if row_source(r) != measurement_source)
+        if other_sources:
+            missing += (f"; {other_sources} fila(s) medidas con otra fuente que {measurement_source} "
+                        f"no calibran este lanzamiento")
         if reserve_kb:
             return Decision(None, _mebibytes(reserve_kb),
                             f"{missing}: la cota es sólo la reserva {reserve_kb} KB"
@@ -383,10 +411,12 @@ def _memory_from_row(row: dict, margin: float, reserve_kb: int,
 
 
 def derive_memory(history: Path, margin: float = DEFAULT_MARGIN, reserve_kb: int = 0,
-                  available_ram_kb: int | None = None) -> MemoryDecision:
+                  available_ram_kb: int | None = None,
+                  measurement_source: str = HOST_TREE) -> MemoryDecision:
     """``--memfree`` y el tope de anchura por RAM desde la última ejecución
-    medida; sin ninguna no inventa: sin cota, y dice por qué."""
-    row = _last_row(history)
+    medida con ``measurement_source``; sin ninguna no inventa: sin cota, y
+    dice por qué."""
+    row = _last_row(history, measurement_source=measurement_source)
     if row is None:
         return MemoryDecision(None, None, "sin ejecución previa de este historial: nada que derivar")
     return _memory_from_row(row, margin, reserve_kb, available_ram_kb)
@@ -402,6 +432,8 @@ def main(argv: list[str]) -> int:
     p_rec.add_argument("--runner", default=None, help="el binario que corrió los ítems")
     p_rec.add_argument("--item-model", default=None, help="el modelo que corrió los ítems")
     p_rec.add_argument("--template", default=None, help="la plantilla: se guarda su huella")
+    p_rec.add_argument("--measurement-source", choices=MEASUREMENT_SOURCES, default=HOST_TREE,
+                       help="de dónde salen las medidas de la fila")
     p_der = sub.add_parser("derive", help="imprime TTL, memfree y porqué, separados por tabulador")
     p_der.add_argument("history"); p_der.add_argument("model")
     p_der.add_argument("--margin", type=float, default=DEFAULT_MARGIN)
@@ -420,6 +452,8 @@ def main(argv: list[str]) -> int:
                        help="calibrado sólo con al menos estos ítems medidos")
     p_der.add_argument("--max-age-hours", type=float, default=None,
                        help="calibrado sólo si la fila no es más vieja")
+    p_der.add_argument("--measurement-source", choices=MEASUREMENT_SOURCES, default=HOST_TREE,
+                       help="la fuente de medida del lanzamiento: sólo cuentan sus filas")
     args = parser.parse_args(argv)
 
     if args.command == "dir":
@@ -428,7 +462,8 @@ def main(argv: list[str]) -> int:
     if args.command == "record":
         row = record(Path(args.history), Path(args.out_dir), runner=args.runner,
                      item_model=args.item_model,
-                     template_digest=template_digest(Path(args.template)) if args.template else None)
+                     template_digest=template_digest(Path(args.template)) if args.template else None,
+                     measurement_source=args.measurement_source)
         print(json.dumps(row) if row else "historial: ningún .time medible, sin fila")
         return 0
     catalog, reason = model_catalog.try_catalog()
@@ -441,7 +476,8 @@ def main(argv: list[str]) -> int:
                       gpu_interval_s=args.gpu_interval, runner=args.runner,
                       item_model=args.item_model, min_items=args.min_items,
                       template_digest=template_digest(Path(args.template)) if args.template else None,
-                      max_age_s=args.max_age_hours * 3600 if args.max_age_hours is not None else None)
+                      max_age_s=args.max_age_hours * 3600 if args.max_age_hours is not None else None,
+                      measurement_source=args.measurement_source)
     width = effective_width(args.configured_width, decision) if args.configured_width else decision.width_cap
     # `-` y no vacío: `read` con IFS de tabulador colapsa dos tabuladores
     # seguidos, y un campo vacío corre al siguiente a su lugar.

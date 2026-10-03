@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts run --task TASK-THYROX-0743 --kind maintenance -- bash -c false", "started_at": "2026-10-01T19:19:45+00:00"}
+{"kind": "settle", "exit_code": 1, "finished_at": "2026-10-01T19:19:49+00:00", "duration_seconds": 4.023083}

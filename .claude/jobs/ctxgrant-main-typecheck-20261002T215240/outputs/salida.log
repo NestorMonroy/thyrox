@@ -1,0 +1,5 @@
+model-scheduling errors=1
+local-models errors=9
+scheduling-all rc=1 122 pass 1 fail
+execution thyrox-worker-test-muri1b04-19320 kind=test task=TASK-THYROX-0706 exit=0
+__BG_EXIT__=0

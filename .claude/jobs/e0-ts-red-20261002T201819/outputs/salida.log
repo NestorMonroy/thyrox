@@ -1,0 +1,7 @@
+
+ 17 pass
+ 4 fail
+ 36 expect() calls
+Ran 21 tests across 1 file. [154.00ms]
+execution thyrox-worker-test-murenyjf-13128 kind=test task=TASK-THYROX-0773 exit=0
+__BG_EXIT__=0

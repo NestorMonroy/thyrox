@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts run --task TASK-THYROX-0743 --kind maintenance -- bash -c bash .claude/workbench/managed-podman-execution-boundary-20261001T164746/verify/caller_migrated.sh p2b local-models src/packages/local-models/ollamaModelInstaller.ts src/packages/local-models/podmanArtifactFetcher.ts", "started_at": "2026-10-01T23:18:39+00:00"}
+{"kind": "settle", "exit_code": 1, "finished_at": "2026-10-01T23:18:43+00:00", "duration_seconds": 4.791759}

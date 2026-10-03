@@ -1,0 +1,4 @@
+anulación 1: requireRangeStart retirado -> cae sólo 'un tramo que empieza en otro byte se rehúsa' (4 pass, 1 fail)
+anulación 2: rama 200 retirada -> cae sólo 'un servidor que ignora Range responde 200 entero' (4 pass, 1 fail)
+restaurado: 5 pass, 0 fail
+anulación 3: blobChunkBytes ignorado -> cae sólo 'baja la capa por tramos del tamaño declarado' (61 pass, 1 fail)

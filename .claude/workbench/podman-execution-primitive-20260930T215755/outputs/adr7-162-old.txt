@@ -1,0 +1,6 @@
+- ``unavailable`` = evidencia suficiente de GPU **y** ningún backend soportado
+  da telemetría de memoria. ``absent`` = sin evidencia de GPU. Los cuatro
+  estados son disjuntos: ``measured(0)`` ≠ ``absent`` ≠ ``unavailable`` ≠
+  ``error``.
+- La ausencia de backend no es una implementación medible: no hay operación
+  que pueda devolver una cantidad sin backend; devuelve el estado.

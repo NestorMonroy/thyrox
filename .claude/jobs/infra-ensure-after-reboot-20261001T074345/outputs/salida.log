@@ -1,0 +1,3 @@
+infrastructure_ensure: falta THYROX_INFRA_POSTGRES_PASSWORD (credencial de PostgreSQL).
+                       No se invoca podman ni se toca nada.
+__BG_EXIT__=2

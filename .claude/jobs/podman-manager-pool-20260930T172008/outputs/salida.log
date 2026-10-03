@@ -1,0 +1,6 @@
+modelo: claude-opus-5-5 (derivado de --task-class analisis)
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /home/user/thyrox/bin/cli en esta plantilla; ninguna con el modelo claude-opus-5-5: nada que derivar
+credencial: proxy-store (derivada de --credential-proxy; sin variable de credencial en el entorno del pool: el proxy resuelve la conexión del store)
+headless-pool: REHUSA — el proxy de credencial no arrancó para la fuente proxy-store (/home/user/thyrox/bin/provider-credential-proxy): credentialProxy: sin credencial propia — declara ANTHROPIC_AUTH_TOKEN, THYROX_CODE_OAUTH_TOKEN, THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR o ANTHROPIC_API_KEY en el entorno del proxy. NO se escucha. 
+__BG_EXIT__=2

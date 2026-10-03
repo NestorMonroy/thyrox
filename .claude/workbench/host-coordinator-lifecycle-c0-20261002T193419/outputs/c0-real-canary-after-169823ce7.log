@@ -1,0 +1,16 @@
+# canario real de stop tras 169823ce7 (2026-10-02T20:22:48Z)
+## unidades antes: 1
+model_coordinator: sano socket=/root/.claude/model-scheduling/coordinator.sock tickets=0
+## stop
+bg daemon: shutdown signal accepted
+
+real	0m6.017s
+user	0m4.483s
+sys	0m0.887s
+exit=0
+## inmediatamente al volver stop
+ledger: done:0
+unidades: 0
+socket: retirado
+model_coordinator: sin coordinador sano en /root/.claude/model-scheduling/coordinator.sock (no responde su protocolo)
+status exit=1

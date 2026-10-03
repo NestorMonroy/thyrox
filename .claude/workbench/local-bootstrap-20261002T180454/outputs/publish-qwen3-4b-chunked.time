@@ -1,0 +1,23 @@
+	Command being timed: "bash bin/artifact-registry-publish-artifact --source-dir .thyrox/runtime/local-bootstrap/qwen3-4b-publish --repository th3rox/thyrox-quantization-lab-artifacts --tag qwen3-4b-359d7dd-q4_k_m --record-file .claude/workbench/local-bootstrap-20261002T180454/outputs/record-qwen3-4b-q4_k_m.json --artifact-type application/vnd.thyrox.model-artifact.v1 --out .claude/workbench/local-bootstrap-20261002T180454/outputs/publication-qwen3-4b.json"
+	User time (seconds): 1228.66
+	System time (seconds): 30.75
+	Percent of CPU this job got: 88%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 23:38.53
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 2003972
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 1
+	Minor (reclaiming a frame) page faults: 4691045
+	Voluntary context switches: 149963
+	Involuntary context switches: 20481
+	Swaps: 0
+	File system inputs: 200
+	File system outputs: 2616
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

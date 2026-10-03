@@ -1,0 +1,8 @@
+.claude/workbench/task-thyrox-0284-stream-handler-20260930T083446/README.md
+src/packages/agent/__tests__/handleMessageFromStream.test.ts
+src/packages/agent/hooks/execAgentHook.ts
+src/packages/agent/messages.ts
+src/packages/agent/tokens.ts
+src/packages/repl/src/components/Messages.tsx
+src/packages/repl/src/hooks/useRemoteSession.ts
+src/packages/repl/src/screens/REPLView.tsx

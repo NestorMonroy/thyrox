@@ -1,0 +1,527 @@
+.. meta::
+   :artefacto: ADR-THYROX-008
+   :tipo: ADR
+   :dominio: thyrox
+   :estado: Aceptado
+   :version: 1.5.0
+   :fecha: 2026-09-29T11:58:40
+
+.. _adr-thyrox-008:
+
+===================================================================================
+ADR-008: SemanticSearchStore, un store de dominio sobre PostgreSQL + pgvector
+===================================================================================
+
+Estado
+------
+
+**ACEPTADO**: decisión del ejecutor, 2026-09-29. Precisa :ref:`adr-thyrox-007`
+en un punto: el ``semantic_search_worker`` no habla con el store genérico como
+API de dominio, sino con un store propio de la búsqueda semántica. Tarea de
+implementación: **TASK-THYROX-0562** (este store) y **TASK-THYROX-0558** (worker, API y consumidor RAG). La
+decisión de modelo de embeddings y dimensiones sigue en D5 y la versión de
+pgvector en D2b; este registro no las toma.
+
+----
+
+Contexto
+--------
+
+ADR-007 dibujaba al worker conectándose a «PostgreSQL + pgvector» y listaba
+pgvector como una rama de ``@thyrox/store``:
+
+.. code-block:: text
+
+   @thyrox/store
+   ├── SQLite (por defecto)
+   └── PostgreSQL
+         └── pgvector, sólo donde hay búsqueda vectorial
+
+Esa forma deja abierta la puerta a que ``@thyrox/store`` acumule operadores,
+índices y funciones que sólo tienen sentido para la búsqueda vectorial:
+``binary_quantize()``, ``bit_hamming_ops``, ``vector_cosine_ops``,
+``halfvec_cosine_ops``, ``hnsw.ef_search``, ``ivfflat.probes``. Son decisiones
+del dominio vectorial, no de la persistencia común.
+
+Decisión
+--------
+
+**Regla 1: el worker depende de un store de dominio, no del store genérico.**
+
+.. code-block:: text
+
+   semantic_search_worker
+           │
+           ▼
+   SemanticSearchStore
+           │
+           ├── semántica propia de búsqueda vectorial
+           │   ├── embeddings
+           │   ├── búsqueda de vecinos más cercanos (ANN)
+           │   ├── cuantización binaria
+           │   ├── HNSW / IVFFlat
+           │   └── soporte de reranking matemático
+           │
+           └── reutiliza infraestructura
+                   │
+                   ▼
+               @thyrox/store (infraestructura PostgreSQL)
+                   │
+                   ▼
+               PostgreSQL
+
+.. list-table:: Responsabilidades
+   :header-rows: 1
+
+   * - Pieza
+     - Qué le pertenece
+   * - ``@thyrox/store``
+     - conexiones, migraciones base, configuración, ciclo de vida y
+       transacciones comunes, convenciones de persistencia
+   * - ``SemanticSearchStore``
+     - esquema de embeddings, operadores de pgvector, índices vectoriales,
+       consultas ANN, cuantización, métricas y distancias
+   * - ``semantic_search_worker``
+     - cálculo de embeddings, recuperación, reranking por modelo y la
+       orquestación del trabajo semántico
+
+**Regla 2: pgvector es una extensión dentro de PostgreSQL, no un segundo
+backend.**
+
+.. code-block:: text
+
+                    SemanticSearchStore
+                            │
+              ┌─────────────┴─────────────┐
+              │                           │
+              ▼                           ▼
+   @thyrox/store infraestructura    persistencia vectorial
+   PostgreSQL                       semántica y migraciones
+              │                           │
+              └─────────────┬─────────────┘
+                            ▼
+                       PostgreSQL
+                            │
+                         pgvector
+
+La forma incorrecta, que esta regla descarta, es tratar PostgreSQL y pgvector
+como dos destinos paralelos de un mismo store.
+
+**Regla 3: el contrato del motor es explícito y no se generaliza.**
+
+.. code-block:: text
+
+   SemanticSearchStore  →  PostgreSQL + pgvector (OBLIGATORIO)
+
+   AgentStore           →  @thyrox/store  →  SQLite
+   SharedDomainStore    →  @thyrox/store  →  PostgreSQL
+
+Que ``@thyrox/store`` admita SQLite y PostgreSQL **no** implica que
+``SemanticSearchStore`` los admita. Sin PostgreSQL con la extensión instalada
+en la versión que la migración exige, ``SemanticSearchStore`` rehúsa con un
+error que nombra lo que falta; no degrada a SQLite ni a búsqueda lineal en
+silencio. Se descarta una interfaz común del tipo «store que funciona con
+cualquier motor»: oculta capacidades que no son intercambiables.
+
+**Regla 4: una capacidad propia de un motor no sube a la abstracción común
+salvo que varios dominios necesiten ese mismo contrato.** Así
+``@thyrox/store`` no acumula pgvector, Redis, FTS ni embeddings. Hoy el único
+dominio vectorial es la búsqueda semántica; si aparece un segundo con el mismo
+contrato, la extracción a una pieza común se decide entonces, con los dos
+consumidores medidos.
+
+Superficie de ``SemanticSearchStore``
+-------------------------------------
+
+Forma orientativa, no firmada todavía (la fija TASK-THYROX-0558 en TDD):
+
+.. code-block:: text
+
+   SemanticSearchStore
+   ├── upsertEmbedding(...)
+   ├── searchNearest(...)
+   ├── searchBinaryCandidates(...)
+   ├── getEmbedding(...)
+   └── migrateVectorSchema(...)
+
+El worker no necesita saber cómo se construyó un índice. Un ejemplo de lo que
+el store puede declarar por dentro:
+
+.. code-block:: sql
+
+   CREATE INDEX ... USING hnsw (
+       (binary_quantize(embedding)::bit(3072)) bit_hamming_ops
+   );
+
+Flujo de una búsqueda
+---------------------
+
+.. code-block:: text
+
+   semantic_search_worker
+           │ search(query_embedding)
+           ▼
+   SemanticSearchStore
+           ├── binary_quantize
+           ├── ANN por distancia de Hamming
+           ▼
+   PostgreSQL + pgvector
+           │
+           ▼
+   N candidatos
+           │
+   SemanticSearchStore: distancia exacta (coseno / L2) sobre el embedding original
+           ▼
+   K candidatos
+           │
+           ▼
+   semantic_search_worker: reranking por modelo (cross-encoder)
+
+**Techo de dimensiones, medido** (pgvector 0.8.6, clúster de pruebas,
+``thyrox: .claude/workbench/durable-semantic-corpus-20260930T211821/probes/pgvector_index_limits.sh``):
+
+.. list-table::
+   :header-rows: 1
+
+   * - Índice HNSW sobre
+     - Admite
+   * - ``vector``
+     - hasta 2 000 dimensiones
+   * - ``halfvec``
+     - hasta 4 000
+   * - una columna ``bit``
+     - hasta 64 000
+   * - ``binary_quantize(vector(N))::bit(N)``
+     - hasta 16 000: el techo lo pone la columna original, no el índice
+
+El techo de 2 000 es de ``vector``, no de pgvector. En este flujo el límite
+real es 16 000, no 64 000: el reranking exacto necesita el vector original
+guardado, y ``vector``/``halfvec`` no pasan de 16 000 dimensiones. Los 64 000
+sólo valen para una columna ``bit`` nativa, sin vector original con que
+reordenar.
+
+**Reranking tiene dos significados y se nombran por separado.** El reranking
+**matemático** —recalcular la distancia exacta con el embedding original sobre
+los candidatos de un índice aproximado— es del store. El reranking **por
+modelo** —un cross-encoder u otro modelo que reordena— es del worker, porque
+exige el runtime de inferencia que el store no tiene.
+
+Ámbito de vida de PostgreSQL (enmienda 1.1.0)
+-----------------------------------------------
+
+Decidido por el ejecutor el 2026-09-30, al revisar
+``thyrox: .claude/workbench/postgresql-readiness-20260930T193448``. La decisión
+fija el ámbito de vida y operación de PostgreSQL, no dónde se levanta hoy.
+
+.. code-block:: text
+
+   Podman workers → efímeros
+   PostgreSQL     → persistente   (servicio compartido, fuera del lifecycle de los workers)
+   Redis          → compartido/efímero
+
+- PostgreSQL + pgvector es infraestructura gestionada de thyrox, como Redis,
+  con otra responsabilidad: persistencia durable compartida y búsqueda
+  vectorial. No vive dentro del ``semantic_search_worker`` ni lo crea o
+  destruye el ``PodmanWorkerManager``; el worker puede morir, reiniciarse o
+  reemplazarse y PostgreSQL sigue existiendo.
+- En producción puede vivir en una máquina persistente o en un servicio
+  gestionado. El dominio no elige entre los dos: ambos caben detrás de la
+  misma URL (``THYROX_SEMANTIC_SEARCH_DATABASE_URL``).
+- El clúster PostgreSQL de un contenedor de desarrollo es **development/test
+  infrastructure**, no la ubicación del PostgreSQL común. Las pruebas lo
+  alcanzan sólo por ``THYROX_TEST_POSTGRES_URL``: ninguna ruta, socket ni
+  nombre de clúster entra al contrato.
+
+.. list-table:: Propiedad de cada pieza
+   :header-rows: 1
+
+   * - Pieza
+     - Le pertenece
+   * - bootstrap de infraestructura
+     - PostgreSQL y la habilitación de pgvector
+   * - ``SemanticSearchStore``
+     - tablas, columnas vectoriales, índices HNSW / IVFFlat, cuantización
+       binaria, consultas vectoriales
+   * - ``semantic_search_worker``
+     - embeddings, recuperación, reranking por modelo
+
+**El store detecta capacidades; no administra la extensión.**
+``migrateVectorSchema`` no ejecuta ``CREATE EXTENSION``: comprueba que
+``vector`` esté disponible en el servidor, habilitada en la base y en una
+versión igual o mayor que la mínima declarada, y distingue los tres fallos
+(no disponible · no habilitada · versión incompatible) con errores distintos
+que nombran la condición, sin prescribir un remedio único: en un servicio
+gestionado la habilitación puede tener otro mecanismo. Medido en el clúster
+de pruebas (``pg_available_extension_versions.trusted = f`` en esa
+instalación) el rol de aplicación no podía habilitarla; eso es una
+observación de esa instalación, no una propiedad de pgvector, y no entra al
+dominio.
+
+**La dimensión y la representación son configuración del esquema** mientras
+D5 no esté decidida: ``vector(N)``, ``halfvec(N)`` y
+``binary_quantize(...)::bit(N)`` los encapsula el store; ninguna dimensión
+fija en su contrato. Implementación: **TASK-THYROX-0562**.
+
+Corpus durable: el índice no depende de la fuente (enmienda 1.2.0)
+-------------------------------------------------------------------
+
+Decidido por el ejecutor el 2026-09-30. **Requisito:** si desaparecen el
+contenedor, el worktree o el directorio original, el corpus ya ingerido y los
+análisis hechos sobre él siguen disponibles.
+
+**Lo que había, medido.** La tabla de ``SemanticSearchStore``
+(``thyrox: src/packages/semantic-search/vectorSql.ts``, commit ``02d99b4da``)
+guarda ``id``, ``embedding``, ``metadata JSONB`` y ``updated_at``: no guarda
+texto, ni hash de contenido, ni el modelo que produjo el vector. Con eso un
+resultado es un ``id`` cuyo contenido vive en otro sitio, y ese sitio puede ser
+efímero. Tampoco se puede cambiar de modelo sin volver a la fuente. No satisface
+el requisito.
+
+**Una base vectorial indexa vectores; aquí también guarda el contenido.**
+PostgreSQL + pgvector persiste el texto de los chunks y su metadata, no sólo el
+embedding. Tres capas, con durabilidad distinta:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Capa
+     - Dónde vive
+     - Durabilidad
+   * - fuente original
+     - Git, worktree, directorio del usuario, contenedor
+     - puede desaparecer
+   * - snapshot canónico ingerido (documento y chunks)
+     - PostgreSQL
+     - durable
+   * - representación derivada (embedding e índice)
+     - PostgreSQL + pgvector
+     - regenerable desde los chunks
+
+.. code-block:: text
+
+   PostgreSQL
+   ├── documents          document_id · scope · source identity · version ·
+   │                      content_hash · metadata · ingested_at
+   ├── document_chunks    chunk_id · document_id · position · text ·
+   │                      content_hash
+   ├── embedding_spaces   space_id · model · dimensions · representation ·
+   │                      estado (building · active · retired)
+   └── embeddings_<space> chunk_id · embedding  (un índice HNSW por espacio)
+
+**Reglas.**
+
+- ``source_ref`` ≠ dependencia de la fuente. La identidad de origen se
+  conserva para trazar, pero buscar, reordenar por distancia exacta y devolver
+  el resultado no vuelven al filesystem: el texto viene de ``document_chunks``.
+- El contenido durable y la representación derivada se separan. Un vector está
+  tipado por su dimensión, así que cada par modelo · dimensión es un **espacio**
+  propio con su tabla y su índice. Cambiar de modelo es crear un espacio nuevo,
+  embeber los chunks persistidos, activarlo y retirar el anterior, sin
+  recuperar los archivos originales.
+- Un cambio se detecta por ``content_hash``: un documento cuyo hash no cambió no
+  se re-chunkea ni se re-embebe; uno que cambió crea versión nueva y sus
+  embeddings se recalculan. Reingerir el mismo contenido es idempotente.
+- Un worktree no se empaqueta ni es almacenamiento durable (ADR-010), pero **sí
+  puede ser fuente de ingestión**: lo que persiste es el contenido lógico
+  ingerido, con su identidad, hash, fecha y origen, no el directorio operativo.
+- PostgreSQL sigue fuera del lifecycle del worker (enmienda 1.1.0): borrar o
+  recrear un worker o un contenedor no elimina el corpus.
+
+**«Canónico» es para la recuperación, no para el dominio.** El snapshot
+ingerido es canónico **para semantic search**: la copia autosuficiente con que
+se busca, se recupera texto y se re-embebe aunque la fuente ya no sea
+accesible. **No** sustituye a la fuente de verdad del dominio.
+
+.. code-block:: text
+
+   fuente de verdad del dominio   → el sistema propietario (un ADR: Git)
+   snapshot durable ingerido      → fuente autosuficiente para semantic_search
+
+Una corrección al documento se hace en su sistema propietario y llega al
+corpus por reingesta (versión nueva por hash); nunca editando los chunks.
+
+**Reproducible no es persistido.** Son dos contratos:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Capa
+     - Qué garantiza
+   * - ``documents`` · ``document_chunks``
+     - corpus durable: un análisis se puede **repetir**
+   * - ``embedding_spaces`` · ``embeddings_<space>``
+     - representación para la recuperación, regenerable
+   * - ``analysis_runs``
+     - el resultado de una ejecución concreta queda **guardado**
+
+El requisito dice que los análisis ya hechos siguen disponibles, y eso no lo da
+el corpus: repetir una consulta con otro espacio activo o sobre otra versión
+devuelve otra cosa. Por eso TASK-THYROX-0682 también persiste cada ejecución:
+
+.. code-block:: text
+
+   analysis_runs
+   ├── analysis_id
+   ├── input (consulta)            ├── candidatos (chunk_id + versión)
+   ├── space_id (modelo · dim)     ├── scores
+   ├── versiones del corpus usadas ├── reranker / modelo (si lo hubo)
+   ├── output                      └── created_at
+
+Un ``analysis_run`` guarda referencias a chunks con su versión, y los chunks
+versionados no se borran mientras un análisis los cite: retirar un espacio o
+ingerir una versión nueva no deja un resultado histórico apuntando a nada.
+
+**Política de ingestión por dominio (enmienda 1.4.0).** Corrige la 1.3.0, que
+declaraba fuente de ingestión el contenido de ``.thyrox/runtime/`` (los
+transcripts y los informes de cada ítem del pool) y el diff de cada worktree.
+Decisión del ejecutor, 2026-09-30: **lo que entra al corpus lo define un
+dominio, no un directorio**. Que algo exista en un worktree o en el runtime no
+lo hace ingerible, y cambiar «guardar todos los worktrees» por «meter todos los
+worktrees en PostgreSQL» sería otro problema.
+
+Los primeros dominios son **findings** y **errors**. Para cada uno, D5 fija
+los tipos de fuente aceptados, la identidad estable del documento, el scope,
+la revisión de la fuente, el hash, el chunking, el espacio de embeddings, la
+retención, la reingesta y el re-embedding.
+
+.. list-table::
+   :header-rows: 1
+
+   * - Dominio
+     - Fuente autoritativa actual
+     - Fuente legada o de recuperación
+   * - findings
+     - los ``.rst`` de ``kaupamex-docs`` y el dominio de findings
+       (``@thyrox/finding``)
+     - un documento de ese dominio encontrado en ``.claude/worktrees/`` u otro
+       worktree conservado
+   * - errors
+     - el dominio de errores de ``@thyrox/local-observability``
+     - logs o worktrees, sólo si cumplen el contrato de documento de error
+
+Una fuente legada se **recorre y se reconoce**: se buscan en ella los tipos de
+documento que un dominio acepta, y sólo esos se ingieren. ``node_modules``,
+``dist``, ``.git`` y el ruido de ejecución no entran nunca. ``.thyrox/runtime/``
+es ejecución y no es corpus por defecto; las refs de snapshot son recuperación,
+tampoco corpus.
+
+**Dos invariantes de D5.**
+
+- **D5-I1.** Una fuente ingerida con éxito ⇒ la recuperación no depende de su
+  filesystem.
+- **D5-I2.** Un chunk persistido ⇒ se puede re-embeber sin reabrir la fuente
+  original.
+
+El documento guarda ``source_ref`` y ``source_revision`` para trazar, depurar y
+reconciliar; ninguno es almacenamiento del que dependa la búsqueda.
+
+**Un directorio legado se vuelve desechable después de demostrarlo, no
+antes.** Algunos worktrees pueden guardar la única copia de un contenido que el
+corpus todavía no tiene. Antes de limpiar, mover, consolidar o ignorar un
+directorio legado:
+
+.. code-block:: text
+
+   inventario del directorio
+   → reconocer los documentos de los dominios aceptados
+   → comprobar cuáles ya están ingeridos (identidad + hash + versión)
+   → ingerir los que falten
+   → verificar identidad, chunks, hash, procedencia y éxito de la ingesta
+   → verificar que ningún analysis_run cite algo que sólo exista allí
+   → sólo entonces el directorio es desechable
+
+**Se mide en cada clon, no en uno.** Que ``.claude/worktrees/`` no exista en el
+clon donde se midió (2026-09-30) no dice nada de los otros contenedores y
+clones, que pueden guardar contenido que todavía no está en el corpus. Por eso
+la migración no es un paso manual de un contenedor: es un comando del proveedor
+que corre en cualquier clon, es idempotente (reingerir lo ya ingerido no cambia
+nada) y decide si **ese** directorio ya es desechable en **esa** máquina. La
+identidad del documento no incluye la ruta local del clon, para que dos clones
+que ingieren el mismo contenido converjan en la misma versión.
+
+**Identidad y versión son dos cosas (enmienda 1.5.0).** Que la identidad no
+incluya la ruta local no significa que sea el hash del contenido.
+
+.. code-block:: text
+
+   identidad del documento  = dominio + identificador estable del dominio
+   versión del documento    = hash del contenido canónico
+
+   ruta local del clon   ≠ identidad
+   hash del contenido    ≠ identidad
+
+Ejemplo: ``finding / H-THYROX-293`` es la misma identidad en cualquier clon,
+esté el ``.rst`` en ``/home/a/kaupamex-docs/…`` o en ``/work/kaupamex-docs/…``,
+y su hash dice qué versión es. Dos documentos distintos con texto idéntico
+(``H-THYROX-100`` y ``H-THYROX-200``) son dos identidades aunque sus hashes
+coincidan. ``source_ref`` y ``source_revision`` siguen siendo procedencia.
+
+Si un dominio tiene identificadores que sólo son únicos dentro de un scope, el
+scope forma parte de la identidad: ``dominio + scope + identificador``. Para
+findings basta ``dominio + id``, porque ``H-<PREFIJO>-NNN`` es único en todo el
+dominio y lo vigila ``thyrox: src/verify/check_finding_id_unique.py``. Esta
+precisión impide que la fórmula se reutilice en un dominio cuyos ids se
+repiten entre scopes.
+
+**«Desechable» es una prueba positiva, no la ausencia de pendientes.** El
+veredicto de TASK-THYROX-0684 sobre un directorio legado sólo es
+``DISPOSABLE`` si se cumplen todas:
+
+- todo documento relevante reconocido está representado en el corpus;
+- sus chunks y su texto están persistidos;
+- su identidad, su hash y su versión están verificados contra el corpus;
+- ningún ``analysis_run`` depende de algo que sólo exista en el directorio;
+- no hay ingesta pendiente ni fallida.
+
+Un material que la herramienta no puede clasificar con seguridad, o que parece
+relevante y no pertenece a un dominio aceptado, deja el veredicto en
+``NOT_PROVEN``, nunca en ``DISPOSABLE``. No detectar nada no prueba que se
+pueda borrar; probar que se preservó sí. El veredicto se puede volver a
+calcular y da lo mismo con el mismo corpus y el mismo directorio, para que
+TASK-THYROX-0683 (y cualquier limpieza) dependa de él y no de una lectura
+humana.
+
+**Dos retenciones distintas.** La de la fuente operativa (worktree, directorio
+del contenedor, checkout local): se elimina cuando termina su cierre o su
+recuperación y su contenido semántico requerido ya está ingerido. La del
+corpus: una versión citada por un ``analysis_run`` y la ingesta canónica
+vigente se retienen; una versión reemplazada y nunca citada es candidata a
+recolección; un embedding de un modelo obsoleto se regenera o se recolecta
+según la política de su espacio.
+
+**Durable respecto a qué.** El proceso o contenedor de PostgreSQL es
+desechable; sus datos no. Sobrevivir a ``rm`` del contenedor lo cubre un
+volumen persistente de la máquina. Sobrevivir a que desaparezca la sesión o la
+VM entera exige que la autoridad PostgreSQL viva fuera de ese ciclo de vida:
+es D4-B (TASK-THYROX-0627). Son dos requisitos distintos, y un volumen local a
+una VM efímera sólo cumple el primero.
+
+Implementación: la ingestión es **TASK-THYROX-0684**, que depende de
+TASK-THYROX-0682. La política de hogar de ``.claude/worktrees/`` es
+**TASK-THYROX-0683**, y empieza por la migración de contenido de arriba.
+
+**D5, repartida.** Unidad durable, metadata de identidad y revisión, detección
+por hash, reindexado por espacio, persistencia de análisis, los dos primeros
+dominios y sus invariantes quedan decididos arriba. Siguen abiertas, y son del
+ejecutor: **qué otros dominios**, **el scope de cada uno** y **la retención del
+contenido privado o temporal**. Hasta decidirlas, nada fuera de findings y
+errors se ingiere, y nada se borra por caducidad.
+
+Implementación: **TASK-THYROX-0682**.
+
+Qué cambia de ADR-007
+---------------------
+
+- El diagrama de capacidades pasa por ``SemanticSearchStore`` entre el worker
+  y PostgreSQL.
+- El bloque «Verdad persistente» deja de listar pgvector como rama de
+  ``@thyrox/store``: pgvector pertenece a ``SemanticSearchStore``.
+- Nada de Redis, Podman ni ``PodmanWorkerManager`` cambia.
+
+Qué no decide
+-------------
+
+- El modelo de embeddings, sus dimensiones y la versión de pgvector (D5, D2b).
+- Si la cuantización binaria entra desde la primera versión o tras medir la
+  recuperación sin ella.
+- La firma exacta de la superficie de arriba.

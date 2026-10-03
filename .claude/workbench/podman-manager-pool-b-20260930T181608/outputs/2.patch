@@ -1,0 +1,505 @@
+diff --git a/src/packages/daemon/src/__tests__/bgDaemonWorkerSupervision.test.ts b/src/packages/daemon/src/__tests__/bgDaemonWorkerSupervision.test.ts
+new file mode 100644
+index 000000000..a01545f8d
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/bgDaemonWorkerSupervision.test.ts
+@@ -0,0 +1,119 @@
++import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
++import { mkdtempSync, rmSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import { bgDaemonMain } from '../bgDaemon.js'
++import { daemonRequest } from '../daemonClient.js'
++import { PODMAN_LOG_LABEL, type SupervisorLogSink, type WorkerManagerLifecycle } from '../podmanWorkerSupervision.js'
++import type { PodmanCommandResult, PodmanExecutor } from '../podman/workerContainerLifecycle.js'
++import { getControlSocketPath } from '../socketPaths.js'
++
++const READY_TIMEOUT_MS = 5_000
++const READY_POLL_MS = 20
++const PODMAN_VERSION: PodmanCommandResult = { exitCode: 0, stdout: 'podman version 5.4.2\n', stderr: '' }
++const ISOLATED_ENV_KEYS = ['THYROX_CONFIG_DIR', 'TMPDIR', 'THYROX_CODE_BG_SPARE_POOL'] as const
++
++let sandbox = ''
++const originalEnv = new Map<string, string | undefined>()
++
++beforeEach(() => {
++  sandbox = mkdtempSync(join(tmpdir(), 'bg-daemon-podman-'))
++  for (const key of ISOLATED_ENV_KEYS) originalEnv.set(key, process.env[key])
++  process.env.THYROX_CONFIG_DIR = join(sandbox, 'config')
++  process.env.TMPDIR = join(sandbox, 'tmp')
++  delete process.env.THYROX_CODE_BG_SPARE_POOL
++})
++
++afterEach(() => {
++  for (const [key, value] of originalEnv) {
++    if (value === undefined) delete process.env[key]
++    else process.env[key] = value
++  }
++  rmSync(sandbox, { recursive: true, force: true })
++})
++
++function podmanAnswering(answer: PodmanCommandResult | Error): PodmanExecutor {
++  return {
++    async run() {
++      if (answer instanceof Error) throw answer
++      return answer
++    },
++  }
++}
++
++function recordingManager(): WorkerManagerLifecycle & { readonly calls: string[] } {
++  const calls: string[] = []
++  return {
++    calls,
++    async reconcileOrphans() {
++      calls.push('reconcileOrphans')
++      return []
++    },
++    async retireAll() {
++      calls.push('retireAll')
++      return []
++    },
++  }
++}
++
++function memoryLog(): SupervisorLogSink & { readonly lines: string[] } {
++  const lines: string[] = []
++  return {
++    lines,
++    write(label, message) {
++      lines.push(`${label}: ${message}`)
++    },
++  }
++}
++
++/** El daemon está listo para una señal cuando su supervisión de workers ya escribió en el log. */
++async function waitUntilSupervised(log: { readonly lines: string[] }): Promise<void> {
++  const deadline = Date.now() + READY_TIMEOUT_MS
++  while (log.lines.length === 0) {
++    if (Date.now() > deadline) throw new Error('el daemon no arrancó su supervisión de workers a tiempo')
++    await new Promise(resolve => setTimeout(resolve, READY_POLL_MS))
++  }
++}
++
++async function runDaemonUntil(
++  podman: PodmanExecutor,
++  stop: () => Promise<unknown>,
++): Promise<{ exitCode: number; manager: ReturnType<typeof recordingManager>; log: ReturnType<typeof memoryLog> }> {
++  const manager = recordingManager()
++  const log = memoryLog()
++  const running = bgDaemonMain([], { podmanWorkers: { podman, manager }, supervisorLog: log })
++  await waitUntilSupervised(log)
++  await stop()
++  return { exitCode: await running, manager, log }
++}
++
++describe('bgDaemonMain y el PodmanWorkerManager', () => {
++  test('arranca reconciliando los huérfanos y SIGTERM retira todo antes de salir', async () => {
++    const { exitCode, manager } = await runDaemonUntil(
++      podmanAnswering(PODMAN_VERSION), async () => process.emit('SIGTERM', 'SIGTERM'))
++    expect(exitCode).toBe(0)
++    expect(manager.calls).toEqual(['reconcileOrphans', 'retireAll'])
++  })
++
++  test('SIGINT también retira todo antes de salir', async () => {
++    const { manager } = await runDaemonUntil(
++      podmanAnswering(PODMAN_VERSION), async () => process.emit('SIGINT', 'SIGINT'))
++    expect(manager.calls).toEqual(['reconcileOrphans', 'retireAll'])
++  })
++
++  test('el op shutdown retira todo antes de salir', async () => {
++    const { exitCode, manager } = await runDaemonUntil(
++      podmanAnswering(PODMAN_VERSION), () => daemonRequest('shutdown', {}, { socketPath: getControlSocketPath() }))
++    expect(exitCode).toBe(0)
++    expect(manager.calls).toEqual(['reconcileOrphans', 'retireAll'])
++  })
++
++  test('sin Podman el daemon arranca igual, lo declara con la causa y no toca el manager', async () => {
++    const { exitCode, manager, log } = await runDaemonUntil(
++      podmanAnswering(new Error('spawn podman ENOENT')), async () => process.emit('SIGTERM', 'SIGTERM'))
++    expect(exitCode).toBe(0)
++    expect(manager.calls).toEqual([])
++    expect(log.lines[0]).toStartWith(`${PODMAN_LOG_LABEL}: sin Podman en el anfitrión (spawn podman ENOENT)`)
++  })
++})
+diff --git a/src/packages/daemon/src/__tests__/podmanWorkerSupervision.test.ts b/src/packages/daemon/src/__tests__/podmanWorkerSupervision.test.ts
+new file mode 100644
+index 000000000..22289d19d
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/podmanWorkerSupervision.test.ts
+@@ -0,0 +1,139 @@
++import { describe, expect, test } from 'bun:test'
++
++import {
++  PODMAN_LOG_LABEL,
++  PODMAN_PROBE_ARGV,
++  probePodman,
++  startWorkerSupervision,
++  type DaemonPodmanWorkers,
++  type SupervisorLogSink,
++  type WorkerManagerLifecycle,
++} from '../podmanWorkerSupervision.js'
++import type {
++  PodmanCommandResult,
++  PodmanExecutor,
++  WorkerContainerRetirement,
++} from '../podman/workerContainerLifecycle.js'
++
++const PODMAN_VERSION: PodmanCommandResult = { exitCode: 0, stdout: 'podman version 5.4.2\n', stderr: '' }
++
++function retirement(name: string): WorkerContainerRetirement {
++  return { name, stopped: true, removed: true, killedStaleProcess: false }
++}
++
++/** Podman de prueba para la sonda: responde un resultado fijo o rechaza como un binario ausente. */
++function probeExecutor(answer: PodmanCommandResult | Error): PodmanExecutor & { readonly calls: string[][] } {
++  const calls: string[][] = []
++  return {
++    calls,
++    async run(args) {
++      calls.push([...args])
++      if (answer instanceof Error) throw answer
++      return answer
++    },
++  }
++}
++
++/** Manager de prueba: registra el orden de llamadas y puede fallar en una de ellas. */
++function fakeManager(options: {
++  orphans?: WorkerContainerRetirement[]
++  retired?: WorkerContainerRetirement[]
++  reconcileError?: Error
++  retireAllError?: Error
++} = {}): WorkerManagerLifecycle & { readonly calls: string[] } {
++  const calls: string[] = []
++  return {
++    calls,
++    async reconcileOrphans() {
++      calls.push('reconcileOrphans')
++      if (options.reconcileError) throw options.reconcileError
++      return options.orphans ?? []
++    },
++    async retireAll() {
++      calls.push('retireAll')
++      if (options.retireAllError) throw options.retireAllError
++      return options.retired ?? []
++    },
++  }
++}
++
++function memoryLog(): SupervisorLogSink & { readonly lines: string[] } {
++  const lines: string[] = []
++  return {
++    lines,
++    write(label, message) {
++      lines.push(`${label}: ${message}`)
++    },
++  }
++}
++
++function workers(podman: PodmanExecutor, manager: WorkerManagerLifecycle): DaemonPodmanWorkers {
++  return { podman, manager }
++}
++
++describe('probePodman', () => {
++  test('exit 0 de la sonda es Podman disponible', async () => {
++    const podman = probeExecutor(PODMAN_VERSION)
++    expect(await probePodman(podman)).toEqual({ available: true })
++    expect(podman.calls).toEqual([[...PODMAN_PROBE_ARGV]])
++  })
++
++  test('un binario ausente es no disponible con la causa del rechazo', async () => {
++    const availability = await probePodman(probeExecutor(new Error('spawn podman ENOENT')))
++    expect(availability).toEqual({ available: false, cause: 'spawn podman ENOENT' })
++  })
++
++  test('una salida distinta de 0 es no disponible con su código y su stderr', async () => {
++    const availability = await probePodman(probeExecutor({ exitCode: 125, stdout: '', stderr: 'cannot connect\n' }))
++    expect(availability).toEqual({ available: false, cause: 'podman --version salió 125: cannot connect' })
++  })
++})
++
++describe('startWorkerSupervision', () => {
++  test('con Podman reconcilia los huérfanos al arrancar y lo declara en el log', async () => {
++    const manager = fakeManager({ orphans: [retirement('thyrox-worker-a'), retirement('thyrox-worker-b')] })
++    const log = memoryLog()
++    await startWorkerSupervision(workers(probeExecutor(PODMAN_VERSION), manager), log)
++    expect(manager.calls).toEqual(['reconcileOrphans'])
++    expect(log.lines).toEqual([`${PODMAN_LOG_LABEL}: huérfanos retirados al arrancar: 2 (thyrox-worker-a, thyrox-worker-b)`])
++  })
++
++  test('con Podman el apagado retira todos los workers y lo declara', async () => {
++    const manager = fakeManager({ retired: [retirement('thyrox-worker-w1')] })
++    const log = memoryLog()
++    const supervision = await startWorkerSupervision(workers(probeExecutor(PODMAN_VERSION), manager), log)
++    await supervision.shutdown()
++    expect(manager.calls).toEqual(['reconcileOrphans', 'retireAll'])
++    expect(log.lines.at(-1)).toBe(`${PODMAN_LOG_LABEL}: workers retirados al apagar: 1 (thyrox-worker-w1)`)
++  })
++
++  test('sin Podman no toca el manager y declara la causa', async () => {
++    const manager = fakeManager()
++    const log = memoryLog()
++    const supervision = await startWorkerSupervision(
++      workers(probeExecutor(new Error('spawn podman ENOENT')), manager), log)
++    await supervision.shutdown()
++    expect(manager.calls).toEqual([])
++    expect(log.lines).toEqual([
++      `${PODMAN_LOG_LABEL}: sin Podman en el anfitrión (spawn podman ENOENT); ` +
++        'el daemon sigue sin workers especializados que gestionar',
++    ])
++  })
++
++  test('un reconcile que falla no tumba el arranque: se declara y el apagado sigue retirando', async () => {
++    const manager = fakeManager({ reconcileError: new Error('inspect roto') })
++    const log = memoryLog()
++    const supervision = await startWorkerSupervision(workers(probeExecutor(PODMAN_VERSION), manager), log)
++    await supervision.shutdown()
++    expect(manager.calls).toEqual(['reconcileOrphans', 'retireAll'])
++    expect(log.lines[0]).toBe(`${PODMAN_LOG_LABEL}: no se pudieron reconciliar los huérfanos al arrancar: inspect roto`)
++  })
++
++  test('un retireAll que falla no tumba el apagado: se declara', async () => {
++    const manager = fakeManager({ retireAllError: new Error('stop colgado') })
++    const log = memoryLog()
++    const supervision = await startWorkerSupervision(workers(probeExecutor(PODMAN_VERSION), manager), log)
++    await supervision.shutdown()
++    expect(log.lines.at(-1)).toBe(`${PODMAN_LOG_LABEL}: no se pudieron retirar los workers al apagar: stop colgado`)
++  })
++})
+diff --git a/src/packages/daemon/src/bgDaemon.ts b/src/packages/daemon/src/bgDaemon.ts
+index 56a1b33ea..9844ca03c 100644
+--- a/src/packages/daemon/src/bgDaemon.ts
++++ b/src/packages/daemon/src/bgDaemon.ts
+@@ -63,6 +63,13 @@ import { type DaemonServer, type OpHandler, err, ok, startSocketServer } from '.
+ import type { ProtoOp } from './socketProto.js'
+ import { WorkerVm } from './workerVm.js'
+ import { getPinnedWorkerShorts } from './workerRegistry.js'
++import {
++  type DaemonPodmanWorkers,
++  type SupervisorLogSink,
++  createDaemonPodmanWorkers,
++  startWorkerSupervision,
++} from './podmanWorkerSupervision.js'
++import { createSupervisorLog } from './supervisorLog.js'
+ 
+ /**
+  * Arma un valor con forma de Socket no-op para rutas RPC de dispara-y-
+@@ -220,12 +227,38 @@ export function decideDuplicateDispatchOutcome(params: {
+   return { action: 'dup-live', escalateToSigkill: false }
+ }
+ 
++/** Dependencias inyectables del daemon; sin ellas se usan las reales. */
++export type BgDaemonDeps = {
++  /** El manager de workers de Podman que el daemon posee, y el ejecutor con que sondea el anfitrión. */
++  podmanWorkers?: DaemonPodmanWorkers
++  /** El log de supervisor; por defecto el de `--log-file`, o stderr sin él. */
++  supervisorLog?: SupervisorLogSink
++}
++
++type OwnedSupervisorLog = SupervisorLogSink & { close(): Promise<void> }
++
++const stderrSupervisorLog: OwnedSupervisorLog = {
++  write(label, message) {
++    process.stderr.write(`[${new Date().toISOString()}] [${label}] ${message}\n`)
++  },
++  async close() {},
++}
++
++/** El log de supervisor del daemon; uno inyectado no es suyo y no lo cierra al salir. */
++async function openSupervisorLog(injected: SupervisorLogSink | undefined, logFile: string | undefined): Promise<OwnedSupervisorLog> {
++  if (injected) return { write: (label, message) => injected.write(label, message), close: async () => {} }
++  if (!logFile) return stderrSupervisorLog
++  mkdirSync(dirname(logFile), { recursive: true })
++  return createSupervisorLog(logFile)
++}
++
+ /**
+  * Arranca el bg daemon. Se resuelve una vez que el daemon se apagó
+- * (señal u op de shutdown recibido). Devuelve el código de salida del
+- * daemon (0 en apagado ordenado, distinto de cero ante error).
++ * (señal u op de shutdown recibido) y retiró sus workers de Podman.
++ * Devuelve el código de salida del daemon (0 en apagado ordenado,
++ * distinto de cero ante error).
+  */
+-export async function bgDaemonMain(args: readonly string[]): Promise<number> {
++export async function bgDaemonMain(args: readonly string[], deps: BgDaemonDeps = {}): Promise<number> {
+   const parsed = parseArgs(args)
+   const state: DaemonState = {
+     server: undefined,
+@@ -988,6 +1021,12 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
+   }
+   process.on('SIGHUP', onSighup)
+ 
++  // Tras las señales: un SIGTERM durante la reconciliación ya aborta, y el
++  // apagado de abajo igual retira lo que el manager gestione.
++  const supervisorLog = await openSupervisorLog(deps.supervisorLog, parsed.logFile)
++  const workerSupervision = await startWorkerSupervision(
++    deps.podmanWorkers ?? createDaemonPodmanWorkers(process.pid), supervisorLog)
++
+   await new Promise<void>(resolve => {
+     if (state.abort.signal.aborted) {
+       resolve()
+@@ -1035,5 +1074,7 @@ export async function bgDaemonMain(args: readonly string[]): Promise<number> {
+   }
+   spoolWatcher.close()
+   await state.server?.close()
++  await workerSupervision.shutdown()
++  await supervisorLog.close()
+   return 0
+ }
+diff --git a/src/packages/daemon/src/podmanWorkerSupervision.ts b/src/packages/daemon/src/podmanWorkerSupervision.ts
+new file mode 100644
+index 000000000..b97cdb49c
+--- /dev/null
++++ b/src/packages/daemon/src/podmanWorkerSupervision.ts
+@@ -0,0 +1,148 @@
++/**
++ * Supervisión de los workers de Podman dentro del bg-daemon
++ * (ADR-THYROX-007 Regla 2, TASK-THYROX-0557): el daemon POSEE un
++ * `PodmanWorkerManager`; al arrancar le pide retirar los contenedores que
++ * dejó un daemon muerto (`reconcileOrphans`) y al apagarse, por cualquiera
++ * de sus vías (op `shutdown`, SIGTERM, SIGINT), retira los que gestiona
++ * (`retireAll`) antes de salir.
++ *
++ * Un anfitrión sin Podman no es un fallo del daemon: no hay workers
++ * especializados que gestionar, el daemon arranca igual y lo declara en su
++ * log de supervisor con la causa medida por la sonda. Tampoco lo es un
++ * reconcile o un retiro que falla: se declara y el daemon sigue su ciclo.
++ *
++ * Qué workers especializados existen no se decide aquí (TASK-THYROX-0558).
++ *
++ * Métrica: las llamadas al manager y las líneas del log, sobre un Podman y
++ * un manager falsos. Ciega a: Podman real, que cubre
++ * `tests/daemon/test-podman-worker-manager-real.sh`.
++ */
++
++import { join } from 'node:path'
++
++import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
++
++import {
++  PodmanWorkerManager,
++  createPodmanExecutor,
++  createVramAdmissionPort,
++  readHardwareVerdict,
++} from './podman/podmanWorkerManager.js'
++import {
++  createWorkerContainerLifecycleDeps,
++  type PodmanExecutor,
++  type WorkerContainerRetirement,
++} from './podman/workerContainerLifecycle.js'
++
++/** Etiqueta de las líneas de esta supervisión en el log del supervisor. */
++export const PODMAN_LOG_LABEL = 'podman'
++
++/** `--version` no contacta el servicio de Podman: mide sólo que el binario existe y responde. */
++export const PODMAN_PROBE_ARGV: readonly string[] = ['--version']
++
++/** Registro compartido de VRAM, el mismo que usa `headless-pool.sh` cuando se declara. */
++const VRAM_LEDGER_ENV = 'HEADLESS_POOL_VRAM_LEDGER'
++const DEFAULT_VRAM_LEDGER_FILE = 'vram-reservations.json'
++
++/** Lo que el daemon necesita del manager para su ciclo de vida. */
++export type WorkerManagerLifecycle = Pick<PodmanWorkerManager, 'reconcileOrphans' | 'retireAll'>
++
++/** El manager que el daemon posee y el ejecutor de Podman con el que se sondea el anfitrión. */
++export type DaemonPodmanWorkers = {
++  manager: WorkerManagerLifecycle
++  podman: PodmanExecutor
++}
++
++/** La cara de escritura de `SupervisorLogWriter` que esta supervisión usa. */
++export interface SupervisorLogSink {
++  write(label: string, message: string): void
++}
++
++export type PodmanAvailability = { available: true } | { available: false; cause: string }
++
++/** El ciclo de vida de los workers una vez arrancado; `shutdown` nunca lanza. */
++export interface WorkerSupervision {
++  shutdown(): Promise<void>
++}
++
++function errorMessage(error: unknown): string {
++  return error instanceof Error ? error.message : String(error)
++}
++
++function describeRetirements(retirements: readonly WorkerContainerRetirement[]): string {
++  const names = retirements.map(retirement => retirement.name)
++  return names.length === 0 ? '0' : `${names.length} (${names.join(', ')})`
++}
++
++/** Sondea el binario de Podman; un rechazo o una salida distinta de 0 es «no disponible» con su causa. */
++export async function probePodman(podman: PodmanExecutor): Promise<PodmanAvailability> {
++  try {
++    const result = await podman.run(PODMAN_PROBE_ARGV)
++    if (result.exitCode === 0) return { available: true }
++    const detail = result.stderr.trim() || 'sin stderr'
++    return { available: false, cause: `podman ${PODMAN_PROBE_ARGV.join(' ')} salió ${result.exitCode}: ${detail}` }
++  } catch (error) {
++    return { available: false, cause: errorMessage(error) }
++  }
++}
++
++class InactiveWorkerSupervision implements WorkerSupervision {
++  async shutdown(): Promise<void> {}
++}
++
++class ActiveWorkerSupervision implements WorkerSupervision {
++  constructor(
++    private readonly manager: WorkerManagerLifecycle,
++    private readonly log: SupervisorLogSink,
++  ) {}
++
++  async reconcile(): Promise<void> {
++    try {
++      const orphans = await this.manager.reconcileOrphans()
++      this.log.write(PODMAN_LOG_LABEL, `huérfanos retirados al arrancar: ${describeRetirements(orphans)}`)
++    } catch (error) {
++      this.log.write(PODMAN_LOG_LABEL, `no se pudieron reconciliar los huérfanos al arrancar: ${errorMessage(error)}`)
++    }
++  }
++
++  async shutdown(): Promise<void> {
++    try {
++      const retired = await this.manager.retireAll()
++      this.log.write(PODMAN_LOG_LABEL, `workers retirados al apagar: ${describeRetirements(retired)}`)
++    } catch (error) {
++      this.log.write(PODMAN_LOG_LABEL, `no se pudieron retirar los workers al apagar: ${errorMessage(error)}`)
++    }
++  }
++}
++
++/** Arranca la supervisión: sondea Podman y, si está, reconcilia los huérfanos. Nunca lanza. */
++export async function startWorkerSupervision(
++  workers: DaemonPodmanWorkers,
++  log: SupervisorLogSink,
++): Promise<WorkerSupervision> {
++  const availability = await probePodman(workers.podman)
++  if (!availability.available) {
++    log.write(PODMAN_LOG_LABEL, `sin Podman en el anfitrión (${availability.cause}); ` +
++      'el daemon sigue sin workers especializados que gestionar')
++    return new InactiveWorkerSupervision()
++  }
++  const supervision = new ActiveWorkerSupervision(workers.manager, log)
++  await supervision.reconcile()
++  return supervision
++}
++
++function vramLedgerPath(): string {
++  return process.env[VRAM_LEDGER_ENV] || join(getConfigHomeDir(), 'daemon', DEFAULT_VRAM_LEDGER_FILE)
++}
++
++/** El manager real del daemon: Podman del toolchain, `bin/hardware-inventory` y `gpu_monitor`. */
++export function createDaemonPodmanWorkers(daemonPid: number): DaemonPodmanWorkers {
++  const podman = createPodmanExecutor()
++  const manager = new PodmanWorkerManager({
++    lifecycle: createWorkerContainerLifecycleDeps(podman),
++    daemonPid,
++    hardwareVerdict: readHardwareVerdict,
++    vram: createVramAdmissionPort(vramLedgerPath()),
++  })
++  return { manager, podman }
++}

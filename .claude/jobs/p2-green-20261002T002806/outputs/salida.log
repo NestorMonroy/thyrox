@@ -1,0 +1,17 @@
+ok
+  ok   caso 1: el pool sale 0
+  ok   caso 1: resumen
+  ok   caso 1: cada ítem pide su ejecución a la primitiva
+  FALLA caso 1: con la referencia de trabajo del consumidor y dueño pool — esperado [--work ai-course-notes:cs224r/1 --owner pool:cs224r-1;|--work ai-course-notes:cs224r/2 --owner pool:cs224r-2;|] obtenido [--work ai-course-notes:cs224r/1;--owner pool:cs224r-1;|--work ai-course-notes:cs224r/2;--owner pool:cs224r-2;|]
+  ok   caso 1: el ejecutor corre dentro de la ejecución con el modelo local
+  ok   caso 1: cada ítem recibe su texto
+  ok   caso 1: ningún ítem ve la credencial del anfitrión
+  ok   caso 1: la autorización no pide secretos
+  ok   caso 2: si la primitiva no ejecuta, nada corre en el anfitrión
+  ok   caso 3: --execution unit sin referencia de trabajo se rehúsa con 2
+
+9 ok · 1 falla(s) (alcance medido: headless-pool --execution unit)
+  ok    gpu_monitor no crece (deuda de TASK-THYROX-0667: 4 de 4)
+10 ok, 0 fallas (alcance medido: 1 archivo, 7 términos prohibidos, 3 congelados)
+execution thyrox-worker-test-muq85c8u-18964 kind=test task=TASK-THYROX-0757 exit=0
+__BG_EXIT__=0

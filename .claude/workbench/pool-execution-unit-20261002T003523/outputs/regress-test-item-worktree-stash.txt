@@ -1,0 +1,61 @@
+caso a — git stash por el envoltorio rehúsa y registra el intento
+  ok    sale 2
+  ok    no imprime salida
+  ok    una línea en el archivo de intentos
+caso b — las formas que escriben refs/stash rehúsan tras opciones globales
+  ok    stash create rehúsa
+  ok    --git-dir y --work-tree con valor separado: stash push rehúsa
+  ok    stash pop rehúsa
+  ok    stash apply rehúsa
+  ok    stash drop rehúsa
+  ok    stash clear rehúsa
+  ok    stash store rehúsa
+  ok    stash branch rehúsa
+  ok    stash save rehúsa
+caso b2 — las formas de sólo lectura pasan al git real y no cuentan como intento
+  ok    -C --no-pager stash list pasa
+  ok    stash list no registra intento
+  ok    stash show no registra intento
+caso c — cualquier otro subcomando pasa al git real
+  ok    status sale 0
+  ok    status trae salida real
+caso d — un intento registrado da con-stash a ese ítem
+item_worktree: no se enlaza node_modules: no existe en el árbol principal
+item_worktree: no se enlaza .venv: no existe en el árbol principal
+  ok    veredicto con-stash
+caso e — anomalía compartida: ningún ítem la atribuye, un solo registro, dos observadores
+item_worktree: no se enlaza node_modules: no existe en el árbol principal
+item_worktree: no se enlaza .venv: no existe en el árbol principal
+item_worktree: no se enlaza node_modules: no existe en el árbol principal
+item_worktree: no se enlaza .venv: no existe en el árbol principal
+  ok    item1 no recibe con-stash
+  ok    item2 no recibe con-stash
+  ok    item1 deja la anomalía
+  ok    item2 deja la anomalía
+  ok    un solo parche de la anomalía
+  ok    los dos ítems constan como observadores
+  ok    la pila conserva la entrada
+caso f — sin stash, los veredictos existentes no cambian
+item_worktree: no se enlaza node_modules: no existe en el árbol principal
+item_worktree: no se enlaza .venv: no existe en el árbol principal
+  ok    veredicto verificado, sin stash de por medio
+caso g — pool_integrate no aplica ni con-stash ni anomalía, y los anota
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+bin/pool_lifecycle: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+  ok    item1 (con-stash) no se aplica
+  ok    item2 (anomalía) no se aplica
+caso h — con el repositorio guardado declarado, un stash en OTRO repositorio pasa
+  ok    stash en otro repositorio: sale 0
+  ok    y no cuenta como intento
+  ok    y llegó al git real
+  ok    stash en un worktree del repositorio guardado: rehúsa
+  ok    y cuenta como intento
+item_worktree stash guard: 33/33

@@ -1,0 +1,34 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/modelQualification.test.ts:
+(pass) validateQualification > una medición válida se devuelve intacta [0.54ms]
+(pass) validateQualification > una clase desconocida se rehúsa con la ruta del campo [0.19ms]
+(pass) validateQualification > cero casos o más aprobados que totales no es una medición [0.06ms]
+(pass) validateQualification > un instante sin zona UTC se rehúsa [0.02ms]
+(pass) parse y serialize > ida y vuelta estable, ordenada por modelo, clase e instante [0.93ms]
+(pass) parse y serialize > el error de un elemento nombra su posición [0.29ms]
+(pass) qualifiedModels > sólo cuenta una medición de tarea aprobada de esa clase [0.35ms]
+(pass) qualifiedModels > el protocolo aprobado solo no hace elegible: compatibilidad no es competencia [0.09ms]
+(pass) qualifiedModels > sin protocolo aprobado, una tarea aprobada tampoco basta [0.06ms]
+(pass) qualifiedModels > sin medición no hay modelo: el rango no se declara [0.02ms]
+(pass) qualifiedModels > la medición más reciente gobierna: una que suspende retira la aprobación [1.19ms]
+(pass) qualifiedModels > un contexto medido menor que el exigido no cumple [0.18ms]
+(pass) qualifiedModels > una cualificación de otra revisión no cuenta [0.15ms]
+(pass) qualifiedModels > entre medidas aisladas, del más rápido al más lento [0.12ms]
+(pass) qualifiedModels > una velocidad contendida no ordena: va detrás aunque su cifra sea mayor [0.06ms]
+(pass) forma de cada tipo de cualificación > una de tarea exige su clase [0.13ms]
+(pass) forma de cada tipo de cualificación > una de protocolo no mide ninguna clase [0.10ms]
+(pass) forma de cada tipo de cualificación > la condición de medición es isolated o contended [0.09ms]
+(pass) cualificación de embeddings > una de embeddings no mide ninguna clase [0.09ms]
+(pass) cualificación de embeddings > elegible: capacidad embeddings declarada y su medición vigente aprobada [0.10ms]
+(pass) cualificación de embeddings > la medición más reciente gobierna: una que suspende retira la aprobación [0.07ms]
+(pass) cualificación de embeddings > sin la capacidad declarada no es elegible aunque aprobara: el nombre no la prueba [0.02ms]
+(pass) cualificación de embeddings > un modelo de API compite con el mismo criterio que uno local: capacidad declarada y medición aprobada [0.07ms]
+(pass) cualificación de embeddings > una cualificación de tarea no hace elegible para embeddings [0.02ms]
+(pass) localModelHome > por defecto, bajo .thyrox/models de la raíz [0.16ms]
+(pass) localModelHome > lo declarado gana, y una declaración vacía no cuenta [0.06ms]
+
+ 26 pass
+ 0 fail
+ 32 expect() calls
+Ran 26 tests across 1 file. [183.00ms]

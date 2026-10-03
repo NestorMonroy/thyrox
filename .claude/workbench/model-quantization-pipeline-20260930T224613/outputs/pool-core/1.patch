@@ -1,0 +1,1593 @@
+diff --git a/bun.lock b/bun.lock
+index d3447d98b..b16722142 100644
+--- a/bun.lock
++++ b/bun.lock
+@@ -492,6 +492,10 @@
+         "zod": "^4.3.6",
+       },
+     },
++    "src/packages/model-artifacts": {
++      "name": "@thyrox/model-artifacts",
++      "version": "0.1.0",
++    },
+     "src/packages/modifiers-napi": {
+       "name": "@thyrox/modifiers-napi",
+       "version": "1.0.0",
+@@ -503,6 +507,7 @@
+         "@thyrox/agent": "0.4.0",
+         "@thyrox/paths": "0.1.0",
+         "@thyrox/store": "0.1.0",
++        "@thyrox/task": "0.1.0",
+       },
+       "devDependencies": {
+         "@types/bun": "^1.4.0",
+@@ -591,6 +596,7 @@
+         "@thyrox/local-observability": "0.1.0",
+         "@thyrox/mcp-runtime": "0.1.0",
+         "@thyrox/output": "0.1.0",
++        "@thyrox/paths": "0.1.0",
+         "@thyrox/permission": "0.1.0",
+         "@thyrox/repl": "0.0.0",
+         "@thyrox/shared-state": "0.1.0",
+@@ -787,6 +793,7 @@
+       "version": "0.1.0",
+       "dependencies": {
+         "@thyrox/paths": "0.1.0",
++        "@thyrox/store": "0.1.0",
+       },
+     },
+     "src/packages/teleport": {
+@@ -1271,6 +1278,8 @@
+ 
+     "@thyrox/mitm": ["@thyrox/mitm@workspace:src/packages/mitm"],
+ 
++    "@thyrox/model-artifacts": ["@thyrox/model-artifacts@workspace:src/packages/model-artifacts"],
++
+     "@thyrox/modifiers-napi": ["@thyrox/modifiers-napi@workspace:src/packages/modifiers-napi"],
+ 
+     "@thyrox/observability": ["@thyrox/observability@workspace:src/packages/observability"],
+diff --git a/src/packages/model-artifacts/__tests__/artifactManifest.test.ts b/src/packages/model-artifacts/__tests__/artifactManifest.test.ts
+new file mode 100644
+index 000000000..58f765704
+--- /dev/null
++++ b/src/packages/model-artifacts/__tests__/artifactManifest.test.ts
+@@ -0,0 +1,101 @@
++import { describe, expect, test } from 'bun:test'
++
++import {
++  InvalidArtifactManifestError,
++  artifactModelName,
++  parseArtifactManifest,
++  serializeArtifactManifest,
++  type ArtifactManifest,
++} from '../artifactManifest.js'
++
++const HEX64 = (seed: string): string => seed.repeat(64).slice(0, 64)
++
++function manifest(): ArtifactManifest {
++  return {
++    repository: 'Qwen/Qwen2.5-0.5B-Instruct',
++    source: 'hf',
++    revision: '7ae557604adf67be50417f59c2c2f167def9a775',
++    sourceFiles: [
++      { path: 'model.safetensors', sha256: HEX64('a') },
++      { path: 'config.json', sha256: HEX64('b') },
++    ],
++    converter: { name: 'convert_hf_to_gguf.py', image: 'ghcr.io/ggml-org/llama.cpp:full', imageDigest: `sha256:${HEX64('c')}` },
++    quantization: 'q4_k_m',
++    gguf: { sha256: HEX64('d'), bytes: 397807712 },
++    validation: { perplexity: 12.5, tokensPerSecond: 88.2, loaded: true },
++    createdAt: '2026-09-30T23:00:00.000Z',
++  }
++}
++
++function withoutPath(value: unknown, path: readonly string[]): unknown {
++  const copy = structuredClone(value) as Record<string, unknown>
++  let cursor: Record<string, unknown> = copy
++  for (const key of path.slice(0, -1)) cursor = cursor[key] as Record<string, unknown>
++  delete cursor[path[path.length - 1] ?? '']
++  return copy
++}
++
++describe('serializeArtifactManifest', () => {
++  test('ida y vuelta conserva el manifiesto', () => {
++    expect(parseArtifactManifest(serializeArtifactManifest(manifest()))).toEqual(manifest())
++  })
++
++  test('JSON canónico: claves ordenadas en todos los niveles, independiente del orden de escritura', () => {
++    const text = serializeArtifactManifest(manifest())
++    const topKeys = Object.keys(JSON.parse(text) as object)
++    expect(topKeys).toEqual([...topKeys].sort())
++    expect(text.indexOf('"bytes"')).toBeLessThan(text.indexOf('"sha256":"dddd'))
++    const reordered = Object.fromEntries(Object.entries(manifest()).reverse()) as unknown as ArtifactManifest
++    expect(serializeArtifactManifest(reordered)).toBe(text)
++  })
++
++  test('no serializa un manifiesto inválido', () => {
++    expect(() => serializeArtifactManifest({ ...manifest(), quantization: 'q9_z' })).toThrow()
++  })
++})
++
++describe('parseArtifactManifest — un campo que falta es un error con nombre', () => {
++  const required: readonly (readonly string[])[] = [
++    ['repository'], ['source'], ['revision'], ['sourceFiles'], ['converter', 'imageDigest'], ['converter', 'image'],
++    ['converter', 'name'], ['quantization'], ['gguf', 'sha256'], ['gguf', 'bytes'], ['validation', 'perplexity'],
++    ['validation', 'tokensPerSecond'], ['validation', 'loaded'], ['createdAt'],
++  ]
++  for (const path of required) {
++    test(`falta ${path.join('.')}`, () => {
++      const text = JSON.stringify(withoutPath(manifest(), path))
++      expect(() => parseArtifactManifest(text)).toThrow(InvalidArtifactManifestError)
++      expect(() => parseArtifactManifest(text)).toThrow(path.join('.'))
++    })
++  }
++})
++
++describe('parseArtifactManifest — rehúsa valores con forma equivocada', () => {
++  const cases: readonly [string, (m: Record<string, unknown>) => void][] = [
++    ['gguf.sha256', m => { (m.gguf as Record<string, unknown>).sha256 = 'xyz' }],
++    ['gguf.bytes', m => { (m.gguf as Record<string, unknown>).bytes = -1 }],
++    ['converter.imageDigest', m => { (m.converter as Record<string, unknown>).imageDigest = HEX64('c') }],
++    ['sourceFiles[0].sha256', m => { ((m.sourceFiles as Record<string, unknown>[])[0] ?? {}).sha256 = 'no' }],
++    ['sourceFiles', m => { m.sourceFiles = [] }],
++    ['quantization', m => { m.quantization = 'q9_z' }],
++    ['createdAt', m => { m.createdAt = 'ayer' }],
++    ['validation.loaded', m => { (m.validation as Record<string, unknown>).loaded = 'yes' }],
++    ['validation.perplexity', m => { (m.validation as Record<string, unknown>).perplexity = Number.NaN }],
++  ]
++  for (const [field, mutate] of cases) {
++    test(field, () => {
++      const value = structuredClone(manifest()) as unknown as Record<string, unknown>
++      mutate(value)
++      expect(() => parseArtifactManifest(JSON.stringify(value))).toThrow(field)
++    })
++  }
++
++  test('un texto que no es JSON', () => {
++    expect(() => parseArtifactManifest('{')).toThrow(InvalidArtifactManifestError)
++  })
++})
++
++describe('artifactModelName', () => {
++  test('el manifiesto deriva el nombre del contrato', () => {
++    expect(artifactModelName(manifest())).toBe('thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf')
++  })
++})
+diff --git a/src/packages/model-artifacts/__tests__/ggufMetadata.test.ts b/src/packages/model-artifacts/__tests__/ggufMetadata.test.ts
+new file mode 100644
+index 000000000..c357642bd
+--- /dev/null
++++ b/src/packages/model-artifacts/__tests__/ggufMetadata.test.ts
+@@ -0,0 +1,130 @@
++import { afterAll, describe, expect, test } from 'bun:test'
++import { existsSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import { InvalidGgufError, MAX_GGUF_HEADER_BYTES, readGgufMetadata } from '../ggufMetadata.js'
++import { syntheticGgufBytes, type SyntheticHeader } from '../testing/syntheticGguf.js'
++
++const WORKDIR = mkdtempSync(join(tmpdir(), 'gguf-metadata-'))
++afterAll(() => rmSync(WORKDIR, { recursive: true, force: true }))
++
++let fileCounter = 0
++function writeGguf(bytes: Uint8Array): string {
++  fileCounter += 1
++  const path = join(WORKDIR, `model-${fileCounter}.gguf`)
++  writeFileSync(path, bytes)
++  return path
++}
++
++function writeHeader(header: SyntheticHeader): string {
++  return writeGguf(syntheticGgufBytes(header))
++}
++
++describe('readGgufMetadata — cabecera válida', () => {
++  test('lee versión, conteos y cada tipo de valor', async () => {
++    const path = writeHeader({
++      tensorCount: 290n,
++      entries: [
++        ['general.architecture', { type: 'string', value: 'qwen2' }],
++        ['u8', { type: 'uint8', value: 200 }],
++        ['i8', { type: 'int8', value: -5 }],
++        ['u16', { type: 'uint16', value: 60000 }],
++        ['i16', { type: 'int16', value: -300 }],
++        ['qwen2.block_count', { type: 'uint32', value: 24 }],
++        ['i32', { type: 'int32', value: -70000 }],
++        ['f32', { type: 'float32', value: 0.5 }],
++        ['flag', { type: 'bool', value: true }],
++        ['u64', { type: 'uint64', value: 1n << 40n }],
++        ['i64big', { type: 'int64', value: -(1n << 60n) }],
++        ['f64', { type: 'float64', value: 1e-6 }],
++        ['tokens', { type: 'array', elementType: 'string', values: [{ type: 'string', value: 'a' }, { type: 'string', value: 'ñ' }] }],
++      ],
++    })
++    const header = await readGgufMetadata(path)
++    expect(header.version).toBe(3)
++    expect(header.tensorCount).toBe(290)
++    expect(header.metadata).toEqual({
++      'general.architecture': 'qwen2',
++      u8: 200, i8: -5, u16: 60000, i16: -300,
++      'qwen2.block_count': 24, i32: -70000, f32: 0.5, flag: true,
++      u64: 2 ** 40, i64big: -(1n << 60n), f64: 1e-6,
++      tokens: ['a', 'ñ'],
++    })
++  })
++
++  test('no lee tensores: una cabecera sin sus datos se lee igual', async () => {
++    const path = writeHeader({ tensorCount: 1_000_000n, entries: [['k', { type: 'uint32', value: 1 }]] })
++    expect((await readGgufMetadata(path)).metadata).toEqual({ k: 1 })
++  })
++
++  test('una cabecera que cruza varios bloques de lectura', async () => {
++    const long = 'x'.repeat(1_000_000)
++    const path = writeHeader({ entries: [['a', { type: 'string', value: long }], ['b', { type: 'uint32', value: 7 }]] })
++    const metadata = (await readGgufMetadata(path)).metadata
++    expect(metadata.a).toBe(long)
++    expect(metadata.b).toBe(7)
++  })
++})
++
++describe('readGgufMetadata — rehúsa con nombre', () => {
++  test('magia distinta de GGUF', async () => {
++    const path = writeHeader({ magic: 'GGML', entries: [] })
++    expect(readGgufMetadata(path)).rejects.toThrow(/magia/)
++  })
++
++  test('versión no soportada', async () => {
++    const path = writeHeader({ version: 1, entries: [] })
++    expect(readGgufMetadata(path)).rejects.toThrow(/versión 1/)
++  })
++
++  test('tipo de valor desconocido, nombrando la clave', async () => {
++    const path = writeHeader({ entries: [['rara', { type: 'raw', typeCode: 99, bytes: new Uint8Array(4) }]] })
++    expect(readGgufMetadata(path)).rejects.toThrow(/rara.*99/)
++  })
++
++  test('cabecera truncada', async () => {
++    const bytes = syntheticGgufBytes({ entries: [['general.architecture', { type: 'string', value: 'qwen2' }]] })
++    const path = writeGguf(bytes.slice(0, bytes.length - 2))
++    expect(readGgufMetadata(path)).rejects.toThrow(InvalidGgufError)
++    expect(readGgufMetadata(path)).rejects.toThrow(/truncad/)
++  })
++
++  test('cabecera mayor que la cota: no se lee sin límite', async () => {
++    const path = writeHeader({ entries: [['huge', { type: 'string', value: 'y'.repeat(MAX_GGUF_HEADER_BYTES) }]] })
++    expect(readGgufMetadata(path)).rejects.toThrow(/cota/)
++  })
++
++  test('longitud declarada absurda: rehúsa sin reservar esa memoria', async () => {
++    const bytes = syntheticGgufBytes({ entries: [['k', { type: 'string', value: 'ab' }]] })
++    const view = new DataView(bytes.buffer)
++    const keyLengthOffset = 4 + 4 + 8 + 8
++    view.setBigUint64(keyLengthOffset, 1n << 62n, true)
++    expect(readGgufMetadata(writeGguf(bytes))).rejects.toThrow(/cota/)
++  })
++
++  test('clave repetida', async () => {
++    const path = writeHeader({ entries: [['k', { type: 'uint8', value: 1 }], ['k', { type: 'uint8', value: 2 }]] })
++    expect(readGgufMetadata(path)).rejects.toThrow(/repetida.*k/)
++  })
++})
++
++const REAL_Q4_K_M = '/var/lib/containers/storage/volumes/thyrox-quantization-lab-artifacts/_data/model-Q4_K_M.gguf'
++const realAvailable = existsSync(REAL_Q4_K_M)
++
++describe('readGgufMetadata — GGUF real (opcional)', () => {
++  if (!realAvailable) {
++    test.skip(`se salta: no existe ${REAL_Q4_K_M} (volumen thyrox-quantization-lab-artifacts)`, () => {})
++    return
++  }
++  test('Qwen2.5-0.5B-Instruct Q4_K_M: qwen2, 24 capas, 2 cabezas KV', async () => {
++    const { metadata, version, tensorCount } = await readGgufMetadata(REAL_Q4_K_M)
++    expect(version).toBe(3)
++    expect(tensorCount).toBe(290)
++    expect(metadata['general.architecture']).toBe('qwen2')
++    expect(metadata['qwen2.block_count']).toBe(24)
++    expect(metadata['qwen2.attention.head_count_kv']).toBe(2)
++    expect(metadata['qwen2.attention.head_count']).toBe(14)
++    expect(metadata['qwen2.embedding_length']).toBe(896)
++  })
++})
+diff --git a/src/packages/model-artifacts/__tests__/memoryEstimate.test.ts b/src/packages/model-artifacts/__tests__/memoryEstimate.test.ts
+new file mode 100644
+index 000000000..df8245c98
+--- /dev/null
++++ b/src/packages/model-artifacts/__tests__/memoryEstimate.test.ts
+@@ -0,0 +1,91 @@
++import { describe, expect, test } from 'bun:test'
++
++import type { GgufMetadata } from '../ggufMetadata.js'
++import {
++  InvalidMemoryEstimateInputError,
++  KV_CACHE_BYTES_PER_ELEMENT,
++  MissingGgufKeyError,
++  SERVING_BUFFER_MARGIN_BYTES,
++  estimateServingMemory,
++} from '../memoryEstimate.js'
++
++const QWEN2_METADATA: GgufMetadata = {
++  'general.architecture': 'qwen2',
++  'qwen2.block_count': 24,
++  'qwen2.attention.head_count_kv': 2,
++  'qwen2.attention.head_count': 14,
++  'qwen2.embedding_length': 896,
++}
++const Q4_K_M_BYTES = 397_807_712
++
++describe('estimateServingMemory', () => {
++  test('peso = bytes del archivo; KV = 2 × capas × contexto × cabezas_kv × dim_cabeza × bytes', () => {
++    const estimate = estimateServingMemory({ ggufBytes: Q4_K_M_BYTES, metadata: QWEN2_METADATA, contextLength: 2048, kvCacheType: 'f16' })
++    expect(estimate.weightsBytes).toBe(Q4_K_M_BYTES)
++    expect(estimate.kvCacheBytes).toBe(2 * 24 * 2048 * 2 * 64 * 2)
++    expect(estimate.bufferBytes).toBe(SERVING_BUFFER_MARGIN_BYTES)
++    expect(estimate.totalBytes).toBe(Q4_K_M_BYTES + 25_165_824 + SERVING_BUFFER_MARGIN_BYTES)
++  })
++
++  test('el tipo de caché KV escala la caché, no el peso', () => {
++    const base = { ggufBytes: Q4_K_M_BYTES, metadata: QWEN2_METADATA, contextLength: 4096 }
++    const f16 = estimateServingMemory({ ...base, kvCacheType: 'f16' }).kvCacheBytes
++    expect(estimateServingMemory({ ...base, kvCacheType: 'f32' }).kvCacheBytes).toBe(f16 * 2)
++    expect(estimateServingMemory({ ...base, kvCacheType: 'q8_0' }).kvCacheBytes).toBe(Math.ceil(f16 / 2 * KV_CACHE_BYTES_PER_ELEMENT.q8_0))
++    expect(estimateServingMemory({ ...base, kvCacheType: 'q4_0' }).kvCacheBytes).toBe(Math.ceil(f16 / 2 * KV_CACHE_BYTES_PER_ELEMENT.q4_0))
++  })
++
++  test('cota superior de lo que Ollama 0.35.0 reservó para el mismo GGUF (/api/ps)', () => {
++    const measured: readonly [number, number][] = [[2048, 619_614_042], [8192, 747_026_512]]
++    for (const [contextLength, ollamaSize] of measured) {
++      const { totalBytes } = estimateServingMemory({ ggufBytes: Q4_K_M_BYTES, metadata: QWEN2_METADATA, contextLength, kvCacheType: 'f16' })
++      expect(totalBytes).toBeGreaterThanOrEqual(ollamaSize)
++    }
++  })
++
++  test('las claves se leen de la arquitectura declarada, no de una fija', () => {
++    const llama: GgufMetadata = {
++      'general.architecture': 'llama', 'llama.block_count': 32, 'llama.attention.head_count_kv': 8,
++      'llama.attention.head_count': 32, 'llama.embedding_length': 4096,
++    }
++    const estimate = estimateServingMemory({ ggufBytes: 1, metadata: llama, contextLength: 1, kvCacheType: 'f16' })
++    expect(estimate.kvCacheBytes).toBe(2 * 32 * 1 * 8 * 128 * 2)
++  })
++})
++
++describe('estimateServingMemory — una clave ausente es un error con su nombre, no un cero', () => {
++  for (const key of Object.keys(QWEN2_METADATA)) {
++    test(key, () => {
++      const metadata = Object.fromEntries(Object.entries(QWEN2_METADATA).filter(([name]) => name !== key))
++      const run = (): unknown => estimateServingMemory({ ggufBytes: 1, metadata, contextLength: 1, kvCacheType: 'f16' })
++      expect(run).toThrow(MissingGgufKeyError)
++      expect(run).toThrow(key)
++    })
++  }
++})
++
++describe('estimateServingMemory — rehúsa entradas sin sentido', () => {
++  const valid = { ggufBytes: Q4_K_M_BYTES, metadata: QWEN2_METADATA, contextLength: 2048, kvCacheType: 'f16' } as const
++
++  test('una clave con un valor que no es entero positivo', () => {
++    expect(() => estimateServingMemory({ ...valid, metadata: { ...QWEN2_METADATA, 'qwen2.block_count': 0 } })).toThrow(/qwen2.block_count/)
++    expect(() => estimateServingMemory({ ...valid, metadata: { ...QWEN2_METADATA, 'qwen2.block_count': 'x' } })).toThrow(/qwen2.block_count/)
++  })
++
++  test('general.architecture que no es cadena', () => {
++    expect(() => estimateServingMemory({ ...valid, metadata: { ...QWEN2_METADATA, 'general.architecture': 3 } })).toThrow(/general.architecture/)
++  })
++
++  test('embedding_length que no se reparte entre las cabezas', () => {
++    expect(() => estimateServingMemory({ ...valid, metadata: { ...QWEN2_METADATA, 'qwen2.attention.head_count': 13 } })).toThrow(/head_count/)
++  })
++
++  test('contexto y bytes no positivos', () => {
++    expect(() => estimateServingMemory({ ...valid, contextLength: 0 })).toThrow(InvalidMemoryEstimateInputError)
++    expect(() => estimateServingMemory({ ...valid, ggufBytes: -1 })).toThrow(/ggufBytes/)
++  })
++
++  test('tipo de caché KV desconocido', () => {
++    expect(() => estimateServingMemory({ ...valid, kvCacheType: 'q2_k' as 'f16' })).toThrow(/q2_k/)
++  })
++})
+diff --git a/src/packages/model-artifacts/__tests__/modelName.test.ts b/src/packages/model-artifacts/__tests__/modelName.test.ts
+new file mode 100644
+index 000000000..fbe7b7ce5
+--- /dev/null
++++ b/src/packages/model-artifacts/__tests__/modelName.test.ts
+@@ -0,0 +1,117 @@
++import { describe, expect, test } from 'bun:test'
++
++import {
++  InvalidModelNameInputError,
++  OLLAMA_NAME_PART_MAX_LENGTH,
++  parseThyroxModelName,
++  thyroxModelName,
++} from '../modelName.js'
++import { UnknownQuantizationLevelError } from '../quantizationLevel.js'
++
++const HF_COMMIT = '7ae557604adf67be50417f59c2c2f167def9a775'
++const OLLAMA_DIGEST = 'a8b0c5157701' + '0'.repeat(52)
++
++describe('thyroxModelName — ejemplos fijados verbatim', () => {
++  test('fuente de Hugging Face', () => {
++    expect(thyroxModelName({
++      repository: 'Qwen/Qwen2.5-0.5B-Instruct', quantization: 'q4_K_M', source: 'hf', revision: HF_COMMIT,
++    })).toBe('thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf')
++  })
++
++  test('registro de Ollama, con el digest del manifiesto con prefijo sha256:', () => {
++    expect(thyroxModelName({
++      repository: 'library/qwen2.5-0.5b', quantization: 'Q4_K_M', source: 'ollama', revision: `sha256:${OLLAMA_DIGEST}`,
++    })).toBe('thyrox-library--qwen2.5-0.5b:q4_k_m-ollama-a8b0c5157701')
++  })
++
++  test('registro de Ollama, con el digest pelado como lo da /api/tags', () => {
++    expect(thyroxModelName({
++      repository: 'library/qwen2.5-0.5b', quantization: 'Q4_K_M', source: 'ollama', revision: OLLAMA_DIGEST,
++    })).toBe('thyrox-library--qwen2.5-0.5b:q4_k_m-ollama-a8b0c5157701')
++  })
++
++  test('el alias de nivel da el mismo nombre que el canónico', () => {
++    const base = { repository: 'Qwen/Qwen2.5-0.5B-Instruct', source: 'hf', revision: HF_COMMIT } as const
++    expect(thyroxModelName({ ...base, quantization: 'Q4_K' })).toBe(thyroxModelName({ ...base, quantization: 'Q4_K_M' }))
++  })
++})
++
++describe('thyroxModelName — rehúsa con nombre', () => {
++  const valid = { repository: 'Qwen/Qwen2.5-0.5B-Instruct', quantization: 'q8_0', source: 'hf', revision: HF_COMMIT } as const
++
++  test('un repositorio sin /', () => {
++    expect(() => thyroxModelName({ ...valid, repository: 'qwen2.5' })).toThrow(InvalidModelNameInputError)
++    expect(() => thyroxModelName({ ...valid, repository: 'qwen2.5' })).toThrow(/repository/)
++  })
++
++  test('un repositorio con más de una /', () => {
++    expect(() => thyroxModelName({ ...valid, repository: 'a/b/c' })).toThrow(InvalidModelNameInputError)
++  })
++
++  test('una organización con -- no volvería por el inverso', () => {
++    expect(() => thyroxModelName({ ...valid, repository: 'my--org/model' })).toThrow(InvalidModelNameInputError)
++  })
++
++  test('un carácter que Ollama no admite', () => {
++    expect(() => thyroxModelName({ ...valid, repository: 'org/model+ft' })).toThrow(/model\+ft/)
++  })
++
++  test('una revisión que no es hex', () => {
++    expect(() => thyroxModelName({ ...valid, revision: 'main' })).toThrow(InvalidModelNameInputError)
++    expect(() => thyroxModelName({ ...valid, revision: 'main' })).toThrow(/revision/)
++    expect(() => thyroxModelName({ ...valid, revision: 'z'.repeat(40) })).toThrow(InvalidModelNameInputError)
++  })
++
++  test('una revisión con la longitud de la otra fuente', () => {
++    expect(() => thyroxModelName({ ...valid, revision: OLLAMA_DIGEST })).toThrow(InvalidModelNameInputError)
++    expect(() => thyroxModelName({ ...valid, source: 'ollama', revision: HF_COMMIT })).toThrow(InvalidModelNameInputError)
++  })
++
++  test('una fuente desconocida', () => {
++    expect(() => thyroxModelName({ ...valid, source: 'gitlab' as 'hf' })).toThrow(/source/)
++  })
++
++  test('un nivel desconocido', () => {
++    expect(() => thyroxModelName({ ...valid, quantization: 'q9_z' })).toThrow(UnknownQuantizationLevelError)
++  })
++
++  test('un nombre de modelo más largo que lo que Ollama admite', () => {
++    const fits = 'r'.repeat(OLLAMA_NAME_PART_MAX_LENGTH - 'thyrox-o--'.length)
++    expect(() => thyroxModelName({ ...valid, repository: `o/${fits}` })).not.toThrow()
++    expect(() => thyroxModelName({ ...valid, repository: `o/${fits}r` })).toThrow(/80/)
++  })
++})
++
++describe('parseThyroxModelName', () => {
++  test('devuelve las partes del nombre', () => {
++    expect(parseThyroxModelName('thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf')).toEqual({
++      repository: 'qwen/qwen2.5-0.5b-instruct', quantization: 'q4_k_m', source: 'hf', revision: '7ae557604adf',
++    })
++  })
++
++  test('ida y vuelta es la identidad', () => {
++    for (const name of [
++      'thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf',
++      'thyrox-library--qwen2.5-0.5b:q4_k_m-ollama-a8b0c5157701',
++      'thyrox-org--repo--with--dashes:int4-hf-0123456789ab',
++    ]) {
++      const parts = parseThyroxModelName(name)
++      expect(parts).toBeDefined()
++      expect(thyroxModelName(parts!)).toBe(name)
++    }
++  })
++
++  test('un nombre que no es de thyrox da undefined', () => {
++    for (const name of [
++      'qwen2.5:0.5b',
++      'thyrox-qwen2.5-0.5b-instruct:q8_0',
++      'thyrox-qwen--x:q4_k_m-hf-7ae557604ad',
++      'thyrox-qwen--x:q4_k_m-gitlab-7ae557604adf',
++      'thyrox-qwen--x:q9_z-hf-7ae557604adf',
++      'thyrox-Qwen--x:q4_k_m-hf-7ae557604adf',
++      'thyrox---x:q4_k_m-hf-7ae557604adf',
++    ]) {
++      expect(parseThyroxModelName(name)).toBeUndefined()
++    }
++  })
++})
+diff --git a/src/packages/model-artifacts/__tests__/packageBoundary.test.ts b/src/packages/model-artifacts/__tests__/packageBoundary.test.ts
+new file mode 100644
+index 000000000..83053ad4d
+--- /dev/null
++++ b/src/packages/model-artifacts/__tests__/packageBoundary.test.ts
+@@ -0,0 +1,27 @@
++import { describe, expect, test } from 'bun:test'
++import { readFileSync, readdirSync } from 'node:fs'
++import { join } from 'node:path'
++
++const PACKAGE_ROOT = join(import.meta.dir, '..')
++const IMPORT_SPECIFIER = /from\s+'([^']+)'/g
++const ALLOWED_EXTERNAL = new Set(['node:fs/promises'])
++
++function sourceFiles(): string[] {
++  return readdirSync(PACKAGE_ROOT).filter(name => name.endsWith('.ts')).map(name => join(PACKAGE_ROOT, name))
++}
++
++function importSpecifiers(file: string): string[] {
++  return [...readFileSync(file, 'utf8').matchAll(IMPORT_SPECIFIER)].map(match => match[1] ?? '')
++}
++
++describe('frontera del paquete — lógica pura, sin Podman ni red', () => {
++  test('cada módulo importa sólo módulos hermanos o node:fs/promises', () => {
++    const files = sourceFiles()
++    expect(files.length).toBe(5)
++    const offenders = files.flatMap(file =>
++      importSpecifiers(file)
++        .filter(specifier => !specifier.startsWith('./') && !ALLOWED_EXTERNAL.has(specifier))
++        .map(specifier => `${file}: ${specifier}`))
++    expect(offenders).toEqual([])
++  })
++})
+diff --git a/src/packages/model-artifacts/__tests__/quantizationLevel.test.ts b/src/packages/model-artifacts/__tests__/quantizationLevel.test.ts
+new file mode 100644
+index 000000000..d444489ac
+--- /dev/null
++++ b/src/packages/model-artifacts/__tests__/quantizationLevel.test.ts
+@@ -0,0 +1,60 @@
++import { describe, expect, test } from 'bun:test'
++
++import {
++  QUANTIZATION_LEVELS,
++  UnknownQuantizationLevelError,
++  normalizeQuantizationLevel,
++  quantizationBackend,
++} from '../quantizationLevel.js'
++
++describe('normalizeQuantizationLevel', () => {
++  test('las mayúsculas no distinguen niveles: Q4_K_M ≡ q4_k_m', () => {
++    expect(normalizeQuantizationLevel('Q4_K_M')).toBe('q4_k_m')
++    expect(normalizeQuantizationLevel('q4_k_m')).toBe('q4_k_m')
++    expect(normalizeQuantizationLevel('INT4')).toBe('int4')
++  })
++
++  test('un alias de llama-quantize resuelve a su nivel canónico, no a un segundo nombre', () => {
++    expect(normalizeQuantizationLevel('Q4_K')).toBe('q4_k_m')
++    expect(normalizeQuantizationLevel('q3_k')).toBe('q3_k_m')
++    expect(normalizeQuantizationLevel('Q5_K')).toBe('q5_k_m')
++  })
++
++  test('rehúsa un nivel desconocido nombrándolo', () => {
++    expect(() => normalizeQuantizationLevel('q9_z')).toThrow(UnknownQuantizationLevelError)
++    expect(() => normalizeQuantizationLevel('q9_z')).toThrow(/q9_z/)
++    expect(() => normalizeQuantizationLevel('')).toThrow(UnknownQuantizationLevelError)
++  })
++})
++
++describe('quantizationBackend', () => {
++  test('los K-quants y los cuantos clásicos los produce llama-quantize', () => {
++    for (const level of ['Q4_K_M', 'q8_0', 'Q4_0', 'Q6_K', 'IQ4_XS', 'Q4_K']) {
++      expect(quantizationBackend(level)).toBe('llama-quantize')
++    }
++  })
++
++  test('int4, int8, nvfp4, mxfp4 y mxfp8 sólo los produce ollama create desde safetensors', () => {
++    for (const level of ['int4', 'int8', 'nvfp4', 'mxfp4', 'MXFP8']) {
++      expect(quantizationBackend(level)).toBe('ollama-create')
++    }
++  })
++
++  test('f16 y bf16 salen del convertidor', () => {
++    expect(quantizationBackend('F16')).toBe('convert')
++    expect(quantizationBackend('bf16')).toBe('convert')
++  })
++
++  test('rehúsa lo desconocido en vez de elegir un backend por defecto', () => {
++    expect(() => quantizationBackend('fp3')).toThrow(UnknownQuantizationLevelError)
++  })
++})
++
++describe('QUANTIZATION_LEVELS', () => {
++  test('cada nivel canónico está en minúsculas y no lleva guion, que separa partes del nombre', () => {
++    for (const level of Object.keys(QUANTIZATION_LEVELS)) {
++      expect(level).toBe(level.toLowerCase())
++      expect(level.includes('-')).toBe(false)
++    }
++  })
++})
+diff --git a/src/packages/model-artifacts/artifactManifest.ts b/src/packages/model-artifacts/artifactManifest.ts
+new file mode 100644
+index 000000000..09ccf523b
+--- /dev/null
++++ b/src/packages/model-artifacts/artifactManifest.ts
+@@ -0,0 +1,201 @@
++/**
++ * Manifiesto de procedencia de un artefacto GGUF: de qué repositorio y
++ * revisión salió, el sha256 de cada archivo de la fuente, qué convertidor e
++ * imagen (con digest) lo produjo, a qué nivel, el sha256 y los bytes del GGUF,
++ * su validación y cuándo se creó.
++ *
++ * Se serializa a JSON canónico (claves ordenadas en todos los niveles), así que
++ * dos manifiestos iguales dan el mismo texto byte a byte. Al leer se valida:
++ * un campo que falta es un error con su ruta, nunca un valor por defecto.
++ */
++
++import { thyroxModelName, type ModelSource } from './modelName.js'
++import { normalizeQuantizationLevel, UnknownQuantizationLevelError } from './quantizationLevel.js'
++
++export interface SourceFileDigest {
++  readonly path: string
++  readonly sha256: string
++}
++
++export interface ConverterProvenance {
++  readonly name: string
++  readonly image: string
++  /** Digest de la imagen (`sha256:`+64 hex): una etiqueta sola no fija el convertidor. */
++  readonly imageDigest: string
++}
++
++export interface GgufDigest {
++  readonly sha256: string
++  readonly bytes: number
++}
++
++export interface ArtifactValidation {
++  readonly perplexity: number
++  readonly tokensPerSecond: number
++  readonly loaded: boolean
++}
++
++export interface ArtifactManifest {
++  readonly repository: string
++  readonly source: ModelSource
++  readonly revision: string
++  readonly sourceFiles: readonly SourceFileDigest[]
++  readonly converter: ConverterProvenance
++  readonly quantization: string
++  readonly gguf: GgufDigest
++  readonly validation: ArtifactValidation
++  /** Instante ISO 8601 en UTC. */
++  readonly createdAt: string
++}
++
++export class InvalidArtifactManifestError extends Error {
++  constructor(readonly field: string, reason: string) {
++    super(`manifiesto de artefacto inválido en ${field}: ${reason}`)
++    this.name = 'InvalidArtifactManifestError'
++  }
++}
++
++const SHA256_HEX_PATTERN = /^[0-9a-f]{64}$/
++const IMAGE_DIGEST_PATTERN = /^sha256:[0-9a-f]{64}$/
++const ISO_UTC_INSTANT_PATTERN = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/
++
++type JsonObject = Record<string, unknown>
++
++/** Serializa a JSON canónico; valida antes, para no escribir un manifiesto que no se podría leer. */
++export function serializeArtifactManifest(manifest: ArtifactManifest): string {
++  validateArtifactManifest(manifest)
++  return JSON.stringify(canonicalize(manifest))
++}
++
++/** Lee y valida un manifiesto; rehúsa con la ruta del campo que falla. */
++export function parseArtifactManifest(text: string): ArtifactManifest {
++  const value = parseJson(text)
++  validateArtifactManifest(value)
++  return value
++}
++
++/** El nombre del contrato `thyrox-…` que corresponde a este artefacto. */
++export function artifactModelName(manifest: ArtifactManifest): string {
++  return thyroxModelName(manifest)
++}
++
++function parseJson(text: string): unknown {
++  try {
++    return JSON.parse(text) as unknown
++  } catch (error) {
++    throw new InvalidArtifactManifestError('<raíz>', `no es JSON (${(error as Error).message})`)
++  }
++}
++
++function canonicalize(value: unknown): unknown {
++  if (Array.isArray(value)) return value.map(canonicalize)
++  if (!isObject(value)) return value
++  const sortedKeys = Object.keys(value).sort()
++  return Object.fromEntries(sortedKeys.map(key => [key, canonicalize(value[key])]))
++}
++
++function validateArtifactManifest(value: unknown): asserts value is ArtifactManifest {
++  const root = requireObject(value, '<raíz>')
++  requireNonEmptyString(root, 'repository', '')
++  requireNonEmptyString(root, 'source', '')
++  requireNonEmptyString(root, 'revision', '')
++  validateSourceFiles(root)
++  validateConverter(requireObject(root.converter, 'converter'))
++  validateQuantization(root)
++  validateGguf(requireObject(root.gguf, 'gguf'))
++  validateValidation(requireObject(root.validation, 'validation'))
++  validateCreatedAt(root)
++}
++
++function validateSourceFiles(root: JsonObject): void {
++  const files = root.sourceFiles
++  if (files === undefined) throw new InvalidArtifactManifestError('sourceFiles', 'falta')
++  if (!Array.isArray(files) || files.length === 0) {
++    throw new InvalidArtifactManifestError('sourceFiles', 'se espera una lista no vacía')
++  }
++  files.forEach((file: unknown, index) => {
++    const prefix = `sourceFiles[${index}]`
++    const entry = requireObject(file, prefix)
++    requireNonEmptyString(entry, 'path', prefix)
++    requireMatching(entry, 'sha256', prefix, SHA256_HEX_PATTERN)
++  })
++}
++
++function validateConverter(converter: JsonObject): void {
++  requireNonEmptyString(converter, 'name', 'converter')
++  requireNonEmptyString(converter, 'image', 'converter')
++  requireMatching(converter, 'imageDigest', 'converter', IMAGE_DIGEST_PATTERN)
++}
++
++function validateQuantization(root: JsonObject): void {
++  const level = requireNonEmptyString(root, 'quantization', '')
++  try {
++    normalizeQuantizationLevel(level)
++  } catch (error) {
++    if (error instanceof UnknownQuantizationLevelError) throw new InvalidArtifactManifestError('quantization', error.message)
++    throw error
++  }
++}
++
++function validateGguf(gguf: JsonObject): void {
++  requireMatching(gguf, 'sha256', 'gguf', SHA256_HEX_PATTERN)
++  const bytes = requirePresent(gguf, 'bytes', 'gguf')
++  if (!isPositiveInteger(bytes)) throw new InvalidArtifactManifestError('gguf.bytes', `se espera un entero positivo, llegó ${String(bytes)}`)
++}
++
++function validateValidation(validation: JsonObject): void {
++  requireFiniteNumber(validation, 'perplexity', 'validation')
++  requireFiniteNumber(validation, 'tokensPerSecond', 'validation')
++  const loaded = requirePresent(validation, 'loaded', 'validation')
++  if (typeof loaded !== 'boolean') throw new InvalidArtifactManifestError('validation.loaded', 'se espera un booleano')
++}
++
++function validateCreatedAt(root: JsonObject): void {
++  const createdAt = requireNonEmptyString(root, 'createdAt', '')
++  if (!ISO_UTC_INSTANT_PATTERN.test(createdAt) || Number.isNaN(Date.parse(createdAt))) {
++    throw new InvalidArtifactManifestError('createdAt', `«${createdAt}» no es un instante ISO 8601 en UTC`)
++  }
++}
++
++function fieldPath(prefix: string, key: string): string {
++  return prefix === '' ? key : `${prefix}.${key}`
++}
++
++function requirePresent(object: JsonObject, key: string, prefix: string): unknown {
++  if (!Object.hasOwn(object, key)) throw new InvalidArtifactManifestError(fieldPath(prefix, key), 'falta')
++  return object[key]
++}
++
++function requireNonEmptyString(object: JsonObject, key: string, prefix: string): string {
++  const value = requirePresent(object, key, prefix)
++  if (typeof value !== 'string' || value === '') {
++    throw new InvalidArtifactManifestError(fieldPath(prefix, key), 'se espera una cadena no vacía')
++  }
++  return value
++}
++
++function requireMatching(object: JsonObject, key: string, prefix: string, pattern: RegExp): void {
++  const value = requireNonEmptyString(object, key, prefix)
++  if (!pattern.test(value)) throw new InvalidArtifactManifestError(fieldPath(prefix, key), `«${value}» no cumple ${pattern.source}`)
++}
++
++function requireFiniteNumber(object: JsonObject, key: string, prefix: string): void {
++  const value = requirePresent(object, key, prefix)
++  if (typeof value !== 'number' || !Number.isFinite(value)) {
++    throw new InvalidArtifactManifestError(fieldPath(prefix, key), 'se espera un número finito')
++  }
++}
++
++function requireObject(value: unknown, field: string): JsonObject {
++  if (value === undefined) throw new InvalidArtifactManifestError(field, 'falta')
++  if (!isObject(value)) throw new InvalidArtifactManifestError(field, 'se espera un objeto')
++  return value
++}
++
++function isObject(value: unknown): value is JsonObject {
++  return typeof value === 'object' && value !== null && !Array.isArray(value)
++}
++
++function isPositiveInteger(value: unknown): boolean {
++  return typeof value === 'number' && Number.isSafeInteger(value) && value > 0
++}
+diff --git a/src/packages/model-artifacts/bunfig.toml b/src/packages/model-artifacts/bunfig.toml
+new file mode 100644
+index 000000000..51b90dff6
+--- /dev/null
++++ b/src/packages/model-artifacts/bunfig.toml
+@@ -0,0 +1,5 @@
++# `bun test` lee sólo el bunfig del cwd: sin este archivo, una suite corrida
++# desde el paquete no pasaría por los grifos de la raíz y escribiría en el
++# store versionado. Los preloads son los mismos, en el mismo orden.
++[test]
++preload = ["../../../tests/preload/tmpdir.ts", "../../../tests/preload/store.ts"]
+diff --git a/src/packages/model-artifacts/ggufMetadata.ts b/src/packages/model-artifacts/ggufMetadata.ts
+new file mode 100644
+index 000000000..03681844f
+--- /dev/null
++++ b/src/packages/model-artifacts/ggufMetadata.ts
+@@ -0,0 +1,197 @@
++/**
++ * Lector de la cabecera GGUF v3: magia `GGUF`, versión, conteo de tensores y
++ * de pares clave-valor, y los KV tipados. No lee tensores: recorre el archivo
++ * por bloques desde el principio y se detiene tras el último KV.
++ *
++ * La lectura está acotada por `MAX_GGUF_HEADER_BYTES`: una longitud declarada
++ * que la excede se rehúsa antes de reservar memoria, así que una cabecera
++ * corrupta no puede pedir gigabytes.
++ *
++ * Formato (little-endian): `uint32` magia, `uint32` versión, `uint64` tensores,
++ * `uint64` KV; cada KV es una cadena (`uint64` longitud + UTF-8), un `uint32`
++ * de tipo y el valor; un arreglo es `uint32` tipo de elemento, `uint64`
++ * longitud y los elementos.
++ */
++
++import { open, type FileHandle } from 'node:fs/promises'
++
++export type GgufValue = number | bigint | boolean | string | readonly GgufValue[]
++
++export type GgufMetadata = Readonly<Record<string, GgufValue>>
++
++export interface GgufHeader {
++  readonly version: number
++  readonly tensorCount: number
++  readonly metadata: GgufMetadata
++}
++
++export class InvalidGgufError extends Error {
++  constructor(readonly path: string, reason: string) {
++    super(`GGUF inválido (${path}): ${reason}`)
++    this.name = 'InvalidGgufError'
++  }
++}
++
++const GGUF_MAGIC = 'GGUF'
++const SUPPORTED_VERSION = 3
++
++/**
++ * Cota de bytes de la cabecera. Medido: magia, conteos y KV de
++ * `model-{F16,Q8_0,Q4_K_M}.gguf` de Qwen2.5-0.5B-Instruct ocupan 5 931 473
++ * bytes en los tres, casi todo `tokenizer.ggml.tokens` (151 936),
++ * `token_type` (151 936) y `merges` (151 387). 64 MiB es ~11× esa medida y
++ * sigue rehusando una longitud corrupta del orden de gigabytes.
++ */
++export const MAX_GGUF_HEADER_BYTES = 64 * 1024 * 1024
++
++const READ_BLOCK_BYTES = 256 * 1024
++
++const enum ValueType {
++  Uint8 = 0, Int8 = 1, Uint16 = 2, Int16 = 3, Uint32 = 4, Int32 = 5, Float32 = 6,
++  Bool = 7, String = 8, Array = 9, Uint64 = 10, Int64 = 11, Float64 = 12,
++}
++
++/** Bytes mínimos que ocupa un elemento de cada tipo; acota el conteo de un arreglo. */
++const MIN_ELEMENT_BYTES: Readonly<Record<number, number>> = {
++  [ValueType.Uint8]: 1, [ValueType.Int8]: 1, [ValueType.Uint16]: 2, [ValueType.Int16]: 2,
++  [ValueType.Uint32]: 4, [ValueType.Int32]: 4, [ValueType.Float32]: 4, [ValueType.Bool]: 1,
++  [ValueType.String]: 8, [ValueType.Array]: 12, [ValueType.Uint64]: 8, [ValueType.Int64]: 8,
++  [ValueType.Float64]: 8,
++}
++
++/** Lee la cabecera y los KV de un GGUF sin cargar sus tensores. */
++export async function readGgufMetadata(path: string): Promise<GgufHeader> {
++  const handle = await open(path, 'r')
++  try {
++    return await new HeaderReader(path, handle).read()
++  } finally {
++    await handle.close()
++  }
++}
++
++/** Cursor sobre el principio del archivo, que pide bloques sólo cuando le faltan bytes. */
++class BoundedCursor {
++  private buffer = new Uint8Array(0)
++  private start = 0
++  private consumed = 0
++
++  constructor(private readonly path: string, private readonly handle: FileHandle) {}
++
++  async take(size: number): Promise<DataView> {
++    await this.ensure(size)
++    const view = new DataView(this.buffer.buffer, this.buffer.byteOffset + this.start, size)
++    this.start += size
++    this.consumed += size
++    return view
++  }
++
++  async takeBytes(size: number): Promise<Uint8Array> {
++    const view = await this.take(size)
++    return new Uint8Array(view.buffer, view.byteOffset, size)
++  }
++
++  /** Rehúsa si `size` bytes más desbordarían la cota; se llama antes de reservar. */
++  requireWithinBound(size: number, what: string): void {
++    if (this.consumed + size > MAX_GGUF_HEADER_BYTES) {
++      throw new InvalidGgufError(this.path, `${what} de ${size} bytes excede la cota de ${MAX_GGUF_HEADER_BYTES} bytes de cabecera`)
++    }
++  }
++
++  private async ensure(size: number): Promise<void> {
++    this.requireWithinBound(size, 'lectura')
++    const available = this.buffer.length - this.start
++    if (available >= size) return
++    const missing = size - available
++    const block = new Uint8Array(available + Math.max(missing, READ_BLOCK_BYTES))
++    block.set(this.buffer.subarray(this.start), 0)
++    const { bytesRead } = await this.handle.read(block, available, block.length - available, this.consumed + available)
++    this.buffer = block.subarray(0, available + bytesRead)
++    this.start = 0
++    if (this.buffer.length < size) throw new InvalidGgufError(this.path, `cabecera truncada en el byte ${this.consumed + this.buffer.length}`)
++  }
++}
++
++class HeaderReader {
++  private readonly cursor: BoundedCursor
++  private readonly decoder = new TextDecoder('utf-8', { fatal: true })
++
++  constructor(private readonly path: string, handle: FileHandle) {
++    this.cursor = new BoundedCursor(path, handle)
++  }
++
++  async read(): Promise<GgufHeader> {
++    await this.readMagic()
++    const version = (await this.cursor.take(4)).getUint32(0, true)
++    if (version !== SUPPORTED_VERSION) throw new InvalidGgufError(this.path, `versión ${version} no soportada; se lee la ${SUPPORTED_VERSION}`)
++    const tensorCount = this.toCount(await this.readUint64(), 'conteo de tensores')
++    const kvCount = this.toCount(await this.readUint64(), 'conteo de KV')
++    return { version, tensorCount, metadata: await this.readEntries(kvCount) }
++  }
++
++  private async readMagic(): Promise<void> {
++    const magic = String.fromCharCode(...await this.cursor.takeBytes(GGUF_MAGIC.length))
++    if (magic !== GGUF_MAGIC) throw new InvalidGgufError(this.path, `magia «${magic}», se espera «${GGUF_MAGIC}»`)
++  }
++
++  private async readEntries(count: number): Promise<GgufMetadata> {
++    const metadata: Record<string, GgufValue> = {}
++    for (let index = 0; index < count; index += 1) {
++      const key = await this.readString()
++      if (Object.hasOwn(metadata, key)) throw new InvalidGgufError(this.path, `clave repetida «${key}»`)
++      const type = (await this.cursor.take(4)).getUint32(0, true)
++      metadata[key] = await this.readValue(type, key)
++    }
++    return metadata
++  }
++
++  private async readValue(type: number, key: string): Promise<GgufValue> {
++    switch (type) {
++      case ValueType.Uint8: return (await this.cursor.take(1)).getUint8(0)
++      case ValueType.Int8: return (await this.cursor.take(1)).getInt8(0)
++      case ValueType.Uint16: return (await this.cursor.take(2)).getUint16(0, true)
++      case ValueType.Int16: return (await this.cursor.take(2)).getInt16(0, true)
++      case ValueType.Uint32: return (await this.cursor.take(4)).getUint32(0, true)
++      case ValueType.Int32: return (await this.cursor.take(4)).getInt32(0, true)
++      case ValueType.Float32: return (await this.cursor.take(4)).getFloat32(0, true)
++      case ValueType.Bool: return (await this.cursor.take(1)).getUint8(0) !== 0
++      case ValueType.String: return this.readString()
++      case ValueType.Array: return this.readArray(key)
++      case ValueType.Uint64: return narrowInteger(await this.readUint64())
++      case ValueType.Int64: return narrowInteger((await this.cursor.take(8)).getBigInt64(0, true))
++      case ValueType.Float64: return (await this.cursor.take(8)).getFloat64(0, true)
++      default: throw new InvalidGgufError(this.path, `la clave «${key}» tiene el tipo de valor desconocido ${type}`)
++    }
++  }
++
++  private async readArray(key: string): Promise<GgufValue[]> {
++    const elementType = (await this.cursor.take(4)).getUint32(0, true)
++    const minElementBytes = MIN_ELEMENT_BYTES[elementType]
++    if (minElementBytes === undefined) throw new InvalidGgufError(this.path, `el arreglo «${key}» tiene el tipo de elemento desconocido ${elementType}`)
++    const length = await this.readUint64()
++    this.cursor.requireWithinBound(Number(length) * minElementBytes, `el arreglo «${key}»`)
++    const values: GgufValue[] = []
++    for (let index = 0; index < Number(length); index += 1) values.push(await this.readValue(elementType, key))
++    return values
++  }
++
++  private async readString(): Promise<string> {
++    const length = await this.readUint64()
++    this.cursor.requireWithinBound(Number(length), 'una cadena')
++    return this.decoder.decode(await this.cursor.takeBytes(Number(length)))
++  }
++
++  private async readUint64(): Promise<bigint> {
++    return (await this.cursor.take(8)).getBigUint64(0, true)
++  }
++
++  private toCount(value: bigint, what: string): number {
++    if (value > BigInt(Number.MAX_SAFE_INTEGER)) throw new InvalidGgufError(this.path, `${what} ${value} fuera de rango`)
++    return Number(value)
++  }
++}
++
++/** Un entero de 64 bits se devuelve como `number` si cabe sin pérdida; si no, como `bigint`. */
++function narrowInteger(value: bigint): number | bigint {
++  const fitsInNumber = value <= BigInt(Number.MAX_SAFE_INTEGER) && value >= BigInt(Number.MIN_SAFE_INTEGER)
++  return fitsInNumber ? Number(value) : value
++}
+diff --git a/src/packages/model-artifacts/memoryEstimate.ts b/src/packages/model-artifacts/memoryEstimate.ts
+new file mode 100644
+index 000000000..caad4b445
+--- /dev/null
++++ b/src/packages/model-artifacts/memoryEstimate.ts
+@@ -0,0 +1,133 @@
++/**
++ * Estimación de la memoria que ocupa un GGUF al servirse: peso + caché KV +
++ * un margen de buffers. Los parámetros salen de la metadata del propio GGUF
++ * (`<arch>.block_count`, `<arch>.attention.head_count_kv`, …, con `<arch>` =
++ * `general.architecture`), no de una tabla escrita a mano; una clave ausente
++ * se rehúsa con su nombre, porque un cero subestimaría la admisión.
++ */
++
++import type { GgufMetadata, GgufValue } from './ggufMetadata.js'
++
++/**
++ * Bytes por elemento de la caché KV según su tipo. `q8_0` y `q4_0` son
++ * bloques de 32 elementos de 34 y 18 bytes (escala f16 + cuantos).
++ */
++export const KV_CACHE_BYTES_PER_ELEMENT = {
++  f32: 4,
++  f16: 2,
++  q8_0: 34 / 32,
++  q4_0: 18 / 32,
++} as const
++
++export type KvCacheType = keyof typeof KV_CACHE_BYTES_PER_ELEMENT
++
++/**
++ * Margen de buffers de cómputo y del runtime, por encima de peso y caché KV.
++ * Medido con Ollama 0.35.0 (`/api/ps`, 2026-09-30) sirviendo
++ * `model-Q4_K_M.gguf` de Qwen2.5-0.5B-Instruct con caché f16: lo reservado
++ * menos peso y KV fue 196 640 506 bytes a contexto 2048 y 248 555 504 a 8192.
++ * 256 MiB cubre las dos medidas; crece con el contexto, así que para modelos o
++ * contextos mayores es un piso de una sola medición, no una constante general.
++ */
++export const SERVING_BUFFER_MARGIN_BYTES = 256 * 1024 * 1024
++
++/** Una clave y otra por cada tensor de la caché: K y V. */
++const KV_TENSORS_PER_LAYER = 2
++
++export interface ServingMemoryInput {
++  readonly ggufBytes: number
++  readonly metadata: GgufMetadata
++  readonly contextLength: number
++  readonly kvCacheType: KvCacheType
++}
++
++export interface ServingMemoryEstimate {
++  readonly weightsBytes: number
++  readonly kvCacheBytes: number
++  readonly bufferBytes: number
++  readonly totalBytes: number
++}
++
++export class MissingGgufKeyError extends Error {
++  constructor(readonly key: string) {
++    super(`falta la clave GGUF «${key}» para estimar la memoria`)
++    this.name = 'MissingGgufKeyError'
++  }
++}
++
++export class InvalidMemoryEstimateInputError extends Error {
++  constructor(readonly field: string, reason: string) {
++    super(`entrada inválida para estimar la memoria en ${field}: ${reason}`)
++    this.name = 'InvalidMemoryEstimateInputError'
++  }
++}
++
++interface AttentionShape {
++  readonly blockCount: number
++  readonly kvHeadCount: number
++  readonly headDimension: number
++}
++
++/** Peso + caché KV + margen de buffers, en bytes. */
++export function estimateServingMemory(input: ServingMemoryInput): ServingMemoryEstimate {
++  requirePositiveInteger('ggufBytes', input.ggufBytes)
++  requirePositiveInteger('contextLength', input.contextLength)
++  const kvCacheBytes = kvCacheSize(attentionShape(input.metadata), input.contextLength, kvBytesPerElement(input.kvCacheType))
++  return {
++    weightsBytes: input.ggufBytes,
++    kvCacheBytes,
++    bufferBytes: SERVING_BUFFER_MARGIN_BYTES,
++    totalBytes: input.ggufBytes + kvCacheBytes + SERVING_BUFFER_MARGIN_BYTES,
++  }
++}
++
++function kvCacheSize(shape: AttentionShape, contextLength: number, bytesPerElement: number): number {
++  const elements = KV_TENSORS_PER_LAYER * shape.blockCount * contextLength * shape.kvHeadCount * shape.headDimension
++  return Math.ceil(elements * bytesPerElement)
++}
++
++function attentionShape(metadata: GgufMetadata): AttentionShape {
++  const architecture = architectureOf(metadata)
++  const headCountKey = `${architecture}.attention.head_count`
++  const embeddingKey = `${architecture}.embedding_length`
++  const headCount = positiveIntegerKey(metadata, headCountKey)
++  const embeddingLength = positiveIntegerKey(metadata, embeddingKey)
++  if (embeddingLength % headCount !== 0) {
++    throw new InvalidMemoryEstimateInputError(headCountKey, `${embeddingKey}=${embeddingLength} no se reparte entre ${headCount} cabezas`)
++  }
++  return {
++    blockCount: positiveIntegerKey(metadata, `${architecture}.block_count`),
++    kvHeadCount: positiveIntegerKey(metadata, `${architecture}.attention.head_count_kv`),
++    headDimension: embeddingLength / headCount,
++  }
++}
++
++function architectureOf(metadata: GgufMetadata): string {
++  const key = 'general.architecture'
++  const value = requireKey(metadata, key)
++  if (typeof value !== 'string' || value === '') throw new InvalidMemoryEstimateInputError(key, 'se espera una cadena no vacía')
++  return value
++}
++
++function positiveIntegerKey(metadata: GgufMetadata, key: string): number {
++  const value = requireKey(metadata, key)
++  if (typeof value !== 'number') throw new InvalidMemoryEstimateInputError(key, `se espera un entero, llegó ${String(value)}`)
++  requirePositiveInteger(key, value)
++  return value
++}
++
++function requireKey(metadata: GgufMetadata, key: string): GgufValue {
++  if (!Object.hasOwn(metadata, key)) throw new MissingGgufKeyError(key)
++  return metadata[key] as GgufValue
++}
++
++function requirePositiveInteger(field: string, value: number): void {
++  if (!Number.isSafeInteger(value) || value <= 0) throw new InvalidMemoryEstimateInputError(field, `se espera un entero positivo, llegó ${value}`)
++}
++
++function kvBytesPerElement(kvCacheType: string): number {
++  if (!Object.hasOwn(KV_CACHE_BYTES_PER_ELEMENT, kvCacheType)) {
++    throw new InvalidMemoryEstimateInputError('kvCacheType', `«${kvCacheType}» no es ${Object.keys(KV_CACHE_BYTES_PER_ELEMENT).join(', ')}`)
++  }
++  return KV_CACHE_BYTES_PER_ELEMENT[kvCacheType as KvCacheType]
++}
+diff --git a/src/packages/model-artifacts/modelName.ts b/src/packages/model-artifacts/modelName.ts
+new file mode 100644
+index 000000000..a69099990
+--- /dev/null
++++ b/src/packages/model-artifacts/modelName.ts
+@@ -0,0 +1,136 @@
++/**
++ * Contrato de nombre de un modelo gestionado por thyrox:
++ * `thyrox-<org>--<repo>:<quant>-<source>-<revision12>`, en minúsculas.
++ *
++ * El nombre identifica el modelo con su repositorio, nivel, fuente y revisión
++ * exacta, y el prefijo `thyrox-` lo separa de lo que un usuario creó a mano:
++ * N modelos conviven sin interferir. `--` entre organización y repositorio es
++ * la convención de la caché de Hugging Face; del registro de Ollama el
++ * repositorio es `<namespace>/<modelo>-<etiqueta>`.
++ */
++
++import { normalizeQuantizationLevel, type QuantizationLevel } from './quantizationLevel.js'
++
++export type ModelSource = 'hf' | 'ollama'
++
++export interface ThyroxModelNameParts {
++  /** `org/repo` de Hugging Face o `<namespace>/<modelo>-<etiqueta>` del registro. */
++  readonly repository: string
++  readonly quantization: string
++  readonly source: ModelSource
++  /** Commit de HF (40 hex), digest del manifiesto (`sha256:`+64 hex) o sus 12 primeros hex. */
++  readonly revision: string
++}
++
++export interface ParsedThyroxModelName {
++  readonly repository: string
++  readonly quantization: QuantizationLevel
++  readonly source: ModelSource
++  readonly revision: string
++}
++
++export const THYROX_MODEL_PREFIX = 'thyrox-'
++const REPOSITORY_SEPARATOR = '--'
++const REVISION_PREFIX_LENGTH = 12
++
++/**
++ * Longitud máxima de cada lado del `:` (modelo y etiqueta). Medido contra
++ * Ollama 0.35.0 (`podman exec thyrox-ollama ollama cp …`, 2026-09-30): 80
++ * caracteres se aceptan, 81 dan `destination … is invalid`, en el modelo y en
++ * la etiqueta por separado; 80+80 juntos se aceptan.
++ */
++export const OLLAMA_NAME_PART_MAX_LENGTH = 80
++
++/**
++ * Alfabeto de una parte del nombre. Medido en la misma sesión: `.`, `_` y `-`
++ * se aceptan; `+` da `is invalid`, y una etiqueta que empieza por `-` también.
++ * Ollama acepta mayúsculas, pero el contrato normaliza a minúsculas.
++ */
++const NAME_PART_ALPHABET = /^[a-z0-9._-]+$/
++
++/** Una organización sin `--` ni guion final: si no, el inverso no la recupera. */
++const ORGANIZATION_PATTERN = /^[a-z0-9._]+(?:-[a-z0-9._]+)*$/
++
++const HF_COMMIT_PATTERN = /^[0-9a-f]{40}$/
++const OLLAMA_DIGEST_PATTERN = /^(?:sha256:)?[0-9a-f]{64}$/
++const REVISION_PREFIX_PATTERN = /^[0-9a-f]{12}$/
++
++const REVISION_PATTERN_BY_SOURCE: Readonly<Record<ModelSource, RegExp>> = {
++  hf: HF_COMMIT_PATTERN,
++  ollama: OLLAMA_DIGEST_PATTERN,
++}
++
++const THYROX_NAME_PATTERN = /^thyrox-(.+):([a-z0-9_]+)-([a-z]+)-([0-9a-f]{12})$/
++
++export class InvalidModelNameInputError extends Error {
++  constructor(readonly field: string, readonly value: string, reason: string) {
++    super(`${field} «${value}» no forma un nombre thyrox-: ${reason}`)
++    this.name = 'InvalidModelNameInputError'
++  }
++}
++
++/** Compone el nombre del contrato; rehúsa con el campo que lo impide. */
++export function thyroxModelName(parts: ThyroxModelNameParts): string {
++  const source = requireSource(parts.source)
++  const model = `${THYROX_MODEL_PREFIX}${repositorySlug(parts.repository)}`
++  const tag = `${normalizeQuantizationLevel(parts.quantization)}-${source}-${revisionPrefix(parts.revision, source)}`
++  requireWithinOllamaLimit('model', model)
++  requireWithinOllamaLimit('tag', tag)
++  return `${model}:${tag}`
++}
++
++/** Las partes de un nombre del contrato, o `undefined` si el nombre no es de thyrox. */
++export function parseThyroxModelName(name: string): ParsedThyroxModelName | undefined {
++  const match = THYROX_NAME_PATTERN.exec(name)
++  if (!match) return undefined
++  const [, slug = '', quantization = '', source = '', revision = ''] = match
++  const separatorAt = slug.indexOf(REPOSITORY_SEPARATOR)
++  if (separatorAt < 0) return undefined
++  const repository = `${slug.slice(0, separatorAt)}/${slug.slice(separatorAt + REPOSITORY_SEPARATOR.length)}`
++  return rebuildsExactly(name, { repository, quantization, source: source as ModelSource, revision })
++}
++
++function rebuildsExactly(name: string, parts: ThyroxModelNameParts): ParsedThyroxModelName | undefined {
++  try {
++    if (thyroxModelName(parts) !== name) return undefined
++  } catch {
++    return undefined
++  }
++  return { ...parts, quantization: normalizeQuantizationLevel(parts.quantization) }
++}
++
++function requireSource(source: string): ModelSource {
++  if (!Object.hasOwn(REVISION_PATTERN_BY_SOURCE, source)) {
++    throw new InvalidModelNameInputError('source', source, 'se admite hf u ollama')
++  }
++  return source as ModelSource
++}
++
++function repositorySlug(repository: string): string {
++  const segments = repository.toLowerCase().split('/')
++  if (segments.length !== 2) {
++    throw new InvalidModelNameInputError('repository', repository, 'se espera exactamente una / (org/repo)')
++  }
++  const [organization = '', model = ''] = segments
++  if (!ORGANIZATION_PATTERN.test(organization)) {
++    throw new InvalidModelNameInputError('repository', repository, `organización «${organization}» vacía, con -- o con guion en un extremo`)
++  }
++  if (!NAME_PART_ALPHABET.test(model)) {
++    throw new InvalidModelNameInputError('repository', repository, `«${model}» fuera del alfabeto [a-z0-9._-]`)
++  }
++  return `${organization}${REPOSITORY_SEPARATOR}${model}`
++}
++
++function revisionPrefix(revision: string, source: ModelSource): string {
++  const lowered = revision.toLowerCase()
++  if (!REVISION_PATTERN_BY_SOURCE[source].test(lowered) && !REVISION_PREFIX_PATTERN.test(lowered)) {
++    throw new InvalidModelNameInputError('revision', revision, `no es una revisión hex de ${source} ni su prefijo de ${REVISION_PREFIX_LENGTH}`)
++  }
++  return lowered.replace(/^sha256:/, '').slice(0, REVISION_PREFIX_LENGTH)
++}
++
++function requireWithinOllamaLimit(part: string, value: string): void {
++  if (value.length > OLLAMA_NAME_PART_MAX_LENGTH) {
++    throw new InvalidModelNameInputError(part, value, `${value.length} caracteres, Ollama admite ${OLLAMA_NAME_PART_MAX_LENGTH}`)
++  }
++}
+diff --git a/src/packages/model-artifacts/package.json b/src/packages/model-artifacts/package.json
+new file mode 100644
+index 000000000..cb97322c7
+--- /dev/null
++++ b/src/packages/model-artifacts/package.json
+@@ -0,0 +1,17 @@
++{
++  "name": "@thyrox/model-artifacts",
++  "version": "0.1.0",
++  "private": true,
++  "type": "module",
++  "description": "Núcleo agnóstico del modelo local (TASK-THYROX-0694): contrato de nombre thyrox-, catálogo de niveles de cuantización, manifiesto de procedencia, lector de metadata GGUF y estimación de memoria al servir. Lógica pura, sin Podman ni red.",
++  "exports": {
++    "./*.ts": {
++      "@thyrox/source": "./*.ts",
++      "types": "./dist/*.d.ts",
++      "default": "./*.ts"
++    }
++  },
++  "scripts": {
++    "test": "bun test"
++  }
++}
+diff --git a/src/packages/model-artifacts/quantizationLevel.ts b/src/packages/model-artifacts/quantizationLevel.ts
+new file mode 100644
+index 000000000..4b3cd4e4a
+--- /dev/null
++++ b/src/packages/model-artifacts/quantizationLevel.ts
+@@ -0,0 +1,77 @@
++/**
++ * Catálogo de niveles de cuantización y del backend que puede producir cada
++ * uno. Es la única fuente de verdad: el contrato de nombre y el despachador lo
++ * leen, no lo copian.
++ *
++ * Medido (TASK-THYROX-0694, banco model-quantization-pipeline-20260930T224613):
++ * - `llama-quantize --help` de `ghcr.io/ggml-org/llama.cpp:full` lista los
++ *   tipos de `LLAMA_QUANTIZE_LEVELS`; `Q3_K`, `Q4_K` y `Q5_K` son alias de su
++ *   variante `_M`.
++ * - `ollama create --quantize` (0.35.0) sólo acepta `int4`, `int8`, `nvfp4`,
++ *   `mxfp4` y `mxfp8`, y sólo desde safetensors; rechaza `q8_0` y `q4_K_M`.
++ * - `f16` y `bf16` son la salida de `convert_hf_to_gguf.py`, no una
++ *   cuantización.
++ *
++ * Los niveles canónicos van en minúsculas y sin guion: el guion separa partes
++ * del nombre `thyrox-…`.
++ */
++
++export type QuantizationBackend = 'llama-quantize' | 'ollama-create' | 'convert'
++
++const LLAMA_QUANTIZE_LEVELS = [
++  'q1_0', 'q2_0', 'q4_0', 'q4_1', 'mxfp4_moe', 'q5_0', 'q5_1',
++  'iq2_xxs', 'iq2_xs', 'iq2_s', 'iq2_m', 'iq1_s', 'iq1_m', 'tq1_0', 'tq2_0',
++  'q2_k', 'q2_k_s', 'iq3_xxs', 'iq3_s', 'iq3_m', 'iq3_xs',
++  'q3_k_s', 'q3_k_m', 'q3_k_l', 'iq4_nl', 'iq4_xs',
++  'q4_k_s', 'q4_k_m', 'q5_k_s', 'q5_k_m', 'q6_k', 'q8_0',
++] as const
++
++const OLLAMA_CREATE_LEVELS = ['int4', 'int8', 'nvfp4', 'mxfp4', 'mxfp8'] as const
++
++const CONVERT_LEVELS = ['f16', 'bf16'] as const
++
++export type QuantizationLevel =
++  | typeof LLAMA_QUANTIZE_LEVELS[number]
++  | typeof OLLAMA_CREATE_LEVELS[number]
++  | typeof CONVERT_LEVELS[number]
++
++/** Alias que `llama-quantize` acepta para un nivel que ya tiene nombre propio. */
++const LEVEL_ALIASES: Readonly<Record<string, QuantizationLevel>> = {
++  q3_k: 'q3_k_m',
++  q4_k: 'q4_k_m',
++  q5_k: 'q5_k_m',
++}
++
++function backendTable(): Readonly<Record<QuantizationLevel, QuantizationBackend>> {
++  const table: Partial<Record<QuantizationLevel, QuantizationBackend>> = {}
++  for (const level of LLAMA_QUANTIZE_LEVELS) table[level] = 'llama-quantize'
++  for (const level of OLLAMA_CREATE_LEVELS) table[level] = 'ollama-create'
++  for (const level of CONVERT_LEVELS) table[level] = 'convert'
++  return table as Record<QuantizationLevel, QuantizationBackend>
++}
++
++export const QUANTIZATION_LEVELS: Readonly<Record<QuantizationLevel, QuantizationBackend>> = backendTable()
++
++export class UnknownQuantizationLevelError extends Error {
++  constructor(readonly level: string) {
++    super(`nivel de cuantización desconocido: «${level}»`)
++    this.name = 'UnknownQuantizationLevelError'
++  }
++}
++
++function isQuantizationLevel(candidate: string): candidate is QuantizationLevel {
++  return Object.hasOwn(QUANTIZATION_LEVELS, candidate)
++}
++
++/** Devuelve el nivel canónico (minúsculas, alias resuelto) o rehúsa nombrándolo. */
++export function normalizeQuantizationLevel(level: string): QuantizationLevel {
++  const lowered = level.toLowerCase()
++  const canonical = LEVEL_ALIASES[lowered] ?? lowered
++  if (!isQuantizationLevel(canonical)) throw new UnknownQuantizationLevelError(level)
++  return canonical
++}
++
++/** El backend que produce el nivel; lo desconocido se rehúsa, no toma un default. */
++export function quantizationBackend(level: string): QuantizationBackend {
++  return QUANTIZATION_LEVELS[normalizeQuantizationLevel(level)]
++}
+diff --git a/src/packages/model-artifacts/testing/syntheticGguf.ts b/src/packages/model-artifacts/testing/syntheticGguf.ts
+new file mode 100644
+index 000000000..7a675b2c5
+--- /dev/null
++++ b/src/packages/model-artifacts/testing/syntheticGguf.ts
+@@ -0,0 +1,98 @@
++/**
++ * Constructor de cabeceras GGUF sintéticas para las pruebas: escribe la magia,
++ * la versión, los conteos y los pares clave-valor tipados en little-endian, y
++ * nada de tensores. Permite fabricar cabeceras truncadas o corruptas.
++ */
++
++export type SyntheticValue =
++  | { readonly type: 'uint8' | 'int8' | 'uint16' | 'int16' | 'uint32' | 'int32' | 'float32' | 'float64', readonly value: number }
++  | { readonly type: 'uint64' | 'int64', readonly value: bigint }
++  | { readonly type: 'bool', readonly value: boolean }
++  | { readonly type: 'string', readonly value: string }
++  | { readonly type: 'array', readonly elementType: SyntheticValue['type'], readonly values: readonly SyntheticValue[] }
++  | { readonly type: 'raw', readonly typeCode: number, readonly bytes: Uint8Array }
++
++export interface SyntheticHeader {
++  readonly magic?: string
++  readonly version?: number
++  readonly tensorCount?: bigint
++  readonly entries: readonly (readonly [string, SyntheticValue])[]
++}
++
++const TYPE_CODES: Readonly<Record<Exclude<SyntheticValue['type'], 'raw'>, number>> = {
++  uint8: 0, int8: 1, uint16: 2, int16: 3, uint32: 4, int32: 5, float32: 6, bool: 7,
++  string: 8, array: 9, uint64: 10, int64: 11, float64: 12,
++}
++
++class ByteSink {
++  private readonly chunks: Uint8Array[] = []
++
++  push(size: number, write: (view: DataView) => void): void {
++    const chunk = new Uint8Array(size)
++    write(new DataView(chunk.buffer))
++    this.chunks.push(chunk)
++  }
++
++  bytes(bytes: Uint8Array): void {
++    this.chunks.push(bytes)
++  }
++
++  string(text: string): void {
++    const encoded = new TextEncoder().encode(text)
++    this.push(8, view => view.setBigUint64(0, BigInt(encoded.length), true))
++    this.bytes(encoded)
++  }
++
++  concat(): Uint8Array {
++    const total = this.chunks.reduce((sum, chunk) => sum + chunk.length, 0)
++    const out = new Uint8Array(total)
++    let offset = 0
++    for (const chunk of this.chunks) {
++      out.set(chunk, offset)
++      offset += chunk.length
++    }
++    return out
++  }
++}
++
++function typeCode(value: SyntheticValue): number {
++  return value.type === 'raw' ? value.typeCode : TYPE_CODES[value.type]
++}
++
++function writePayload(sink: ByteSink, value: SyntheticValue): void {
++  switch (value.type) {
++    case 'uint8': sink.push(1, v => v.setUint8(0, value.value)); break
++    case 'int8': sink.push(1, v => v.setInt8(0, value.value)); break
++    case 'uint16': sink.push(2, v => v.setUint16(0, value.value, true)); break
++    case 'int16': sink.push(2, v => v.setInt16(0, value.value, true)); break
++    case 'uint32': sink.push(4, v => v.setUint32(0, value.value, true)); break
++    case 'int32': sink.push(4, v => v.setInt32(0, value.value, true)); break
++    case 'float32': sink.push(4, v => v.setFloat32(0, value.value, true)); break
++    case 'float64': sink.push(8, v => v.setFloat64(0, value.value, true)); break
++    case 'uint64': sink.push(8, v => v.setBigUint64(0, value.value, true)); break
++    case 'int64': sink.push(8, v => v.setBigInt64(0, value.value, true)); break
++    case 'bool': sink.push(1, v => v.setUint8(0, value.value ? 1 : 0)); break
++    case 'string': sink.string(value.value); break
++    case 'array':
++      sink.push(4, v => v.setUint32(0, TYPE_CODES[value.elementType as Exclude<SyntheticValue['type'], 'raw'>], true))
++      sink.push(8, v => v.setBigUint64(0, BigInt(value.values.length), true))
++      for (const element of value.values) writePayload(sink, element)
++      break
++    case 'raw': sink.bytes(value.bytes); break
++  }
++}
++
++/** Los bytes de una cabecera GGUF con los pares dados. */
++export function syntheticGgufBytes(header: SyntheticHeader): Uint8Array {
++  const sink = new ByteSink()
++  sink.bytes(new TextEncoder().encode(header.magic ?? 'GGUF'))
++  sink.push(4, v => v.setUint32(0, header.version ?? 3, true))
++  sink.push(8, v => v.setBigUint64(0, header.tensorCount ?? 0n, true))
++  sink.push(8, v => v.setBigUint64(0, BigInt(header.entries.length), true))
++  for (const [key, value] of header.entries) {
++    sink.string(key)
++    sink.push(4, v => v.setUint32(0, typeCode(value), true))
++    writePayload(sink, value)
++  }
++  return sink.concat()
++}
+diff --git a/src/packages/model-artifacts/tsconfig.build.json b/src/packages/model-artifacts/tsconfig.build.json
+new file mode 100644
+index 000000000..13507c48c
+--- /dev/null
++++ b/src/packages/model-artifacts/tsconfig.build.json
+@@ -0,0 +1,40 @@
++{
++  "compilerOptions": {
++    "declaration": true,
++    "emitDeclarationOnly": true,
++    "noEmit": false,
++    "skipLibCheck": true,
++    "strict": true,
++    "module": "esnext",
++    "target": "esnext",
++    "moduleResolution": "bundler",
++    "allowImportingTsExtensions": true,
++    "jsx": "react-jsx",
++    "types": [
++      "bun"
++    ],
++    "preserveSymlinks": true,
++    "rootDir": ".",
++    "outDir": "dist",
++    "paths": {
++      "@thyrox/model-artifacts/*.ts": [
++        "./*.ts"
++      ]
++    }
++  },
++  "include": [
++    "**/*"
++  ],
++  "exclude": [
++    "**/__tests__/**",
++    "**/*.test.ts",
++    "**/*.test.tsx",
++    "**/*.spec.ts",
++    "**/*.spec.tsx",
++    "node_modules",
++    "dist"
++  ],
++  "files": [
++    "../../types/build-globals.d.ts"
++  ]
++}
+diff --git a/src/packages/model-artifacts/tsconfig.test.json b/src/packages/model-artifacts/tsconfig.test.json
+new file mode 100644
+index 000000000..de4a64e70
+--- /dev/null
++++ b/src/packages/model-artifacts/tsconfig.test.json
+@@ -0,0 +1,19 @@
++{
++  "extends": "./tsconfig.build.json",
++  "compilerOptions": {
++    "noEmit": true,
++    "declaration": false,
++    "emitDeclarationOnly": false,
++    "rootDir": "."
++  },
++  "include": [
++    "**/*",
++    "**/*.test.ts",
++    "**/*.test.tsx",
++    "**/__tests__/**/*"
++  ],
++  "exclude": [
++    "node_modules",
++    "dist"
++  ]
++}

@@ -10,9 +10,7 @@
  * Sustituidos localmente (`internal/pendingCrossPackageDeps.ts`, ninguno
  * exportado por su sibling real):
  * - `getSessionId` — app-host/bootstrap/state, subpath no exportado.
- * - `getOrCreateUserID` — config (bare barrel), símbolo no declarado en
- *   el `.` de `@thyrox/config`.
- * - `envDynamic` — config/env/dynamic.js, archivo ausente.
+ * - `getOrCreateUserID` y `envDynamic` ya se importan de `@thyrox/config`.
  * - `getOauthAccountInfo` — provider/authAlias.js, subpath no exportado.
  *
  * `MACRO.VERSION`: la fuente lo usa SIN guarda (asume que
@@ -26,16 +24,16 @@ import type { Attributes } from '@opentelemetry/api'
 
 import { isEnvTruthy } from '@thyrox/config/env/utils'
 import { toTaggedId } from '@thyrox/agent/taggedId'
+import { envDynamic } from '@thyrox/config/env/dynamic'
+import { getOrCreateUserID } from '@thyrox/config/global/config.js'
 import {
-  envDynamic,
   getOauthAccountInfo,
-  getOrCreateUserID,
   getSessionId,
 } from '../internal/pendingCrossPackageDeps.js'
 
 declare const MACRO: { VERSION: string } | undefined
 
-const getTerminalType = (): string | undefined => envDynamic.terminal
+const getTerminalType = (): string | undefined => envDynamic.terminal as string | undefined
 
 const METRICS_CARDINALITY_DEFAULTS = {
   OTEL_METRICS_INCLUDE_SESSION_ID: true,

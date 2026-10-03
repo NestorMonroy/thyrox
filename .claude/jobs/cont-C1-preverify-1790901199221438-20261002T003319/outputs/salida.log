@@ -1,0 +1,2 @@
+execution thyrox-worker-maintenance-muq8c1gt-3463 kind=maintenance task=TASK-BATCHC-0001 exit=1
+__BG_EXIT__=1

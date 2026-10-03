@@ -1,0 +1,3 @@
+1	Fuente: .claude/workbench/model-scheduling-implementation-20261001T084219/p1-coordination.md. Archivos: src/packages/model-scheduling/memoryCoordination.ts, redisCoordination.ts, coordinationFactory.ts. Orden: memoria, Redis, fábrica.
+2	Fuente: .claude/workbench/model-scheduling-implementation-20261001T084219/p2-ledger.md. Archivo: src/packages/model-scheduling/memoryVramLedger.ts.
+3	Fuente: .claude/workbench/model-scheduling-implementation-20261001T084219/p3-scheduler.md. Archivo: src/packages/model-scheduling/scheduler.ts. Orden: execute con sus compensaciones, después reconcile.

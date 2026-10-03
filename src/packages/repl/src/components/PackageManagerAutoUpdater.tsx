@@ -146,13 +146,6 @@ export function PackageManagerAutoUpdater({
   }, [])
 
   const checkForUpdates = React.useCallback(async () => {
-    if (
-      process.env.NODE_ENV === 'test' ||
-      process.env.NODE_ENV === 'development'
-    ) {
-      return
-    }
-
     if (isAutoUpdaterDisabled()) {
       return
     }

@@ -1,0 +1,9 @@
+ok   single_tool	{"content":"","toolCalls":[{"name":"get_weather","arguments":{"city":"Madrid"}}]}
+ok   integer_arguments	{"content":"","toolCalls":[{"name":"add","arguments":{"a":17,"b":25}}]}
+ok   choose_between_tools	{"content":"","toolCalls":[{"name":"read_file","arguments":{"path":"/etc/hostname"}}]}
+ok   enum_argument	{"content":"","toolCalls":[{"name":"set_mode","arguments":{"mode":"safe"}}]}
+ok   no_tool_needed	{"content":"hello","toolCalls":[]}
+ok   continuation_after_tool	{"content":"The result of adding 17 and 25 is **42**.","toolCalls":[]}
+aprobada: thyrox-library--qwen3-4b:q4_k_m-ollama-359d7dd4bcda protocolo tool-calling@1 6/6, 2.9 tokens/s (isolated), ctx 8192 → /home/user/thyrox/.thyrox/models/qualifications.json
+execution thyrox-worker-probe-murdjmd1-10386 kind=probe task=TASK-THYROX-0707 exit=0
+__BG_EXIT__=0

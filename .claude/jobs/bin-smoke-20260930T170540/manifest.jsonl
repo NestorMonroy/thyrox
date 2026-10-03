@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c ls bin | bash bin/parallel_map --width 4 'bash .claude/workbench/bin-health-20260930T170228/probes/smoke_help.sh {} /home/user/thyrox' :::: - > .claude/workbench/bin-health-20260930T170228/outputs/smoke_help.tsv; echo rc=$?", "started_at": "2026-09-30T17:05:40+00:00"}

@@ -115,14 +115,21 @@ def _resolved_store(store_path: 'Path | _StoreSentinel | None') -> 'Path | None'
     return store_path
 
 
-def docs_root(consumer: str = 'docs') -> Path:
-    """La raíz de ``source/`` de kaupamex-docs — donde vive TODO hallazgo.
+def docs_root(consumer: str = 'docs') -> Path | None:
+    """La raíz de ``source/`` de kaupamex-docs, o ``None`` si el clon no está.
 
     ``consumer`` existe para que un caller pueda apuntar a otro clon si
     alguna vez hiciera falta (o a un árbol de prueba); el default es el
     único que este ecosistema usa hoy.
+
+    El consumidor es OPCIONAL para thyrox: su estado se recupera del store
+    SQLite, y un clon retirado para liberar disco no es un error. Ausente se
+    distingue de malformado: una raíz que existe sin ``source/`` sigue
+    rehusando, porque ahí escanear daría un cero que no mide nada.
     """
     root = reach.root(consumer)
+    if not root.exists():
+        return None
     source = root / 'source'
     if not source.is_dir():
         raise SystemExit(
@@ -131,7 +138,7 @@ def docs_root(consumer: str = 'docs') -> Path:
     return source
 
 
-def used_numbers(source_root: Path, prefix: str) -> list[int]:
+def used_numbers(source_root: Path | None, prefix: str) -> list[int]:
     """Todo número ya usado bajo ``prefijo``, en cualquier archivo de texto
     del árbol — no sólo ``.rst``: un barrido en ``.py`` o una evidencia en
     ``.txt`` pueden citar el mismo literal.
@@ -140,7 +147,9 @@ def used_numbers(source_root: Path, prefix: str) -> list[int]:
     escaneo entero por un solo binario perdido bajo ``source/``.
     """
     prefix = prefix.upper()
-    numbers = []
+    numbers: list[int] = []
+    if source_root is None:
+        return numbers
     for file_path in source_root.rglob('*'):
         if not file_path.is_file():
             continue
@@ -222,7 +231,7 @@ def validated_prefix(prefix: str) -> str:
     return candidate
 
 
-def next_id(source_root: Path, prefix: str,
+def next_id(source_root: Path | None, prefix: str,
             store_path: Path | _StoreSentinel | None = RESOLVE_STORE) -> str:
     """``H-<PREFIJO>-N``, con ``N`` uno más que el máximo ya usado — o 1 si
     el prefijo no tiene ninguna cita todavía.
@@ -243,7 +252,7 @@ def next_id(source_root: Path, prefix: str,
     return f'H-{prefix.upper()}-{next_number:02d}'
 
 
-def is_free(source_root: Path, full_id: str,
+def is_free(source_root: Path | None, full_id: str,
             store_path: Path | _StoreSentinel | None = RESOLVE_STORE) -> bool:
     """¿``full_id`` NO aparece ya citado en el árbol NI en el store?
 
@@ -266,14 +275,33 @@ def is_free(source_root: Path, full_id: str,
     return number not in used
 
 
+def measured_root(consumer: str) -> Path | None:
+    """La raíz a escanear; sin el clon, declara que sólo mide el store.
+
+    Sin clon ni store no queda nada que medir, y se rehúsa con exit 2: un id
+    «libre» calculado sobre cero fuentes sería un verde falso.
+    """
+    root = docs_root(consumer)
+    if root is not None:
+        return root
+    store = reach.agent_store_path()
+    if not store.is_file():
+        print(f'hallazgo_ids.py: ni el clon {consumer!r} ni el store {store} '
+              'están en disco; no hay nada que medir', file=sys.stderr)
+        raise SystemExit(2)
+    print(f'hallazgo_ids.py: el clon {consumer!r} no está en disco; se mide '
+          f'sólo el store {store}', file=sys.stderr)
+    return None
+
+
 def _cmd_propose_id(args: argparse.Namespace) -> int:
-    root = docs_root(args.consumer)
+    root = measured_root(args.consumer)
     print(next_id(root, args.prefix))   # default: árbol + store
     return 0
 
 
 def _cmd_verify(args: argparse.Namespace) -> int:
-    root = docs_root(args.consumer)
+    root = measured_root(args.consumer)
     if is_free(root, args.id):          # default: árbol + store
         print(f'{args.id} — libre')
         return 0

@@ -1,0 +1,13 @@
+== 1. B vive con su buzón publicado en el registro ==
+OK   B publica messagingSocketPath y el socket existe
+== 2. A envía texto a uds:<socket de B> por la herramienta SendMessage ==
+OK   A termina su turno con éxito
+OK   A ofrece SendMessage y ListAgents a su modelo
+OK   el envío de A llega al buzón de B
+BLOQUEADA el mensaje entra a la cola de B — retenido por la compuerta de entrada (cause=mode-unknown)
+== 3. el mensaje aparece en el turno de B ==
+OK   B termina su turno con éxito
+BLOQUEADA el texto de A aparece en la conversación de B — retenido por la compuerta de entrada (cause=mode-unknown)
+
+5 aserciones, 0 fallo(s), 2 bloqueada(s) (alcance medido: dos bin/cli reales, A envía a B)
+__BG_EXIT__=0

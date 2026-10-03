@@ -1,0 +1,10 @@
+state running running True pid 2374
+pid alive:  2374 ollama
+listener: 1
+version: {"version":"0.35.0"}
+tags:
+   thyrox-qwen--qwen2.5-coder-1.5b-instruct:q4_k_m-hf-2e1fd397ee46
+   thyrox-library--qwen3-4b:q4_k_m-ollama-359d7dd4bcda
+   thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf
+   thyrox-durability-probe:20261002t022736
+   qwen3:4b

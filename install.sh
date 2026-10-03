@@ -23,6 +23,14 @@
 # `src/verify/check_env_contract_keys.py` verifica que ninguna clave leída del
 # entorno se quede fuera de ese archivo.
 #
+# Los hogares del clon: Empaquetado P11
+# -------------------------------------
+# Además de declarar, crea los hogares que un `git clone` no trae porque git
+# los ignora (`.claude/jobs-ledger`, `.thyrox/runtime`,
+# `.thyrox/pool-worktrees`): delega en `src/paths/ensure_homes.py` (paso 5b)
+# y no se declara instalado si rehúsa. P11 vive aquí; P7 (instalar) y P8
+# (githooks) lo extenderán sin duplicarlo.
+#
 # Procedencia del porte — tres referencias, leídas en sólo lectura
 # ----------------------------------------------------------------
 #   claude-code-nestor-monroy-tools/install.sh
@@ -141,7 +149,6 @@ MARKER_REL="src/paths/reach.py"
 # NO es decoración: el mecanismo de alcance la honra al leer, así que un
 # instalador que la ignorara escribiría en un archivo que el lector no mira —
 # y las dos mitades quedarían verdes por separado sin que nada funcionara.
-ENV_FILE_VAR="THYROX_ENV_FILE"
 
 ENV_FILE_SOURCES=(
     "variable THYROX_ENV_FILE del proceso"
@@ -516,6 +523,41 @@ for target in "${TARGETS[@]}"; do
             ;;
     esac
 done
+
+# --------------------------------------------------------------------------
+# Paso 5b — los hogares del clon del proveedor (Empaquetado P11)
+#
+# Un `git clone` no trae lo que git ignora —`.claude/jobs-ledger`,
+# `.thyrox/runtime`, `.thyrox/pool-worktrees`—, y cada módulo creaba su hogar
+# en su primer uso: quien clonaba lo «descubría», y lo que asumía que ya
+# existía fallaba. Se DELEGA en `src/paths/ensure_homes.py`, que crea cada
+# hogar de `src/paths/declarations.py` con su declaración o su default y
+# rehúsa con exit 2 nombrando la clave si una declaración no es escribible.
+# Va DESPUÉS de declarar `THYROX_ROOT`, y un rehúse impide declararse
+# instalado. P11 vive aquí; P7 (instalar) y P8 (githooks) lo extenderán.
+# --------------------------------------------------------------------------
+
+ENSURE_HOMES_REL="src/paths/ensure_homes.py"
+
+ensure_provider_homes() {
+    local output rc
+    if [ ! -f "$ROOT/$ENSURE_HOMES_REL" ]; then
+        warn "SIN MEDIR — falta $ENSURE_HOMES_REL: no se crearon los hogares del clon"
+        return 0
+    fi
+    output="$(cd "$ROOT" && THYROX_ROOT="$ROOT" PYTHONPATH="$ROOT/src${PYTHONPATH:+:$PYTHONPATH}" \
+        python3 "$ROOT/$ENSURE_HOMES_REL" 2>&1)"
+    rc=$?
+    printf '\n  hogares del clon:\n'
+    printf '%s\n' "$output" | sed 's/^/    /'
+    [ "$rc" -eq 0 ] || fatal "$ENSURE_HOMES_REL no pudo crear los hogares (exit $rc)" \
+        "corrige la declaración que nombra, en el .env del clon"
+}
+
+case "$MODE" in
+    install) ensure_provider_homes ;;
+    dry-run) info "$ROOT — crearía los hogares registrados ($ENSURE_HOMES_REL)" ;;
+esac
 
 # --------------------------------------------------------------------------
 # Paso 6 — preparar los clones: lo que vive en `.git/config` y no viaja

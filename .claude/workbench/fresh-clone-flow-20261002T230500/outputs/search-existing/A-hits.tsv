@@ -1,0 +1,1340 @@
+identity	commit[-_ ]?identity	.githooks/commit-msg
+identity	commit[-_ ]?identity	.githooks/pre-commit
+identity	commit[-_ ]?identity	README.md
+identity	commit[-_ ]?identity	bin/commit_identity
+identity	commit[-_ ]?identity	src/lib/toolchain.sh
+identity	commit[-_ ]?identity	src/session/documentation_publisher.py
+identity	commit[-_ ]?identity	src/verify/check-toolchain-ready.sh
+identity	commit[-_ ]?identity	src/verify/commit_identity.py
+identity	commit[-_ ]?identity	src/verify/product_word_baseline.tsv
+identity	commit[-_ ]?identity	src/verify/tsc_cycle.py
+identity	commit[-_ ]?identity	src/verify/tsc_zero_loop.py
+identity	commit[-_ ]?identity	tests/verify/test-toolchain-ready.sh
+identity	commit[-_ ]?identity	tests/verify/test_commit_identity.py
+identity	commit[-_ ]?identity	tests/verify/test_tsc_cycle.py
+identity	GIT_COMMITTER	src/packages/coordination/branchIntegration.ts
+identity	GIT_COMMITTER	src/packages/podman-execution/__tests__/managedExecution.real.test.ts
+identity	GIT_COMMITTER	src/packages/storage/src/__tests__/git.test.ts
+identity	GIT_COMMITTER	src/session/documentation_publisher.py
+identity	GIT_COMMITTER	src/session/snapshot_store.py
+identity	GIT_COMMITTER	src/verify/commit_identity.py
+identity	GIT_COMMITTER	tests/agents/test-agent-store-fecha-apertura.sh
+identity	GIT_COMMITTER	tests/agents/test-agent-store-fecha-documento.sh
+identity	GIT_COMMITTER	tests/corpus/test_censar_scripts.py
+identity	GIT_COMMITTER	tests/verify/test-toolchain-ready.sh
+identity	GIT_COMMITTER	tests/verify/test_commit_identity.py
+identity	GIT_COMMITTER	tests/verify/test_pre_commit_hook.py
+identity	GIT_AUTHOR	src/packages/coordination/branchIntegration.ts
+identity	GIT_AUTHOR	src/packages/podman-execution/__tests__/managedExecution.real.test.ts
+identity	GIT_AUTHOR	src/packages/podman-execution/executionCommand.ts
+identity	GIT_AUTHOR	src/packages/shell/src/legacy/readOnlyCommandValidation.ts
+identity	GIT_AUTHOR	src/packages/shell/src/providers/readOnlyCommandValidation.ts
+identity	GIT_AUTHOR	src/packages/storage/src/__tests__/git.test.ts
+identity	GIT_AUTHOR	src/session/documentation_publisher.py
+identity	GIT_AUTHOR	src/session/snapshot_store.py
+identity	GIT_AUTHOR	src/verify/commit_identity.py
+identity	GIT_AUTHOR	src/verify/env_sensitivity.tsv
+identity	GIT_AUTHOR	tests/agents/test-agent-store-fecha-apertura.sh
+identity	GIT_AUTHOR	tests/agents/test-agent-store-fecha-documento.sh
+identity	GIT_AUTHOR	tests/corpus/test_censar_scripts.py
+identity	GIT_AUTHOR	tests/verify/test-toolchain-ready.sh
+identity	GIT_AUTHOR	tests/verify/test_commit_identity.py
+identity	GIT_AUTHOR	tests/verify/test_pre_commit_hook.py
+identity	noreply@anthropic	src/packages/agent/__tests__/attributionTexts.test.ts
+identity	noreply@anthropic	src/packages/agent/attribution.ts
+identity	noreply@anthropic	src/packages/coordination/__tests__/branchIntegration.test.ts
+identity	noreply@anthropic	src/session/reconcile_user_hooks.py
+identity	noreply@anthropic	src/verify/commit_identity.py
+identity	noreply@anthropic	tests/session/test_reconcile_user_hooks.py
+identity	noreply@anthropic	tests/verify/test-toolchain-ready.sh
+identity	noreply@anthropic	tests/verify/test_commit_identity.py
+identity	user.email	src/packages/agent/__tests__/reconcile.test.ts
+identity	user.email	src/packages/cli/__tests__/impactCli.test.ts
+identity	user.email	src/packages/coordination/__tests__/branchIntegration.test.ts
+identity	user.email	src/packages/coordination/__tests__/claims.test.ts
+identity	user.email	src/packages/coordination/branchIntegration.ts
+identity	user.email	src/packages/local-observability/src/telemetry/attributes.ts
+identity	user.email	src/packages/provider/src/accounts/imports/codexSessionImport.ts
+identity	user.email	src/packages/provider/src/user.ts
+identity	user.email	src/packages/storage/src/__tests__/findGitRoot.test.ts
+identity	user.email	src/packages/storage/src/__tests__/getWorktreePaths.test.ts
+identity	user.email	src/packages/storage/src/__tests__/getWorktreePathsPortable.test.ts
+identity	user.email	src/session/reconcile_user_hooks.py
+identity	user.email	tests/agents/test-agent-store-clasificar-documentos.sh
+identity	user.email	tests/agents/test-agent-store-fecha-apertura.sh
+identity	user.email	tests/agents/test-agent-store-fecha-documento.sh
+identity	user.email	tests/agents/test-merge-sqlite-union.sh
+identity	user.email	tests/corpus/test-find-reference-home.sh
+identity	user.email	tests/githooks/test-pre-commit-cache-layout.sh
+identity	user.email	tests/githooks/test-pre-commit-identifier-language.sh
+identity	user.email	tests/githooks/test-pre-commit-reconcile-status.sh
+identity	user.email	tests/githooks/test-pre-commit-renamed-paths.sh
+identity	user.email	tests/hooks/test_compact_context.py
+identity	user.email	tests/hooks/test_stop_pending_work.py
+identity	user.email	tests/hooks/test_stop_tests.py
+identity	user.email	tests/install/test_install.sh
+identity	user.email	tests/repo/test_citations.py
+identity	user.email	tests/repo/test_clone.py
+identity	user.email	tests/repo/test_gitlink_bump.py
+identity	user.email	tests/repo/test_object_footprint.py
+identity	user.email	tests/repo/test_pack_headroom.py
+identity	user.email	tests/repo/test_pending_work.py
+identity	user.email	tests/repo/test_pending_work_telemetry.py
+identity	user.email	tests/roster/test_worktree_state.py
+identity	user.email	tests/session/test-continuation-frontier-e2e.sh
+identity	user.email	tests/session/test-headless-pool-exit-live-items.sh
+identity	user.email	tests/session/test-headless-pool-lifecycle.sh
+identity	user.email	tests/session/test-headless-pool-worktree.sh
+identity	user.email	tests/session/test-item-worktree-disk.sh
+identity	user.email	tests/session/test-item-worktree-links.sh
+identity	user.email	tests/session/test-item-worktree-location.sh
+identity	user.email	tests/session/test-item-worktree-lock.sh
+identity	user.email	tests/session/test-item-worktree-orphans.sh
+identity	user.email	tests/session/test-item-worktree-sparse.sh
+identity	user.email	tests/session/test-item-worktree-stash.sh
+identity	user.email	tests/session/test-run-task-pool.sh
+identity	user.email	tests/session/test_documentation_preflight.py
+identity	user.email	tests/session/test_documentation_publisher.py
+identity	user.email	tests/session/test_hook_migration.py
+identity	user.email	tests/session/test_reconcile_user_hooks.py
+identity	user.email	tests/session/test_session_restart.py
+identity	user.email	tests/session/test_snapshot_recovery.py
+identity	user.email	tests/task/test_census_open_tasks.py
+identity	user.email	tests/verify/test-evidence-tracked.sh
+identity	user.email	tests/verify/test-ids-entre-ramas.sh
+identity	user.email	tests/verify/test-mutante-en-staging.sh
+identity	user.email	tests/verify/test-post-commit-store-index.sh
+identity	user.email	tests/verify/test-run-tree-mutation.sh
+identity	user.email	tests/verify/test_agent_proposal.py
+identity	user.email	tests/verify/test_annulment_control.py
+identity	user.email	tests/verify/test_bench_untracked.py
+identity	user.email	tests/verify/test_check_cache_layout.py
+identity	user.email	tests/verify/test_check_staged_live_writers.py
+identity	user.email	tests/verify/test_measure_worktree.py
+identity	user.email	tests/verify/test_pathspec_commit.py
+identity	user.email	tests/verify/test_pool_pipeline.py
+identity	user.email	tests/verify/test_pushed_branch.py
+identity	user.email	tests/verify/test_step_close.py
+identity	user.email	tests/verify/test_tree_fingerprint.py
+identity	user.email	tests/verify/test_tsc_cycle.py
+identity	user.email	tests/verify/test_tsc_zero_loop.py
+identity	user.name	src/packages/agent/__tests__/reconcile.test.ts
+identity	user.name	src/packages/cli/__tests__/impactCli.test.ts
+identity	user.name	src/packages/coordination/__tests__/branchIntegration.test.ts
+identity	user.name	src/packages/coordination/__tests__/claims.test.ts
+identity	user.name	src/packages/coordination/branchIntegration.ts
+identity	user.name	src/packages/ide/src/ide.ts
+identity	user.name	src/packages/provider/src/context.ts
+identity	user.name	src/packages/repl/src/diagnostics/claudeDesktop.ts
+identity	user.name	src/packages/storage/src/__tests__/findGitRoot.test.ts
+identity	user.name	src/packages/storage/src/__tests__/getWorktreePaths.test.ts
+identity	user.name	src/packages/storage/src/__tests__/getWorktreePathsPortable.test.ts
+identity	user.name	src/packages/storage/src/file.ts
+identity	user.name	src/session/reconcile_user_hooks.py
+identity	user.name	src/verify/commit_identity.py
+identity	user.name	tests/agents/test-agent-store-clasificar-documentos.sh
+identity	user.name	tests/agents/test-agent-store-fecha-apertura.sh
+identity	user.name	tests/agents/test-agent-store-fecha-documento.sh
+identity	user.name	tests/agents/test-merge-sqlite-union.sh
+identity	user.name	tests/corpus/test-find-reference-home.sh
+identity	user.name	tests/githooks/test-pre-commit-cache-layout.sh
+identity	user.name	tests/githooks/test-pre-commit-identifier-language.sh
+identity	user.name	tests/githooks/test-pre-commit-reconcile-status.sh
+identity	user.name	tests/githooks/test-pre-commit-renamed-paths.sh
+identity	user.name	tests/hooks/test_compact_context.py
+identity	user.name	tests/hooks/test_stop_pending_work.py
+identity	user.name	tests/hooks/test_stop_tests.py
+identity	user.name	tests/install/test_install.sh
+identity	user.name	tests/repo/test_citations.py
+identity	user.name	tests/repo/test_clone.py
+identity	user.name	tests/repo/test_gitlink_bump.py
+identity	user.name	tests/repo/test_object_footprint.py
+identity	user.name	tests/repo/test_pack_headroom.py
+identity	user.name	tests/repo/test_pending_work.py
+identity	user.name	tests/repo/test_pending_work_telemetry.py
+identity	user.name	tests/roster/test_worktree_state.py
+identity	user.name	tests/session/test-continuation-frontier-e2e.sh
+identity	user.name	tests/session/test-headless-pool-exit-live-items.sh
+identity	user.name	tests/session/test-headless-pool-lifecycle.sh
+identity	user.name	tests/session/test-headless-pool-worktree.sh
+identity	user.name	tests/session/test-item-worktree-disk.sh
+identity	user.name	tests/session/test-item-worktree-links.sh
+identity	user.name	tests/session/test-item-worktree-location.sh
+identity	user.name	tests/session/test-item-worktree-lock.sh
+identity	user.name	tests/session/test-item-worktree-orphans.sh
+identity	user.name	tests/session/test-item-worktree-sparse.sh
+identity	user.name	tests/session/test-item-worktree-stash.sh
+identity	user.name	tests/session/test-run-task-pool.sh
+identity	user.name	tests/session/test_documentation_preflight.py
+identity	user.name	tests/session/test_documentation_publisher.py
+identity	user.name	tests/session/test_hook_migration.py
+identity	user.name	tests/session/test_reconcile_user_hooks.py
+identity	user.name	tests/session/test_session_restart.py
+identity	user.name	tests/session/test_snapshot_recovery.py
+identity	user.name	tests/task/test_census_open_tasks.py
+identity	user.name	tests/verify/test-evidence-tracked.sh
+identity	user.name	tests/verify/test-ids-entre-ramas.sh
+identity	user.name	tests/verify/test-mutante-en-staging.sh
+identity	user.name	tests/verify/test-post-commit-store-index.sh
+identity	user.name	tests/verify/test-run-tree-mutation.sh
+identity	user.name	tests/verify/test_agent_proposal.py
+identity	user.name	tests/verify/test_annulment_control.py
+identity	user.name	tests/verify/test_bench_untracked.py
+identity	user.name	tests/verify/test_check_cache_layout.py
+identity	user.name	tests/verify/test_check_staged_live_writers.py
+identity	user.name	tests/verify/test_commit_identity.py
+identity	user.name	tests/verify/test_measure_worktree.py
+identity	user.name	tests/verify/test_pathspec_commit.py
+identity	user.name	tests/verify/test_pool_pipeline.py
+identity	user.name	tests/verify/test_pushed_branch.py
+identity	user.name	tests/verify/test_step_close.py
+identity	user.name	tests/verify/test_tree_fingerprint.py
+identity	user.name	tests/verify/test_tsc_cycle.py
+identity	user.name	tests/verify/test_tsc_zero_loop.py
+identity	committer	.claude/commands/loop-analyze.md
+identity	committer	.claude/rules/git.md
+identity	committer	README.md
+identity	committer	src/commands/loop-analyze.md
+identity	committer	src/conformance/checklist.ts
+identity	committer	src/lib/toolchain.sh
+identity	committer	src/packages/coordination/__tests__/branchIntegration.test.ts
+identity	committer	src/packages/coordination/branchIntegration.ts
+identity	committer	src/packages/shell/src/legacy/readOnlyCommandValidation.ts
+identity	committer	src/packages/shell/src/providers/readOnlyCommandValidation.ts
+identity	committer	src/rules/definitions/gitAuthorIdentity.body.md
+identity	committer	src/rules/definitions/gitAuthorIdentity.ts
+identity	committer	src/session/documentation_publisher.py
+identity	committer	src/session/reconcile_user_hooks.py
+identity	committer	src/verify/commit_identity.py
+identity	committer	src/verify/env_sensitivity.tsv
+identity	committer	tests/session/test_documentation_publisher.py
+identity	committer	tests/session/test_reconcile_user_hooks.py
+identity	committer	tests/verify/test-toolchain-ready.sh
+identity	committer	tests/verify/test_commit_identity.py
+identity	committer	tests/verify/test_pre_commit_hook.py
+identity	AGENT_EMAILS	src/verify/commit_identity.py
+identity	Co-Authored-By	.claude/rules/git.md
+identity	Co-Authored-By	.claude/skills/workflow-implement/references/commit-helper.md
+identity	Co-Authored-By	.githooks/commit-msg
+identity	Co-Authored-By	src/packages/agent/__tests__/attributionTexts.test.ts
+identity	Co-Authored-By	src/packages/agent/attribution.ts
+identity	Co-Authored-By	src/packages/config/settings/types.ts
+identity	Co-Authored-By	src/packages/tool-registry/src/__tests__/undercover.test.ts
+identity	Co-Authored-By	src/packages/tool-registry/src/undercover.ts
+identity	Co-Authored-By	src/rules/definitions/gitAuthorIdentity.body.md
+identity	Co-Authored-By	src/verify/commit_identity.py
+identity	Co-Authored-By	tests/verify/test_commit_identity.py
+identity	THYROX_COMMIT_	.env.example
+identity	THYROX_COMMIT_	.githooks/pre-commit
+identity	THYROX_COMMIT_	README.md
+identity	THYROX_COMMIT_	src/lib/toolchain.sh
+identity	THYROX_COMMIT_	src/packages/paths/reach.ts
+identity	THYROX_COMMIT_	src/paths/reach.py
+identity	THYROX_COMMIT_	src/rules/definitions/gitAuthorIdentity.ts
+identity	THYROX_COMMIT_	src/verify/commit_identity.py
+identity	THYROX_COMMIT_	src/verify/env_sensitivity.tsv
+identity	THYROX_COMMIT_	tests/paths/test_consumer_env_layer.py
+identity	THYROX_COMMIT_	tests/session/test_documentation_publisher.py
+identity	THYROX_COMMIT_	tests/verify/test-toolchain-ready.sh
+identity	THYROX_COMMIT_	tests/verify/test_commit_identity.py
+identity	THYROX_COMMIT_	tests/verify/test_pre_commit_hook.py
+identity	gitAuthorIdentity	src/rules/definitions/gitAuthorIdentity.ts
+identity	gitAuthorIdentity	src/rules/index.ts
+identity	gitAuthorIdentity	src/verify/commit_identity.py
+identity	gitAuthorIdentity	tests/verify/test_commit_identity.py
+bootstrap	fresh[-_ ]clone	tests/install/test_install.sh
+bootstrap	clon nuevo	.claude/rules/measured-pool-failures.md
+bootstrap	clon nuevo	README.md
+bootstrap	clon nuevo	install.sh
+bootstrap	clon nuevo	scripts/install-hooks.sh
+bootstrap	clon nuevo	src/corpus/archive_build_corpus.py
+bootstrap	clon nuevo	src/lib/reach.sh
+bootstrap	clon nuevo	src/lib/toolchain.sh
+bootstrap	clon nuevo	src/paths/reach.py
+bootstrap	clon nuevo	src/rules/definitions/measuredPoolFailures.body.md
+bootstrap	clon nuevo	src/session/clone_bootstrap.py
+bootstrap	clon nuevo	src/session/instalar-config-usuario.sh
+bootstrap	clon nuevo	src/verify/check-toolchain-ready.sh
+bootstrap	clon nuevo	src/verify/install-hooks.sh
+bootstrap	clon nuevo	tests/install/test_install.sh
+bootstrap	clon nuevo	tests/lib/test-reach-pythonpath.sh
+bootstrap	clon nuevo	tests/paths/test_ensure_homes.py
+bootstrap	clon nuevo	tests/session/test-arranque-de-clon.sh
+bootstrap	clon nuevo	tests/session/test-headless-pool.sh
+bootstrap	clon nuevo	tests/verify/test-toolchain-ready.sh
+bootstrap	clon nuevo	tests/verify/test_commit_identity.py
+bootstrap	clon nuevo	tests/verify/test_package_root_resolution.sh
+bootstrap	clon reci[eé]n	src/lib/toolchain.sh
+bootstrap	clon reci[eé]n	src/session/clone_bootstrap.py
+bootstrap	clon reci[eé]n	src/verify/commit-msg-citation.sh
+bootstrap	clon reci[eé]n	src/workbench/paths.py
+bootstrap	clon reci[eé]n	tests/session/test-arranque-de-clon.sh
+bootstrap	clon reci[eé]n	tests/verify/test-toolchain-ready.sh
+bootstrap	clon reci[eé]n	tests/verify/test_commit_identity.py
+bootstrap	bootstrap	.claude/commands/init.md
+bootstrap	bootstrap	.claude/commands/workflow_init.md
+bootstrap	bootstrap	.claude/skills/python-mcp/SKILL.md
+bootstrap	bootstrap	.env.example
+bootstrap	bootstrap	bin/clone_bootstrap
+bootstrap	bootstrap	bin/infrastructure-bootstrap
+bootstrap	bootstrap	install.sh
+bootstrap	bootstrap	src/agents/definitions/skill-generator.md
+bootstrap	bootstrap	src/agents/definitions/tech-detector.md
+bootstrap	bootstrap	src/commands/init.md
+bootstrap	bootstrap	src/commands/workflow_init.md
+bootstrap	bootstrap	src/hooks/detect_controller_mutation.py
+bootstrap	bootstrap	src/lib/infrastructure.sh
+bootstrap	bootstrap	src/lib/managed_execution.sh
+bootstrap	bootstrap	src/lib/reach.sh
+bootstrap	bootstrap	src/lib/workbench.sh
+bootstrap	bootstrap	src/packages/agent/SessionMemory/sessionMemory.ts
+bootstrap	bootstrap	src/packages/agent/__tests__/compactConversationHelpers.test.ts
+bootstrap	bootstrap	src/packages/agent/__tests__/diffDisplay.test.ts
+bootstrap	bootstrap	src/packages/agent/__tests__/hooksEngine.test.ts
+bootstrap	bootstrap	src/packages/agent/__tests__/internalCronTasksCore.behavior.test.ts
+bootstrap	bootstrap	src/packages/agent/__tests__/isTodoV2Enabled.test.ts
+bootstrap	bootstrap	src/packages/agent/__tests__/loopSentinelCore.test.ts
+bootstrap	bootstrap	src/packages/agent/__tests__/systemInitUdsInbox.test.ts
+bootstrap	bootstrap	src/packages/agent/agentHostBindings.ts
+bootstrap	bootstrap	src/packages/agent/attachments.ts
+bootstrap	bootstrap	src/packages/agent/background/preconditions.ts
+bootstrap	bootstrap	src/packages/agent/claudeInChromeSetup.ts
+bootstrap	bootstrap	src/packages/agent/commands/brief.ts
+bootstrap	bootstrap	src/packages/agent/commitAttribution.ts
+bootstrap	bootstrap	src/packages/agent/compaction/autoCompact.ts
+bootstrap	bootstrap	src/packages/agent/compaction/compact.ts
+bootstrap	bootstrap	src/packages/agent/constants/spinnerVerbs.ts
+bootstrap	bootstrap	src/packages/agent/contracts.ts
+bootstrap	bootstrap	src/packages/agent/diff.ts
+bootstrap	bootstrap	src/packages/agent/fileChangedWatcher.ts
+bootstrap	bootstrap	src/packages/agent/goalStopHook.ts
+bootstrap	bootstrap	src/packages/agent/hooks.ts
+bootstrap	bootstrap	src/packages/agent/hooksConfigSnapshot.ts
+bootstrap	bootstrap	src/packages/agent/idleTimeout.ts
+bootstrap	bootstrap	src/packages/agent/internal/cronSchedulerCore.ts
+bootstrap	bootstrap	src/packages/agent/internal/cronTasksCore.ts
+bootstrap	bootstrap	src/packages/agent/internal/cronTasksLockCore.ts
+bootstrap	bootstrap	src/packages/agent/internal/loopDynamicCore.ts
+bootstrap	bootstrap	src/packages/agent/internal/loopSentinelCore.ts
+bootstrap	bootstrap	src/packages/agent/internal/stopHooksCore.ts
+bootstrap	bootstrap	src/packages/agent/localAgentTask.tsx
+bootstrap	bootstrap	src/packages/agent/messageQueueManager.ts
+bootstrap	bootstrap	src/packages/agent/messages.ts
+bootstrap	bootstrap	src/packages/agent/messages/mappers.ts
+bootstrap	bootstrap	src/packages/agent/messages/systemInit.ts
+bootstrap	bootstrap	src/packages/agent/prompts.ts
+bootstrap	bootstrap	src/packages/agent/runtime/backgroundHousekeeping.ts
+bootstrap	bootstrap	src/packages/agent/sdkEventQueue.ts
+bootstrap	bootstrap	src/packages/agent/services/preventSleep.ts
+bootstrap	bootstrap	src/packages/agent/sessionFileAccessHooks.ts
+bootstrap	bootstrap	src/packages/agent/sessionTitle.ts
+bootstrap	bootstrap	src/packages/agent/sessionTools/analyzeContext.ts
+bootstrap	bootstrap	src/packages/agent/sessionTools/crossProjectResume.ts
+bootstrap	bootstrap	src/packages/agent/sideQuery.ts
+bootstrap	bootstrap	src/packages/agent/tasks.ts
+bootstrap	bootstrap	src/packages/agent/tasks/LocalMainSessionTask.tsx
+bootstrap	bootstrap	src/packages/agent/tasks/LocalShellTask.tsx
+bootstrap	bootstrap	src/packages/agent/types/hooks.ts
+bootstrap	bootstrap	src/packages/agent/workflow/namedWorkflows.ts
+bootstrap	bootstrap	src/packages/agent/workflow/paths.ts
+bootstrap	bootstrap	src/packages/agent/workflow/workflowAgentRun.ts
+bootstrap	bootstrap	src/packages/app-host/README.md
+bootstrap	bootstrap	src/packages/app-host/package.json
+bootstrap	bootstrap	src/packages/app-host/src/activityManager.ts
+bootstrap	bootstrap	src/packages/app-host/src/bootstrap/__tests__/bypassModeState.test.ts
+bootstrap	bootstrap	src/packages/app-host/src/bootstrap/__tests__/interactiveSession.test.ts
+bootstrap	bootstrap	src/packages/app-host/src/bootstrap/__tests__/meterState.test.ts
+bootstrap	bootstrap	src/packages/app-host/src/bootstrap/__tests__/requestCaptureState.test.ts
+bootstrap	bootstrap	src/packages/app-host/src/bootstrap/gracefulShutdown.ts
+bootstrap	bootstrap	src/packages/app-host/src/bootstrap/state.ts
+bootstrap	bootstrap	src/packages/app-host/src/heapDumpService.ts
+bootstrap	bootstrap	src/packages/app-host/src/init.ts
+bootstrap	bootstrap	src/packages/app-host/src/main/cli/runtimeActivation.ts
+bootstrap	bootstrap	src/packages/app-host/src/main/startup/context.ts
+bootstrap	bootstrap	src/packages/app-host/src/main/startup/telemetry.ts
+bootstrap	bootstrap	src/packages/app-host/src/providerHostSetup.ts
+bootstrap	bootstrap	src/packages/app-host/src/runtime/__tests__/bootstrapRefusalFallbackRestore.test.ts
+bootstrap	bootstrap	src/packages/app-host/src/runtime/__tests__/installCliBindingsRefusalFallbackRestore.test.ts
+bootstrap	bootstrap	src/packages/app-host/src/runtime/__tests__/refusalFallbackRestoreWiring.test.ts
+bootstrap	bootstrap	src/packages/app-host/src/runtime/__tests__/sessionStoreOnChangeWiring.test.ts
+bootstrap	bootstrap	src/packages/app-host/src/runtime/bootstrap.ts
+bootstrap	bootstrap	src/packages/app-host/src/runtime/installCliBindings.ts
+bootstrap	bootstrap	src/packages/app-host/src/runtime/installPluginBindings.ts
+bootstrap	bootstrap	src/packages/app-host/src/runtime/messagingInboxAtLaunch.ts
+bootstrap	bootstrap	src/packages/app-host/src/runtime/sessionRegistryAtLaunch.ts
+bootstrap	bootstrap	src/packages/app-host/src/startup/startupProfiler.ts
+bootstrap	bootstrap	src/packages/app-host/src/state/__tests__/refusalFallbackRestore.test.ts
+bootstrap	bootstrap	src/packages/app-host/src/state/__tests__/refusalFallbackRestoreDeps.test.ts
+bootstrap	bootstrap	src/packages/app-host/src/state/refusalFallbackRestore.ts
+bootstrap	bootstrap	src/packages/app-host/src/state/refusalFallbackRestoreDeps.ts
+bootstrap	bootstrap	src/packages/app-host/tsconfig.build.json
+bootstrap	bootstrap	src/packages/artifact-registry/__tests__/chunkedUpload.test.ts
+bootstrap	bootstrap	src/packages/bridge/src/bridgeMain.ts
+bootstrap	bootstrap	src/packages/bridge/src/bridgeMessaging.ts
+bootstrap	bootstrap	src/packages/bridge/src/inboundAttachments.ts
+bootstrap	bootstrap	src/packages/bridge/src/initReplBridge.ts
+bootstrap	bootstrap	src/packages/bridge/src/internal/pendingCrossPackageDeps.ts
+bootstrap	bootstrap	src/packages/bridge/src/remoteBridgeCore.ts
+bootstrap	bootstrap	src/packages/bridge/src/replBridge.ts
+bootstrap	bootstrap	src/packages/cli/__tests__/modeDispatchContext.test.ts
+bootstrap	bootstrap	src/packages/cli/__tests__/runStreamingUdsInbox.test.ts
+bootstrap	bootstrap	src/packages/cli/src/__tests__/installOAuthTokensEnvFdCoordination.behavior.test.ts
+bootstrap	bootstrap	src/packages/cli/src/bg/daemonAdapter.ts
+bootstrap	bootstrap	src/packages/cli/src/bg/openAgentsFromRepl.ts
+bootstrap	bootstrap	src/packages/cli/src/commands/mcp-commands.ts
+bootstrap	bootstrap	src/packages/cli/src/entry/README.md
+bootstrap	bootstrap	src/packages/cli/src/entry/bootstrap-utils.ts
+bootstrap	bootstrap	src/packages/cli/src/entry/cli.tsx
+bootstrap	bootstrap	src/packages/cli/src/entry/detect-mode.ts
+bootstrap	bootstrap	src/packages/cli/src/entry/main.tsx
+bootstrap	bootstrap	src/packages/cli/src/entry/mode-dispatch.ts
+bootstrap	bootstrap	src/packages/cli/src/entry/preprocess-argv.ts
+bootstrap	bootstrap	src/packages/cli/src/entry/run-cli.ts
+bootstrap	bootstrap	src/packages/cli/src/entry/run-program.ts
+bootstrap	bootstrap	src/packages/cli/src/handlers/agents.ts
+bootstrap	bootstrap	src/packages/cli/src/handlers/agentsFleet.ts
+bootstrap	bootstrap	src/packages/cli/src/handlers/auth.ts
+bootstrap	bootstrap	src/packages/cli/src/handlers/mcp.tsx
+bootstrap	bootstrap	src/packages/cli/src/handlers/plugins.ts
+bootstrap	bootstrap	src/packages/cli/src/headless/sdk/control/handlers.ts
+bootstrap	bootstrap	src/packages/cli/src/headless/sdk/control/permission-helpers.ts
+bootstrap	bootstrap	src/packages/cli/src/headless/sdk/session/__tests__/activeUserSpecifiedModelMirror.test.ts
+bootstrap	bootstrap	src/packages/cli/src/headless/sdk/session/load.ts
+bootstrap	bootstrap	src/packages/cli/src/headless/sdk/session/run-streaming.ts
+bootstrap	bootstrap	src/packages/cli/src/headless/sdk/session/run.ts
+bootstrap	bootstrap	src/packages/cli/src/headless/sdk/session/utils/streamJsonStdoutGuard.ts
+bootstrap	bootstrap	src/packages/cli/src/print.ts
+bootstrap	bootstrap	src/packages/cli/src/remoteIO.ts
+bootstrap	bootstrap	src/packages/cli/src/setup/setup.ts
+bootstrap	bootstrap	src/packages/command-runtime/src/commands/background/background.tsx
+bootstrap	bootstrap	src/packages/command-runtime/src/commands/chrome/index.ts
+bootstrap	bootstrap	src/packages/command-runtime/src/commands/clear/caches.ts
+bootstrap	bootstrap	src/packages/command-runtime/src/commands/clear/conversation.ts
+bootstrap	bootstrap	src/packages/command-runtime/src/commands/compact/compact.ts
+bootstrap	bootstrap	src/packages/command-runtime/src/commands/context/index.ts
+bootstrap	bootstrap	src/packages/command-runtime/src/commands/goal/goal.ts
+bootstrap	bootstrap	src/packages/command-runtime/src/commands/goal/goalLocal.ts
+bootstrap	bootstrap	src/packages/command-runtime/src/commands/goal/index.ts
+bootstrap	bootstrap	src/packages/command-runtime/src/commands/ide/ide.tsx
+bootstrap	bootstrap	src/packages/command-runtime/src/commands/login/login.tsx
+bootstrap	bootstrap	src/packages/command-runtime/src/commands/rename/rename.ts
+bootstrap	bootstrap	src/packages/command-runtime/src/commands/resume/resume.tsx
+bootstrap	bootstrap	src/packages/command-runtime/src/commands/session/index.ts
+bootstrap	bootstrap	src/packages/command-runtime/src/commands/stop/stop.tsx
+bootstrap	bootstrap	src/packages/command-runtime/src/gitignore.ts
+bootstrap	bootstrap	src/packages/command-runtime/src/internal/pendingCrossPackageDeps.ts
+bootstrap	bootstrap	src/packages/command-runtime/src/skills/bundled/claudeApi.ts
+bootstrap	bootstrap	src/packages/command-runtime/src/skills/bundled/dream.ts
+bootstrap	bootstrap	src/packages/command-runtime/src/skills/loadSkillsDir.ts
+bootstrap	bootstrap	src/packages/computer-use-mcp/src/legacy/computerUseLock.ts
+bootstrap	bootstrap	src/packages/computer-use-mcp/src/legacy/wrapper.tsx
+bootstrap	bootstrap	src/packages/config/contracts.ts
+bootstrap	bootstrap	src/packages/config/gitFilesystem.ts
+bootstrap	bootstrap	src/packages/config/host.ts
+bootstrap	bootstrap	src/packages/config/internal/allowedSourcesState.ts
+bootstrap	bootstrap	src/packages/config/internal/pendingCrossPackageDeps.ts
+bootstrap	bootstrap	src/packages/config/migrations/migrateSonnet1mToSonnet45.ts
+bootstrap	bootstrap	src/packages/config/outputStyles.ts
+bootstrap	bootstrap	src/packages/config/plugin/_deps.ts
+bootstrap	bootstrap	src/packages/config/plugin/commands/reload-plugins/reload-plugins.ts
+bootstrap	bootstrap	src/packages/config/settings/allErrors.ts
+bootstrap	bootstrap	src/packages/config/settings/types.ts
+bootstrap	bootstrap	src/packages/daemon/src/__tests__/workerIpc.test.ts
+bootstrap	bootstrap	src/packages/daemon/src/launchAgent.ts
+bootstrap	bootstrap	src/packages/daemon/src/main.ts
+bootstrap	bootstrap	src/packages/daemon/src/spareClaim.ts
+bootstrap	bootstrap	src/packages/daemon/src/sparePool.ts
+bootstrap	bootstrap	src/packages/daemon/src/workerIpc.ts
+bootstrap	bootstrap	src/packages/ide/src/ide.ts
+bootstrap	bootstrap	src/packages/ide/src/internal/pendingCrossPackageDeps.ts
+bootstrap	bootstrap	src/packages/ide/src/lsp/LSPServerInstance.ts
+bootstrap	bootstrap	src/packages/infrastructure/__tests__/bootstrapEntry.test.ts
+bootstrap	bootstrap	src/packages/infrastructure/__tests__/infrastructureBootstrap.test.ts
+bootstrap	bootstrap	src/packages/infrastructure/bin/bootstrap.ts
+bootstrap	bootstrap	src/packages/infrastructure/bootstrapCommand.ts
+bootstrap	bootstrap	src/packages/infrastructure/infrastructureBootstrap.ts
+bootstrap	bootstrap	src/packages/infrastructure/package.json
+bootstrap	bootstrap	src/packages/ink/src/core/jediTermScrollFix.ts
+bootstrap	bootstrap	src/packages/ink/src/index.ts
+bootstrap	bootstrap	src/packages/local-observability/__tests__/udsMessaging.test.ts
+bootstrap	bootstrap	src/packages/local-observability/src/__tests__/localEventLogger.test.ts
+bootstrap	bootstrap	src/packages/local-observability/src/__tests__/logAuthEvent.behavior.test.ts
+bootstrap	bootstrap	src/packages/local-observability/src/__tests__/logOTelEvent.behavior.test.ts
+bootstrap	bootstrap	src/packages/local-observability/src/__tests__/structuredEvents.behavior.test.ts
+bootstrap	bootstrap	src/packages/local-observability/src/aggregates/headlessProfiler.ts
+bootstrap	bootstrap	src/packages/local-observability/src/debug.ts
+bootstrap	bootstrap	src/packages/local-observability/src/internal/pendingCrossPackageDeps.ts
+bootstrap	bootstrap	src/packages/local-observability/src/localEventLogger.ts
+bootstrap	bootstrap	src/packages/local-observability/src/logging/error-log-sink.ts
+bootstrap	bootstrap	src/packages/local-observability/src/logging/error-log.ts
+bootstrap	bootstrap	src/packages/local-observability/src/slowOperations.ts
+bootstrap	bootstrap	src/packages/local-observability/src/telemetry/attributes.ts
+bootstrap	bootstrap	src/packages/local-observability/src/telemetry/events.ts
+bootstrap	bootstrap	src/packages/local-observability/src/uds/inboundGate.ts
+bootstrap	bootstrap	src/packages/local-observability/src/uds/inboxServer.ts
+bootstrap	bootstrap	src/packages/local-observability/src/uds/listAllPeers.ts
+bootstrap	bootstrap	src/packages/local-observability/src/uds/peerFiles.ts
+bootstrap	bootstrap	src/packages/local-observability/src/uds/registrySweep.ts
+bootstrap	bootstrap	src/packages/local-observability/src/uds/registrySweepPermission.ts
+bootstrap	bootstrap	src/packages/local-observability/src/uds/sessionRegistration.ts
+bootstrap	bootstrap	src/packages/local-observability/src/uds/sessionRegistryState.ts
+bootstrap	bootstrap	src/packages/mcp-runtime/src/channelNotification.ts
+bootstrap	bootstrap	src/packages/mcp-runtime/src/clientRuntime.ts
+bootstrap	bootstrap	src/packages/mcp-runtime/src/config.ts
+bootstrap	bootstrap	src/packages/mcp-runtime/src/headersHelper.ts
+bootstrap	bootstrap	src/packages/mcp-runtime/src/roots.ts
+bootstrap	bootstrap	src/packages/mcp-runtime/src/useManageMCPConnections.ts
+bootstrap	bootstrap	src/packages/mcp-runtime/src/utils.ts
+bootstrap	bootstrap	src/packages/memory/src/contracts.ts
+bootstrap	bootstrap	src/packages/memory/src/teamMemorySyncWatcher.ts
+bootstrap	bootstrap	src/packages/output/package.json
+bootstrap	bootstrap	src/packages/output/src/capture/asciicast.ts
+bootstrap	bootstrap	src/packages/permission/package.json
+bootstrap	bootstrap	src/packages/permission/src/__tests__/PermissionMode.test.ts
+bootstrap	bootstrap	src/packages/permission/src/__tests__/fileToolPermissions.test.ts
+bootstrap	bootstrap	src/packages/permission/src/__tests__/internalPaths.test.ts
+bootstrap	bootstrap	src/packages/permission/src/__tests__/memoryPausePermissions.test.ts
+bootstrap	bootstrap	src/packages/permission/src/__tests__/pathSafety.test.ts
+bootstrap	bootstrap	src/packages/permission/src/__tests__/playfulLobsterShadow.test.ts
+bootstrap	bootstrap	src/packages/permission/src/__tests__/validatePath.test.ts
+bootstrap	bootstrap	src/packages/permission/src/bypassPermissionsKillswitch.ts
+bootstrap	bootstrap	src/packages/permission/src/components/EnterPlanModePermissionRequest/EnterPlanModePermissionRequest.tsx
+bootstrap	bootstrap	src/packages/permission/src/components/ExitPlanModePermissionRequest/ExitPlanModePermissionRequest.tsx
+bootstrap	bootstrap	src/packages/permission/src/components/FallbackPermissionRequest.tsx
+bootstrap	bootstrap	src/packages/permission/src/components/FileEditPermissionRequest/FileEditPermissionRequest.tsx
+bootstrap	bootstrap	src/packages/permission/src/components/FilePermissionDialog/FilePermissionDialog.tsx
+bootstrap	bootstrap	src/packages/permission/src/components/FilePermissionDialog/permissionOptions.tsx
+bootstrap	bootstrap	src/packages/permission/src/components/FileWritePermissionRequest/FileWritePermissionRequest.tsx
+bootstrap	bootstrap	src/packages/permission/src/components/NotebookEditPermissionRequest/NotebookEditToolDiff.tsx
+bootstrap	bootstrap	src/packages/permission/src/components/SedEditPermissionRequest/SedEditPermissionRequest.tsx
+bootstrap	bootstrap	src/packages/permission/src/components/SkillPermissionRequest/SkillPermissionRequest.tsx
+bootstrap	bootstrap	src/packages/permission/src/components/rules/WorkspaceTab.tsx
+bootstrap	bootstrap	src/packages/permission/src/components/shellPermissionHelpers.tsx
+bootstrap	bootstrap	src/packages/permission/src/fileToolPermissions.ts
+bootstrap	bootstrap	src/packages/permission/src/internalPaths.ts
+bootstrap	bootstrap	src/packages/permission/src/pathSafety.ts
+bootstrap	bootstrap	src/packages/permission/src/pathValidation.ts
+bootstrap	bootstrap	src/packages/permission/src/permissions.ts
+bootstrap	bootstrap	src/packages/permission/src/ruleMatching.ts
+bootstrap	bootstrap	src/packages/permission/src/toolPermission/handlers/interactiveHandler.ts
+bootstrap	bootstrap	src/packages/permission/src/toolPermission/permissionLogging.ts
+bootstrap	bootstrap	src/packages/permission/src/yolo-classifier-prompts/permissions_anthropic.txt
+bootstrap	bootstrap	src/packages/permission/src/yolo-classifier-prompts/permissions_external.txt
+bootstrap	bootstrap	src/packages/permission/src/yoloClassifier.ts
+bootstrap	bootstrap	src/packages/permission/src/yoloSystemPrompt.ts
+bootstrap	bootstrap	src/packages/podman-execution/__tests__/resourceMaterialization.test.ts
+bootstrap	bootstrap	src/packages/provider/__tests__/accounts/imports/anthropicAuthFile.test.ts
+bootstrap	bootstrap	src/packages/provider/__tests__/accounts/oauth/claudeCodexFlows.test.ts
+bootstrap	bootstrap	src/packages/provider/__tests__/recommendExecution.test.ts
+bootstrap	bootstrap	src/packages/provider/src/__tests__/gatewayModelDiscovery.test.ts
+bootstrap	bootstrap	src/packages/provider/src/__tests__/populateOAuthAccountInfo.behavior.test.ts
+bootstrap	bootstrap	src/packages/provider/src/__tests__/systemPromptTelemetry.behavior.test.ts
+bootstrap	bootstrap	src/packages/provider/src/accounts/antigravity/clientIdentity.ts
+bootstrap	bootstrap	src/packages/provider/src/accounts/antigravity/projectDiscovery.ts
+bootstrap	bootstrap	src/packages/provider/src/accounts/imports/anthropicAuthFile.ts
+bootstrap	bootstrap	src/packages/provider/src/accounts/imports/anthropicAuthImport.ts
+bootstrap	bootstrap	src/packages/provider/src/accounts/oauth/flows/anthropicFlow.ts
+bootstrap	bootstrap	src/packages/provider/src/authAlias.ts
+bootstrap	bootstrap	src/packages/provider/src/authFileDescriptor.ts
+bootstrap	bootstrap	src/packages/provider/src/betas.ts
+bootstrap	bootstrap	src/packages/provider/src/bootstrap.ts
+bootstrap	bootstrap	src/packages/provider/src/claudeAiLimits.ts
+bootstrap	bootstrap	src/packages/provider/src/commands/logout/logout.tsx
+bootstrap	bootstrap	src/packages/provider/src/context.ts
+bootstrap	bootstrap	src/packages/provider/src/cost/executionPolicy.ts
+bootstrap	bootstrap	src/packages/provider/src/costTracker.ts
+bootstrap	bootstrap	src/packages/provider/src/dumpPrompts.ts
+bootstrap	bootstrap	src/packages/provider/src/errors.ts
+bootstrap	bootstrap	src/packages/provider/src/fastMode.ts
+bootstrap	bootstrap	src/packages/provider/src/filesApi.ts
+bootstrap	bootstrap	src/packages/provider/src/grove.ts
+bootstrap	bootstrap	src/packages/provider/src/headlessProfiler.ts
+bootstrap	bootstrap	src/packages/provider/src/internal/authFileDescriptor.ts
+bootstrap	bootstrap	src/packages/provider/src/internal/legacyRuntimeSupport.ts
+bootstrap	bootstrap	src/packages/provider/src/internal/modelSupport.ts
+bootstrap	bootstrap	src/packages/provider/src/legacy/api.ts
+bootstrap	bootstrap	src/packages/provider/src/logging.ts
+bootstrap	bootstrap	src/packages/provider/src/model.ts
+bootstrap	bootstrap	src/packages/provider/src/model/modelStrings.ts
+bootstrap	bootstrap	src/packages/provider/src/modelCost.ts
+bootstrap	bootstrap	src/packages/provider/src/policyLimits/index.ts
+bootstrap	bootstrap	src/packages/provider/src/sessionIngressAuth.ts
+bootstrap	bootstrap	src/packages/provider/src/systemPromptSections.ts
+bootstrap	bootstrap	src/packages/provider/src/user.ts
+bootstrap	bootstrap	src/packages/provider/src/vcr.ts
+bootstrap	bootstrap	src/packages/repl/src/__tests__/extraUsage.test.ts
+bootstrap	bootstrap	src/packages/repl/src/__tests__/projectOnboardingState.test.ts
+bootstrap	bootstrap	src/packages/repl/src/commands/add-dir/add-dir.tsx
+bootstrap	bootstrap	src/packages/repl/src/commands/cd/cd.ts
+bootstrap	bootstrap	src/packages/repl/src/commands/color/color.ts
+bootstrap	bootstrap	src/packages/repl/src/commands/exit/exit.tsx
+bootstrap	bootstrap	src/packages/repl/src/commands/export/export.tsx
+bootstrap	bootstrap	src/packages/repl/src/commands/files/files.ts
+bootstrap	bootstrap	src/packages/repl/src/commands/plan/plan.tsx
+bootstrap	bootstrap	src/packages/repl/src/commands/sandbox-toggle/sandbox-toggle.tsx
+bootstrap	bootstrap	src/packages/repl/src/commands/tag/tag.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/BridgeDialog.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/BypassPermissionsModeDialog.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/DesktopHandoff.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/DevBar.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/DevChannelsDialog.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/DiagnosticsDisplay.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/ExitFlow.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/ExportDialog.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/FileEditToolUseRejectedMessage.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/GlobalSearchDialog.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/LogSelector.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/LogoV2/ChannelsNotice.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/LogoV2/LogoV2.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/LogoV2/feedConfigs.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/LogoutPicker.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/MCPServerDesktopImportDialog.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/Messages.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/NotebookEditToolUseRejectedMessage.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/OutputStylePicker.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/PromptInput/PromptInput.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/PromptInput/PromptInputFooterLeftSide.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/QuickOpenDialog.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/Settings/Config.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/Settings/Status.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/ShowInIDEPrompt.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/Spinner.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/StatusLine.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/TeleportError.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/ThemePicker.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/agents/agentFileUtils.ts
+bootstrap	bootstrap	src/packages/repl/src/components/diff/DiffDetailView.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/goal/GoalPanel.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/memory/MemoryFileSelector.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/memory/MemoryUpdateNotification.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/messages/UserPromptMessage.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/tasks/WorkflowsDialog.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/tasks/__tests__/bgAgentPanelGate.test.ts
+bootstrap	bootstrap	src/packages/repl/src/components/tasks/taskStatusUtils.tsx
+bootstrap	bootstrap	src/packages/repl/src/components/ultraplan/UltraplanChoiceDialog.tsx
+bootstrap	bootstrap	src/packages/repl/src/conversationRecovery.tsx
+bootstrap	bootstrap	src/packages/repl/src/diagnostics/desktopDeepLink.ts
+bootstrap	bootstrap	src/packages/repl/src/doctorDiagnostic.ts
+bootstrap	bootstrap	src/packages/repl/src/extraUsage.ts
+bootstrap	bootstrap	src/packages/repl/src/fullscreen.ts
+bootstrap	bootstrap	src/packages/repl/src/github/githubRepoPathMapping.ts
+bootstrap	bootstrap	src/packages/repl/src/handlePromptSubmit.tsx
+bootstrap	bootstrap	src/packages/repl/src/history.ts
+bootstrap	bootstrap	src/packages/repl/src/hooks/fileSuggestions.ts
+bootstrap	bootstrap	src/packages/repl/src/hooks/notifs/useAutoModeUnavailableNotification.ts
+bootstrap	bootstrap	src/packages/repl/src/hooks/notifs/useDeprecationWarningNotification.tsx
+bootstrap	bootstrap	src/packages/repl/src/hooks/notifs/useFastModeNotification.tsx
+bootstrap	bootstrap	src/packages/repl/src/hooks/notifs/useIDEStatusIndicator.tsx
+bootstrap	bootstrap	src/packages/repl/src/hooks/notifs/useLspInitializationNotification.tsx
+bootstrap	bootstrap	src/packages/repl/src/hooks/notifs/useMcpConnectivityStatus.tsx
+bootstrap	bootstrap	src/packages/repl/src/hooks/notifs/usePluginAutoupdateNotification.tsx
+bootstrap	bootstrap	src/packages/repl/src/hooks/notifs/usePluginInstallationStatus.tsx
+bootstrap	bootstrap	src/packages/repl/src/hooks/notifs/useRateLimitWarningNotification.tsx
+bootstrap	bootstrap	src/packages/repl/src/hooks/notifs/useSettingsErrors.tsx
+bootstrap	bootstrap	src/packages/repl/src/hooks/notifs/useStartupNotification.ts
+bootstrap	bootstrap	src/packages/repl/src/hooks/notifs/useTeammateShutdownNotification.ts
+bootstrap	bootstrap	src/packages/repl/src/hooks/useApiKeyVerification.ts
+bootstrap	bootstrap	src/packages/repl/src/hooks/useDirectConnect.ts
+bootstrap	bootstrap	src/packages/repl/src/hooks/useLspPluginRecommendation.tsx
+bootstrap	bootstrap	src/packages/repl/src/hooks/useNotifyAfterTimeout.ts
+bootstrap	bootstrap	src/packages/repl/src/hooks/usePluginRecommendationBase.tsx
+bootstrap	bootstrap	src/packages/repl/src/hooks/usePrStatus.ts
+bootstrap	bootstrap	src/packages/repl/src/hooks/useReplBridge.tsx
+bootstrap	bootstrap	src/packages/repl/src/hooks/useSSHSession.ts
+bootstrap	bootstrap	src/packages/repl/src/hooks/useSwarmInitialization.ts
+bootstrap	bootstrap	src/packages/repl/src/hooks/useTeleportResume.tsx
+bootstrap	bootstrap	src/packages/repl/src/hooksConfigManager.ts
+bootstrap	bootstrap	src/packages/repl/src/hooksSettings.ts
+bootstrap	bootstrap	src/packages/repl/src/interactiveHelpers/interactiveHelpers.tsx
+bootstrap	bootstrap	src/packages/repl/src/keybindings/loadUserBindings.ts
+bootstrap	bootstrap	src/packages/repl/src/onChangeAppState.ts
+bootstrap	bootstrap	src/packages/repl/src/processUserInput/processSlashCommand.tsx
+bootstrap	bootstrap	src/packages/repl/src/processUserInput/processTextPrompt.ts
+bootstrap	bootstrap	src/packages/repl/src/processUserInput/slashUserPromptTelemetry.ts
+bootstrap	bootstrap	src/packages/repl/src/projectOnboardingState.ts
+bootstrap	bootstrap	src/packages/repl/src/promptSuggestion.tsx
+bootstrap	bootstrap	src/packages/repl/src/promptSuggestionSpeculation.tsx
+bootstrap	bootstrap	src/packages/repl/src/queryHelpers.ts
+bootstrap	bootstrap	src/packages/repl/src/relaunch.ts
+bootstrap	bootstrap	src/packages/repl/src/screens/Doctor.tsx
+bootstrap	bootstrap	src/packages/repl/src/screens/REPLView.tsx
+bootstrap	bootstrap	src/packages/repl/src/screens/ResumeConversation.tsx
+bootstrap	bootstrap	src/packages/repl/src/screens/agentFleet/FleetView.tsx
+bootstrap	bootstrap	src/packages/repl/src/screens/repl/useReplRuntimeViews.ts
+bootstrap	bootstrap	src/packages/repl/src/teammateViewHelpers.ts
+bootstrap	bootstrap	src/packages/repl/src/textInputTypes.ts
+bootstrap	bootstrap	src/packages/repl/src/uiHelpers/logoV2Utils.ts
+bootstrap	bootstrap	src/packages/repl/src/uiHelpers/statusNoticeDefinitions.tsx
+bootstrap	bootstrap	src/packages/repl/src/utils/suggestions/directoryCompletion.ts
+bootstrap	bootstrap	src/packages/server/src/internal/pendingCrossPackageDeps.ts
+bootstrap	bootstrap	src/packages/server/src/upstreamproxy/upstreamproxy.ts
+bootstrap	bootstrap	src/packages/shell/src/Shell.ts
+bootstrap	bootstrap	src/packages/shell/src/execFileNoThrow.ts
+bootstrap	bootstrap	src/packages/shell/src/execFileNoThrowPortable.ts
+bootstrap	bootstrap	src/packages/shell/src/legacy/__tests__/outputLimits.test.ts
+bootstrap	bootstrap	src/packages/shell/src/sandbox/sandbox-adapter.ts
+bootstrap	bootstrap	src/packages/shell/src/terminal/terminalPanel.ts
+bootstrap	bootstrap	src/packages/shell/src/terminal/tmuxSocket.ts
+bootstrap	bootstrap	src/packages/storage/src/__tests__/claudemdExternalIncludes.test.ts
+bootstrap	bootstrap	src/packages/storage/src/__tests__/claudemdInstructionFiles.test.ts
+bootstrap	bootstrap	src/packages/storage/src/__tests__/detectRepository.test.ts
+bootstrap	bootstrap	src/packages/storage/src/__tests__/file.test.ts
+bootstrap	bootstrap	src/packages/storage/src/__tests__/getMemoryFiles.test.ts
+bootstrap	bootstrap	src/packages/storage/src/__tests__/git.test.ts
+bootstrap	bootstrap	src/packages/storage/src/__tests__/path.test.ts
+bootstrap	bootstrap	src/packages/storage/src/__tests__/toolResultStorage.test.ts
+bootstrap	bootstrap	src/packages/storage/src/agentMetadata.ts
+bootstrap	bootstrap	src/packages/storage/src/claudemd.ts
+bootstrap	bootstrap	src/packages/storage/src/detectRepository.ts
+bootstrap	bootstrap	src/packages/storage/src/file.ts
+bootstrap	bootstrap	src/packages/storage/src/filePersistence/filePersistence.ts
+bootstrap	bootstrap	src/packages/storage/src/getWorktreePathsPortable.ts
+bootstrap	bootstrap	src/packages/storage/src/git.ts
+bootstrap	bootstrap	src/packages/storage/src/internal/pendingCrossPackageDeps.ts
+bootstrap	bootstrap	src/packages/storage/src/path.ts
+bootstrap	bootstrap	src/packages/storage/src/plans.ts
+bootstrap	bootstrap	src/packages/storage/src/sessionActivity.ts
+bootstrap	bootstrap	src/packages/storage/src/sessionEnvironment.ts
+bootstrap	bootstrap	src/packages/storage/src/sessionPaths.ts
+bootstrap	bootstrap	src/packages/storage/src/sessionRestore.ts
+bootstrap	bootstrap	src/packages/storage/src/sessionStart.ts
+bootstrap	bootstrap	src/packages/storage/src/sessionStorage.ts
+bootstrap	bootstrap	src/packages/storage/src/task/diskOutput.ts
+bootstrap	bootstrap	src/packages/storage/src/toolResultStorage.ts
+bootstrap	bootstrap	src/packages/storage/src/windowsPaths.ts
+bootstrap	bootstrap	src/packages/swarm/commands/branch/branch.ts
+bootstrap	bootstrap	src/packages/swarm/src/childSession.ts
+bootstrap	bootstrap	src/packages/swarm/src/install/installSwarmHost.ts
+bootstrap	bootstrap	src/packages/swarm/src/worktree/index.ts
+bootstrap	bootstrap	src/packages/teleport/src/gitBundle.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/__tests__/thyroxEnvReaders.test.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/gitDiff.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/imageStore.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/markdownConfigLoader.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/services/toolExecution.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/skills/skillChangeDetector.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/teleport.tsx
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/AgentTool/AgentTool.tsx
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/AgentTool/__tests__/agentToolUtils.test.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/AgentTool/agentColorManager.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/AgentTool/agentMemorySnapshot.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/AgentTool/agentToolUtils.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/AgentTool/builtInAgents.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/AgentTool/forkSubagent.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/AgentTool/resumeAgent.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/AgentTool/runAgent.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/AgentTool/runAgentTelemetry.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/AskUserQuestionTool/AskUserQuestionTool.tsx
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/BashTool/BashTool.tsx
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/BashTool/readOnlyValidation.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/BashTool/utils.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/BriefTool/BriefTool.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/BriefTool/attachments.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/EnterPlanModeTool/EnterPlanModeTool.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/EnterWorktreeTool/EnterWorktreeTool.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/ExitPlanModeTool/ExitPlanModeV2Tool.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/ExitWorktreeTool/ExitWorktreeTool.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/FileEditTool/FileEditTool.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/FileReadTool/FileReadTool.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/FileWriteTool/FileWriteTool.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/FileWriteTool/UI.tsx
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/GlobTool/GlobTool.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/GrepTool/GrepTool.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/LSPTool/LSPTool.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/NotebookEditTool/NotebookEditTool.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/PowerShellTool/__tests__/gitSafety.test.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/PowerShellTool/gitSafety.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/PowerShellTool/pathValidation.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/PowerShellTool/powershellPermissions.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/PushNotificationTool/PushNotificationTool.tsx
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/ScheduleCronTool/CronCreateTool.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/SendMessageTool/SendMessageTool.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/SendMessageTool/responseHandlers.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/ShareOnboardingGuideTool.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/SkillTool/SkillTool.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/TeamCreateTool/TeamCreateTool.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/TodoWriteTool/TodoWriteTool.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/ToolSearchTool/prompt.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/WaitForMcpServersTool/WaitForMcpServersTool.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/WebFetchTool/preapproved.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/WebSearchTool/adapters/index.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/__tests__/taskGetAndList.test.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/__tests__/todoWrite.test.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/shared/__tests__/ensureTeamFile.test.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/shared/gitOperationTracking.ts
+bootstrap	bootstrap	src/packages/tool-registry/src/tools/shared/spawnMultiAgent.ts
+bootstrap	bootstrap	src/packages/tools/src/definitions/skillGenerator.ts
+bootstrap	bootstrap	src/packages/tools/src/definitions/techDetector.prompt.md
+bootstrap	bootstrap	src/packages/tools/src/definitions/techDetector.ts
+bootstrap	bootstrap	src/packages/updater/src/__tests__/assertMinVersionNodeEnv.test.ts
+bootstrap	bootstrap	src/packages/updater/src/autoUpdater.ts
+bootstrap	bootstrap	src/packages/updater/src/nativeInstaller/installer.ts
+bootstrap	bootstrap	src/packages/voice/src/voiceKeyterms.ts
+bootstrap	bootstrap	src/paths/reach.py
+bootstrap	bootstrap	src/paths/surface.py
+bootstrap	bootstrap	src/rules/paths.py
+bootstrap	bootstrap	src/session/clone_bootstrap.py
+bootstrap	bootstrap	src/session/control_plane_entries.tsv
+bootstrap	bootstrap	src/session/execution_policy.json
+bootstrap	bootstrap	src/session/execution_policy.py
+bootstrap	bootstrap	src/session/infrastructure_ensure.sh
+bootstrap	bootstrap	src/session/sync_local_settings.py
+bootstrap	bootstrap	src/skills/bin/import.ts
+bootstrap	bootstrap	src/verify/bootstrap.py
+bootstrap	bootstrap	src/verify/checkStartupModuleBudget.ts
+bootstrap	bootstrap	src/verify/check_consumer_anchor.py
+bootstrap	bootstrap	src/verify/check_path_arithmetic.py
+bootstrap	bootstrap	src/verify/check_podman_materialization.py
+bootstrap	bootstrap	src/verify/check_python_surface.py
+bootstrap	bootstrap	src/verify/correlation.py
+bootstrap	bootstrap	src/verify/env_sensitivity.tsv
+bootstrap	bootstrap	src/verify/install-hooks.sh
+bootstrap	bootstrap	src/verify/product_word_baseline.tsv
+bootstrap	bootstrap	tests/agents/test_agents_module_paths.py
+bootstrap	bootstrap	tests/agents/test_clasificar_agentes.py
+bootstrap	bootstrap	tests/agents/test_document_root_default.py
+bootstrap	bootstrap	tests/agents/test_model_catalog_paths.py
+bootstrap	bootstrap	tests/agents/test_payload_sin_transcript.py
+bootstrap	bootstrap	tests/agents/test_readonly_connection.py
+bootstrap	bootstrap	tests/agents/test_store_dir_default.py
+bootstrap	bootstrap	tests/agents/test_store_home.py
+bootstrap	bootstrap	tests/agents/test_table_census.py
+bootstrap	bootstrap	tests/agents/test_usage_census_deviation.py
+bootstrap	bootstrap	tests/cache/test_work_cache.py
+bootstrap	bootstrap	tests/corpus/test_archive_build_corpus.py
+bootstrap	bootstrap	tests/corpus/test_censar_scripts.py
+bootstrap	bootstrap	tests/docs/test_citations.py
+bootstrap	bootstrap	tests/fixtures/execution_policy_unrestricted.json
+bootstrap	bootstrap	tests/hooks/test_detect_agent_dispatch.py
+bootstrap	bootstrap	tests/hooks/test_detect_code_language.py
+bootstrap	bootstrap	tests/hooks/test_detect_dedicated_tool_usage.py
+bootstrap	bootstrap	tests/hooks/test_detect_ephemeral_citation.py
+bootstrap	bootstrap	tests/hooks/test_detect_foreground_long_command.py
+bootstrap	bootstrap	tests/hooks/test_detect_self_matching_pgrep.py
+bootstrap	bootstrap	tests/hooks/test_detect_topic_duplication.py
+bootstrap	bootstrap	tests/hooks/test_detect_unbounded_traversal.py
+bootstrap	bootstrap	tests/hooks/test_error_log.py
+bootstrap	bootstrap	tests/hooks/test_execution_policy_enforcement.py
+bootstrap	bootstrap	tests/install/test_install.sh
+bootstrap	bootstrap	tests/integration/agent-loop.test.ts
+bootstrap	bootstrap	tests/integration/cli-arguments.test.ts
+bootstrap	bootstrap	tests/integration/plugin-load.test.ts
+bootstrap	bootstrap	tests/integration/slash-commands.test.ts
+bootstrap	bootstrap	tests/lib/test-infrastructure-desired.sh
+bootstrap	bootstrap	tests/lib/test-infrastructure.sh
+bootstrap	bootstrap	tests/lib/test-reach-pythonpath.sh
+bootstrap	bootstrap	tests/meta/test_runner_reach.py
+bootstrap	bootstrap	tests/package/dependencies_baseline.txt
+bootstrap	bootstrap	tests/package/package_identity.test.ts
+bootstrap	bootstrap	tests/paths/test_child_env.py
+bootstrap	bootstrap	tests/paths/test_config_home_cli.py
+bootstrap	bootstrap	tests/paths/test_consumer_root_refuses_provider.py
+bootstrap	bootstrap	tests/paths/test_deferred_names_not_used_bare.py
+bootstrap	bootstrap	tests/paths/test_reach.py
+bootstrap	bootstrap	tests/paths/test_reach_roots_shim.py
+bootstrap	bootstrap	tests/paths/test_surface.py
+bootstrap	bootstrap	tests/rules/test_paths_parity.py
+bootstrap	bootstrap	tests/session/test-arranque-de-clon.sh
+bootstrap	bootstrap	tests/session/test-infrastructure-ensure.sh
+bootstrap	bootstrap	tests/session/test_adopt_background.py
+bootstrap	bootstrap	tests/session/test_background.py
+bootstrap	bootstrap	tests/session/test_bounded_scan.py
+bootstrap	bootstrap	tests/session/test_documentation_preflight.py
+bootstrap	bootstrap	tests/session/test_installed_hooks_resolve.py
+bootstrap	bootstrap	tests/session/test_probe_model_switch_cache.py
+bootstrap	bootstrap	tests/session/test_user_wiring.py
+bootstrap	bootstrap	tests/smoke/headless-smoke.test.ts
+bootstrap	bootstrap	tests/smoke/lib/runtime-probe.ts
+bootstrap	bootstrap	tests/smoke/lib/spawn-cli.ts
+bootstrap	bootstrap	tests/smoke/live-fire-smoke.test.ts
+bootstrap	bootstrap	tests/smoke/repl-smoke.test.ts
+bootstrap	bootstrap	tests/smoke/resume-smoke.test.ts
+bootstrap	bootstrap	tests/smoke/swarm-smoke.test.ts
+bootstrap	bootstrap	tests/task/test_board_ordinal_identity.py
+bootstrap	bootstrap	tests/task/test_board_sync.py
+bootstrap	bootstrap	tests/task/test_layer_axis.py
+bootstrap	bootstrap	tests/task/test_layer_signals.py
+bootstrap	bootstrap	tests/task/test_task_ids.py
+bootstrap	bootstrap	tests/task/test_task_source_citas.py
+bootstrap	bootstrap	tests/task/test_vecinos_de_tarea.py
+bootstrap	bootstrap	tests/transcript/test_closing.py
+bootstrap	bootstrap	tests/unit/utils/envValidation.test.ts
+bootstrap	bootstrap	tests/unit/utils/json.test.ts
+bootstrap	bootstrap	tests/unit/utils/path.test.ts
+bootstrap	bootstrap	tests/unit/utils/tokens.test.ts
+bootstrap	bootstrap	tests/verify/test-hook-script-token.sh
+bootstrap	bootstrap	tests/verify/test_bootstrap.py
+bootstrap	bootstrap	tests/verify/test_byte_class_gate.py
+bootstrap	bootstrap	tests/verify/test_check_absence_claim.py
+bootstrap	bootstrap	tests/verify/test_check_stale_divergence.py
+bootstrap	bootstrap	tests/verify/test_class_header.py
+bootstrap	bootstrap	tests/verify/test_commit_message_label.py
+bootstrap	bootstrap	tests/verify/test_config_precedence.py
+bootstrap	bootstrap	tests/verify/test_consumer_anchor.py
+bootstrap	bootstrap	tests/verify/test_consumer_copies.py
+bootstrap	bootstrap	tests/verify/test_correlation.py
+bootstrap	bootstrap	tests/verify/test_counterpart_body.py
+bootstrap	bootstrap	tests/verify/test_gitattributes.py
+bootstrap	bootstrap	tests/verify/test_hook_script_token.py
+bootstrap	bootstrap	tests/verify/test_path_arithmetic.py
+bootstrap	bootstrap	tests/verify/test_pathspec_commit.py
+bootstrap	bootstrap	tests/verify/test_rst_gate_root.py
+bootstrap	bootstrap	tests/verify/test_rule_divergence.py
+bootstrap	bootstrap	tests/verify/test_script_deprecated.py
+bootstrap	bootstrap	tests/verify/test_symbol_home.py
+bootstrap	bootstrap	tests/verify/test_unbounded_pipe.py
+bootstrap	bootstrap	tests/workbench/test_manifest_jsonl.py
+bootstrap	onboarding	.claude/skills/bpa-analyze/references/value-classification.md
+bootstrap	onboarding	.claude/skills/bpa-design/references/redesign-principles.md
+bootstrap	onboarding	.claude/skills/bpa-identify/SKILL.md
+bootstrap	onboarding	.claude/skills/bpa-identify/references/process-prioritization.md
+bootstrap	onboarding	.claude/skills/dmaic-analyze/SKILL.md
+bootstrap	onboarding	.claude/skills/dmaic-analyze/references/root-cause-tools.md
+bootstrap	onboarding	.claude/skills/lean-control/SKILL.md
+bootstrap	onboarding	.claude/skills/lean-control/references/lean-sustainability-guide.md
+bootstrap	onboarding	.claude/skills/pm-closing/references/project-closure-guide.md
+bootstrap	onboarding	.claude/skills/rup-construction/assets/construction-report-template.md
+bootstrap	onboarding	.claude/skills/rup-transition/SKILL.md
+bootstrap	onboarding	.claude/skills/sp-adjust/SKILL.md
+bootstrap	onboarding	.claude/skills/sp-formulate/SKILL.md
+bootstrap	onboarding	.claude/skills/sp-formulate/assets/okr-template.md
+bootstrap	onboarding	.claude/skills/sp-formulate/references/strategy-map-guide.md
+bootstrap	onboarding	README.md
+bootstrap	onboarding	install.sh
+bootstrap	onboarding	src/agents/definitions/rup-coordinator.md
+bootstrap	onboarding	src/packages/agent/background/fleet/rvServer.ts
+bootstrap	onboarding	src/packages/app-host/src/commands/initPrompts.ts
+bootstrap	onboarding	src/packages/app-host/src/runtime/commandRegistryRuntime.ts
+bootstrap	onboarding	src/packages/cli/src/__tests__/installOAuthTokens.behavior.test.ts
+bootstrap	onboarding	src/packages/cli/src/handlers/auth.ts
+bootstrap	onboarding	src/packages/command-runtime/src/commands/login/login.tsx
+bootstrap	onboarding	src/packages/command-runtime/src/skills/bundled/scheduleRemoteAgents.ts
+bootstrap	onboarding	src/packages/command-runtime/src/stubs/stubCommand.ts
+bootstrap	onboarding	src/packages/config/__tests__/globalConfig.test.ts
+bootstrap	onboarding	src/packages/config/global/config.ts
+bootstrap	onboarding	src/packages/config/global/configMarkers.ts
+bootstrap	onboarding	src/packages/config/managedEnv.ts
+bootstrap	onboarding	src/packages/ide/src/hooks/useIDEIntegration.tsx
+bootstrap	onboarding	src/packages/ide/src/ide.ts
+bootstrap	onboarding	src/packages/mcp-runtime/src/vscodeSdkMcp.ts
+bootstrap	onboarding	src/packages/paths/docs.ts
+bootstrap	onboarding	src/packages/provider/__tests__/accounts/imports/agyAndCliProxyImport.test.ts
+bootstrap	onboarding	src/packages/provider/__tests__/accounts/oauth/antigravityFlow.test.ts
+bootstrap	onboarding	src/packages/provider/src/__tests__/fetchProfileInfo.behavior.test.ts
+bootstrap	onboarding	src/packages/provider/src/__tests__/performLogout.behavior.test.ts
+bootstrap	onboarding	src/packages/provider/src/__tests__/populateOAuthAccountInfo.behavior.test.ts
+bootstrap	onboarding	src/packages/provider/src/accounts/antigravity/projectDiscovery.ts
+bootstrap	onboarding	src/packages/provider/src/accounts/imports/agyAuthImport.ts
+bootstrap	onboarding	src/packages/provider/src/accounts/oauth/antigravityProjectGate.ts
+bootstrap	onboarding	src/packages/provider/src/commands/logout/logout.tsx
+bootstrap	onboarding	src/packages/provider/src/connections.ts
+bootstrap	onboarding	src/packages/provider/src/internal/oauthTypes.ts
+bootstrap	onboarding	src/packages/provider/src/oauth/client.ts
+bootstrap	onboarding	src/packages/repl/package.json
+bootstrap	onboarding	src/packages/repl/src/__tests__/projectOnboardingState.test.ts
+bootstrap	onboarding	src/packages/repl/src/components/ClaudeInChromeOnboarding.tsx
+bootstrap	onboarding	src/packages/repl/src/components/IdeOnboardingDialog.tsx
+bootstrap	onboarding	src/packages/repl/src/components/LogoV2/LogoV2.tsx
+bootstrap	onboarding	src/packages/repl/src/components/LogoV2/feedConfigs.tsx
+bootstrap	onboarding	src/packages/repl/src/components/Onboarding.tsx
+bootstrap	onboarding	src/packages/repl/src/components/PromptInput/usePromptInputPlaceholder.ts
+bootstrap	onboarding	src/packages/repl/src/components/ThemePicker.tsx
+bootstrap	onboarding	src/packages/repl/src/components/grove/Grove.tsx
+bootstrap	onboarding	src/packages/repl/src/interactiveHelpers/interactiveHelpers.tsx
+bootstrap	onboarding	src/packages/repl/src/projectOnboardingState.ts
+bootstrap	onboarding	src/packages/repl/src/screens/REPLView.tsx
+bootstrap	onboarding	src/packages/repl/src/screens/repl/dialogs.ts
+bootstrap	onboarding	src/packages/repl/src/screens/repl/useBgRendezvousServer.ts
+bootstrap	onboarding	src/packages/repl/src/terminalSetup.ts
+bootstrap	onboarding	src/packages/repl/tsconfig.build.json
+bootstrap	onboarding	src/packages/teleport/src/remote-setup/api.ts
+bootstrap	onboarding	src/packages/teleport/src/remote-setup/remote-setup.tsx
+bootstrap	onboarding	src/packages/tool-registry/src/tasks/RemoteAgentTask.tsx
+bootstrap	onboarding	src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/ShareOnboardingGuideTool.ts
+bootstrap	onboarding	src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/__tests__/ShareOnboardingGuideTool.test.ts
+bootstrap	onboarding	src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/api.ts
+bootstrap	onboarding	src/packages/tool-registry/src/tools/ShareOnboardingGuideTool/constants.ts
+bootstrap	onboarding	src/packages/tool-registry/src/tools/registry/providers/BuiltInToolsProvider.ts
+bootstrap	onboarding	src/packages/tools/src/definitions/rupCoordinator.prompt.md
+bootstrap	onboarding	src/skills/definitions/bpaIdentify.prompt.md
+bootstrap	onboarding	src/skills/definitions/dmaicAnalyze.prompt.md
+bootstrap	onboarding	src/skills/definitions/leanControl.prompt.md
+bootstrap	onboarding	src/skills/definitions/rupTransition.prompt.md
+bootstrap	onboarding	src/skills/definitions/spAdjust.prompt.md
+bootstrap	onboarding	src/skills/definitions/spFormulate.prompt.md
+bootstrap	onboarding	src/verify/product_word_baseline.tsv
+bootstrap	onboarding	tests/install/test_install.sh
+bootstrap	onboarding	tests/verify/test_product_word.py
+bootstrap	first[-_ ]run	src/packages/agent/logsTypes.ts
+bootstrap	first[-_ ]run	src/packages/agent/workflow/hooks.ts
+bootstrap	first[-_ ]run	src/packages/computer-use-swift/src/backends/darwin.ts
+bootstrap	first[-_ ]run	src/packages/config/plugin/pluginLoader.ts
+bootstrap	first[-_ ]run	src/packages/mitm/__tests__/cert/rootCa.test.ts
+bootstrap	first[-_ ]run	src/packages/repl/src/components/StatusLine.tsx
+bootstrap	first[-_ ]run	src/packages/repl/src/interactiveHelpers/interactiveHelpers.tsx
+bootstrap	install-hooks	.env.example
+bootstrap	install-hooks	bin/install-hooks
+bootstrap	install-hooks	install.sh
+bootstrap	install-hooks	src/agents/merge_sqlite_union.py
+bootstrap	install-hooks	src/lib/toolchain.sh
+bootstrap	install-hooks	src/packages/coordination/claims.ts
+bootstrap	install-hooks	src/session/sync_local_settings.py
+bootstrap	install-hooks	src/verify/check_branch_commit_messages.sh
+bootstrap	install-hooks	src/verify/check_githooks_activos.py
+bootstrap	install-hooks	src/verify/install-hooks.sh
+bootstrap	install-hooks	tests/agents/test-merge-sqlite-union.sh
+bootstrap	install-hooks	tests/install/test_install.sh
+bootstrap	install-hooks	tests/lib/test-reach-pythonpath.sh
+bootstrap	install-hooks	tests/verify/test-toolchain-ready.sh
+bootstrap	install-hooks	tests/verify/test_pre_commit_hook.py
+bootstrap	hooksPath	.claude/rules/measured-pool-failures.md
+bootstrap	hooksPath	.githooks/pre-commit
+bootstrap	hooksPath	README.md
+bootstrap	hooksPath	install.sh
+bootstrap	hooksPath	scripts/install-hooks.sh
+bootstrap	hooksPath	src/lib/toolchain.sh
+bootstrap	hooksPath	src/packages/config/plugin/pluginLoader.ts
+bootstrap	hooksPath	src/packages/swarm/src/worktree/index.ts
+bootstrap	hooksPath	src/rules/definitions/measuredPoolFailures.body.md
+bootstrap	hooksPath	src/session/documentation_publisher.py
+bootstrap	hooksPath	src/verify/check_githooks_activos.py
+bootstrap	hooksPath	src/verify/install-hooks.sh
+bootstrap	hooksPath	src/verify/pre-commit.sh
+bootstrap	hooksPath	src/verify/registry.py
+bootstrap	hooksPath	src/verify/thyrox-audit.sh
+bootstrap	hooksPath	tests/install/test_install.sh
+bootstrap	hooksPath	tests/session/test_documentation_publisher.py
+bootstrap	hooksPath	tests/verify/test-githooks-activos.sh
+bootstrap	hooksPath	tests/verify/test-toolchain-ready.sh
+bootstrap	hooksPath	tests/verify/test_pre_commit_hook.py
+bootstrap	githooks_activos	.claude/rules/measured-pool-failures.md
+bootstrap	githooks_activos	README.md
+bootstrap	githooks_activos	bin/check_githooks_activos
+bootstrap	githooks_activos	src/rules/definitions/measuredPoolFailures.body.md
+bootstrap	githooks_activos	src/task/asignadas.py
+bootstrap	githooks_activos	src/verify/check_githooks_activos.py
+bootstrap	githooks_activos	src/verify/registry.py
+bootstrap	githooks_activos	tests/verify/test-githooks-activos.sh
+bootstrap	ensure_homes	bin/ensure_homes
+bootstrap	ensure_homes	install.sh
+bootstrap	ensure_homes	src/packages/artifact-registry/bin/publishArtifact.ts
+bootstrap	ensure_homes	src/packages/local-models/bin/ensure.ts
+bootstrap	ensure_homes	src/paths/ensure_homes.py
+bootstrap	ensure_homes	tests/install/test_install.sh
+bootstrap	ensure_homes	tests/paths/test_ensure_homes.py
+bootstrap	ensure_homes	tests/session/test-headless-pool.sh
+bootstrap	write-env	.env.example
+bootstrap	write-env	README.md
+bootstrap	write-env	bin/write-env
+bootstrap	write-env	src/packages/paths/__tests__/reach.test.ts
+bootstrap	write-env	src/paths/reach.py
+bootstrap	write-env	src/session/job_runs.py
+bootstrap	write-env	src/session/write-env.sh
+bootstrap	write-env	src/workbench/paths.py
+bootstrap	write-env	tests/paths/test_declaration_port.py
+bootstrap	write-env	tests/session/test-write-env-repairs-moved-clone.sh
+bootstrap	write-env	tests/session/test_jobs_home.py
+bootstrap	write-env	tests/session/test_write_env.py
+preflight	preflight	.claude/CLAUDE.md
+preflight	preflight	.claude/rules/operaciones-de-archivo-con-bash.md
+preflight	preflight	.claude/rules/search-the-git-index.md
+preflight	preflight	.claude/rules/trabajo-en-segundo-plano.md
+preflight	preflight	.claude/settings-backups/settings.local.json.20260929T123506
+preflight	preflight	.claude/settings-backups/settings.local.json.20260930T041706
+preflight	preflight	.claude/settings-backups/settings.local.json.20261002T202230
+preflight	preflight	.env.example
+preflight	preflight	README.md
+preflight	preflight	bin/documentation_preflight
+preflight	preflight	bin/tool_use_preflight
+preflight	preflight	install.sh
+preflight	preflight	src/hooks/detect_awk_substr_target.py
+preflight	preflight	src/hooks/detect_bare_awk.py
+preflight	preflight	src/hooks/detect_client_background.py
+preflight	preflight	src/hooks/detect_gawk_opportunity.py
+preflight	preflight	src/hooks/detect_irreversible_operation.py
+preflight	preflight	src/hooks/detect_library_path_invocation.py
+preflight	preflight	src/hooks/detect_literal_replacement.py
+preflight	preflight	src/hooks/detect_narrative_continuity.py
+preflight	preflight	src/hooks/detect_parallel_opportunity.py
+preflight	preflight	src/hooks/detect_temp_home_write.py
+preflight	preflight	src/hooks/detect_topic_duplication.py
+preflight	preflight	src/hooks/maintenance_chain.py
+preflight	preflight	src/hooks/shell_text.py
+preflight	preflight	src/hooks/tool_use_preflight.py
+preflight	preflight	src/lib/toolchain.sh
+preflight	preflight	src/packages/agent/bin/recommend.ts
+preflight	preflight	src/packages/command-runtime/src/commands/bridge/bridge.tsx
+preflight	preflight	src/packages/computer-use-mcp/src/legacy/hostAdapter.ts
+preflight	preflight	src/packages/config/__tests__/policyFieldRescue.test.ts
+preflight	preflight	src/packages/config/plugin/marketplaceManager.ts
+preflight	preflight	src/packages/config/settings/inventory.ts
+preflight	preflight	src/packages/config/settings/policyMerge.ts
+preflight	preflight	src/packages/config/settings/types.ts
+preflight	preflight	src/packages/local-models/externalArtifact.ts
+preflight	preflight	src/packages/local-models/quantizationRun.ts
+preflight	preflight	src/packages/local-observability/src/uds/udsClient.ts
+preflight	preflight	src/packages/provider/__tests__/recommendExecution.test.ts
+preflight	preflight	src/packages/provider/src/cost/executionPolicy.ts
+preflight	preflight	src/packages/provider/src/errorUtils.ts
+preflight	preflight	src/packages/shell/src/legacy/prefix.ts
+preflight	preflight	src/packages/tool-registry/src/teleport.tsx
+preflight	preflight	src/packages/tool-registry/src/tools/PowerShellTool/PowerShellTool.tsx
+preflight	preflight	src/packages/tool-registry/src/tools/WebFetchTool/utils.ts
+preflight	preflight	src/session/documentation_preflight.py
+preflight	preflight	src/session/headless-pool.sh
+preflight	preflight	src/session/infrastructure_ensure.sh
+preflight	preflight	src/session/session_restart.py
+preflight	preflight	src/session/user_wiring.py
+preflight	preflight	src/typescript/emit_declarations.py
+preflight	preflight	src/verify/check-toolchain-ready.sh
+preflight	preflight	src/verify/commit_identity.py
+preflight	preflight	src/verify/podman_access_pending.txt
+preflight	preflight	tests/hooks/test_detect_ephemeral_citation.py
+preflight	preflight	tests/hooks/test_detect_foreground_long_command.py
+preflight	preflight	tests/hooks/test_detect_irreversible_operation.py
+preflight	preflight	tests/hooks/test_detect_library_path_invocation.py
+preflight	preflight	tests/hooks/test_detect_topic_duplication.py
+preflight	preflight	tests/hooks/test_detect_unbounded_traversal.py
+preflight	preflight	tests/hooks/test_execution_policy_enforcement.py
+preflight	preflight	tests/hooks/test_shell_text.py
+preflight	preflight	tests/hooks/test_tool_use_preflight.py
+preflight	preflight	tests/install/test_install.sh
+preflight	preflight	tests/lib/test-toolchain-hunspell.sh
+preflight	preflight	tests/lib/test-toolchain-manifests.sh
+preflight	preflight	tests/lib/test-toolchain-parallel.sh
+preflight	preflight	tests/lib/test-toolchain-texlive.sh
+preflight	preflight	tests/session/test_documentation_preflight.py
+preflight	preflight	tests/session/test_generate_bin.py
+preflight	preflight	tests/session/test_installed_hooks_resolve.py
+preflight	preflight	tests/session/test_session_restart.py
+preflight	preflight	tests/session/test_user_wiring.py
+preflight	preflight	tests/verify/test-assert-no-writes.sh
+preflight	preflight	tests/verify/test-ids-entre-ramas.sh
+preflight	preflight	tests/verify/test-toolchain-ready.sh
+preflight	preflight	tests/verify/test_commit_identity.py
+preflight	toolchain_require	.claude/rules/operaciones-de-archivo-con-bash.md
+preflight	toolchain_require	.claude/rules/trabajo-en-segundo-plano.md
+preflight	toolchain_require	.env.example
+preflight	toolchain_require	bin/agent-cross-model-read-gate
+preflight	toolchain_require	bin/agent-emit
+preflight	toolchain_require	bin/agent-pre-model-switch
+preflight	toolchain_require	bin/agent-recommend
+preflight	toolchain_require	bin/artifact-registry-publish-artifact
+preflight	toolchain_require	bin/binary
+preflight	toolchain_require	bin/cli
+preflight	toolchain_require	bin/command-runtime
+preflight	toolchain_require	bin/commands-emit
+preflight	toolchain_require	bin/config-settings
+preflight	toolchain_require	bin/finding
+preflight	toolchain_require	bin/headless-sdk-generate-core-types
+preflight	toolchain_require	bin/infrastructure-bootstrap
+preflight	toolchain_require	bin/local-models-catalog
+preflight	toolchain_require	bin/local-models-ensure
+preflight	toolchain_require	bin/local-models-import
+preflight	toolchain_require	bin/local-models-qualify
+preflight	toolchain_require	bin/local-models-quantize
+preflight	toolchain_require	bin/model-scheduling-socket-path
+preflight	toolchain_require	bin/packaging-reachability
+preflight	toolchain_require	bin/podman-execution-execute
+preflight	toolchain_require	bin/provider-anthropic-mock-server
+preflight	toolchain_require	bin/provider-credential-proxy
+preflight	toolchain_require	bin/provider-generate-storage-key
+preflight	toolchain_require	bin/provider-local-proxy
+preflight	toolchain_require	bin/provider-store-credential-proxy
+preflight	toolchain_require	bin/rules-emit
+preflight	toolchain_require	bin/semantic-search-ingest
+preflight	toolchain_require	bin/shell
+preflight	toolchain_require	bin/skills-emit
+preflight	toolchain_require	bin/skills-import
+preflight	toolchain_require	bin/storage
+preflight	toolchain_require	bin/tool-registry-apply-edits
+preflight	toolchain_require	bin/typescript-build-javascript
+preflight	toolchain_require	pyproject.toml
+preflight	toolchain_require	src/corpus/archive_extract.py
+preflight	toolchain_require	src/corpus/cfb.py
+preflight	toolchain_require	src/corpus/pdf_to_text.py
+preflight	toolchain_require	src/corpus/xlsx_to_text.py
+preflight	toolchain_require	src/hooks/detect_git_grep_opportunity.py
+preflight	toolchain_require	src/lib/infrastructure.sh
+preflight	toolchain_require	src/lib/podman_capabilities.sh
+preflight	toolchain_require	src/lib/toolchain.sh
+preflight	toolchain_require	src/packages/daemon/src/podman/specializedWorkerProfile.ts
+preflight	toolchain_require	src/packages/podman-execution/podmanExecutor.ts
+preflight	toolchain_require	src/packages/shared-state/__tests__/redisServerFromToolchain.ts
+preflight	toolchain_require	src/session/bg.sh
+preflight	toolchain_require	src/session/generate_bin.py
+preflight	toolchain_require	src/session/headless-pool.sh
+preflight	toolchain_require	src/session/infrastructure_ensure.sh
+preflight	toolchain_require	src/session/model_coordinator.sh
+preflight	toolchain_require	src/session/parallel_map.sh
+preflight	toolchain_require	src/session/pool-calibrate.sh
+preflight	toolchain_require	src/session/run-task-pool.sh
+preflight	toolchain_require	src/verify/check-hallazgo-sucesor.sh
+preflight	toolchain_require	src/verify/check-toolchain-ready.sh
+preflight	toolchain_require	src/verify/check_identifier_language.py
+preflight	toolchain_require	src/verify/commit_message.py
+preflight	toolchain_require	src/verify/run_suites_isolated.sh
+preflight	toolchain_require	src/verify/run_ts_isolated.sh
+preflight	toolchain_require	tests/corpus/test_pdf_to_text.py
+preflight	toolchain_require	tests/daemon/test-podman-worker-manager-real.sh
+preflight	toolchain_require	tests/hooks/test_detect_git_grep_opportunity.py
+preflight	toolchain_require	tests/lib/test-podman-capabilities.sh
+preflight	toolchain_require	tests/lib/test-toolchain-degraded.sh
+preflight	toolchain_require	tests/lib/test-toolchain-gawk.sh
+preflight	toolchain_require	tests/lib/test-toolchain-gnu-time.sh
+preflight	toolchain_require	tests/lib/test-toolchain-hunspell.sh
+preflight	toolchain_require	tests/lib/test-toolchain-iproute2.sh
+preflight	toolchain_require	tests/lib/test-toolchain-manifests.sh
+preflight	toolchain_require	tests/lib/test-toolchain-parallel.sh
+preflight	toolchain_require	tests/lib/test-toolchain-pdf-text.sh
+preflight	toolchain_require	tests/lib/test-toolchain-pgvector.sh
+preflight	toolchain_require	tests/lib/test-toolchain-podman.sh
+preflight	toolchain_require	tests/lib/test-toolchain-poppler.sh
+preflight	toolchain_require	tests/lib/test-toolchain-postgres-test-db.sh
+preflight	toolchain_require	tests/lib/test-toolchain-redis.sh
+preflight	toolchain_require	tests/lib/test-toolchain-rsync.sh
+preflight	toolchain_require	tests/lib/test-toolchain-texlive.sh
+preflight	toolchain_require	tests/session/hardware/test-gpu-pools-real.sh
+preflight	toolchain_require	tests/session/test-gnu-time-launchers.sh
+preflight	toolchain_require	tests/session/test-run-task-pool-memfree.sh
+preflight	PROBES=	src/verify/check-toolchain-ready.sh
+preflight	check-toolchain-ready	.env.example
+preflight	check-toolchain-ready	README.md
+preflight	check-toolchain-ready	bin/check-toolchain-ready
+preflight	check-toolchain-ready	install.sh
+preflight	check-toolchain-ready	src/corpus/pdf_to_text.py
+preflight	check-toolchain-ready	src/corpus/xlsx_to_text.py
+preflight	check-toolchain-ready	src/hooks/detect_bare_awk.py
+preflight	check-toolchain-ready	src/lib/toolchain.sh
+preflight	check-toolchain-ready	src/verify/check-toolchain-ready.sh
+preflight	check-toolchain-ready	src/verify/registry.py
+preflight	check-toolchain-ready	tests/install/test_install.sh
+preflight	check-toolchain-ready	tests/lib/test-toolchain-degraded.sh
+preflight	check-toolchain-ready	tests/lib/test-toolchain-texlive.sh
+preflight	check-toolchain-ready	tests/verify/test-toolchain-ready.sh
+preflight	SIN MEDIR	.claude/rules/operaciones-de-archivo-con-bash.md
+preflight	SIN MEDIR	.claude/skills/bpa-monitor/SKILL.md
+preflight	SIN MEDIR	.claude/skills/thyrox/references/mechanical-bulk-edits.md
+preflight	SIN MEDIR	.claude/skills/thyrox/references/methodology-bias-watch.md
+preflight	SIN MEDIR	.githooks/pre-commit
+preflight	SIN MEDIR	README.md
+preflight	SIN MEDIR	install.sh
+preflight	SIN MEDIR	src/agents/agent_store.py
+preflight	SIN MEDIR	src/agents/reconcile_store.py
+preflight	SIN MEDIR	src/hooks/stop_payload.py
+preflight	SIN MEDIR	src/lib/toolchain.sh
+preflight	SIN MEDIR	src/measurement/change_point.py
+preflight	SIN MEDIR	src/packages/agent/__tests__/catalogCoverage.test.ts
+preflight	SIN MEDIR	src/packages/agent/__tests__/logEventMeasured.test.ts
+preflight	SIN MEDIR	src/packages/agent/__tests__/portFidelity.test.ts
+preflight	SIN MEDIR	src/packages/agent/bin/recommend.ts
+preflight	SIN MEDIR	src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts
+preflight	SIN MEDIR	src/packages/artifact-registry/diskAdmission.ts
+preflight	SIN MEDIR	src/packages/binary/__tests__/bunfs.test.ts
+preflight	SIN MEDIR	src/packages/binary/src/organize.ts
+preflight	SIN MEDIR	src/packages/cli/__tests__/ptyRing.test.ts
+preflight	SIN MEDIR	src/packages/config/plugin/pluginOperations.ts
+preflight	SIN MEDIR	src/packages/daemon/src/__tests__/workerContainerLifecycle.real.test.ts
+preflight	SIN MEDIR	src/packages/daemon/src/workerVm.ts
+preflight	SIN MEDIR	src/packages/local-models/__tests__/commands.test.ts
+preflight	SIN MEDIR	src/packages/local-models/__tests__/ollamaModelInstaller.test.ts
+preflight	SIN MEDIR	src/packages/local-models/__tests__/podmanArtifactFetcher.test.ts
+preflight	SIN MEDIR	src/packages/local-models/__tests__/residencyLifecycle.real.test.ts
+preflight	SIN MEDIR	src/packages/local-observability/__tests__/errorStore.postgres.test.ts
+preflight	SIN MEDIR	src/packages/plan/src/mode.ts
+preflight	SIN MEDIR	src/packages/podman-execution/__tests__/managedExecution.real.test.ts
+preflight	SIN MEDIR	src/packages/podman-execution/__tests__/podmanExecution.real.test.ts
+preflight	SIN MEDIR	src/packages/podman-execution/__tests__/resourceMaterialization.real.test.ts
+preflight	SIN MEDIR	src/packages/provider/__tests__/adapters.test.ts
+preflight	SIN MEDIR	src/packages/provider/__tests__/openaiClientSourcePinning.test.ts
+preflight	SIN MEDIR	src/packages/provider/src/__tests__/ipv6NoProxy.behavior.test.ts
+preflight	SIN MEDIR	src/packages/skills/__tests__/skills.test.ts
+preflight	SIN MEDIR	src/packages/swarm/__tests__/mailbox.test.ts
+preflight	SIN MEDIR	src/packages/task/__tests__/schema.test.ts
+preflight	SIN MEDIR	src/packages/tools/__tests__/skillTool.test.ts
+preflight	SIN MEDIR	src/session/gpu_trace.py
+preflight	SIN MEDIR	src/session/kernel_modules.py
+preflight	SIN MEDIR	src/session/report_client_caps.py
+preflight	SIN MEDIR	src/session/user_wiring.py
+preflight	SIN MEDIR	src/skills/definitions/bpaMonitor.prompt.md
+preflight	SIN MEDIR	src/typescript/emit_declarations.py
+preflight	SIN MEDIR	src/verify/annulment_control.py
+preflight	SIN MEDIR	src/verify/batch_verification.py
+preflight	SIN MEDIR	src/verify/check-agent-artifacts.sh
+preflight	SIN MEDIR	src/verify/check-cli-typecheck.sh
+preflight	SIN MEDIR	src/verify/check-ids-duplicados.sh
+preflight	SIN MEDIR	src/verify/check_bench_untracked.py
+preflight	SIN MEDIR	src/verify/check_cifra_de_artefacto_vivo.py
+preflight	SIN MEDIR	src/verify/check_consumer_copies.py
+preflight	SIN MEDIR	src/verify/check_gitattributes.py
+preflight	SIN MEDIR	src/verify/check_hook_script_token.py
+preflight	SIN MEDIR	src/verify/check_hooks_timeout.py
+preflight	SIN MEDIR	src/verify/check_package_typecheck.py
+preflight	SIN MEDIR	src/verify/check_suite_discrimina.py
+preflight	SIN MEDIR	src/verify/check_veredicto_de_gate.py
+preflight	SIN MEDIR	src/verify/commit_identity.py
+preflight	SIN MEDIR	src/verify/runner.py
+preflight	SIN MEDIR	src/verify/thyrox-audit.sh
+preflight	SIN MEDIR	src/verify/tsc_cycle.py
+preflight	SIN MEDIR	src/verify/tsc_reflect.py
+preflight	SIN MEDIR	src/verify/tsc_schedule.py
+preflight	SIN MEDIR	src/verify/tsc_zero_loop.py
+preflight	SIN MEDIR	src/verify/tsc_zero_step.py
+preflight	SIN MEDIR	tests/agents/test-agent-store-fecha-apertura.sh
+preflight	SIN MEDIR	tests/agents/test-agent-store-usage-source.sh
+preflight	SIN MEDIR	tests/agents/test-carrete-store.sh
+preflight	SIN MEDIR	tests/agents/test-costo-agente.sh
+preflight	SIN MEDIR	tests/agents/test-model-catalog.sh
+preflight	SIN MEDIR	tests/corpus/test-markdown-to-rst.sh
+preflight	SIN MEDIR	tests/corpus/test_bie_series.py
+preflight	SIN MEDIR	tests/corpus/test_censo_contraparte.py
+preflight	SIN MEDIR	tests/docs/test_unwrap_rst.py
+preflight	SIN MEDIR	tests/hooks/test_stop_gate.py
+preflight	SIN MEDIR	tests/hooks/test_tool_use_preflight.py
+preflight	SIN MEDIR	tests/install/test_install.sh
+preflight	SIN MEDIR	tests/lib/test-script-deprecated.sh
+preflight	SIN MEDIR	tests/lib/test-toolchain-manifests.sh
+preflight	SIN MEDIR	tests/lib/test-toolchain-poppler.sh
+preflight	SIN MEDIR	tests/lib/test-toolchain-texlive.sh
+preflight	SIN MEDIR	tests/measurement/test_normalizer_magnitude.py
+preflight	SIN MEDIR	tests/measurement/test_rejection_sampling.py
+preflight	SIN MEDIR	tests/meta/test_runner_exit_two.py
+preflight	SIN MEDIR	tests/package/sibling_exports.test.ts
+preflight	SIN MEDIR	tests/paths/test_consumer_root.py
+preflight	SIN MEDIR	tests/run.sh
+preflight	SIN MEDIR	tests/session/test-evidencia-varada.sh
+preflight	SIN MEDIR	tests/session/test-gnu-time-launchers.sh
+preflight	SIN MEDIR	tests/session/test-headless-pool.sh
+preflight	SIN MEDIR	tests/session/test_pool_history.py
+preflight	SIN MEDIR	tests/session/test_session_restart.py
+preflight	SIN MEDIR	tests/skills/markdown.test.ts
+preflight	SIN MEDIR	tests/verify/events_only_external.py
+preflight	SIN MEDIR	tests/verify/test-agent-artifacts.sh
+preflight	SIN MEDIR	tests/verify/test-audit-timing.sh
+preflight	SIN MEDIR	tests/verify/test-cifra-de-artefacto-vivo.sh
+preflight	SIN MEDIR	tests/verify/test-commit-msg-citation.sh
+preflight	SIN MEDIR	tests/verify/test-coordinator-sin-worktree.sh
+preflight	SIN MEDIR	tests/verify/test-cross-model-read.sh
+preflight	SIN MEDIR	tests/verify/test-eventos-hook.sh
+preflight	SIN MEDIR	tests/verify/test-generator-determinism.sh
+preflight	SIN MEDIR	tests/verify/test-hook-script-token.sh
+preflight	SIN MEDIR	tests/verify/test-hooks-timeout.sh
+preflight	SIN MEDIR	tests/verify/test-premise-drift.sh
+preflight	SIN MEDIR	tests/verify/test-run-suites-isolated.sh
+preflight	SIN MEDIR	tests/verify/test-veredicto-de-gate.sh
+preflight	SIN MEDIR	tests/verify/test-verificar-premisa.sh
+preflight	SIN MEDIR	tests/verify/test-vocabulario-prosa.sh
+preflight	SIN MEDIR	tests/verify/test_annulment_control.py
+preflight	SIN MEDIR	tests/verify/test_audit_delegates.sh
+preflight	SIN MEDIR	tests/verify/test_commit_identity.py
+preflight	SIN MEDIR	tests/verify/test_consumer_copies.py
+preflight	SIN MEDIR	tests/verify/test_consumer_root_gates.py
+preflight	SIN MEDIR	tests/verify/test_hook_script_token.py
+preflight	SIN MEDIR	tests/verify/test_package_root_resolution.sh
+preflight	SIN MEDIR	tests/verify/test_package_typecheck.py
+preflight	SIN MEDIR	tests/verify/test_pre_commit_hook.py
+preflight	SIN MEDIR	tests/verify/test_pre_push_finding_gate.sh
+preflight	SIN MEDIR	tests/verify/test_provider_refresh.py
+preflight	SIN MEDIR	tests/verify/test_runner.py

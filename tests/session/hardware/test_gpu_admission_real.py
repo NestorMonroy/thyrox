@@ -30,7 +30,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[3] / "src"))
 from paths import reach  # noqa: E402
 
 ROOT = reach.thyrox_root()
-from session import gpu_monitor as gm  # noqa: E402
+from session import gpu_backend as gb  # noqa: E402
 from session import gpu_trace as gt  # noqa: E402
 
 ALLOCATOR = Path(__file__).resolve().parent / "cuda_stepped_alloc.py"
@@ -55,13 +55,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--window", type=float, default=1.0)
     args = parser.parse_args(argv)
 
-    if not gm.available(args.nvidia_smi):
-        return refuse(f"nvidia-smi no responde ({args.nvidia_smi})")
+    backend = gb.NvidiaSmiBackend(args.nvidia_smi)
+    cause = gb.telemetry_failure(backend)
+    if cause:
+        return refuse(cause)
     if not cuda_ready():
         return refuse("falta PyTorch con CUDA en este intérprete")
-    free = gm.free_vram_mib(args.nvidia_smi)
-    if free is None:
-        return refuse(f"no se pudo medir la VRAM libre ({args.nvidia_smi})")
+    try:
+        free = gb.largest_free_mib(backend)
+    except gb.GpuReadFailed as error:
+        return refuse(f"no se pudo medir la VRAM libre: {error}")
     mib = args.mib or min(2048, free // 4)
     out = args.out or ROOT / ".claude/build-logs" / time.strftime("gpu-trace-%Y%m%dT%H%M%SZ", time.gmtime())
     out.mkdir(parents=True, exist_ok=True)

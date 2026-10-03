@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash bin/local-models-qualify thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf mecanica", "started_at": "2026-10-01T01:00:31+00:00"}

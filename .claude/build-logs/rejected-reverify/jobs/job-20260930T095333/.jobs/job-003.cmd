@@ -1,0 +1,1 @@
+PYTHONDONTWRITEBYTECODE=1 timeout 900 python3 tests/session/test_user_wiring.py > /home/user/thyrox/.claude/build-logs/rejected-reverify/0261-user-wiring.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/rejected-reverify/0261-user-wiring.log

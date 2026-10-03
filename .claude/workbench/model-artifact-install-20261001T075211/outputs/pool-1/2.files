@@ -1,0 +1,10 @@
+src/packages/artifact-registry/__tests__/fetchLayerEntry.test.ts
+src/packages/artifact-registry/__tests__/pullLayer.test.ts
+src/packages/artifact-registry/artifactRegistry.ts
+src/packages/artifact-registry/bin/fetchLayer.ts
+src/packages/artifact-registry/jobEgress.ts
+src/packages/artifact-registry/ociArtifactRegistry.ts
+src/packages/artifact-registry/podmanJobVerifier.ts
+src/packages/local-models/__tests__/podmanArtifactFetcher.test.ts
+src/packages/local-models/package.json
+src/packages/local-models/podmanArtifactFetcher.ts

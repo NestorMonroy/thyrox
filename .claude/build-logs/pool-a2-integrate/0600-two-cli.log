@@ -1,0 +1,16 @@
+== 1. A vive con su buzón publicado en el registro ==
+OK   A publica messagingSocketPath y el socket existe
+OK   A tiene nombre en el registro
+== 2. B lista desde su propia sesión, con A viva ==
+OK   B termina su turno con éxito
+OK   el listado se escribió
+OK   los pares de listAllPeers traen uds:<socket de A>
+OK   el listing de ListAgents nombra a A con su [ref]
+OK   el listing abre la sección de pares
+OK   A sigue viva mientras B lista
+== 3. control de anulación: con HARBOR_KITE=0 el mismo listado es el aviso, sin pares ==
+OK   sin mensajería no hay pares
+OK   sin mensajería el listing es el aviso de apagado
+
+10 aserciones, 0 fallo(s) (alcance medido: dos bin/cli reales, uno lista al otro)
+rc=0

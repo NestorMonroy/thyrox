@@ -14,12 +14,20 @@
 # este contenedor, 214.9 GiB de 252 GiB. Quien lea `Used 37G` sobre un disco
 # de 252G y concluya «queda sitio de sobra» esta leyendo el numero equivocado.
 #
-# Y la reserva **no siempre es inalcanzable**: historicamente `root` escribe
-# dentro de ella. Tres cosas deciden si se alcanza, y las tres se miden aqui:
+# Y la reserva **no siempre es inalcanzable**. La regla completa, la del ext4:
 #
-#   1. que exista  — `f_bfree` contra `f_bavail` de `statvfs`;
-#   2. `CAP_SYS_RESOURCE` en el `CapEff` de quien llama — el bit 24;
-#   3. que el montaje NO declare `resv_strict`, que la cierra incluso a root.
+#   1. tiene que existir — `f_bfree` contra `f_bavail` de `statvfs`;
+#   2. si el montaje declara `resv_strict`, nadie la alcanza, ni root;
+#   3. sin `resv_strict`, la alcanza quien cumpla UNA de tres:
+#        a. su uid efectivo es el `resuid` del montaje,
+#        b. alguno de sus grupos es el `resgid` del montaje,
+#        c. tiene `CAP_SYS_RESOURCE` en su `CapEff` — el bit 24.
+#
+# `resuid`/`resgid` se leen de las options del montaje; si no figuran no se
+# cuentan como via, aunque el ext4 tenga uno por defecto en el superbloque.
+# Es la lectura conservadora: el techo publicado puede quedar corto, nunca
+# largo. El uid y los grupos salen de `id`, o de `DISK_HEADROOM_UID` y
+# `DISK_HEADROOM_GROUPS` (separados por espacios) para el control.
 #
 # Las salidas son cuatro, y por que
 # ----------------------------------
@@ -28,6 +36,10 @@
 # ``1`` RESERVA_ALCANZABLE     el techo REAL es mayor que `Avail`.
 # ``3`` RESERVA_INALCANZABLE   `Avail` es techo duro; esos bytes no vuelven.
 # ``2`` rehusa                 no se pudo medir; **no se emite cifra**.
+#
+# Con `--ceiling-bytes` la salida es UN entero: el techo real segun el
+# veredicto — `f_bfree` si la reserva es alcanzable, `f_bavail` si no la hay o
+# no se alcanza — con el mismo codigo de salida. Con exit 2 no imprime nada.
 #
 # Un guion de dos salidas —«hay reserva / no hay»— no separa la 1 de la 3, que
 # es justo la decision que hacia falta tomar. Un verdict que no discrimina es
@@ -52,12 +64,13 @@ THYROX_TEST_BIT_RESOURCE=1
 CAP_SYS_RESOURCE_BIT=24
 
 target="."
-format="texto"
+format="text"
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --path)   target="$2"; shift 2 ;;
-        --brief)  format="breve"; shift ;;
-        -h|--help) sed -n '2,45p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        --brief)  format="brief"; shift ;;
+        --ceiling-bytes) format="ceiling"; shift ;;
+        -h|--help) awk 'NR > 1 && !/^#/ {exit} NR > 1' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) printf 'ERROR — opcion desconocida: %s\n' "$1" >&2; exit "$REFUSAL" ;;
     esac
 done
@@ -88,6 +101,11 @@ mounts_file="${DISK_HEADROOM_MOUNTS:-/proc/self/mounts}"
 status_file="${DISK_HEADROOM_STATUS:-/proc/self/status}"
 [[ -r "$status_file" ]] || refuse "no se puede leer «$status_file»"
 
+effective_uid="${DISK_HEADROOM_UID:-$(id -u)}"
+[[ "$effective_uid" =~ ^[0-9]+$ ]] || refuse "el uid efectivo «$effective_uid» no es un entero"
+group_ids="${DISK_HEADROOM_GROUPS:-$(id -G)}"
+[[ "$group_ids" =~ ^[0-9]+( [0-9]+)*$ ]] || refuse "los grupos «$group_ids» no son enteros"
+
 # --- mount_point de montaje, y sus options ---
 
 mount_point="$(stat -c '%m' "$target" 2>/dev/null)"
@@ -114,6 +132,23 @@ available=$(( avail_blocks * block_size ))
 
 strict=0
 grep -qE '(^|,)resv_strict(,|$)' <<<"$options" && strict=1
+
+# El valor numerico de una option `clave=N` del montaje; vacio si no figura.
+mount_option_value() {
+    grep -oE "(^|,)$1=[0-9]+" <<<"$options" | tail -1 | sed 's/.*=//'
+}
+reserve_uid="$(mount_option_value resuid)"
+reserve_gid="$(mount_option_value resgid)"
+
+# Via a: el uid efectivo es el dueno declarado de la reserva.
+uid_owns_reserve() {
+    [[ -n "$reserve_uid" && "$effective_uid" == "$reserve_uid" ]]
+}
+
+# Via b: alguno de los grupos es el grupo declarado de la reserva.
+group_owns_reserve() {
+    [[ -n "$reserve_gid" ]] && grep -qw -- "$reserve_gid" <<<"${group_ids// /$'\n'}"
+}
 
 has_bit=1
 if [[ "$THYROX_TEST_BIT_RESOURCE" == "1" ]]; then
@@ -178,7 +213,10 @@ _sum_deleted_open() {
 }
 
 held_by_open_fd="(no medido)"
-if [[ -n "${DISK_HEADROOM_LSOF:-}" ]]; then
+if [[ "$format" != "text" ]]; then
+    # Las salidas breves no publican esta columna: no se paga el `lsof`.
+    :
+elif [[ -n "${DISK_HEADROOM_LSOF:-}" ]]; then
     # Punto de inyeccion: sin el, esta rama solo se alcanza midiendo el disco
     # real, y por eso sus tres defectos vivieron sin una sola asercion encima.
     held_by_open_fd="$(_sum_deleted_open "$mount_dev" < "${DISK_HEADROOM_LSOF}")"
@@ -197,6 +235,12 @@ if (( reserved <= 0 )); then
 elif (( strict == 1 )); then
     verdict="RESERVA_INALCANZABLE"; code=3
     reason="el montaje declara resv_strict, que cierra la reserva incluso a root."
+elif uid_owns_reserve; then
+    verdict="RESERVA_ALCANZABLE"; code=1
+    reason="el uid efectivo $effective_uid es resuid y no hay resv_strict: el techo real supera «Avail»."
+elif group_owns_reserve; then
+    verdict="RESERVA_ALCANZABLE"; code=1
+    reason="el grupo $reserve_gid es resgid del montaje y del proceso, y no hay resv_strict: el techo real supera «Avail»."
 elif [[ "$has_bit" == "0" ]]; then
     verdict="RESERVA_INALCANZABLE"; code=3
     reason="a CapEff le falta CAP_SYS_RESOURCE (bit $CAP_SYS_RESOURCE_BIT)."
@@ -208,8 +252,15 @@ fi
 as_mib() { awk -v b="$1" 'BEGIN{printf "%.2f MiB", b/1048576}'; }
 as_gib() { awk -v b="$1" 'BEGIN{printf "%.2f GiB", b/1073741824}'; }
 
-if [[ "$format" == "breve" ]]; then
+if [[ "$format" == "brief" ]]; then
     printf '%s\n' "$verdict"
+    exit "$code"
+fi
+
+if [[ "$format" == "ceiling" ]]; then
+    ceiling="$available"
+    (( code == 1 )) && ceiling=$(( free_blocks * block_size ))
+    printf '%s\n' "$ceiling"
     exit "$code"
 fi
 

@@ -1,0 +1,10 @@
+# RED contra la base (HEAD a3cd6e282) con el doble y la suite nuevos
+  FALLA 4 status sano sale 0 — esperado [0] obtenido [1]
+  FALLA 4 publica los tickets del protocolo — esperado [1] obtenido [0]
+  FALLA 5 con trabajos en el daemon stop rehúsa con 4 — esperado [4] obtenido [0]
+  FALLA 5 y el coordinador sigue sano — esperado [0] obtenido [1]
+  FALLA 5 con tickets vivos stop rehúsa con 4 — esperado [4] obtenido [0]
+  FALLA 6 stop sale 0 — esperado [0] obtenido [1]
+  FALLA 6 al volver stop, el daemon ya terminó (su barrido incluido) — esperado [done:0] obtenido [done:1]
+  FALLA 6 status detenido no sale 0 — esperado [detenido] obtenido [vivo]
+model_coordinator: 10 ok, 8 fallas

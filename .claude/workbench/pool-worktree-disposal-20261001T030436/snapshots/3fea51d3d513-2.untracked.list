@@ -1,0 +1,5 @@
+src/packages/daemon/src/__tests__/bgDaemonStartup.test.ts
+src/packages/daemon/src/__tests__/bgDaemonStartupTimers.test.ts
+src/packages/daemon/src/__tests__/daemonLockStartup.test.ts
+src/packages/daemon/src/__tests__/socketProto.test.ts
+src/packages/local-observability/tsconfig.check.json

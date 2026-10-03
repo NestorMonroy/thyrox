@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/qualifyCommand.test.ts:
+(pass) runQualifyCommand por admisión > cualifica contra la unidad del ticket, suelta la admisión y no asegura thyrox-ollama [83.66ms]
+(pass) runQualifyCommand por admisión > --context viaja en la petición de admisión [16.22ms]
+(pass) runQualifyCommand por admisión > una admisión rehusada rehúsa con su etapa y causa, sin tocar el runtime [5.37ms]
+(pass) runQualifyCommand por admisión > sin coordinador rehúsa nombrando su socket [11.95ms]
+155 |     return path
+156 |   }
+157 | 
+158 |   test('corre los casos de la suite y escribe una cualificación de tarea de su clase', async () => {
+159 |     const coordinator = await coordinatorWith()
+160 |     expect(await runQualifyCommand([MODEL, '--suite', taskSuiteFile()], contextFor())).toBe(EXIT_OK)
+                                                                                             ^
+error: expect(received).toBe(expected)
+
+Expected: 0
+Received: 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/qualifyCommand.test.ts:160:88)
+(fail) runQualifyCommand --suite: la cualificación de tarea de un consumidor (TASK-THYROX-0780) > corre los casos de la suite y escribe una cualificación de tarea de su clase [6.42ms]
+(pass) runQualifyCommand --suite: la cualificación de tarea de un consumidor (TASK-THYROX-0780) > una suite ilegible se rehúsa antes de pedir admisión [3.77ms]
+
+ 5 pass
+ 1 fail
+ 20 expect() calls
+Ran 6 tests across 1 file. [341.00ms]

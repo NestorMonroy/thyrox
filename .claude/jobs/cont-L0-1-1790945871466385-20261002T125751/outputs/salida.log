@@ -1,0 +1,2 @@
+execution thyrox-worker-maintenance-muqyxisg-8090 kind=maintenance task=TASK-THYROX-0908 exit=1
+__BG_EXIT__=1

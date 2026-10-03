@@ -1,0 +1,3 @@
+(fail) subida de un blob por tramos > un blob mayor que el tramo sube en PATCH sucesivos y un PUT final, y queda publicado con su digest [11.48ms]
+ 2 pass
+ 1 fail

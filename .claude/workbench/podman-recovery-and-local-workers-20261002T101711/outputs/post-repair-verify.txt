@@ -1,0 +1,29 @@
+thyrox-postgres pid=12568 state=running alive
+thyrox-redis pid=13076 state=running alive
+thyrox-ollama pid=13553 state=running alive
+## postgres
+/var/run/postgresql:5432 - accepting connections
+psql: error: connection to server on socket "/var/run/postgresql/.s.PGSQL.5432" failed: FATAL:  role "postgres" does not exist
+## redis
+PONG
+## ollama
+NAME                                       ID              SIZE      MODIFIED     
+thyrox-durability-probe:20261002t022736    a79806aa7e23    2.5 GB    8 hours ago     
+qwen3:4b                                   359d7dd4bcda    2.5 GB    35 hours ago    
+-- postgres
+ERROR:  relation "documents" does not exist
+-- thyrox
+ERROR:  relation "documents" does not exist
+vector=0.8.0
+public|1
+semantic_search|6
+semantic_search.document_chunks=0
+semantic_search.documents=0
+semantic_search.semantic_search_migrations=0
+documents=1675 chunks=9981 migrations=2,3,4
+analysis_candidates
+analysis_runs
+document_chunks
+documents
+embedding_spaces
+semantic_search_migrations

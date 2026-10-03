@@ -2,8 +2,9 @@
  * Los verbos que escriben conexiones: `add` da de alta una de clave de API,
  * `edit` cambia sólo los campos declarados de una existente e `import` da de
  * alta las de un archivo JSON, saltando las que ya existen por proveedor y
- * nombre. Un archivo aporta datos de proveedor y nada más: su id, su estado o
- * su tipo de autenticación no llegan a la fila.
+ * nombre, con el proveedor por su id canónico (`providerId.ts`). Un archivo
+ * aporta datos de proveedor y nada más: su id, su estado o su tipo de
+ * autenticación no llegan a la fila.
  *
  * Ninguna salida lleva el secreto; el ensayo (`--dry-run`) muestra su forma.
  *
@@ -18,6 +19,7 @@ import { firstPositional } from './commandArgs.ts'
 import { buildConnectionPayload, parsePriority, type ConnectionPayloadOptions } from './connectionPayload.ts'
 import { resolveConnection } from './connectionSelector.ts'
 import { CREDENTIAL_ARGUMENT_REFUSED, passesCredentialAsArgument, resolveCredential, type CredentialSources } from './credentialInput.ts'
+import { canonicalProviderId } from './providerId.ts'
 import { publicConnection } from './publicConnection.ts'
 import { credentialShape, redactSecrets } from './secretShape.ts'
 
@@ -124,12 +126,12 @@ export async function runEditVerb(args: string[], deps: WriteVerbDeps): Promise<
 
 type ImportResult = { provider?: string; name?: string; ok: boolean; status?: string; connectionId?: unknown; error?: string }
 
-const identityKey = (provider: unknown, name: unknown) => `${String(provider ?? '').toLowerCase()}\0${String(name ?? provider ?? '').toLowerCase()}`
+const identityKey = (provider: unknown, name: unknown) => `${canonicalProviderId(String(provider ?? '')).toLowerCase()}\0${String(name ?? provider ?? '').toLowerCase()}`
 
 function importEntry(entry: unknown, existing: Map<string, Row>, dryRun: boolean, deps: WriteVerbDeps): ImportResult {
   if (!entry || typeof entry !== 'object' || !(entry as Row).provider) return { ok: false, error: 'entry.provider is required' }
   const fields = entry as Row
-  const provider = String(fields.provider).trim()
+  const provider = canonicalProviderId(String(fields.provider))
   const name = String(fields.name || provider).trim()
   const found = existing.get(identityKey(provider, name))
   if (found) return { provider, name, ok: true, status: 'skipped_existing', connectionId: found.id }

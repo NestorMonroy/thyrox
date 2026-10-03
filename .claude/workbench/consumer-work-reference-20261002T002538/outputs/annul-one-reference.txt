@@ -1,0 +1,73 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/executionAuthorization.test.ts:
+(pass) ExecutionAuthorization > una autorización de tarea completa se acepta [1.09ms]
+(pass) ExecutionAuthorization > una autorización de modelo, sin comando ni directorio, se acepta [0.18ms]
+(pass) ExecutionAuthorization > la tarea se cita con su forma durable, no con el ordinal del board [0.20ms]
+(pass) ExecutionAuthorization > un runtime de modelo se autoriza por un grant, no por una tarea [0.10ms]
+(pass) ExecutionAuthorization > un trabajo de tarea no se autoriza por un grant [0.05ms]
+(pass) ExecutionAuthorization > el tipo de ejecución es uno de los declarados [0.05ms]
+(pass) ExecutionAuthorization > un comando declarado no puede estar vacío [0.05ms]
+(pass) ExecutionAuthorization > un directorio de trabajo declarado vive dentro de un montaje [0.05ms]
+(pass) ExecutionAuthorization > una salida declarada vive bajo un montaje de escritura [0.24ms]
+(pass) ExecutionAuthorization > una autorización vencida se rehúsa [0.08ms]
+(pass) ExecutionAuthorization > el dueño se valida [0.13ms]
+(pass) ExecutionAuthorization > una etiqueta propia no reescribe las de la ejecución [0.10ms]
+(pass) ExecutionAuthorization > una variable que nombra una credencial se rehúsa: su valor quedaría en podman inspect [0.76ms]
+(pass) el contenedor que materializa una autorización > lleva tipo, referencia e id en sus etiquetas, su directorio de trabajo, su montaje y su red [0.90ms]
+(pass) el contenedor que materializa una autorización > el de un modelo publica su puerto en loopback, concede sus dispositivos y lleva sus etiquetas [0.47ms]
+(pass) el contenedor que materializa una autorización > un secreto se monta como archivo, nunca como variable [0.29ms]
+(pass) el contenedor que materializa una autorización > un raíz de sólo lectura declarado se traduce a --read-only en el argv de create [0.19ms]
+(pass) el contenedor que materializa una autorización > sin declarar el raíz, la materialización conserva el comportamiento de hoy: escribible [0.14ms]
+(pass) el contenedor que materializa una autorización > runExecution corre el contenedor hasta que termina y lo retira [1.84ms]
+(pass) el contenedor que materializa una autorización > materializeExecution crea, arranca e inspecciona: devuelve la ExecutionUnit canónica y no espera ni retira [0.87ms]
+(pass) el contenedor que materializa una autorización > un contenedor sin proceso ni cgroup informado da una unidad sin PIDs ni cgroup [0.34ms]
+(pass) el contenedor que materializa una autorización > si la inspección falla, nombra la etapa inspect y deja el contenedor a su dueño [0.45ms]
+(pass) el contenedor que materializa una autorización > una inspección ilegible también es la etapa inspect, no un éxito sin identidad [0.93ms]
+(pass) el contenedor que materializa una autorización > si el arranque falla, materializeExecution nombra la etapa y deja el contenedor a su dueño [0.47ms]
+(pass) el contenedor que materializa una autorización > una autorización inválida no llega a Podman [0.27ms]
+(pass) la referencia de trabajo de un consumidor > autoriza un trabajo de tarea con la identidad del consumidor, sin convertirla en TASK [0.36ms]
+(pass) la referencia de trabajo de un consumidor > un consumidor o un id fuera de su forma se rehúsan [0.15ms]
+(pass) la referencia de trabajo de un consumidor > un runtime de modelo no se autoriza por una referencia de trabajo [0.05ms]
+
+__tests__/executionCommand.test.ts:
+(pass) parseMount > sin destino ni modo: la misma ruta, sólo lectura [0.17ms]
+(pass) parseMount > con modo y sin destino [0.07ms]
+(pass) parseMount > con destino y modo [0.03ms]
+(pass) thyrox-exec run > el payload corre en la unidad, con el repositorio montado de escritura en su propia ruta [2.26ms]
+(pass) thyrox-exec run > THYROX_EXEC_IMAGE elige la imagen [0.42ms]
+(pass) thyrox-exec run > --script-stdin entrega el guion a bash dentro de la unidad [0.31ms]
+(pass) thyrox-exec run > la red host lleva el proxy y monta su CA de sólo lectura [0.34ms]
+(pass) thyrox-exec run > sin red, el proxy no viaja [0.32ms]
+(pass) thyrox-exec run > sin payload rehúsa con 2 y no invoca Podman [0.25ms]
+(pass) thyrox-exec run > una cita de tarea inválida rehúsa con 2 nombrando el campo [0.13ms]
+(pass) thyrox-exec run > el veredicto de la unidad es el de la orden [0.42ms]
+(pass) --secret-from-env: la credencial llega a la unidad como secreto montado > materializa el secreto por stdin y lo monta; el valor no aparece en ningún argv ni salida [1.21ms]
+(pass) --secret-from-env: la credencial llega a la unidad como secreto montado > un secreto con el mismo valor no se recrea [0.45ms]
+(pass) --secret-from-env: la credencial llega a la unidad como secreto montado > credencial ausente: sale 2, lo nombra y no toca Podman [0.17ms]
+(pass) reconcile-orphans: un contenedor cuyo dueño de tarea murió se retira sin intervención > retira sólo el de dueño de tarea con PID muerto; deja vivos y ajenos [1.28ms]
+(pass) reconcile-orphans: un contenedor cuyo dueño de tarea murió se retira sin intervención > sin huérfanos, sale 0 y lo dice [0.15ms]
+(pass) run con la referencia de trabajo de un consumidor > --work autoriza con la identidad del consumidor y --owner declara el dueño del pool [0.37ms]
+228 |   })
+229 | 
+230 |   test('--task y --work juntos no son una autorización', async () => {
+231 |     const h = harness()
+232 |     const code = await runExecutionCommand(['run', '--task', 'TASK-THYROX-0001', '--work', 'a:b', '--kind', 'test', '--', 'true'], h.deps)
+233 |     expect(code).toBe(2)
+                       ^
+error: expect(received).toBe(expected)
+
+Expected: 2
+Received: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/executionCommand.test.ts:233:18)
+(fail) run con la referencia de trabajo de un consumidor > --task y --work juntos no son una autorización [0.49ms]
+(pass) run con la referencia de trabajo de un consumidor > un dueño que no es de pool no se declara por línea de orden [0.18ms]
+
+1 tests failed:
+(fail) run con la referencia de trabajo de un consumidor > --task y --work juntos no son una autorización [0.49ms]
+
+ 46 pass
+ 1 fail
+ 103 expect() calls
+Ran 47 tests across 2 files. [278.00ms]

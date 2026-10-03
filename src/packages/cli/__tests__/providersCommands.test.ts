@@ -71,6 +71,11 @@ describe('resolving a connection selector', () => {
     expect(resolveConnection([{ id: 'ID-1', provider: 'OpenAI', name: 'Main' }], 'main')?.id).toBe('ID-1')
   })
 
+  test('anthropic and claude select the same provider, whichever spelling the row carries', () => {
+    expect(resolveConnection(rows(), 'claude')?.id).toBe('aaab2222-y')
+    expect(resolveConnection([{ id: 'c-1', provider: 'claude', name: 'own' }], 'Anthropic')?.id).toBe('c-1')
+  })
+
   test('an ambiguous selector names every candidate instead of picking one', () => {
     expect(() => resolveConnection(rows(), 'aaa')).toThrow("Provider connection selector 'aaa' is ambiguous: aaaa1111-x, aaab2222-y")
   })

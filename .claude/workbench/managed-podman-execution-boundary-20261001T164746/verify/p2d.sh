@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+# p2d: la entrada canónica deja "entry":"thyrox-bg" y una unidad por clase usada por p3-p5.
+set -uo pipefail
+wb="$(cd "$(dirname "$0")/.." && pwd)"; cd "$(git -C "$wb" rev-parse --show-toplevel)" || exit 2; fail=0
+# Las unidades por clase las demuestra el plano de control (probes/p2d_control_plane.sh):
+# una unidad no alcanza Podman (outputs/unit-podman-reachability.log).
+bash tests/session/test-bg-managed-execution.sh >/dev/null 2>&1 || { echo "FALLA test-bg-managed-execution"; fail=1; }
+uv run --frozen --no-sync python "$wb/tests/test_manifest_identity.py" >/dev/null 2>&1 || { echo "FALLA test_manifest_identity"; fail=1; }
+for log in red green annulment; do [[ -s "$wb/outputs/p2d-$log.log" ]] || { echo "FALLA falta p2d-$log"; fail=1; }; done
+# Gates del verificador, no del trabajador (ejecutor 2026-10-02): alcance y RED contra la base.
+bash "$wb/verify/scope.sh" p2d src/lib/managed_execution.sh src/session/bg.sh tests/session/test-bg-managed-execution.sh .env.example || fail=1
+mapfile -t changed_tests < <(bash "$wb/verify/changed_tests.sh")
+if (( ${#changed_tests[@]} == 0 )); then echo "FALLA p2d no añadió ni cambió ninguna prueba"; fail=1
+else bash "$wb/verify/red_against_base.sh" p2d "${changed_tests[@]}" > /dev/null || { echo "FALLA RED/GREEN contra la base (outputs/p2d-red-verified.log)"; fail=1; }; fi
+exit "$fail"

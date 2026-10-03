@@ -1,0 +1,18 @@
+== src/learning (4 archivos)
+__init__.py experience.py reward.py token_usage.py
+
+== src/testing (2 archivos)
+__init__.py clone_tree.py
+
+== src/workbench (3 archivos)
+__init__.py manifest.py paths.py
+
+== src/measurement (10 archivos)
+__init__.py change_point.py deviation.py distribution.py normalizer_magnitude.py perplexity.py rejection_sampling.py residual_structure.py series.py trend.py
+
+== src/packages/stdin-napi (22 archivos)
+config.toml .gitignore README.md native.test.ts bunfig.toml Cargo.lock Cargo.toml build.rs lib.rs package.json index.ts tsconfig.build.json tsconfig.test.json stdin.node .gitkeep stdin.node .gitkeep stdin.node .gitkeep stdin.node .gitkeep stdin.node
+
+== src/packages/command-runtime (223 archivos)
+README.md command.ts bunfig.toml package.json api.test.ts argumentSubstitution.test.ts command.test.ts createMovedToPluginCommand.test.ts errors.test.ts forkSlug.test.ts frequentlyModifiedFilesNodeEnv.test.ts gitignore.test.ts parsePluginArgs.test.ts portedCommandsSmoke.test.ts promptShellExecution.behavior.test.ts skillHelpers.test.ts slashCommandParsing.test.ts types.test.ts ultrareviewEnabled.test.ts xml.test.ts api.ts argumentSubstitution.ts commandRuntimeInstaller.ts background.tsx index.ts bridge.tsx index.ts btw.tsx index.ts chrome.tsx
+

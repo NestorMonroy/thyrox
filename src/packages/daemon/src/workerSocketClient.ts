@@ -178,10 +178,10 @@ export interface WorkerSocketClient {
   dispose(): void
 }
 
-/** Duplicate of `pendingCrossPackageDeps.ts::isPidAlive` — see the
- *  `isWorkerAlive` option's own docstring for why this isn't imported
- *  from there instead. Verbatim to that file's own citation:
- *  `ccnmt: packages/shell/src/genericProcessUtils.ts:46-54`. */
+/** Duplicado de `isPidAlive` (`ccnmt: packages/shell/src/genericProcessUtils.ts:46-54`)
+ *  — ver el docstring de la opción `isWorkerAlive` para por qué no se importa
+ *  de `@thyrox/agent/loop/session/reconcile`, cuya forma no lleva la guarda
+ *  `pid <= 1`. */
 function defaultIsWorkerAlive(pid: number): boolean {
   if (pid <= 1) return false
   try {

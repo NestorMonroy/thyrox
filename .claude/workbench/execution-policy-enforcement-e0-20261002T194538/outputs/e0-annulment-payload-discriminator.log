@@ -1,0 +1,4 @@
+## payload-discriminator
+  FALLA 6 una espera de observación no se niega — esperado None obtenido 'deny'
+  FALLA 8 una entrada del plano de control no se niega — esperado None obtenido 'deny'
+execution_policy: 12 ok, 2 fallas

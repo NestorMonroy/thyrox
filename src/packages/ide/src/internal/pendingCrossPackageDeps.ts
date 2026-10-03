@@ -32,7 +32,6 @@ import { join as pathJoin } from 'node:path'
 import type { StructuredPatchHunk } from '@thyrox/agent/diff.js'
 import type { IdeType } from '../ide.js'
 
-export { isBareMode } from '@thyrox/config/env/utils'
 // ─────────────────────────────────────────────────────────────────────────
 // 1. Envoltorios de require() diferido — el paquete hermano YA existe
 // ─────────────────────────────────────────────────────────────────────────
@@ -211,66 +210,15 @@ export function requireLocalObservabilityRoot(): {
 }
 
 // ─────────────────────────────────────────────────────────────────────────
-// 2a. Reimplementación fiel — config/env/utils.ts: dos símbolos que
-//     `@thyrox/config/env/utils.ts` no exporta todavía (sólo declara
-//     isEnvTruthy/readEnv/getAllEnv). Verbatim contra ccnmt.
-// ─────────────────────────────────────────────────────────────────────────
-
-/**
- * Puerto de `ccnmt: packages/config/env/utils.ts` (`isEnvDefinedFalsy`).
- * Idéntica reimplementación a la que ya usa
- * `@thyrox/mcp-runtime: src/internal/pendingCrossPackageDeps.ts` (mismo
- * origen, mismo cuerpo) — no se consume de ahí porque `mcp-runtime` tampoco
- * lo exporta como subpath público.
- */
-export function isEnvDefinedFalsy(
-  envVar: string | boolean | undefined,
-): boolean {
-  if (envVar === undefined) return false
-  if (typeof envVar === 'boolean') return !envVar
-  if (!envVar) return false
-  const normalizedValue = envVar.toLowerCase().trim()
-  return ['0', 'false', 'no', 'off'].includes(normalizedValue)
-}
-
-export { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
-
-// ─────────────────────────────────────────────────────────────────────────
-// 2b. Reimplementación fiel — config/env/paths.ts y config/env/dynamic.ts
-//     (`env`/`envDynamic`): NINGUNO de los dos existe en `@thyrox/config`
-//     todavía. `ide.ts` sólo lee `env.terminal`/`envDynamic.terminal`; el
-//     propio `@thyrox/config/env/dynamic.ts` ya degrada a
-//     `{ platform: ..., terminal: null, ... }` cuando `./paths.js` no
-//     resuelve (ver su docstring) — aquí se reproduce esa MISMA rama
-//     degradada, recortada a lo que `ide` necesita.
+// 2b. Reimplementación fiel — config/env/paths.ts (`env`): su original,
+//     `@thyrox/config/env`, cerraría un ciclo de módulos con este paquete
+//     (`hooks/useIdeSelection.ts`). `ide.ts` sólo lee `env.terminal`; el
+//     propio `@thyrox/config/env/dynamic.ts` ya degrada a `terminal: null`
+//     cuando `./paths.js` no resuelve — aquí se reproduce esa MISMA rama
+//     degradada. `envDynamic` sí se importa de `@thyrox/config/env/dynamic`.
 // ─────────────────────────────────────────────────────────────────────────
 
 export const env: { terminal: string | null } = { terminal: null }
-export const envDynamic: { terminal: string | null } = { terminal: null }
-
-// ─────────────────────────────────────────────────────────────────────────
-// 2c. Reimplementación fiel — config/semver.ts (`lt`): el archivo no existe
-//     en `@thyrox/config`. `Bun.semver` es nativo del runtime (siempre
-//     disponible aquí — `bun test`), así que no hace falta el fallback a la
-//     dependencia npm `semver` que usa `ccnmt: packages/config/semver.ts`
-//     para el caso Node.
-// ─────────────────────────────────────────────────────────────────────────
-
-export function lt(a: string, b: string): boolean {
-  return Bun.semver.order(a, b) === -1
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// 2d. Reimplementación fiel — tool-registry/utils/lazySchema.ts: el paquete
-//     `tool-registry` no existe en este árbol. Fábrica singleton perezosa,
-//     idéntica a la que ya usa `@thyrox/headless-sdk` en su propio
-//     `pendingCrossPackageDeps.ts` (mismo origen, mismo cuerpo de 3 líneas).
-// ─────────────────────────────────────────────────────────────────────────
-
-export function lazySchema<T>(factory: () => T): () => T {
-  let cached: T | undefined
-  return () => (cached ??= factory())
-}
 
 // ─────────────────────────────────────────────────────────────────────────
 // 2e. Reimplementación fiel — lodash-es/{memoize,capitalize}.js: siguiendo
@@ -298,6 +246,7 @@ export function memoize<Args extends unknown[], Result>(
   }
 }
 
+// homonym capitalize: 2.1.283 (`chunk-5t3x93y6.js`, `QPt = x4`) usa la de lodash, que baja el resto a minúsculas; `@thyrox/output/utils/stringUtils.js` no lo hace (`str.charAt(0).toUpperCase() + str.slice(1)`), así que importarla cambiaría `toIDEDisplayName`.
 /** Mismo contrato que `lodash-es/capitalize.js`: primera letra en mayúscula, resto en minúscula. */
 export function capitalize(str: string): string {
   if (!str) return ''
@@ -907,79 +856,6 @@ export function getIsScrollDraining(): boolean {
 }
 export function setGetIsScrollDrainingFn(fn: () => boolean): void {
   _getIsScrollDraining = fn
-}
-
-/**
- * `callIdeRpc` — de `mcp-runtime/clientRuntime.ts`. Ese archivo está
- * BLOQUEADO dentro del propio `@thyrox/mcp-runtime` (13 de 48 símbolos, por
- * ausencia de `tool-registry` — ver el `description` de su `package.json`).
- * `callIdeRpc` depende de `callMCPTool`, que a su vez es parte del mismo
- * archivo de 3179 líneas: reimplementarlo aquí duplicaría un mecanismo que
- * no le pertenece a `ide`. Default: lanza con un mensaje que nombra la
- * causa exacta, en vez de fabricar un resultado silencioso
- * (`porte-completo-no-parcial.md`: "un módulo fabricado es peor que uno
- * ausente"). Setter para inyectar la implementación real cuando exista, o
- * un doble de test.
- */
-let _callIdeRpc: (
-  toolName: string,
-  args: Record<string, unknown>,
-  client: unknown,
-) => Promise<string | unknown[] | undefined> = () => {
-  throw new Error(
-    'callIdeRpc: no implementado — @thyrox/mcp-runtime/clientRuntime.ts ' +
-      'está bloqueado (13/48 símbolos, por ausencia de @thyrox/tool-registry). ' +
-      'Inyectar con setCallIdeRpcFn() para tests, o esperar a que mcp-runtime ' +
-      'porte clientRuntime.ts.',
-  )
-}
-export function callIdeRpc(
-  toolName: string,
-  args: Record<string, unknown>,
-  client: unknown,
-): Promise<string | unknown[] | undefined> {
-  return _callIdeRpc(toolName, args, client)
-}
-export function setCallIdeRpcFn(
-  fn: (
-    toolName: string,
-    args: Record<string, unknown>,
-    client: unknown,
-  ) => Promise<string | unknown[] | undefined>,
-): void {
-  _callIdeRpc = fn
-}
-
-// ─────────────────────────────────────────────────────────────────────────
-// 4. Sustituto in-memory — config (getGlobalConfig/saveGlobalConfig): el
-//    subsistema real (`ccnmt: packages/config/global/config.ts`, >1100
-//    líneas) lee/escribe `~/.claude.json`. `ide.ts` sólo toca dos campos
-//    (`diffTool`, `autoInstallIdeExtension`) y los hooks uno más
-//    (`autoConnectIde`). Mismo patrón DI que `@thyrox/memory`'s
-//    `getInitialSettings`/`setInitialSettingsForTesting`: estado en memoria
-//    de módulo, sin tocar disco, con setter para tests.
-// ─────────────────────────────────────────────────────────────────────────
-
-export type IdeGlobalConfigShape = {
-  diffTool?: string
-  autoInstallIdeExtension?: boolean
-  autoConnectIde?: boolean
-}
-
-let _globalConfig: IdeGlobalConfigShape = {}
-
-export function getGlobalConfig(): IdeGlobalConfigShape {
-  return _globalConfig
-}
-
-export function saveGlobalConfig(
-  updater: (current: IdeGlobalConfigShape) => IdeGlobalConfigShape,
-): void {
-  _globalConfig = updater(_globalConfig)
-}
-
-export function setGlobalConfigForTesting(config: IdeGlobalConfigShape): void {
-  _globalConfig = config
 }
 
 // Re-exportado para que otros módulos del paquete puedan citar el tipo sin

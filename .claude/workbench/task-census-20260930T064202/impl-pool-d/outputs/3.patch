@@ -1,0 +1,388 @@
+diff --git a/.claude/workbench/task-thyrox-0645-worktree-verify-leak-20260930T100825/README.md b/.claude/workbench/task-thyrox-0645-worktree-verify-leak-20260930T100825/README.md
+new file mode 100644
+index 000000000..a36f2c432
+--- /dev/null
++++ b/.claude/workbench/task-thyrox-0645-worktree-verify-leak-20260930T100825/README.md
+@@ -0,0 +1,121 @@
++# TASK-THYROX-0645 — el verify de un ítem aislado medía el árbol principal
++
++Hallazgo de origen: H-THYROX-287 (pool A2 rechazó 0284 y 0261; aplicados en el
++árbol principal, pasan). Medido desde el worktree
++`.thyrox/pool-worktrees/d8dda5fc002a/3` (HEAD 330d7f051), 2026-09-30.
++
++## 1. Causa de 0284 — `@thyrox/agent` se resuelve fuera del worktree
++
++`bunx tsc --traceResolution` sobre un `import "@thyrox/agent"` escrito en
++`src/packages/repl/` del worktree:
++
++```
++Directory '<wt>/src/packages/repl/node_modules' does not exist …
++Directory '<wt>/node_modules' does not exist …
++Directory '<wt>/../node_modules' … '<wt>/../../node_modules' … '/home/user/thyrox/.thyrox/node_modules' does not exist
++Found 'package.json' at '/home/user/thyrox/node_modules/@thyrox/agent/package.json'.
++Module name '@thyrox/agent' was successfully resolved to
++  '/home/user/thyrox/node_modules/@thyrox/agent/dist/index.d.ts'
++```
++
++- El worktree no tiene `node_modules` (ni raíz ni `src/packages/*/`): es un
++  checkout de git y `node_modules/`, `dist/`, `.venv/` están en `.gitignore`.
++- El worktree vive DENTRO del árbol principal (`<top>/.thyrox/pool-worktrees/`),
++  así que el ascenso de la resolución de Node llega a `<top>/node_modules`, y
++  ahí `@thyrox/agent -> ../../src/packages/agent` es el paquete del árbol
++  principal, con SU `dist/`. Con `preserveSymlinks: true` (COMPILER_OPTIONS de
++  `emit_declarations.py`) la ruta reportada es la del enlace; sin la bandera
++  sería `<top>/src/packages/agent/…`: las dos son el árbol principal.
++- `check_package_typecheck` con `THYROX_ROOT=<wt>` reconstruye providers viejos
++  en `<wt>/src/packages/*/dist` (`packages_by_name(reach.thyrox_root())`), pero
++  tsc nunca lee ese `dist/`: lee el del principal. Un ítem que cambia `agent`
++  se tipa contra el contrato viejo de `agent` → «repl: 0 -> 28».
++- `main/node_modules/@thyrox/`: 38 enlaces relativos `../../src/packages/<x>`;
++  `@ant/` 4 y `@anthropic/ink` 1 más; 51 de 68 enlaces de primer nivel apuntan
++  al workspace. 10 paquetes tienen `node_modules/` propio con deps hoisted
++  (`repl/node_modules/diff`, `*/node_modules/chalk`).
++
++Métrica: salida de `--traceResolution` para un solo import, y `ls -la` de
++`node_modules/@thyrox`. Ciega a: paquetes que resuelvan por `paths` propios
++del `tsconfig` (ninguno de los medidos lo hace).
++
++## 2. Causa de 0261 — `bin/*` sin `.venv` avisa por stderr
++
++`bin/check_package_typecheck` (y cada envoltorio de `generate_bin.py`) busca
++`$THYROX_ROOT/.venv/bin/python`; en el worktree no existe y cae a
++`/usr/local/bin/python3` con dos líneas por stderr:
++
++```
++bin/tool_use_preflight: sin entorno del proveedor; corre con /usr/local/bin/python3.
++              Generalo con: cd "<wt>" && uv sync
++```
++
++Los dos casos de `test_user_wiring.py` que fallaban (`obtenido=` arriba)
++exigen `stderr == ""`: 122 ok, 2 fallos en el worktree. Con
++`ln -s /home/user/thyrox/.venv <wt>/.venv`: 124 ok, 0 fallos. El venv de uv
++es relocalizable por enlace: `pyvenv.cfg` no lleva su propia ruta
++(`home = /usr/local/bin`), `bin/python -> /usr/local/bin/python3`, y
++`<link>/.venv/bin/python -c 'import sys; print(sys.prefix)'` da la ruta del
++enlace con `import sphinx` OK.
++
++Métrica: conteo de la suite y stderr del caso. Ciega a: un venv creado con
++rutas absolutas (`virtualenv` sin `--relocatable`), que no es el de este árbol.
++
++## 3. Un enlace llamado `node_modules` NO está ignorado por `node_modules/`
++
++`.gitignore` con `node_modules/` y `.venv/` (con barra: sólo directorios) y un
++enlace `node_modules` → `git status`: `?? node_modules`. `finalize` hace
++`git add -A`: los enlaces entrarían al parche del ítem. Cerrado con un
++`core.excludesFile` en la configuración DEL WORKTREE (`git config --worktree`,
++requiere `extensions.worktreeConfig`, ya `true` en thyrox por el
++`sparse-checkout`): con `/node_modules` en ese archivo, `git status` calla.
++`info/exclude` no sirve: `git rev-parse --git-path info/exclude` en el
++worktree da `/home/user/thyrox/.git/info/exclude` — es común a todos.
++
++## 4. Cómo lo hace la referencia (2.1.283, sólo lectura con `rg`)
++
++| símbolo / literal | chunk:línea | qué hace |
++|---|---|---|
++| `worktree.symlinkDirectories` (schema) | `chunk-379zyrv7.js:14` | «Directories to symlink from main repository to worktrees to avoid disk bloat. Must be explicitly configured — no directories are symlinked by default. Common examples: node_modules, .cache, .bin» |
++| `mGn(e,n,r)` | `chunk-csayct82.js:984` | por cada nombre: rehúsa absoluto o `..` (`pGn`); rehúsa si el destino escapa del worktree por un enlace commiteado (`pTe`); si la fuente no existe en el principal, la salta con log; `symlink(src, dst, "dir")`, tolera `ENOENT`/`EEXIST` |
++| `bTe(e,n)` | `chunk-csayct82.js:987` | tras `worktree add`: copia `settings.local.json`, configura `core.hooksPath` del principal, y aplica `symlinkDirectories` si hay |
++| `vg(e)` | `chunk-csayct82.js:983` | los worktrees de agente viven en `<repo>/.claude/worktrees` |
++| `["worktree","add", ...]` con `--no-checkout` si `sparsePaths` | `chunk-csayct82.js:985` | mismo patrón que `add_worktree` de `item_worktree.sh` |
++
++Portado: la lista de nombres relativos, el salto de la fuente ausente, el
++rechazo de `..`/absoluto, la tolerancia a `EEXIST`. Divergencias declaradas:
++
++- **Un enlace plano al `node_modules` del principal no cierra la fuga**: sus
++  entradas `@thyrox/<x> -> ../../src/packages/<x>` se resuelven en el sistema
++  de archivos relativas al directorio REAL, o sea al principal. Se construye
++  un `node_modules` sombra: cada entrada cuyo enlace sale del directorio
++  enlazado hacia dentro del repositorio se vuelve a enlazar a la misma ruta
++  relativa DENTRO del worktree; el resto se enlaza a su ruta real en el
++  principal; un subdirectorio real que contiene enlaces así (`@thyrox/`) se
++  sombrea a su vez. Medido: con la sombra, `@thyrox/agent` resuelve a
++  `<wt>/node_modules/@thyrox/agent/index.ts`.
++- **Hay valor por defecto** (`node_modules .venv src/packages/*/node_modules`),
++  porque sin él el verify del pool mide el árbol equivocado en silencio; la
++  referencia lo deja vacío porque su worktree es para una conversación, no
++  para un veredicto. `THYROX_ITEM_WORKTREE_LINK` lo cambia; vacío no enlaza.
++- **La exclusión de git** (sección 3) no existe en la referencia: su
++  `.gitignore` sí cubre directorios y ella no hace `git add -A` en el worktree.
++- No se copia `settings.local.json` ni se toca `core.hooksPath`: el ítem corre
++  con `--setting-sources project` y el pool ya pone su propio `git` en PATH.
++
++## 5. Lo que no se toca y por qué
++
++- `src/typescript/emit_declarations.py`, `src/verify/check_package_typecheck.py`:
++  con el `node_modules` sombra ya miden el worktree; ninguna ruta suya apunta
++  al principal (`reach.thyrox_root()` honra `THYROX_ROOT`, medido en
++  `reach.py:895`). Sin cambio.
++- `src/session/headless-pool.sh` bloque `item-root`: exporta
++  `THYROX_TOOLCHAIN_NODE_MODULES_HOME=$THYROX_ROOT/node_modules` con el
++  principal ANTES de reasignar `THYROX_ROOT`; con el worktree enlazado puede
++  quedar en `$workdir/node_modules`. Cambio exacto en la respuesta; no se
++  aplica aquí (archivo compartido con pools en curso).
++
++## 6. Suite
++
++`bash tests/session/test-item-worktree-links.sh` — sus casos y los controles
++de anulación están en la respuesta del ítem.
+diff --git a/src/session/item_worktree.sh b/src/session/item_worktree.sh
+index 71cd333c9..5d305cc18 100755
+--- a/src/session/item_worktree.sh
++++ b/src/session/item_worktree.sh
+@@ -10,6 +10,7 @@
+ #   item_worktree.sh sweep    REPO OUT            -> retira los que queden
+ #   item_worktree.sh sweep-orphans REPO           -> retira los de pools muertos
+ #   item_worktree.sh lock-path REPO OUT           -> candado de la ejecución
++#   item_worktree.sh link-shared REPO DIR         -> enlaza node_modules, .venv…
+ #
+ # Veredictos: `fallido` (el ítem salió con error), `sin-cambios` (diff vacío),
+ # `verificado` / `rechazado` (VERIFY salió 0 / con error, corrido en el
+@@ -116,6 +117,125 @@ for prefix in $SPARSE_EXCLUDE; do
+     fi
+ done
+ 
++# Directorios que el checkout no trae y el verify necesita. Un worktree es un
++# checkout de git: `node_modules/`, `.venv/` y `dist/` están en `.gitignore` y
++# no llegan. Como el worktree vive DENTRO del árbol principal, la resolución de
++# Node asciende hasta el `node_modules` del principal y tipa contra el código
++# del principal, no del ítem (H-THYROX-287: «repl: 0 -> 28»); y `bin/*` sin
++# `.venv` cae al python del sistema avisando por stderr. Es el
++# `worktree.symlinkDirectories` de la referencia (2.1.283), con dos
++# diferencias: hay valor por defecto, porque sin él el verify mide el árbol
++# equivocado en silencio, y un enlace plano no basta para `node_modules` (ver
++# `shadow_dir`). Nombres relativos a la raíz del repositorio, separados por
++# espacios, con globs; vacío no enlaza nada; uno ausente se salta y se dice.
++DEFAULT_LINK_NAMES="node_modules .venv src/packages/*/node_modules"
++LINK_NAMES="${THYROX_ITEM_WORKTREE_LINK-$DEFAULT_LINK_NAMES}"
++for name in $LINK_NAMES; do
++    if [[ "$name" == /* || "/$name/" == */../* ]]; then
++        echo "item_worktree: THYROX_ITEM_WORKTREE_LINK admite nombres relativos dentro del árbol, no: $name" >&2
++        exit 2
++    fi
++done
++# El archivo de exclusión del worktree. `node_modules/` con barra en
++# `.gitignore` ignora un directorio, no un enlace del mismo nombre: sin esto
++# `git add -A` de `finalize` metería los enlaces en el parche del ítem.
++# `info/exclude` no sirve porque es común a todos los worktrees.
++LINKS_EXCLUDE_FILE="pool-links-exclude"
++
++# ¿Es LINK un enlace que sale de ROOT hacia dentro de TOP? Es la forma del
++# enlace de workspace (`node_modules/@thyrox/x -> ../../src/packages/x`):
++# copiado tal cual al worktree seguiría resolviendo en el principal, porque el
++# sistema de archivos lo resuelve relativo al directorio REAL.
++escapes_into_repo() {
++    local link="$1" root="$2" top="$3" target
++    target="$(realpath -m "$link")" || return 1
++    [[ "$target" == "$top"/* && "$target" != "$root" && "$target" != "$root"/* ]]
++}
++
++# ¿Algún hijo directo de DIR es un enlace que sale de ROOT hacia dentro de TOP?
++has_escaping_links() {
++    local dir="$1" root="$2" top="$3" child
++    for child in "$dir"/* "$dir"/.[!.]*; do
++        [[ -L "$child" ]] || continue
++        escapes_into_repo "$child" "$root" "$top" && return 0
++    done
++    return 1
++}
++
++# La sombra de SRC en DST: cada hijo que es un enlace de workspace se vuelve a
++# enlazar a la misma ruta relativa DENTRO del worktree; un subdirectorio real
++# que contiene enlaces así (`@thyrox/`) se sombrea a su vez; todo lo demás se
++# enlaza a su ruta real en el principal.
++shadow_dir() {
++    local src="$1" dst="$2" root="$3" top="$4" worktree="$5" child name target
++    mkdir -p "$dst" || return 2
++    for child in "$src"/* "$src"/.[!.]*; do
++        [[ -e "$child" || -L "$child" ]] || continue
++        name="${child##*/}"
++        if [[ -L "$child" ]] && escapes_into_repo "$child" "$root" "$top"; then
++            target="$(realpath -m "$child")" || return 2
++            ln -s "$worktree/${target#"$top"/}" "$dst/$name" || return 2
++        elif [[ -d "$child" && ! -L "$child" ]] && has_escaping_links "$child" "$root" "$top"; then
++            shadow_dir "$child" "$dst/$name" "$root" "$top" "$worktree" || return 2
++        else
++            ln -s "$(realpath "$child")" "$dst/$name" || return 2
++        fi
++    done
++}
++
++# Un nombre: sombra si hace falta, enlace plano si no.
++link_shared_dir() {
++    local top="$1" worktree="$2" name="$3" src="$top/$name" dst="$worktree/$name"
++    [[ -e "$src" ]] || { echo "item_worktree: no se enlaza $name: no existe en el árbol principal" >&2; return 0; }
++    [[ -e "$dst" || -L "$dst" ]] && return 0
++    mkdir -p "${dst%/*}" || return 2
++    if [[ -d "$src" && ! -L "$src" ]] && has_escaping_links "$src" "$src" "$top"; then
++        shadow_dir "$src" "$dst" "$src" "$top" "$worktree"
++    else
++        ln -s "$src" "$dst"
++    fi
++}
++
++# Los enlaces quedan fuera del índice del worktree por un `core.excludesFile`
++# propio (`config --worktree`; `extensions.worktreeConfig` ya lo activa el
++# sparse-checkout, y aquí se activa si falta).
++exclude_links() {
++    local worktree="$1" gitdir file name
++    gitdir="$(git -C "$worktree" rev-parse --absolute-git-dir)" || return 2
++    file="$gitdir/$LINKS_EXCLUDE_FILE"
++    for name in "${@:2}"; do printf '/%s\n' "${name%/}"; done > "$file" || return 2
++    git -C "$worktree" config --get extensions.worktreeConfig >/dev/null \
++        || git -C "$worktree" config extensions.worktreeConfig true || return 2
++    git -C "$worktree" config --worktree core.excludesFile "$file"
++}
++
++# link-shared REPO DIR: enlaza en DIR los nombres de LINK_NAMES desde la raíz
++# de REPO. Idempotente: lo que ya está no se rehace.
++link_shared_dirs() {
++    local repo="$1" worktree="$2" top pattern name linked=()
++    [[ -n "$LINK_NAMES" ]] || return 0
++    top="$(git -C "$repo" rev-parse --show-toplevel)" || return 2
++    for pattern in $LINK_NAMES; do
++        # Un nombre literal se enlaza aunque falte (y se dice); un glob sin
++        # coincidencias no nombra nada.
++        for name in $(expand_link_pattern "$top" "$pattern"); do
++            link_shared_dir "$top" "$worktree" "$name" || return 2
++            linked+=("$name")
++        done
++    done
++    [[ "${#linked[@]}" -gt 0 ]] || return 0
++    exclude_links "$worktree" "${linked[@]}"
++}
++
++expand_link_pattern() {
++    local top="$1" pattern="$2"
++    if [[ "$pattern" == *[*?]* ]]; then
++        (cd "$top" && compgen -G "$pattern")
++        return 0
++    fi
++    printf '%s\n' "$pattern"
++}
++
+ # Patrones de sparse-checkout (modo no-cone): todo, menos cada hijo que los
+ # prefijos excluidos tienen en HEAD. El hijo que contiene OUT —el banco del
+ # propio pool— nunca se excluye: el verify del ítem llama a sus sondas por
+@@ -218,6 +338,7 @@ prepare() {
+         admit_disk "$repo" "$root" || exit $?
+         add_worktree "$repo" "$dir" "$out" || exit 2
+     ) 9> "$root/.admission.lock" || return $?
++    link_shared_dirs "$repo" "$dir" || return 2
+     printf '%s\n' "$dir"
+ }
+ 
+@@ -411,6 +532,7 @@ case "${1:-}" in
+     sweep) shift; sweep "$@" ;;
+     sweep-orphans) shift; sweep_orphans "$@" ;;
+     lock-path) shift; lock_path "$@" ;;
++    link-shared) shift; link_shared_dirs "$@" ;;
+     checkout-bytes) shift; checkout_bytes "$@" ;;
+-    *) echo "item_worktree: uso: prepare|finalize|sweep|sweep-orphans|lock-path|checkout-bytes …" >&2; exit 2 ;;
++    *) echo "item_worktree: uso: prepare|finalize|sweep|sweep-orphans|lock-path|link-shared|checkout-bytes …" >&2; exit 2 ;;
+ esac
+diff --git a/tests/session/test-item-worktree-links.sh b/tests/session/test-item-worktree-links.sh
+new file mode 100644
+index 000000000..738fa4d70
+--- /dev/null
++++ b/tests/session/test-item-worktree-links.sh
+@@ -0,0 +1,100 @@
++#!/usr/bin/env bash
++# Suite de los directorios que item_worktree.sh enlaza desde el árbol principal
++# al worktree de un ítem (TASK-THYROX-0645, H-THYROX-287). Un worktree es un
++# checkout: no trae `node_modules/` ni `.venv/`, que están en `.gitignore`. Como
++# vive DENTRO del árbol principal, la resolución de Node asciende hasta el
++# `node_modules` del principal y el verify tipa contra el código del principal;
++# y `bin/*` sin `.venv` cae al python del sistema avisando por stderr.
++#
++# Control de anulación, uno por mecanismo: sin `link_shared_dirs` en `prepare`
++# caen «resuelve dentro del worktree», «.venv es un enlace» y «entra al patrón
++# del principal» del caso 1 y el caso 4; sin `shadow_dir` (enlace plano) cae
++# sólo «resuelve dentro del worktree»; sin `exclude_links` caen sólo los dos del
++# caso 3.
++set -uo pipefail
++ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
++MODULE="${ITEM_WORKTREE_MODULE:-$ROOT/src/session/item_worktree.sh}"
++failures=0; total=0
++check() {
++    total=$((total + 1))
++    if [[ "$2" == "$3" ]]; then echo "  ok    $1"; else echo "  FALLA $1: esperado «$3», obtenido «$2»"; failures=$((failures + 1)); fi
++}
++
++# La resolución de Node: sube desde START hasta hallar node_modules/NAME y
++# devuelve su ruta real. Es lo que tsc hizo en la medición del banco.
++resolve_node_modules() {
++    local dir="$1" name="$2"
++    while true; do
++        [[ -e "$dir/node_modules/$name" ]] && { realpath "$dir/node_modules/$name"; return 0; }
++        [[ "$dir" == / ]] && return 1
++        dir="$(dirname "$dir")"
++    done
++}
++
++# El repositorio de prueba no puede vivir bajo `.claude/`: su ruta sería
++# sensible para el runner. Los worktrees van a su sitio por defecto, DENTRO
++# del repositorio, que es lo que produce el ascenso hasta el principal.
++mkdir -p "$HOME/.cache"
++W="$(mktemp -d "$HOME/.cache/thyrox-links-test.XXXXXX")"
++REPO="$W/repo"
++trap 'rm -rf "${W:?}"' EXIT
++git init -q "$REPO"
++mkdir -p "$REPO/packages/pkg" "$REPO/packages/consumer" "$REPO/node_modules/@x" \
++    "$REPO/node_modules/left-pad" "$REPO/node_modules/.bin" "$REPO/.venv/lib" \
++    "$REPO/packages/consumer/node_modules/diff"
++printf 'main\n' > "$REPO/packages/pkg/index.js"
++printf 'c\n' > "$REPO/packages/consumer/index.js"
++printf 'lp\n' > "$REPO/node_modules/left-pad/tool"
++printf 'd\n' > "$REPO/packages/consumer/node_modules/diff/index.js"
++printf 'home = /usr/bin\n' > "$REPO/.venv/pyvenv.cfg"
++ln -s ../../packages/pkg "$REPO/node_modules/@x/pkg"
++ln -s ../left-pad/tool "$REPO/node_modules/.bin/tool"
++ln -s lib "$REPO/.venv/lib64"
++printf 'node_modules/\n.venv/\n' > "$REPO/.gitignore"
++git -C "$REPO" add . && git -C "$REPO" -c user.email=t@t -c user.name=t commit -q -m base
++export THYROX_ITEM_WORKTREE_DISK_RESERVE_MB=0 THYROX_ITEM_WORKTREE_DISK_WAIT_SECONDS=0 \
++    THYROX_ITEM_WORKTREE_RETRY_SECONDS=0
++unset THYROX_POOL_WORKTREES_DIR THYROX_ITEM_WORKTREE_LINK
++
++echo "caso 0 — la fuga: sin enlaces, un consumidor del worktree resuelve el paquete del principal"
++dir0="$(THYROX_ITEM_WORKTREE_LINK="" bash "$MODULE" prepare "$REPO" "$W/out0" 1)"
++check "la resolución asciende hasta el principal" "$(resolve_node_modules "$dir0/packages/consumer" "@x/pkg")" "$(realpath "$REPO/packages/pkg")"
++check "y THYROX_ITEM_WORKTREE_LINK vacío no enlaza nada" "$([[ -e "$dir0/node_modules" || -e "$dir0/.venv" ]] && echo si || echo no)" "no"
++bash "$MODULE" sweep "$REPO" "$W/out0"
++
++echo "caso 1 — con los enlaces por defecto, el verify mide el código del worktree"
++dir="$(bash "$MODULE" prepare "$REPO" "$W/out1" 1)"; rc=$?
++check "prepare sale 0" "$rc" "0"
++printf 'edited\n' > "$dir/packages/pkg/index.js"
++check "el paquete de workspace resuelve dentro del worktree" "$(resolve_node_modules "$dir/packages/consumer" "@x/pkg")" "$(realpath "$dir/packages/pkg")"
++check "y es la copia editada por el ítem" "$(cat "$(resolve_node_modules "$dir/packages/consumer" "@x/pkg")/index.js")" "edited"
++check "una dependencia externa resuelve a la real del principal" "$(resolve_node_modules "$dir/packages/consumer" "left-pad")" "$(realpath "$REPO/node_modules/left-pad")"
++check "el .bin del principal sigue sirviendo" "$(cat "$dir/node_modules/.bin/tool")" "lp"
++check ".venv es un enlace al del principal" "$(readlink "$dir/.venv")" "$REPO/.venv"
++check "y su enlace interno sigue resolviendo" "$(realpath "$dir/.venv/lib64")" "$(realpath "$REPO/.venv/lib")"
++check "el node_modules de un paquete también llega" "$(cat "$dir/packages/consumer/node_modules/diff/index.js")" "d"
++
++echo "caso 2 — el worktree arranca limpio y el principal no cambia"
++check "git status del worktree calla" "$(git -C "$dir" status --porcelain | wc -l)" "0"
++check "el principal queda limpio" "$(git -C "$REPO" status --porcelain | wc -l)" "0"
++
++echo "caso 3 — los enlaces no entran al parche del ítem"
++mkdir -p "$W/out1"
++bash "$MODULE" finalize "$REPO" "$dir" "$W/out1" 1 0 >/dev/null 2>&1
++check "sólo el archivo editado está en el parche" "$(cat "$W/out1/1.files")" "packages/pkg/index.js"
++check "ningún enlace aparece" "$(grep -cE '^(node_modules|\.venv|packages/consumer/node_modules)' "$W/out1/1.files")" "0"
++
++echo "caso 4 — un nombre ausente en el principal se salta sin fallar"
++dir4="$(THYROX_ITEM_WORKTREE_LINK="node_modules no-existe .venv" bash "$MODULE" prepare "$REPO" "$W/out4" 1 2>"$W/err4")"; rc=$?
++check "prepare sale 0" "$rc" "0"
++check "lo dice por stderr" "$(grep -c 'no-existe' "$W/err4")" "1"
++check "y enlaza los que sí existen" "$([[ -L "$dir4/.venv" && -d "$dir4/node_modules" ]] && echo si || echo no)" "si"
++bash "$MODULE" sweep "$REPO" "$W/out4"
++
++echo "caso 5 — un nombre absoluto o con .. se rehúsa"
++THYROX_ITEM_WORKTREE_LINK="../fuera" bash "$MODULE" prepare "$REPO" "$W/out5" 1 >/dev/null 2>"$W/err5"; rc=$?
++check "exit 2" "$rc" "2"
++check "lo dice" "$(grep -c 'relativos' "$W/err5")" "1"
++
++echo "item_worktree links: $((total - failures))/$total"
++[[ "$failures" -eq 0 ]]

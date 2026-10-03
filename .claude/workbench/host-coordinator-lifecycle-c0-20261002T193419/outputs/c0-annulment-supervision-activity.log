@@ -1,0 +1,5 @@
+## supervision-activity
+$ cd src/packages/daemon && bun test src/__tests__/bgDaemonTimers.test.ts src/__tests__/modelCoordinatorSupervision.test.ts
+(fail) startModelCoordinatorSupervision > publica las admisiones vivas del coordinador como actividad; sin coordinador, cero [0.30ms]
+ 19 pass
+ 1 fail

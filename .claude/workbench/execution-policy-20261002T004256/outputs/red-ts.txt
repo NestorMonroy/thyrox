@@ -1,0 +1,14 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/recommendExecution.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../src/cost/executionPolicy.ts' from '/home/user/thyrox/src/packages/provider/__tests__/recommendExecution.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [250.00ms]

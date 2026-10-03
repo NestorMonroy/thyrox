@@ -1,0 +1,5 @@
+.claude/workbench/qwen-library-policy-20261002T070324
+bin/manifest: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox" && uv sync
+execution thyrox-worker-test-muqm9oqt-4129 kind=test work=ai-course-notes:es-mx/qwen-library-policy exit=0
+__BG_EXIT__=0

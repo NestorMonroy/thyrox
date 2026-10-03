@@ -1,0 +1,4 @@
+## tickets-guard
+  FALLA 5 con tickets vivos stop rehúsa con 4 — esperado [4] obtenido [0]
+  FALLA 6 stop sale 0 — esperado [0] obtenido [1]
+model_coordinator: 15 ok, 2 fallas

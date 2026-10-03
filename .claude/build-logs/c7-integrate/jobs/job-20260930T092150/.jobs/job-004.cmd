@@ -1,0 +1,1 @@
+timeout 300 python3 src/session/generate_bin.py --check > .claude/build-logs/c7-integrate/bin-check.log 2>&1; echo "rc=$?" >> .claude/build-logs/c7-integrate/bin-check.log

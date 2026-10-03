@@ -1,0 +1,79 @@
+bun test v1.3.11 (af24e281)
+
+ 23 pass
+ 0 fail
+ 80 expect() calls
+Ran 23 tests across 1 file. [443.00ms]
+bun test v1.3.11 (af24e281)
+
+ 13 pass
+ 0 fail
+ 29 expect() calls
+Ran 13 tests across 1 file. [234.00ms]
+bun test v1.3.11 (af24e281)
+
+ 3 pass
+ 0 fail
+ 3 expect() calls
+Ran 3 tests across 1 file. [203.00ms]
+
+== el registro decide cada clave de hogar del contrato ==
+  ok    ninguna clave de .env.example sin decidir
+  ok    ninguna decisión sobre una clave que el contrato ya no publica
+  ok    registrada y excluida son disjuntas
+  ok    toda exclusión lleva su razón
+  ok    todo default es relativo a la raíz
+  ok    todo hogar nombra su módulo dueño
+
+== una clave nueva en el contrato queda sin decidir ==
+  ok    la clave nueva sale como sin decidir
+
+== crea los hogares registrados, e idempotente ==
+  ok    primera corrida -> exit 0
+  ok    existen todos los hogares de directorio
+  ok    un hogar que es archivo sólo asegura su padre
+  ok    una línea de desenlace por hogar
+  ok    sobre un clon vacío, crea
+  ok    el modo del hogar creado no depende del umask
+  ok    segunda corrida -> exit 0
+  ok    segunda corrida no cambia el árbol
+  ok    segunda corrida: todo `existía`
+  ok    y lo dice
+
+== una declaración en el .env del clon gana al default ==
+  ok    exit 0
+  ok    crea el hogar declarado
+  ok    no crea el default
+
+== --resolve publica la ruta de un hogar sin crear nada ==
+  ok    exit 0
+  ok    imprime el default del registro
+  ok    no crea nada
+  ok    la declaración del clon gana
+  ok    una clave no registrada rehúsa con exit 2
+  ok    sin ruta en stdout
+  ok    nombra la clave
+
+== una declaración fuera del árbol no se crea ==
+  ok    exit 0
+  ok    lo dice
+  ok    no lo crea
+
+== una declaración no escribible rehúsa, sin crear nada ==
+  ok    exit 2
+  ok    nombra la clave
+  ok    no crea nada antes de rehusar
+
+== la caché de artefactos de modelo: mismo default que su dueño TS ==
+  ok    registrada como hogar
+  ok    es un directorio
+  ok    el dueño declara la clave
+  ok    el dueño compone el mismo default
+
+37 aserciones: 37 ok, 0 fallidas
+ruff: 0 hallazgo(s) (alcance medido: 2 archivo(s))
+pyright: 0 hallazgo(s) (alcance medido: 2 archivo(s))
+  local-models: 0 propio(s) · 0 de hermano · 0 fuera (total 0)  <- sin baseline
+  model-artifacts: 0 propio(s) · 0 de hermano · 0 fuera (total 0)  <- sin baseline
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 2 de 2 paquete(s))

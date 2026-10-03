@@ -1,0 +1,8 @@
+catalog revision	359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7
+registry manifest body sha256 (library/qwen3:4b)	359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7
+stored manifest sha256	359d7dd4bcdab3d86b87d73ac27966f4dbb9f5efdfcc75d34a8764a09474fae7
+model layer digest and bytes	sha256:3e4cb14174460404e7a233e531675303b2fbf7749c02f91864fe311ab6344e4f 2497280480
+local blob content sha256	3e4cb14174460404e7a233e531675303b2fbf7749c02f91864fe311ab6344e4f
+registry manifest by digest	404 (served by tag only)
+blob and artifact cache filesystem	same device 65024
+free bytes	9042702336

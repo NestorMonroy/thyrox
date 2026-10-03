@@ -1,0 +1,1267 @@
+diff --git a/src/packages/semantic-search/__tests__/corpus.postgres.test.ts b/src/packages/semantic-search/__tests__/corpus.postgres.test.ts
+index 7963aca16..6176cac29 100644
+--- a/src/packages/semantic-search/__tests__/corpus.postgres.test.ts
++++ b/src/packages/semantic-search/__tests__/corpus.postgres.test.ts
+@@ -1,5 +1,5 @@
+ /**
+- * Las invariantes del corpus durable (ADR-THYROX-008 1.2.0) contra un
++ * Las invariantes del corpus durable (ADR-THYROX-008 1.5.0) contra un
+  * PostgreSQL real: el índice no depende de la fuente, la reingesta es
+  * idempotente por hash, una versión nueva oculta la anterior, el cambio de
+  * modelo re-embebe desde los chunks persistidos y un análisis guardado
+@@ -23,7 +23,8 @@ const url = resolvePostgresTestUrl()
+ 
+ const MODEL_A = { model: 'model-a', dimensions: 4, representation: 'vector' as const }
+ const MODEL_B = { model: 'model-b', dimensions: 6, representation: 'halfvec' as const }
+-const SCOPE = 'adr'
++const DOMAIN = 'note'
++const REVISION = 'abc'
+ const NOTES = {
+   'alpha.md': ['PostgreSQL guarda el texto de cada chunk.', 'El embedding se regenera desde los chunks.'],
+   'beta.md': ['Un worker que muere no se lleva el corpus.'],
+@@ -55,7 +56,7 @@ function writeSourceDirectory(): string {
+ async function ingestDirectory(store: SemanticSearchStore, directory: string): Promise<void> {
+   for (const name of readdirSync(directory).sort()) {
+     const chunks = readFileSync(join(directory, name), 'utf8').split('\n')
+-    await store.ingestDocument({ scope: SCOPE, sourceIdentity: `tmp:${name}`, metadata: { name }, chunks })
++    await store.ingestDocument({ domain: DOMAIN, domainId: name, sourceRef: `tmp:${name}`, sourceRevision: null, metadata: { name }, chunks })
+   }
+ }
+ 
+@@ -89,7 +90,7 @@ if (!url) {
+         await activateNewSpace(store, MODEL_A)
+         const [first] = await store.searchNearest(embedText(target, MODEL_A.dimensions), 1, CANDIDATES)
+         expect(first?.text).toBe(target)
+-        expect(first?.sourceIdentity).toBe('tmp:beta.md')
++        expect(first).toMatchObject({ domain: DOMAIN, domainId: 'beta.md', sourceRef: 'tmp:beta.md', sourceRevision: null })
+         expect(first?.version).toBe(1)
+         expect(first?.similarity).toBeCloseTo(1, 5)
+         expect(typeof first?.documentId).toBe('string')
+@@ -101,7 +102,7 @@ if (!url) {
+   describe('corpus durable — ingesta idempotente por hash', () => {
+     test('el mismo contenido otra vez: unchanged y 0 filas nuevas en documentos, chunks y embeddings', async () => {
+       await withCorpusStore(testUrl, async (store, sql) => {
+-        const document = { scope: SCOPE, sourceIdentity: 'git:repo@abc:a.md', metadata: {}, chunks: ['uno', 'dos'] }
++        const document = { domain: DOMAIN, domainId: 'a.md', sourceRef: 'repo/a.md', sourceRevision: REVISION, metadata: {}, chunks: ['uno', 'dos'] }
+         const first = await store.ingestDocument(document)
+         expect(first.status).toBe('created')
+         const spaceId = await activateNewSpace(store, MODEL_A)
+@@ -118,7 +119,7 @@ if (!url) {
+   describe('corpus durable — cambio de contenido', () => {
+     test('otro contenido crea la versión 2 y la versión 1 deja de aparecer en la búsqueda', async () => {
+       await withCorpusStore(testUrl, async store => {
+-        const identity = { scope: SCOPE, sourceIdentity: 'git:repo@abc:c.md', metadata: {} }
++        const identity = { domain: DOMAIN, domainId: 'c.md', sourceRef: 'repo/c.md', sourceRevision: REVISION, metadata: {} }
+         const first = await store.ingestDocument({ ...identity, chunks: ['texto viejo del documento'] })
+         const spaceId = await activateNewSpace(store, MODEL_A)
+         const second = await store.ingestDocument({ ...identity, chunks: ['texto nuevo del documento'] })
+@@ -136,7 +137,7 @@ if (!url) {
+     // máxima, recorridas por el HNSW: el filtro descarta las viejas y deja la vigente.
+     test('la versión vigente aparece aunque haya muchas versiones viejas más cercanas', async () => {
+       await withCorpusStore(indexOnlyUrl(testUrl), async store => {
+-        const identity = { scope: SCOPE, sourceIdentity: 'git:repo@abc:e.md', metadata: {} }
++        const identity = { domain: DOMAIN, domainId: 'e.md', sourceRef: 'repo/e.md', sourceRevision: REVISION, metadata: {} }
+         const space = await store.createEmbeddingSpace(MODEL_A)
+         await store.activateSpace(space.spaceId)
+         for (let version = 1; version <= STALE_VERSIONS; version++) {
+@@ -172,7 +173,7 @@ if (!url) {
+ 
+     test('putEmbeddings con otra dimensión que la del espacio rehúsa nombrando las dos', async () => {
+       await withCorpusStore(testUrl, async store => {
+-        await store.ingestDocument({ scope: SCOPE, sourceIdentity: 's', metadata: {}, chunks: ['x'] })
++        await store.ingestDocument({ domain: DOMAIN, domainId: 's', sourceRef: 's', sourceRevision: null, metadata: {}, chunks: ['x'] })
+         const space = await store.createEmbeddingSpace(MODEL_A)
+         const [chunk] = await store.chunksWithoutEmbedding(space.spaceId, 1)
+         await expect(store.putEmbeddings(space.spaceId, [{ chunkId: chunk?.chunkId ?? '', embedding: [1, 2] }])).rejects.toThrow(/2 dimensions.*4/)
+@@ -181,7 +182,7 @@ if (!url) {
+ 
+     test('sin espacio activo la búsqueda rehúsa nombrándolo, no devuelve vacío', async () => {
+       await withCorpusStore(testUrl, async store => {
+-        await store.ingestDocument({ scope: SCOPE, sourceIdentity: 's', metadata: {}, chunks: ['x'] })
++        await store.ingestDocument({ domain: DOMAIN, domainId: 's', sourceRef: 's', sourceRevision: null, metadata: {}, chunks: ['x'] })
+         await store.createEmbeddingSpace(MODEL_A)
+         await expect(store.searchNearest([1, 1, 1, 1], 1, CANDIDATES)).rejects.toBeInstanceOf(NoActiveEmbeddingSpaceError)
+         await expect(store.searchNearest([1, 1, 1, 1], 1, CANDIDATES)).rejects.toThrow(/active embedding space/)
+@@ -217,7 +218,7 @@ if (!url) {
+   describe('corpus durable — análisis persistido', () => {
+     test('un analysis_run sobrevive a la reingesta y al retiro de su espacio con el mismo texto', async () => {
+       await withCorpusStore(testUrl, async store => {
+-        const identity = { scope: SCOPE, sourceIdentity: 'git:repo@abc:d.md', metadata: {} }
++        const identity = { domain: DOMAIN, domainId: 'd.md', sourceRef: 'repo/d.md', sourceRevision: REVISION, metadata: {} }
+         await store.ingestDocument({ ...identity, chunks: ['primera redacción', 'otro párrafo'] })
+         const spaceA = await activateNewSpace(store, MODEL_A)
+         const results = await store.searchNearest(embedText('primera redacción', MODEL_A.dimensions), 2, CANDIDATES)
+@@ -264,7 +265,7 @@ if (!url) {
+           expect(await recreated.migrate()).toEqual([])
+           expect(await topText(recreated, target, MODEL_A.dimensions)).toBe(target)
+           expect(await recreated.getAnalysisRun(analysisId)).toEqual(recorded)
+-          expect((await recreated.ingestDocument({ scope: SCOPE, sourceIdentity: 'tmp:beta.md', metadata: {}, chunks: NOTES['beta.md'] })).status).toBe('unchanged')
++          expect((await recreated.ingestDocument({ domain: DOMAIN, domainId: 'beta.md', sourceRef: 'tmp:beta.md', sourceRevision: null, metadata: {}, chunks: NOTES['beta.md'] })).status).toBe('unchanged')
+         } finally {
+           await recreated.close()
+         }
+diff --git a/src/packages/semantic-search/__tests__/identity.postgres.test.ts b/src/packages/semantic-search/__tests__/identity.postgres.test.ts
+new file mode 100644
+index 000000000..d16a66ace
+--- /dev/null
++++ b/src/packages/semantic-search/__tests__/identity.postgres.test.ts
+@@ -0,0 +1,213 @@
++/**
++ * La identidad del corpus durable (ADR-THYROX-008 1.5.0) contra un
++ * PostgreSQL real: un documento es `domain` · `scope` · `domainId`, su versión
++ * es el hash del contenido, y `sourceRef` · `sourceRevision` son procedencia
++ * que se guarda sin decidir nada. Las filas escritas con la identidad vieja
++ * (migración 2) convergen por `reconcileLegacyIdentities` sin que ningún
++ * análisis pierda el texto de sus candidatos.
++ *
++ * Sin `THYROX_TEST_POSTGRES_URL` la suite se declara NO MEDIDA en vez de pasar.
++ */
++import type { SQL } from 'bun'
++import { describe, expect, test } from 'bun:test'
++
++import { resolvePostgresTestUrl, withDisposableSchema } from '@thyrox/store/testing/postgresTestSchema.ts'
++
++import type { DocumentInput } from '../corpus.ts'
++import type { LegacyIdentityResolver } from '../legacyIdentity.ts'
++import { countRows, currentSchema, embedPending, openStoreFor, withCorpusStore } from './support/corpusFixtures.ts'
++import { allChunkIds, candidateTexts, insertLegacyAnalysisRun, insertLegacyDocument, migrateToLegacySchema } from './support/legacyCorpus.ts'
++
++const url = resolvePostgresTestUrl()
++
++const FINDINGS = 'finding'
++const ADR = 'adr'
++const MODEL = { model: 'model-a', dimensions: 4, representation: 'vector' as const }
++const REVISION_A = 'aaaaaaa'
++const REVISION_B = 'bbbbbbb'
++
++function finding(domainId: string, sourceRef: string, chunks: readonly string[], sourceRevision: string | null = REVISION_A): DocumentInput {
++  return { domain: FINDINGS, domainId, sourceRef, sourceRevision, metadata: {}, chunks }
++}
++
++async function versionsOf(sql: SQL, documentId: string): Promise<number[]> {
++  const rows = (await sql.unsafe('SELECT DISTINCT version FROM document_chunks WHERE document_id = $1 ORDER BY version', [documentId])) as { version: number }[]
++  return rows.map(row => row.version)
++}
++
++if (!url) {
++  describe('identidad de dominio — postgres', () => {
++    test.skip('NO MEDIDO: declara THYROX_TEST_POSTGRES_URL para correrlo', () => {})
++  })
++} else {
++  const testUrl = url
++
++  describe('identidad de dominio — ingesta', () => {
++    test('1: mismo domainId y mismo contenido desde dos rutas de clon es un documento con una versión', async () => {
++      await withCorpusStore(testUrl, async (store, sql) => {
++        const first = await store.ingestDocument(finding('H-API-0001', 'clone-a/pm/hallazgo-H-API-0001.rst', ['cuerpo 1']))
++        await store.ingestDocument(finding('H-API-0002', 'clone-a/pm/hallazgo-H-API-0002.rst', ['cuerpo 2']))
++        const again = await store.ingestDocument(finding('H-API-0001', 'clone-b/otra/ruta/hallazgo-H-API-0001.rst', ['cuerpo 1']))
++        expect(again).toEqual({ status: 'unchanged', documentId: first.documentId, version: 1 })
++        expect(await countRows(sql, 'documents')).toBe(2)
++        expect(await versionsOf(sql, first.documentId)).toEqual([1])
++      })
++    })
++
++    test('2: mismo domainId con contenido cambiado es un documento con dos versiones', async () => {
++      await withCorpusStore(testUrl, async (store, sql) => {
++        const first = await store.ingestDocument(finding('H-API-0001', 'clone-a/h.rst', ['redacción vieja']))
++        const second = await store.ingestDocument(finding('H-API-0001', 'clone-b/h.rst', ['redacción nueva']))
++        expect(second).toEqual({ status: 'new-version', documentId: first.documentId, version: 2 })
++        expect(await countRows(sql, 'documents')).toBe(1)
++        expect(await versionsOf(sql, first.documentId)).toEqual([1, 2])
++      })
++    })
++
++    test('3: distinto domainId con contenido idéntico son dos documentos', async () => {
++      await withCorpusStore(testUrl, async (store, sql) => {
++        const first = await store.ingestDocument(finding('H-API-0001', 'h1.rst', ['mismo texto']))
++        const second = await store.ingestDocument(finding('H-API-0002', 'h2.rst', ['mismo texto']))
++        expect(second.status).toBe('created')
++        expect(second.documentId).not.toBe(first.documentId)
++        expect(await countRows(sql, 'documents')).toBe(2)
++      })
++    })
++
++    test('4: cambiar sourceRef no cambia la identidad y actualiza la procedencia', async () => {
++      await withCorpusStore(testUrl, async store => {
++        const first = await store.ingestDocument(finding('H-API-0001', 'clone-a/h.rst', ['texto']))
++        const moved = await store.ingestDocument(finding('H-API-0001', 'clone-a/movido/h.rst', ['texto']))
++        expect(moved.documentId).toBe(first.documentId)
++        const found = await store.findDocument({ domain: FINDINGS, domainId: 'H-API-0001' })
++        expect(found?.documentId).toBe(first.documentId)
++        expect(found?.sourceRef).toBe('clone-a/movido/h.rst')
++      })
++    })
++
++    test('5: cambiar sourceRevision sin cambiar el contenido no crea versión', async () => {
++      await withCorpusStore(testUrl, async (store, sql) => {
++        const first = await store.ingestDocument(finding('H-API-0001', 'h.rst', ['texto'], REVISION_A))
++        const again = await store.ingestDocument(finding('H-API-0001', 'h.rst', ['texto'], REVISION_B))
++        expect(again).toEqual({ status: 'unchanged', documentId: first.documentId, version: 1 })
++        expect(await countRows(sql, 'document_chunks')).toBe(1)
++        const found = await store.findDocument({ domain: FINDINGS, domainId: 'H-API-0001' })
++        expect(found).toMatchObject({ version: 1, sourceRevision: REVISION_B })
++      })
++    })
++
++    test('8: mismo domainId en dos scopes de un dominio con scope son dos documentos', async () => {
++      await withCorpusStore(testUrl, async (store, sql) => {
++        const common = { domain: ADR, domainId: 'ADR-001', sourceRevision: null, metadata: {}, chunks: ['decisión'] }
++        const thyrox = await store.ingestDocument({ ...common, scope: 'thyrox', sourceRef: 'thyrox/adr-001.rst' })
++        const api = await store.ingestDocument({ ...common, scope: 'kaupamex-api', sourceRef: 'api/adr-001.rst' })
++        expect([thyrox.status, api.status]).toEqual(['created', 'created'])
++        expect(await countRows(sql, 'documents')).toBe(2)
++        expect((await store.findDocument({ domain: ADR, scope: 'kaupamex-api', domainId: 'ADR-001' }))?.documentId).toBe(api.documentId)
++        expect(await store.findDocument({ domain: ADR, domainId: 'ADR-001' })).toBeNull()
++      })
++    })
++
++    test('findDocument devuelve la versión y el hash vigentes; la búsqueda devuelve la identidad y la procedencia', async () => {
++      await withCorpusStore(testUrl, async store => {
++        await store.ingestDocument(finding('H-API-0001', 'h.rst', ['uno']))
++        const second = await store.ingestDocument(finding('H-API-0001', 'h.rst', ['dos'], REVISION_B))
++        const found = await store.findDocument({ domain: FINDINGS, scope: '', domainId: 'H-API-0001' })
++        expect(found).toMatchObject({ documentId: second.documentId, domain: FINDINGS, scope: '', domainId: 'H-API-0001', version: 2, sourceRef: 'h.rst' })
++        expect(found?.contentHash).toMatch(/^[0-9a-f]{64}$/)
++        const space = await store.createEmbeddingSpace(MODEL)
++        await embedPending(store, space.spaceId, MODEL.dimensions)
++        await store.activateSpace(space.spaceId)
++        const [hit] = await store.searchNearest([1, 1, 1, 1], 1, { candidates: 5 })
++        expect(hit).toMatchObject({ text: 'dos', domain: FINDINGS, domainId: 'H-API-0001', sourceRef: 'h.rst', sourceRevision: REVISION_B, version: 2 })
++      })
++    })
++  })
++
++  describe('identidad de dominio — migración v2 → v3 y reconciliación', () => {
++    test('6 y 7: lo viejo converge a la identidad de dominio sin dejar análisis colgados; lo no mapeado queda sin mapear', async () => {
++      await withDisposableSchema(testUrl, async sql => {
++        const schema = await currentSchema(sql)
++        await migrateToLegacySchema(sql)
++        const earliest = await insertLegacyDocument(sql, {
++          scope: 'adr',
++          sourceIdentity: 'thyrox@c0:clone-b/adr-001.rst',
++          versions: [['versión cero']],
++          ingestedAt: '2026-09-01T00:00:00Z',
++        })
++        const later = await insertLegacyDocument(sql, {
++          scope: 'adr',
++          sourceIdentity: 'thyrox@c1:clone-a/adr-001.rst',
++          versions: [['versión uno'], ['versión dos', 'anexo']],
++          ingestedAt: '2026-09-02T00:00:00Z',
++        })
++        const duplicate = await insertLegacyDocument(sql, {
++          scope: 'adr',
++          sourceIdentity: 'thyrox@c2:clone-c/adr-001.rst',
++          versions: [['versión dos', 'anexo']],
++          ingestedAt: '2026-09-03T00:00:00Z',
++        })
++        await insertLegacyDocument(sql, { scope: 'adr', sourceIdentity: 'thyrox@c1:clone-a/adr-002.rst', versions: [['otra decisión']], ingestedAt: '2026-09-02T00:00:00Z' })
++        await insertLegacyDocument(sql, { scope: 'notes', sourceIdentity: 'tmp:borrador.md', versions: [['sin dueño']], ingestedAt: '2026-09-02T00:00:00Z' })
++        const cited = [earliest.chunkIds[0]?.[0], later.chunkIds[0]?.[0], duplicate.chunkIds[0]?.[1], later.chunkIds[1]?.[0]].map(id => id ?? '')
++        const analysisId = await insertLegacyAnalysisRun(sql, cited)
++        const textsBefore = await candidateTexts(sql, analysisId)
++        const chunksBefore = await allChunkIds(sql)
++
++        const store = openStoreFor(testUrl, schema)
++        try {
++          expect(await store.migrate()).toEqual([3])
++          const resolve: LegacyIdentityResolver = (_scope, sourceIdentity) => {
++            const match = /adr-(\d+)\.rst$/.exec(sourceIdentity)
++            return match ? { domain: ADR, scope: 'thyrox', domainId: `ADR-${match[1]}` } : null
++          }
++          expect(await store.reconcileLegacyIdentities(resolve)).toEqual({ mapped: 4, unmapped: 1, documents: 2 })
++
++          const adr001 = await store.findDocument({ domain: ADR, scope: 'thyrox', domainId: 'ADR-001' })
++          expect(adr001).toMatchObject({ version: 3, sourceRef: 'thyrox@c2:clone-c/adr-001.rst' })
++          expect(await versionsOf(sql, adr001?.documentId ?? '')).toEqual([1, 2, 3])
++          expect(await allChunkIds(sql)).toEqual(chunksBefore)
++          expect(await candidateTexts(sql, analysisId)).toEqual(textsBefore)
++
++          const run = await store.getAnalysisRun(analysisId)
++          expect(run?.candidates.map(candidate => candidate.text)).toEqual(textsBefore)
++          expect(run?.corpusVersions).toEqual([1, 2, 3].map(version => ({ documentId: adr001?.documentId ?? '', version })))
++
++          expect(await countRows(sql, 'documents')).toBe(3)
++          const [unmapped] = (await sql.unsafe('SELECT count(*)::int AS n FROM documents WHERE domain IS NULL')) as { n: number }[]
++          expect(unmapped?.n).toBe(1)
++          expect(await store.findDocument({ domain: 'notes', scope: 'notes', domainId: 'tmp:borrador.md' })).toBeNull()
++          const reingested = await store.ingestDocument({ domain: 'notes', scope: 'notes', domainId: 'borrador', sourceRef: 'tmp:borrador.md', sourceRevision: null, metadata: {}, chunks: ['sin dueño'] })
++          expect(reingested.status).toBe('created')
++
++          const space = await store.createEmbeddingSpace(MODEL)
++          const embedded = await embedPending(store, space.spaceId, MODEL.dimensions)
++          expect(embedded).toBe(4)
++          expect(await store.reconcileLegacyIdentities(resolve)).toEqual({ mapped: 0, unmapped: 1, documents: 0 })
++        } finally {
++          await store.close()
++        }
++      })
++    })
++
++    test('la reconciliación converge sobre un documento ya ingerido con la identidad nueva', async () => {
++      await withDisposableSchema(testUrl, async sql => {
++        const schema = await currentSchema(sql)
++        await migrateToLegacySchema(sql)
++        await insertLegacyDocument(sql, { scope: 'h', sourceIdentity: 'docs@c0:H-API-0007.rst', versions: [['antes']], ingestedAt: '2026-09-01T00:00:00Z' })
++        const store = openStoreFor(testUrl, schema)
++        try {
++          await store.migrate()
++          const current = await store.ingestDocument(finding('H-API-0007', 'docs/H-API-0007.rst', ['ahora']))
++          const result = await store.reconcileLegacyIdentities(() => ({ domain: FINDINGS, scope: '', domainId: 'H-API-0007' }))
++          expect(result).toEqual({ mapped: 1, unmapped: 0, documents: 1 })
++          const found = await store.findDocument({ domain: FINDINGS, domainId: 'H-API-0007' })
++          expect(found).toMatchObject({ documentId: current.documentId, version: 2, sourceRef: 'docs/H-API-0007.rst' })
++          expect(await countRows(sql, 'documents')).toBe(1)
++        } finally {
++          await store.close()
++        }
++      })
++    })
++  })
++}
+diff --git a/src/packages/semantic-search/__tests__/store.postgres.test.ts b/src/packages/semantic-search/__tests__/store.postgres.test.ts
+index 134e73541..df4c77ff9 100644
+--- a/src/packages/semantic-search/__tests__/store.postgres.test.ts
++++ b/src/packages/semantic-search/__tests__/store.postgres.test.ts
+@@ -14,12 +14,13 @@ import { resolvePostgresTestUrl, withDisposableSchema } from '@thyrox/store/test
+ 
+ import { MINIMUM_PGVECTOR_VERSION, VectorExtensionVersionError } from '../extension.ts'
+ import { openSemanticSearchStore, type SemanticSearchStore } from '../store.ts'
+-import { CORPUS_MIGRATION_VERSION, MIGRATIONS_TABLE } from '../corpusSql.ts'
++import { CORPUS_MIGRATIONS, MIGRATIONS_TABLE } from '../corpusSql.ts'
+ import { binaryCandidatesQuery, spaceIndexName, spaceTableName } from '../vectorSql.ts'
+ import { currentSchema, openStoreFor, withCorpusStore } from './support/corpusFixtures.ts'
+ 
+ const url = resolvePostgresTestUrl()
+ const DIMENSIONS = 4
++const MIGRATION_VERSIONS = CORPUS_MIGRATIONS.map(migration => migration.version)
+ const CORPUS_TABLES = ['analysis_candidates', 'analysis_runs', 'document_chunks', 'documents', 'embedding_spaces']
+ 
+ /**
+@@ -58,7 +59,7 @@ function alternateUrl(original: string): string {
+ 
+ /** Ingiere el conjunto conocido como un documento de un chunk por etiqueta y lo embebe con sus vectores fijos. */
+ async function seedKnownSet(store: SemanticSearchStore): Promise<{ spaceId: number; labelOf: Map<string, string> }> {
+-  await store.ingestDocument({ scope: 'known', sourceIdentity: 'known-set', metadata: {}, chunks: Object.keys(KNOWN_SET) })
++  await store.ingestDocument({ domain: 'known', domainId: 'known-set', sourceRef: 'known-set.txt', sourceRevision: null, metadata: {}, chunks: Object.keys(KNOWN_SET) })
+   const space = await store.createEmbeddingSpace({ model: 'fixed', dimensions: DIMENSIONS, representation: 'vector' })
+   const pending = await store.chunksWithoutEmbedding(space.spaceId, 10)
+   await store.putEmbeddings(space.spaceId, pending.map(chunk => ({ chunkId: chunk.chunkId, embedding: KNOWN_SET[chunk.text] ?? [] })))
+@@ -74,16 +75,16 @@ if (!url) {
+   const testUrl = url
+ 
+   describe('SemanticSearchStore — migración', () => {
+-    test('crea las tablas del corpus y registra su versión en el ledger', async () => {
++    test('crea las tablas del corpus y registra sus versiones en el ledger', async () => {
+       await withDisposableSchema(testUrl, async sql => {
+         const schema = await currentSchema(sql)
+         const store = openStoreFor(testUrl, schema)
+         try {
+-          expect(await store.migrate()).toEqual([CORPUS_MIGRATION_VERSION])
++          expect(await store.migrate()).toEqual(MIGRATION_VERSIONS)
+           const tables = (await sql.unsafe('SELECT tablename FROM pg_tables WHERE schemaname = $1 ORDER BY tablename', [schema])) as { tablename: string }[]
+           expect(tables.map(row => row.tablename).filter(name => name !== MIGRATIONS_TABLE)).toEqual(CORPUS_TABLES)
+           const ledger = (await sql.unsafe(`SELECT version FROM ${MIGRATIONS_TABLE}`)) as { version: number }[]
+-          expect(ledger.map(row => row.version)).toEqual([CORPUS_MIGRATION_VERSION])
++          expect(ledger.map(row => row.version).sort()).toEqual(MIGRATION_VERSIONS)
+           expect(await store.migrate()).toEqual([])
+         } finally {
+           await store.close()
+@@ -168,11 +169,11 @@ if (!url) {
+       const otherUrl = alternateUrl(testUrl)
+       expect(otherUrl).not.toBe(testUrl)
+       await withCorpusStore(testUrl, async (store, _sql, schema) => {
+-        const ingested = await store.ingestDocument({ scope: 's', sourceIdentity: 'a', metadata: { origin: 'first-url' }, chunks: ['a'] })
++        const ingested = await store.ingestDocument({ domain: 's', domainId: 'a', sourceRef: 'a', sourceRevision: null, metadata: { origin: 'first-url' }, chunks: ['a'] })
+         const other = openStoreFor(otherUrl, schema)
+         try {
+           expect(await other.migrate()).toEqual([])
+-          expect(await other.ingestDocument({ scope: 's', sourceIdentity: 'a', metadata: {}, chunks: ['a'] })).toEqual({ ...ingested, status: 'unchanged' })
++          expect(await other.ingestDocument({ domain: 's', domainId: 'a', sourceRef: 'a', sourceRevision: null, metadata: {}, chunks: ['a'] })).toEqual({ ...ingested, status: 'unchanged' })
+         } finally {
+           await other.close()
+         }
+@@ -201,7 +202,7 @@ if (!url) {
+         const nearest = await store.searchNearest(QUERY, 2, { candidates: 4 })
+         expect(nearest.map(result => result.text)).toEqual(['x', 'y'])
+         expect(nearest[0]?.similarity).toBeCloseTo(cosine(QUERY, KNOWN_SET.x ?? []), 5)
+-        expect(nearest[0]?.sourceIdentity).toBe('known-set')
++        expect(nearest[0]).toMatchObject({ domain: 'known', domainId: 'known-set', sourceRef: 'known-set.txt' })
+       })
+     })
+ 
+diff --git a/src/packages/semantic-search/__tests__/support/legacyCorpus.ts b/src/packages/semantic-search/__tests__/support/legacyCorpus.ts
+new file mode 100644
+index 000000000..ecc761eb2
+--- /dev/null
++++ b/src/packages/semantic-search/__tests__/support/legacyCorpus.ts
+@@ -0,0 +1,87 @@
++/**
++ * Escribe un corpus con la forma de la migración 2 —identidad `scope` ·
++ * `source_identity`— directamente en SQL, como lo dejó la implementación
++ * anterior: la migración 3 y la reconciliación se prueban sobre esas filas,
++ * no sobre filas fabricadas con la API nueva.
++ */
++import type { SQL } from 'bun'
++
++import { runMigrations } from '@thyrox/store/migrations.ts'
++
++import { chunkHash, documentHash } from '../../contentHash.ts'
++import { CORPUS_MIGRATIONS, MIGRATIONS_TABLE } from '../../corpusSql.ts'
++
++const LEGACY_MIGRATION_COUNT = 1
++
++export type LegacyDocument = { scope: string; sourceIdentity: string; versions: readonly (readonly string[])[]; ingestedAt: string }
++
++/** Chunks escritos por versión: `chunkIds[v - 1][posición]`. */
++export type LegacyRows = { documentId: string; chunkIds: string[][] }
++
++/** Aplica sólo la migración 2 del corpus: el esquema tal como estaba antes de la identidad de dominio. */
++export async function migrateToLegacySchema(sql: SQL): Promise<void> {
++  await runMigrations(sql, 'postgres', { table: MIGRATIONS_TABLE, migrations: CORPUS_MIGRATIONS.slice(0, LEGACY_MIGRATION_COUNT) })
++}
++
++/** Inserta un documento con la identidad vieja y todas sus versiones de chunks. */
++export async function insertLegacyDocument(sql: SQL, document: LegacyDocument): Promise<LegacyRows> {
++  const current = document.versions.at(-1) ?? []
++  const [row] = (await sql.unsafe(
++    `INSERT INTO documents (scope, source_identity, version, content_hash, metadata, ingested_at)
++     VALUES ($1, $2, $3, $4, $5::jsonb, $6::timestamptz) RETURNING document_id`,
++    [document.scope, document.sourceIdentity, document.versions.length, documentHash(current), JSON.stringify({ origin: document.sourceIdentity }), document.ingestedAt],
++  )) as { document_id: string }[]
++  if (!row) throw new Error(`inserting legacy document '${document.sourceIdentity}' returned no row`)
++  const chunkIds: string[][] = []
++  for (const [index, chunks] of document.versions.entries()) {
++    const ids: string[] = []
++    for (const [position, text] of chunks.entries()) {
++      const [chunk] = (await sql.unsafe(
++        `INSERT INTO document_chunks (document_id, version, position, text, content_hash) VALUES ($1, $2, $3, $4, $5) RETURNING chunk_id`,
++        [row.document_id, index + 1, position, text, chunkHash(text)],
++      )) as { chunk_id: string }[]
++      if (!chunk) throw new Error(`inserting legacy chunk of '${document.sourceIdentity}' returned no row`)
++      ids.push(chunk.chunk_id)
++    }
++    chunkIds.push(ids)
++  }
++  return { documentId: row.document_id, chunkIds }
++}
++
++/** Un análisis de la forma v2 que cita `chunkIds` en orden, con sus versiones de corpus fijadas por SQL. */
++export async function insertLegacyAnalysisRun(sql: SQL, chunkIds: readonly string[]): Promise<string> {
++  const [space] = (await sql.unsafe(
++    `INSERT INTO embedding_spaces (model, dimensions, representation, state) VALUES ('legacy', 4, 'vector', 'retired') RETURNING space_id`,
++  )) as { space_id: number }[]
++  const [run] = (await sql.unsafe(
++    `INSERT INTO analysis_runs (input, space_id, corpus_versions, output) VALUES ('legacy query', $1, '[]'::jsonb, '{}'::jsonb) RETURNING analysis_id`,
++    [space?.space_id],
++  )) as { analysis_id: string }[]
++  if (!run) throw new Error('inserting legacy analysis run returned no row')
++  for (const [rank, chunkId] of chunkIds.entries()) {
++    await sql.unsafe(`INSERT INTO analysis_candidates (analysis_id, rank, chunk_id, score) VALUES ($1, $2, $3, 1)`, [run.analysis_id, rank, chunkId])
++  }
++  await sql.unsafe(
++    `UPDATE analysis_runs SET corpus_versions = (
++       SELECT jsonb_agg(jsonb_build_object('documentId', used.document_id, 'version', used.version) ORDER BY used.document_id, used.version)
++         FROM (SELECT DISTINCT c.document_id, c.version FROM analysis_candidates a
++                 JOIN document_chunks c ON c.chunk_id = a.chunk_id WHERE a.analysis_id = $1) AS used)
++     WHERE analysis_id = $1`,
++    [run.analysis_id],
++  )
++  return run.analysis_id
++}
++
++/** El texto de los candidatos de un análisis en orden de rango, leído por SQL (válido en v2 y en v3). */
++export async function candidateTexts(sql: SQL, analysisId: string): Promise<string[]> {
++  const rows = (await sql.unsafe(
++    `SELECT c.text FROM analysis_candidates a JOIN document_chunks c ON c.chunk_id = a.chunk_id WHERE a.analysis_id = $1 ORDER BY a.rank`,
++    [analysisId],
++  )) as { text: string }[]
++  return rows.map(row => row.text)
++}
++
++export async function allChunkIds(sql: SQL): Promise<string[]> {
++  const rows = (await sql.unsafe('SELECT chunk_id FROM document_chunks ORDER BY chunk_id')) as { chunk_id: string }[]
++  return rows.map(row => row.chunk_id)
++}
+diff --git a/src/packages/semantic-search/analysisRuns.ts b/src/packages/semantic-search/analysisRuns.ts
+index 8bb4591c6..6b3bd0d02 100644
+--- a/src/packages/semantic-search/analysisRuns.ts
++++ b/src/packages/semantic-search/analysisRuns.ts
+@@ -37,7 +37,10 @@ export type AnalysisCandidate = {
+   chunkId: string
+   score: number
+   documentId: string
+-  sourceIdentity: string
++  domain: string | null
++  domainId: string | null
++  sourceRef: string
++  sourceRevision: string | null
+   version: number
+   position: number
+   text: string
+@@ -77,7 +80,10 @@ type CandidateRow = {
+   version: number
+   position: number
+   text: string
+-  source_identity: string
++  domain: string | null
++  domain_id: string | null
++  source_ref: string
++  source_revision: string | null
+ }
+ 
+ function assertFiniteScores(candidates: readonly AnalysisCandidateInput[]): void {
+@@ -91,7 +97,10 @@ function toCandidate(row: CandidateRow): AnalysisCandidate {
+     chunkId: row.chunk_id,
+     score: row.score,
+     documentId: row.document_id,
+-    sourceIdentity: row.source_identity,
++    domain: row.domain,
++    domainId: row.domain_id,
++    sourceRef: row.source_ref,
++    sourceRevision: row.source_revision,
+     version: row.version,
+     position: row.position,
+     text: row.text,
+diff --git a/src/packages/semantic-search/corpus.ts b/src/packages/semantic-search/corpus.ts
+index 60ecd301b..f48afa156 100644
+--- a/src/packages/semantic-search/corpus.ts
++++ b/src/packages/semantic-search/corpus.ts
+@@ -1,42 +1,123 @@
+ /**
+- * La ingesta del corpus durable: un documento es su identidad de origen
+- * (`scope` · `sourceIdentity`) y una secuencia de versiones de chunks. El
++ * La ingesta del corpus durable: un documento es su identidad de dominio
++ * (`domain` · `scope` · `domainId`) y una secuencia de versiones de chunks. El
+  * hash del contenido decide si una reingesta es la misma versión; todo
+  * ocurre en una transacción con el documento bloqueado.
+  *
+- * `sourceIdentity` es texto para trazar (repo@commit:ruta, URL, …) y nunca se
+- * abre: el contenido llega entero en `chunks`. No hay edición de chunks: una
+- * corrección llega por reingesta, como versión nueva.
++ * `sourceRef` y `sourceRevision` son procedencia (ruta de un clon, commit,
++ * URL, …): se guardan y se actualizan, pero no deciden identidad ni versión,
++ * y nunca se abren: el contenido llega entero en `chunks`. No hay edición de
++ * chunks: una corrección llega por reingesta, como versión nueva.
+  */
+ import type { SQL } from 'bun'
+ 
++import { readJson } from '@thyrox/store/sql.ts'
++
+ import { chunkHash, documentHash } from './contentHash.ts'
+-import { INSERT_CHUNK_QUERY, INSERT_DOCUMENT_QUERY, LOCK_DOCUMENT_QUERY, UPDATE_DOCUMENT_QUERY } from './corpusSql.ts'
++import {
++  INSERT_CHUNK_QUERY,
++  INSERT_DOCUMENT_QUERY,
++  LOCK_DOCUMENT_QUERY,
++  SELECT_DOCUMENT_QUERY,
++  UPDATE_DOCUMENT_QUERY,
++  UPDATE_PROVENANCE_QUERY,
++} from './corpusSql.ts'
+ import { InvalidCorpusInputError } from './errors.ts'
+ 
+ export type Metadata = Record<string, unknown>
+ 
+-export type DocumentInput = { scope: string; sourceIdentity: string; metadata: Metadata; chunks: readonly string[] }
++/** El scope de un dominio cuyos ids son únicos en todo el dominio (findings: `H-<PREFIJO>-NNN`). */
++export const DOMAIN_WIDE_SCOPE = ''
++
++/** La identidad de un documento; sin `scope`, la del dominio entero. */
++export type DocumentIdentity = { domain: string; scope?: string; domainId: string }
++
++export type DocumentInput = DocumentIdentity & {
++  sourceRef: string
++  sourceRevision: string | null
++  metadata: Metadata
++  chunks: readonly string[]
++}
+ 
+-/** `created`: primera versión · `new-version`: el hash cambió · `unchanged`: no se escribió nada. */
++/** `created`: primera versión · `new-version`: el hash cambió · `unchanged`: mismo contenido, a lo sumo procedencia nueva. */
+ export type IngestStatus = 'created' | 'new-version' | 'unchanged'
+ 
+ export type IngestResult = { status: IngestStatus; documentId: string; version: number }
+ 
+-type LockedDocument = { document_id: string; version: number; content_hash: string }
++/** Un documento ingerido con su versión y hash vigentes. */
++export type StoredDocument = {
++  documentId: string
++  domain: string
++  scope: string
++  domainId: string
++  version: number
++  contentHash: string
++  sourceRef: string
++  sourceRevision: string | null
++  metadata: Metadata
++}
++
++type DocumentRow = {
++  document_id: string
++  domain: string
++  scope: string
++  domain_id: string
++  version: number
++  content_hash: string
++  source_ref: string
++  source_revision: string | null
++  metadata: unknown
++}
+ 
+ type Transaction = Pick<SQL, 'unsafe'>
+ 
++function isBlank(value: string): boolean {
++  return value.trim() === ''
++}
++
++/** `DOMAIN_WIDE_SCOPE` o un scope con contenido; nunca sólo espacios. */
++function isValidScope(scope: string): boolean {
++  return scope === DOMAIN_WIDE_SCOPE || !isBlank(scope)
++}
++
++export function scopeOf(identity: DocumentIdentity): string {
++  return identity.scope ?? DOMAIN_WIDE_SCOPE
++}
++
++export function assertValidIdentity(identity: DocumentIdentity): void {
++  if (isBlank(identity.domain)) throw new InvalidCorpusInputError('document domain must be a non-empty string')
++  if (isBlank(identity.domainId)) throw new InvalidCorpusInputError('document domainId must be a non-empty string')
++  if (!isValidScope(scopeOf(identity))) throw new InvalidCorpusInputError(`document scope must be '' or a non-blank string, got '${identity.scope}'`)
++}
++
+ function assertValidDocument(input: DocumentInput): void {
+-  if (!input.scope.trim()) throw new InvalidCorpusInputError('document scope must be a non-empty string')
+-  if (!input.sourceIdentity.trim()) throw new InvalidCorpusInputError('document sourceIdentity must be a non-empty string')
+-  if (input.chunks.length === 0) throw new InvalidCorpusInputError(`document '${input.sourceIdentity}' has no chunks`)
++  assertValidIdentity(input)
++  if (isBlank(input.sourceRef)) throw new InvalidCorpusInputError(`document '${input.domainId}' needs a non-empty sourceRef`)
++  if (input.chunks.length === 0) throw new InvalidCorpusInputError(`document '${input.domainId}' has no chunks`)
+ }
+ 
+-function isSameContent(existing: LockedDocument, contentHash: string): boolean {
++function identityParameters(identity: DocumentIdentity): string[] {
++  return [identity.domain, scopeOf(identity), identity.domainId]
++}
++
++function isSameContent(existing: DocumentRow, contentHash: string): boolean {
+   return existing.content_hash === contentHash
+ }
+ 
++function toStoredDocument(row: DocumentRow): StoredDocument {
++  return {
++    documentId: row.document_id,
++    domain: row.domain,
++    scope: row.scope,
++    domainId: row.domain_id,
++    version: row.version,
++    contentHash: row.content_hash,
++    sourceRef: row.source_ref,
++    sourceRevision: row.source_revision,
++    metadata: readJson(row.metadata),
++  }
++}
++
+ async function insertChunks(tx: Transaction, documentId: string, version: number, chunks: readonly string[]): Promise<void> {
+   for (const [position, text] of chunks.entries()) {
+     await tx.unsafe(INSERT_CHUNK_QUERY, [documentId, version, position, text, chunkHash(text)])
+@@ -44,33 +125,45 @@ async function insertChunks(tx: Transaction, documentId: string, version: number
+ }
+ 
+ async function createDocument(tx: Transaction, input: DocumentInput, contentHash: string): Promise<IngestResult> {
+-  const [row] = (await tx.unsafe(INSERT_DOCUMENT_QUERY, [input.scope, input.sourceIdentity, contentHash, JSON.stringify(input.metadata)])) as {
+-    document_id: string
+-  }[]
+-  if (!row) throw new Error(`inserting document '${input.sourceIdentity}' returned no row`)
++  const parameters = [...identityParameters(input), input.sourceRef, input.sourceRevision, contentHash, JSON.stringify(input.metadata)]
++  const [row] = (await tx.unsafe(INSERT_DOCUMENT_QUERY, parameters)) as { document_id: string }[]
++  if (!row) throw new Error(`inserting document '${input.domain}:${input.domainId}' returned no row`)
+   await insertChunks(tx, row.document_id, 1, input.chunks)
+   return { status: 'created', documentId: row.document_id, version: 1 }
+ }
+ 
+-async function addVersion(tx: Transaction, existing: LockedDocument, input: DocumentInput, contentHash: string): Promise<IngestResult> {
++async function addVersion(tx: Transaction, existing: DocumentRow, input: DocumentInput, contentHash: string): Promise<IngestResult> {
+   const version = existing.version + 1
+-  await tx.unsafe(UPDATE_DOCUMENT_QUERY, [existing.document_id, version, contentHash, JSON.stringify(input.metadata)])
++  await tx.unsafe(UPDATE_DOCUMENT_QUERY, [existing.document_id, version, contentHash, JSON.stringify(input.metadata), input.sourceRef, input.sourceRevision])
+   await insertChunks(tx, existing.document_id, version, input.chunks)
+   return { status: 'new-version', documentId: existing.document_id, version }
+ }
+ 
++async function keepVersion(tx: Transaction, existing: DocumentRow, input: DocumentInput): Promise<IngestResult> {
++  await tx.unsafe(UPDATE_PROVENANCE_QUERY, [existing.document_id, input.sourceRef, input.sourceRevision])
++  return { status: 'unchanged', documentId: existing.document_id, version: existing.version }
++}
++
+ /**
+- * Ingiere un documento. Mismo origen y mismo hash: `unchanged`, sin escribir
+- * nada —tampoco la metadata—. Hash distinto: versión nueva con sus chunks, y
+- * la anterior deja de ser buscable (su texto se conserva para los análisis).
++ * Ingiere un documento. Misma identidad y mismo hash: `unchanged`, sin
++ * versión ni chunks nuevos —sólo la procedencia, si cambió—. Hash distinto:
++ * versión nueva con sus chunks, y la anterior deja de ser buscable (su texto
++ * se conserva para los análisis).
+  */
+ export async function ingestDocument(sql: SQL, input: DocumentInput): Promise<IngestResult> {
+   assertValidDocument(input)
+   const contentHash = documentHash(input.chunks)
+   return sql.begin(async tx => {
+-    const [existing] = (await tx.unsafe(LOCK_DOCUMENT_QUERY, [input.scope, input.sourceIdentity])) as LockedDocument[]
++    const [existing] = (await tx.unsafe(LOCK_DOCUMENT_QUERY, identityParameters(input))) as DocumentRow[]
+     if (!existing) return createDocument(tx, input, contentHash)
+-    if (isSameContent(existing, contentHash)) return { status: 'unchanged', documentId: existing.document_id, version: existing.version }
++    if (isSameContent(existing, contentHash)) return keepVersion(tx, existing, input)
+     return addVersion(tx, existing, input, contentHash)
+   })
+ }
++
++/** El documento ingerido con esa identidad, o `null`: una fila sin mapear nunca se devuelve. */
++export async function findDocument(sql: SQL, identity: DocumentIdentity): Promise<StoredDocument | null> {
++  assertValidIdentity(identity)
++  const [row] = (await sql.unsafe(SELECT_DOCUMENT_QUERY, identityParameters(identity))) as DocumentRow[]
++  return row ? toStoredDocument(row) : null
++}
+diff --git a/src/packages/semantic-search/corpusSql.ts b/src/packages/semantic-search/corpusSql.ts
+index 87ef2308e..c8aebdd08 100644
+--- a/src/packages/semantic-search/corpusSql.ts
++++ b/src/packages/semantic-search/corpusSql.ts
+@@ -1,24 +1,38 @@
+ /**
+- * El SQL del corpus durable (ADR-THYROX-008 1.2.0): el DDL de su migración y
+- * las consultas que no dependen de ningún espacio de embeddings. El texto
+- * vive en `document_chunks`; nada aquí lee `source_identity` como ruta.
++ * El SQL del corpus durable (ADR-THYROX-008 1.5.0): el DDL de sus migraciones
++ * y las consultas que no dependen de ningún espacio de embeddings. El texto
++ * vive en `document_chunks`; nada aquí lee `source_ref` como ruta.
+  *
+- * La migración es la versión 2 del ledger del store. La versión 1 era la
+- * tabla única `semantic_embeddings` de la superficie anterior, sin texto ni
+- * modelo: ya no se declara, así que un ledger que la tenga rehúsa por
+- * `assertNoNewerDatabase` en vez de convivir con un esquema que no cumple el
+- * requisito de durabilidad.
++ * La migración 2 creó el corpus con la identidad `scope` · `source_identity`,
++ * que llevaba una ruta: dos clones del mismo documento eran dos documentos.
++ * La 3 la sustituye por la identidad de dominio `domain` · `scope` ·
++ * `domain_id`; la ruta y la revisión pasan a procedencia (`source_ref`,
++ * `source_revision`) y no deciden nada. Las filas de la 2 quedan sin mapear
++ * (`domain` NULL) con su identidad vieja en `legacy_source_identity` hasta
++ * que `reconcileLegacyIdentities` las asigne.
++ *
++ * La versión 1 era la tabla única `semantic_embeddings` de la superficie
++ * anterior, sin texto ni modelo: ya no se declara, así que un ledger que la
++ * tenga rehúsa por `assertNoNewerDatabase` en vez de convivir con un esquema
++ * que no cumple el requisito de durabilidad.
+  */
++import type { Migration } from '@thyrox/store/migrations.ts'
++
+ export const MIGRATIONS_TABLE = 'semantic_search_migrations'
+ export const CORPUS_MIGRATION_VERSION = 2
+ export const CORPUS_MIGRATION_NAME = 'create_durable_corpus'
++export const DOMAIN_IDENTITY_MIGRATION_VERSION = 3
++export const DOMAIN_IDENTITY_MIGRATION_NAME = 'domain_document_identity'
+ 
+ /**
+- * La condición que deja sólo la versión vigente de cada documento, sobre los
+- * alias `c` (chunk) y `d` (documento). La comparten la búsqueda y el censo de
+- * chunks por embeber: una versión reemplazada ni se busca ni se re-embebe.
++ * La condición que deja sólo los chunks buscables, sobre los alias `c` (chunk)
++ * y `d` (documento): de la versión vigente, canónicos (un duplicado colapsado
++ * por la reconciliación conserva su fila, pero no se busca) y de un documento
++ * con identidad de dominio. La comparten la búsqueda y el censo de chunks por
++ * embeber: lo reemplazado, lo duplicado y lo sin mapear ni se busca ni se
++ * re-embebe.
+  */
+-export const CURRENT_VERSION_CONDITION = 'c.version = d.version'
++export const SEARCHABLE_CHUNK_CONDITION = 'c.version = d.version AND c.canonical_chunk_id IS NULL AND d.domain IS NOT NULL'
+ 
+ export const CORPUS_STATEMENTS: readonly string[] = [
+   `CREATE TABLE documents (
+@@ -68,18 +82,85 @@ export const CORPUS_STATEMENTS: readonly string[] = [
+    )`,
+ ]
+ 
+-/** El documento de una identidad de origen, bloqueado hasta el fin de la transacción: `$1` scope, `$2` identidad. */
+-export const LOCK_DOCUMENT_QUERY = `SELECT document_id, version, content_hash FROM documents
+-   WHERE scope = $1 AND source_identity = $2 FOR UPDATE`
++/**
++ * Pasa `documents` a la identidad de dominio y `document_chunks` a admitir
++ * duplicados colapsados. Los nombres de las restricciones que se retiran son
++ * los que PostgreSQL derivó de la migración 2.
++ */
++export const DOMAIN_IDENTITY_STATEMENTS: readonly string[] = [
++  `ALTER TABLE documents RENAME COLUMN source_identity TO legacy_source_identity`,
++  `ALTER TABLE documents ALTER COLUMN legacy_source_identity DROP NOT NULL`,
++  `ALTER TABLE documents DROP CONSTRAINT documents_scope_source_identity_key`,
++  `ALTER TABLE documents ADD COLUMN domain TEXT, ADD COLUMN domain_id TEXT, ADD COLUMN source_ref TEXT, ADD COLUMN source_revision TEXT`,
++  `UPDATE documents SET source_ref = legacy_source_identity`,
++  `ALTER TABLE documents ALTER COLUMN source_ref SET NOT NULL`,
++  `ALTER TABLE documents ADD CONSTRAINT documents_domain_identity_complete CHECK ((domain IS NULL) = (domain_id IS NULL))`,
++  `ALTER TABLE documents ADD CONSTRAINT documents_unmapped_keeps_legacy_identity CHECK (domain IS NOT NULL OR legacy_source_identity IS NOT NULL)`,
++  `ALTER TABLE documents ADD CONSTRAINT documents_domain_identity_key UNIQUE (domain, scope, domain_id)`,
++  `ALTER TABLE document_chunks ADD COLUMN canonical_chunk_id UUID REFERENCES document_chunks (chunk_id)`,
++  `ALTER TABLE document_chunks DROP CONSTRAINT document_chunks_document_id_version_position_key`,
++  `CREATE UNIQUE INDEX document_chunks_canonical_position ON document_chunks (document_id, version, position) WHERE canonical_chunk_id IS NULL`,
++]
++
++/** Las migraciones del corpus en el ledger de `@thyrox/store`, en orden; sólo PostgreSQL. */
++export const CORPUS_MIGRATIONS: readonly Migration[] = [
++  { version: CORPUS_MIGRATION_VERSION, name: CORPUS_MIGRATION_NAME, statements: { postgres: [...CORPUS_STATEMENTS], sqlite: [] } },
++  { version: DOMAIN_IDENTITY_MIGRATION_VERSION, name: DOMAIN_IDENTITY_MIGRATION_NAME, statements: { postgres: [...DOMAIN_IDENTITY_STATEMENTS], sqlite: [] } },
++]
++
++const DOCUMENT_COLUMNS = 'document_id, domain, scope, domain_id, version, content_hash, source_ref, source_revision, metadata'
++
++/** El documento de una identidad de dominio: `$1` dominio, `$2` scope, `$3` id de dominio. */
++export const SELECT_DOCUMENT_QUERY = `SELECT ${DOCUMENT_COLUMNS} FROM documents
++   WHERE domain = $1 AND scope = $2 AND domain_id = $3`
+ 
+-/** `$1` scope, `$2` identidad, `$3` hash, `$4` metadata JSON. */
+-export const INSERT_DOCUMENT_QUERY = `INSERT INTO documents (scope, source_identity, version, content_hash, metadata)
+-   VALUES ($1, $2, 1, $3, $4::jsonb) RETURNING document_id`
++/** El mismo documento, bloqueado hasta el fin de la transacción. */
++export const LOCK_DOCUMENT_QUERY = `${SELECT_DOCUMENT_QUERY} FOR UPDATE`
+ 
+-/** `$1` documento, `$2` versión nueva, `$3` hash, `$4` metadata JSON. */
+-export const UPDATE_DOCUMENT_QUERY = `UPDATE documents SET version = $2, content_hash = $3, metadata = $4::jsonb, ingested_at = now()
++/** `$1` dominio, `$2` scope, `$3` id de dominio, `$4` ref, `$5` revisión, `$6` hash, `$7` metadata JSON. */
++export const INSERT_DOCUMENT_QUERY = `INSERT INTO documents (domain, scope, domain_id, source_ref, source_revision, version, content_hash, metadata)
++   VALUES ($1, $2, $3, $4, $5, 1, $6, $7::jsonb) RETURNING document_id`
++
++/** `$1` documento, `$2` versión nueva, `$3` hash, `$4` metadata JSON, `$5` ref, `$6` revisión. */
++export const UPDATE_DOCUMENT_QUERY = `UPDATE documents SET version = $2, content_hash = $3, metadata = $4::jsonb, source_ref = $5, source_revision = $6, ingested_at = now()
+    WHERE document_id = $1`
+ 
++/** Actualiza sólo la procedencia, si cambió: `$1` documento, `$2` ref, `$3` revisión. */
++export const UPDATE_PROVENANCE_QUERY = `UPDATE documents SET source_ref = $2, source_revision = $3
++   WHERE document_id = $1 AND (source_ref IS DISTINCT FROM $2 OR source_revision IS DISTINCT FROM $3)`
++
++/** El documento ya mapeado a una identidad, como miembro de una convergencia: `$1` dominio, `$2` scope, `$3` id. */
++export const LOCK_MAPPED_MEMBER_QUERY = `SELECT document_id, ingested_at FROM documents
++   WHERE domain = $1 AND scope = $2 AND domain_id = $3 FOR UPDATE`
++
++/** Los documentos sin identidad de dominio, bloqueados, en orden de ingesta. */
++export const LOCK_UNMAPPED_DOCUMENTS_QUERY = `SELECT document_id, scope, legacy_source_identity, ingested_at FROM documents
++   WHERE domain IS NULL ORDER BY ingested_at, document_id FOR UPDATE`
++
++/** Las filas de chunk de un documento, duplicados incluidos, en orden de versión y posición: `$1` documento. */
++export const SELECT_DOCUMENT_CHUNKS_QUERY = `SELECT chunk_id, version, position, text, canonical_chunk_id FROM document_chunks
++   WHERE document_id = $1 ORDER BY version, position, canonical_chunk_id NULLS FIRST`
++
++/** Mueve un chunk a su lugar en el documento convergido: `$1` chunk, `$2` documento, `$3` versión, `$4` canónico o NULL. */
++export const MOVE_CHUNK_QUERY = `UPDATE document_chunks SET document_id = $2, version = $3, canonical_chunk_id = $4 WHERE chunk_id = $1`
++
++/** Quita el desplazamiento temporal de las versiones del documento: `$1` documento, `$2` desplazamiento. */
++export const SHIFT_VERSIONS_DOWN_QUERY = `UPDATE document_chunks SET version = version - $2 WHERE document_id = $1 AND version > $2`
++
++/**
++ * Asigna la identidad de dominio al documento que sobrevive a la convergencia,
++ * con la procedencia, la metadata y la fecha del miembro más reciente:
++ * `$1` documento, `$2` dominio, `$3` scope, `$4` id, `$5` versión, `$6` hash, `$7` miembro más reciente.
++ */
++export const CONVERGE_DOCUMENT_QUERY = `UPDATE documents AS t
++      SET domain = $2, scope = $3, domain_id = $4, version = $5, content_hash = $6, metadata = s.metadata,
++          ingested_at = s.ingested_at, source_ref = s.source_ref, source_revision = s.source_revision, legacy_source_identity = NULL
++     FROM documents AS s
++    WHERE t.document_id = $1 AND s.document_id = $7`
++
++/** `$1` documento absorbido, ya sin chunks. */
++export const DELETE_DOCUMENT_QUERY = `DELETE FROM documents WHERE document_id = $1`
++
+ /** `$1` documento, `$2` versión, `$3` posición, `$4` texto, `$5` hash. */
+ export const INSERT_CHUNK_QUERY = `INSERT INTO document_chunks (document_id, version, position, text, content_hash)
+    VALUES ($1, $2, $3, $4, $5)`
+@@ -106,23 +187,41 @@ export const INSERT_ANALYSIS_RUN_QUERY = `INSERT INTO analysis_runs (input, spac
+ export const INSERT_ANALYSIS_CANDIDATE_QUERY = `INSERT INTO analysis_candidates (analysis_id, rank, chunk_id, score) VALUES ($1, $2, $3, $4)`
+ 
+ /**
+- * Fija las versiones del corpus que usó el análisis a partir de sus
+- * candidatos ya insertados: `$1` análisis. Los chunks no cambian después de
+- * escribirse, así que el par documento · versión es el de ese momento.
++ * Las versiones del corpus que citan los candidatos del análisis `analysisId`
++ * (una expresión SQL): el par documento · versión de cada chunk citado.
+  */
+-export const FIX_CORPUS_VERSIONS_QUERY = `UPDATE analysis_runs SET corpus_versions = COALESCE((
++function corpusVersionsOf(analysisId: string): string {
++  return `COALESCE((
+      SELECT jsonb_agg(jsonb_build_object('documentId', used.document_id, 'version', used.version) ORDER BY used.document_id, used.version)
+        FROM (SELECT DISTINCT c.document_id, c.version FROM analysis_candidates a
+-               JOIN document_chunks c ON c.chunk_id = a.chunk_id WHERE a.analysis_id = $1) AS used
+-   ), '[]'::jsonb)
++               JOIN document_chunks c ON c.chunk_id = a.chunk_id WHERE a.analysis_id = ${analysisId}) AS used
++   ), '[]'::jsonb)`
++}
++
++/**
++ * Fija las versiones del corpus que usó el análisis a partir de sus
++ * candidatos ya insertados: `$1` análisis. Los chunks no cambian de texto
++ * después de escribirse, así que el par documento · versión es el de ese momento.
++ */
++export const FIX_CORPUS_VERSIONS_QUERY = `UPDATE analysis_runs SET corpus_versions = ${corpusVersionsOf('$1')}
+    WHERE analysis_id = $1`
+ 
++/**
++ * Recalcula las versiones de corpus de todo análisis que cite un chunk del
++ * documento `$1`: la convergencia renumera versiones y absorbe documentos,
++ * y un análisis no puede quedar citando un par que ya no existe.
++ */
++export const REFRESH_CORPUS_VERSIONS_QUERY = `UPDATE analysis_runs AS r SET corpus_versions = ${corpusVersionsOf('r.analysis_id')}
++   WHERE r.analysis_id IN (SELECT a.analysis_id FROM analysis_candidates a
++                             JOIN document_chunks c ON c.chunk_id = a.chunk_id WHERE c.document_id = $1)`
++
+ export const SELECT_ANALYSIS_RUN_QUERY = `SELECT r.analysis_id, r.input, r.corpus_versions, r.reranker, r.output, r.created_at,
+           s.space_id, s.model, s.dimensions, s.representation
+      FROM analysis_runs r JOIN embedding_spaces s ON s.space_id = r.space_id
+     WHERE r.analysis_id = $1`
+ 
+-export const SELECT_ANALYSIS_CANDIDATES_QUERY = `SELECT a.rank, a.chunk_id, a.score, c.document_id, c.version, c.position, c.text, d.source_identity
++export const SELECT_ANALYSIS_CANDIDATES_QUERY = `SELECT a.rank, a.chunk_id, a.score, c.document_id, c.version, c.position, c.text,
++          d.domain, d.domain_id, d.source_ref, d.source_revision
+      FROM analysis_candidates a
+      JOIN document_chunks c ON c.chunk_id = a.chunk_id
+      JOIN documents d ON d.document_id = c.document_id
+diff --git a/src/packages/semantic-search/legacyIdentity.ts b/src/packages/semantic-search/legacyIdentity.ts
+new file mode 100644
+index 000000000..49512086f
+--- /dev/null
++++ b/src/packages/semantic-search/legacyIdentity.ts
+@@ -0,0 +1,167 @@
++/**
++ * La reconciliación de las filas escritas con la identidad vieja
++ * (`scope` · `source_identity`, migración 2) hacia la identidad de dominio.
++ * Quien llama aporta el resolver: el store no sabe qué dominio es cada ruta.
++ *
++ * Lo que el resolver no mapea sigue sin mapear (ni se busca ni cuenta como
++ * ingerido) y se cuenta. Los documentos que mapean a la misma identidad
++ * —incluido uno ya ingerido con la API nueva— convergen en uno: sus versiones
++ * se encadenan en orden de `ingested_at`, y una versión con el mismo hash que
++ * la inmediatamente anterior colapsa en ella (sus chunks quedan como
++ * duplicados de los canónicos). Ningún `chunk_id` cambia, así que ningún
++ * análisis pierde su chunk; las versiones de corpus que citan los análisis se
++ * recalculan en la misma transacción.
++ */
++import type { SQL } from 'bun'
++
++import { assertValidIdentity } from './corpus.ts'
++import { documentHash } from './contentHash.ts'
++import {
++  CONVERGE_DOCUMENT_QUERY,
++  DELETE_DOCUMENT_QUERY,
++  LOCK_MAPPED_MEMBER_QUERY,
++  LOCK_UNMAPPED_DOCUMENTS_QUERY,
++  MOVE_CHUNK_QUERY,
++  REFRESH_CORPUS_VERSIONS_QUERY,
++  SELECT_DOCUMENT_CHUNKS_QUERY,
++  SHIFT_VERSIONS_DOWN_QUERY,
++} from './corpusSql.ts'
++
++/** La identidad de dominio completa, con el scope explícito. */
++export type DomainIdentity = { domain: string; scope: string; domainId: string }
++
++/** Traduce una identidad vieja a la de dominio, o `null` si no la reconoce. */
++export type LegacyIdentityResolver = (scope: string, sourceIdentity: string) => DomainIdentity | null | Promise<DomainIdentity | null>
++
++/** `mapped`: filas viejas asignadas · `unmapped`: las que siguen sin mapear · `documents`: identidades resultantes. */
++export type ReconciliationResult = { mapped: number; unmapped: number; documents: number }
++
++type Transaction = Pick<SQL, 'unsafe'>
++
++type UnmappedRow = { document_id: string; scope: string; legacy_source_identity: string; ingested_at: Date }
++
++type Member = { documentId: string; ingestedAt: Date }
++
++type ChunkRow = { chunk_id: string; version: number; position: number; text: string; canonical_chunk_id: string | null }
++
++/** Una versión guardada de un miembro: todas sus filas, duplicados incluidos. */
++type StoredVersion = { rows: ChunkRow[]; hash: string }
++
++/** Una versión del documento convergido: su número, su hash y sus chunks canónicos por posición. */
++type ConvergedVersion = { number: number; hash: string; canonicalIds: string[] }
++
++type ChunkMove = { chunkId: string; version: number; canonicalChunkId: string | null }
++
++type ConvergencePlan = { moves: ChunkMove[]; current: ConvergedVersion }
++
++function identityKey(identity: DomainIdentity): string {
++  return JSON.stringify([identity.domain, identity.scope, identity.domainId])
++}
++
++function isCanonical(row: ChunkRow): boolean {
++  return row.canonical_chunk_id === null
++}
++
++function byIngestion(left: Member, right: Member): number {
++  return left.ingestedAt.getTime() - right.ingestedAt.getTime() || left.documentId.localeCompare(right.documentId)
++}
++
++/** Agrupa las filas de un documento por versión, en orden, con el hash de sus chunks canónicos. */
++function groupVersions(rows: readonly ChunkRow[]): StoredVersion[] {
++  const byVersion = new Map<number, ChunkRow[]>()
++  for (const row of rows) byVersion.set(row.version, [...(byVersion.get(row.version) ?? []), row])
++  return [...byVersion.values()].map(versionRows => ({
++    rows: versionRows,
++    hash: documentHash(versionRows.filter(isCanonical).map(row => row.text)),
++  }))
++}
++
++/** Una versión que repite el hash de la anterior se vuelve duplicado de sus chunks canónicos. */
++function collapseInto(previous: ConvergedVersion, stored: StoredVersion): ChunkMove[] {
++  return stored.rows.map(row => ({ chunkId: row.chunk_id, version: previous.number, canonicalChunkId: previous.canonicalIds[row.position] ?? null }))
++}
++
++function appendVersion(number: number, stored: StoredVersion): { moves: ChunkMove[]; version: ConvergedVersion } {
++  const moves = stored.rows.map(row => ({ chunkId: row.chunk_id, version: number, canonicalChunkId: row.canonical_chunk_id }))
++  const canonicalIds = stored.rows.filter(isCanonical).map(row => row.chunk_id)
++  return { moves, version: { number, hash: stored.hash, canonicalIds } }
++}
++
++/** Encadena las versiones de los miembros, ya en orden de ingesta, en una sola secuencia. */
++function planConvergence(versions: readonly StoredVersion[]): ConvergencePlan {
++  const moves: ChunkMove[] = []
++  let current: ConvergedVersion | undefined
++  for (const stored of versions) {
++    if (current && current.hash === stored.hash) {
++      moves.push(...collapseInto(current, stored))
++      continue
++    }
++    const appended = appendVersion((current?.number ?? 0) + 1, stored)
++    moves.push(...appended.moves)
++    current = appended.version
++  }
++  if (!current) throw new Error('converging documents without chunk versions')
++  return { moves, current }
++}
++
++async function readChunkRows(tx: Transaction, documentId: string): Promise<ChunkRow[]> {
++  return (await tx.unsafe(SELECT_DOCUMENT_CHUNKS_QUERY, [documentId])) as ChunkRow[]
++}
++
++async function lockMappedMember(tx: Transaction, identity: DomainIdentity): Promise<Member | null> {
++  const [row] = (await tx.unsafe(LOCK_MAPPED_MEMBER_QUERY, [identity.domain, identity.scope, identity.domainId])) as { document_id: string; ingested_at: Date }[]
++  return row ? { documentId: row.document_id, ingestedAt: row.ingested_at } : null
++}
++
++/**
++ * Mueve cada chunk a su versión final pasando por un desplazamiento mayor que
++ * toda versión existente: la unicidad de posición por versión nunca ve dos
++ * canónicos en el mismo sitio a mitad de la renumeración.
++ */
++async function applyMoves(tx: Transaction, target: string, moves: readonly ChunkMove[], offset: number): Promise<void> {
++  for (const move of moves) await tx.unsafe(MOVE_CHUNK_QUERY, [move.chunkId, target, move.version + offset, move.canonicalChunkId])
++  await tx.unsafe(SHIFT_VERSIONS_DOWN_QUERY, [target, offset])
++}
++
++/** Converge los miembros de una identidad en un documento, el ya mapeado si existe o el más antiguo. */
++async function convergeIdentity(tx: Transaction, identity: DomainIdentity, legacyMembers: readonly Member[]): Promise<void> {
++  const existing = await lockMappedMember(tx, identity)
++  const members = [...legacyMembers, ...(existing ? [existing] : [])].sort(byIngestion)
++  const target = existing?.documentId ?? members[0]?.documentId
++  const latest = members.at(-1)
++  if (!target || !latest) throw new Error(`converging '${identityKey(identity)}' without members`)
++  const rows = await Promise.all(members.map(member => readChunkRows(tx, member.documentId)))
++  const offset = Math.max(0, ...rows.flat().map(row => row.version))
++  const plan = planConvergence(rows.flatMap(groupVersions))
++  await applyMoves(tx, target, plan.moves, offset)
++  await tx.unsafe(CONVERGE_DOCUMENT_QUERY, [target, identity.domain, identity.scope, identity.domainId, plan.current.number, plan.current.hash, latest.documentId])
++  for (const member of members) if (member.documentId !== target) await tx.unsafe(DELETE_DOCUMENT_QUERY, [member.documentId])
++  await tx.unsafe(REFRESH_CORPUS_VERSIONS_QUERY, [target])
++}
++
++async function resolveIdentity(resolve: LegacyIdentityResolver, row: UnmappedRow): Promise<DomainIdentity | null> {
++  const identity = await resolve(row.scope, row.legacy_source_identity)
++  if (identity) assertValidIdentity(identity)
++  return identity
++}
++
++/** Reconcilia todas las filas sin mapear en una transacción; un resolver que lanza la revierte entera. */
++export async function reconcileLegacyIdentities(sql: SQL, resolve: LegacyIdentityResolver): Promise<ReconciliationResult> {
++  return sql.begin(async tx => {
++    const unmapped = (await tx.unsafe(LOCK_UNMAPPED_DOCUMENTS_QUERY)) as UnmappedRow[]
++    const groups = new Map<string, { identity: DomainIdentity; members: Member[] }>()
++    let unresolved = 0
++    for (const row of unmapped) {
++      const identity = await resolveIdentity(resolve, row)
++      if (!identity) {
++        unresolved++
++        continue
++      }
++      const group = groups.get(identityKey(identity)) ?? { identity, members: [] }
++      group.members.push({ documentId: row.document_id, ingestedAt: row.ingested_at })
++      groups.set(identityKey(identity), group)
++    }
++    for (const group of groups.values()) await convergeIdentity(tx, group.identity, group.members)
++    return { mapped: unmapped.length - unresolved, unmapped: unresolved, documents: groups.size }
++  })
++}
+diff --git a/src/packages/semantic-search/store.ts b/src/packages/semantic-search/store.ts
+index a89e51f3a..4f0ce56a1 100644
+--- a/src/packages/semantic-search/store.ts
++++ b/src/packages/semantic-search/store.ts
+@@ -1,5 +1,5 @@
+ /**
+- * `SemanticSearchStore` (ADR-THYROX-008 1.2.0): el corpus durable y su
++ * `SemanticSearchStore` (ADR-THYROX-008 1.5.0): el corpus durable y su
+  * búsqueda semántica sobre PostgreSQL + pgvector. Guarda el contenido
+  * ingerido (documentos y chunks versionados por hash), sus representaciones
+  * derivadas (un espacio de embeddings por modelo · forma) y los análisis
+@@ -20,11 +20,12 @@
+  */
+ import { SQL } from 'bun'
+ 
+-import { runMigrations, type Migration } from '@thyrox/store/migrations.ts'
++import { runMigrations } from '@thyrox/store/migrations.ts'
+ 
+ import { type SchemaConfig, validateEmbedding, validateSchemaConfig, validateStoreUrl } from './config.ts'
+-import { type DocumentInput, type IngestResult, ingestDocument } from './corpus.ts'
+-import { CORPUS_MIGRATION_NAME, CORPUS_MIGRATION_VERSION, CORPUS_STATEMENTS, MIGRATIONS_TABLE } from './corpusSql.ts'
++import { type DocumentIdentity, type DocumentInput, findDocument, type IngestResult, ingestDocument, type StoredDocument } from './corpus.ts'
++import { CORPUS_MIGRATIONS, MIGRATIONS_TABLE } from './corpusSql.ts'
++import { type LegacyIdentityResolver, type ReconciliationResult, reconcileLegacyIdentities } from './legacyIdentity.ts'
+ import { type AnalysisRun, type AnalysisRunInput, getAnalysisRun, recordAnalysisRun } from './analysisRuns.ts'
+ import { NoActiveEmbeddingSpaceError } from './errors.ts'
+ import {
+@@ -58,7 +59,10 @@ export type NearestResult = {
+   chunkId: string
+   text: string
+   documentId: string
+-  sourceIdentity: string
++  domain: string
++  domainId: string
++  sourceRef: string
++  sourceRevision: string | null
+   version: number
+   similarity: number
+ }
+@@ -71,9 +75,13 @@ export type SemanticSearchStoreDeps = {
+ }
+ 
+ export type SemanticSearchStore = {
+-  /** Comprueba pgvector y aplica la migración del corpus si falta; devuelve las versiones aplicadas ahora. */
++  /** Comprueba pgvector y aplica las migraciones del corpus que falten; devuelve las versiones aplicadas ahora. */
+   migrate(): Promise<number[]>
+   ingestDocument(input: DocumentInput): Promise<IngestResult>
++  /** El documento ingerido con esa identidad, con su versión y hash vigentes; una fila sin mapear nunca se devuelve. */
++  findDocument(identity: DocumentIdentity): Promise<StoredDocument | null>
++  /** Asigna la identidad de dominio a las filas de la migración 2 y converge las que coinciden. */
++  reconcileLegacyIdentities(resolve: LegacyIdentityResolver): Promise<ReconciliationResult>
+   createEmbeddingSpace(declaration: SpaceDeclaration): Promise<EmbeddingSpace>
+   getEmbeddingSpace(spaceId: number): Promise<EmbeddingSpace | null>
+   activeEmbeddingSpace(): Promise<EmbeddingSpace | null>
+@@ -98,16 +106,13 @@ type CandidateRow = {
+   text: string
+   document_id: string
+   version: number
+-  source_identity: string
++  domain: string
++  domain_id: string
++  source_ref: string
++  source_revision: string | null
+   hamming_distance: number
+ }
+ 
+-const CORPUS_MIGRATION: Migration = {
+-  version: CORPUS_MIGRATION_VERSION,
+-  name: CORPUS_MIGRATION_NAME,
+-  statements: { postgres: [...CORPUS_STATEMENTS], sqlite: [] },
+-}
+-
+ function parseVectorText(text: string): number[] {
+   return JSON.parse(text) as number[]
+ }
+@@ -121,7 +126,10 @@ function toNearest(row: CandidateRow, similarity: number): NearestResult {
+     chunkId: row.chunk_id,
+     text: row.text,
+     documentId: row.document_id,
+-    sourceIdentity: row.source_identity,
++    domain: row.domain,
++    domainId: row.domain_id,
++    sourceRef: row.source_ref,
++    sourceRevision: row.source_revision,
+     version: row.version,
+     similarity,
+   }
+@@ -163,7 +171,7 @@ export function openSemanticSearchStore(options: SemanticSearchStoreOptions, dep
+     async migrate() {
+       await vectorExtension()
+       await sql.unsafe(`CREATE SCHEMA IF NOT EXISTS ${config.name}`)
+-      return runMigrations(sql, 'postgres', { table: MIGRATIONS_TABLE, migrations: [CORPUS_MIGRATION] })
++      return runMigrations(sql, 'postgres', { table: MIGRATIONS_TABLE, migrations: CORPUS_MIGRATIONS })
+     },
+ 
+     async ingestDocument(input) {
+@@ -171,6 +179,16 @@ export function openSemanticSearchStore(options: SemanticSearchStoreOptions, dep
+       return ingestDocument(sql, input)
+     },
+ 
++    async findDocument(identity) {
++      await vectorExtension()
++      return findDocument(sql, identity)
++    },
++
++    async reconcileLegacyIdentities(resolve) {
++      await vectorExtension()
++      return reconcileLegacyIdentities(sql, resolve)
++    },
++
+     async createEmbeddingSpace(declaration) {
+       const extension = await vectorExtension()
+       return createEmbeddingSpace(sql, extension.schema, declaration)
+diff --git a/src/packages/semantic-search/vectorSql.ts b/src/packages/semantic-search/vectorSql.ts
+index 9f1499afd..710a6ed39 100644
+--- a/src/packages/semantic-search/vectorSql.ts
++++ b/src/packages/semantic-search/vectorSql.ts
+@@ -13,7 +13,7 @@
+  * única parte interpolada que no es texto fijo ni una forma ya validada.
+  */
+ import type { EmbeddingShape } from './config.ts'
+-import { CURRENT_VERSION_CONDITION } from './corpusSql.ts'
++import { SEARCHABLE_CHUNK_CONDITION } from './corpusSql.ts'
+ 
+ export function spaceTableName(spaceId: number): string {
+   if (!Number.isInteger(spaceId) || spaceId <= 0) throw new RangeError(`invalid space id ${spaceId}: expected a positive integer`)
+@@ -61,7 +61,7 @@ export function putEmbeddingQuery(extensionSchema: string, spaceId: number, shap
+ export function chunksWithoutEmbeddingQuery(spaceId: number): string {
+   return `SELECT c.chunk_id, c.document_id, c.version, c.position, c.text
+             FROM document_chunks c
+-            JOIN documents d ON d.document_id = c.document_id AND ${CURRENT_VERSION_CONDITION}
++            JOIN documents d ON d.document_id = c.document_id AND ${SEARCHABLE_CHUNK_CONDITION}
+             LEFT JOIN ${spaceTableName(spaceId)} e ON e.chunk_id = c.chunk_id
+            WHERE e.chunk_id IS NULL
+            ORDER BY c.document_id, c.version, c.position
+@@ -69,7 +69,7 @@ export function chunksWithoutEmbeddingQuery(spaceId: number): string {
+ }
+ 
+ /**
+- * El filtro de versión vigente como subconsulta escalar correlacionada sobre
++ * El filtro de chunk buscable como subconsulta escalar correlacionada sobre
+  * el alias `e`. Un `EXISTS` o un `JOIN` los aplana el planificador en un join
+  * y ordena después (medido con `EXPLAIN`: sin rastro del HNSW); la subconsulta
+  * escalar queda como `Filter: SubPlan` del recorrido por el índice.
+@@ -79,7 +79,7 @@ export function chunksWithoutEmbeddingQuery(spaceId: number): string {
+  * `ef_search` 5 o 40 no se reprodujo (el grafo se recorrió entero), así que
+  * `hnsw.iterative_scan` no se activa sin un caso que lo exija.
+  */
+-const CURRENT_CHUNK_FILTER = `(SELECT ${CURRENT_VERSION_CONDITION} FROM document_chunks c
++const SEARCHABLE_CHUNK_FILTER = `(SELECT ${SEARCHABLE_CHUNK_CONDITION} FROM document_chunks c
+                                 JOIN documents d ON d.document_id = c.document_id
+                                WHERE c.chunk_id = e.chunk_id)`
+ 
+@@ -87,16 +87,16 @@ const CURRENT_CHUNK_FILTER = `(SELECT ${CURRENT_VERSION_CONDITION} FROM document
+  * Los candidatos vigentes más cercanos por distancia de Hamming entre
+  * cuantizaciones binarias, ordenados por la misma expresión que indexa el
+  * HNSW para que el planificador pueda usarlo: `$1` consulta como texto, `$2`
+- * límite. Devuelven el texto del chunk y su identidad de origen: la búsqueda
++ * límite. Devuelven el texto del chunk, su identidad y su procedencia: la búsqueda
+  * no vuelve a ninguna fuente.
+  */
+ export function binaryCandidatesQuery(extensionSchema: string, spaceId: number, shape: EmbeddingShape): string {
+   const query = binaryQuantized(extensionSchema, `$1::${vectorType(extensionSchema, shape)}`, shape)
+   const distance = `${binaryQuantized(extensionSchema, 'e.embedding', shape)} OPERATOR(${extensionSchema}.<~>) ${query}`
+-  return `SELECT n.chunk_id, n.embedding, c.text, c.document_id, c.version, d.source_identity, n.hamming_distance
++  return `SELECT n.chunk_id, n.embedding, c.text, c.document_id, c.version, d.domain, d.domain_id, d.source_ref, d.source_revision, n.hamming_distance
+             FROM (SELECT e.chunk_id, e.embedding::text AS embedding, ${distance} AS hamming_distance
+                     FROM ${spaceTableName(spaceId)} e
+-                   WHERE ${CURRENT_CHUNK_FILTER}
++                   WHERE ${SEARCHABLE_CHUNK_FILTER}
+                    ORDER BY ${distance}
+                    LIMIT $2) AS n
+             JOIN document_chunks c ON c.chunk_id = n.chunk_id

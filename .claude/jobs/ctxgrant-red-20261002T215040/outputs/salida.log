@@ -1,0 +1,9 @@
+rc=1
+(fail) PodmanModelUnitMaterializer: entorno derivado del grant > el contexto concedido llega al runtime como entorno del contenedor [0.74ms]
+(fail) residencyKeyOf > deriva de la identidad entera, la colocación y el contexto, nunca de la cuantización sola [0.22ms]
+(fail) PodmanModelUnitMaterializer: entorno derivado del grant > el contexto concedido llega al runtime como entorno del contenedor [0.74ms]
+(fail) residencyKeyOf > deriva de la identidad entera, la colocación y el contexto, nunca de la cuantización sola [0.22ms]
+ 25 pass
+ 2 fail
+execution thyrox-worker-test-murhyq2d-17526 kind=test task=TASK-THYROX-0706 exit=0
+__BG_EXIT__=0

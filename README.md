@@ -233,8 +233,43 @@ bash bin/declarations                    # 2. ¿qué falta declarar?
 # THYROX_JOBS_<CLON> (ver .env.example, sección «Hogares que el consumidor
 # declara y thyrox NO inventa» para el resto de la familia)
 bash bin/check_env_contract_keys --strict   # 3. contrato cerrado
-bash tests/run.sh                                     # 4. el árbol funciona
+# 3b. identidad del commit (.claude/rules/git.md): declarar en .env
+#     THYROX_COMMIT_AUTHOR y THYROX_COMMIT_COMMITTER, y en cada shell que commitea:
+eval "$(bash bin/commit_identity env)"
+bash install.sh                             # 4. activa los githooks del proveedor y de cada clon
+bash bin/check_githooks_activos --strict    # 5. ¿corren de verdad? exit 1 nombra el clon y su arreglo
+bash tests/run.sh                           # 6. el árbol funciona
+bash bin/cli providers add anthropic --credential-env <VAR>   # 7. opcional: credencial propia del pool
 ```
+
+**El paso 7 da al pool una credencial propia, por una de dos vías.** Con
+`--credential-env <VAR>` la clave se lee de esa variable; sin la opción, de un
+prompt oculto. En los dos casos queda cifrada en el store de conexiones, y
+`resolveCredential` la lee cuando el entorno no declara ninguna variable de
+credencial. Sin él, un pool corre igual en `inherit` a través del proxy local:
+`--credential-proxy` es opcional, y `bin/provider-credential-proxy` lo recuerda
+al rehusar sin credencial.
+
+**Sin el paso 4 ningún gate de commit corre, y nada lo dice.** `core.hooksPath`
+vive en `.git/config`, que no se clona: un clon nuevo trae `.githooks/` escrito
+y git no lo mira. Medido el 2026-09-30: `kaupamex-docs` tenía los hooks
+inactivos y sus commits pasaron sin ningún gate. El paso 5 es el que lo
+detecta; su salida trae la orden exacta que lo arregla.
+
+**Sin el paso 3b el primer commit puede salir firmado por el agente.** Bajo
+el entorno remoto, `~/.gitconfig` declara al agente como committer y sólo el
+author llega corregido por el entorno. `commit_identity check` medía el
+invariante del agente únicamente si la identidad estaba declarada; sin `.env`
+respondía «sin medir» y el pre-commit dejaba pasar el commit. Hoy el
+invariante se mide sin declaración, y el preflight lo publica como
+`error · commit-identity`.
+
+**Una suite que lanza procesos aísla sus hogares con
+`src/lib/test_homes.sh::thyrox_isolate_homes`, no exportando la clave global.**
+La clave por clon del `.env` (`THYROX_JOBS_THYROX`…) le gana a la global, así
+que `export THYROX_JOBS_DIR=$TMP/jobs` deja que la suite escriba en el
+`.claude/jobs/` real. El pre-commit lo rehúsa (`check_test_home_isolation`)
+en cada suite que el commit toca.
 
 ### Y para usar TODOS los guiones de `src/session/`, `src/verify/`, `src/agents/`
 

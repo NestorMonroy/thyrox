@@ -1,0 +1,23 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.286
+import{b1o,iWo}from"/$bunfs/root/chunk-4hjp8tw4.js";import{a}from"/$bunfs/root/chunk-v5r4yd9z.js";import{pS}from"/$bunfs/root/chunk-22qvrdjq.js";import{CSe}from"/$bunfs/root/chunk-wk88sc60.js";import{Pi,idn,oG}from"/$bunfs/root/chunk-y9g2znyd.js";import{sl}from"/$bunfs/root/chunk-amrdj7qa.js";import{Qd}from"/$bunfs/root/chunk-94e4x1b4.js";import{xP}from"/$bunfs/root/chunk-zez1g4ss.js";import{$pn,dLo,uLo}from"/$bunfs/root/chunk-kkbcjs7e.js";import{_t}from"/$bunfs/root/chunk-8c1anhhs.js";import{La}from"/$bunfs/root/chunk-x8xm9s8c.js";var RP="EnterWorktree";var $x="ReportFindings",SDr="Report code-review findings as a typed list so the host UI can render them. Use this only when the active code-review instructions tell you to report findings with this tool; otherwise follow whatever output format those instructions specify. When reporting a review's results, call it once with the verified findings ranked most-severe first (empty array if nothing survived verification) and do not also print the findings as text. When re-reporting after applying fixes (only if the apply instructions ask for it), set `outcome` on each finding to what actually happened.";var S6e="ShareOnboardingGuide",wDr=`Upload the ONBOARDING.md in the current directory and return a share link teammates can open in Claude Code. Call this after the user has confirmed the final content.
+
+When called with the default mode='check': if a local ONBOARDING.md is present, uploads it to the most-recently-updated org guide (or creates one if none exist) and returns a fresh link. If no local file is present, returns the existing link without uploading (status: has_existing).`;var f=import.meta.require("/$bunfs/root/chunk-65mhpa2h.js").BRIEF_TOOL_NAME,u=new Set([$x,Qd,S6e]),d=`Fetches full schema definitions for deferred tools so they can be called.
+
+Deferred tools appear by name in <system-reminder> messages.`,c=" Until fetched, only the name is known \u2014 there is no parameter schema, so the tool cannot be invoked.",m=` Until fetched, only the name is known \u2014 there is no parameter schema, so calling the tool fails with InputValidationError. When any instruction, system reminder, or other tool's description names a deferred tool, fetch it with query "select:<name>" before calling it.`,p=` This tool takes a query, matches it against the deferred tool list, and returns the matched tools' complete JSONSchema definitions inside a <functions> block. Once a tool's schema appears in that result, it is callable exactly like any tool defined at the top of the prompt.
+
+Result format: each matched tool appears as one <function>{"description": "...", "name": "...", "parameters": {...}}</function> line inside the <functions> block \u2014 the same encoding as the tool list at the top of this prompt.
+
+Query forms:
+- "select:Read,Edit,Grep" \u2014 fetch these exact tools by name
+- "notebook jupyter" \u2014 keyword search, up to max_results best matches
+- "+slack send" \u2014 require "slack" in the name, rank by remaining terms`;function yye(e){return b1o(e.name)??$Ae(e)}function $Ae(e){if(e.alwaysLoad===!0)return!1;if(T(e))return!1;if(idn())return!1;return h(e)}function h(e){if(e.isMcp===!0)return!0;if(dLo()&&pS(e,u))return!0;return e.shouldDefer===!0}function T(e){return i(e)||O(e)||s(e)}function i(e){if(pS(e,$pn()))return!0;if(e.isMcp===!0)return!1;if(e.name===La)return!0;if(e.name===Pi)return!0;if(e.name===_t){let t=import.meta.require("/$bunfs/root/chunk-zpw0srst.js");if(t.isForkSubagentEnabled())return!0}if(e.name===f)return!0;if(s(e)&&!uLo())return!0;if(e.name===sl)return!0;return!1}function O(e){return e.isMcp!==!0&&e.name===RP&&a.CLAUDE_CODE_SESSION_KIND==="bg"}function s(e){return e.isMcp!==!0&&e.name===xP&&CSe()}function tJ(e,t,r,{toolSearchAbsent:l=!1,placements:n="hooks"}={}){let o=n==="hooks"?b1o(e.name):void 0;if(o!==void 0)return o;if(l){if(t===void 0)return!1}else if(t===void 0)return n==="hooks"?yye(e):$Ae(e);if(r!==void 0&&oG(r))return!1;if(i(e))return!1;return!t.has(e.name)}function vDr(e){return e.name}function OVn(){return d+(iWo()?m:c)+p}
+export{RP,$x,SDr,S6e,wDr,yye,$Ae,tJ,vDr,OVn};

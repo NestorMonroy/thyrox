@@ -1,0 +1,18 @@
+test_execution_policy_enforcement.py rc=0 execution_policy: 65 ok, 0 fallas
+test_detect_client_background.py rc=0 12 ok, 0 fallos
+test_detect_agent_dispatch.py rc=0 11 caso(s); 0 fallo(s)
+lint rc=0
+ruff: 0 hallazgo(s) (alcance medido: 5 archivo(s))
+pyright: 0 hallazgo(s) (alcance medido: 5 archivo(s))
+verify_rc=0
+data-heredoc: execution_policy: 64 ok, 1 fallas | cayeron: FALLA 14 el cuerpo de un heredoc de datos no es payload
+shell-fed-heredoc: execution_policy: 63 ok, 2 fallas | cayeron: FALLA 14 el cuerpo de un heredoc que lee bash sí se ejecuta: deny;FALLA 14 y el de sh -s también: deny
+data-quotes: execution_policy: 64 ok, 1 fallas | cayeron: FALLA 14 un separador dentro de una comilla de datos no abre un comando
+shell-code: execution_policy: 64 ok, 1 fallas | cayeron: FALLA 14 el argumento de bash -c sí es código: deny
+worker-identity: execution_policy: 63 ok, 2 fallas | cayeron: FALLA 15 un worker escribe en su worktree;FALLA 15 y por Bash
+worker-scope: execution_policy: 64 ok, 1 fallas | cayeron: FALLA 15 un worker fuera de su worktree: deny
+state-tops: execution_policy: 60 ok, 5 fallas | cayeron: FALLA 12 el estado (.claude/) no es producto;FALLA 15 el estado .thyrox/ no es producto;FALLA 15 agent-results/ no es producto;FALLA 15 commitear lo integrado con salida a un log no es escribir el producto;FALLA 15 copiar DESDE el producto no lo escribe
+tree-containers: execution_policy: 61 ok, 4 fallas | cayeron: FALLA 12 y en tests/ de un worktree;FALLA 15 git apply en un worktree del árbol también: deny;FALLA 15 el controlador en el worktree de un ítem: deny;FALLA 15 media identidad no es un worker: deny
+cp-last-operand: execution_policy: 64 ok, 1 fallas | cayeron: FALLA 15 copiar DESDE el producto no lo escribe
+execution thyrox-worker-test-murfrewg-30573 kind=test task=TASK-THYROX-0773 exit=0
+__BG_EXIT__=0

@@ -1,0 +1,102 @@
+==== fc: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js variable fc [13645,13683)
+fc=Symbol("secureStorage.READ_FAILED")
+==== Rn: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js variable Rn [13766,13775)
+Rn=new Ii
+==== vs: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js variable vs [13776,13796)
+vs=Promise.resolve()
+==== fWr: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js function fWr [13797,14295)
+async function fWr(e){if(Rn.getStore())return e();let r=vs,n=Promise.withResolvers();vs=n.promise;try{await r;let s=Fw();await ce().mkdir(s);let o=await Ci(vi(s,".storage-write"),{realpath:!1,retries:{retries:10,minTimeout:100,maxTimeout:1000},stale:15000,onCompromised:(i)=>t(`[secureStorage] write lock compromised: ${l(i)}`,{level:"warn"})});try{return await Rn.run(!0,e)}finally{await o().catch((i)=>t(`[secureStorage] write lock release failed: ${l(i)}`,{level:"warn"}))}}finally{n.resolve()}}
+==== aFo: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js function aFo [14295,14337)
+async function aFo(e){return Rn.run(!0,e)}
+==== Et: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js function Et [14337,14662)
+function Et(e,r,n){return fWr(async()=>{e.invalidateCache?.();let s=await(e.readAsyncStrict?.(n,{inaccessibleAs:"failureIfTransient"})??e.readAsync(n));if(s===fc)return p("secure_storage_credentials_write","read_failed_skip_write"),{success:!1,transient:!0};let o=s??{},i=r(o);return i===o?{success:!0}:await e.update(i,n)})}
+==== nl: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js variable nl [14666,14705)
+nl=Symbol("secureStorage.fallbackLegs")
+==== Fi: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js variable Fi [14710,14717)
+Fi=2000
+==== mWr: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js function mWr [14725,14798)
+function mWr(){if(Ye!==void 0)return Ye;return Ye=Promise.resolve(!1),Ye}
+==== we: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js function we [14864,14970)
+function we(){let e=Fw(),r=".credentials.json";return{storageDir:e,storagePath:Hi(e,".credentials.json")}}
+==== v6n: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js variable v6n [14974,15022)
+v6n="Warning: Storing credentials in plaintext."
+==== $i: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js function $i [15023,15163)
+function $i(e,r){if(e==="ENOENT"||e==="EISDIR"||e==="ENOTDIR")return null;if((e==="EACCES"||e==="EPERM")&&r!=="win32")return null;return fc}
+==== Ui: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js function Ui [15163,15208)
+function Ui(e,r){return e==="ENOENT"?null:fc}
+==== Bi: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js variable Bi [15212,15855)
+Bi={async read(){let{storagePath:e}=we();try{let r=await ce().readFile(e,{encoding:"utf8"});return J(r)}catch{return null}},async readStrict(e){let{storagePath:r}=we(),n;try{n=await ce().readFile(r,{encoding:"utf8"})}catch(s){return(e?Ui:$i)(v(s),"linux")}try{return J(n)}catch{if(e)return fc;return null}},async write(e){try{let{storageDir:r,storagePath:n}=we();return await ce().mkdir(r),await An(n,b(e),384),await Li(n,384),{success:!0,warning:v6n}}catch{return{success:!1}}finally{if(N())c_e()}},async remove(){let{storagePath:e}=we();try{return await ce().unlink(e),!0}catch(r){if(v(r)==="ENOENT")return!0;return!1}finally{if(N())c_e()}}}
+==== Wi: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js function Wi [15856,16033)
+function Wi(e){switch(e.state){case"present":return e.data;case"absent":case"corrupt":return null;case"refused-symlink":case"read-failed":return fc;default:{let r=e;return fc}}}
+==== ji: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js function ji [16033,16839)
+function ji(e){return{async read(){let{storagePath:r}=we(),n=Xe(),s=n.generation,o=await vr(e.readCredentials(),n);return Ps(n,o,r,s),o.state==="present"?o.data:null},async readStrict(r){let{storagePath:n}=we(),s=Xe(),o=s.generation,i=await vr(r?e.readCredentials():e.readCredentialsStrict(),s);if(Ps(s,i,n,o),r)return i.state==="present"?i.data:i.state==="absent"?null:fc;return Wi(i)},async write(r){let{storagePath:n}=we(),s=Xe(),o=s.generation,i=await vr(e.writeCredentials(r),s);if(i.state==="written"&&o===s.generation)Tr(s,n,b(r));else He(s);return i.state==="written"?{success:!0,warning:v6n}:{success:!1}},async remove(){let{storagePath:r}=we(),n=Xe(),s=n.generation,o=await vr(e.deleteCredentials(),n);if(o.state==="deleted"&&s===n.generation)Tr(n,r,null);else He(n);return o.state==="deleted"}}}
+==== vr: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js function vr [16839,16905)
+async function vr(e,r){try{return await e}catch(n){throw He(r),n}}
+==== qi: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js variable qi [16943,16963)
+qi=new q(()=>new Ts)
+==== Xe: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js function Xe [16964,17001)
+function Xe(){return qi.of(j().host)}
+==== Tr: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js function Tr [17001,17065)
+function Tr(e,r,n){e.copy={storagePath:r,text:n},e.generation++}
+==== Ps: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js function Ps [17065,17300)
+function Ps(e,r,n,s){if(s!==e.generation){He(e);return}switch(r.state){case"present":Tr(e,n,b(r.data));return;case"absent":case"corrupt":case"refused-symlink":Tr(e,n,null);return;case"read-failed":He(e);return;default:{let o=r;He(e)}}}
+==== He: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js function He [17300,17344)
+function He(e){e.copy=void 0,e.generation++}
+==== c_e: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js function c_e [17344,17368)
+function c_e(){He(Xe())}
+==== Pr: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js function Pr [17368,17415)
+function Pr(e){return N()&&e!==void 0?ji(e):Bi}
+==== In: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js variable In [17419,17942)
+In={name:"plaintext",osGuarded:!1,read(e){let{storagePath:r}=we();try{let n=N()&&e?.fromStoreCopy===!0?Xe().copy:void 0;if(n!==void 0&&n.storagePath===r){if(n.text===null)return null;return JSON.parse(n.text)}let s=ce().readFileSync(r,{encoding:"utf8"});return J(s)}catch{return null}},invalidateCache(){c_e()},readAsync(e){return Pr(e).read()},readAsyncStrict(e,r){return Pr(e).readStrict(r?.unreadableFileAs==="failure")},mutate(e,r){return Et(In,e,r)},update(e,r){return Pr(r).write(e)},delete(e){return Pr(e).remove()}}
+==== Gi: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js variable Gi [18320,18340)
+Gi=new q(()=>new Ms)
+==== Ns: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js function Ns [18341,18378)
+function Ns(){return Gi.of(j().host)}
+==== Ds: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js function Ds [18378,18508)
+function Ds(){return{legacyPath:Cs(Se(),".config.json"),configPath:Cs(process.env.CLAUDE_CONFIG_DIR||Ji(),`.claude${uK()}.json`)}}
+==== gWr: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js function gWr [18508,18614)
+function gWr(){if(process.env.CLAUDE_CODE_FORCE_WINDOWS_CREDMAN==="1")return!0;return Ns().resolve(Ds,zi)}
+==== zi: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js function zi [18614,18756)
+function zi({legacyPath:e,configPath:r}){let n=Ki(e)?e:r;return JSON.parse(Vi(n,"utf8")).cachedGrowthBookFeatures?.tengu_windows_credman===!0}
+==== hWr: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js function hWr [18756,18789)
+function hWr(e){Ns().prime(e,Ds)}
+==== Un: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js function Un [18796,18836)
+function Un(){if(Os)return Os;return In}
+==== gr: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js function gr [18836,19188)
+function gr(e,r,n,s,o){if(s==="m")throw TypeError("Private method is not writable");if(s==="a"&&!o)throw TypeError("Private accessor was defined without a setter");if(typeof r==="function"?e!==r||!o:!r.has(e))throw TypeError("Cannot write private member to an object whose class did not declare it");return s==="a"?o.call(e,n):o?o.value=n:r.set(e,n),n}
+==== Ne: 1 definicion(es) de nivel superior
+---- chunk-mmqkf96q.js function Ne [19188,19480)
+function Ne(e,r,n,s){if(n==="a"&&!s)throw TypeError("Private accessor was defined without a getter");if(typeof r==="function"?e!==r||!s:!r.has(e))throw TypeError("Cannot read private member from an object whose class did not declare it");return n==="m"?s:n==="a"?s.call(e):s?s.value:r.get(e)}

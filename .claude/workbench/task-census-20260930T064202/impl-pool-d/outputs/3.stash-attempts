@@ -1,0 +1,1 @@
+git -C /root/.cache/thyrox-stash-test.TnlLpv/repo stash push -u -m thyrox-test-anomaly

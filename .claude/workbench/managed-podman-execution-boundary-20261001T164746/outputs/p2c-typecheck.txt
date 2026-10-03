@@ -1,0 +1,43 @@
+# p2c-typecheck — errores antes y después, por paquete del tramo C
+# antes medido al arrancar el tramo; después, con quantizationLab y podmanWorkerManager en su estado final
+
+### typecheck ANTES — src/packages/local-models
+$ cd src/packages/local-models && bun ../../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.test.json
+__tests__/externalArtifact.test.ts(49,25): error TS2345: Argument of type 'string | Uint8Array<ArrayBufferLike>' is not assignable to parameter of type 'BodyInit | null | undefined'.
+  Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'BodyInit | null | undefined'.
+    Type 'Uint8Array<ArrayBufferLike>' is missing the following properties from type 'URLSearchParams': size, append, delete, get, and 3 more.
+__tests__/qualifyCommand.test.ts(48,7): error TS2740: Type '{ unitId: string; grantId: string; artifact: ResolvedModelArtifact; residencyKey: string; generation: number; runtime: "ollama"; endpoint: string; containerId: string; devices: never[]; }' is missing the following properties from type 'ModelExecutionUnit': kind, reference, owner, containerName, and 2 more.
+__tests__/qualifyModel.test.ts(30,5): error TS2740: Type '{ unitId: string; grantId: string; artifact: ResolvedModelArtifact; residencyKey: string; generation: number; runtime: "ollama"; endpoint: string; containerId: string; devices: never[]; }' is missing the following properties from type 'ModelExecutionUnit': kind, reference, owner, containerName, and 2 more.
+__tests__/quantizationRun.test.ts(46,25): error TS2345: Argument of type 'string | Uint8Array<ArrayBufferLike>' is not assignable to parameter of type 'BodyInit | null | undefined'.
+  Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'BodyInit | null | undefined'.
+    Type 'Uint8Array<ArrayBufferLike>' is missing the following properties from type 'URLSearchParams': size, append, delete, get, and 3 more.
+exit=2
+
+### typecheck ANTES — src/packages/daemon
+$ cd src/packages/daemon && bun ../../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.test.json
+src/__tests__/bgAdopt.test.ts(223,17): error TS2345: Argument of type 'string | NonSharedBuffer' is not assignable to parameter of type 'Buffer<ArrayBufferLike>'.
+  Type 'string' is not assignable to type 'Buffer<ArrayBufferLike>'.
+src/__tests__/daemonLockStartup.test.ts(259,19): error TS2339: Property 'message' does not exist on type 'YieldHandshakeResult'.
+  Property 'message' does not exist on type '{ kind: "not-needed"; }'.
+exit=2
+
+### typecheck DESPUÉS — src/packages/local-models
+$ cd src/packages/local-models && bun ../../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.test.json
+__tests__/externalArtifact.test.ts(49,25): error TS2345: Argument of type 'string | Uint8Array<ArrayBufferLike>' is not assignable to parameter of type 'BodyInit | null | undefined'.
+  Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'BodyInit | null | undefined'.
+    Type 'Uint8Array<ArrayBufferLike>' is missing the following properties from type 'URLSearchParams': size, append, delete, get, and 3 more.
+__tests__/qualifyCommand.test.ts(48,7): error TS2740: Type '{ unitId: string; grantId: string; artifact: ResolvedModelArtifact; residencyKey: string; generation: number; runtime: "ollama"; endpoint: string; containerId: string; devices: never[]; }' is missing the following properties from type 'ModelExecutionUnit': kind, reference, owner, containerName, and 2 more.
+__tests__/qualifyModel.test.ts(30,5): error TS2740: Type '{ unitId: string; grantId: string; artifact: ResolvedModelArtifact; residencyKey: string; generation: number; runtime: "ollama"; endpoint: string; containerId: string; devices: never[]; }' is missing the following properties from type 'ModelExecutionUnit': kind, reference, owner, containerName, and 2 more.
+__tests__/quantizationRun.test.ts(46,25): error TS2345: Argument of type 'string | Uint8Array<ArrayBufferLike>' is not assignable to parameter of type 'BodyInit | null | undefined'.
+  Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'BodyInit | null | undefined'.
+    Type 'Uint8Array<ArrayBufferLike>' is missing the following properties from type 'URLSearchParams': size, append, delete, get, and 3 more.
+exit=2
+
+### typecheck DESPUÉS — src/packages/daemon
+$ cd src/packages/daemon && bun ../../../node_modules/typescript/lib/tsc.js --noEmit -p tsconfig.test.json
+src/__tests__/bgAdopt.test.ts(223,17): error TS2345: Argument of type 'string | NonSharedBuffer' is not assignable to parameter of type 'Buffer<ArrayBufferLike>'.
+  Type 'string' is not assignable to type 'Buffer<ArrayBufferLike>'.
+src/__tests__/daemonLockStartup.test.ts(259,19): error TS2339: Property 'message' does not exist on type 'YieldHandshakeResult'.
+  Property 'message' does not exist on type '{ kind: "not-needed"; }'.
+exit=2
+# errores por paquete: local-models 4 antes / 4 después (los mismos); daemon 2 antes / 2 después (los mismos). Ninguno nombra un archivo del tramo C.

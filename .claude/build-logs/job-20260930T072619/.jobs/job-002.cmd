@@ -1,0 +1,1 @@
+(cd src/packages/provider && bun test __tests__/credentials.test.ts __tests__/accounts/connectionStoreHome.test.ts __tests__/accounts/proxyCredentials.test.ts src/__tests__/credentialsConnectionStore.test.ts)

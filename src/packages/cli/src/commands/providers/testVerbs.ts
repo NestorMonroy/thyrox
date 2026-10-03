@@ -13,6 +13,7 @@ import { testConnection, testResultUpdate, validateConnection, type ConnectionTe
 import { hasFlag } from '../../entry/flags.ts'
 import { EXIT_FAIL, EXIT_OK } from '../../exitCodes.ts'
 import { resolveConnection } from './connectionSelector.ts'
+import { apiKeyProbeProvider } from './providerId.ts'
 import { publicConnection } from './publicConnection.ts'
 
 type Row = Record<string, unknown>
@@ -26,8 +27,13 @@ export interface TestVerbDeps {
 
 type TestReport = { connection: Row; valid: boolean; error: string | null; statusCode?: number | null; skipped: boolean }
 
+/** La sonda de clave conoce a Anthropic por el nombre de su receta, no por el id del store. */
+function probeByRecipeName(testDeps: ConnectionTestDeps): ConnectionTestDeps {
+  return { ...testDeps, probe: input => testDeps.probe({ ...input, provider: apiKeyProbeProvider(input.provider) }) }
+}
+
 async function testAndRecord(row: Row, deps: TestVerbDeps): Promise<TestReport> {
-  const { persist, ...outcome }: ConnectionTestOutcome = await testConnection(row, deps.testDeps)
+  const { persist, ...outcome }: ConnectionTestOutcome = await testConnection(row, probeByRecipeName(deps.testDeps))
   if (persist) deps.store.update(String(row.id), testResultUpdate(outcome, deps.now()))
   return { connection: publicConnection(row), ...outcome }
 }

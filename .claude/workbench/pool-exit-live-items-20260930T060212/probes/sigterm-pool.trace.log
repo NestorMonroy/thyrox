@@ -1,0 +1,12 @@
+pool exit: 143
+.claude/workbench/pool-exit-live-items-20260930T060212/probes/common.sh: line 49: /tmp/tmp.24AdlzcCMT/repo/.claude/workbench/b/out/joblog.tsv: No such file or directory
+joblog lines (out): ausente
+joblog lines (runtime): 1
+worktrees del ítem: 1
+runners vivos: 2
+items cerrados: 0
+runtime conservado: 1
+--- pool.log
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.24AdlzcCMT/runner en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+__BG_EXIT__=0

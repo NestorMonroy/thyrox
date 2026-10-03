@@ -1,0 +1,33 @@
+OK   A: en curso, el ítem tiene su worktree
+OK   A: en curso, el runner vive
+OK   A: el pool no termina bien
+OK   A: ningún runner sobrevive al pool
+OK   A: la salida no tiene el ítem
+OK   A: el worktree del ítem no cerrado se conserva
+OK   A: el trabajo a mitad sigue en el worktree
+OK   A: el runtime se conserva
+FAIL A: el pool declara el runtime conservado — expected '1', got '2'
+OK   A: reconcile declara el ítem recuperable
+OK   B: GNU Parallel corre bajo el pool
+OK   B: el pool no termina bien
+OK   B: el joblog quedó sólo con cabecera
+OK   B: ningún runner sobrevive al pool
+OK   B: el ítem quedó cerrado por su propio shell
+OK   B: su manifiesto coincide con la salida
+OK   B: el veredicto es fallido (el runner murió)
+OK   B: la foto conserva el trabajo a mitad
+OK   B: el worktree se barrió sólo después de cerrar
+OK   B: el pool nombra el ítem sin veredicto de Parallel
+OK   control Ac: el bloque se retiró
+el ítem nunca arrancó:
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: sin ejecución previa de /tmp/tmp.JRb449OOE4/runner en esta plantilla; ninguna con el modelo claude-sonnet-5: nada que derivar
+gawk: cmd. line:2: fatal: cannot open file `/tmp/tmp.JRb449OOE4/runAc.runtime/pool/463bdd3e655c-20260930T060935-2164/joblog.tsv' for reading: No such file or directory
+verificados=0 rechazados=0 sin-cambios=0 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)
+tests/session/test-headless-pool-exit-live-items.sh: line 134: kill: (-2154) - No such process
+FAIL control Ac: sin drenaje, el runner sobrevive al pool — expected '1', got '0'
+OK   control Bc: la guarda se retiró
+OK   control Bc: sin la guarda, el worktree del ítem no cerrado se barrió
+22/24 aserciones
+__BG_EXIT__=1

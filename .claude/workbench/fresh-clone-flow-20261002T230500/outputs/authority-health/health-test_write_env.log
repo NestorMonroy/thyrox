@@ -1,0 +1,30 @@
+  ok   escribe y sale 0
+  ok   declara THYROX_ROOT
+  ok   y su valor es la raíz real de thyrox
+  ok   NO es el árbol padre (el defecto que originó todo esto)
+  ok   declara los dos localizadores
+  ok   y el .env que escribe lo puede leer reach.py
+  ok   un .env existente NO se pisa
+  ok   y conserva su contenido
+  ok   --force sí lo reescribe
+  ok   y ahora lleva el valor derivado
+  ok   una opción desconocida rehúsa con 2
+  ok   y no crea el archivo
+  ok   sin marcador alcanzable, rehúsa con 2
+  ok   y NO deja un .env a medias
+  ok   y dice por qué
+  ok   el proveedor regenera su .env
+  ok   el proveedor declara su hogar con la clave POR CLON
+  ok   y el de sus trabajos con la suya
+  ok   y NO emite las globales (se filtrarian a los consumidores)
+  ok   y NO la emite al .env de un consumidor
+  ok   y tampoco esa al .env de un consumidor
+  ok   ni las claves por clon del proveedor
+  ok   --force sale 0 sobre un .env con claves ajenas
+  ok   conserva la clave de politica por clon (api)
+  ok   conserva la de docs tambien
+  ok   conserva una clave declarada sin el prefijo THYROX_
+  ok   y REGENERA la suya: el valor rancio no sobrevive
+  ok   sin duplicar la clave regenerada
+
+28 aprobada(s) · 0 fallida(s) (alcance medido: write-env.sh)

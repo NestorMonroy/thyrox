@@ -1,0 +1,27 @@
+chat-green rc=0 Ran 27 tests across 3 files. [289.00ms]
+chat-typecheck rc=2   Type 'EmbeddingValidationFacts' is missing the following properties from type 'ArtifactValidationFacts': perplexity, tokensPerSecond
+annul runtime-deadline: (fail) admittedChat > la petición no hereda el plazo de 300 s del runtime [0.80ms]
+annul declared-deadline: (fail) admittedChat > un plazo declarado corta la petición lenta [505.86ms]
+test_execution_policy_enforcement.py rc=0 execution_policy: 65 ok, 0 fallas
+test_detect_client_background.py rc=0 12 ok, 0 fallos
+test_detect_agent_dispatch.py rc=0 11 caso(s); 0 fallo(s)
+lint rc=0
+ruff: 0 hallazgo(s) (alcance medido: 5 archivo(s))
+pyright: 0 hallazgo(s) (alcance medido: 5 archivo(s))
+tests/session/test-headless-pool-credential-source.sh	exit=0	aserciones: 42 de 42 · fallos: 0
+tests/session/test-headless-pool-execution-unit.sh	exit=0	14 ok · 0 falla(s) (alcance medido: headless-pool --execution unit)
+tests/session/test-headless-pool-exit-live-items.sh	exit=0	24/24 aserciones
+tests/session/test-headless-pool-frozen-launcher.sh	exit=0	result: 6 of 6 assertions green
+tests/session/test-headless-pool-item-drain.sh	exit=0	result: 17 of 17 assertions green
+tests/session/test-headless-pool-lifecycle.sh	exit=0	result: 48 of 48 assertions green
+tests/session/test-headless-pool-local-model-e2e.sh	exit=0	8 ok · 0 falla(s) (alcance medido: modelo local por el coordinador desde la unidad, con dobles)
+tests/session/test-headless-pool-model-policy.sh	exit=0	20 ok · 0 falla(s) (alcance medido: headless-pool --model-policy)
+tests/session/test-headless-pool-runtime.sh	exit=0	22/22 aserciones
+tests/session/test-headless-pool-thyrox-p.sh	exit=0	12 ok · 0 falla(s) (alcance medido: headless-pool con thyrox -p)
+tests/session/test-headless-pool-worktree.sh	exit=1	test-headless-pool-worktree: 46 aserciones — 45 ok, 1 falla(s)
+tests/session/test-headless-pool.sh	exit=1	aserciones: 147 de 148 · fallos: 1
+user_wiring rc=1 120 ok, 5 fallos
+recommend_cli rc=0 58 aprobada(s) · 0 fallida(s) (alcance medido: recommend.ts)
+recommendExecution rc=0 Ran 21 tests across 1 file. [53.00ms]
+execution thyrox-worker-test-murg8l60-24536 kind=test task=TASK-THYROX-0773 exit=1
+__BG_EXIT__=1

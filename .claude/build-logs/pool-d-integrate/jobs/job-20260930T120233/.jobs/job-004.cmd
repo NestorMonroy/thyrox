@@ -1,0 +1,1 @@
+cd src/packages/tool-registry && timeout 600 bun test src/tools/SendMessageTool/__tests__/udsRoute.test.ts > /home/user/thyrox/.claude/build-logs/pool-d-integrate/0449-route.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-d-integrate/0449-route.log

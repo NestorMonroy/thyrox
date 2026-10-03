@@ -1,0 +1,40 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/externalArtifact.test.ts:
+90 |   const response = await fetcher(`${HUGGING_FACE_BASE_URL}/${source.repository}/resolve/${source.revision}/${file.path}`)
+91 |   if (!response.ok) throw new SourceDownloadError(file.path, `la descarga respondió ${response.status}`)
+92 |   await mkdir(dirname(target), { recursive: true })
+93 |   const partial = `${target}.partial`
+94 |   await Bun.write(partial, response)
+95 |   if (!(await isVerifiedOnDisk(partial, file))) throw new SourceDownloadError(file.path, `no coincide con ${file.digest}`)
+                                                           ^
+SourceDownloadError: tiny-q4_k_m.gguf: no coincide con sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+ path: "tiny-q4_k_m.gguf",
+
+      at downloadFile (/home/user/thyrox/src/packages/local-models/huggingFaceSource.ts:95:55)
+      at async downloadSource (/home/user/thyrox/src/packages/local-models/huggingFaceSource.ts:83:11)
+      at async acquire (/home/user/thyrox/src/packages/local-models/externalArtifact.ts:228:9)
+      at async importExternalArtifact (/home/user/thyrox/src/packages/local-models/externalArtifact.ts:132:18)
+      at async <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/externalArtifact.test.ts:106:27)
+(fail) external artifact import > refuses before downloading when the published sha256 differs from the pinned one [3.31ms]
+90 |   const response = await fetcher(`${HUGGING_FACE_BASE_URL}/${source.repository}/resolve/${source.revision}/${file.path}`)
+91 |   if (!response.ok) throw new SourceDownloadError(file.path, `la descarga respondió ${response.status}`)
+92 |   await mkdir(dirname(target), { recursive: true })
+93 |   const partial = `${target}.partial`
+94 |   await Bun.write(partial, response)
+95 |   if (!(await isVerifiedOnDisk(partial, file))) throw new SourceDownloadError(file.path, `no coincide con ${file.digest}`)
+                                                           ^
+SourceDownloadError: tiny-q4_k_m-00002-of-00002.gguf: no coincide con sha256:eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee
+ path: "tiny-q4_k_m-00002-of-00002.gguf",
+
+      at downloadFile (/home/user/thyrox/src/packages/local-models/huggingFaceSource.ts:95:55)
+      at async downloadSource (/home/user/thyrox/src/packages/local-models/huggingFaceSource.ts:83:11)
+      at async acquire (/home/user/thyrox/src/packages/local-models/externalArtifact.ts:228:9)
+      at async importExternalArtifact (/home/user/thyrox/src/packages/local-models/externalArtifact.ts:132:18)
+      at async <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/externalArtifact.test.ts:219:27)
+(fail) external artifact import from official shards > refuses before downloading when any shard is published with another sha256 [6.56ms]
+
+ 9 pass
+ 2 fail
+ 25 expect() calls
+Ran 11 tests across 1 file. [286.00ms]

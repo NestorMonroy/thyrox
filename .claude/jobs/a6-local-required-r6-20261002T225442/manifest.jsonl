@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bin/headless-pool --prompt /home/user/thyrox/.claude/workbench/thyrox-p-local-required-a6-20261002T203222/probes/prompt.md --out /home/user/thyrox/.claude/workbench/thyrox-p-local-required-a6-20261002T203222/outputs/pool-r6 --task-class mecanica --context-tokens 24663 --width 1 --timeout 1800 --execution unit --work-reference thyrox:a6", "started_at": "2026-10-02T22:54:42+00:00"}
+{"kind": "settle", "exit_code": 1, "finished_at": "2026-10-02T23:00:34+00:00", "duration_seconds": 352.104627}

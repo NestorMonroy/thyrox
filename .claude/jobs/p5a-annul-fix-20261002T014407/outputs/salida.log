@@ -1,0 +1,5 @@
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+(fail) build-image con la referencia de trabajo de un consumidor (TASK-THYROX-0760) > --task y --work juntos n
+2982a9183
+execution thyrox-worker-test-muqav37j-1872 kind=test task=TASK-THYROX-0760 exit=0
+__BG_EXIT__=0

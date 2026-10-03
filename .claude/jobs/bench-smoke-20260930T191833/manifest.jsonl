@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "python3 .claude/workbench/ollama-cpu-benchmark-20260930T191740/probes/benchmark.py .claude/workbench/ollama-cpu-benchmark-20260930T191740/outputs/smoke.tsv .claude/workbench/ollama-cpu-benchmark-20260930T191740/outputs/smoke.jsonl qwen2.5:0.5b", "started_at": "2026-09-30T19:18:33+00:00"}

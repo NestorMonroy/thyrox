@@ -1,0 +1,178 @@
+#10  completed    [-]  Aplicar el mapa de nombres al corpus con un reescritor por AST
+#100  completed    [-]  Buscar el mecanismo en la referencia por su flujo, no por su literal
+#1008  completed    [docs]  Portar la familia session a thyrox — el pool, la barrera y el marcador
+#1018  pending      [docs]  Analizar si los 10 baselines son parámetro del consumidor o viajan a thyrox
+#103  completed    [thyrox]  Materialize thyrox-postgres through the primitive and prove durability
+#1032  completed    [docs]  Barrer los guiones que perdieron su aritmética de ruta en la mudanza a thyrox
+#104  completed    [api]  Anclar citation_id al sujeto, no al ordinal: hoy TASK-API-0001 puede pasar a nombrar otra cosa
+#1050  completed    [docs]  Decidir si los 54 manifiestos en español del corpus de eventos se renombran
+#1060  completed    [docs]  P3c — clasificar y repartir .claude/packages entre thyrox y kaupamex-docs
+#1064  pending      [docs]  Migrar los 10 guiones que codifican la raíz del árbol al mecanismo de alcance
+#1077  completed    [docs]  El README del corpus de builds transcribe su árbol en vez de derivarlo
+#1078  completed    [docs]  Propagar al store el renombre y el cierre que TaskUpdate hace en el board
+#1081  completed    [docs]  Portar los 99 archivos de test de ccnmt packages/agent/__tests__ con sus mecanismos
+#1084  completed    [docs]  Reapuntar models.test.ts al corpus mudado a _references
+#1098  pending      [docs]  Barrer los 11 hits que el detector de vetadas destapó al despertar
+#1106  pending      [docs]  Portar el trabajo en segundo plano acotado al lado TypeScript
+#1114  completed    [docs]  Repartir tests/legacy: 56 de 92 no son legacy, sólo están sin reapuntar
+#112  completed    [thyrox]  MITM F7 — servidor, passthrough, gestor, tproxy y shims _internal
+#1129  completed    [docs]  Renombrar THYROX_CONTRAPARTE_DECLARATION: una clave de entorno en español
+#1130  completed    [docs]  Mover los 11 bancos de evidencia del árbol del proveedor al del consumidor
+#1136  pending      [docs]  Sacar el dominio del producto del proveedor: 23 archivos lo llevan en código
+#1149  completed    [docs]  Terminar de mudar el pre-commit: 133 líneas de mecanismo siguen en el consumidor
+#1157  completed    [gen]  Ningun gate ve un termino tecnico traducido a una palabra española atestiguada
+#116  completed    [thyrox]  Empaquetado P0 — extraer el ejecutable propio con bin/binary (forma de apéndice de Bun 1.3)
+#1167  in_progress  [api]  Construir BaseModel propio desde el contrato medido de la referencia
+#1176  pending      [docs]  Cablear el cache de dos escalones a su primer consumidor: el gate de idioma
+#120  pending      [thyrox]  Empaquetado P6 — subcomandos en el ejecutable y destino de los 275 envoltorios de bin/
+#121  pending      [thyrox]  Persist the semantic corpus in PostgreSQL and reclaim disk (POSTGRES-CORPUS-DISK-RECLAIM)
+#1212  completed    [thyrox]  Enforce the task status vocabulary at the single shared point (SQLite CHECK)
+#1214  pending      [docs]  Decidir el desenlace de las 16 rutas que el gate ciego no congeló
+#1219  pending      [thyrox]  Decidir la forma durable del store: particion por reconstruibilidad y volcado de texto
+#122  pending      [thyrox]  Empaquetado P3 — nativos .node incrustados por plataforma, decisión por nativo
+#1220  pending      [thyrox]  Reapuntar las 29 citas a bin/harness.ts, un archivo que ya no existe
+#1223  pending      [thyrox]  El estado declarado de un artefacto no envejece solo: ningún gate lo ve
+#1224  completed    [thyrox]  Dar script a lo que hoy es comando de una vez: familia repo/ en el PROVEEDOR
+#123  pending      [thyrox]  Empaquetado P4 — skills, referencias, plantillas y assets incrustados como la referencia
+#1237  pending      [thyrox]  Resolver las 3 colisiones de relleno H-THYROX-1/01, 2/02, 3/03
+#1241  completed    [docs]  Mover a pm/docs los 13 H-DOCS alojados en pm/api
+#126  pending      [thyrox]  S3: SemanticSearchStore boundary for exposure evidence (raw/search/retrieval + fingerprint)
+#1262  completed    [thyrox]  Falsificar por conducta H-DOCS-1274: el medidor de límite SÍ se expone
+#1269  completed    [thyrox]  Cuatro suites miden el consumidor desde el proveedor y revientan
+#1270  completed    [thyrox]  El baseline de huérfanos se compone bajo el consumidor y .claude/scripts se mudó a thyrox
+#1274  completed    [thyrox]  Separar «rojo del sujeto» de «rojo de la premisa rancia»: tres en un pase
+#128  completed    [thyrox]  MITM F7h — rutas de API del AgentBridge y del inspector, sólo locales, sobre el proxy de thyrox
+#128  pending      [thyrox]  Classify environment names from one declarative authority
+#1286  pending      [thyrox]  La lista cerrada de FILE_PATH ciega S2 al 49 % de las rutas citadas
+#129  pending      [thyrox]  Refuse credentials at Podman boundaries by the sensitivity authority
+#1291  completed    [thyrox]  El corpus de 2.1.274 esta versionado a medias: sin claude_strings.txt ni README
+#130  pending      [thyrox]  Take the worker secret inventory from the sensitivity authority
+#1303  pending      [thyrox]  Censo del corpus de hallazgos: la regla lleva cifras y 7 ya están rancias
+#1304  pending      [docs]  El gate de cifra viva no ve la cifra que nombra un CORPUS, sólo la que nombra un archivo
+#1308  completed    [docs]  Los .txt de BPM y OAIS quedan como corpus de consulta
+#1322  completed    [thyrox]  Dar hogar a reference/triple.ts: su bloqueo declarado era falso
+#1324  pending      [thyrox]  Implementar lo que los dos libros prescriben, midiendo contra los 50 predicados de su apéndice A
+#1326  completed    [thyrox]  Dar política de caducidad a la memoria rancia y a los skills inválidos
+#1349  completed    [thyrox]  Portar el cache de trabajo-ya-hecho de dos escalones a src/cache
+#1355  completed    [thyrox]  hallazgo_ids.py acunar acepta un prefijo malformado en vez de rehusar
+#136  completed    [thyrox]  MITM F7h-3 — rutas del inspector: requests, annotation, replay, hosts, sessions, export.har, capture-modes, internal/ingest, ws
+#136  pending      [thyrox]  Resolve semantic-search embeddings through a qualified local or API provider
+#1361  completed    [thyrox]  Archivar el corpus de builds: quedarse con N y comprimir el resto
+#1362  pending      [thyrox]  Que extract emita los cuatro marcadores, o rehuse declarar exito
+#1364  pending      [thyrox]  Reapuntar los 16 archivos que citan builds archivadas: la ruta ya no resuelve
+#1365  pending      [thyrox]  Censar las suites que invocan un generador con cwd en la raíz real
+#1366  pending      [thyrox]  Decidir el desenlace de los dos commits publicados que citan TASK-THYROX-0469
+#137  pending      [thyrox]  Persist each managed execution's record before its unit becomes reclaimable
+#1382  pending      [thyrox]  El gate de vocabulario ve prosa .rst y no ve store, board ni mensaje de commit
+#140  completed    [thyrox]  MITM F7h-5 — componer y arrancar la API local: todas las rutas, dependencias reales, canal en vivo y el cableado de la ingesta hacia el servidor MITM
+#142  pending      [gen]  Compare local Qwen baseline vs Qwen with retrieved examples on held-out executable tasks
+#1428  completed    [thyrox]  Censar los subpaths sin declarar de los otros 27 paquetes
+#143  pending      [gen]  Distillation experiment on a sample of an external reasoning-trace dataset, only if retrieval leaves a gap
+#149  completed    [thyrox]  MITM F7h-6 — una responsabilidad por módulo de rutas, dependencias estrechas y docstrings de intención
+#151  pending      [thyrox]  Select a local math specialist by measured capability, not by name
+#154  pending      [thyrox]  Name the semantic corpus schema by what it owns: semantic, not semantic_search
+#16  completed    [thyrox]  Declarar la fuente del porte en los 29 archivos de test del harness
+#17  pending      [docs]  Construir @kaupamex/binary — el análisis del ejecutable, en etapas y nativo
+#175  pending      [-]  Barrer «tubería» del corpus de docs y cerrar el grifo en el vocabulario
+#19  pending      [-]  Atajar el error de sintaxis RST al escribirlo, no al validar el corpus
+#198  completed    [docs]  Evaluar /goal: el cuarto mecanismo de cierre del bucle, sin uso
+#212  pending      [thyrox]  Datos D5 — capacidad vectorial y FTS (decisión: qué vectorizar y modelo de embeddings)
+#239  pending      [docs]  Barrer el ordinal de gate en source/ — ampliada por H-DOCS-233
+#261  completed    [docs]  Diagnosticar el subject corrupto de #169 y #170 (H-DOCS-121)
+#298  pending      [thyrox]  Task identity — reconcile this session's 28 stored rows to their board ordinals, then assign IDs to the 274 pending cards
+#300  completed    [thyrox]  Task identity — rename task_ids CLI and identifiers to English (ingest-board, TASK-<LAYER>-NNNN)
+#301  completed    [docs]  CERRADA — la postura UNLICENSED de docs es DEC-DOC-016
+#306  completed    [docs]  DECISIÓN: conservar o retirar el corpus ccb ahora que su procedencia está declarada
+#309  completed    [thyrox]  Podman fase 2 — sonda de capacidades de ejecución (contenedor local, --pids-limit, --memory, limpieza)
+#311  completed    [docs]  CERRADA por directiva — los .txt y .pdf se quedan; COSMIC lo lleva otra persona
+#315  pending      [thyrox]  Semantic search worker y API (embeddings, retrieval pgvector, reranking) y consumidor RAG
+#319  pending      [thyrox]  SemanticSearchStore sobre PostgreSQL + pgvector (ADR-THYROX-008)
+#328  pending      [thyrox]  Declare PostgreSQL+pgvector and Redis as Podman services
+#33  completed    [api]  Declarar `attachment` y `progress` como tipos de línea del transcript
+#33  completed    [thyrox]  Declarar `attachment` y `progress` como tipos de línea del transcript
+#336  completed    [thyrox]  Specialized worker profile with a versioned image
+#34  completed    [thyrox]  Emitir la frontera `compact_boundary` con su `compactMetadata` al compactar
+#35  completed    [-]  Registrar la forma del transcript en la fila de sesión del store
+#35  completed    [api]  Registrar la forma del transcript en la fila de sesión del store
+#352  completed    [thyrox]  Finding completeness gate scoped to a session, with pre-push as secondary defence
+#37  completed    [gen]  SemanticSearchStore sobre PostgreSQL + pgvector (TASK-THYROX-0562)
+#397  completed    [api]  Familia web — 13 archivos ausentes del addon raíz (22 def)
+#41  pending      [api]  Barrer las citas en prosa a guiones mudados por d566c180
+#41  pending      [docs]  Barrer las citas en prosa a guiones mudados por d566c180
+#41  pending      [thyrox]  Carry external infrastructure credentials through the credential mechanism
+#42  pending      [thyrox]  Measure which entry points reach each operational dependency
+#425  pending      [api]  DECISIÓN: postura ante los 271 addons AGPL-3 del corpus OCA
+#43  completed    [-]  Analizar en el binario 2.1.258 el flujo de reanudación y reconciliación de estado tras un reinicio
+#43  completed    [api]  Analizar en el binario 2.1.258 el flujo de reanudación y reconciliación de estado tras un reinicio
+#44  completed    [api]  Analizar en la referencia (ccb, hccw, ccnmt) el flujo de reanudación y reconciliación de estado
+#44  completed    [docs]  Analizar en la referencia (ccb, hccw, ccnmt) el flujo de reanudación y reconciliación de estado
+#44  completed    [thyrox]  Persist the semantic corpus: documents, chunks and derived embeddings
+#445  pending      [docs]  Leer MemoryProxy: pipeline de inyección, sesión y puente de skills (H-DOCS-179)
+#447  pending      [docs]  DECISIÓN: dónde vive el corpus TencentDB de forma durable (H-DOCS-179)
+#46  pending      [thyrox]  Ingest pool and agent-worktree evidence into the durable corpus
+#577  in_progress  [api]  Integrar CS 106X en base-cognitiva de forma abstracta
+#578  pending      [docs]  Re-medir las lecturas 1 y 2 de CS 106X contra su fuente
+#592  pending      [docs]  Gate: corpus generado que cita un .claude/eventos/&lt;id&gt; inexistente
+#593  pending      [docs]  Censar los corpus de base-cognitiva cuyo generador se perdió
+#595  pending      [docs]  Gate: afirmación de vigencia en un corpus generado (H-DOCS-215)
+#599  completed    [docs]  Capturar effort, version y service_tier del transcript (H-DOCS-222)
+#636  pending      [docs]  Leer los 25 capítulos restantes de hbooks, un slice por vez
+#644  pending      [docs]  Instrumento de registro: contraste peninsular↔mexicano (H-DOCS-231)
+#645  pending      [docs]  Triar las 127 palabras del baseline de vocabulario inventado
+#649  in_progress  [docs]  Leer los 40 capítulos restantes de heng, un slice por vez
+#666  pending      [docs]  DESCONOCIDO: si el parser propio detecta lo que detectaba tree-sitter (H-DOCS-246)
+#697  pending      [docs]  Anclar la sonda de identificador a su papel sintáctico en los instrumentos de heng (H-DOCS-268)
+#762  pending      [docs]  DECISIÓN: quién es la Designated Community y cuál su Knowledge Base (H-DOCS-316)
+#774  completed    [docs]  DECISIÓN: la fecha de apertura de una tarea no existe (H-DOCS-327)
+#785  pending      [thyrox]  Medir si algún skill se beneficia de declarar arguments: en su frontmatter
+#793  pending      [docs]  DESCONOCIDO: gate de extensión que promete validez no medida (H-DOCS-345)
+#795  pending      [docs]  DESCONOCIDO: gate de cobertura de formas en un extractor de corpus (H-DOCS-347)
+#796  pending      [docs]  DESCONOCIDO: distinguir material nuevo de material ya vendorizado (H-DOCS-348)
+#798  pending      [docs]  DESCONOCIDO: separar deriva de versión de nombre mangleado en el cruce libro↔binario (H-DOCS-350)
+#799  completed    [docs]  DECISIÓN: vendorizar o no el corpus extraído del ejecutable (37 MB, 28 propietarios)
+#803  pending      [docs]  DECISIÓN: el universo del corpus sale del binario, no del recorte del libro (H-DOCS-358)
+#805  pending      [docs]  Las formas de USO no cierran solas: 1 de 90 piezas no parsea (H-DOCS-362)
+#812  pending      [docs]  Medir los otros diez archivos del bunfs como universo (H-DOCS-367)
+#819  pending      [docs]  Extender el mapa de hogar documental a los 31 agentes
+#825  pending      [docs]  DECISIÓN: el acto que autoriza una baja no existe (H-DOCS-374)
+#828  pending      [docs]  DECISIÓN: separar la admisión de la escritura, o declarar que no aplica (H-DOCS-379)
+#831  pending      [docs]  Declarar Monitor Technology: los 18 corpus vigilan sin nombre ni destinatario (H-DOCS-380)
+#832  pending      [docs]  Construir el punto de cotejo: nadie junta lo que las lecturas de corpus destapan (H-DOCS-380)
+#843  pending      [docs]  Fixity de los otros 3 corpus crudos de base-cognitiva (H-DOCS-387)
+#844  pending      [docs]  Las cinco clases de PDI en los 19 dominios del fondo (H-DOCS-388)
+#846  pending      [docs]  DECISIÓN: qué forma toma el Retrieval Aid del fondo (H-DOCS-390)
+#847  pending      [docs]  Positivo real del repo para el literal pegado a letra (H-DOCS-391)
+#863  pending      [docs]  DESCONOCIDO: criterio de desempate al resolver una función por nombre minificado (H-DOCS-404)
+#870  pending      [docs]  Reajustar la cota de apertura cuando aparece una fuente más temprana
+#88  completed    [api]  Teach the successor gate the TASK- citation form (board-to-store already done)
+#880  pending      [docs]  Que los corpus cosmic y bpm se puedan citar — Etapa 1, método de lectura (H-DOCS-416)
+#885  pending      [-]  Aplicar los mecanismos de las CUATRO instituciones a la derivación de #777
+#887  pending      [docs]  La premisa de una tarea se mide antes de despacharla (H-DOCS-418)
+#888  pending      [docs]  Obtener y analizar los Lineamientos técnicos generales del SNT (H-DOCS-421)
+#889  pending      [docs]  Lista cerrada de funciones para iniciativas contra los 100 verbos medidos (H-DOCS-422)
+#89  completed    [api]  Declare the bulk-transformation form in the eventos README and route the pending sweeps to it
+#89  completed    [docs]  Declare the bulk-transformation form in the eventos README and route the pending sweeps to it
+#891  completed    [docs]  Partir A5 en sus cinco funciones y asignar las 165 (H-DOCS-423)
+#9  completed    [-]  Avisar cuando el corpus extraído se quede atrás del ejecutable instalado
+#9  completed    [-]  Implementar el sustrato de skill como código en el harness
+#9  completed    [docs]  Implementar el sustrato de skill como código en el harness
+#900  completed    [docs]  La clave del baseline de vocabulario depende de la FORMA de la ruta
+#902  pending      [docs]  DECISIÓN: qué ventana corre en qué disparador para el gate RST (H-DOCS-448)
+#905  completed    [docs]  La cifra de coste del gate de vocabulario está transcrita a prosa (H-DOCS-453)
+#907  pending      [docs]  Retirar la cifra-propiedad 56.2 s de redaccion-tecnica-es.md
+#920  completed    [docs]  RESUELTA por directiva — el corpus ccb se versiona entero
+#927  pending      [docs]  Subir la sensibilidad del léxico de idioma: mide el 6 % (H-DOCS-484)
+#928  pending      [docs]  DECISIÓN: el idioma de las banderas de CLI en .claude/scripts (--raiz en 4 guiones)
+#93  pending      [docs]  Revisar las afirmaciones que apoyan su peso en ccb Y ccnmt como si fueran dos
+#930  pending      [docs]  Triar las 11 citas de evidencia a rutas ausentes (H-DOCS-486)
+#933  pending      [docs]  DECISIÓN: si el ID de hallazgo, el #NNN y el repo@hash se ENTREGAN en vez de teclearse
+#934  pending      [docs]  DESCONOCIDO: qué señal delata que un defecto admite volverse irrepresentable
+#943  pending      [docs]  DECISIÓN: qué ventana corre el gate de censo de scripts, el 2º más caro del audit (H-DOCS-495)
+#953  completed    [docs]  DESCONOCIDO: el nombre exacto de la clave de effort en el frontmatter de agente (H-DOCS-500)
+#958  pending      [docs]  DECISIÓN: vendorizar o no claude-code-nestor-monroy-tools (H-DOCS-502)
+#959  completed    [docs]  RESUELTA — 18 claves delimitadas en 2.1.250, no 15 (H-DOCS-503)
+#961  pending      [docs]  DESCONOCIDO: las tres cotas de validateAgentType dan 0 hits en nuestro ejecutable
+#965  pending      [docs]  El pre-commit no mide el peso ni el conteo de lo que entra al índice (H-DOCS-505)
+#967  pending      [docs]  Medir por qué la raíz de descubrimiento de agentes no es el directorio de trabajo (H-DOCS-1000)
+#979  pending      [docs]  Dar veredicto a las 2 fallas de test-hallazgo-submodulo.sh (H-DOCS-509)
+#99  pending      [thyrox]  Measure Podman lock recovery before deciding whether to automate it

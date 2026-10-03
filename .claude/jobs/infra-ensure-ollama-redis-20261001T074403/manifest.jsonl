@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c bash bin/infrastructure_ensure thyrox-redis && bash bin/infrastructure_ensure thyrox-ollama", "started_at": "2026-10-01T07:44:03+00:00"}
+{"kind": "settle", "exit_code": 3, "finished_at": "2026-10-01T07:44:08+00:00", "duration_seconds": 5.219755}

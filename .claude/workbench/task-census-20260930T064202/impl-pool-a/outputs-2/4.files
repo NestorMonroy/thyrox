@@ -1,0 +1,9 @@
+.claude/workbench/task-thyrox-0600-listagents-20260930T082528/README.md
+src/packages/local-observability/src/uds/listAgentsFormat.ts
+src/packages/local-observability/src/uds/listAllPeers.ts
+src/packages/local-observability/src/uds/peerFiles.ts
+src/packages/tool-registry/src/tools/ListAgentsTool/ListAgentsTool.ts
+src/packages/tool-registry/src/tools/ListAgentsTool/__tests__/ListAgentsTool.test.ts
+src/packages/tool-registry/src/tools/ListAgentsTool/prompt.ts
+src/packages/tool-registry/src/tools/registry/providers/BuiltInToolsProvider.ts
+tests/session/test-list-agents-two-cli.sh

@@ -9,6 +9,8 @@ import { mkdirSync, mkdtempSync, rmSync, statSync, writeFileSync } from 'node:fs
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
+import { getPlatform } from '@thyrox/config/platform'
+
 import {
   claimParkedJobPeer,
   hasConflictingMessagingSocketOwner,
@@ -21,7 +23,8 @@ import {
   readSessionRecordFile,
   sessionSpansForeignPidDomain,
 } from '../liveSessionRegistry.ts'
-import { currentProcessStartToken } from '../processIdentity.ts'
+import { currentPidDomain, currentProcessStartToken } from '../processIdentity.ts'
+import { sessionRegistryState } from '../sessionRegistryState.ts'
 
 const CONFIG_DIR_ENV = 'THYROX_CONFIG_DIR'
 let dir: string | undefined
@@ -98,6 +101,67 @@ describe('listAllSessionRecords (YOt) y sessionSpansForeignPidDomain (G3o)', () 
   })
 })
 
+/** Un pid que vivió y ya murió: el de un hijo que terminó y fue cosechado. */
+async function exitedChildPid(): Promise<number> {
+  const child = Bun.spawn(['true'])
+  await child.exited
+  return child.pid
+}
+
+/** El retiro de un registro muerto es fire-and-forget; con este plazo, si no llegó, no va a llegar. */
+const RETIRE_TIMEOUT_MS = 2000
+const RETIRE_POLL_MS = 10
+/** Tras este plazo, un retiro que se hubiera lanzado ya habría tocado el disco. */
+const RETIRE_SETTLE_MS = 200
+
+function pause(ms: number): Promise<void> {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
+
+function fileExists(path: string): boolean {
+  try {
+    statSync(path)
+    return true
+  } catch {
+    return false
+  }
+}
+
+/** Si `condition` se cumple antes de `RETIRE_TIMEOUT_MS`, sondeando cada `RETIRE_POLL_MS`. */
+async function becomesTrue(condition: () => boolean): Promise<boolean> {
+  const deadline = Date.now() + RETIRE_TIMEOUT_MS
+  while (Date.now() < deadline) {
+    if (condition()) return true
+    await pause(RETIRE_POLL_MS)
+  }
+  return condition()
+}
+
+/** Corre `body` con el permiso de barrido de este anfitrión fijado a `permitted`, y lo restaura. */
+async function withSweepPermission(permitted: boolean, body: () => Promise<void>): Promise<void> {
+  const state = sessionRegistryState()
+  const previous = state.registrySweepPermitted
+  state.registrySweepPermitted = Promise.resolve(permitted)
+  try {
+    await body()
+  } finally {
+    state.registrySweepPermitted = previous
+  }
+}
+
+const KEY_DIGEST = 'a'.repeat(64)
+const PEER_TOKEN = 'b'.repeat(32)
+
+/** Un registro `<pid>.json` y una clave `<pid>.<sha256>.key` de una sesión de este dominio cuyo pid ya murió. */
+async function writeDeadOwnDomainSession(sessionId: string): Promise<{ recordPath: string; keyPath: string }> {
+  const ownDomain = await currentPidDomain(getPlatform())
+  const pid = await exitedChildPid()
+  writeRecord(pid, { cwd: '/w', startedAt: 1, sessionId, pidDomain: ownDomain })
+  const keyPath = join(sessionsDir(), `${pid}.${KEY_DIGEST}.key`)
+  writeFileSync(keyPath, JSON.stringify({ peerToken: PEER_TOKEN, pidDomain: ownDomain }))
+  return { recordPath: join(sessionsDir(), `${pid}.json`), keyPath }
+}
+
 describe('listAllLiveSessions (D3)', () => {
   test('un registro sin token de arranque, de un pid vivo, cuenta como vivo', async () => {
     writeRecord(process.pid, { cwd: '/w', startedAt: 1, sessionId: 'alive' })
@@ -115,6 +179,27 @@ describe('listAllLiveSessions (D3)', () => {
     writeRecord(process.pid, { cwd: '/w', startedAt: 1, sessionId: 'no-domain-check' })
     const live = await listAllLiveSessions()
     expect(live.some(record => record.sessionId === 'no-domain-check')).toBe(true)
+  })
+
+  test('con barrido permitido, un registro muerto del dominio propio se retira con sus claves', async () => {
+    await withSweepPermission(true, async () => {
+      const { recordPath, keyPath } = await writeDeadOwnDomainSession('dead-swept')
+      const live = await listAllLiveSessions()
+      expect(live.some(record => record.sessionId === 'dead-swept')).toBe(false)
+      expect(await becomesTrue(() => !fileExists(recordPath))).toBe(true)
+      expect(await becomesTrue(() => !fileExists(keyPath))).toBe(true)
+    })
+  })
+
+  test('sin permiso de barrido, el registro muerto no aparece pero queda en disco (control negativo)', async () => {
+    await withSweepPermission(false, async () => {
+      const { recordPath, keyPath } = await writeDeadOwnDomainSession('dead-kept')
+      const live = await listAllLiveSessions()
+      expect(live.some(record => record.sessionId === 'dead-kept')).toBe(false)
+      await pause(RETIRE_SETTLE_MS)
+      expect(fileExists(recordPath)).toBe(true)
+      expect(fileExists(keyPath)).toBe(true)
+    })
   })
 })
 

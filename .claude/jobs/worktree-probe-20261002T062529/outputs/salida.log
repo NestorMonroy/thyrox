@@ -1,0 +1,18 @@
+error: unable to write file .claude/workbench/session-inbox-at-launch-20260929T134728/outputs/1.stream.jsonl
+fatal: cannot create directory at '.claude/workbench/session-inbox-at-launch-resume-20260929T153813': No space left on device
+git exit=128
+0
+2ce4a1a025da45a37fa178255f2b03621900af7e
+drwxr-xr-x 9 root root 4096 Oct  2 06:24 /home/user/thyrox/.git
+drwxr-xr-x 4 root root 4096 Oct  2 06:25 /home/user/thyrox/.git/worktrees
++ t=/home/user/thyrox/.thyrox/runtime/continuation/worktrees/probe/wt-1
+++ dirname /home/user/thyrox/.thyrox/runtime/continuation/worktrees/probe/wt-1
++ mkdir -p /home/user/thyrox/.thyrox/runtime/continuation/worktrees/probe
++ git -C /home/user/thyrox worktree add -q --detach /home/user/thyrox/.thyrox/runtime/continuation/worktrees/probe/wt-1 HEAD
++ echo 'git exit=128'
++ id -u
++ git -C /home/user/thyrox rev-parse HEAD
++ head -2
++ ls -ld /home/user/thyrox/.git /home/user/thyrox/.git/worktrees
+execution thyrox-worker-probe-muqkwxh7-26203 kind=probe task=TASK-THYROX-0769 exit=0
+__BG_EXIT__=0

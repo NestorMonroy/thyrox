@@ -1,0 +1,1 @@
+history clean: localhost/thyrox-model-quantizer:clean-candidate

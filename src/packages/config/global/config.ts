@@ -833,7 +833,7 @@ let freshnessWatcherStarted = false
 // `watchFile` sondea `stat` en el threadpool de libuv y sólo llama cuando el
 // mtime cambió — un stat colgado nunca bloquea el hilo principal.
 function startGlobalConfigFreshnessWatcher(file: string): void {
-  if (freshnessWatcherStarted || process.env.NODE_ENV === 'test') return
+  if (freshnessWatcherStarted) return
   freshnessWatcherStarted = true
   watchFile(
     file,

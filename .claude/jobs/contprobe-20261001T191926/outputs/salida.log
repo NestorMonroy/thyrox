@@ -1,0 +1,2 @@
+task_continuation: hard_block en probe; evidencia en outputs/continuation.jsonl
+__BG_EXIT__=3

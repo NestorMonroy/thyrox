@@ -283,6 +283,17 @@ export function cloneRootOf(start: string): string | null {
   return existsSync(join(top, '.git')) ? top : null
 }
 
+/**
+ * La base contra la que se resuelve una clave por clon RELATIVA: la raíz del
+ * clon que contiene `start`, o `start` mismo fuera de uno. Gemela de
+ * `per_clone_base` — es lo único que faltaba portar de la familia por clon
+ * para que `workbenchDir` tenga con qué anclar su rama por clon.
+ */
+export function perCloneBase(start?: string): string {
+  const here = start ?? process.cwd()
+  return cloneRootOf(here) ?? resolve(here)
+}
+
 /** `kaupamex-docs` -> `docs`; `ai-course-notes` -> `ai-course-notes`. */
 export function cloneShortName(start: string): string | null {
   const root = cloneRootOf(start)

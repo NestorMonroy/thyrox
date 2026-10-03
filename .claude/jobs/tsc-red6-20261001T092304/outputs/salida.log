@@ -1,0 +1,5 @@
+3
+src/packages/local-models/ollamaRuntimeAdapter.ts(42,32): error TS6138: Property 'options' is declared but its value is never read.
+src/packages/model-scheduling/podmanModelExecutionPrimitive.ts(51,32): error TS6138: Property 'options' is declared but its value is never read.
+src/packages/model-scheduling/residencyController.ts(74,32): error TS6138: Property 'dependencies' is declared but its value is never read.
+__BG_EXIT__=0

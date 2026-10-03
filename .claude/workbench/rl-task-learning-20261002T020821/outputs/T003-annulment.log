@@ -1,0 +1,16 @@
+# anulación: to_record sin assert_secret_free
+== 1. versiones y forma ==
+ok   schemaVersion presente
+ok   policyVersion y rewardVersion
+ok   S' acumula el resultado del intento
+ok   S' avanza el intento
+== 2. ida y vuelta ==
+ok   from_record(to_record(e)) == e
+== 3. secretos ==
+FAIL un nombre de credencial se rehúsa
+FAIL un valor con forma de clave se rehúsa
+== 4. versión de esquema ==
+ok   otra versión se rehúsa
+
+8 casos: 6 ok, 2 fallos
+exit=1

@@ -1,0 +1,9 @@
+before swarm tsconfig.test.json exit=2 errores=12
+before swarm tsconfig.build.json exit=2 errores=12
+before local-observability tsconfig.test.json exit=2 errores=23
+before local-observability tsconfig.build.json exit=2 errores=12
+after swarm tsconfig.test.json exit=2 errores=12
+after swarm tsconfig.build.json exit=2 errores=12
+after local-observability tsconfig.test.json exit=2 errores=23
+after local-observability tsconfig.build.json exit=2 errores=12
+__BG_EXIT__=0

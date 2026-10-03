@@ -1,0 +1,295 @@
+diff --git a/.claude/workbench/task-thyrox-0449-uds-client-send-and-discovery-20260930T101121/README.md b/.claude/workbench/task-thyrox-0449-uds-client-send-and-discovery-20260930T101121/README.md
+new file mode 100644
+index 000000000..8037eed49
+--- /dev/null
++++ b/.claude/workbench/task-thyrox-0449-uds-client-send-and-discovery-20260930T101121/README.md
+@@ -0,0 +1,84 @@
++# TASK-THYROX-0449 — cliente UDS: envío con clave publicada y descubrimiento (ListAgents)
++
++Cómo resuelve 2.1.283 lo que este ítem cierra, medido sobre
++`/home/user/thyrox/_references/claude-code-bin/2.1.283/bunfs-root/` con `rg -o -n`
++(sólo lectura), y qué se portó, qué ya estaba portado y qué se declara divergencia.
++El censo (`prompt.md`) daba la tarea como *parcial* por tres huecos; los tres se midieron
++de nuevo antes de escribir.
++
++## Símbolos consultados
++
++| Símbolo | Chunk:línea | Qué hace | Decisión |
++|---|---|---|---|
++| `deliver` de SendMessage, rama `S.scheme==="uds"` | `chunk-zzjp4jq7.js:53` | `ySe` (auto-envío) → rechazo; `import.meta.require(chunk-p4b2d9hd).sendToUdsSocket`; `is(...)` (mensaje vacío/notify); `_bt` (nota de un solo sentido); `B(S.target, K, r.storageV5, j, void 0, EFe(...), A, {fromPlugin})`; `e.summary||fo(e.message,50)` como preview; `success: X!==void 0 \|\| Q?.ok` | ya portado en `SendMessageTool.ts:568-586` con `sendToUdsSocket(addr.target, input.message)` y `input.summary \|\| truncate(message, 50)`. Sin prueba hasta hoy → `udsRoute.test.ts` |
++| `validateInput`: `if(lh(e.to).scheme==="uds"&&typeof e.message==="string")return{result:!0}` | `chunk-zzjp4jq7.js:53` | texto plano a `uds:` pasa sin exigir summary; un estructurado cae al rechazo `structured messages cannot be sent cross-session` | ya portado (`SendMessageTool.ts:445-453` y `:478-485`); ahora con aserción en las dos ramas de la bandera |
++| `(w==="uds"\|\|w==="bridge")&&!Ws()` → `$Mt` | `chunk-zzjp4jq7.js:53` | compuerta de mensajería cross-session apagada | **divergencia declarada**: `SendMessageTool.ts` no la porta (`git grep isSessionMessagingEnabled -- SendMessageTool/` → 0). No es de este alcance (`SendMessageTool.ts` no está en los archivos que me pertenecen); la prueba lo nombra en `Ciega a` |
++| `ySe(S.target)` → `XK` (rechazo de auto-envío) | `chunk-zzjp4jq7.js:53` | rehúsa mandarse a su propio socket | no portado en `SendMessageTool.ts`; misma razón, misma declaración |
++| `export{… VOt as sendToUdsSocket, kee as sendControlToUdsSocket, iat as sendStampedControlToUdsSocket, D3 as listAllLiveSessions …}` | `chunk-p4b2d9hd.js:11` | el nombre público de `VOt` es `sendToUdsSocket` (7 args + opciones) | el árbol lo porta como `sendPeerUserMessage` (misma firma) y expone `sendToUdsSocket(target, message)` como envoltorio de dos args para `SendMessageTool`/`conversationRecovery`; divergencia ya declarada en la cabecera de `udsClient.ts:548-551` |
++| `VOt(e,n,r,i,s,m,g,{trackReceipts,expectPeerPid,expectPeerProcStart,fromPlugin})` | `chunk-qcy58j4w.js:11` | sobre, ritmo de salida, recibo y `Pe` | ya portado (`sendPeerUserMessage`, `udsClient.ts:463`) |
++| `Pe(e,n,r,{noFollowSymlink,expectPeerPid,expectPeerProcStart,preflightedJson})` | `chunk-qcy58j4w.js:11` | `d=ofn()`; `o=await QDo(e,r,{requireLiveOwner:d})`; `c=o.kind==="token"?o.token:void 0`; `E=c!==void 0?zFr(c):""`; `h=E+l+"\n"` | ya portado (`sendRawMessage`, `udsClient.ts:351-372`): `readPeerToken(target,{requireLiveOwner,storage})` → `authFrameLine(token)` → `payload = authLine + json + "\n"`. **Sin aserción directa hasta hoy** → dos casos nuevos en `udsClient.test.ts` |
++| `ofn(){return O()==="windows"}` | `chunk-5mcqvwzx.js:14` | auth exigida por defecto sólo en Windows | ya portado (`authRequiredByDefault`, `inboxAuth.ts:24`). Consecuencia medida: en Linux `requireLiveOwner=false`, así que el token se usa **si la clave existe** y se omite si no, sin rechazar. Eso es lo que las dos pruebas (con clave / sin clave) miden |
++| `zFr(e){return b({type:X,token:e})+"\n"}` | `chunk-5mcqvwzx.js:14` | el marco de auth es una línea JSON `{type:"auth",token}` | ya portado (`authFrameLine`, `inboxAuth.ts:34`); la prueba compara byte a byte contra él |
++| `QDo`/`XDo` (leer/publicar clave) | `chunk-5mcqvwzx.js` | clave en `<sessions>/<pid>.<sha256(addr)>.key` | ya portados (`readPeerToken`, `publishInboxKey`, `inboxKeys.ts:313/269`); la prueba nueva publica con `publishInboxKey` y deja que `sendToUdsSocket` la lea por el camino real (sin `deps` inyectadas) |
++| `getListPeersTool` / ListAgents | `chunk-8xzbdmg9.js` + `chunk-3pfj38s1.js` | herramienta de descubrimiento | **ya cerrado por TASK-THYROX-0600 en `b1ae180d3`**: `BuiltInToolsProvider.ts:145-146` y `:255` lo registran sin compuerta; `ListAgentsTool.test.ts:149` lo asegura. El censo (`getListPeersTool = () => null`, `:143`) era anterior a ese commit |
++
++*Métrica:* primera línea del chunk donde `rg -o -n` casa el patrón; chunks minificados
++(líneas 11, 14, 53), así que la línea no localiza dentro de la línea.
++*Ciega a:* símbolos que `rg -o` recortó por longitud (`{0,N}`); no se leyó el chunk entero.
++
++## Lo que el censo afirmaba y resultó distinto al medir
++
++1. **«getListPeersTool devuelve null (BuiltInToolsProvider.ts:143)»** — en `HEAD`
++   (`330d7f051`) la línea 143 es un comentario y `:145-146` define `getListAgentsTool`
++   con `require('../../ListAgentsTool/ListAgentsTool.js')`, empujado en `:255`.
++   *Métrica:* `cat -n BuiltInToolsProvider.ts`. *Ciega a:* nada; es el archivo.
++   Consecuencia: **`BuiltInToolsProvider.ts` no se toca** aunque me pertenezca — el hueco
++   ya está cerrado y reescribirlo sería duplicar TASK-THYROX-0600.
++2. **`feature('UDS_INBOX')` bajo `bun test`** — sin bandera es `false` (`INLINE= off`),
++   con `bun test --feature=UDS_INBOX` es `true` en el archivo de prueba **y en los módulos
++   que importa** (`IMPORTED= on`); `mock.module('bun:bundle', …)` **no** lo cambia
++   (`MOCK INLINE= off`). Medido con tres sondas `zz_probe_*.test.ts`, borradas después.
++   *Métrica:* `console.log` de la sonda bajo las tres formas. *Ciega a:* el binario
++   compilado (`bin/cli`), donde la macro se resuelve al construir.
++   Consecuencia: la prueba del ramal sigue el idioma de
++   `messagingInboxAtLaunch.test.ts` — un `if (!feature('UDS_INBOX'))` que elige la rama
++   de aserciones — y se corre dos veces.
++3. **`sendToUdsSocket` a un socket sin oyente NO lanza**: `call` atrapa y devuelve
++   `success:false, "Failed to send to uds:<ruta>: connect ENOENT …"`. Sale de la
++   prueba `un socket sin oyente…`; el censo no lo decía ni lo negaba.
++
++## Casos cubiertos
++
++| Caso | Prueba |
++|---|---|
++| sin bandera: `to: uds:<sock>` texto plano pasa `validateInput` y deriva `summary` como un nombre cualquiera | `udsRoute.test.ts` › sin feature › `validateInput no toma el atajo uds:` |
++| sin bandera: estructurado a `uds:` no se rechaza como cross-session (el ramal no existe) | `udsRoute.test.ts` › sin feature › `un mensaje estructurado a uds: no se rechaza…` |
++| con bandera: texto plano a `uds:` pasa sin exigir ni derivar `summary` | `udsRoute.test.ts` › con feature › `validateInput acepta texto plano sin summary y no lo deriva` |
++| con bandera: estructurado a `uds:` → `structured messages cannot be sent cross-session` | `udsRoute.test.ts` › con feature › `validateInput rechaza un mensaje estructurado a uds:` |
++| con bandera: `call` → `sendToUdsSocket` → el servidor recibe 1 línea `type:user` con el texto y `msg_id`; resultado `“hola par” → uds:<sock>` | `udsRoute.test.ts` › con feature › `call llega a sendToUdsSocket…` |
++| con bandera: `summary` explícito es el preview | `udsRoute.test.ts` › con feature › `call con summary explícito…` |
++| con bandera: socket sin oyente → `success:false`, `Failed to send to …`, 0 líneas recibidas | `udsRoute.test.ts` › con feature › `un socket sin oyente…` |
++| clave publicada con `publishInboxKey` → la primera línea recibida es exactamente `authFrameLine(peerToken)`, la segunda el `user` | `udsClient.test.ts` › `envío con clave publicada` › `con la clave del par publicada…` |
++| clave retirada con `removeInboxKey` → 1 sola línea, `type:user`, sin marco de auth | `udsClient.test.ts` › `envío con clave publicada` › `retirada la clave… (control de anulación)` |
++
++## Controles de anulación (copia con `mktemp`, `sed -i`, medir, restaurar; `git diff --quiet` → limpio)
++
++| Rama retirada | Cómo | Caen | Sobreviven |
++|---|---|---|---|
++| `authLine` en `sendRawMessage` (`udsClient.ts:375` → `const authLine = ''`) | `sed -i` | **1/23**: `con la clave del par publicada…` | 22, incluido el control `retirada la clave…` (que no depende del token) |
++| ramal `uds` de `call` (`SendMessageTool.ts:568` → `'never-uds'`) | `sed -i`, con `--feature=UDS_INBOX` | **3/5**: `call llega…`, `summary explícito…`, `socket sin oyente…` | 2: las dos de `validateInput` |
++| atajo `uds` de `validateInput` (`SendMessageTool.ts:447` → `'never-uds'`) | `sed -i`, con `--feature=UDS_INBOX` | **1/5**: `validateInput acepta texto plano sin summary y no lo deriva` | 4 |
++
++Cada rama tumba exactamente los casos que dependen de ella y ninguno más.
++
++## Resultados
++
++- `bun test src/uds/__tests__/udsClient.test.ts` (local-observability): 21 → **23 pass, 0 fail, 41 → 48 expect**.
++- `bun test src/tools/SendMessageTool/__tests__/udsRoute.test.ts` (tool-registry): **2 pass / 3 expect** sin bandera; **5 pass / 15 expect** con `--feature=UDS_INBOX`.
++- `bun test src/tools/SendMessageTool/__tests__/` (las dos suites previas, ambas banderas): 21 pass, 0 fail, sin cambio.
++
++## Archivos
++
++- `src/packages/tool-registry/src/tools/SendMessageTool/__tests__/udsRoute.test.ts` (nuevo)
++- `src/packages/local-observability/src/uds/__tests__/udsClient.test.ts` (+2 imports, +1 `describe`)
++- `src/packages/tool-registry/src/tools/registry/providers/BuiltInToolsProvider.ts`: **sin cambios** (hallazgo 1)
+diff --git a/src/packages/local-observability/src/uds/__tests__/udsClient.test.ts b/src/packages/local-observability/src/uds/__tests__/udsClient.test.ts
+index 24671ece8..8c748b3e1 100644
+--- a/src/packages/local-observability/src/uds/__tests__/udsClient.test.ts
++++ b/src/packages/local-observability/src/uds/__tests__/udsClient.test.ts
+@@ -33,6 +33,8 @@ import {
+ } from '../udsClient.ts'
+ import { messagingState } from '../messagingState.ts'
+ import { NoLiveInboxError } from '../udsClient.ts'
++import { authFrameLine, createInboxTokens } from '../inboxAuth.ts'
++import { publishInboxKey, removeInboxKey } from '../inboxKeys.ts'
+ 
+ describe('MAX_UDS_MESSAGE_CHARS (WOt) y el tope de tamaño del envío', () => {
+   test('un mensaje que supera el tope se rehúsa como demasiado grande', async () => {
+@@ -261,3 +263,57 @@ describe('envío real sobre un socket de escucha (mkdtemp)', () => {
+     else process.env.THYROX_FEATURE_FLAGS = previousFlags
+   })
+ })
++
++describe('envío con clave publicada: readPeerToken → authFrameLine (Pe, chunk-qcy58j4w.js)', () => {
++  const CONFIG_DIR_ENV = 'THYROX_CONFIG_DIR'
++  let previousConfigDir: string | undefined
++  let dir: string | undefined
++  let server: Server | undefined
++  let socketPath: string | undefined
++  let receivedLines: string[] = []
++
++  beforeEach(async () => {
++    previousConfigDir = process.env[CONFIG_DIR_ENV]
++    dir = mkdtempSync(join(tmpdir(), 'uds-client-key-'))
++    // La clave se lee del directorio de sesiones bajo el hogar de configuración;
++    // apuntarlo al temporal aísla la prueba del hogar real.
++    process.env[CONFIG_DIR_ENV] = join(dir, 'config')
++    socketPath = join(dir, 'peer.sock')
++    receivedLines = []
++    server = createServer(socket => {
++      socket.on('data', chunk => receivedLines.push(...chunk.toString('utf8').split('\n').filter(line => line.length > 0)))
++      socket.on('error', () => {})
++    })
++    await new Promise<void>(resolve => server!.listen(socketPath, () => resolve()))
++  })
++
++  afterEach(async () => {
++    if (server) await new Promise<void>(resolve => server!.close(() => resolve()))
++    if (dir) rmSync(dir, { recursive: true, force: true })
++    if (previousConfigDir === undefined) delete process.env[CONFIG_DIR_ENV]
++    else process.env[CONFIG_DIR_ENV] = previousConfigDir
++  })
++
++  test('con la clave del par publicada, la primera línea que recibe el servidor es el marco de auth con ese token', async () => {
++    const { peerToken } = createInboxTokens()
++    const keyPath = await publishInboxKey(socketPath!, peerToken, { sweepPermitted: false })
++    expect(keyPath).toStartWith(join(dir!, 'config', 'sessions'))
++    await sendToUdsSocket(socketPath!, 'hola con clave')
++    await new Promise(resolve => setTimeout(resolve, 20))
++    expect(receivedLines.length).toBe(2)
++    expect(`${receivedLines[0]}\n`).toBe(authFrameLine(peerToken))
++    const frame = JSON.parse(receivedLines[1]!)
++    expect(frame.type).toBe('user')
++    expect(frame.message.content).toContain('hola con clave')
++  })
++
++  test('retirada la clave, el mismo envío no lleva marco de auth (control de anulación)', async () => {
++    const { peerToken } = createInboxTokens()
++    const keyPath = await publishInboxKey(socketPath!, peerToken, { sweepPermitted: false })
++    await removeInboxKey(keyPath)
++    await sendToUdsSocket(socketPath!, 'hola sin clave')
++    await new Promise(resolve => setTimeout(resolve, 20))
++    expect(receivedLines.length).toBe(1)
++    expect(JSON.parse(receivedLines[0]!).type).toBe('user')
++  })
++})
+diff --git a/src/packages/tool-registry/src/tools/SendMessageTool/__tests__/udsRoute.test.ts b/src/packages/tool-registry/src/tools/SendMessageTool/__tests__/udsRoute.test.ts
+new file mode 100644
+index 000000000..c8ac39aa7
+--- /dev/null
++++ b/src/packages/tool-registry/src/tools/SendMessageTool/__tests__/udsRoute.test.ts
+@@ -0,0 +1,128 @@
++/**
++ * El ramal `uds:` de `SendMessage` (TASK-THYROX-0449): `to: "uds:<socket>"`
++ * con texto plano llega a `sendToUdsSocket` y el par recibe el marco `user`.
++ * Es la mitad de `deliver` de `chunk-zzjp4jq7.js` (2.1.283) que
++ * `SendMessageTool.ts:568` porta: `import.meta.require(chunk-p4b2d9hd).sendToUdsSocket`.
++ *
++ * AISLAMIENTO DE BANDERA (mismo idioma que
++ * `app-host/src/runtime/__tests__/messagingInboxAtLaunch.test.ts`). Este
++ * archivo se corre DOS veces: sin bandera (`bun test`), donde el ramal no
++ * existe y lo único medible es que `validateInput` NO toma el atajo `uds:`;
++ * y con ella (`bun test --feature=UDS_INBOX`), donde `call` se conecta a un
++ * socket real de escucha creado con `mkdtemp`. `feature()` sólo se lee
++ * directo en un `if`/ternario, así que su valor decide qué rama corre.
++ *
++ * Métrica: las líneas que un servidor UDS local recibe cuando `call`
++ * despacha, y el veredicto de `validateInput` sobre la misma entrada.
++ * Ciega a: el permiso (`checkPermissions` no se invoca), el recibo del par
++ * (`peer_message_status`) y la compuerta `Ws` de la referencia, que
++ * `SendMessageTool.ts` todavía no porta.
++ */
++import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
++import { feature } from 'bun:bundle'
++import { mkdtempSync, rmSync } from 'node:fs'
++import { createServer, type Server } from 'node:net'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import { SendMessageTool, type Input } from '../SendMessageTool.ts'
++
++type CallResult = { data: { success: boolean; message: string } }
++type CallFunction = (input: Input, context: object, canUseTool: unknown, assistantMessage: unknown) => Promise<CallResult>
++type ValidateFunction = (input: Input, context: object) => Promise<{ result: boolean; message?: string }>
++
++const call = SendMessageTool.call as unknown as CallFunction
++const validateInput = SendMessageTool.validateInput as unknown as ValidateFunction
++const context = {}
++const canUseTool = () => Promise.resolve({ behavior: 'allow' })
++
++let dir: string | undefined
++let server: Server | undefined
++let socketPath = ''
++let receivedLines: string[] = []
++
++async function listen(): Promise<void> {
++  server = createServer(socket => {
++    socket.on('data', chunk => {
++      receivedLines.push(...chunk.toString('utf8').split('\n').filter(line => line.length > 0))
++    })
++    socket.on('error', () => {})
++  })
++  await new Promise<void>(resolve => server!.listen(socketPath, () => resolve()))
++}
++
++/** El servidor recibe por eventos; el envío ya resolvió, así que basta ceder un turno del event loop. */
++async function settle(): Promise<void> {
++  await new Promise(resolve => setTimeout(resolve, 20))
++}
++
++beforeEach(async () => {
++  dir = mkdtempSync(join(tmpdir(), 'send-uds-'))
++  socketPath = join(dir, 'peer.sock')
++  receivedLines = []
++  await listen()
++})
++
++afterEach(async () => {
++  if (server) await new Promise<void>(resolve => server!.close(() => resolve()))
++  server = undefined
++  if (dir) rmSync(dir, { recursive: true, force: true })
++  dir = undefined
++})
++
++if (!feature('UDS_INBOX')) {
++  describe('SendMessage a uds:<socket> — sin feature(UDS_INBOX)', () => {
++    test('validateInput no toma el atajo uds: y deriva el summary como con cualquier nombre', async () => {
++      const input: Input = { to: `uds:${socketPath}`, message: 'hola par' }
++      const verdict = await validateInput(input, context)
++      expect(verdict.result).toBe(true)
++      expect(input.summary).toBe('hola par')
++    })
++
++    test('un mensaje estructurado a uds: no se rechaza como cross-session (el ramal no existe)', async () => {
++      const verdict = await validateInput({ to: `uds:${socketPath}`, message: { type: 'shutdown_request', reason: 'x' } }, context)
++      expect(verdict.message ?? '').not.toContain('cross-session')
++    })
++  })
++} else {
++  describe('SendMessage a uds:<socket> — con feature(UDS_INBOX)', () => {
++    test('validateInput acepta texto plano sin summary y no lo deriva', async () => {
++      const input: Input = { to: `uds:${socketPath}`, message: 'hola par' }
++      const verdict = await validateInput(input, context)
++      expect(verdict.result).toBe(true)
++      expect(input.summary).toBeUndefined()
++    })
++
++    test('validateInput rechaza un mensaje estructurado a uds:', async () => {
++      const verdict = await validateInput({ to: `uds:${socketPath}`, message: { type: 'shutdown_request', reason: 'x' } }, context)
++      expect(verdict.result).toBe(false)
++      expect(verdict.message).toContain('structured messages cannot be sent cross-session')
++    })
++
++    test('call llega a sendToUdsSocket: el par recibe un marco user con el texto', async () => {
++      const outcome = await call({ to: `uds:${socketPath}`, message: 'hola par' }, context, canUseTool, undefined)
++      await settle()
++      expect(outcome.data.success).toBe(true)
++      expect(outcome.data.message).toBe(`“hola par” → uds:${socketPath}`)
++      expect(receivedLines.length).toBe(1)
++      const frame = JSON.parse(receivedLines[0]!)
++      expect(frame.type).toBe('user')
++      expect(frame.message.role).toBe('user')
++      expect(frame.message.content).toContain('hola par')
++      expect(typeof frame.msg_id).toBe('string')
++    })
++
++    test('call con summary explícito lo usa como preview', async () => {
++      const outcome = await call({ to: `uds:${socketPath}`, message: 'un texto largo', summary: 'resumen' }, context, canUseTool, undefined)
++      expect(outcome.data.message).toBe(`“resumen” → uds:${socketPath}`)
++    })
++
++    test('un socket sin oyente devuelve success:false con la causa, sin lanzar', async () => {
++      const dead = join(dir!, 'nadie.sock')
++      const outcome = await call({ to: `uds:${dead}`, message: 'hola' }, context, canUseTool, undefined)
++      expect(outcome.data.success).toBe(false)
++      expect(outcome.data.message).toStartWith(`Failed to send to uds:${dead}:`)
++      expect(receivedLines).toEqual([])
++    })
++  })
++}

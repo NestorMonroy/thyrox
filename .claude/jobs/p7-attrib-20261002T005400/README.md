@@ -1,0 +1,16 @@
+# p7-attrib
+
+## Qué se lanzó
+
+```
+bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts run --work ai-course-notes:es-mx/executor-qwen --kind test --network host --mount /home/user/ai-course-notes:/home/user/ai-course-notes:rw --mount /tmp/claude-0/-home-user/81a17524-87b5-5e9d-997b-0732e892d302/scratchpad:/scratch:ro -- bash -c cd /home/user/ai-course-notes && git config --global --add safe.directory /home/user/ai-course-notes >/dev/null 2>&1; W=.claude/workbench/executor-qwen-20261002/outputs; uv run --locked pytest -q tests/test_translation_loop.py -k "policy or model_flag or consumer_policy" 2>&1 | tail -2; uv run --locked pytest -q -rf tests/test_translation_loop.py > $W/green-unit.txt 2>&1; echo "fallos: $(grep -c "^FAILED" $W/green-unit.txt)"; echo "con hunspell/xelatex ausente: $(grep -E "^FAILED" $W/green-unit.txt | grep -cE "hunspell|xelatex|setup.sh")"; grep -E "^FAILED" $W/green-unit.txt | grep -vE "hunspell|xelatex|setup.sh" | cut -c1-160 | head -8
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

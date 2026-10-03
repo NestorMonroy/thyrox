@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bin/task_continuation run .claude/workbench/local-models-publication-20261002T114251 --task TASK-THYROX-0908", "started_at": "2026-10-02T12:56:44+00:00"}
+{"kind": "settle", "exit_code": 143, "finished_at": "2026-10-02T13:57:52+00:00", "duration_seconds": 3668.60527}

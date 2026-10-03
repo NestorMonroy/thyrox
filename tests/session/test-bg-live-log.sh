@@ -22,17 +22,28 @@
 # casos 1 y 2 y ninguno más.
 # =============================================================================
 set -uo pipefail
+# El payload de thyrox-bg va a la primitiva; aquí lo recibe su doble (managed_execution.sh).
+THYROX_MANAGED_EXECUTION_RUNNER="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/doubles/managed-execution-runner"
+export THYROX_MANAGED_EXECUTION_RUNNER
 cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 1
 BG=src/session/bg.sh
 ok=0; failures=0
 check() { if [[ "$2" == "$3" ]]; then echo "  ok    $1"; ok=$((ok+1));
         else echo "  FALLA $1 — esperado [$3] obtenido [$2]"; failures=$((failures+1)); fi; }
 
+# El hogar REAL de trabajos, resuelto antes de aislar nada: la suite no puede
+# dejar ahí ninguna ejecución. Medido 2026-09-30: con `THYROX_JOBS_THYROX`
+# declarado en el `.env`, la clave del clon le ganaba a la global de abajo y
+# `vivo`, `plana` y `barrera` aterrizaban en `.claude/jobs/` del árbol.
+real_jobs_home="$(PYTHONPATH=src python3 -c 'from session import job_runs; print(job_runs.jobs_dir())')"
+real_jobs_before="$(ls "$real_jobs_home" 2>/dev/null | sort)"
 TMP="$(mktemp -d)"; pid=""
 # Si una aserción deja el trabajo bloqueado en la FIFO, la limpieza lo termina
 # por grupo: el trabajo nace líder de su sesión.
 trap '[[ -z "$pid" ]] || kill -- "-$pid" 2>/dev/null; rm -rf "${TMP:?}"' EXIT
-export THYROX_JOBS_DIR="$TMP/jobs"
+# shellcheck source=src/lib/test_homes.sh
+source src/lib/test_homes.sh
+thyrox_isolate_homes "$TMP/homes"
 export THYROX_SESSION_LEDGER_DIR="$TMP/ledger"
 export THYROX_RUNTIME_DIR="$TMP/runtime"
 unset BG_DIR
@@ -51,7 +62,7 @@ writers_under() {
 }
 
 mkfifo "$TMP/release"
-start_output="$($BG start vivo --grace 0 -- bash -c "echo linea-uno; read -r _ < '$TMP/release'; echo linea-dos")"
+start_output="$($BG start vivo --grace 0 --task TASK-THYROX-0001 --kind test -- bash -c "echo linea-uno; read -r _ < '$TMP/release'; echo linea-dos")"
 run="$(sed -n 's/^RUN=//p' <<<"$start_output")"
 pid="$(sed -n 's/^PID=//p' <<<"$start_output")"
 live="$THYROX_RUNTIME_DIR/jobs/$(basename "$run")/salida.log"
@@ -79,17 +90,22 @@ check "y su directorio también" "$([[ -d "$(dirname "$live")" ]] && echo si || 
 check "status asienta el código" "$($BG status vivo)" "done:0"
 
 echo "== 4. la barrera recoge el trabajo por el log del run =="
-$BG start barrera --grace 0 -- bash -c 'echo hecho' >/dev/null
+$BG start barrera --grace 0 --task TASK-THYROX-0001 --kind test -- bash -c 'echo hecho' >/dev/null
 $BG register barrera >/dev/null
 check "wait-jobs lo recoge OK" \
   "$(bash src/session/wait-jobs.sh wait --only barrera --timeout 30 2>/dev/null | grep -c '^OK *barrera')" "1"
 
 echo "== 5. la forma plana no cambia =="
 flat_home="$TMP/flat_home"
-BG_DIR="$flat_home" $BG start plana --grace 0 -- bash -c 'echo plana' >/dev/null
+BG_DIR="$flat_home" $BG start plana --grace 0 --task TASK-THYROX-0001 --kind test -- bash -c 'echo plana' >/dev/null
 flat_pid="$(cat "$flat_home/plana.pid")"
 timeout 30 tail --pid="$flat_pid" -f /dev/null
 check "el log flat_home está en su hogar" "$(grep -c '^plana$' "$flat_home/plana.log" 2>/dev/null)" "1"
+
+echo "== 6. el hogar real de trabajos no gana ejecuciones =="
+check "ninguna ejecución de la suite aterrizó en $real_jobs_home" \
+  "$(comm -13 <(printf '%s\n' "$real_jobs_before") <(ls "$real_jobs_home" 2>/dev/null | sort) \
+      | grep -cE '^(vivo|plana|barrera)-')" "0"
 
 echo "test-bg-live-log: $((ok + failures)) aserciones — $ok ok, $failures falla(s)"
 [[ "$failures" -eq 0 ]]

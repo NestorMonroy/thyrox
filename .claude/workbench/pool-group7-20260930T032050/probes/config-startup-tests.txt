@@ -1,0 +1,15 @@
+config:  946 pass
+config:  0 fail
+config: Ran 946 tests across 66 files. [9.95s]
+updater:  58 pass
+updater:  0 fail
+updater: Ran 58 tests across 6 files. [639.00ms]
+command-runtime:  328 pass
+command-runtime:  0 fail
+command-runtime: Ran 328 tests across 27 files. [61.32s]
+local-observability:  1095 pass
+local-observability:  0 fail
+local-observability: Ran 1096 tests across 76 files. [2.88s]
+cli:  543 pass
+cli:  0 fail
+cli: Ran 544 tests across 59 files. [96.13s]

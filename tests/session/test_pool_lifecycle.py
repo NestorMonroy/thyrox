@@ -30,6 +30,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT / "src"))
 
+from peer_mailbox.inbox import Inbox  # noqa: E402
 from session import pool_lifecycle as lc  # noqa: E402
 
 OK = 0
@@ -228,7 +229,8 @@ with tempfile.TemporaryDirectory() as scratch:
           ((out4 / "index.tsv").exists(), (out4 / "joblog.tsv").exists()))
     closed = json.loads((out4 / lc.RUN_CLOSED).read_text())
     check("run.closed nombra los ítems cerrados", ["1"], closed["items"])
-    check("el runtime de la ejecución se retira", False, live9.exists())
+    check("el runtime de la ejecución se retira salvo su buzón", [lc.MAILBOX_DIR],
+          sorted(p.name for p in live9.iterdir()))
 
 # I5 con el fallo inyectado entre CADA operación de la publicación, no sólo
 # tras la primera. Con tres artefactos en el mismo sistema de archivos son
@@ -322,6 +324,64 @@ with tempfile.TemporaryDirectory() as scratch:
     lc.publish(live, out, "5", exit_code=0, generation=old + 1)
     check("el nuevo dueño publica su generación", ([], old + 1),
           (lc.verify_closed(out, "5"), lc.closed_generation(out, "5")))
+
+# Caso 10 (TASK-THYROX-0672): cada cambio del ciclo de vida deja un sobre al
+# orquestador en el buzón de la ejecución, con un request_id estable.
+def envelopes(live: Path) -> list[dict]:
+    """Los sobres que el orquestador tiene pendientes en el buzón de la ejecución."""
+    return Inbox(lc.mailbox_dir(live)).pending(lc.ORCHESTRATOR_ADDRESS)
+
+
+def request_ids(live: Path) -> list[str]:
+    return [message.get("request_id", "") for message in envelopes(live)]
+
+
+with tempfile.TemporaryDirectory() as scratch:
+    base = Path(scratch)
+    os.environ["THYROX_RUNTIME_DIR"] = str(base / "runtime")
+    print("caso 10: cada cambio del ciclo de vida deja un sobre al orquestador")
+    out = base / "out"
+    out.mkdir()
+    live = lc.open_run(out, os.getpid(), run_id="m1")
+    check("open-run crea el buzón de la ejecución", True, lc.mailbox_dir(live).is_dir())
+    check("la dirección de un ítem es item-<n>", "item-1", lc.item_address("1"))
+    lc.begin(live, out, "1", owner_pid=os.getpid())
+    check("begin deja exactamente un sobre", ["m1:1:begin:1"], request_ids(live))
+    body = json.loads(envelopes(live)[0]["body"])
+    check("el cuerpo lleva ítem, dirección, estado, generación y hora",
+          ("begin", "1", "item-1", lc.RUNNING, 1, True),
+          (body["event"], body["item"], body["address"], body["state"], body["generation"],
+           bool(body["at"])))
+    check("el remitente es el ciclo de vida", lc.LIFECYCLE_SENDER, envelopes(live)[0]["from"])
+    lc.transition(live, "1", lc.SNAPSHOTTING)
+    check("transition deja su sobre", "m1:1:transition-snapshotting:1", request_ids(live)[-1])
+    lc.transition(live, "1", lc.RUNNING)
+    lc.transition(live, "1", lc.SNAPSHOTTING)
+    check("repetir la misma transición en la misma generación no duplica", 3, len(envelopes(live)))
+    lc.transition(live, "1", lc.RUNNING)
+    lc.transition(live, "1", lc.ABANDONED_RECOVERABLE)
+    lc.claim(live, out, "1", owner_pid=os.getpid())
+    check("claim deja un sobre con la generación nueva", "m1:1:claim:2", request_ids(live)[-1])
+    lc.claim(live, out, "1", owner_pid=os.getpid())
+    check("un claim con otra generación nueva deja otro", "m1:1:claim:3", request_ids(live)[-1])
+    before_publish = len(envelopes(live))
+    lc.publish(live, out, "1", exit_code=0)
+    check("publish deja un sobre, y ninguno por sus transiciones internas",
+          (before_publish + 1, "m1:1:publish:3"), (len(envelopes(live)), request_ids(live)[-1]))
+    lc.publish(live, out, "1", exit_code=0)
+    check("publicar de nuevo no duplica", before_publish + 1, len(envelopes(live)))
+    lc.close_run(live, out)
+    check("close-run deja su sobre", "m1:run:close-run:0", request_ids(live)[-1])
+    check("... que nombra los ítems cerrados", ["1"], json.loads(envelopes(live)[-1]["body"])["items"])
+    check("el buzón sobrevive al cierre de la ejecución", True, lc.mailbox_dir(live).is_dir())
+
+    print("caso 10b: un runtime sin buzón —anterior al buzón— sigue funcionando")
+    legacy = lc.open_run(out, os.getpid(), run_id="m2")
+    lc.mailbox_dir(legacy).rmdir()
+    lc.begin(legacy, out, "2", owner_pid=os.getpid())
+    lc.transition(legacy, "2", lc.SNAPSHOTTING)
+    check("sin buzón no se crea uno ni se rehúsa", (lc.SNAPSHOTTING, False),
+          (state_of(legacy, "2").state, lc.mailbox_dir(legacy).exists()))
 
 print(f"resultado: {OK} de {OK + FAILED} aserciones en verde")
 sys.exit(1 if FAILED else 0)

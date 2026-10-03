@@ -1,0 +1,9 @@
+== thyrox-postgres
+thyrox-postgres action=recreated drift=stale-runtime-state created=yes started=yes health=healthy provision=applied volumes=thyrox-postgres-data:preserved
+exit=0
+== thyrox-redis
+thyrox-redis action=recreated drift=volume created=yes started=yes health=healthy provision=not-declared volumes=-
+exit=0
+== thyrox-ollama
+thyrox-ollama action=recreated drift=configuration created=yes started=yes health=healthy provision=not-declared volumes=thyrox-ollama-bench-models:preserved
+exit=0

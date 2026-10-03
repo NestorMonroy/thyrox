@@ -1,0 +1,211 @@
+# p2a — diff de los archivos de código del tramo (la forma que imitan B y C)
+#
+# Código: src/packages/artifact-registry/podmanJobVerifier.ts y su suite
+# fuera del diff: p2-caller-classification.md (la clasificación), p2a-findings.jsonl,
+# p2a-{red,green,annulment}.log y p2a-typecheck.txt (evidencia, con su comando y salida)
+
+$ git diff --stat -- src/packages/artifact-registry/podmanJobVerifier.ts src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts
+ .../__tests__/podmanJobVerifier.test.ts            | 61 ++++++++++++++++++----
+ .../artifact-registry/podmanJobVerifier.ts         | 54 +++++++++++--------
+ 2 files changed, 83 insertions(+), 32 deletions(-)
+
+$ git diff -- src/packages/artifact-registry/podmanJobVerifier.ts src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts
+diff --git a/src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts b/src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts
+index c42a34525..ad8281fae 100644
+--- a/src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts
++++ b/src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts
+@@ -16,11 +16,12 @@ import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+ import { tmpdir } from 'node:os'
+ import { join, resolve } from 'node:path'
+ 
++import { EXECUTION_ID_LABEL_KEY, EXECUTION_KIND_LABEL_KEY, EXECUTION_REFERENCE_LABEL_KEY } from '@thyrox/podman-execution/executionAuthorization.ts'
+ import { createPodmanExecutor, type PodmanCommandResult, type PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
+ 
+ import { describeArtifactFile } from '../artifactFiles.js'
+ import { createOciArtifactRegistry } from '../ociArtifactRegistry.js'
+-import { createPodmanJobVerifier, verificationJobSpec, VERIFICATION_REPORT_NAME, type PodmanJobVerifierOptions } from '../podmanJobVerifier.js'
++import { createPodmanJobVerifier, VERIFICATION_REPORT_NAME, type PodmanJobVerifierOptions } from '../podmanJobVerifier.js'
+ import { FAKE_PUBLISHER, startFakeOciRegistry, type FakeOciRegistry } from '../testing/fakeOciRegistry.js'
+ 
+ const REPOSITORY_ROOT = resolve(import.meta.dir, '../../../..')
+@@ -47,29 +48,67 @@ function options(overrides: Partial<PodmanJobVerifierOptions> = {}): PodmanJobVe
+   }
+ }
+ 
+-describe('verificationJobSpec', () => {
+-  test('con proxy: red host, el proxy declarado y el CA montado de sólo lectura', () => {
+-    const argv = verificationJobSpec(options(), PINNED, LOCATION).resourceArgv.join(' ')
++/**
++ * El doble que registra el argv de `podman create`; `wait` sale 0 para que el
++ * trabajo se lea entero. El veredicto no importa aquí: lo que se mide es la
++ * composición con la que el contenedor se materializa.
++ */
++function recordingPodman(): { podman: PodmanExecutor; created: string[][] } {
++  const created: string[][] = []
++  return {
++    created,
++    podman: {
++      run: async (args): Promise<PodmanCommandResult> => {
++        if (args[0] === 'create') created.push([...args])
++        if (args[0] === 'wait') return { exitCode: 0, stdout: '0\n', stderr: '' }
++        return { exitCode: 0, stdout: '', stderr: '' }
++      },
++    },
++  }
++}
++
++/** El argv con que `podman create` materializa el trabajo, leído del doble. */
++async function createdArgv(overrides: Partial<PodmanJobVerifierOptions> = {}): Promise<string> {
++  const recorder = recordingPodman()
++  await createPodmanJobVerifier(options({ ...overrides, podman: recorder.podman })).verify(PINNED, LOCATION)
++  return (recorder.created[0] ?? []).join(' ')
++}
++
++describe('la composición del trabajo', () => {
++  test('con proxy: red host, el proxy declarado y el CA montado de sólo lectura', async () => {
++    const argv = await createdArgv()
+     expect(argv).toContain('--network host')
+     expect(argv).toContain('--env HTTPS_PROXY=http://10.1.2.3:3128')
+     expect(argv).toContain('--env NODE_EXTRA_CA_CERTS=/certs/ca-bundle.crt')
+     expect(argv).toContain('-v /host/ca.crt:/certs/ca-bundle.crt:ro')
+     expect(argv).toContain(`-v ${REPOSITORY_ROOT}:/w:ro`)
+-    expect(argv).toContain('--read-only')
+   })
+ 
+-  test('sin proxy la red es bridge y no se monta ningún CA', () => {
+-    const argv = verificationJobSpec(options({ egress: { kind: 'direct' } }), PINNED, LOCATION).resourceArgv.join(' ')
++  test('sin proxy la red es bridge y no se monta ningún CA', async () => {
++    const argv = await createdArgv({ egress: { kind: 'direct' } })
+     expect(argv).toContain('--network bridge')
+     expect(argv).not.toContain('HTTPS_PROXY')
+     expect(argv).not.toContain('/certs/')
+   })
+ 
+-  test('el trabajo no recibe credencial ni el almacenamiento de Podman', () => {
+-    const spec = verificationJobSpec(options(), PINNED, LOCATION)
+-    const argv = [...spec.resourceArgv, ...(spec.command ?? [])].join(' ')
++  test('el trabajo no recibe credencial ni el almacenamiento de Podman', async () => {
++    const argv = await createdArgv()
+     expect(argv).not.toMatch(/TOKEN|PASSWORD|SECRET|containers\/storage/i)
+-    expect(spec.command).toContain(PINNED.digest)
++    expect(argv).toContain(PINNED.digest)
++  })
++})
++
++describe('la autorización del trabajo', () => {
++  test('corre como una ejecución autorizada: clase registry-operation y la cita de su tarea', async () => {
++    const argv = await createdArgv()
++    expect(argv).toContain(`--label ${EXECUTION_KIND_LABEL_KEY}=registry-operation`)
++    expect(argv).toContain(`--label ${EXECUTION_REFERENCE_LABEL_KEY}=task:TASK-THYROX-0728`)
++    expect(argv).toContain(`--label ${EXECUTION_ID_LABEL_KEY}=artifact-verify-test`)
++  })
++
++  test('la cita de la tarea que autoriza es declarable por el llamador', async () => {
++    const argv = await createdArgv({ taskCitation: 'TASK-THYROX-0001' })
++    expect(argv).toContain(`--label ${EXECUTION_REFERENCE_LABEL_KEY}=task:TASK-THYROX-0001`)
+   })
+ })
+ 
+diff --git a/src/packages/artifact-registry/podmanJobVerifier.ts b/src/packages/artifact-registry/podmanJobVerifier.ts
+index b5cf956eb..5398b7b75 100644
+--- a/src/packages/artifact-registry/podmanJobVerifier.ts
++++ b/src/packages/artifact-registry/podmanJobVerifier.ts
+@@ -9,15 +9,18 @@
+  * salida estándar del contenedor es diagnóstico, no canal de datos.
+  *
+  * El intérprete se monta de sólo lectura desde el anfitrión, igual que el
+- * repositorio, así que la imagen sólo aporta la libc.
++ * repositorio, así que la imagen sólo aporta la libc. La composición pasa por
++ * la autorización canónica (`registry-operation`, con la cita de su tarea):
++ * el verificador no compone por spec ni alcanza ninguna función interna de la
++ * primitiva.
+  */
+ import { mkdir, readFile, rm } from 'node:fs/promises'
+ import { join } from 'node:path'
+ 
+-import { runJobWithOutput } from '@thyrox/podman-execution/containerRun.ts'
++import { runExecution, type ExecutionAuthorization } from '@thyrox/podman-execution/executionAuthorization.ts'
+ import type { PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
+-import type { ContainerOwner, WorkerContainerSpec } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+-import { workerResourceLimitArgv, type WorkerResourceProfile } from '@thyrox/podman-execution/workerResourceProfile.ts'
++import type { ContainerOwner } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
++import type { WorkerResourceProfile } from '@thyrox/podman-execution/workerResourceProfile.ts'
+ 
+ import type { ArtifactLocation, PinnedArtifact } from './artifactRegistry.js'
+ import type { ArtifactVerifier, VerificationOutcome } from './artifactVerifier.js'
+@@ -25,6 +28,9 @@ import { jobNetworkProfile, type JobEgress } from './jobEgress.js'
+ 
+ export const VERIFICATION_REPORT_NAME = 'verification.json'
+ 
++/** La cita de la tarea que autoriza la operación de registry; el llamador puede declarar otra. */
++export const DEFAULT_VERIFICATION_TASK_CITATION = 'TASK-THYROX-0728'
++
+ const CONTAINER_BUN = '/usr/local/bin/bun'
+ const CONTAINER_REPOSITORY = '/w'
+ const CONTAINER_SCRATCH = '/scratch'
+@@ -43,27 +49,24 @@ export interface PodmanJobVerifierOptions {
+   readonly owner: ContainerOwner
+   readonly workerId: string
+   readonly limits: Pick<WorkerResourceProfile, 'cpus' | 'memoryMib' | 'pidsLimit'>
++  /** Cita de la tarea que autoriza la verificación; por defecto, la del flujo que la define. */
++  readonly taskCitation?: string
+ }
+ 
+-export function verificationJobSpec(options: PodmanJobVerifierOptions, pinned: PinnedArtifact, location: ArtifactLocation): WorkerContainerSpec {
++/**
++ * La verificación compuesta en la autorización canónica: clase
++ * `registry-operation` con la cita de su tarea, la red que decide el egress y
++ * los montajes de siempre —intérprete y repositorio de sólo lectura, scratch
++ * de escritura—.
++ */
++export function verificationAuthorization(options: PodmanJobVerifierOptions, pinned: PinnedArtifact, location: ArtifactLocation): ExecutionAuthorization {
+   const network = jobNetworkProfile(options.egress)
+-  const profile: WorkerResourceProfile = {
+-    ...options.limits,
+-    network: network.network,
+-    environment: { ...network.environment, HOME: `${CONTAINER_SCRATCH}/home`, TMPDIR: `${CONTAINER_SCRATCH}/tmp` },
+-    readOnlyRootfs: true,
+-    mounts: [
+-      { source: options.bunPath, destination: CONTAINER_BUN, mode: 'ro' },
+-      { source: options.repositoryRoot, destination: CONTAINER_REPOSITORY, mode: 'ro' },
+-      { source: options.scratchDir, destination: CONTAINER_SCRATCH, mode: 'rw' },
+-      ...network.mounts,
+-    ],
+-  }
+   return {
+-    workerId: options.workerId,
+-    image: options.image,
++    executionId: options.workerId,
++    reference: { kind: 'task', citation: options.taskCitation ?? DEFAULT_VERIFICATION_TASK_CITATION },
+     owner: options.owner,
+-    resourceArgv: workerResourceLimitArgv(profile),
++    kind: 'registry-operation',
++    image: options.image,
+     command: [
+       CONTAINER_BUN, VERIFY_ENTRY,
+       '--registry', options.registryUrl,
+@@ -73,6 +76,15 @@ export function verificationJobSpec(options: PodmanJobVerifierOptions, pinned: P
+       '--work-dir', `${CONTAINER_SCRATCH}/blobs`,
+       '--report', `${CONTAINER_SCRATCH}/${VERIFICATION_REPORT_NAME}`,
+     ],
++    mounts: [
++      { source: options.bunPath, destination: CONTAINER_BUN, mode: 'ro' },
++      { source: options.repositoryRoot, destination: CONTAINER_REPOSITORY, mode: 'ro' },
++      { source: options.scratchDir, destination: CONTAINER_SCRATCH, mode: 'rw' },
++      ...network.mounts,
++    ],
++    resources: options.limits,
++    network: network.network,
++    environment: { ...network.environment, HOME: `${CONTAINER_SCRATCH}/home`, TMPDIR: `${CONTAINER_SCRATCH}/tmp` },
+   }
+ }
+ 
+@@ -90,7 +102,7 @@ export function createPodmanJobVerifier(options: PodmanJobVerifierOptions): Arti
+       await rm(options.scratchDir, { recursive: true, force: true })
+       await Promise.all(['home', 'tmp'].map(name => mkdir(join(options.scratchDir, name), { recursive: true })))
+       try {
+-        const job = await runJobWithOutput(options.podman, verificationJobSpec(options, pinned, location))
++        const job = await runExecution(options.podman, verificationAuthorization(options, pinned, location))
+         const report = await readReport(join(options.scratchDir, VERIFICATION_REPORT_NAME))
+         if (report) return report
+         return {

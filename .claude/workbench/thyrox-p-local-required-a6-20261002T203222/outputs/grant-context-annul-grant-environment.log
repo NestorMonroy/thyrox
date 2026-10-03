@@ -1,0 +1,53 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/podmanModelUnitMaterializer.test.ts:
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un grant caducado [0.39ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un grant de una generación que ya no es la vigente [0.20ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > con la coordinación no disponible [0.08ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un runtime sin perfil de contenedor [0.08ms]
+(pass) PodmanModelUnitMaterializer: materializar > crea, arranca e inspecciona; la unidad lleva su identidad completa [2.82ms]
+(pass) PodmanModelUnitMaterializer: materializar > el contenedor va en loopback, con el dispositivo concedido y las etiquetas de la unidad [1.99ms]
+(pass) PodmanModelUnitMaterializer: materializar > en CPU no pide dispositivos [0.37ms]
+(pass) PodmanModelUnitMaterializer: materializar > si create falla no quedó nada: partial false [0.58ms]
+(pass) PodmanModelUnitMaterializer: materializar > si start falla quedó un contenedor: partial true con su unitId [0.35ms]
+210 |       now: () => NOW,
+211 |     })
+212 |     const outcome = await primitive.materialize(GRANT)
+213 |     if (outcome.status !== 'materialized') throw new Error(JSON.stringify(outcome))
+214 |     const create = podman.calls[0]!.join(' ')
+215 |     expect(create).toContain(`OLLAMA_CONTEXT_LENGTH=${GRANT.contextLength}`)
+                         ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "OLLAMA_CONTEXT_LENGTH=4096"
+Received: "create --name thyrox-worker-unit-grant-request-1 --label thyrox.owner-kind=model-coordinator --label thyrox.owner-id=host-coordinator --label thyrox.owner-pid=4321 --label thyrox.worker-id=unit-grant-request-1 --label thyrox.execution-id=unit-grant-request-1 --label thyrox.execution-kind=model-runtime --label thyrox.execution-reference=grant:grant-request-1 --label thyrox.model.bytes=397807712 --label thyrox.model.created-at=2026-10-01T00:30:00.000Z --label thyrox.model.devices=GPU-6a9c1d2e-0000-0000-0000-000000000000 --label thyrox.model.format=gguf --label thyrox.model.generation=3 --label thyrox.model.grant=grant-request-1 --label thyrox.model.name=thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf --label thyrox.model.port=61234 --label thyrox.model.quantization=q4_k_m --label thyrox.model.repository=Qwen/Qwen2.5-0.5B-Instruct --label thyrox.model.residency=residency/qwen/gpu0 --label thyrox.model.revision=7ae557604adf67be50417f59c2c2f167def9a775 --label thyrox.model.runtime=ollama --label thyrox.model.sha256=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb --label thyrox.model.source=hf --label thyrox.model.unit=unit-grant-request-1 --cpus 2 --memory 4096m --pids-limit 256 --network bridge --env OLLAMA_HOST=0.0.0.0:11434 -p 127.0.0.1:61234:11434 --device nvidia.com/gpu=GPU-6a9c1d2e-0000-0000-0000-000000000000 docker.io/ollama/ollama:0.35.0"
+
+      at <anonymous> (/home/user/thyrox/.thyrox/runtime/worktrees/ctxgrant/src/packages/model-scheduling/__tests__/podmanModelUnitMaterializer.test.ts:215:20)
+(fail) PodmanModelUnitMaterializer: entorno derivado del grant > el contexto concedido llega al runtime como entorno del contenedor [0.63ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > destroy distingue destruido, ausente y fallido [0.27ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > destroy retira sólo el contenedor de la unidad [0.07ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > units reconstruye cada unidad de sus etiquetas e ignora contenedores ajenos [1.01ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > nunca borra imágenes ni volúmenes [0.30ms]
+(pass) PodmanModelUnitMaterializer: identidad completa > una unidad cuya identidad etiquetada está incompleta no es una unidad de esta primitiva [0.23ms]
+(pass) una unidad de Transformers con el artefacto del grant montado (TASK-THYROX-0776) > expone el artefacto concedido de sólo lectura en la unidad [0.58ms]
+(pass) una unidad de Transformers con el artefacto del grant montado (TASK-THYROX-0776) > un perfil sin montaje declarado no monta nada, como el de Ollama [0.34ms]
+(pass) una unidad de Transformers con el artefacto del grant montado (TASK-THYROX-0776) > una unidad de Transformers se reconstruye desde sus etiquetas [1.25ms]
+
+__tests__/hostCoordinator.test.ts:
+(pass) ModelSchedulingCoordinator: admitir > el ticket lleva el grant y la unidad de la identidad exacta resuelta [2.77ms]
+(pass) ModelSchedulingCoordinator: admitir > varios clientes del mismo modelo comparten una residencia y una unidad [0.40ms]
+(pass) ModelSchedulingCoordinator: admitir > dos modelos con la misma cuantización no comparten residencia [0.26ms]
+(pass) ModelSchedulingCoordinator: admitir > dos cuantizaciones del mismo modelo no comparten residencia [0.20ms]
+(pass) ModelSchedulingCoordinator: admitir > un modelo que el catálogo no declara se rehúsa sin tomar ningún lease [0.23ms]
+(pass) ModelSchedulingCoordinator: admitir > una identidad que no cabe en ninguna colocación se rehúsa sin tomar ningún lease [0.16ms]
+(pass) ModelSchedulingCoordinator: terminar > finish suelta el ticket una vez; los tickets vigentes se listan [0.71ms]
+(pass) ModelSchedulingCoordinator: terminar > desalojar con un ticket vigente drena; sin tickets, destruye la unidad [1.65ms]
+(pass) residencyKeyOf > deriva de la identidad entera, la colocación y el contexto, nunca de la cuantización sola [0.18ms]
+
+1 tests failed:
+(fail) PodmanModelUnitMaterializer: entorno derivado del grant > el contexto concedido llega al runtime como entorno del contenedor [0.63ms]
+
+ 26 pass
+ 1 fail
+ 79 expect() calls
+Ran 27 tests across 2 files. [61.00ms]

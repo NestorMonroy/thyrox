@@ -1,0 +1,10 @@
+green-scheduling rc=0  27 pass  0 fail 
+green-composition rc=0  6 pass  0 fail 
+typecheck-scheduling rc=2 
+typecheck-local-models rc=2 
+/home/user/thyrox/.claude/workbench/thyrox-p-local-required-a6-20261002T203222/outputs/grant-context-typecheck-scheduling.log:1
+/home/user/thyrox/.claude/workbench/thyrox-p-local-required-a6-20261002T203222/outputs/grant-context-typecheck-local-models.log:9
+annul residency-key: 
+annul grant-environment: 
+execution thyrox-worker-test-murhzo0r-18075 kind=test task=TASK-THYROX-0706 exit=1
+__BG_EXIT__=1

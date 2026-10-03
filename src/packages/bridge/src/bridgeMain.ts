@@ -19,13 +19,10 @@
  * en su paquete real. `runBridgeHeadless` —la ruta que sí usa el daemon
  * worker— NO pasa por esas cuatro (su config llega por parámetro,
  * `HeadlessBridgeOpts`, no por settings.json de proyecto), pero SÍ llama
- * a `enableConfigs()`/`checkHasTrustDialogAccepted()` — que TAMBIÉN
- * faltan en `@thyrox/config` (medido: mismo 0 hits) y por eso son puntos
- * de inyección en `pendingCrossPackageDeps.ts`, con
- * `checkHasTrustDialogAccepted` en default `false` (conservador: sin
- * wiring real, `runBridgeHeadless` falla honesto con
- * `BridgeHeadlessPermanentError` en vez de fingir que la confianza del
- * workspace ya se verificó). `bridgeMain()` existe con su firma exacta y
+ * a `enableConfigs()`/`checkHasTrustDialogAccepted()`, que vienen de
+ * `@thyrox/config/global/config.js` y leen la configuración real (sin
+ * confianza aceptada, `runBridgeHeadless` falla honesto con
+ * `BridgeHeadlessPermanentError`). `bridgeMain()` existe con su firma exacta y
  * lanza al invocarse — mismo patrón que `createV2ReplTransport` en
  * `./replBridgeTransport.ts`. Se retira cuando `@thyrox/config` porte
  * las cuatro funciones de config de proyecto/global.
@@ -54,29 +51,28 @@
 import { randomUUID } from 'node:crypto'
 import { hostname, tmpdir } from 'node:os'
 import { join, resolve } from 'node:path'
+import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/agent/eventMetadata'
+import { isInBundledMode } from '@thyrox/config/bundledMode'
+import { isInProtectedNamespace } from '@thyrox/config/env/utils'
+import { checkGate_CACHED_OR_BLOCKING } from '@thyrox/config/feature-flags'
+import { checkHasTrustDialogAccepted, enableConfigs } from '@thyrox/config/global/config.js'
+import { sleep } from '@thyrox/config/sleep'
+import { logEvent } from '@thyrox/local-observability'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { truncateToWidth } from '@thyrox/output/formatters/truncate.js'
 import {
-  checkHasTrustDialogAccepted,
   createAgentWorktree,
-  enableConfigs,
-  errorMessage,
   getMacroVersion,
   getRemoteSessionUrl,
   initSinks,
   installSwarmHost,
-  isInBundledMode,
-  isInProtectedNamespace,
   logError,
-  logEvent,
   logForDebugging,
   logForDiagnosticsNoPII,
   removeAgentWorktree,
   setCwdState,
   setOriginalCwd,
-  sleep,
-  truncateToWidth,
-  checkGate_CACHED_OR_BLOCKING,
   feature,
-  type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
 } from './internal/pendingCrossPackageDeps.js'
 import {
   BridgeFatalError,

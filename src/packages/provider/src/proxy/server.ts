@@ -31,6 +31,9 @@
  *   (`./spendLimits.ts`) para cuando haya a quién aplicárselos.
  * - `/v1/models` (`qv`) vive en `./modelsList.ts`; `/v1/chat/completions`,
  *   que la pasarela no sirve, en `./chatCompletions.ts`.
+ * - `/claude-cli/bridge/<token>` no existe en la pasarela: es el servidor MCP
+ *   que el upstream `claude-cli` (`./claudeCli/forwarder.ts`) expone a su
+ *   `claude -p` hijo, y se sirve antes del control de acceso.
  * - `Mv` (upstream `raw`) está en `./upstreamForwarder.ts`; `jv` (cliente
  *   de proveedor por SDK, con su renovación de credencial ante 401/403)
  *   queda pendiente hasta que haya un upstream de nube que servir.
@@ -41,6 +44,7 @@ import { randomUUID } from 'node:crypto'
 import { type AccessManager, httpStatusOf } from './access.ts'
 import { type CredentialSelector, ModelCooldownError, type ProxyCredential } from './credentialSelectors.ts'
 import { ANTIGRAVITY_PATH, serveAntigravity } from './antigravity.ts'
+import { BRIDGE_PATH_PREFIX } from './claudeCli/bridge.ts'
 import { CHAT_COMPLETIONS_PATH, serveChatCompletion } from './chatCompletions.ts'
 import { compactMessagesBody } from './context/compactRequest.ts'
 import type { ContextWindowOf } from './context/contextManager.ts'
@@ -124,14 +128,35 @@ export type ProxyServerConfig = {
    * desenlace queda en las métricas del combo.
    */
   combos?: ComboRouter
+  /**
+   * El puente MCP del upstream `claude-cli` (`./claudeCli/bridge.ts`): sirve
+   * `POST /claude-cli/bridge/<token>` ANTES del control de acceso, porque
+   * quien llama es el `claude -p` hijo, que no conoce la clave del proxy; su
+   * token aleatorio, que sólo él recibió, es la credencial.
+   */
+  claudeCliBridge?: (token: string, request: Request) => Promise<Response>
 }
 
 /** `Mt`: el cuerpo de error del formato Anthropic. */
+/**
+ * La cabecera con que un error fabricado por el proxy declara su mensaje: el
+ * enrutador la lee para nombrar la causa de cada intento fallido sin leer el
+ * cuerpo de un 5xx, que puede no terminar. Va codificada porque una cabecera
+ * no admite caracteres fuera de ISO-8859-1.
+ */
+const ERROR_MESSAGE_HEADER = 'x-thyrox-error-message'
+
 export function errorResponse(status: number, type: string, message: string, requestId?: string): Response {
   return Response.json(
     { type: 'error', ...(requestId && { request_id: requestId }), error: { type, message } },
-    { status },
+    { status, headers: { [ERROR_MESSAGE_HEADER]: encodeURIComponent(message) } },
   )
+}
+
+/** El mensaje que un error del proxy declara; `undefined` en una respuesta ajena. */
+export function errorMessageOf(response: Response): string | undefined {
+  const encoded = response.headers.get(ERROR_MESSAGE_HEADER)
+  return encoded === null ? undefined : decodeURIComponent(encoded)
 }
 
 /**
@@ -270,7 +295,7 @@ async function forwardBody(
       if (response.status < 400) config.cooldown?.clear(credential)
       else config.cooldown?.markUnavailable({ credential, provider: upstream.provider, model: resolved.model, status: response.status, errorText, headers: response.headers })
       if (fallsOver(response.status)) {
-        reasons.push(`${response.status} ${response.statusText}`)
+        reasons.push(`${response.status} ${errorMessageOf(response) ?? response.statusText}`)
         if (response.status === 501) { discard(notImplemented); notImplemented = response }
         else if (response.status === 429) { discard(rateLimited); rateLimited = response }
         else if (response.status === 401 || response.status === 403) { discard(unauthorized); unauthorized = response }
@@ -299,7 +324,7 @@ async function forwardBody(
   if (notFound) { discard(notImplemented); return notFound }
   if (notImplemented) return notImplemented
   if (cooling) return cooldownResponse(config, cooling.error, cooling.credentials)
-  return errorResponse(502, 'api_error', `all upstreams failed (${config.routing.upstreams.length} attempted)`, requestId)
+  return errorResponse(502, 'api_error', `all upstreams failed (${config.routing.upstreams.length} attempted): ${reasons.join('; ')}`, requestId)
 }
 
 type ComboPlan = {
@@ -380,9 +405,18 @@ export function createProxyHandler(config: ProxyServerConfig): (request: Request
   }
 }
 
+/** El token de una ruta del puente, o nada si la ruta no es del puente. */
+function bridgeTokenOf(pathname: string): string | undefined {
+  if (!pathname.startsWith(BRIDGE_PATH_PREFIX)) return undefined
+  const token = pathname.slice(BRIDGE_PATH_PREFIX.length)
+  return token !== '' && !token.includes('/') ? token : undefined
+}
+
 async function route(config: ProxyServerConfig, request: Request, requestId: string): Promise<Response> {
   const { pathname } = new URL(request.url)
   if (request.method === 'GET' && pathname === '/healthz') return new Response('ok', { status: 200 })
+  const bridgeToken = bridgeTokenOf(pathname)
+  if (bridgeToken !== undefined && config.claudeCliBridge) return config.claudeCliBridge(bridgeToken, request)
   const access = config.access.authenticate(request)
   if (access.error) return errorResponse(httpStatusOf(access.error), 'authentication_error', access.error.message, requestId)
   // `requestCallerScope`: el espacio de afinidad de este cliente sale de su clave de acceso, nunca guardada en claro.

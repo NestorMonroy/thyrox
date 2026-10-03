@@ -1,0 +1,73 @@
+=== formas de declaración ===
+  ok    extrae SALIDA
+  ok    extrae raiz
+  ok    extrae otro
+  ok    extrae ESPERADO
+  ok    extrae FALLOS
+  ok    extrae mapa
+  ok    extrae cuenta
+  ok    extrae veredicto_de
+  ok    extrae afirmar
+  ok    extrae elemento
+  ok    extrae primero
+  ok    extrae segundo
+  ok    extrae lista
+  ok    extrae respuesta
+  ok    extrae LC_ALL
+  ok    extrae prefijo
+  ok    extrae tras_and
+  ok    extrae tras_punto
+  ok    extrae tras_then
+  ok    extrae arr
+  ok    extrae indice
+  ok    no extrae el argumento de -p
+  ok    no extrae el comando tras las asignaciones
+=== lo que NO declara nada ===
+  ok    no extrae comentario
+  ok    no extrae resultado
+  ok    no extrae cadena
+  ok    no extrae otra
+  ok    no extrae cola
+  ok    no extrae valor
+  ok    no extrae tras_comentario
+  ok    no extrae cuerpo
+  ok    no extrae del_heredoc
+  ok    no extrae dentro
+  ok    la línea tras el heredoc es la suya
+  ok    la línea tras una cadena multilínea es la suya
+=== un <<MARCA en un comentario no abre heredoc ===
+  ok    extrae lo que sigue al comentario
+=== qué archivo es shell ===
+  ok    a.sh es shell: True
+  ok    wrapper es shell: True
+  ok    plain es shell: True
+  ok    tool es shell: False
+  ok    notes es shell: False
+=== el gate sobre casos reales del árbol ===
+  ok    con baseline vacío sale 1
+  ok    reporta SALIDA de test-headless-pool.sh
+  ok    reporta rehusa de headless-pool.sh
+  ok    en la línea de su declaración
+  ok    mide los dos .sh
+=== raíces, shebang y baseline ===
+  ok    recorriendo raíces sale 1
+  ok    reporta el .sh
+  ok    reporta el archivo con shebang bash
+  ok    no reporta el comentario
+  ok    congelados en el baseline, sale 0
+  ok    y cuenta los tres archivos
+=== el pre-commit pasa los .sh staged ===
+  ok    el bloque del gate incluye src/*.sh
+  ok    el bloque del gate incluye tests/*.sh
+  ok    el bloque del gate incluye bin/*.sh
+=== el baseline del árbol ===
+  ok    no pierde ninguna entrada previa
+  ok    congela SALIDA
+  ok    congela rehusa
+  ok    los .sh del árbol no tienen deuda fuera del baseline
+test_identifier_language_shell: 59 aserciones — 59 ok, 0 falla(s)
+shellcheck: 1 hallazgo(s) (alcance medido: 2 archivo(s))
+    .claude/workbench/ollama-podman-measure-20260930T185844/probes/network_modes.sh:16: SC2155 Declare and assign separately to avoid masking return values.
+ruff: 0 hallazgo(s) (alcance medido: 3 archivo(s))
+pyright: 0 hallazgo(s) (alcance medido: 3 archivo(s))
+__BG_EXIT__=1

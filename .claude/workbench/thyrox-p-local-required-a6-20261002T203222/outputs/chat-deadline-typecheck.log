@@ -1,0 +1,20 @@
+__tests__/admittedChat.test.ts(28,5): error TS2740: Type '{ unitId: string; grantId: string; artifact: ResolvedModelArtifact; residencyKey: string; generation: number; runtime: "ollama"; endpoint: string; containerId: string; devices: never[]; }' is missing the following properties from type 'ModelExecutionUnit': kind, reference, owner, containerName, and 2 more.
+__tests__/embeddingValidation.test.ts(53,47): error TS2345: Argument of type '{ path: string; scratchDir: string; corpusPath: string; workerId: string; expectedFileType: number; runInLab: (step: LabStep) => Promise<{ exitCode: number; stdout: string; stderr: string; }>; }' is not assignable to parameter of type 'GgufValidationInput'.
+  The types returned by 'runInLab(...)' are incompatible between these types.
+    Type 'Promise<{ exitCode: number; stdout: string; stderr: string; }>' is not assignable to type 'Promise<LabStepResult>'.
+      Type '{ exitCode: number; stdout: string; stderr: string; }' is missing the following properties from type 'LabStepResult': containerName, containerId
+__tests__/embeddingValidation.test.ts(60,39): error TS2345: Argument of type '{ path: string; scratchDir: string; corpusPath: string; workerId: string; expectedFileType: number; runInLab: (step: LabStep) => Promise<{ exitCode: number; stdout: string; stderr: string; }>; }' is not assignable to parameter of type 'GgufValidationInput'.
+  The types returned by 'runInLab(...)' are incompatible between these types.
+    Type 'Promise<{ exitCode: number; stdout: string; stderr: string; }>' is not assignable to type 'Promise<LabStepResult>'.
+      Type '{ exitCode: number; stdout: string; stderr: string; }' is missing the following properties from type 'LabStepResult': containerName, containerId
+__tests__/embeddingValidation.test.ts(67,47): error TS2345: Argument of type '{ path: string; scratchDir: string; corpusPath: string; workerId: string; expectedFileType: number; runInLab: (step: LabStep) => Promise<{ exitCode: number; stdout: string; stderr: string; }>; }' is not assignable to parameter of type 'GgufValidationInput'.
+  The types returned by 'runInLab(...)' are incompatible between these types.
+    Type 'Promise<{ exitCode: number; stdout: string; stderr: string; }>' is not assignable to type 'Promise<LabStepResult>'.
+      Type '{ exitCode: number; stdout: string; stderr: string; }' is missing the following properties from type 'LabStepResult': containerName, containerId
+__tests__/qualifyCommand.test.ts(48,7): error TS2740: Type '{ unitId: string; grantId: string; artifact: ResolvedModelArtifact; residencyKey: string; generation: number; runtime: "ollama"; endpoint: string; containerId: string; devices: never[]; }' is missing the following properties from type 'ModelExecutionUnit': kind, reference, owner, containerName, and 2 more.
+__tests__/qualifyModel.test.ts(35,5): error TS2740: Type '{ unitId: string; grantId: string; artifact: ResolvedModelArtifact; residencyKey: string; generation: number; runtime: "ollama"; endpoint: string; containerId: string; devices: never[]; }' is missing the following properties from type 'ModelExecutionUnit': kind, reference, owner, containerName, and 2 more.
+__tests__/quantizationRun.test.ts(46,25): error TS2345: Argument of type 'string | Uint8Array<ArrayBufferLike>' is not assignable to parameter of type 'BodyInit | null | undefined'.
+  Type 'Uint8Array<ArrayBufferLike>' is not assignable to type 'BodyInit | null | undefined'.
+    Type 'Uint8Array<ArrayBufferLike>' is missing the following properties from type 'URLSearchParams': size, append, delete, get, and 3 more.
+quantizationSteps.ts(173,3): error TS2322: Type 'ArtifactValidationFacts | EmbeddingValidationFacts' is not assignable to type 'ArtifactValidationFacts | undefined'.
+  Type 'EmbeddingValidationFacts' is missing the following properties from type 'ArtifactValidationFacts': perplexity, tokensPerSecond

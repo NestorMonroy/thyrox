@@ -1,0 +1,104 @@
+# p2c-annulment — retirada la causa (vuelta a la llamada por spec), caen exactamente las aserciones nuevas
+
+## 1. quantizationLab.ts = HEAD (runJobWithOutput), prueba nueva puesta
+$ cp /tmp/p2c-quantizationLab.head.ts src/packages/local-models/quantizationLab.ts; grep -c 'runJobWithOutput' src/packages/local-models/quantizationLab.ts
+3
+$ cd src/packages/local-models && bun test __tests__/quantizationLab.test.ts
+bun test v1.3.11 (af24e281)
+
+__tests__/quantizationLab.test.ts:
+(pass) quantization lab > runs a step through the podman execution primitive, never podman run [1.98ms]
+(pass) quantization lab > declares the lab owner, no network, the memory limit and the scratch mount [0.21ms]
+52 |   test('compone la autorización de la clase quantization citando su tarea dueña', async () => {
+53 |     const podman = fakePodman()
+54 |     const lab = new QuantizationLab(podman, 'image-id', '/scratch-host', LIMITS, async () => undefined, OWNER)
+55 |     await lab.run({ workerId: 'quantize-run', command: ['true'] })
+56 |     const create = podman.calls[0]!.join(' ')
+57 |     expect(create).toContain(`--label ${EXECUTION_KIND_LABEL_KEY}=quantization`)
+                        ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "--label thyrox.execution-kind=quantization"
+Received: "create --name thyrox-worker-quantize-run --label thyrox.owner-kind=lab --label thyrox.owner-id=quantize-run --label thyrox.owner-pid=4321 --label thyrox.worker-id=quantize-run --cpus 4 --memory 8192m --pids-limit 512 --network none -v /scratch-host:/scratch:rw image-id true"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/quantizationLab.test.ts:57:20)
+(fail) la ejecución se autoriza por paso > compone la autorización de la clase quantization citando su tarea dueña [0.33ms]
+61 | 
+62 |   test('la cita de la tarea que autoriza es declarable por el llamador', async () => {
+63 |     const podman = fakePodman()
+64 |     const lab = new QuantizationLab(podman, 'image-id', '/scratch-host', LIMITS, async () => undefined, OWNER, 'TASK-THYROX-0743')
+65 |     await lab.run({ workerId: 'quantize-run', command: ['true'] })
+66 |     expect(podman.calls[0]!.join(' ')).toContain(`--label ${EXECUTION_REFERENCE_LABEL_KEY}=task:TASK-THYROX-0743`)
+                                            ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "--label thyrox.execution-reference=task:TASK-THYROX-0743"
+Received: "create --name thyrox-worker-quantize-run --label thyrox.owner-kind=lab --label thyrox.owner-id=quantize-run --label thyrox.owner-pid=4321 --label thyrox.worker-id=quantize-run --cpus 4 --memory 8192m --pids-limit 512 --network none -v /scratch-host:/scratch:rw image-id true"
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/quantizationLab.test.ts:66:40)
+(fail) la ejecución se autoriza por paso > la cita de la tarea que autoriza es declarable por el llamador [0.21ms]
+(pass) mandatory execution path > no module of the package composes its own podman run [4.41ms]
+
+ 3 pass
+ 2 fail
+ 9 expect() calls
+Ran 5 tests across 1 file. [152.00ms]
+exit=1
+
+$ cp /tmp/p2c-quantizationLab.green.ts src/packages/local-models/quantizationLab.ts && bun test __tests__/quantizationLab.test.ts
+ 5 pass
+ 0 fail
+ 11 expect() calls
+Ran 5 tests across 1 file. [155.00ms]
+
+## 2. podmanWorkerManager.ts = HEAD (materializeContainer), prueba nueva puesta
+$ cp /tmp/p2c-manager.head.ts src/packages/daemon/src/podman/podmanWorkerManager.ts; grep -c 'materializeContainer' src/packages/daemon/src/podman/podmanWorkerManager.ts
+2
+$ cd src/packages/daemon && bun test src/__tests__/podmanWorkerManager.test.ts -t 'la autorización de cada lanzamiento'
+bun test v1.3.11 (af24e281)
+
+src/__tests__/podmanWorkerManager.test.ts:
+211 |   private containerSpec(request: WorkerLaunchRequest, deviceArgv: readonly string[]): WorkerContainerSpec {
+212 |     return {
+213 |       workerId: request.workerId,
+214 |       image: request.image,
+215 |       owner: daemonContainerOwner(this.deps.daemonPid),
+216 |       resourceArgv: [...request.resourceArgv, ...deviceArgv],
+                              ^
+TypeError: Spread syntax requires ...iterable not be null or undefined
+      at containerSpec (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:216:25)
+      at launch (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:173:23)
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:281:19)
+(fail) la autorización de cada lanzamiento > compone la autorización de infraestructura del daemon con su clase y su referencia [0.64ms]
+211 |   private containerSpec(request: WorkerLaunchRequest, deviceArgv: readonly string[]): WorkerContainerSpec {
+212 |     return {
+213 |       workerId: request.workerId,
+214 |       image: request.image,
+215 |       owner: daemonContainerOwner(this.deps.daemonPid),
+216 |       resourceArgv: [...request.resourceArgv, ...deviceArgv],
+                              ^
+TypeError: Spread syntax requires ...iterable not be null or undefined
+      at containerSpec (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:216:25)
+      at launch (/home/user/thyrox/src/packages/daemon/src/podman/podmanWorkerManager.ts:173:23)
+      at <anonymous> (/home/user/thyrox/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts:291:19)
+(fail) la autorización de cada lanzamiento > la vida se confirma con la inspección de la unidad materializada [0.20ms]
+
+ 0 pass
+ 24 filtered out
+ 2 fail
+Ran 2 tests across 1 file. [294.00ms]
+exit=1
+
+$ cd src/packages/daemon && bun test src/__tests__/podmanWorkerManager.test.ts   (archivo completo bajo anulación)
+
+ 9 pass
+ 17 fail
+ 21 expect() calls
+Ran 26 tests across 1 file. [382.00ms]
+
+$ cp /tmp/p2c-manager.green.ts src/packages/daemon/src/podman/podmanWorkerManager.ts && bun test src/__tests__/podmanWorkerManager.test.ts
+
+ 26 pass
+ 0 fail
+ 62 expect() calls
+Ran 26 tests across 1 file. [359.00ms]

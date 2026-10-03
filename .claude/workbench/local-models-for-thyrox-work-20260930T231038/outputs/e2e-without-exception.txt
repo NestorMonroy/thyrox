@@ -1,0 +1,4 @@
+variables_de_excepcion_en_el_entorno=0
+ready
+exit=0 pared_s=128
+__BG_EXIT__=0

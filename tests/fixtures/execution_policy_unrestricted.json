@@ -1,0 +1,5 @@
+{
+  "allowed": [],
+  "fallback": { "enabled": true },
+  "controller": { "subagents": true, "unmanagedPayloads": true, "implementation": "bootstrap-exception" }
+}

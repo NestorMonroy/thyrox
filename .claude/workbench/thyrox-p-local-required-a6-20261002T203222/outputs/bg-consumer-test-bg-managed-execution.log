@@ -1,0 +1,22 @@
+  ok    caso 1: el código del payload vuelve por el runner
+  ok    caso 1: el runner recibe la autorización y el payload como argv
+  ok    caso 1: la salida del payload llega al log
+  ok    caso 2: un payload sin --task se rehúsa con 2
+  ok    caso 2: no corrió nada en el anfitrión
+  ok    caso 2: el rehúso nombra --task y el plano de control
+  ok    caso 3: --task sin --kind se rehúsa con 2
+  ok    caso 4: una entrada declarada del plano de control corre
+  ok    caso 4: su salida llega al log
+  ok    caso 5: un envoltorio que no apunta a su módulo declarado se rehúsa
+  ok    caso 5: no corrió nada
+  ok    caso 6: --secret-from-env llega al runner por nombre
+  ok    caso 6: el valor no aparece en el argv
+  ok    caso 7: --work se acepta en lugar de --task
+  ok    caso 7: el runner recibe la referencia de trabajo del consumidor, no una TASK
+  ok    caso 8: --task y --work juntos se rehúsan con 2
+  ok    caso 9: --attest llega al runner
+  ok    caso 10: el payload corre y vuelve su código
+  ok    caso 10: el payload ve la entrada por la que se materializó
+  ok    caso 10: la autorización pide el envío de la entrada a la unidad
+
+20 casos: 20 ok, 0 fallos

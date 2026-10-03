@@ -1,0 +1,220 @@
+diff --git a/src/hooks/detect_foreground_long_command.py b/src/hooks/detect_foreground_long_command.py
+index 2fb550bbc..f75f74b3c 100644
+--- a/src/hooks/detect_foreground_long_command.py
++++ b/src/hooks/detect_foreground_long_command.py
+@@ -25,6 +25,16 @@ ensambladores ni por un ``nohup`` propio. Las tres condiciones importan:
+   quitan las envolturas (``bash``, ``uv run``, ``time``, asignaciones de
+   entorno) antes de buscar la familia al principio de lo que queda.
+ 
++Las esperas se miden aparte
++---------------------------
++
++Una espera (``BLOCKING_WAIT``) nombra el mecanismo, así que el descuento la
++eximiría. Tiene dos defectos distintos, cada uno con su aviso: en el primer
++plano del cliente **bloquea** el turno; desprendida del shell —lista cerrada
++por ``&``, o envuelta en ``nohup``/``setsid``— **no notifica** a nadie y recoge
++el trabajo del ledger en silencio. La desprendida se mide primero porque
++``run_in_background`` no la corrige: el defecto está en el comando.
++
+ Qué NO hace, y es deliberado
+ ----------------------------
+ 
+@@ -117,6 +127,66 @@ BLOCKING_WAIT = re.compile(
+ )
+ 
+ 
++#: Separadores de LISTA del shell: ``;``, salto de línea y el ``&`` suelto. El
++#: ``&`` desprende la lista entera que termina —``a && b &`` lanza las dos—, así
++#: que ``&&``, ``||`` y ``|`` quedan dentro. Se excluye el ``&`` de una
++#: redirección (``2>&1``, ``&>log``, ``<&3``): redirige, no desprende.
++_LIST_TERMINATOR = re.compile(r";|\n|(?<![&<>|])&(?![&>])")
++
++#: Envolturas que desprenden sin ``&``: ``setsid -f`` sale en el acto, y
++#: ``nohup`` sólo tiene sentido para un proceso que sobrevive al shell.
++#: ``disown`` no figura: sin un ``&`` previo no desprende nada, y con él ya lo
++#: delata el terminador.
++_DETACHING_WRAPPER = re.compile(r"\b(?:nohup|setsid)\b")
++
++
++def shell_lists(command: str) -> list[tuple[str, str]]:
++    """Cada lista del comando con el terminador que la cierra (``""`` al final)."""
++    lists = []
++    start = 0
++    for terminator in _LIST_TERMINATOR.finditer(command):
++        lists.append((command[start:terminator.start()], terminator.group()))
++        start = terminator.end()
++    lists.append((command[start:], ""))
++    return lists
++
++
++def is_detached(shell_list: str, terminator: str) -> bool:
++    """La lista corre fuera del shell que la lanza: ``&`` final o envoltura."""
++    return terminator == "&" or bool(_DETACHING_WRAPPER.search(shell_list))
++
++
++def detaches_a_wait(command: str) -> bool:
++    """Alguna espera del comando se desprende del shell en vez de esperar en él."""
++    return any(BLOCKING_WAIT.search(shell_list) and is_detached(shell_list, terminator)
++               for shell_list, terminator in shell_lists(command))
++
++
++def blocks_the_turn(command: str, tool_input: dict) -> bool:
++    """Una espera en el primer plano del cliente: retiene el turno hasta terminar."""
++    return bool(BLOCKING_WAIT.search(command)) and not tool_input.get("run_in_background")
++
++
++#: La espera desprendida corre en el segundo plano del SHELL: el cliente no la
++#: ve, nadie recibe aviso al terminar y recoge el trabajo del ledger en
++#: silencio. Es el defecto de TASK-THYROX-0668, distinto de bloquear.
++DETACHED_WAIT_NOTICE = (
++    "GATE DE SEGUNDO PLANO — esta ESPERA se desprende del shell (`&`, `nohup` "
++    "o `setsid`): corre en el segundo plano del SHELL, no en el del cliente, así "
++    "que nadie recibe aviso cuando termina y recoge el trabajo del ledger en "
++    "silencio. Lanza el mismo comando sin `&` ni `disown` (ni `nohup`/`setsid`) "
++    "con `run_in_background` del cliente: es lo único que notifica."
++)
++
++BLOCKING_WAIT_NOTICE = (
++    "GATE DE SEGUNDO PLANO — esta ESPERA bloquea el turno hasta que el "
++    "trabajo termine. Una espera es un comando largo: lánzala con "
++    "`run_in_background` y sigue trabajando; el cliente te notifica "
++    "cuando termina. Para mirar sin bloquear: `thyrox-bg status <nombre>` "
++    "o `wait-jobs status`."
++)
++
++
+ def detect(payload: dict) -> str | None:
+     """El aviso de segundo plano si el comando lo merece, o ``None``."""
+     tool_input = payload.get("tool_input") or {}
+@@ -124,15 +194,11 @@ def detect(payload: dict) -> str | None:
+     if not isinstance(command, str) or not command.strip():
+         return None
+ 
+-    if (BLOCKING_WAIT.search(strip_heredoc_bodies(command))
+-            and not tool_input.get("run_in_background")):
+-        return (
+-            "GATE DE SEGUNDO PLANO — esta ESPERA bloquea el turno hasta que el "
+-            "trabajo termine. Una espera es un comando largo: lánzala con "
+-            "`run_in_background` y sigue trabajando; el cliente te notifica "
+-            "cuando termina. Para mirar sin bloquear: `thyrox-bg status <nombre>` "
+-            "o `wait-jobs status`."
+-        )
++    executed = strip_heredoc_bodies(command)
++    if detaches_a_wait(executed):
++        return DETACHED_WAIT_NOTICE
++    if blocks_the_turn(executed, tool_input):
++        return BLOCKING_WAIT_NOTICE
+ 
+     # Un comando que ya viaja por el mecanismo cumple la regla: callar.
+     if ALREADY_BACKGROUND.search(command):
+diff --git a/tests/hooks/test_detect_foreground_long_command.py b/tests/hooks/test_detect_foreground_long_command.py
+index d8f9582e9..8b929a58f 100644
+--- a/tests/hooks/test_detect_foreground_long_command.py
++++ b/tests/hooks/test_detect_foreground_long_command.py
+@@ -110,29 +110,6 @@ def test_the_dispatcher_registers_it():
+     assert any(name == "detect_foreground_long_command" for name, _ in registry)
+ 
+ 
+-# Sin este bloque `python3 <suite>` sólo IMPORTA el módulo: las funciones
+-# `test_*` no se invocan y el corredor cuenta la suite en verde. El verde no
+-# distinguía «las aserciones pasan» de «las aserciones no se ejecutan» —
+-# sub-patrón D con la propia suite como sujeto. Medido: 20 funciones inertes en
+-# dos archivos de los 117 `test_*.py` (los otros 81 sin bloque asertan a nivel
+-# de módulo, y ésas sí corren al importar).
+-if __name__ == "__main__":
+-    import traceback
+-    _failures = 0
+-    for _name, _case in sorted(list(globals().items())):
+-        if not _name.startswith("test_") or not callable(_case):
+-            continue
+-        try:
+-            _case()
+-            print(f"  ok    {_name}")
+-        except Exception:
+-            _failures += 1
+-            print(f"  FALLO {_name}")
+-            traceback.print_exc()
+-    print(f"resumen: {_failures} fallo(s)")
+-    raise SystemExit(1 if _failures else 0)
+-
+-
+ def _payload_bg(command, background):
+     return {"tool_name": "Bash",
+             "tool_input": {"command": command, "run_in_background": background}}
+@@ -166,3 +143,76 @@ def test_a_wait_named_inside_a_heredoc_body_stays_silent():
+     """El cuerpo de un heredoc es un dato que se escribe, no una orden."""
+     command = "python3 - <<'PY'\nnota = 'usa wait-jobs wait'\nPY"
+     assert gate.detect(_payload_bg(command, False)) is None
++
++
++#: El comando real del episodio de TASK-THYROX-0668, citado verbatim.
++EPISODE_DETACHED_WAIT = ("bash bin/wait-jobs wait --only shell-gate-pool --timeout 7500"
++                         " >/dev/null 2>&1 & disown")
++
++
++def _is_detached_notice(notice):
++    return bool(notice) and "desprende" in notice and "run_in_background" in notice
++
++
++def test_the_episode_detached_wait_is_named_as_detached():
++    """La espera con `& disown` no bloquea: el aviso de bloqueo decía lo contrario."""
++    for background in (False, True):
++        notice = gate.detect(_payload_bg(EPISODE_DETACHED_WAIT, background))
++        assert _is_detached_notice(notice), background
++        assert "bloquea el turno" not in notice
++
++
++def test_a_wait_list_ended_by_an_ampersand_is_detached():
++    """El `&` desprende la lista entera, `&&` incluido, no sólo el último comando."""
++    for command in ("bash bin/thyrox-bg wait suite &",
++                    "bash bin/wait-jobs wait && echo listo &",
++                    "nohup bash bin/wait-jobs wait > log 2>&1 &"):
++        assert _is_detached_notice(gate.detect(_payload_bg(command, True))), command
++
++
++def test_a_wait_wrapped_by_setsid_or_nohup_is_detached():
++    """Sin `&`: sólo el envoltorio lo delata; es la rama que carga este caso."""
++    for command in ("setsid -f bash bin/wait-jobs wait --timeout 1800",
++                    "nohup bash bin/thyrox-bg wait suite > log 2>&1"):
++        assert _is_detached_notice(gate.detect(_payload_bg(command, True))), command
++
++
++def test_a_client_background_wait_with_redirections_stays_silent():
++    """`2>&1` y `&>` redirigen; no desprenden. Con `run_in_background`, calla."""
++    for command in ("bash bin/wait-jobs wait --only shell-gate-pool --timeout 7500",
++                    "bash bin/wait-jobs wait --timeout 1800 >log 2>&1",
++                    "bash bin/thyrox-bg wait suite &>log"):
++        assert gate.detect(_payload_bg(command, True)) is None, command
++
++
++def test_a_detached_launch_that_is_not_a_wait_is_not_a_detached_wait():
++    notice = gate.detect(_payload_bg("bash bin/thyrox-bg start x -- bash tests/run.sh &", False))
++    assert not _is_detached_notice(notice)
++
++
++def test_a_detached_wait_inside_a_heredoc_body_stays_silent():
++    command = "cat > nota.md <<'EOF'\nbash bin/wait-jobs wait & disown\nEOF"
++    assert gate.detect(_payload_bg(command, True)) is None
++
++
++# Sin este bloque `python3 <suite>` sólo IMPORTA el módulo: las funciones
++# `test_*` no se invocan y el corredor cuenta la suite en verde. El verde no
++# distinguía «las aserciones pasan» de «las aserciones no se ejecutan» —
++# sub-patrón D con la propia suite como sujeto. Medido: 20 funciones inertes en
++# dos archivos de los 117 `test_*.py` (los otros 81 sin bloque asertan a nivel
++# de módulo, y ésas sí corren al importar).
++if __name__ == "__main__":
++    import traceback
++    _failures = 0
++    for _name, _case in sorted(list(globals().items())):
++        if not _name.startswith("test_") or not callable(_case):
++            continue
++        try:
++            _case()
++            print(f"  ok    {_name}")
++        except Exception:
++            _failures += 1
++            print(f"  FALLO {_name}")
++            traceback.print_exc()
++    print(f"resumen: {_failures} fallo(s)")
++    raise SystemExit(1 if _failures else 0)

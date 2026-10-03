@@ -1,0 +1,17 @@
+{
+  "name": "@thyrox/semantic-search",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Store de búsqueda semántica sobre PostgreSQL + pgvector: esquema vectorial, escritura y consultas por candidatos binarios con reranking por coseno exacto.",
+  "exports": {
+    "./*.ts": {
+      "@thyrox/source": "./*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./*.ts"
+    }
+  },
+  "dependencies": {
+    "@thyrox/store": "0.1.0"
+  }
+}

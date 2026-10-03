@@ -3,8 +3,12 @@
  * AES-256-GCM, en el formato `enc:v1:<iv>:<cifrado>:<tag>`, con la clave que
  * declara `THYROX_STORAGE_ENCRYPTION_KEY`.
  *
- * Sin clave el texto pasa tal cual, y se avisa una vez: guardar en claro es
- * una elección del operador, no un fallo. Un valor cifrado que no se deja
+ * Sin clave NO se escribe una credencial: `encrypt` y
+ * `encryptConnectionFields` rehúsan con `StorageKeyMissingError`, igual que
+ * el cliente de referencia, que sin su clave de sellado apaga la caché en vez
+ * de escribir en claro (`.claude/workbench/sqlite-sensitive-data-at-rest-*`).
+ * Leer sigue siendo posible: un valor en claro heredado se devuelve tal cual.
+ * Un valor cifrado que no se deja
  * descifrar —otra clave, tag truncado, formato roto— vuelve `null`, y
  * `decryptConnectionFields` marca la conexión con `credentialDecryptFailed`
  * para que nadie lo lea como una credencial vacía y mande un Bearer vacío.
@@ -35,6 +39,14 @@ export type ConnectionFields = { [F in CredentialField]?: string | null } & {
   /** Una credencial cifrada que no se pudo descifrar: no es una credencial vacía. */
   credentialDecryptFailed?: true
 } & Record<string, unknown>
+
+/** Una credencial iba a escribirse sin clave de cifrado declarada: se rehúsa en vez de guardarla en claro. */
+export class StorageKeyMissingError extends Error {
+  constructor(readonly field: string) {
+    super(`${STORAGE_KEY_VARIABLE} is not set: refusing to store ${field} in plain text. Declare it (bin/provider-generate-storage-key) and retry.`)
+    this.name = 'StorageKeyMissingError'
+  }
+}
 
 export interface FieldCipher {
   readonly enabled: boolean
@@ -87,11 +99,8 @@ export function createFieldCipher(secret: string | undefined, report: (message: 
 
   const encrypt = (plaintext: Stored): Stored => {
     if (!plaintext) return plaintext
-    if (!key) {
-      reportOnce('plaintext', `${STORAGE_KEY_VARIABLE} is not set: credentials are stored in plain text.`)
-      return plaintext
-    }
     if (plaintext.startsWith(PREFIX)) return plaintext
+    if (!key) throw new StorageKeyMissingError('a credential')
     const iv = randomBytes(IV_LENGTH)
     const cipher = createCipheriv(ALGORITHM, key, iv)
     const encrypted = cipher.update(plaintext, 'utf8', 'hex') + cipher.final('hex')
@@ -125,8 +134,12 @@ export function createFieldCipher(secret: string | undefined, report: (message: 
     },
 
     encryptConnectionFields(connection) {
-      if (!key || !connection) return connection
-      for (const field of CREDENTIAL_FIELDS) if (connection[field]) connection[field] = encrypt(connection[field]) as string
+      if (!connection) return connection
+      for (const field of CREDENTIAL_FIELDS) {
+        if (!connection[field]) continue
+        if (!key && !looksEncrypted(connection[field])) throw new StorageKeyMissingError(field)
+        if (key) connection[field] = encrypt(connection[field]) as string
+      }
       return connection
     },
 

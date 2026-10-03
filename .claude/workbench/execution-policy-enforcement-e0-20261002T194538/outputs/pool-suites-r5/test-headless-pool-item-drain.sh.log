@@ -1,0 +1,39 @@
+el principal nunca anunció su salida:
+headless-pool: REHUSA — no se pudo derivar el modelo de --task-class analisis con /home/user/thyrox/.thyrox/runtime/worktrees/e0b/bin/agent-recommend: runtime (sin respuesta), modelo (sin respuesta)
+cat: /tmp/tmp.LhseAtflSL/drained.child-pid: No such file or directory
+OK   el hijo sigue vivo después de que salió el principal
+bin/writer_inspector: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/runtime/worktrees/e0b" && uv sync
+FAIL el hijo es escritor vivo del stream — expected '1', got '0'
+OK   mientras el hijo vive, el ítem no tiene .json
+FAIL el pool termina bien — expected '0', got '2'
+grep: /tmp/tmp.LhseAtflSL/drained.out/1.stream.jsonl: No such file or directory
+FAIL la línea tardía está en el stream — expected '1', got ''
+jq: error: Could not open file /tmp/tmp.LhseAtflSL/drained.out/1.json: No such file or directory
+FAIL el .json es la línea result — expected 'result', got ''
+bin/writer_inspector: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/runtime/worktrees/e0b" && uv sync
+OK   nadie escribe ya en las salidas del ítem
+FAIL el hijo ya no vive — expected 'no', got 'yes'
+el principal nunca anunció su salida:
+headless-pool: REHUSA — no se pudo derivar el modelo de --task-class analisis con /home/user/thyrox/.thyrox/runtime/worktrees/e0b/bin/agent-recommend: runtime (sin respuesta), modelo (sin respuesta)
+cat: /tmp/tmp.LhseAtflSL/stuck.child-pid: No such file or directory
+FAIL el pool termina aunque el hijo no saliera — expected '1', got '2'
+FAIL el hijo fue retirado — expected 'no', got 'yes'
+grep: /tmp/tmp.LhseAtflSL/stuck.out/1.err: No such file or directory
+FAIL el ítem declara que tuvo que terminar procesos — expected '1', got ''
+FAIL el resumen cuenta el ítem como fallido — expected '1', got '0'
+bin/writer_inspector: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/runtime/worktrees/e0b" && uv sync
+OK   nadie escribe ya en las salidas del ítem
+OK   control: el bloque de drenaje se retiró
+el principal nunca anunció su salida:
+headless-pool: REHUSA — no se pudo derivar el modelo de --task-class analisis con /home/user/thyrox/.thyrox/runtime/worktrees/e0b/bin/agent-recommend: runtime (sin respuesta), modelo (sin respuesta)
+cat: /tmp/tmp.LhseAtflSL/undrained.child-pid: No such file or directory
+OK   control: sin drenaje el pool cierra con el hijo vivo
+bin/writer_inspector: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/runtime/worktrees/e0b" && uv sync
+FAIL control: y el hijo sigue escribiendo en el stream del ítem — expected '1', got '0'
+OK   control: con el escritor vivo, la publicación rehúsa y el ítem no se cierra
+tail: invalid PID: ''
+result: 7 of 17 assertions green

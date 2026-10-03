@@ -1,0 +1,14 @@
+{
+  "name": "@thyrox/bounded-download",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Descarga de un archivo remoto grande a disco con la memoria acotada a un tramo, midiendo su sha256 a la vez. El llamador decide cómo se lee cada tramo (registry OCI, hub de Hugging Face); el paquete no conoce ningún proveedor.",
+  "exports": {
+    "./*.ts": {
+      "@thyrox/source": "./*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./*.ts"
+    }
+  }
+}

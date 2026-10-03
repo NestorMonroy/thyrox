@@ -1,0 +1,1193 @@
+diff --git a/src/session/container_measure.py b/src/session/container_measure.py
+new file mode 100644
+index 000000000..a5019591b
+--- /dev/null
++++ b/src/session/container_measure.py
+@@ -0,0 +1,221 @@
++"""La medida de un contenedor, desde su cgroup y no desde el cliente.
++
++El proceso de un contenedor de Podman cuelga de ``conmon`` → ``init``, no del
++``podman run`` que lo lanzó: el árbol ``/proc`` del wrapper de un ítem no lo
++alcanza, y GNU Time sobre ``podman run`` midió 41 MB con el contenedor
++reteniendo ~200 MB (banco ``podman-execution-primitive-20260930T215755``,
++H-THYROX-294). Este módulo da, por el nombre del contenedor, el conjunto de
++PIDs y la memoria de SU cgroup, la ruta que publica ``podman inspect``.
++
++Tres estados que no se colapsan: ``measured``; ``absent`` (el contenedor no
++existe o su cgroup ya no está: no hay nada que medir); ``error`` (se intentó y
++falló: ``podman`` no responde o el cgroup no es legible). Un ausente o un error
++nunca se leen como cero.
++
++Disposición del cgroup, medida en este contenedor (Podman 4.9.3 rootful,
++``cgroupfs``, cgroups v1): ``/sys/fs/cgroup/memory/<ruta>`` con
++``cgroup.procs``, ``memory.max_usage_in_bytes`` y ``memory.usage_in_bytes``.
++En v2 la misma ruta cuelga de la raíz unificada con ``memory.peak`` y
++``memory.current``.
++
++Métrica: los PIDs de ``cgroup.procs`` y el pico y el uso de memoria que el
++kernel contabiliza al cgroup del contenedor.
++Ciega a: la memoria de ``conmon`` (vive fuera del cgroup del contenedor); la
++caché de páginas que el kernel carga al cgroup (el uso v1 la incluye); y, en
++v2 con un kernel anterior a 5.19, el pico (no existe ``memory.peak``: error).
++"""
++from __future__ import annotations
++
++import argparse
++import subprocess
++import sys
++from dataclasses import dataclass
++from pathlib import Path
++
++MEASURED = "measured"
++ABSENT = "absent"
++ERROR = "error"
++DEFAULT_CGROUP_ROOT = Path("/sys/fs/cgroup")
++PODMAN_TIMEOUT_S = 30
++EXIT_MEASURED = 0
++EXIT_NOT_MEASURED = 2
++#: Lo que ``podman inspect`` imprime: si corre y la ruta de su cgroup.
++INSPECT_FORMAT = "{{.State.Running}} {{.State.CgroupPath}}"
++EXIT_EXISTS = 0
++EXIT_MISSING = 1
++
++
++class MembersUnavailable(Exception):
++    """La fuente de miembros no pudo dar los PIDs: no se sabe a quién medir."""
++
++
++@dataclass(frozen=True)
++class ContainerReading:
++    """Una lectura del cgroup de un contenedor, en uno de los tres estados."""
++    state: str
++    pids: frozenset[int] = frozenset()
++    peak_bytes: int | None = None
++    usage_bytes: int | None = None
++    reason: str | None = None
++
++
++@dataclass(frozen=True)
++class CgroupFiles:
++    """Los tres archivos de un cgroup que la medida lee."""
++    procs: Path
++    peak: Path
++    usage: Path
++
++
++def v1_files(root: Path, relative: str) -> CgroupFiles:
++    memory = root / "memory" / relative.lstrip("/")
++    return CgroupFiles(memory / "cgroup.procs", memory / "memory.max_usage_in_bytes",
++                       memory / "memory.usage_in_bytes")
++
++
++def v2_files(root: Path, relative: str) -> CgroupFiles:
++    unified = root / relative.lstrip("/")
++    return CgroupFiles(unified / "cgroup.procs", unified / "memory.peak", unified / "memory.current")
++
++
++def is_v2_cgroup(root: Path, relative: str) -> bool:
++    return (root / relative.lstrip("/") / "cgroup.controllers").is_file()
++
++
++def locate_files(root: Path, relative: str) -> CgroupFiles | None:
++    """Los archivos del cgroup según la jerarquía que exista; ``None`` si el
++    cgroup ya no está en ninguna."""
++    v1 = v1_files(root, relative)
++    if v1.procs.parent.is_dir():
++        return v1
++    if is_v2_cgroup(root, relative):
++        return v2_files(root, relative)
++    return None
++
++
++class PodmanFailed(Exception):
++    """``podman inspect`` no respondió por una causa que no es la ausencia."""
++
++
++def run_podman(podman: str, *args: str) -> subprocess.CompletedProcess:
++    """Una orden de ``podman``; ``PodmanFailed`` si no se pudo ejecutar."""
++    try:
++        return subprocess.run([podman, *args], capture_output=True, text=True, timeout=PODMAN_TIMEOUT_S)
++    except (OSError, subprocess.TimeoutExpired) as error:
++        raise PodmanFailed(f"podman {' '.join(args)}: {error}") from error
++
++
++def container_exists(name: str, podman: str) -> bool:
++    """``podman container exists``: 0 existe, 1 no existe, otro código es un
++    fallo de ``podman`` y no una ausencia."""
++    done = run_podman(podman, "container", "exists", name)
++    if done.returncode not in (EXIT_EXISTS, EXIT_MISSING):
++        raise PodmanFailed(f"podman container exists {name}: {done.stderr.strip() or f'exit {done.returncode}'}")
++    return done.returncode == EXIT_EXISTS
++
++
++def inspect_cgroup(name: str, podman: str) -> str | None:
++    """La ruta del cgroup del contenedor en marcha; ``None`` si no existe o no
++    corre. Lanza ``PodmanFailed`` si ``podman`` no pudo responder."""
++    if not container_exists(name, podman):
++        return None
++    done = run_podman(podman, "inspect", "-f", INSPECT_FORMAT, name)
++    if done.returncode != 0:
++        raise PodmanFailed(f"podman inspect {name}: {done.stderr.strip() or f'exit {done.returncode}'}")
++    running, _, relative = done.stdout.strip().partition(" ")
++    return relative if running == "true" and relative else None
++
++
++def read_integer(path: Path) -> int:
++    """Un entero de un archivo de cgroup; ``ValueError`` si no lo es."""
++    return int(path.read_text().strip())
++
++
++def read_pids(path: Path) -> frozenset[int]:
++    return frozenset(int(line) for line in path.read_text().split())
++
++
++def read_files(files: CgroupFiles) -> ContainerReading:
++    """Lee los tres archivos. Un cgroup que desaparece entre la localización
++    y la lectura es un contenedor que salió: ausente, no error."""
++    try:
++        return ContainerReading(MEASURED, read_pids(files.procs), read_integer(files.peak),
++                                read_integer(files.usage))
++    except FileNotFoundError:
++        return ContainerReading(ABSENT, reason=f"el cgroup {files.procs.parent} ya no existe")
++    except (OSError, ValueError) as error:
++        return ContainerReading(ERROR, reason=f"cgroup ilegible en {files.procs.parent}: {error}")
++
++
++def read_container(name: str, podman: str = "podman",
++                   cgroup_root: Path = DEFAULT_CGROUP_ROOT) -> ContainerReading:
++    """Los PIDs y la memoria del cgroup del contenedor ``name``."""
++    try:
++        relative = inspect_cgroup(name, podman)
++    except PodmanFailed as error:
++        return ContainerReading(ERROR, reason=str(error))
++    if relative is None:
++        return ContainerReading(ABSENT, reason=f"el contenedor {name} no existe o no corre")
++    files = locate_files(Path(cgroup_root), relative)
++    if files is None:
++        return ContainerReading(ABSENT, reason=f"sin cgroup para {name} bajo {cgroup_root}")
++    return read_files(files)
++
++
++class ContainerMembers:
++    """Fuente de miembros de un contenedor: vive mientras su cgroup existe, y
++    sus miembros son los PIDs de ``cgroup.procs``. Vida y miembros salen de la
++    MISMA lectura: dos lecturas separadas dejarían una ventana en la que el
++    contenedor sale entre ambas. Un cgroup ilegible sigue vivo —hay algo
++    corriendo que no se pudo leer— y se declara con ``MembersUnavailable`` en
++    vez de devolver un conjunto vacío."""
++
++    def __init__(self, name: str, podman: str = "podman", cgroup_root: Path = DEFAULT_CGROUP_ROOT):
++        self.name = name
++        self.podman = podman
++        self.cgroup_root = Path(cgroup_root)
++
++    def reading(self) -> ContainerReading:
++        return read_container(self.name, self.podman, self.cgroup_root)
++
++    def current_members(self) -> set[int] | None:
++        """Los PIDs de ``cgroup.procs`` en una sola lectura; ``None`` si el
++        contenedor ya no existe (terminó o aún no arrancó)."""
++        current = self.reading()
++        if current.state == ERROR:
++            raise MembersUnavailable(current.reason or current.state)
++        return set(current.pids) if current.state == MEASURED else None
++
++    def used_bytes(self) -> int:
++        """Lo que el cgroup usa ahora; 0 si está ausente (aún no arrancó o ya
++        salió: su reserva cuenta entera). Un error lanza ``MembersUnavailable``."""
++        current = self.reading()
++        if current.state == ERROR:
++            raise MembersUnavailable(current.reason or current.state)
++        return current.usage_bytes or 0
++
++
++def reading_line(reading: ContainerReading) -> str:
++    """Una línea por estado: ``measured <pico> <uso> <pids>``, ``absent
++    <causa>`` o ``error <causa>``."""
++    if reading.state == MEASURED:
++        pids = ",".join(str(pid) for pid in sorted(reading.pids))
++        return f"{MEASURED} {reading.peak_bytes} {reading.usage_bytes} {pids}"
++    return f"{reading.state} {reading.reason}"
++
++
++def main(argv: list[str]) -> int:
++    parser = argparse.ArgumentParser(prog="container_measure", description=(__doc__ or "").splitlines()[0])
++    sub = parser.add_subparsers(dest="order", required=True)
++    p_read = sub.add_parser("read", help="imprime el estado del cgroup de NAME; sale 0 medido, 2 si no")
++    p_read.add_argument("name")
++    p_read.add_argument("--podman", default="podman")
++    p_read.add_argument("--cgroup-root", type=Path, default=DEFAULT_CGROUP_ROOT)
++    args = parser.parse_args(argv)
++    reading = read_container(args.name, args.podman, args.cgroup_root)
++    print(reading_line(reading))
++    return EXIT_MEASURED if reading.state == MEASURED else EXIT_NOT_MEASURED
++
++
++if __name__ == "__main__":
++    raise SystemExit(main(sys.argv[1:]))
+diff --git a/src/session/gpu_monitor.py b/src/session/gpu_monitor.py
+index 3e737ff19..8f807e1d8 100644
+--- a/src/session/gpu_monitor.py
++++ b/src/session/gpu_monitor.py
+@@ -6,8 +6,12 @@ vive el ÁRBOL de procesos del ítem y deja ``<n>.gpu``, una línea::
+ 
+     <vram pico MiB> <vram media MiB> <uso pico de GPU %> <muestras>
+ 
+-Cuenta la VRAM de todos los procesos del árbol (el ítem y sus hijos), no la
+-de los demás que compartan la GPU. El uso de GPU sólo se atribuye a una
++Cuenta la VRAM de los procesos que da su FUENTE DE MIEMBROS, no la de los
++demás que compartan la GPU. En local la fuente es el árbol ``/proc`` del ítem
++(``HostTree``); en contenedor, el cgroup del contenedor (``ContainerMembers``,
++``--container``), porque su proceso cuelga de ``conmon`` y no del wrapper
++(H-THYROX-294). Una fuente que no puede dar los PIDs deja ``error <causa>``,
++nunca un cero. El uso de GPU sólo se atribuye a una
+ muestra en la que el árbol tenía VRAM: ``nvidia-smi`` da el uso por GPU, no
+ por proceso.
+ 
+@@ -18,7 +22,7 @@ en el servidor y la GPU local no se usa, así que medirla sólo informa cuando
+ el pool corre trabajo local con CUDA.
+ 
+ Métrica: ``used_memory`` de ``nvidia-smi --query-compute-apps`` por PID del
+-árbol, sumada por muestra; ``utilization.gpu`` máxima entre GPUs.
++árbol (o del cgroup), sumada por muestra; ``utilization.gpu`` máxima entre GPUs.
+ Ciega a: un pico más corto que el intervalo de muestreo; la VRAM de un
+ proceso del árbol que ``nvidia-smi`` no lista (contenedores sin espacio de
+ PID compartido); y el uso de GPU de OTRO proceso en la misma muestra.
+@@ -32,7 +36,9 @@ import sys
+ import time
+ from dataclasses import dataclass
+ from pathlib import Path
++from typing import Protocol
+ 
++from session.container_measure import DEFAULT_CGROUP_ROOT, ContainerMembers, MembersUnavailable
+ from session.resource_admission import (  # noqa: F401 — superficie pública de gpu_monitor
+     LEDGER_LOCK_RETRIES,
+     ReservationLedger as VramLedger,
+@@ -109,9 +115,32 @@ def available(nvidia_smi: str = "nvidia-smi") -> bool:
+     return True
+ 
+ 
+-def watch(pid: int, out: Path, nvidia_smi: str = "nvidia-smi",
++class MemberSource(Protocol):
++    """A quién se mide. ``current_members`` da los PIDs que lo forman, o
++    ``None`` si ya no vive; lanza ``MembersUnavailable`` cuando no puede
++    saberlo."""
++
++    def current_members(self) -> set[int] | None: ...
++
++
++class HostTree:
++    """El ítem local: ``pid`` y sus descendientes por ``/proc``."""
++
++    def __init__(self, pid: int):
++        self.pid = pid
++
++    def current_members(self) -> set[int] | None:
++        return tree(self.pid) if _alive(self.pid) else None
++
++
++def write_error(out: Path, cause: object) -> None:
++    """Se intentó medir y falló: ni cero ni ausencia, y sin resumen parcial."""
++    Path(out).write_text(f"error {cause}\n")
++
++
++def watch(source: MemberSource, out: Path, nvidia_smi: str = "nvidia-smi",
+           interval_s: float = DEFAULT_INTERVAL_S) -> Summary | None:
+-    """Muestrea mientras vive el árbol de ``pid`` y escribe ``out``."""
++    """Muestrea mientras vive ``source`` y escribe ``out``."""
+     if not available(nvidia_smi):
+         return None
+     totals, utils = [], []
+@@ -119,17 +148,19 @@ def watch(pid: int, out: Path, nvidia_smi: str = "nvidia-smi",
+         try:
+             current = sample(nvidia_smi)
+         except GpuUnavailable as error:
+-            # Se intentó medir y falló: ni cero ni ausencia. No se publica un
+-            # resumen parcial como si fuera la medida del ítem.
+-            Path(out).write_text(f"error {error}\n")
++            write_error(out, error)
+             return None
+         # La vida se comprueba ANTES de registrar: una muestra tomada con el
+         # árbol ya terminado (el padre zombi, sin hijos) vale 0 MiB y bajaría
+         # la media de una medida que no le pertenece. Sonda:
+         # `.claude/workbench/gpu-vram-*/probe-tree-lifecycle.sh`.
+-        if not _alive(pid):
++        try:
++            members = source.current_members()
++        except MembersUnavailable as error:
++            write_error(out, error)
++            return None
++        if members is None:
+             break
+-        members = tree(pid)
+         used = sum(mib for p, mib in current.vram_by_pid.items() if p in members)
+         totals.append(used)
+         utils.append(current.utilization_pct if used > 0 else 0)
+@@ -231,12 +262,25 @@ def admit_exit_code(args: argparse.Namespace) -> int:
+     return EXIT_ADMITTED if admitted else EXIT_TIMEOUT
+ 
+ 
++def member_source(args: argparse.Namespace) -> MemberSource:
++    """La fuente de ``watch``: el contenedor declarado, o el árbol de PID. En
++    contenedor, PID es el wrapper que lo lanzó y no se mide: el proceso del
++    contenedor no cuelga de él."""
++    if args.container:
++        return ContainerMembers(args.container, args.podman, args.cgroup_root)
++    return HostTree(args.pid)
++
++
+ def main(argv: list[str]) -> int:
+     parser = argparse.ArgumentParser(prog="gpu_monitor", description=(__doc__ or "").splitlines()[0])
+     sub = parser.add_subparsers(dest="order", required=True)
+-    p_watch = sub.add_parser("watch", help="muestrea el árbol de PID y escribe OUT")
++    p_watch = sub.add_parser("watch", help="muestrea el árbol de PID (o el contenedor) y escribe OUT")
+     p_watch.add_argument("pid", type=int)
+     p_watch.add_argument("out", type=Path)
++    p_watch.add_argument("--container", default=None,
++                         help="mide el cgroup de este contenedor en vez del árbol de PID")
++    p_watch.add_argument("--podman", default="podman")
++    p_watch.add_argument("--cgroup-root", type=Path, default=DEFAULT_CGROUP_ROOT)
+     p_watch.add_argument("--nvidia-smi", default="nvidia-smi")
+     p_watch.add_argument("--interval", type=float, default=DEFAULT_INTERVAL_S)
+     p_avail = sub.add_parser("available", help="sale 0 si hay con qué medir, 2 si no")
+@@ -267,7 +311,7 @@ def main(argv: list[str]) -> int:
+         return 0
+     if args.order == "available":
+         return 0 if available(args.nvidia_smi) else 2
+-    return 0 if watch(args.pid, args.out, args.nvidia_smi, args.interval) else 2
++    return 0 if watch(member_source(args), args.out, args.nvidia_smi, args.interval) else 2
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/src/session/pool_history.py b/src/session/pool_history.py
+index f4b03f858..9f6b8bea9 100644
+--- a/src/session/pool_history.py
++++ b/src/session/pool_history.py
+@@ -10,6 +10,13 @@ fuera de él. Este módulo lo lleva al pool:
+   ``choose_cache_ttl`` —la pared máxima de un ítem es el mayor hueco que la
+   caché tiene que atravesar— y ``--memfree`` como la memoria pico por un margen.
+ 
++Cada fila declara su fuente de medida, ``measurement_source``: ``host-tree``
++(el árbol ``/proc`` del ítem) o ``container-cgroup`` (el cgroup de su
++contenedor). En contenedor el árbol del ítem es el cliente ``podman run``, no
++el trabajo (H-THYROX-294): una fila ``host-tree`` de ese pool mide ~40 MB y VRAM
++0, y calibrarla pediría ``admit(0)``. Por eso sólo cuentan las filas de la
++fuente del lanzamiento, y una fila sin el campo cuenta como ``host-tree``.
++
+ Sin historial no inventa: devuelve ``None`` y lo dice. Lo declarado a mano
+ gana siempre; esa precedencia la aplica el pool, no este módulo.
+ 
+@@ -39,6 +46,9 @@ HISTORY_FILE = "runs.jsonl"
+ DEFAULT_MARGIN = 2.0
+ #: El intervalo de muestreo de VRAM del pool, el mismo de `gpu_monitor watch`.
+ DEFAULT_GPU_INTERVAL_S = gpu_monitor.DEFAULT_INTERVAL_S
++HOST_TREE = "host-tree"
++CONTAINER_CGROUP = "container-cgroup"
++MEASUREMENT_SOURCES = (HOST_TREE, CONTAINER_CGROUP)
+ _MEASURE = re.compile(r"^\s*(\d+)\s+([0-9.]+)\s+[0-9.]+\s+[0-9.]+\s*$")
+ 
+ 
+@@ -122,9 +132,14 @@ def _nearest_rank(values: list[int], fraction: float) -> int:
+     return ordered[max(math.ceil(fraction * len(ordered)), 1) - 1]
+ 
+ 
++def row_source(row: dict) -> str:
++    """La fuente de medida de una fila; las anteriores al campo son ``host-tree``."""
++    return row.get("measurement_source", HOST_TREE)
++
++
+ def record(history: Path, out_dir: Path, runner: str | None = None,
+            item_model: str | None = None, template_digest: str | None = None,
+-           now: datetime | None = None) -> dict | None:
++           now: datetime | None = None, measurement_source: str = HOST_TREE) -> dict | None:
+     """Agrega la fila de la ejecución cuya salida es ``out_dir``; ``None`` si
+     ningún ``.time`` fue medible (no se escribe una fila de ceros).
+ 
+@@ -149,6 +164,7 @@ def record(history: Path, out_dir: Path, runner: str | None = None,
+         "median_kb": _nearest_rank([kb for kb, _ in measures], 0.5),
+         "p90_kb": _nearest_rank([kb for kb, _ in measures], 0.9),
+         "recorded_at": (now or datetime.now(UTC)).strftime(RECORDED_AT_FORMAT),
++        "measurement_source": measurement_source,
+     }
+     if template_digest:
+         row["template_digest"] = template_digest
+@@ -188,12 +204,12 @@ def _rows(history: Path) -> list[dict]:
+     return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+ 
+ 
+-def _last_row(history: Path, runner: str | None = None,
+-              item_model: str | None = None) -> dict | None:
+-    """La última fila; con ``runner`` o ``item_model``, la última que registra
+-    ESE binario y ESE modelo. Una fila de otro, o sin el campo registrado, no
+-    describe al declarado."""
+-    rows = _rows(history)
++def _last_row(history: Path, runner: str | None = None, item_model: str | None = None,
++              measurement_source: str = HOST_TREE) -> dict | None:
++    """La última fila medida con ``measurement_source``; con ``runner`` o
++    ``item_model``, la última que registra ESE binario y ESE modelo. Una fila
++    de otro, o sin el campo registrado, no describe al declarado."""
++    rows = [r for r in _rows(history) if row_source(r) == measurement_source]
+     if runner:
+         rows = [r for r in rows if r.get("runner") == runner]
+     if item_model:
+@@ -239,7 +255,8 @@ def _age_s(row: dict, now: datetime | None) -> float | None:
+ 
+ def vram_calibration(row: dict | None, gpu_interval_s: float, min_items: int = 1,
+                      template_digest: str | None = None, max_age_s: float | None = None,
+-                     now: datetime | None = None) -> tuple[bool, str]:
++                     now: datetime | None = None,
++                     measurement_source: str = HOST_TREE) -> tuple[bool, str]:
+     """¿Describe el historial la VRAM de los ítems que se van a lanzar? Sólo
+     si la última ejecución midió la VRAM de TODOS sus ítems y cada uno duró lo
+     bastante para ser visto. Un 0 medido es una medida; como predicción sólo
+@@ -248,9 +265,13 @@ def vram_calibration(row: dict | None, gpu_interval_s: float, min_items: int = 1
+     Y sólo si es representativa de lo que se lanza: al menos ``min_items``
+     ítems medidos —los que irán a la vez—, la misma plantilla por su huella de
+     contenido, y no más vieja que ``max_age_s``. Cada límite se aplica sólo si
+-    se declara."""
++    se declara. Y medida con la fuente del lanzamiento: un 0 de VRAM medido
++    sobre el cliente de un contenedor no dice nada del contenedor."""
+     if row is None:
+         return False, "sin ejecución previa de esta plantilla"
++    if row_source(row) != measurement_source:
++        return False, (f"la fila se midió con {row_source(row)} y se lanza con {measurement_source}: "
++                       f"no describe lo que se va a lanzar")
+     if row.get("items_measured", 0) < min_items:
+         return False, (f"{row.get('items_measured', 0)} ítems medidos para lanzar {min_items} "
+                        f"a la vez: no representa su dispersión")
+@@ -321,7 +342,7 @@ def derive(history: Path, model: str, catalog: dict, margin: float = DEFAULT_MAR
+            gpu_interval_s: float = DEFAULT_GPU_INTERVAL_S, runner: str | None = None,
+            item_model: str | None = None, min_items: int = 1,
+            template_digest: str | None = None, max_age_s: float | None = None,
+-           now: datetime | None = None) -> Decision:
++           now: datetime | None = None, measurement_source: str = HOST_TREE) -> Decision:
+     """TTL y ``--memfree`` desde la última ejecución medida de esta plantilla.
+ 
+     Con ``runner``, sólo cuentan las ejecuciones de ese binario: sin ninguna,
+@@ -329,12 +350,15 @@ def derive(history: Path, model: str, catalog: dict, margin: float = DEFAULT_MAR
+ 
+     ``reserve_kb`` es la memoria de un VECINO que corre junto al pool (el
+     ``tsc`` del pipeline, en ``tsc_cycle``): se suma a lo medido del ítem,
+-    porque la admisión de Parallel tiene que dejar sitio a los dos."""
+-    row = _last_row(history, runner, item_model)
++    porque la admisión de Parallel tiene que dejar sitio a los dos.
++
++    ``measurement_source`` es la del lanzamiento: sólo cuentan sus filas."""
++    row = _last_row(history, runner, item_model, measurement_source)
+     vram_cap, need, vram_why = _vram_decision(row, free_vram_mib, vram_reserve_mib, margin,
+                                               vram_floor_mib, gpu_interval_s,
+                                               {"min_items": min_items, "template_digest": template_digest,
+-                                               "max_age_s": max_age_s, "now": now})
++                                               "max_age_s": max_age_s, "now": now,
++                                               "measurement_source": measurement_source})
+     if row is None:
+         others = len(_rows(history))
+         missing = "sin ejecución previa de esta plantilla"
+@@ -344,6 +368,10 @@ def derive(history: Path, model: str, catalog: dict, margin: float = DEFAULT_MAR
+                 missing += f" ({others} fila(s) de otro binario o sin binario registrado)"
+         if item_model:
+             missing += f"; ninguna con el modelo {item_model}"
++        other_sources = sum(1 for r in _rows(history) if row_source(r) != measurement_source)
++        if other_sources:
++            missing += (f"; {other_sources} fila(s) medidas con otra fuente que {measurement_source} "
++                        f"no calibran este lanzamiento")
+         if reserve_kb:
+             return Decision(None, _mebibytes(reserve_kb),
+                             f"{missing}: la cota es sólo la reserva {reserve_kb} KB"
+@@ -383,10 +411,12 @@ def _memory_from_row(row: dict, margin: float, reserve_kb: int,
+ 
+ 
+ def derive_memory(history: Path, margin: float = DEFAULT_MARGIN, reserve_kb: int = 0,
+-                  available_ram_kb: int | None = None) -> MemoryDecision:
++                  available_ram_kb: int | None = None,
++                  measurement_source: str = HOST_TREE) -> MemoryDecision:
+     """``--memfree`` y el tope de anchura por RAM desde la última ejecución
+-    medida; sin ninguna no inventa: sin cota, y dice por qué."""
+-    row = _last_row(history)
++    medida con ``measurement_source``; sin ninguna no inventa: sin cota, y
++    dice por qué."""
++    row = _last_row(history, measurement_source=measurement_source)
+     if row is None:
+         return MemoryDecision(None, None, "sin ejecución previa de este historial: nada que derivar")
+     return _memory_from_row(row, margin, reserve_kb, available_ram_kb)
+@@ -402,6 +432,8 @@ def main(argv: list[str]) -> int:
+     p_rec.add_argument("--runner", default=None, help="el binario que corrió los ítems")
+     p_rec.add_argument("--item-model", default=None, help="el modelo que corrió los ítems")
+     p_rec.add_argument("--template", default=None, help="la plantilla: se guarda su huella")
++    p_rec.add_argument("--measurement-source", choices=MEASUREMENT_SOURCES, default=HOST_TREE,
++                       help="de dónde salen las medidas de la fila")
+     p_der = sub.add_parser("derive", help="imprime TTL, memfree y porqué, separados por tabulador")
+     p_der.add_argument("history"); p_der.add_argument("model")
+     p_der.add_argument("--margin", type=float, default=DEFAULT_MARGIN)
+@@ -420,6 +452,8 @@ def main(argv: list[str]) -> int:
+                        help="calibrado sólo con al menos estos ítems medidos")
+     p_der.add_argument("--max-age-hours", type=float, default=None,
+                        help="calibrado sólo si la fila no es más vieja")
++    p_der.add_argument("--measurement-source", choices=MEASUREMENT_SOURCES, default=HOST_TREE,
++                       help="la fuente de medida del lanzamiento: sólo cuentan sus filas")
+     args = parser.parse_args(argv)
+ 
+     if args.command == "dir":
+@@ -428,7 +462,8 @@ def main(argv: list[str]) -> int:
+     if args.command == "record":
+         row = record(Path(args.history), Path(args.out_dir), runner=args.runner,
+                      item_model=args.item_model,
+-                     template_digest=template_digest(Path(args.template)) if args.template else None)
++                     template_digest=template_digest(Path(args.template)) if args.template else None,
++                     measurement_source=args.measurement_source)
+         print(json.dumps(row) if row else "historial: ningún .time medible, sin fila")
+         return 0
+     catalog, reason = model_catalog.try_catalog()
+@@ -441,7 +476,8 @@ def main(argv: list[str]) -> int:
+                       gpu_interval_s=args.gpu_interval, runner=args.runner,
+                       item_model=args.item_model, min_items=args.min_items,
+                       template_digest=template_digest(Path(args.template)) if args.template else None,
+-                      max_age_s=args.max_age_hours * 3600 if args.max_age_hours is not None else None)
++                      max_age_s=args.max_age_hours * 3600 if args.max_age_hours is not None else None,
++                      measurement_source=args.measurement_source)
+     width = effective_width(args.configured_width, decision) if args.configured_width else decision.width_cap
+     # `-` y no vacío: `read` con IFS de tabulador colapsa dos tabuladores
+     # seguidos, y un campo vacío corre al siguiente a su lugar.
+diff --git a/src/session/resource_admission.py b/src/session/resource_admission.py
+index c9749bf6e..f96641b86 100644
+--- a/src/session/resource_admission.py
++++ b/src/session/resource_admission.py
+@@ -13,7 +13,9 @@ contador que se repone en un `trap` pierde el hueco con SIGKILL.
+ 
+ El registro y el bucle no saben de qué recurso se trata. Cada recurso aporta
+ su medida: la VRAM, `gpu_monitor` con `nvidia-smi`; la RAM, este módulo con
+-`MemAvailable` y el RSS de cada árbol en `/proc`; el disco, este módulo con el
++`MemAvailable` y el RSS de cada árbol en `/proc` —o, si el dueño es un ítem en
++contenedor, el uso de memoria del cgroup del contenedor, porque su proceso
++cuelga de `conmon` y no del árbol del dueño (H-THYROX-294)—; el disco, este módulo con el
+ techo que publica `disk-headroom --ceiling-bytes` menos un piso de seguridad.
+ 
+ El disco no tiene uso por proceso que leer: lo que un pull ya escribió no se
+@@ -39,6 +41,7 @@ from pathlib import Path
+ 
+ from cache.paths import cache_dir
+ from session import shared_lock
++from session.container_measure import DEFAULT_CGROUP_ROOT, ContainerMembers, MembersUnavailable
+ 
+ LEDGER_LOCK_RETRIES = 50
+ DEFAULT_INTERVAL_S = 1.0
+@@ -50,6 +53,9 @@ DISK_LEDGER_VAR = "THYROX_DISK_ADMISSION_LEDGER"
+ DISK_FLOOR_VAR = "THYROX_DISK_ADMISSION_FLOOR_MB"
+ DISK_HEADROOM_VAR = "THYROX_DISK_ADMISSION_HEADROOM"
+ BYTES_PER_MIB = 1024 * 1024
++BYTES_PER_KB = 1024
++#: El sufijo del registro lateral que asocia cada dueño con su contenedor.
++CONTAINER_OWNERS_SUFFIX = ".containers.json"
+ #: El piso de disco que ninguna admisión reparte. Worktrees, cachés, logs y las
+ #: capas temporales que Podman desempaqueta durante un pull escriben en el mismo
+ #: sistema de archivos sin reservar; 2 GiB es del orden de una capa grande más
+@@ -216,16 +222,79 @@ def available_ram_kb(meminfo: Path = Path("/proc/meminfo")) -> int | None:
+     return int(match.group(1)) if match else None
+ 
+ 
++OwnerUsage = Callable[[int], int]
++
++
++def host_tree_usage_kb(owner_pid: int) -> int:
++    """Lo que reside el árbol ``/proc`` de un dueño local."""
++    return proc_rss_kb(tree(owner_pid))
++
++
++def container_aware_usage(containers: dict[int, ContainerMembers],
++                          host_usage: OwnerUsage = host_tree_usage_kb) -> OwnerUsage:
++    """El uso por dueño: el del cgroup de su contenedor si lo tiene, el de su
++    árbol si no. El RSS del cliente ``podman run`` no es lo que el contenedor
++    usa, así que un dueño en contenedor nunca se mide por su árbol. Un cgroup
++    ilegible propaga ``MembersUnavailable``."""
++    def usage_kb(owner_pid: int) -> int:
++        source = containers.get(owner_pid)
++        if source is None:
++            return host_usage(owner_pid)
++        return source.used_bytes() // BYTES_PER_KB
++    return usage_kb
++
++
+ def ram_headroom(live: dict[str, int], meminfo: Path = Path("/proc/meminfo"),
+-                 rss_kb: Callable[[set[int]], int] = proc_rss_kb,
+-                 tree: Callable[[int], set[int]] = tree) -> int | None:
+-    """Lo libre de RAM menos lo reservado que los árboles dueños aún no residen."""
++                 usage: OwnerUsage = host_tree_usage_kb) -> int | None:
++    """Lo libre de RAM menos lo reservado que los dueños aún no usan. ``None``
++    sin ``MemAvailable`` o sin poder medir el uso de un dueño."""
+     free = available_ram_kb(meminfo)
+     if free is None:
+         return None
+-    trees = {int(pid): tree(int(pid)) for pid in live}
+-    usage = {int(pid): rss_kb(trees[int(pid)]) for pid in live}
+-    return free - pending(live, usage, {pid: {pid} for pid in trees})
++    try:
++        used = {int(pid): usage(int(pid)) for pid in live}
++    except MembersUnavailable:
++        return None
++    return free - pending(live, used, {pid: {pid} for pid in used})
++
++
++def bounded_need(need_kb: int, memory_limit_kb: int | None) -> int:
++    """Lo que reserva un ítem: su necesidad, acotada por el ``--memory`` de su
++    contenedor si se declaró — el kernel no le deja usar más."""
++    return need_kb if memory_limit_kb is None else min(need_kb, memory_limit_kb)
++
++
++def container_owners_path(ledger_path: Path) -> Path:
++    return Path(ledger_path).with_name(Path(ledger_path).name + CONTAINER_OWNERS_SUFFIX)
++
++
++def read_container_owners(ledger_path: Path) -> dict[int, str]:
++    """``{pid del dueño: nombre del contenedor}``; vacío sin registro lateral."""
++    try:
++        return {int(pid): name for pid, name in json.loads(container_owners_path(ledger_path).read_text()).items()}
++    except (OSError, ValueError):
++        return {}
++
++
++def record_container_owner(ledger_path: Path, owner_pid: int, name: str) -> None:
++    """Declara que ``owner_pid`` reserva para el contenedor ``name``. Se
++    escribe antes de reservar: una entrada sin reserva no compromete nada, y
++    las de dueños muertos se retiran al escribir."""
++    path = container_owners_path(ledger_path)
++    path.parent.mkdir(parents=True, exist_ok=True)
++    with shared_lock.held(path, run_id="ram-admission-containers", retries=LEDGER_LOCK_RETRIES,
++                          min_wait_s=0.01, max_wait_s=0.2):
++        owners = {pid: owner for pid, owner in read_container_owners(ledger_path).items() if is_alive(pid)}
++        owners[owner_pid] = name
++        shared_lock.write_atomic(path, json.dumps({str(pid): owner for pid, owner in owners.items()},
++                                                  sort_keys=True))
++
++
++def ledger_usage(ledger_path: Path, podman: str, cgroup_root: Path) -> OwnerUsage:
++    """El uso por dueño según el registro lateral de contenedores del registro."""
++    containers = {pid: ContainerMembers(name, podman, cgroup_root)
++                  for pid, name in read_container_owners(ledger_path).items()}
++    return container_aware_usage(containers)
+ 
+ 
+ def disk_ledger_path() -> Path:
+@@ -299,9 +368,13 @@ def release_disk(args: argparse.Namespace) -> int:
+ 
+ def admit_ram(args: argparse.Namespace) -> int:
+     meminfo = args.meminfo or meminfo_path()
+-    admitted = admit_with(args.ledger or ram_ledger_path(), args.need, args.owner,
+-                          lambda live: ram_headroom(live, meminfo), "ram-admission",
+-                          args.timeout, args.interval)
++    ledger = args.ledger or ram_ledger_path()
++    if args.container:
++        record_container_owner(ledger, args.owner, args.container)
++    admitted = admit_with(ledger, bounded_need(args.need, args.memory_limit_kb), args.owner,
++                          lambda live: ram_headroom(live, meminfo,
++                                                    ledger_usage(ledger, args.podman, args.cgroup_root)),
++                          "ram-admission", args.timeout, args.interval)
+     return EXIT_ADMITTED if admitted else EXIT_TIMEOUT
+ 
+ 
+@@ -320,6 +393,12 @@ def build_parser() -> argparse.ArgumentParser:
+     p_admit.add_argument("--meminfo", type=Path, default=None)
+     p_admit.add_argument("--timeout", type=float, default=600.0)
+     p_admit.add_argument("--interval", type=float, default=DEFAULT_INTERVAL_S)
++    p_admit.add_argument("--container", default=None,
++                         help="el dueño reserva para este contenedor: su uso se mide en su cgroup")
++    p_admit.add_argument("--memory-limit-kb", type=int, default=None,
++                         help="el --memory del contenedor en kB: acota lo que se reserva")
++    p_admit.add_argument("--podman", default="podman")
++    p_admit.add_argument("--cgroup-root", type=Path, default=DEFAULT_CGROUP_ROOT)
+     p_admit.set_defaults(handler=admit_ram)
+     p_release = sub.add_parser("release", help="suelta la reserva de RAM de OWNER")
+     p_release.add_argument("--ledger", type=Path, default=None)
+diff --git a/tests/session/test_container_measure.py b/tests/session/test_container_measure.py
+new file mode 100644
+index 000000000..1c8c0700a
+--- /dev/null
++++ b/tests/session/test_container_measure.py
+@@ -0,0 +1,234 @@
++"""La medida de un contenedor sale de SU cgroup, no del cliente que lo lanzó.
++
++El proceso de un contenedor cuelga de ``conmon`` → ``init``, no del
++``podman run`` del wrapper: GNU Time sobre ``podman run`` dio 41 MB con el
++contenedor reteniendo ~200 MB (banco ``podman-execution-primitive-*``).
++``container_measure`` lee los PIDs y el pico de memoria del cgroup que da
++``podman inspect``, con tres estados que no se colapsan: medida, ausente y
++error.
++
++El caso 1 corre un contenedor real (``docker.io/ollama/ollama:0.35.0``); sin
++``podman`` o sin la imagen, rehúsa con exit 2 en vez de pasar en verde.
++"""
++from __future__ import annotations
++
++import os
++import shutil
++import subprocess
++import sys
++import tempfile
++import time
++import uuid
++from pathlib import Path
++
++ROOT = Path(__file__).resolve().parents[2]
++sys.path.insert(0, str(ROOT / "src"))
++from session import container_measure as cm
++from session.resource_admission import tree
++
++OK = FAILED = 0
++IMAGE = "docker.io/ollama/ollama:0.35.0"
++HELD_BYTES = 200_000_000
++#: Lo que el pico tiene que alcanzar para reflejar los ~200 MB retenidos.
++PEAK_FLOOR_BYTES = 150_000_000
++#: El pico que GNU Time atribuyó al cliente en la sonda del banco, holgado.
++CLIENT_CEILING_BYTES = 100_000_000
++WAIT_S = 60
++EXIT_REFUSED = 2
++
++
++def check(label: str, expected, obtained) -> None:
++    global OK, FAILED
++    if expected == obtained:
++        print(f"  ok    {label}"); OK += 1
++    else:
++        print(f"  FALLA {label}: esperado {expected!r}, obtenido {obtained!r}"); FAILED += 1
++
++
++def podman_ready() -> bool:
++    if shutil.which("podman") is None:
++        return False
++    found = subprocess.run(["podman", "image", "exists", IMAGE], capture_output=True, timeout=60)
++    return found.returncode == 0
++
++
++def wait_for_peak(name: str) -> cm.ContainerReading:
++    """Lee hasta que el pico del cgroup refleje la reserva, o vence el plazo."""
++    deadline = time.monotonic() + WAIT_S
++    reading = cm.read_container(name)
++    while time.monotonic() < deadline:
++        reading = cm.read_container(name)
++        if reading.peak_bytes is not None and reading.peak_bytes >= PEAK_FLOOR_BYTES:
++            return reading
++        time.sleep(0.5)
++    return reading
++
++
++def fake_podman(directory: Path, cgroup_path: str) -> Path:
++    """Un ``podman`` falso: ``inspect`` devuelve un contenedor en marcha con
++    esa ruta de cgroup; cualquier otro nombre no existe."""
++    script = directory / "podman"
++    script.write_text("#!/usr/bin/env bash\n"
++                      'case "$*" in\n'
++                      '  *exists*known*) exit 0 ;;\n'
++                      '  *exists*broken*) echo "cannot connect to the service" >&2; exit 125 ;;\n'
++                      '  *exists*) exit 1 ;;\n'
++                      f'  *inspect*known*) echo "true {cgroup_path}" ;;\n'
++                      '  *) echo "orden no prevista: $*" >&2; exit 125 ;;\n'
++                      "esac\n")
++    script.chmod(0o755)
++    return script
++
++
++def case_real_container() -> None:
++    print("caso 1 — contenedor real: sus PIDs, no el cliente; y el pico de su cgroup")
++    name = f"thyrox-measure-test-{uuid.uuid4().hex[:8]}"
++    command = f'x=$(head -c {HELD_BYTES} /dev/zero | tr "\\0" a); sleep 30'
++    client = subprocess.Popen(["podman", "run", "--rm", "--name", name, "--entrypoint", "sh", IMAGE,
++                               "-c", command], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
++    try:
++        reading = wait_for_peak(name)
++        inspected = subprocess.run(["podman", "inspect", "-f", "{{.State.Pid}}", name],
++                                   capture_output=True, text=True, timeout=30).stdout.strip()
++        check("estado medido", cm.MEASURED, reading.state)
++        check("el PID principal del contenedor está en sus miembros", True,
++              inspected.isdigit() and int(inspected) in reading.pids)
++        check("el cliente `podman run` NO está en sus miembros", False, client.pid in reading.pids)
++        check("el árbol del cliente no alcanza al contenedor", False,
++              inspected.isdigit() and int(inspected) in tree(client.pid))
++        check("el pico del cgroup refleja la reserva de ~200 MB", True,
++              (reading.peak_bytes or 0) >= PEAK_FLOOR_BYTES)
++        check("y supera lo que GNU Time atribuyó al cliente", True,
++              (reading.peak_bytes or 0) > CLIENT_CEILING_BYTES)
++        check("el uso actual es una cifra", True, isinstance(reading.usage_bytes, int))
++    finally:
++        subprocess.run(["podman", "rm", "-f", "-t", "0", name], capture_output=True, timeout=60)
++        client.wait(timeout=60)
++
++
++def case_absent_container() -> None:
++    print("caso 2 — un contenedor que no existe está AUSENTE, no medido en cero")
++    reading = cm.read_container(f"thyrox-no-existe-{uuid.uuid4().hex[:8]}")
++    check("ausente", cm.ABSENT, reading.state)
++    check("sin PIDs ni cifras", (frozenset(), None, None),
++          (reading.pids, reading.peak_bytes, reading.usage_bytes))
++
++
++def cgroup_v1_double(root: Path, relative: str) -> Path:
++    memory = root / "memory" / relative.lstrip("/")
++    memory.mkdir(parents=True)
++    return memory
++
++
++def case_cgroup_doubles(tmp: Path) -> None:
++    print("caso 3 — dobles de cgroup: v1 legible, v2 legible, ilegible y desaparecido")
++    relative = "/libpod_parent/libpod-abc"
++    podman = str(fake_podman(tmp, relative))
++
++    v1_root = tmp / "v1"
++    memory = cgroup_v1_double(v1_root, relative)
++    (memory / "cgroup.procs").write_text("11\n12\n")
++    (memory / "memory.max_usage_in_bytes").write_text("5000\n")
++    (memory / "memory.usage_in_bytes").write_text("3000\n")
++    reading = cm.read_container("known", podman, v1_root)
++    check("v1: medido con sus PIDs y cifras", (cm.MEASURED, frozenset({11, 12}), 5000, 3000),
++          (reading.state, reading.pids, reading.peak_bytes, reading.usage_bytes))
++
++    v2_root = tmp / "v2"
++    unified = v2_root / relative.lstrip("/")
++    unified.mkdir(parents=True)
++    (unified / "cgroup.controllers").write_text("memory pids\n")
++    (unified / "cgroup.procs").write_text("21\n")
++    (unified / "memory.peak").write_text("7000\n")
++    (unified / "memory.current").write_text("4000\n")
++    reading = cm.read_container("known", podman, v2_root)
++    check("v2: medido con memory.peak y memory.current", (cm.MEASURED, frozenset({21}), 7000, 4000),
++          (reading.state, reading.pids, reading.peak_bytes, reading.usage_bytes))
++
++    broken_root = tmp / "broken"
++    memory = cgroup_v1_double(broken_root, relative)
++    (memory / "cgroup.procs").mkdir()
++    (memory / "memory.max_usage_in_bytes").write_text("5000\n")
++    (memory / "memory.usage_in_bytes").write_text("3000\n")
++    reading = cm.read_container("known", podman, broken_root)
++    check("cgroup ilegible: error con causa", (cm.ERROR, True), (reading.state, bool(reading.reason)))
++
++    garbled_root = tmp / "garbled"
++    memory = cgroup_v1_double(garbled_root, relative)
++    (memory / "cgroup.procs").write_text("11\n")
++    (memory / "memory.max_usage_in_bytes").write_text("no-es-un-número\n")
++    (memory / "memory.usage_in_bytes").write_text("3000\n")
++    check("cifra no entera: error", cm.ERROR, cm.read_container("known", podman, garbled_root).state)
++
++    check("cgroup desaparecido (el contenedor ya salió): ausente", cm.ABSENT,
++          cm.read_container("known", podman, tmp / "empty").state)
++    check("podman que falla (exit 125): error, no ausente", cm.ERROR,
++          cm.read_container("broken", podman, v1_root).state)
++    check("podman que no se puede ejecutar: error, no ausente", cm.ERROR,
++          cm.read_container("known", str(tmp / "no-podman"), v1_root).state)
++
++
++def case_member_source(tmp: Path) -> None:
++    print("caso 4 — la fuente de miembros del contenedor")
++    relative = "/libpod_parent/libpod-src"
++    (tmp / "src").mkdir()
++    podman = str(fake_podman(tmp / "src", relative))
++    root = tmp / "src-root"
++    memory = cgroup_v1_double(root, relative)
++    (memory / "cgroup.procs").write_text("31\n")
++    (memory / "memory.max_usage_in_bytes").write_text("1\n")
++    (memory / "memory.usage_in_bytes").write_text("1\n")
++    source = cm.ContainerMembers("known", podman, root)
++    check("vivo: sus miembros son los del cgroup", {31}, source.current_members())
++    (memory / "cgroup.procs").unlink()
++    (memory / "cgroup.procs").mkdir()
++    try:
++        source.current_members()
++        raised = ""
++    except cm.MembersUnavailable as error:
++        raised = str(error)
++    check("cgroup ilegible: lanza MembersUnavailable con su causa, no para ni da vacío", True, bool(raised))
++    gone = cm.ContainerMembers("otro", podman, root)
++    check("un contenedor ausente ya no vive: None, no un conjunto vacío", None, gone.current_members())
++
++
++def case_cli(tmp: Path) -> None:
++    print("caso 5 — la CLI: read imprime el estado y sale 0 sólo si midió")
++    relative = "/libpod_parent/libpod-cli"
++    (tmp / "cli").mkdir()
++    podman = str(fake_podman(tmp / "cli", relative))
++    root = tmp / "cli-root"
++    memory = cgroup_v1_double(root, relative)
++    (memory / "cgroup.procs").write_text("41\n40\n")
++    (memory / "memory.max_usage_in_bytes").write_text("900\n")
++    (memory / "memory.usage_in_bytes").write_text("800\n")
++    env = {**os.environ, "PYTHONPATH": str(ROOT / "src")}
++
++    def run(name: str) -> subprocess.CompletedProcess:
++        return subprocess.run([sys.executable, "-m", "session.container_measure", "read", name,
++                               "--podman", podman, "--cgroup-root", str(root)],
++                              env=env, capture_output=True, text=True, timeout=60)
++    measured = run("known")
++    check("medido: exit 0 y la línea con pico, uso y PIDs", (0, "measured 900 800 40,41"),
++          (measured.returncode, measured.stdout.strip()))
++    absent = run("otro")
++    check("ausente: exit 2 y la palabra absent", (2, "absent"),
++          (absent.returncode, absent.stdout.split(" ", 1)[0]))
++
++
++def main() -> int:
++    if not podman_ready():
++        print(f"test_container_measure: sin podman o sin {IMAGE}; no se afirma nada", file=sys.stderr)
++        return EXIT_REFUSED
++    case_real_container()
++    case_absent_container()
++    with tempfile.TemporaryDirectory() as raw:
++        case_cgroup_doubles(Path(raw))
++        case_member_source(Path(raw))
++        case_cli(Path(raw))
++    print(f"\ntest_container_measure: {OK} ok, {FAILED} falla(s)")
++    return 1 if FAILED else 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+diff --git a/tests/session/test_gpu_monitor.py b/tests/session/test_gpu_monitor.py
+index ea9a1f812..d0b87db85 100644
+--- a/tests/session/test_gpu_monitor.py
++++ b/tests/session/test_gpu_monitor.py
+@@ -19,9 +19,11 @@ Contrato:
+ from __future__ import annotations
+ 
+ import os
++import shutil
+ import subprocess
+ import sys
+ import tempfile
++import threading
+ import time
+ from pathlib import Path
+ 
+@@ -82,7 +84,7 @@ with tempfile.TemporaryDirectory() as raw:
+     apps.write_text(f"{child}, 300\n999999, 5000\n")
+     out = tmp / "1.gpu"
+     started = time.monotonic()
+-    summary = gm.watch(parent.pid, out, nvidia_smi=str(smi), interval_s=0.2)
++    summary = gm.watch(gm.HostTree(parent.pid), out, nvidia_smi=str(smi), interval_s=0.2)
+     elapsed = time.monotonic() - started
+     parent.wait()
+     assert summary is not None
+@@ -101,7 +103,7 @@ with tempfile.TemporaryDirectory() as raw:
+     parent, child = spawn_tree(0.6)
+     apps.write_text("999999, 5000\n")
+     out = tmp / "2.gpu"
+-    summary = gm.watch(parent.pid, out, nvidia_smi=str(smi), interval_s=0.2)
++    summary = gm.watch(gm.HostTree(parent.pid), out, nvidia_smi=str(smi), interval_s=0.2)
+     parent.wait()
+     assert summary is not None
+     check("pico cero, uso cero", (0, 0), (summary.peak_mib, summary.peak_utilization_pct))
+@@ -110,7 +112,7 @@ with tempfile.TemporaryDirectory() as raw:
+     print("== 5. sin nvidia-smi no se escribe nada: ausente no es cero ==")
+     parent, child = spawn_tree(0.3)
+     out = tmp / "3.gpu"
+-    summary = gm.watch(parent.pid, out, nvidia_smi=str(tmp / "no-existe"), interval_s=0.1)
++    summary = gm.watch(gm.HostTree(parent.pid), out, nvidia_smi=str(tmp / "no-existe"), interval_s=0.1)
+     parent.wait()
+     check("sin resumen", None, summary)
+     check("sin archivo", False, out.exists())
+@@ -134,7 +136,7 @@ with tempfile.TemporaryDirectory() as raw:
+     parent, child = spawn_tree(1.5)
+     apps.write_text(f"{child}, 300\n")
+     out = tmp / "4.gpu"
+-    summary = gm.watch(parent.pid, out, nvidia_smi=str(flaky), interval_s=0.2)
++    summary = gm.watch(gm.HostTree(parent.pid), out, nvidia_smi=str(flaky), interval_s=0.2)
+     parent.wait()
+     check("error al medir: sin resumen publicado", None, summary)
+     # Se lee sin lanzar una excepción: si el archivo falta, el caso sale FALLA,
+@@ -279,6 +281,61 @@ with tempfile.TemporaryDirectory() as raw:
+         os.scandir = real_scandir
+     check("el hijo que desapareció cuenta y el recorrido sigue", {4242, 4243}, walked)
+ 
++    print("== 15. watch con la fuente de un contenedor: mide sus PIDs, no los del cliente ==")
++    # Doble de Podman y de cgroup v1: `cgroup.procs` lista al proceso del
++    # contenedor; el cliente (este test) también tiene VRAM y no debe contar.
++    relative = "/libpod_parent/libpod-gpu"
++    podman = tmp / "podman"
++    podman.write_text("#!/usr/bin/env bash\n"
++                      'case "$*" in\n'
++                      "  *exists*known*) exit 0 ;;\n  *exists*) exit 1 ;;\n"
++                      f'  *inspect*known*) echo "true {relative}" ;;\n'
++                      '  *) echo "orden no prevista: $*" >&2; exit 125 ;;\nesac\n')
++    podman.chmod(0o755)
++    cgroup_root = tmp / "cgroup"
++    memory = cgroup_root / "memory" / relative.lstrip("/")
++    memory.mkdir(parents=True)
++    worker = subprocess.Popen(["sleep", "30"])
++    (memory / "cgroup.procs").write_text(f"{worker.pid}\n")
++    (memory / "memory.max_usage_in_bytes").write_text("1\n")
++    (memory / "memory.usage_in_bytes").write_text("1\n")
++    apps.write_text(f"{worker.pid}, 700\n{os.getpid()}, 5000\n")
++    source = gm.ContainerMembers("known", str(podman), cgroup_root)
++    threading.Timer(1.0, shutil.rmtree, args=(memory,)).start()
++    out = tmp / "15.gpu"
++    summary = gm.watch(source, out, nvidia_smi=str(smi), interval_s=0.2)
++    check("pico: los 700 MiB del contenedor, no los 5000 del cliente", 700,
++          summary.peak_mib if summary else None)
++    check("para cuando el cgroup desaparece", True, summary is not None and summary.samples >= 2)
++
++    print("== 16. la fuente de contenedor que no puede dar PIDs: .gpu es error, nunca 0 ==")
++    memory.mkdir(parents=True)
++    (memory / "cgroup.procs").mkdir()
++    (memory / "memory.max_usage_in_bytes").write_text("1\n")
++    (memory / "memory.usage_in_bytes").write_text("1\n")
++    out = tmp / "16.gpu"
++    summary = gm.watch(source, out, nvidia_smi=str(smi), interval_s=0.2)
++    check("sin resumen publicado", None, summary)
++    check("el archivo es error con causa, no ceros", "error", gm.read_gpu_file(out).state)
++
++    print("== 17. la CLI: watch --container usa la fuente del contenedor ==")
++    shutil.rmtree(memory)
++    memory.mkdir(parents=True)
++    (memory / "cgroup.procs").write_text(f"{worker.pid}\n")
++    (memory / "memory.max_usage_in_bytes").write_text("1\n")
++    (memory / "memory.usage_in_bytes").write_text("1\n")
++    threading.Timer(1.0, shutil.rmtree, args=(memory,)).start()
++    out = tmp / "17.gpu"
++    done = subprocess.run([sys.executable, "-m", "session.gpu_monitor", "watch", str(os.getpid()), str(out),
++                           "--container", "known", "--podman", str(podman), "--cgroup-root", str(cgroup_root),
++                           "--nvidia-smi", str(smi), "--interval", "0.2"],
++                          env={**os.environ, "PYTHONPATH": str(reach.thyrox_root() / "src")},
++                          capture_output=True, text=True, timeout=30)
++    reading = gm.read_gpu_file(out)
++    check("la CLI mide el contenedor: pico 700", (0, 700),
++          (done.returncode, reading.summary.peak_mib if reading.summary else None))
++    worker.kill(); worker.wait()
++
+     print("== 6. disponible() distingue las dos situaciones ==")
+     check("con el falso: disponible", True, gm.available(str(smi)))
+     check("sin él: no disponible", False, gm.available(str(tmp / "no-existe")))
+diff --git a/tests/session/test_pool_history.py b/tests/session/test_pool_history.py
+index dd168fa6f..7694f487c 100644
+--- a/tests/session/test_pool_history.py
++++ b/tests/session/test_pool_history.py
+@@ -394,5 +394,56 @@ with tempfile.TemporaryDirectory() as raw:
+     finally:
+         ph.closed_items = original_closed_items
+ 
++    print("== 29. la fuente de medida: host-tree y container-cgroup no se mezclan ==")
++    out = run_with(["41152 3.0 1 0\n", "41152 3.0 1 0\n"])
++    (out / "1.gpu").write_text("0 0 0 6\n"); (out / "2.gpu").write_text("0 0 0 6\n")
++    host_row = ph.record(TMP / "h-source", out)
++    assert host_row is not None
++    check("record declara host-tree por defecto", "host-tree", host_row.get("measurement_source"))
++    check("una fila host-tree con VRAM 0 no calibra un lanzamiento en contenedor", False,
++          ph.vram_calibration(host_row, gpu_interval_s=0.5, measurement_source=ph.CONTAINER_CGROUP)[0])
++    check("y el porqué nombra las dos fuentes", True,
++          all(word in ph.vram_calibration(host_row, gpu_interval_s=0.5,
++                                          measurement_source=ph.CONTAINER_CGROUP)[1]
++              for word in ("host-tree", "container-cgroup")))
++    check("la misma fila sí calibra un lanzamiento local", True,
++          ph.vram_calibration(host_row, gpu_interval_s=0.5)[0])
++    container_row = {**host_row, "measurement_source": ph.CONTAINER_CGROUP}
++    check("una fila container-cgroup calibra un lanzamiento en contenedor", True,
++          ph.vram_calibration(container_row, gpu_interval_s=0.5, measurement_source=ph.CONTAINER_CGROUP)[0])
++    legacy_row = {k: v for k, v in host_row.items() if k != "measurement_source"}
++    check("una fila sin fuente cuenta como host-tree", ("host-tree", False),
++          (ph.row_source(legacy_row),
++           ph.vram_calibration(legacy_row, gpu_interval_s=0.5, measurement_source=ph.CONTAINER_CGROUP)[0]))
++
++    print("== 30. derive en contenedor: las filas host-tree no dan cota, y la línea historial lo dice ==")
++    decision = ph.derive(TMP / "h-source", MODEL, catalog, free_vram_mib=8000,
++                         measurement_source=ph.CONTAINER_CGROUP)
++    check("sin memfree derivado del cliente", None, decision.memfree)
++    check("pide la GPU entera, no admit(0)", 8000, decision.vram_need_mib)
++    check("el porqué cuenta la fila de otra fuente", True,
++          "1 fila(s) medidas con otra fuente que container-cgroup" in decision.why)
++    out = run_with(["300000 3.0 1 0\n", "300000 3.0 1 0\n"])
++    (out / "1.gpu").write_text("2000 1500 80 6\n"); (out / "2.gpu").write_text("2000 1500 80 6\n")
++    ph.record(TMP / "h-source", out, measurement_source=ph.CONTAINER_CGROUP)
++    decision = ph.derive(TMP / "h-source", MODEL, catalog, free_vram_mib=8000,
++                         measurement_source=ph.CONTAINER_CGROUP)
++    check("con su fila container-cgroup: memfree del cgroup", "586M", decision.memfree)
++    check("y la VRAM calibrada del contenedor", 4000, decision.vram_need_mib)
++    check("un lanzamiento local sigue viendo sólo la fila host-tree", "81M",
++          ph.derive(TMP / "h-source", MODEL, catalog).memfree)
++
++    print("== 31. la CLI: record y derive aceptan --measurement-source ==")
++    out = run_with(["300000 3.0 1 0\n"])
++    printed = io.StringIO()
++    with contextlib.redirect_stdout(printed):
++        ph.main(["record", str(TMP / "h-cli-source"), str(out), "--measurement-source", "container-cgroup"])
++    check("la fila impresa declara container-cgroup", "container-cgroup",
++          json.loads(printed.getvalue())["measurement_source"])
++    printed = io.StringIO()
++    with contextlib.redirect_stdout(printed):
++        ph.main(["derive", str(TMP / "h-cli-source"), MODEL])
++    check("derive local sobre sólo filas de contenedor: sin memfree", "-", printed.getvalue().split("\t")[1])
++
+ print(f"\ntest_pool_history: {OK} ok, {FAILED} falla(s)")
+ raise SystemExit(1 if FAILED else 0)
+diff --git a/tests/session/test_resource_admission.py b/tests/session/test_resource_admission.py
+index 24cd6d057..166013698 100644
+--- a/tests/session/test_resource_admission.py
++++ b/tests/session/test_resource_admission.py
+@@ -61,11 +61,10 @@ with tempfile.TemporaryDirectory() as tmp:
+ 
+     print("caso 3 — lo libre de RAM descuenta lo reservado que aún no reside")
+     free = ra.ram_headroom({"4242": 3000}, meminfo(tmp_path / "meminfo", 10_000),
+-                           rss_kb=lambda pids: 1000 if 4242 in pids else 0,
+-                           tree=lambda pid: {pid})
++                           usage=lambda pid: 1000 if pid == 4242 else 0)
+     check("10000 − (3000 − 1000)", 8000, free)
+     check("sin MemAvailable no hay margen", None,
+-          ra.ram_headroom({}, tmp_path / "absent", rss_kb=lambda pids: 0, tree=lambda pid: {pid}))
++          ra.ram_headroom({}, tmp_path / "absent", usage=lambda pid: 0))
+ 
+     print("caso 4 — dos que piden 3 GB sobre 5 GB libres: entra uno")
+     # En kB: el RSS de un `sleep` dueño (1–2 MB) es despreciable frente a lo
+@@ -110,6 +109,60 @@ with tempfile.TemporaryDirectory() as tmp:
+     finally:
+         child.kill(); child.wait()
+ 
++print("caso 7d — un dueño en contenedor: lo pendiente descuenta el uso de SU cgroup, no el RSS del cliente")
++with tempfile.TemporaryDirectory() as raw:
++    root = Path(raw)
++    relative = "/libpod_parent/libpod-ram"
++    podman = root / "podman"
++    podman.write_text("#!/usr/bin/env bash\n"
++                      'case "$*" in\n'
++                      "  *exists*known*) exit 0 ;;\n  *exists*) exit 1 ;;\n"
++                      f'  *inspect*known*) echo "true {relative}" ;;\n'
++                      '  *) echo "orden no prevista: $*" >&2; exit 125 ;;\nesac\n')
++    podman.chmod(0o755)
++    memory = root / "cgroup" / "memory" / relative.lstrip("/")
++    memory.mkdir(parents=True)
++    (memory / "cgroup.procs").write_text("77\n")
++    (memory / "memory.max_usage_in_bytes").write_text(f"{2500 * 1024}\n")
++    (memory / "memory.usage_in_bytes").write_text(f"{2000 * 1024}\n")
++    source = ra.ContainerMembers("known", str(podman), root / "cgroup")
++    client_rss = lambda pid: 40  # el cliente `podman run`: ~nada frente a la reserva
++    usage = ra.container_aware_usage({4242: source}, client_rss)
++    check("10000 − (3000 − 2000 del cgroup)", 9000,
++          ra.ram_headroom({"4242": 3000}, meminfo(root / "meminfo", 10_000), usage))
++    check("un dueño sin contenedor sigue midiéndose por su árbol", 7040,
++          ra.ram_headroom({"4343": 3000}, meminfo(root / "meminfo", 10_000), usage))
++    (memory / "memory.usage_in_bytes").unlink(); (memory / "memory.usage_in_bytes").mkdir()
++    check("cgroup ilegible: sin medida, no un cero", None,
++          ra.ram_headroom({"4242": 3000}, meminfo(root / "meminfo", 10_000), usage))
++    (memory / "memory.usage_in_bytes").rmdir()
++    (memory / "memory.usage_in_bytes").write_text(f"{2000 * 1024}\n")
++
++    print("caso 7e — la reserva de un ítem en contenedor la acota su --memory")
++    check("sin límite: la necesidad entera", 5000, ra.bounded_need(5000, None))
++    check("con --memory menor: el límite", 2000, ra.bounded_need(5000, 2000))
++    check("con --memory mayor: la necesidad", 5000, ra.bounded_need(5000, 8000))
++
++    print("caso 7f — la CLI: admit-ram --container registra al dueño y reserva acotado")
++    ledger = root / "ram.json"
++    owner = subprocess.Popen(["sleep", "30"])
++    try:
++        code = cli("admit-ram", "5000", "--ledger", str(ledger), "--owner", str(owner.pid),
++                   "--meminfo", str(meminfo(root / "meminfo3", 3000)), "--timeout", "0",
++                   "--container", "known", "--memory-limit-kb", "2000",
++                   "--podman", str(podman), "--cgroup-root", str(root / "cgroup")).returncode
++        check("5000 pedidos, --memory 2000, 3000 libres: admitido", 0, code)
++        check("la reserva es la acotada", {str(owner.pid): 2000}, ra.ReservationLedger(ledger).live())
++        check("el dueño queda asociado a su contenedor", {owner.pid: "known"}, ra.read_container_owners(ledger))
++        # El cgroup ya usa 2000 kB: la reserva del dueño está entera a la vista
++        # y no se resta dos veces. Por su árbol (un `sleep`) se restaría casi entera.
++        check("otro de 2500 cabe en 3000 libres: el cgroup ya muestra la reserva", 0,
++              cli("admit-ram", "2500", "--ledger", str(ledger), "--owner", str(os.getpid()),
++                  "--meminfo", str(root / "meminfo3"), "--timeout", "0",
++                  "--podman", str(podman), "--cgroup-root", str(root / "cgroup")).returncode)
++    finally:
++        owner.kill(); owner.wait()
++
+ print("caso 7b — soltada la última reserva viva, el registro desaparece: en reposo no queda archivo")
+ with tempfile.TemporaryDirectory() as idle:
+     idle_ledger = Path(idle) / "idle.json"

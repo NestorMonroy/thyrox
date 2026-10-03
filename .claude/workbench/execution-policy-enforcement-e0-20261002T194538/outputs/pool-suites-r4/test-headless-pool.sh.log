@@ -1,0 +1,156 @@
+OK   tres items: exit 0
+OK   tres items: resumen
+OK   una salida json por item
+OK   el item llega al final del prompt
+OK   sin sesion persistida y en stream-json
+OK   el .json es la linea result del stream, sola
+OK   un stream por item, una linea por peticion
+OK   el indice empareja numero e item
+OK   sin mensajes: una sola línea buzón, con un directorio real
+OK   un fallo: exit 1
+OK   un fallo: lo nombra
+OK   un fallo: resumen
+OK   timeout: exit 1
+OK   timeout: nombra al lento
+OK   --model: exit 2
+OK   --model: sin resumen
+OK   --model: nombra --task-class
+OK   clase desconocida: exit 2
+OK   selector roto: exit 2
+OK   selector roto: sin resumen
+recommend: política de ejecución /home/user/thyrox/tests/fixtures/execution_policy_unrestricted.json: `controller.implementation` es una de bootstrap-exception, managed-only
+FALLA selector real: exit 0 — esperado '0', obtenido '2'
+FALLA selector real: declara el modelo derivado — esperado '1', obtenido '0'
+FALLA selector real: el ítem recibe ese modelo — esperado '1', obtenido '0'
+OK   sin items: exit 2
+OK   sin parallel: exit 2
+OK   sin parallel: lo nombra
+OK   sin ejecutor: exit 2
+OK   HEADLESS_POOL_CLAUDE retirada: exit 2
+OK   HEADLESS_POOL_CLAUDE retirada: nombra --runner claude
+OK   HEADLESS_POOL_CLAUDE retirada: sin resumen
+OK   sin plantilla: exit 2
+OK   sin ejecutor declarado: thyrox -p (bin/cli)
+OK   memfree: exit 0
+OK   memfree: la cota llega a parallel
+OK   memfree ilegible: exit 2
+OK   memfree ilegible: sin resumen
+OK   cache-ttl 5m: exit 0
+OK   cache-ttl 5m: llega a cada item
+OK   sin cache-ttl: rige la constante de 1h
+OK   sin cache-ttl: el pool nombra la constante
+OK   cache-ttl ilegible: exit 2
+OK   cache-ttl ilegible: sin resumen
+OK   variable sin --cache-ttl: llega sólo como THYROX_*
+OK   variable: el pool nombra la razón
+OK   la variable gana a --cache-ttl
+OK   forzar 5m gana a la variable y a la opción
+OK   sólo --cache-ttl: su razón es la opción
+OK   activar 1h sin opción ni variable: 1h
+OK   activar 1h: el pool nombra la razón
+OK   la opción gana a activar 1h
+OK   forzar 5m gana a activar 1h
+OK   activar 1h en Bedrock, con Bedrock: 1h
+OK   activar 1h en Bedrock: la razón es la misma regla
+OK   activar 1h en Bedrock sin Bedrock: no decide, rige la constante
+OK   variable ilegible: exit 2
+OK   variable ilegible: la nombra, sin resumen
+OK   con proxy: el item ve el socket y el marcador, sin credencial
+OK   con proxy: la credencial la recibe el proxy
+OK   con proxy: al terminar el pool el proxy ya no vive
+OK   proxy que no arranca: exit 2, sin resumen, y lo nombra
+OK   sin --credential-proxy el item conserva su entorno
+OK   proxy del store: exit 0
+OK   proxy del store: el ítem ve la URL del proxy y la clave de acceso, sin credencial ni clave de cifrado
+OK   proxy del store: la clave de acceso es propia de la ejecución, no la credencial del entorno
+OK   proxy del store: recibe el modelo del pool
+OK   proxy del store: el pool declara la fuente de credencial
+OK   proxy del store: al terminar el pool el proxy ya no vive
+OK   proxy del store que no arranca: exit 2, sin resumen, y lo nombra
+OK   los dos proxies a la vez: exit 2 sin lanzar ninguno
+OK   sin --store-credential-proxy el ítem conserva su URL y su clave de cifrado
+OK   con GNU time: un .time por item
+OK   con GNU time: memoria pico, pared, usuario y sistema
+OK   con GNU time: el .time del item fallido es solo la medida
+OK   con GNU time: el fallo del item sigue siendo fallo
+OK   GNU time real: el .time trae cuatro cifras
+OK   GNU time real: no declara que falte
+OK   sin GNU time: ningun .time
+OK   sin GNU time: lo declara en vez de callar
+OK   con nvidia-smi: el item deja su .gpu
+OK   con nvidia-smi: VRAM pico y uso pico del item
+OK   con nvidia-smi: lo declara
+OK   sin nvidia-smi: ningun .gpu
+OK   sin nvidia-smi: lo declara en vez de callar
+OK   admision: sin VRAM para su pico el item no arranca
+OK   admision: la causa queda en su .err
+OK   admision: lo reservado por otro pool vivo no se vuelve a dar
+FALLA admision: la reserva ajena sigue en el registro — esperado '900', obtenido '{
+  "device": null,
+  "kind": "worker",
+  "mib": 900,
+  "owner_pid": 5907
+}'
+OK   admisión con error: el ítem falla
+OK   admisión con error: el .err dice que falló, no que venció
+OK   VRAM: 1000 libres / 800 por item -> anchura 1 aunque se configuraron 4
+OK   VRAM: Parallel se lanza con -j 1
+OK   reserva: los items admitidos arrancan
+OK   reserva: el registro queda vacio al terminar
+OK   reserva: registro ilegible no cuenta como vacio
+OK   calibrado exige tantos ítems medidos como van a la vez
+OK   la edad máxima declarada deja fuera la fila
+OK   edad máxima ilegible: exit 2
+OK   dos pools: la ejecución de medida deja el pico del ítem
+OK   dos pools: los dos items terminan
+OK   dos pools: nunca corren juntos (máximo simultáneo 1)
+OK   dos pools: el registro queda vacío
+OK   dos pools: la ejecución concurrente también se mide (una fila por pool)
+OK   pico 0 sin calibrar: los dos terminan
+OK   pico 0 sin calibrar: nunca corren juntos
+OK   pico 0 sin calibrar: lo dice
+OK   RAM: 30000 KB disponibles / (12345 x 2) -> anchura 1
+OK   RAM: Parallel se lanza con -j 1
+OK   historial vacío: lo declara
+OK   historial vacío: rige la constante de 1h
+OK   la ejecución deja una fila
+OK   la fila nombra el binario que corrió los ítems
+OK   la fila nombra el modelo que corrió los ítems
+OK   la fila lleva la huella del CONTENIDO de la plantilla
+OK   con historial: el TTL sigue siendo la constante
+OK   con historial: el TTL no sale del historial
+OK   con historial: --memfree sale de la memoria medida
+OK   lo declarado gana al historial: TTL
+OK   lo declarado gana al historial: memfree
+OK   el entorno gana al historial
+OK   la reserva del vecino se suma a lo medido
+OK   una plantilla, un solo historial
+OK   otro binario: no deriva memfree de su fila
+OK   otro binario: lo dice
+OK   otro modelo: no deriva memfree de su fila
+OK   otro modelo: lo dice
+OK   sin historial, la reserva sola es la cota
+OK   reserva ilegible: exit 2
+OK   runner claude: exit 0
+OK   runner claude: resumen
+OK   runner claude: sin sesión persistida y en stream-json
+OK   runner claude: cada ítem trae un --session-id con forma de uuid
+OK   runner claude: los --session-id son distintos
+OK   runner thyrox por defecto: sin --session-id
+OK   sin --max-turns: el ítem corre sin tope de turnos
+OK   --max-turns declarado llega al ítem
+OK   runner claude sin --max-turns: sin tope
+OK   runner claude sin claude en el PATH: exit 2
+OK   runner claude sin claude en el PATH: lo nombra
+OK   runner desconocido: exit 2
+OK   runner claude con --cache-ttl: exit 0
+OK   runner claude con --cache-ttl: la variable de claude, no la de thyrox
+OK   runner claude con proxy: exit 0
+OK   runner claude con proxy: el ítem ve el socket y el marcador, sin credencial
+OK   runner claude con proxy: la credencial la recibe el proxy
+OK   sin filas en el joblog: no sale 0
+OK   sin filas en el joblog: el total es el del índice
+OK   el runtime real se resuelve
+OK   el runtime real no recibe ejecuciones de la suite
+
+aserciones: 144 de 148 · fallos: 4

@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts run --task TASK-THYROX-0901 --kind probe --env THYROX_EXECUTION_ENTRY -- bash .claude/workbench/container-image-distribution-20261002T234933/probes/search_existing_images.sh .claude/workbench/container-image-distribution-20261002T234933/outputs/search-existing", "started_at": "2026-10-02T23:51:03+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-02T23:51:49+00:00", "duration_seconds": 46.41427}

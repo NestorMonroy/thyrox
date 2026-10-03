@@ -1,0 +1,25 @@
+bun test v1.3.11 (af24e281)
+
+src/__tests__/workerExitBranches.test.ts:
+[bg] illegal worker-phase transition spawning → spawning for exec01
+
+ 28 pass
+ 0 fail
+ 48 expect() calls
+Ran 28 tests across 1 file. [2.00s]
+bun test v1.3.11 (af24e281)
+
+ 9 pass
+ 0 fail
+ 18 expect() calls
+Ran 9 tests across 1 file. [1.57s]
+check-package-typecheck: 42 provider(s) reconstruido(s) por viejos: audio-capture-napi, claude-for-chrome-mcp, color-diff-napi, computer-use-input, computer-use-mcp, computer-use-swift, context-compression, coordination, daemon, headless-sdk, ide, image-processor-napi, ink, local-observability, mcp-runtime, memory, mitm, modifiers-napi, observability, output, paths, permission, plan, provider, repl, server, shared-state, shell, skills, stdin-napi, storage, store, swarm, task, teleport, tool-registry, tools, transparent-napi, updater, url-handler-napi, voice, workbench
+  provider agent: la reconstruccion no emitio
+  provider app-host: la reconstruccion no emitio
+  provider bridge: la reconstruccion no emitio
+  provider cli: la reconstruccion no emitio
+  provider command-runtime: la reconstruccion no emitio
+  provider config: la reconstruccion no emitio
+  SIN TIPAR por un provider roto: daemon, permission, provider
+  NO se emite veredicto: un consumidor bloqueado por un provider roto
+  tiparia contra un contrato que no corresponde a su fuente.

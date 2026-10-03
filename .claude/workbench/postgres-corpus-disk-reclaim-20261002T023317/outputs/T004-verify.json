@@ -1,0 +1,30 @@
+{
+ "domain": "error",
+ "documents": 54,
+ "withoutChunks": 0,
+ "duplicateChunks": 0,
+ "hashMismatch": [],
+ "chunkHashMismatch": [],
+ "missingIdentity": [],
+ "retrieval": [
+  {
+   "domainId": "ERR-021",
+   "found": true,
+   "sourceRef": "kaupamex-docs:source/gestion/pm/docs/iniciativas/catalogar-y-registrar-errores/errores/error-ERR-021-el-camino-barato-no-tenia-registro.rst",
+   "firstChunk": "ERR-021 — el camino barato se prohíbe en 30 archivos y no se registró ni una vez\n\n- **Clase:** proceso · **Tipo:** ``conducta-del-agente``\n- **Severidad:** ALTA"
+  },
+  {
+   "domainId": "ERR-022",
+   "found": true,
+   "sourceRef": "kaupamex-docs:source/gestion/pm/docs/iniciativas/catalogar-y-registrar-errores/errores/error-ERR-022-la-evidencia-nacio-en-tmp-que-muere-con-el-contenedor.rst",
+   "firstChunk": "ERR-022 — la evidencia nació en ``/tmp``, que muere con el contenedor\n\n- **Clase:** proceso · **Tipo:** ``conducta-del-agente``\n- **Severidad:** MEDIA\n- **Estad"
+  },
+  {
+   "domainId": "ERR-023",
+   "found": true,
+   "sourceRef": "kaupamex-docs:source/gestion/pm/docs/iniciativas/catalogar-y-registrar-errores/errores/error-ERR-023-el-renombre-en-bloque-corrompio-prosa-y-rompio-el-programa.rst",
+   "firstChunk": "ERR-023 — el renombre en bloque corrompió la prosa y rompió el programa\n\n- **Clase:** proceso · **Tipo:** ``conducta-del-agente``\n- **Severidad:** ALTA\n- **Esta"
+  }
+ ],
+ "passed": true
+}

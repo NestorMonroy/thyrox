@@ -379,13 +379,11 @@ export function setCwd(
   }
 
   ctx.setCwd(physicalPath)
-  if (process.env.NODE_ENV !== 'test') {
-    try {
-      logEvent('tengu_shell_set_cwd', {
-        success: true,
-      })
-    } catch (_error) {
-      // Ignore logging errors to prevent test failures
-    }
+  try {
+    logEvent('tengu_shell_set_cwd', {
+      success: true,
+    })
+  } catch (_error) {
+    // Un fallo de telemetría no debe impedir el cambio de directorio
   }
 }

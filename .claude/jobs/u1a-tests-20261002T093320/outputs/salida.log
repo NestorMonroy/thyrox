@@ -1,0 +1,28 @@
+bun test v1.3.11 (af24e281)
+error TS5058: The specified path does not exist: 'local-models/tsconfig.json'.
+
+__tests__/externalArtifact.test.ts:
+(pass) external artifact import > validates and registers with external provenance [57.29ms]
+(pass) external artifact import > refuses before downloading when the published sha256 differs from the pinned one [4.03ms]
+(pass) external artifact import > a rerun neither downloads nor validates again [20.67ms]
+(pass) external artifact import > a rerun asks only for the bytes still missing from the scratch [18.24ms]
+(pass) external artifact import > another lab image revalidates without downloading again [21.18ms]
+(pass) external artifact import > an admission refusal stops before downloading [4.63ms]
+(pass) external artifact import from official shards > merges the shards in the lab and registers the merged GGUF with each official shard in its provenance [26.04ms]
+(pass) external artifact import from official shards > refuses before downloading when any shard is published with another sha256 [2.21ms]
+(pass) external artifact import from official shards > refuses before downloading a shard set that is not the complete split [4.43ms]
+(pass) external artifact import from official shards > a merge that still declares a split fails instead of registering [8.88ms]
+(pass) external artifact import from official shards > a rerun neither downloads, merges nor validates again [27.74ms]
+
+__tests__/declaredCapabilities.test.ts:
+(pass) declaredCapabilitiesOf > an embedding model declares embeddings [1.90ms]
+(pass) declaredCapabilitiesOf > a generation model without pooling declares completion [0.81ms]
+(pass) declaredCapabilitiesOf > pooling type none is not an embedding model [0.71ms]
+(pass) declaredCapabilitiesOf > a header without architecture is refused, not guessed [1.33ms]
+
+ 15 pass
+ 0 fail
+ 33 expect() calls
+Ran 15 tests across 2 files. [6.56s]
+execution thyrox-worker-test-muqrmibw-8485 kind=test task=TASK-THYROX-0904 exit=1
+__BG_EXIT__=1

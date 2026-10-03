@@ -1,0 +1,1125 @@
+diff --git a/.env.example b/.env.example
+index 7147c50da..5c82e1d89 100644
+--- a/.env.example
++++ b/.env.example
+@@ -261,6 +261,14 @@ THYROX_MANAGED_EXECUTION_RUNNER=
+ # doble que hable ese contrato; el código de producción no la escribe.
+ THYROX_MODEL_COORDINATOR_DAEMON=
+ 
++# La política de ejecución que rige este árbol: un archivo con el esquema de
++# `executionPolicy.ts` (modelos locales permitidos y `fallback.enabled`). Vacía:
++# la versionada, `src/session/execution_policy.json`, que no admite respaldo.
++# La leen los detectores de `tool_use_preflight` (niegan `Agent` y un payload
++# no gestionado en segundo plano), `agent-recommend` y `headless-pool` cuando no
++# reciben `--policy`/`--model-policy`.
++THYROX_EXECUTION_POLICY=
++
+ # `src/lib/managed_execution.sh`: la entrada por la que corre una unidad. La
+ # unidad la hereda porque el orquestador la pide como `--env` al runner, y su
+ # payload la escribe como campo `entry` en cada línea del manifiesto
+diff --git a/src/hooks/detect_agent_dispatch.py b/src/hooks/detect_agent_dispatch.py
+index e18c4f0ee..e6cc0e3af 100644
+--- a/src/hooks/detect_agent_dispatch.py
++++ b/src/hooks/detect_agent_dispatch.py
+@@ -47,6 +47,10 @@ from __future__ import annotations
+ 
+ import re
+ 
++#: La política de ejecución declarada, la misma que leen `agent-recommend` y
++#: `headless-pool`.
++from session.execution_policy import subagents_allowed  # noqa: E402
++
+ #: Familias de trabajo cuyo resultado es un ``exit code`` o un conteo: no
+ #: depende de decidir nada, así que su ejecutor natural es un proceso. La
+ #: etiqueta se cita en el aviso para que el lector sepa qué lo disparó.
+@@ -113,8 +117,19 @@ def needs_judgment(text: str) -> bool:
+     return bool(JUDGMENT_ROOTS.search(text))
+ 
+ 
+-def detect(payload: dict) -> str | None:
+-    """El aviso de despacho si el trabajo es un proceso, o ``None``."""
++#: La negación cuando la política de ejecución declarada no admite subagentes.
++POLICY_DENY_NOTICE = (
++    "POLÍTICA DE EJECUCIÓN — la política declarada (`src/session/execution_policy.json`, "
++    "o la de `THYROX_EXECUTION_POLICY`) no admite subagentes del cliente "
++    "(`controller.subagents: false`): un subagente es una conversación con el modelo "
++    "del cliente, así que no se despacha. La búsqueda determinista va por proceso (`rg`, "
++    "`git grep`, `bin/agent_store buscar-hallazgos`); el juicio por ítem, por `bin/headless-pool` "
++    "con un modelo local cualificado. Sin ninguno, la rama queda en espera."
++)
++
++
++def detect(payload: dict) -> str | dict | None:
++    """La negación si la política lo prohíbe; si no, el aviso de despacho, o ``None``."""
+     tool_input = payload.get("tool_input") or {}
+     if not isinstance(tool_input, dict):
+         return None
+@@ -125,6 +140,10 @@ def detect(payload: dict) -> str | None:
+     if payload.get("tool_name") not in DISPATCH_TOOLS:
+         return None
+ 
++    # Lo que decide es la acción (un despacho) más la política, no el texto.
++    if not subagents_allowed():
++        return {"notice": POLICY_DENY_NOTICE, "decision": "deny"}
++
+     text = dispatched_text(tool_input)
+     if not text.strip():
+         return None
+diff --git a/src/hooks/detect_client_background.py b/src/hooks/detect_client_background.py
+index 6e371a147..ec2fcee80 100644
+--- a/src/hooks/detect_client_background.py
++++ b/src/hooks/detect_client_background.py
+@@ -24,6 +24,15 @@ Avisa, no bloquea, como sus hermanos de ``tool_use_preflight``.
+ from __future__ import annotations
+ 
+ import re
++from pathlib import Path
++
++#: La política de ejecución declarada, la misma que leen `agent-recommend` y
++#: `headless-pool`.
++from session.execution_policy import unmanaged_payloads_allowed  # noqa: E402
++
++#: Qué es un payload lo decide el mismo clasificador que mide los comandos
++#: largos en primer plano (suite, build, gate, migración).
++from hooks.detect_foreground_long_command import LONG_FAMILIES, command_heads  # noqa: E402
+ 
+ _ASSEMBLED = re.compile(r"\b(?:thyrox-bg|bg\.sh)\s+start\b")
+ 
+@@ -39,15 +48,88 @@ def already_assembled(command: str) -> bool:
+     return bool(_ASSEMBLED.search(command) or _LEDGER_WAIT.search(command))
+ 
+ 
+-def detect(payload: dict) -> str | None:
+-    """El aviso si el cliente, y no el árbol, lleva el trabajo a segundo plano."""
+-    if payload.get("tool_name", "Bash") != "Bash":
++#: Una espera de observación: un bucle que sólo duerme hasta que algo aparece.
++#: No ejecuta trabajo, así que la política no la niega.
++_OBSERVATION_WAIT = re.compile(
++    r"^\s*(?:timeout\s+\d+\s+)?(?:bash\s+-c\s+[\"'])?\s*(?:until|while)\b[^;]*;\s*do\s+sleep\b")
++
++#: Una entrada declarada del plano de control invocada por su envoltorio de `bin/`.
++_CONTROL_PLANE_CALL = re.compile(r"^\s*(?:bash\s+)?(?:\S*/)?bin/([\w.-]+)")
++
++_CONTROL_PLANE_ENTRIES = Path(__file__).resolve().parents[1] / "session" / "control_plane_entries.tsv"
++
++POLICY_DENY_NOTICE = (
++    "POLÍTICA DE EJECUCIÓN — la política declarada (`controller.unmanagedPayloads: false`, "
++    "`src/session/execution_policy.json`) no admite un payload fuera de la ejecución "
++    "gestionada: en primer o en segundo plano, el controlador lo ejecutaría en el "
++    "anfitrión, fuera del ledger y de una ExecutionUnit. Lánzalo con `bash bin/thyrox-bg start <nombre> --task "
++    "TASK-<CAPA>-NNNN --kind <tipo> -- <comando>`; una entrada del plano de control "
++    "(`src/session/control_plane_entries.tsv`) va por `thyrox-bg start <nombre> -- bin/<entrada>`."
++)
++
++
++def control_plane_entry_names() -> frozenset[str]:
++    """Los nombres declarados en `control_plane_entries.tsv`."""
++    try:
++        lines = _CONTROL_PLANE_ENTRIES.read_text(encoding="utf-8").splitlines()
++    except OSError:
++        return frozenset()
++    return frozenset(line.split("\t", 1)[0] for line in lines if line and not line.startswith("#"))
++
++
++def is_declared_entry(command: str) -> bool:
++    """¿Invoca el comando una entrada declarada del plano de control?"""
++    match = _CONTROL_PLANE_CALL.match(command)
++    return bool(match) and match.group(1) in control_plane_entry_names()
++
++
++#: Lo que, además de las familias largas, es un payload: ejecutar un modelo o
++#: la sonda de un banco. Ninguno es plano de control.
++PAYLOAD_FAMILIES: tuple[tuple[str, str], ...] = LONG_FAMILIES + (
++    ("una ejecución de modelo", r"(?:[\w./-]*/)?(?:bin/)?(?:local-models-qualify|cli\s+-p|thyrox\s+-p)\b|ollama\s+run\b"),
++    ("la sonda de un banco", r"(?:[\w./-]*/)?\.claude/workbench/[\w.-]+/probes/"),
++)
++
++
++def payload_families(command: str) -> list[str]:
++    """Las familias de payload que el comando ejecuta (no las que sólo nombra)."""
++    heads = command_heads(command)
++    return [label for label, pattern in PAYLOAD_FAMILIES
++            if any(re.match(pattern, head) for head in heads)]
++
++
++def executed_command(payload: dict) -> tuple[str, bool] | None:
++    """El comando y si corre en el segundo plano del cliente: `Bash` con
++    `run_in_background`, o un `Monitor`, que siempre corre así."""
++    tool = payload.get("tool_name", "Bash")
++    if tool not in ("Bash", "Monitor"):
+         return None
+     tool_input = payload.get("tool_input") or {}
+-    if tool_input.get("run_in_background") is not True:
+-        return None
+     command = tool_input.get("command")
+-    if not isinstance(command, str) or already_assembled(command):
++    if not isinstance(command, str):
++        return None
++    return command, tool == "Monitor" or tool_input.get("run_in_background") is True
++
++
++def detect(payload: dict) -> str | dict | None:
++    """La negación de un payload no gestionado si la política lo prohíbe; si
++    no, el aviso de que el cliente, y no el árbol, lleva el trabajo a segundo
++    plano."""
++    executed = executed_command(payload)
++    if executed is None:
++        return None
++    command, background = executed
++    if already_assembled(command):
++        return None
++    # Todo lo que el cliente corre en segundo plano es trabajo fuera del
++    # ledger; en primer plano, sólo lo que el clasificador reconoce como
++    # payload. Una espera de observación o una entrada del plano de control
++    # no lo son.
++    exempt = bool(_OBSERVATION_WAIT.match(command)) or is_declared_entry(command)
++    unmanaged = not exempt and (background or bool(payload_families(command)))
++    if unmanaged and not unmanaged_payloads_allowed():
++        return {"notice": POLICY_DENY_NOTICE, "decision": "deny"}
++    if payload.get("tool_name", "Bash") != "Bash" or not background:
+         return None
+     return (
+         "SEGUNDO PLANO DEL ÁRBOL — `run_in_background` es el segundo plano del "
+diff --git a/src/hooks/detect_controller_mutation.py b/src/hooks/detect_controller_mutation.py
+new file mode 100644
+index 000000000..c5ca02a69
+--- /dev/null
++++ b/src/hooks/detect_controller_mutation.py
+@@ -0,0 +1,103 @@
++"""Detector PreToolUse: el controlador que modifica el producto fuera de la excepción.
++
++El defecto que ataja
++--------------------
++La excepción bootstrap del 2026-10-02 (H-THYROX-413) permite que el
++controlador implemente C0 y E0 mientras no exista una ruta local gestionada.
++Cuando la ruta existe, la implementación pasa a los workers gestionados y el
++controlador sólo orquesta, verifica e integra. Sin un gate, nada impide que
++siga escribiendo el producto después de cerrar la excepción, sobre todo tras
++una compactación que la olvide.
++
++Qué decide
++----------
++La política de ejecución declarada (``src/session/execution_policy.json``):
++con ``controller.implementation: managed-only`` niega al controlador escribir
++en una ruta de producto —``src/``, ``tests/`` o ``bin/`` del árbol o de uno de
++sus worktrees de ``.thyrox/runtime/worktrees/``—. Mide las herramientas de
++escritura (``Write``, ``Edit``, ``MultiEdit``, ``NotebookEdit``) y las formas de
++escritura por Bash (``sed -i``, ``replace_literal``, ``gawk -i inplace``,
++``>``/``>>``, ``tee``, ``git apply``, ``cp``, ``mv``, ``rm``). Con
++``bootstrap-exception`` calla.
++
++*Métrica:* la herramienta, más la ruta de destino o los argumentos del comando.
++*Ciega a:* una escritura por un programa que el comando no nombra (un guion
++que escribe por dentro) y al estado (``.claude/``, ``.thyrox/``,
++``agent-results/``), que no es producto y el controlador sigue escribiendo.
++"""
++from __future__ import annotations
++
++import re
++import shlex
++from pathlib import Path
++
++from session.execution_policy import controller_may_implement  # noqa: E402
++
++WRITE_TOOLS = frozenset({"Write", "Edit", "MultiEdit", "NotebookEdit"})
++
++#: Las formas de escribir un archivo desde Bash.
++_BASH_WRITE = re.compile(
++    r"\bsed\s+(?:-\w*\s+)*-i\b|\breplace_literal\b|\bgawk\s+-i\s+inplace\b|>>?|\btee\b"
++    r"|\bgit\s+apply\b|\b(?:cp|mv|rm)\s")
++
++_PRODUCT_TOP = ("src", "tests", "bin")
++_ROOT = Path(__file__).resolve().parents[2]
++_WORKTREE = re.compile(r"/\.thyrox/runtime/worktrees/[^/]+/(?:src|tests|bin)/")
++
++POLICY_DENY_NOTICE = (
++    "POLÍTICA DE EJECUCIÓN — la política declarada (`controller.implementation: "
++    "managed-only`, `src/session/execution_policy.json`) cerró la excepción bootstrap: "
++    "el controlador orquesta, verifica e integra, pero no escribe el producto. La "
++    "implementación va a un worker gestionado (`bin/headless-pool --isolation worktree` "
++    "o `bin/task_continuation`) y se integra con `bin/pool_integrate`."
++)
++
++
++def is_product_path(text: str) -> bool:
++    """¿Nombra el texto una ruta de producto del árbol o de uno de sus worktrees?"""
++    path = text.strip("\"'")
++    if path.startswith(tuple(f"{top}/" for top in _PRODUCT_TOP)):
++        return True
++    if any(path.startswith(f"{_ROOT}/{top}/") for top in _PRODUCT_TOP):
++        return True
++    return bool(_WORKTREE.search(path))
++
++
++def _tokens(command: str) -> list[str]:
++    try:
++        return shlex.split(command, comments=False, posix=True)
++    except ValueError:
++        return command.split()
++
++
++def mutated_product_path(payload: dict) -> str | None:
++    """La ruta de producto que la llamada escribiría, o ``None``."""
++    tool = payload.get("tool_name")
++    tool_input = payload.get("tool_input") or {}
++    if tool in WRITE_TOOLS:
++        path = tool_input.get("file_path") or tool_input.get("notebook_path") or ""
++        return path if isinstance(path, str) and is_product_path(path) else None
++    if tool == "Bash":
++        command = tool_input.get("command")
++        if not isinstance(command, str) or not _BASH_WRITE.search(command):
++            return None
++        return next((token for token in _tokens(command) if is_product_path(token.lstrip(">"))), None)
++    return None
++
++
++def detect(payload: dict) -> dict | None:
++    """La negación si el controlador escribe el producto fuera de la excepción."""
++    path = mutated_product_path(payload)
++    if path is None or controller_may_implement():
++        return None
++    return {"notice": f"{POLICY_DENY_NOTICE} Destino: {path}", "decision": "deny"}
++
++
++if __name__ == "__main__":  # pragma: no cover
++    import json
++    import sys
++
++    result = detect(json.load(sys.stdin))
++    if result:
++        print(json.dumps(result))
++    raise SystemExit(0)
+diff --git a/src/hooks/tool_use_preflight.py b/src/hooks/tool_use_preflight.py
+index a51808191..3f0cb700b 100644
+--- a/src/hooks/tool_use_preflight.py
++++ b/src/hooks/tool_use_preflight.py
+@@ -72,6 +72,7 @@ DETECTOR_NAMES: tuple[str, ...] = (
+     "detect_temp_home_write",
+     "detect_bare_awk",
+     "detect_client_background",
++    "detect_controller_mutation",
+     "detect_irreversible_operation",
+     "detect_unguarded_removal",
+     "detect_edit_loop",
+diff --git a/src/packages/agent/bin/recommend.ts b/src/packages/agent/bin/recommend.ts
+index d253ff18e..3d233d0f6 100755
+--- a/src/packages/agent/bin/recommend.ts
++++ b/src/packages/agent/bin/recommend.ts
+@@ -28,6 +28,7 @@
+  * argumento no se entiende o si el catálogo local o sus cualificaciones son
+  * ilegibles — nunca una recomendación por defecto, que sería elegir sin medir.
+  */
++import { existsSync } from 'node:fs'
+ import { readFile } from 'node:fs/promises'
+ import { resolve } from 'node:path'
+ 
+@@ -54,6 +55,9 @@ const EXIT_OK = 0
+ const EXIT_REFUSED = 2
+ const EXIT_BLOCKED = 3
+ const DECLARABLE_RUNTIME = 'claude-cli'
++/** La clave que sustituye la política versionada del árbol, la misma que leen los detectores de preflight. */
++const POLICY_KEY = 'THYROX_EXECUTION_POLICY'
++const VERSIONED_POLICY = 'src/session/execution_policy.json'
+ const OPTIONS_WITH_VALUE = new Set(['--context', '--runtime', '--policy'])
+ const FILE_NOT_FOUND_CODE = 'ENOENT'
+ /** `src/packages/agent/bin` está cuatro niveles por debajo de la raíz de thyrox. */
+@@ -165,6 +169,19 @@ async function loadLocalInventory(home: LocalModelHome): Promise<LocalModelInven
+   }
+ }
+ 
++/**
++ * La política que rige: la de `--policy`, la de la clave declarada, o la
++ * versionada del árbol (`src/session/execution_policy.json`). Así una sesión
++ * nueva o compactada no depende de recordar la bandera.
++ */
++function declaredPolicyPath(explicit: string | undefined): string | undefined {
++  if (explicit !== undefined) return explicit
++  const declared = process.env[POLICY_KEY]?.trim()
++  if (declared) return declared
++  const versioned = resolve(thyroxRoot(), VERSIONED_POLICY)
++  return existsSync(versioned) ? versioned : undefined
++}
++
+ /** La política del consumidor; ilegible o inválida rehúsa con su ruta, nunca se ignora. */
+ async function loadPolicy(path: string): Promise<ExecutionPolicy> {
+   try {
+@@ -229,7 +246,8 @@ async function run(argv: readonly string[]): Promise<number> {
+   }
+   const kind = requireKind(options.kind)
+   const contextTokens = requireContextTokens(options.context)
+-  const policy = options.policy === undefined ? undefined : await loadPolicy(options.policy)
++  const policyPath = declaredPolicyPath(options.policy)
++  const policy = policyPath === undefined ? undefined : await loadPolicy(policyPath)
+   const execution = await chooseExecution(kind, contextTokens, options.runtime, policy)
+   if (options.json) console.log(JSON.stringify(execution, null, 2))
+   if (execution.runtime === 'blocked') {
+diff --git a/src/packages/provider/__tests__/recommendExecution.test.ts b/src/packages/provider/__tests__/recommendExecution.test.ts
+index 1606d94c1..c497a0e44 100644
+--- a/src/packages/provider/__tests__/recommendExecution.test.ts
++++ b/src/packages/provider/__tests__/recommendExecution.test.ts
+@@ -1,4 +1,6 @@
+ import { describe, expect, test } from 'bun:test'
++import { readFileSync } from 'node:fs'
++import { resolve } from 'node:path'
+ 
+ import type { ModelCatalogEntry } from '@thyrox/model-artifacts/catalogEntry.ts'
+ import { attentionShapeOf } from '@thyrox/model-artifacts/memoryEstimate.ts'
+@@ -157,6 +159,35 @@ describe('parseExecutionPolicy', () => {
+   test('un JSON ilegible se rehúsa con su causa', () => {
+     expect(() => parseExecutionPolicy('{ no es json')).toThrow(ExecutionPolicyError)
+   })
++
++  const BASE = { allowed: [], fallback: { enabled: false } }
++
++  test('la sección controller se valida y se conserva: es el mismo esquema que lee el preflight', () => {
++    const policy = parseExecutionPolicy(JSON.stringify({ ...BASE, controller: { subagents: false, unmanagedPayloads: true, implementation: 'managed-only' } }))
++    expect(policy.controller).toEqual({ subagents: false, unmanagedPayloads: true, implementation: 'managed-only' })
++  })
++
++  test('sin sección controller la política sólo gobierna la selección', () => {
++    expect(parseExecutionPolicy(JSON.stringify(BASE)).controller).toBeUndefined()
++  })
++
++  test('un permiso del controlador que no es booleano, o que falta, se rehúsa', () => {
++    expect(() => parseExecutionPolicy(JSON.stringify({ ...BASE, controller: { subagents: 'no', unmanagedPayloads: false, implementation: 'managed-only' } })))
++      .toThrow(ExecutionPolicyError)
++    expect(() => parseExecutionPolicy(JSON.stringify({ ...BASE, controller: { subagents: false, implementation: 'managed-only' } })))
++      .toThrow(ExecutionPolicyError)
++  })
++
++  test('una implementación que no es bootstrap-exception ni managed-only se rehúsa', () => {
++    expect(() => parseExecutionPolicy(JSON.stringify({ ...BASE, controller: { subagents: false, unmanagedPayloads: false, implementation: 'cualquiera' } })))
++      .toThrow(ExecutionPolicyError)
++  })
++
++  test('la política versionada del árbol se lee igual que en el preflight (test_execution_policy_enforcement, caso 13)', () => {
++    const policy = parseExecutionPolicy(readFileSync(resolve(import.meta.dir, '../../../session/execution_policy.json'), 'utf8'))
++    expect([policy.fallback.enabled, policy.controller?.subagents, policy.controller?.unmanagedPayloads, policy.controller?.implementation])
++      .toEqual([false, false, false, 'bootstrap-exception'])
++  })
+ })
+ 
+ describe('la política nombra lo que excluye y distingue la fuente (TASK-THYROX-0778)', () => {
+diff --git a/src/packages/provider/src/cost/executionPolicy.ts b/src/packages/provider/src/cost/executionPolicy.ts
+index f3db7ec6d..af2889fbf 100644
+--- a/src/packages/provider/src/cost/executionPolicy.ts
++++ b/src/packages/provider/src/cost/executionPolicy.ts
+@@ -35,12 +35,28 @@ export interface LocalModelSelector {
+   readonly source?: ModelSource
+ }
+ 
++/** Si el controlador implementa (excepción bootstrap) o sólo orquesta workers gestionados. */
++export type ControllerImplementation = 'bootstrap-exception' | 'managed-only'
++
++/**
++ * Los permisos del controlador que lee el preflight (`src/session/execution_policy.py`):
++ * despachar subagentes, ejecutar payloads fuera de la ejecución gestionada y
++ * escribir el producto. Independientes de `fallback`, que gobierna la selección.
++ */
++export interface ControllerPolicy {
++  readonly subagents: boolean
++  readonly unmanagedPayloads: boolean
++  readonly implementation: ControllerImplementation
++}
++
+ export interface ExecutionPolicy {
+   readonly allowed: readonly LocalModelSelector[]
+   readonly fallback: { readonly enabled: boolean }
++  readonly controller?: ControllerPolicy
+ }
+ 
+ const LOCAL_RUNTIME = 'ollama'
++const CONTROLLER_IMPLEMENTATIONS: readonly ControllerImplementation[] = ['bootstrap-exception', 'managed-only']
+ const MODEL_SOURCES: readonly ModelSource[] = ['hf', 'ollama']
+ 
+ export function parseExecutionPolicy(text: string): ExecutionPolicy {
+@@ -51,13 +67,26 @@ export function parseExecutionPolicy(text: string): ExecutionPolicy {
+     throw new ExecutionPolicyError(`política ilegible: ${(error as Error).message}`)
+   }
+   if (typeof raw !== 'object' || raw === null || Array.isArray(raw)) throw new ExecutionPolicyError('la política es un objeto JSON')
+-  const { allowed, fallback } = raw as Record<string, unknown>
++  const { allowed, fallback, controller } = raw as Record<string, unknown>
+   if (!Array.isArray(allowed)) throw new ExecutionPolicyError('`allowed` es la lista de modelos locales permitidos')
+   const enabled = (fallback as { enabled?: unknown } | null | undefined)?.enabled
+   if (typeof enabled !== 'boolean') {
+     throw new ExecutionPolicyError('`fallback.enabled` se declara (true o false): el respaldo al proveedor no tiene valor por defecto')
+   }
+-  return { allowed: allowed.map(selectorOf), fallback: { enabled } }
++  const parsed = { allowed: allowed.map(selectorOf), fallback: { enabled } }
++  return controller === undefined ? parsed : { ...parsed, controller: controllerOf(controller) }
++}
++
++/** Una sección `controller` declara sus tres campos: uno que falta no se presume abierto. */
++function controllerOf(value: unknown): ControllerPolicy {
++  if (typeof value !== 'object' || value === null || Array.isArray(value)) throw new ExecutionPolicyError('`controller` es un objeto')
++  const { subagents, unmanagedPayloads, implementation } = value as Record<string, unknown>
++  if (typeof subagents !== 'boolean') throw new ExecutionPolicyError('`controller.subagents` se declara (true o false)')
++  if (typeof unmanagedPayloads !== 'boolean') throw new ExecutionPolicyError('`controller.unmanagedPayloads` se declara (true o false)')
++  if (!CONTROLLER_IMPLEMENTATIONS.includes(implementation as ControllerImplementation)) {
++    throw new ExecutionPolicyError(`\`controller.implementation\` es una de ${CONTROLLER_IMPLEMENTATIONS.join(', ')}`)
++  }
++  return { subagents, unmanagedPayloads, implementation: implementation as ControllerImplementation }
+ }
+ 
+ function selectorOf(value: unknown, index: number): LocalModelSelector {
+diff --git a/src/session/execution_policy.json b/src/session/execution_policy.json
+new file mode 100644
+index 000000000..b14663dfe
+--- /dev/null
++++ b/src/session/execution_policy.json
+@@ -0,0 +1,7 @@
++{
++  "allowed": [
++    { "runtime": "ollama", "repository": "library/qwen3-4b", "quantization": "q4_k_m", "source": "ollama" }
++  ],
++  "fallback": { "enabled": false },
++  "controller": { "subagents": false, "unmanagedPayloads": false, "implementation": "bootstrap-exception" }
++}
+diff --git a/src/session/execution_policy.py b/src/session/execution_policy.py
+new file mode 100644
+index 000000000..92b86a60a
+--- /dev/null
++++ b/src/session/execution_policy.py
+@@ -0,0 +1,111 @@
++"""La política de ejecución declarada de este árbol (TASK-THYROX-0773).
++
++Una sola declaración, con el esquema de
++``src/packages/provider/src/cost/executionPolicy.ts``, en dos capas:
++
++- la del REPOSITORIO, versionada en ``src/session/execution_policy.json``: la
++  leen una sesión nueva, una compactación, un reinicio o un clon recién bajado;
++- un override opcional, el archivo de ``THYROX_EXECUTION_POLICY``, que
++  ``agent-recommend`` y ``headless-pool`` usan para la selección de modelo.
++
++Los permisos del controlador (sección ``controller``) los fija el
++repositorio y un override sólo puede ENDURECERLOS: el permiso efectivo es el
++de las dos capas a la vez. Así una política de modelo antigua, sin sección
++``controller``, no borra las restricciones del repositorio.
++
++- ``controller.subagents`` — si el controlador puede despachar un subagente
++  del cliente (``Agent``);
++- ``controller.unmanagedPayloads`` — si puede ejecutar un payload fuera de la
++  ejecución gestionada, en primer o en segundo plano;
++- ``controller.implementation`` — ``bootstrap-exception`` mientras dura la
++  excepción que permite al controlador implementar; ``managed-only`` cuando
++  la implementación queda en los workers gestionados.
++
++``fallback.enabled`` gobierna la selección de modelo y lo interpreta el
++recomendador, no este módulo.
++
++Falla cerrada: una política declarada que no existe o no se puede leer niega
++todo lo que gobierna. Sin política del repositorio ni override, no hay nada
++que restringir.
++"""
++from __future__ import annotations
++
++import json
++import os
++from pathlib import Path
++
++POLICY_KEY = "THYROX_EXECUTION_POLICY"
++DECLARED_POLICY = Path(__file__).resolve().parent / "execution_policy.json"
++BOOTSTRAP_EXCEPTION = "bootstrap-exception"
++MANAGED_ONLY = "managed-only"
++_IMPLEMENTATION_MODES = (BOOTSTRAP_EXCEPTION, MANAGED_ONLY)
++
++
++class UnreadablePolicyError(Exception):
++    """Una política declarada que no existe o no se puede interpretar."""
++
++
++def _read(path: Path) -> dict:
++    try:
++        policy = json.loads(path.read_text(encoding="utf-8"))
++    except (OSError, ValueError) as error:
++        raise UnreadablePolicyError(f"{path}: {error}") from error
++    if not isinstance(policy, dict):
++        raise UnreadablePolicyError(f"{path}: la política es un objeto JSON")
++    return policy
++
++
++def _layers(env: dict[str, str] | None) -> list[dict]:
++    """Las capas declaradas: la del repositorio si existe, y el override si se declaró."""
++    layers = []
++    if DECLARED_POLICY.exists():
++        layers.append(_read(DECLARED_POLICY))
++    declared = (os.environ if env is None else env).get(POLICY_KEY, "").strip()
++    if declared:
++        layers.append(_read(Path(declared)))
++    return layers
++
++
++def _controller_values(name: str, env: dict[str, str] | None) -> list:
++    values = []
++    for layer in _layers(env):
++        controller = layer.get("controller")
++        if controller is None:
++            continue
++        if not isinstance(controller, dict) or name not in controller:
++            raise UnreadablePolicyError(f"controller.{name} no se declara")
++        values.append(controller[name])
++    return values
++
++
++def _allows(name: str, env: dict[str, str] | None) -> bool:
++    try:
++        values = _controller_values(name, env)
++    except UnreadablePolicyError:
++        return False
++    return all(value is True for value in values)
++
++
++def subagents_allowed(env: dict[str, str] | None = None) -> bool:
++    """¿Admiten las capas declaradas que el controlador despache un subagente?"""
++    return _allows("subagents", env)
++
++
++def unmanaged_payloads_allowed(env: dict[str, str] | None = None) -> bool:
++    """¿Admiten las capas declaradas un payload fuera de la ejecución gestionada?"""
++    return _allows("unmanagedPayloads", env)
++
++
++def controller_may_implement(env: dict[str, str] | None = None) -> bool:
++    """¿Puede el controlador modificar el producto (fuera de los workers gestionados)?
++
++    Sí mientras dure la excepción bootstrap en todas las capas que la
++    declaran; ``managed-only`` en cualquiera, un valor desconocido o una
++    política ilegible lo niegan.
++    """
++    try:
++        modes = _controller_values("implementation", env)
++    except UnreadablePolicyError:
++        return False
++    return all(mode == BOOTSTRAP_EXCEPTION for mode in modes) and all(
++        mode in _IMPLEMENTATION_MODES for mode in modes)
+diff --git a/src/session/headless-pool.sh b/src/session/headless-pool.sh
+index de38a47a2..6bf037038 100755
+--- a/src/session/headless-pool.sh
++++ b/src/session/headless-pool.sh
+@@ -263,6 +263,13 @@ case "$EXECUTION" in
+             || rehusa "--execution unit no entrega credenciales del pool al ítem: no va con --credential-*" ;;
+     *) rehusa "--execution va host o unit, no: $EXECUTION" ;;
+ esac
++# Sin `--model-policy` rige la política declarada: la de `THYROX_EXECUTION_POLICY`
++# o la versionada del árbol, la misma que leen `agent-recommend` y el preflight.
++if [[ -z "$MODEL_POLICY" ]]; then
++    if [[ -n "${THYROX_EXECUTION_POLICY:-}" ]]; then MODEL_POLICY="$THYROX_EXECUTION_POLICY"
++    elif [[ -f "$THYROX_ROOT/src/session/execution_policy.json" ]]; then MODEL_POLICY="$THYROX_ROOT/src/session/execution_policy.json"
++    fi
++fi
+ # El respaldo de la política se lee aquí sólo para defender la frontera; la
+ # política la interpreta el recomendador. Sin `fallback.enabled` no hay default.
+ if [[ -n "$MODEL_POLICY" ]]; then
+diff --git a/src/session/user_wiring.py b/src/session/user_wiring.py
+index 42ed7826f..97164a191 100644
+--- a/src/session/user_wiring.py
++++ b/src/session/user_wiring.py
+@@ -279,7 +279,7 @@ def declared_wiring(root: Path | None = None,
+             # sesion. El matcher nombra las herramientas que algun detector
+             # mide; el preflight descarta en proceso lo que no le toca.
+             "PreToolUse": [{
+-                "matcher": "Bash|Agent|Write|Edit|MultiEdit|Read",
++                "matcher": "Bash|Agent|Monitor|Write|Edit|MultiEdit|Read",
+                 # El envoltorio de `bin/` resuelve el `PYTHONPATH`: el hook
+                 # corre desde el cwd de la sesion y sin el entorno del
+                 # corredor, y sin el cuatro de los diecisiete detectores no
+diff --git a/tests/agents/test_recommend_cli.py b/tests/agents/test_recommend_cli.py
+index 2295dadcd..b5469bef8 100644
+--- a/tests/agents/test_recommend_cli.py
++++ b/tests/agents/test_recommend_cli.py
+@@ -83,6 +83,12 @@ class LocalHome:
+         self.root = pathlib.Path(tempfile.mkdtemp(prefix="recommend-cli-"))
+         self.catalog = self.root / "catalog.json"
+         self.qualifications = self.root / "qualifications.json"
++        # La política declarada de esta suite: permite el modelo de su catálogo y
++        # admite el respaldo, así que mide la recomendación sin restringirla. Sin
++        # ella regiría la versionada del árbol (src/session/execution_policy.json).
++        self.policy = self.root / "execution-policy.json"
++        self.policy.write_text(json.dumps({"allowed": [{"runtime": "ollama", "repository": CATALOG_ENTRY["repository"]}],
++                                           "fallback": {"enabled": True}}))
+ 
+     def write_qualified_model(self) -> None:
+         self.catalog.write_text(json.dumps({"entries": [CATALOG_ENTRY]}))
+@@ -91,7 +97,8 @@ class LocalHome:
+     def env(self) -> dict[str, str]:
+         return {**os.environ,
+                 "THYROX_MODEL_CATALOG": str(self.catalog),
+-                "THYROX_MODEL_QUALIFICATIONS": str(self.qualifications)}
++                "THYROX_MODEL_QUALIFICATIONS": str(self.qualifications),
++                "THYROX_EXECUTION_POLICY": str(self.policy)}
+ 
+     def remove(self) -> None:
+         shutil.rmtree(self.root, ignore_errors=True)
+@@ -221,9 +228,20 @@ def check_policy(home: LocalHome) -> None:
+     check("y no nombra ningún claude- como recomendación", "→ claude-" not in r.stdout, r.stdout[:120])
+ 
+ 
++def check_declared_policy(home: LocalHome) -> None:
++    """Sin --policy rige la declarada (THYROX_EXECUTION_POLICY): una sesión no tiene que recordar la bandera."""
++    home.write_qualified_model()
++    home.policy.write_text(json.dumps({"allowed": [{"runtime": "ollama", "repository": "Qwen/Qwen2.5-7B-Instruct-GGUF"}],
++                                       "fallback": {"enabled": False}}))
++    r = run(home, "mecanica", "--json")
++    check("la política declarada sin respaldo bloquea sin --policy (sale 3)", r.returncode == 3,
++          f"{r.returncode} {r.stdout[:120]} {r.stderr[:120]}")
++    check("y no nombra ningún claude-", "claude-" not in r.stdout + r.stderr, r.stdout[:120])
++
++
+ def main() -> int:
+     for scenario in (check_provider_catalog, check_refusals, check_fallback_json,
+-                     check_local_choice, check_unreadable_files, check_policy):
++                     check_local_choice, check_unreadable_files, check_policy, check_declared_policy):
+         home = LocalHome()
+         try:
+             scenario(home)
+diff --git a/tests/fixtures/execution_policy_unrestricted.json b/tests/fixtures/execution_policy_unrestricted.json
+new file mode 100644
+index 000000000..ca665b3f4
+--- /dev/null
++++ b/tests/fixtures/execution_policy_unrestricted.json
+@@ -0,0 +1,5 @@
++{
++  "allowed": [],
++  "fallback": { "enabled": true },
++  "controller": { "subagents": true, "unmanagedPayloads": true }
++}
+diff --git a/tests/hooks/test_detect_agent_dispatch.py b/tests/hooks/test_detect_agent_dispatch.py
+index 46bc98c7b..4cf07c6de 100644
+--- a/tests/hooks/test_detect_agent_dispatch.py
++++ b/tests/hooks/test_detect_agent_dispatch.py
+@@ -32,6 +32,12 @@ assert _spec is not None and _spec.loader is not None
+ gate = importlib.util.module_from_spec(_spec)
+ _spec.loader.exec_module(gate)
+ 
++#: Esta suite mide el AVISO, que sólo existe cuando la política de ejecución no
++#: restringe al controlador: lo fija aquí, en el proceso de prueba, porque un
++#: override no puede abrir la política del repositorio. La negación la mide
++#: `test_execution_policy_enforcement.py`.
++gate.subagents_allowed = lambda env=None: True
++
+ 
+ def _detect(prompt, description=""):
+     return gate.detect({"tool_name": "Agent",
+diff --git a/tests/hooks/test_detect_client_background.py b/tests/hooks/test_detect_client_background.py
+index a49070023..2d7e36d38 100644
+--- a/tests/hooks/test_detect_client_background.py
++++ b/tests/hooks/test_detect_client_background.py
+@@ -33,6 +33,12 @@ assert _spec is not None and _spec.loader is not None
+ gate: Any = importlib.util.module_from_spec(_spec)
+ _spec.loader.exec_module(gate)
+ 
++#: Esta suite mide el AVISO, que sólo existe cuando la política de ejecución no
++#: restringe al controlador: lo fija aquí, en el proceso de prueba, porque un
++#: override no puede abrir la política del repositorio. La negación la mide
++#: `test_execution_policy_enforcement.py`.
++gate.unmanaged_payloads_allowed = lambda env=None: True
++
+ #: Dos llamadas de la sesión, verbatim salvo el recorte de su cola.
+ EPISODE_POOL = ("cd /home/user/thyrox; bash bin/run-task-pool --width 2 --memfree 2G "
+                 "--timeout 900 --dir $W/logs --prefix derivadas $W/comandos.txt > $W/pool.txt 2>&1")
+diff --git a/tests/hooks/test_execution_policy_enforcement.py b/tests/hooks/test_execution_policy_enforcement.py
+new file mode 100644
+index 000000000..bbb66f9e3
+--- /dev/null
++++ b/tests/hooks/test_execution_policy_enforcement.py
+@@ -0,0 +1,202 @@
++"""La política de ejecución declarada niega lo que prohíbe (TASK-THYROX-0773).
++
++El defecto, tomado de la sesión del 2026-10-02 (H-THYROX-413)
++--------------------------------------------------------------
++Tras una compactación, el controlador despachó el Search Existing a un
++subagente ``Explore`` y lanzó una cualificación con el segundo plano del
++cliente después de que ``thyrox-bg`` la rehusara. La regla que lo prohibía sólo
++vivía en la conversación. Aquí vive en ``src/session/execution_policy.json`` y
++la leen los detectores de ``tool_use_preflight``.
++
++Lo que se mide, y cómo podría fallar
++------------------------------------
++- Lo decide la ACCIÓN más el CAMPO que la gobierna: ``controller.subagents``
++  el despacho, ``controller.unmanagedPayloads`` el payload no gestionado (en
++  primer o segundo plano), ``controller.implementation`` la escritura del
++  producto por el controlador. ``fallback.enabled`` no decide ninguna (8).
++- La política del repositorio manda sobre ``controller``: un override sólo la
++  endurece, nunca la abre, ni declarando lo contrario ni omitiendo la sección
++  (9).
++- Falla cerrada: un override declarado que no existe, o una capa ilegible,
++  niega (10).
++"""
++from __future__ import annotations
++
++import importlib.util
++import json
++import os
++import pathlib
++import sys
++import tempfile
++from typing import Any
++
++ROOT = pathlib.Path(__file__).resolve().parents[2]
++sys.path.insert(0, str(ROOT / "src"))
++import session.execution_policy as policy_module  # noqa: E402
++
++
++def _load(name: str) -> Any:
++    spec = importlib.util.spec_from_file_location(f"_{name}", ROOT / "src/hooks" / f"{name}.py")
++    assert spec is not None and spec.loader is not None
++    module = importlib.util.module_from_spec(spec)
++    spec.loader.exec_module(module)
++    return module
++
++
++agent_gate = _load("detect_agent_dispatch")
++payload_gate = _load("detect_client_background")
++mutation_gate = _load("detect_controller_mutation")
++VERSIONED = policy_module.DECLARED_POLICY
++
++#: La llamada del episodio, verbatim salvo el recorte de su cola.
++EPISODE_UNMANAGED = ("cd /home/user/thyrox; R=.thyrox/runtime/a4-qualify-qwen3-4b; bash "
++                     ".claude/workbench/local-bootstrap-20261002T180454/probes/qualify_progressive.sh $R "
++                     "thyrox-library--qwen3-4b:q4_k_m-ollama-359d7dd4bcda > $R/run.log 2>&1")
++AGENT_DISPATCH = {"tool_name": "Agent", "tool_input": {
++    "description": "Search Existing for A8a", "subagent_type": "Explore",
++    "prompt": "Read-only Search Existing: classify the outcome taxonomy and decide REUSE/EXTEND/MISSING."}}
++
++OK = 0
++FAILED = 0
++
++
++def check(label: str, expected, obtained) -> None:
++    global OK, FAILED
++    if expected == obtained:
++        print(f"  ok    {label}")
++        OK += 1
++    else:
++        print(f"  FALLA {label} — esperado {expected!r} obtenido {obtained!r}")
++        FAILED += 1
++
++
++def decision(result) -> str | None:
++    return result.get("decision") if isinstance(result, dict) else None
++
++
++def write_policy(controller: dict | None, fallback: bool = False, text: str | None = None) -> pathlib.Path:
++    path = pathlib.Path(tempfile.mkdtemp()) / "policy.json"
++    if text is not None:
++        path.write_text(text)
++        return path
++    body: dict = {"allowed": [{"runtime": "ollama", "repository": "library/qwen3-4b"}], "fallback": {"enabled": fallback}}
++    if controller is not None:
++        body["controller"] = controller
++    path.write_text(json.dumps(body))
++    return path
++
++
++def controller(subagents=False, payloads=False, implementation="bootstrap-exception") -> dict:
++    return {"subagents": subagents, "unmanagedPayloads": payloads, "implementation": implementation}
++
++
++def layers(repository: pathlib.Path | None, override: pathlib.Path | None = None) -> None:
++    """Fija la capa del repositorio (en el proceso) y el override (por su variable)."""
++    policy_module.DECLARED_POLICY = repository if repository is not None else pathlib.Path("/nonexistent/policy.json")
++    if override is None:
++        os.environ.pop("THYROX_EXECUTION_POLICY", None)
++    else:
++        os.environ["THYROX_EXECUTION_POLICY"] = str(override)
++
++
++def agent() -> str | None:
++    return decision(agent_gate.detect(AGENT_DISPATCH))
++
++
++def run(command: str, background: bool = False, tool: str = "Bash") -> str | None:
++    if tool == "Monitor":
++        call = {"tool_name": "Monitor", "tool_input": {"command": command, "description": "x"}}
++    else:
++        call = {"tool_name": "Bash", "tool_input": {"command": command, "run_in_background": background}}
++    return decision(payload_gate.detect(call))
++
++
++def edit(path: str) -> str | None:
++    return decision(mutation_gate.detect({"tool_name": "Edit", "tool_input": {"file_path": path}}))
++
++
++def bash_mutation(command: str) -> str | None:
++    return decision(mutation_gate.detect({"tool_name": "Bash", "tool_input": {"command": command}}))
++
++
++def main() -> int:
++    layers(write_policy(controller()))
++    check("1 subagentes prohibidos: Agent deny", "deny", agent())
++    check("2 payload del episodio en segundo plano: deny", "deny", run(EPISODE_UNMANAGED, background=True))
++    check("2 el MISMO payload en primer plano: deny", "deny", run(EPISODE_UNMANAGED))
++    check("2 el mismo payload desde Monitor: deny", "deny", run(EPISODE_UNMANAGED, tool="Monitor"))
++    check("3 una suite en primer plano es payload: deny", "deny", run("bash tests/session/test-model-coordinator-entry.sh"))
++    check("3 bun test en primer plano: deny", "deny", run("cd src/packages/daemon && bun test src/__tests__/x.test.ts"))
++    check("3 una cualificación en primer plano: deny", "deny",
++          run("bash bin/local-models-qualify thyrox-library--qwen3-4b:q4_k_m --context 8192"))
++    check("4 thyrox-bg gestionado no se niega", None, run(
++        "bash bin/thyrox-bg start a4 --task TASK-THYROX-0707 --kind probe -- bash bin/local-models-qualify m", background=True))
++    check("4 la espera de un trabajo del ledger no se niega", None, run(
++        "bash bin/thyrox-bg wait a4 >/dev/null 2>&1; echo \"a4: $(bash bin/thyrox-bg status a4)\"", tool="Monitor"))
++    check("4 una espera de observación no se niega", None, run(
++        "until [ -S /root/.claude/model-scheduling/coordinator.sock ]; do sleep 1; done", background=True))
++    check("4 una entrada del plano de control no se niega", None, run("bash bin/infrastructure_ensure thyrox-ollama", background=True))
++    check("4 leer y buscar en primer plano no es payload", None, run("git status --short; cat src/session/bg.sh | head"))
++    check("4 nombrar una suite como argumento no la ejecuta", None, run("grep -n pytest tests/run.sh"))
++
++    # 8 — los ejes son independientes y fallback.enabled no decide ninguno.
++    layers(write_policy(controller(subagents=False, payloads=True), fallback=True))
++    check("8 respaldo admitido NO admite subagentes", "deny", agent())
++    check("8 y el payload se rige por su propio campo", None, run(EPISODE_UNMANAGED))
++    layers(write_policy(controller(subagents=True, payloads=False), fallback=False))
++    check("8 respaldo prohibido NO prohíbe subagentes admitidos", None, agent())
++    check("8 y el payload sigue negado por su campo", "deny", run(EPISODE_UNMANAGED))
++
++    # 9 — el override no abre lo que el repositorio cierra.
++    closed = write_policy(controller())
++    layers(closed, write_policy(None, fallback=True))
++    check("9 un override sin controller no borra la restricción del repositorio", "deny", agent())
++    check("9 ni la del payload", "deny", run(EPISODE_UNMANAGED))
++    layers(closed, write_policy(controller(subagents=True, payloads=True)))
++    check("9 un override que declara lo contrario no abre", "deny", agent())
++    layers(write_policy(controller(subagents=True, payloads=True)), write_policy(controller()))
++    check("9 un override sí puede endurecer", "deny", agent())
++
++    # 10 — falla cerrada.
++    layers(write_policy(controller(subagents=True, payloads=True)), pathlib.Path("/nonexistent/declared.json"))
++    check("10 un override declarado que no existe niega", "deny", agent())
++    check("10 también el payload", "deny", run(EPISODE_UNMANAGED))
++    layers(write_policy(None, text="{ no es json"))
++    check("10 una capa ilegible niega", "deny", agent())
++    layers(write_policy({"subagents": True}))
++    check("10 una sección controller incompleta niega lo que no declara", "deny", run(EPISODE_UNMANAGED))
++    layers(None)
++    check("11 sin ninguna capa no hay nada que restringir", None, agent())
++
++    # 12 — la escritura del producto por el controlador.
++    layers(write_policy(controller(implementation="bootstrap-exception")))
++    check("12 durante la excepción el controlador escribe el producto", None, edit(f"{ROOT}/src/session/bg.sh"))
++    layers(write_policy(controller(implementation="managed-only")))
++    check("12 cerrada la excepción: Edit en src/ deny", "deny", edit(f"{ROOT}/src/session/bg.sh"))
++    check("12 y en tests/ de un worktree", "deny", edit("/home/user/thyrox/.thyrox/runtime/worktrees/e1/tests/x.py"))
++    check("12 sed -i sobre el producto deny", "deny", bash_mutation("sed -i 's/a/b/' src/session/bg.sh"))
++    check("12 replace_literal sobre el producto deny", "deny", bash_mutation("OLD=a NEW=b bash bin/replace_literal src/x.py"))
++    check("12 el estado (.claude/) no es producto", None, edit(f"{ROOT}/.claude/workbench/x/outputs/a.md"))
++    check("12 leer el producto no es escribirlo", None, bash_mutation("cat src/session/bg.sh"))
++    check("12 /usr/bin no es bin/ del producto", None, bash_mutation("/usr/bin/time -v ls > /tmp/x"))
++    layers(write_policy(controller(implementation="bootstrap-exception")), write_policy(controller(implementation="managed-only")))
++    check("12 un override puede cerrar la excepción", "deny", edit(f"{ROOT}/src/session/bg.sh"))
++    layers(write_policy(controller(implementation="managed-only")), write_policy(controller(implementation="bootstrap-exception")))
++    check("12 un override no puede reabrirla", "deny", edit(f"{ROOT}/src/session/bg.sh"))
++
++    # 13 — la política versionada, sin variable: lo que rige tras una compactación.
++    layers(VERSIONED)
++    check("13 versionada: Agent deny", "deny", agent())
++    check("13 versionada: payload en primer plano deny", "deny", run(EPISODE_UNMANAGED))
++    declared = json.loads(VERSIONED.read_text())
++    check("13 la versionada declara los tres permisos y la excepción vigente",
++          (False, False, False, "bootstrap-exception"),
++          (declared["fallback"]["enabled"], declared["controller"]["subagents"],
++           declared["controller"]["unmanagedPayloads"], declared["controller"]["implementation"]))
++
++    print(f"execution_policy: {OK} ok, {FAILED} fallas")
++    return 1 if FAILED else 0
++
++
++if __name__ == "__main__":
++    raise SystemExit(main())
+diff --git a/tests/session/test-headless-pool-credential-source.sh b/tests/session/test-headless-pool-credential-source.sh
+index 0a4426901..0c764a8ea 100755
+--- a/tests/session/test-headless-pool-credential-source.sh
++++ b/tests/session/test-headless-pool-credential-source.sh
+@@ -19,6 +19,9 @@
+ # `tests/session/test-headless-pool-thyrox-p.sh` con el proxy real) y a si el
+ # ítem con máscara encuentra `claude` en el PATH (lo decide `thyrox -p`).
+ set -uo pipefail
++# Esta suite mide la mecánica del pool, no la política de ejecución: la declara
++# sin restricción (sin ella regiría la versionada del árbol, que no admite respaldo).
++export THYROX_EXECUTION_POLICY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../fixtures" && pwd)/execution_policy_unrestricted.json"
+ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+ POOL="$ROOT/src/session/headless-pool.sh"
+ failures=0; total=0
+diff --git a/tests/session/test-headless-pool-execution-unit.sh b/tests/session/test-headless-pool-execution-unit.sh
+index 976a7efed..1b95a3b51 100644
+--- a/tests/session/test-headless-pool-execution-unit.sh
++++ b/tests/session/test-headless-pool-execution-unit.sh
+@@ -10,6 +10,9 @@
+ # - que el ítem recibiera una credencial del entorno del pool;
+ # - que --execution unit se aceptara sin referencia de trabajo.
+ set -uo pipefail
++# Esta suite mide la mecánica del pool, no la política de ejecución: la declara
++# sin restricción (sin ella regiría la versionada del árbol, que no admite respaldo).
++export THYROX_EXECUTION_POLICY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../fixtures" && pwd)/execution_policy_unrestricted.json"
+ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+ POOL="$ROOT/bin/headless-pool"
+ F="$(mktemp -d)"; trap 'rm -rf "$F"' EXIT
+diff --git a/tests/session/test-headless-pool-exit-live-items.sh b/tests/session/test-headless-pool-exit-live-items.sh
+index 16cb9bc90..c85bf3680 100755
+--- a/tests/session/test-headless-pool-exit-live-items.sh
++++ b/tests/session/test-headless-pool-exit-live-items.sh
+@@ -16,6 +16,9 @@
+ # El runner falso escribe en su worktree y se detiene en una FIFO: la prueba
+ # observa el pool EN CURSO sin sleep, y el runner muere con el TERM del drenaje.
+ set -uo pipefail
++# Esta suite mide la mecánica del pool, no la política de ejecución: la declara
++# sin restricción (sin ella regiría la versionada del árbol, que no admite respaldo).
++export THYROX_EXECUTION_POLICY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../fixtures" && pwd)/execution_policy_unrestricted.json"
+ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+ failures=0; total=0
+ check() { total=$((total+1)); if [[ "$2" == "$3" ]]; then echo "OK   $1"; else echo "FAIL $1 — expected '$3', got '$2'"; failures=$((failures+1)); fi; }
+diff --git a/tests/session/test-headless-pool-frozen-launcher.sh b/tests/session/test-headless-pool-frozen-launcher.sh
+index c4af8a139..396acab18 100644
+--- a/tests/session/test-headless-pool-frozen-launcher.sh
++++ b/tests/session/test-headless-pool-frozen-launcher.sh
+@@ -18,6 +18,9 @@
+ # congelado retirado de la copia: la reescritura tiene que llegar entonces al
+ # pool vivo, lo que prueba que el caso ve el defecto contra el que protege.
+ set -uo pipefail
++# Esta suite mide la mecánica del pool, no la política de ejecución: la declara
++# sin restricción (sin ella regiría la versionada del árbol, que no admite respaldo).
++export THYROX_EXECUTION_POLICY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../fixtures" && pwd)/execution_policy_unrestricted.json"
+ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+ failures=0; total=0
+ check() { total=$((total+1)); if [[ "$2" == "$3" ]]; then echo "OK   $1"; else echo "FAIL $1 — expected '$3', got '$2'"; failures=$((failures+1)); fi; }
+diff --git a/tests/session/test-headless-pool-item-drain.sh b/tests/session/test-headless-pool-item-drain.sh
+index 7018f48df..5f4ec23c6 100644
+--- a/tests/session/test-headless-pool-item-drain.sh
++++ b/tests/session/test-headless-pool-item-drain.sh
+@@ -18,6 +18,9 @@
+ #   3. control de anulación: sin el bloque de drenaje, el pool termina con el
+ #      hijo todavía vivo y escribiendo en su salida.
+ set -uo pipefail
++# Esta suite mide la mecánica del pool, no la política de ejecución: la declara
++# sin restricción (sin ella regiría la versionada del árbol, que no admite respaldo).
++export THYROX_EXECUTION_POLICY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../fixtures" && pwd)/execution_policy_unrestricted.json"
+ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+ failures=0; total=0
+ check() { total=$((total+1)); if [[ "$2" == "$3" ]]; then echo "OK   $1"; else echo "FAIL $1 — expected '$3', got '$2'"; failures=$((failures+1)); fi; }
+diff --git a/tests/session/test-headless-pool-lifecycle.sh b/tests/session/test-headless-pool-lifecycle.sh
+index 37e148d16..bb6d191f1 100755
+--- a/tests/session/test-headless-pool-lifecycle.sh
++++ b/tests/session/test-headless-pool-lifecycle.sh
+@@ -34,6 +34,9 @@
+ #   2c. sin la guarda de `pool_integrate`, el ítem sin cerrar se aplica.
+ #   7c. con la espera declarada en segundos, el mismo rechazo tarda esa espera.
+ set -uo pipefail
++# Esta suite mide la mecánica del pool, no la política de ejecución: la declara
++# sin restricción (sin ella regiría la versionada del árbol, que no admite respaldo).
++export THYROX_EXECUTION_POLICY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../fixtures" && pwd)/execution_policy_unrestricted.json"
+ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+ failures=0; total=0
+ check() { total=$((total+1)); if [[ "$2" == "$3" ]]; then echo "OK   $1"; else echo "FAIL $1 — expected '$3', got '$2'"; failures=$((failures+1)); fi; }
+diff --git a/tests/session/test-headless-pool-local-model-e2e.sh b/tests/session/test-headless-pool-local-model-e2e.sh
+index 15c1818f5..14c603794 100644
+--- a/tests/session/test-headless-pool-local-model-e2e.sh
++++ b/tests/session/test-headless-pool-local-model-e2e.sh
+@@ -13,6 +13,9 @@
+ # - que algo invocara `claude` (hay uno falso en el PATH que se anota);
+ # - que el modelo pedido al runtime no fuera el que concede el grant.
+ set -uo pipefail
++# Esta suite mide la mecánica del pool, no la política de ejecución: la declara
++# sin restricción (sin ella regiría la versionada del árbol, que no admite respaldo).
++export THYROX_EXECUTION_POLICY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../fixtures" && pwd)/execution_policy_unrestricted.json"
+ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+ POOL="$ROOT/bin/headless-pool"
+ F="$(mktemp -d)"; COORD_PID=""
+diff --git a/tests/session/test-headless-pool-model-policy.sh b/tests/session/test-headless-pool-model-policy.sh
+index d312b5519..1460fff2f 100644
+--- a/tests/session/test-headless-pool-model-policy.sh
++++ b/tests/session/test-headless-pool-model-policy.sh
+@@ -57,8 +57,11 @@ check "caso 3: Ollama caído y política sin respaldo rehúsa con 2" "$CODE" "2"
+ check "caso 3: no pide claude-cli al recomendador" "$(grep -c -- '--runtime claude-cli' "$F/recommend.log")" "0"
+ check "caso 3: ningún ítem se lanza" "$(wc -l < "$F/runner.log" | tr -d ' ')" "0"
+ 
+-SALIDA="$(ENSURE_EXIT=1 pool)"; CODE=$?
+-check "caso 4: sin política, el respaldo de hoy no cambia (pide claude-cli)" "$(grep -c -- '--runtime claude-cli' "$F/recommend.log")" "1"
++# Una política que admite el respaldo: el de hoy no cambia. Sin ninguna declarada
++# regiría la versionada del árbol, que no lo admite (caso 10).
++printf '{"allowed":[{"runtime":"ollama","repository":"Qwen/Qwen2.5-7B-Instruct-GGUF"}],"fallback":{"enabled":true}}\n' > "$F/con-respaldo.json"
++SALIDA="$(THYROX_EXECUTION_POLICY="$F/con-respaldo.json" ENSURE_EXIT=1 pool)"; CODE=$?
++check "caso 4: con respaldo admitido, el respaldo de hoy no cambia (pide claude-cli)" "$(grep -c -- '--runtime claude-cli' "$F/recommend.log")" "1"
+ 
+ SALIDA="$(RECOMMEND_MODE=provider pool --model-policy "$F/policy.json")"; CODE=$?
+ check "caso 5: un proveedor devuelto contra una política sin respaldo rehúsa con 2" "$CODE" "2"
+@@ -82,5 +85,12 @@ check "caso 9: un --context-tokens que no es entero positivo rehúsa con 2" "$CO
+ check "caso 9: y dice que exige un entero positivo" "$([[ "$SALIDA" == *"--context-tokens exige un entero positivo"* ]] && echo si)" "si"
+ check "caso 9: sin preguntar al recomendador" "$(wc -l < "$F/recommend.log" | tr -d ' ')" "0"
+ 
++# Sin --model-policy rige la declarada (THYROX_EXECUTION_POLICY, o la versionada
++# del árbol): el pool la entrega al recomendador y defiende su frontera igual.
++SALIDA="$(THYROX_EXECUTION_POLICY="$F/policy.json" RECOMMEND_MODE=provider pool)"; CODE=$?
++check "caso 10: la política declarada sin --model-policy rechaza un proveedor con 2" "$CODE" "2"
++SALIDA="$(THYROX_EXECUTION_POLICY="$F/policy.json" pool)"; CODE=$?
++check "caso 10: y el recomendador recibe esa política" "$(grep -c -- "--policy $F/policy.json" "$F/recommend.log")" "1"
++
+ echo; echo "$PASS ok · $FAIL falla(s) (alcance medido: headless-pool --model-policy)"
+ [[ $FAIL -eq 0 ]]
+diff --git a/tests/session/test-headless-pool-runtime.sh b/tests/session/test-headless-pool-runtime.sh
+index 903c65dff..a59dab69f 100644
+--- a/tests/session/test-headless-pool-runtime.sh
++++ b/tests/session/test-headless-pool-runtime.sh
+@@ -10,6 +10,9 @@
+ # HEADLESS_POOL_INFRASTRUCTURE_ENSURE, y el ejecutor del ítem uno que publica
+ # el modelo y el entorno que recibió.
+ set -uo pipefail
++# Esta suite mide la mecánica del pool, no la política de ejecución: la declara
++# sin restricción (sin ella regiría la versionada del árbol, que no admite respaldo).
++export THYROX_EXECUTION_POLICY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../fixtures" && pwd)/execution_policy_unrestricted.json"
+ ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
+ POOL="$ROOT/src/session/headless-pool.sh"
+ failures=0; total=0
+diff --git a/tests/session/test-headless-pool-thyrox-p.sh b/tests/session/test-headless-pool-thyrox-p.sh
+index ec6113e1b..f06c3d894 100755
+--- a/tests/session/test-headless-pool-thyrox-p.sh
++++ b/tests/session/test-headless-pool-thyrox-p.sh
+@@ -9,6 +9,9 @@
+ # stream— sale de él. El modelo es un proveedor grabado: este contenedor no
+ # tiene credencial, y lo que se prueba es el contrato, no el servicio.
+ set -uo pipefail
++# Esta suite mide la mecánica del pool, no la política de ejecución: la declara
++# sin restricción (sin ella regiría la versionada del árbol, que no admite respaldo).
++export THYROX_EXECUTION_POLICY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../fixtures" && pwd)/execution_policy_unrestricted.json"
+ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+ POOL="$ROOT/bin/headless-pool"
+ F="$(mktemp -d)"; trap 'rm -rf "$F"' EXIT
+diff --git a/tests/session/test-headless-pool-worktree.sh b/tests/session/test-headless-pool-worktree.sh
+index 7ea13e138..dbda605e1 100644
+--- a/tests/session/test-headless-pool-worktree.sh
++++ b/tests/session/test-headless-pool-worktree.sh
+@@ -4,6 +4,9 @@
+ # veredicto, y la integración aplica al árbol principal sólo lo verificado y
+ # disjunto, declarando cada conflicto.
+ set -uo pipefail
++# Esta suite mide la mecánica del pool, no la política de ejecución: la declara
++# sin restricción (sin ella regiría la versionada del árbol, que no admite respaldo).
++export THYROX_EXECUTION_POLICY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../fixtures" && pwd)/execution_policy_unrestricted.json"
+ RAIZ="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+ POOL="${HEADLESS_POOL_MODULE:-$RAIZ/src/session/headless-pool.sh}"
+ INTEGRATE="${POOL_INTEGRATE_MODULE:-$RAIZ/src/session/pool_integrate.sh}"
+diff --git a/tests/session/test-headless-pool.sh b/tests/session/test-headless-pool.sh
+index f5da5159b..371f8aca2 100644
+--- a/tests/session/test-headless-pool.sh
++++ b/tests/session/test-headless-pool.sh
+@@ -9,6 +9,9 @@
+ # Lo que se mide es el mecanismo —reparto, salida por item, veredicto,
+ # rechazos—, no al modelo.
+ set -uo pipefail
++# Esta suite mide la mecánica del pool, no la política de ejecución: la declara
++# sin restricción (sin ella regiría la versionada del árbol, que no admite respaldo).
++export THYROX_EXECUTION_POLICY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../fixtures" && pwd)/execution_policy_unrestricted.json"
+ RAIZ="$(cd "$(dirname "$0")/../.." && pwd)"
+ POOL="$RAIZ/src/session/headless-pool.sh"
+ fallos=0; total=0
+diff --git a/tests/session/test_user_wiring.py b/tests/session/test_user_wiring.py
+index d368f848a..78a8e8abb 100644
+--- a/tests/session/test_user_wiring.py
++++ b/tests/session/test_user_wiring.py
+@@ -83,6 +83,8 @@ _pre = d["hooks"].get("PreToolUse", [{}])[0]
+ _matcher = set(_pre.get("matcher", "").split("|"))
+ check("el matcher cubre Bash y Agent, los dos despachos que se miden",
+       True, {"Bash", "Agent"} <= _matcher)
++check("el matcher cubre Monitor, que corre su comando en segundo plano (política de ejecución)",
++      True, "Monitor" in _matcher)
+ check("el matcher cubre la escritura y la lectura de archivos",
+       True, {"Write", "Edit", "Read"} <= _matcher)
+ check("el comando es el preflight del proveedor, por su envoltorio de bin/",

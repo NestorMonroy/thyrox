@@ -10,7 +10,8 @@
  * (`FastModeRuntimeState`, `CooldownReason`, `FastModeDisabledReason`).
  *
  * Reusa de este mismo paquete: `./internal/pendingCrossPackageDeps.ts`
- * (`createSignal`, `isEssentialTrafficOnly` — sustitutos locales YA
+ * (nada ya: `createSignal` viene de `@thyrox/config/signal` e
+ * `isEssentialTrafficOnly` de `@thyrox/config/env/privacy-level`), `./model.ts`,
  * escritos por un pase anterior, mismo contrato que la fuente), `./model.ts`,
  * `./providers.ts`, `./authAlias.ts`, `./oauthConstants.ts`.
  *
@@ -130,7 +131,8 @@ import {
   getSettingsForSource,
   updateSettingsForSource,
 } from '@thyrox/config/settings'
-import { createSignal, isEssentialTrafficOnly } from './internal/pendingCrossPackageDeps.ts'
+import { createSignal } from '@thyrox/config/signal'
+import { isEssentialTrafficOnly } from '@thyrox/config/env/privacy-level'
 
 // Bindings del host de app-host y del config global (`~/.claude.json`) que
 // NO están portados hoy (ver docstring del módulo). Se declaran aquí,

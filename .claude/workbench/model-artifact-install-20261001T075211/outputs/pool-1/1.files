@@ -1,0 +1,5 @@
+src/packages/local-models/__tests__/ollamaApiInstall.test.ts
+src/packages/local-models/__tests__/ollamaModelInstaller.test.ts
+src/packages/local-models/bin/installModel.ts
+src/packages/local-models/ollamaApi.ts
+src/packages/local-models/ollamaModelInstaller.ts

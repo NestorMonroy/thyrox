@@ -1,0 +1,21 @@
+ .../__tests__/ollamaRuntimeAdapter.test.ts         |  8 ++-
+ .../__tests__/residencyLifecycle.real.test.ts      |  6 +-
+ src/packages/local-models/admittedChat.ts          |  2 +-
+ .../local-models/hostCoordinatorComposition.ts     |  4 +-
+ src/packages/local-models/ollamaRuntimeAdapter.ts  | 16 ++---
+ .../__tests__/hostCoordinatorService.test.ts       |  8 +--
+ ...test.ts => podmanModelUnitMaterializer.test.ts} | 36 ++++++++---
+ .../model-scheduling/__tests__/scheduler.test.ts   |  6 +-
+ src/packages/model-scheduling/hostCoordinator.ts   |  6 +-
+ .../model-scheduling/hostCoordinatorService.ts     |  6 +-
+ ...cutionPrimitive.ts => modelUnitMaterializer.ts} | 31 ++++------
+ ...Primitive.ts => podmanModelUnitMaterializer.ts} | 72 ++++++++--------------
+ .../model-scheduling/residencyController.ts        | 18 +++---
+ src/packages/model-scheduling/scheduler.ts         | 14 ++---
+ .../model-scheduling/testing/schedulerFakes.ts     | 24 +++++---
+ .../__tests__/executionAuthorization.test.ts       | 43 +++++++++++--
+ src/packages/podman-execution/containerRun.ts      | 36 ++++++++++-
+ .../podman-execution/executionAuthorization.ts     | 45 ++++++++++++--
+ .../podman-execution/workerContainerLifecycle.ts   | 19 ++++++
+ .../src/proxy/openaiCompat/admittedUpstream.ts     |  2 +-
+ 20 files changed, 262 insertions(+), 140 deletions(-)

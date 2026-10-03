@@ -1,0 +1,200 @@
+{
+  "free_bytes_observed": 2903658496,
+  "ratio_stored_bytes_per_text_byte": 1.661,
+  "average_chunk_text_bytes": 803,
+  "scopes": {
+    "semantic_content": 42334997,
+    "semantic_content+durable_evidence": 642136827
+  },
+  "routes": {
+    "A_local_onnx": {
+      "dimensions": [
+        768
+      ],
+      "model_bytes": 548257603,
+      "runtime_bytes": 131839877,
+      "temporary_model_bytes": 591000182,
+      "network": "descarga única del modelo (Hugging Face) y de las ruedas (PyPI); después ninguna",
+      "operational_dependency": "runtime nuevo onnxruntime+tokenizers+numpy en el worker",
+      "profile": "nomic-ai/nomic-embed-text-v1.5@e9b6763023c6, ONNX fp32, 768, coseno",
+      "sources": [
+        "T005c-model-declared.json",
+        "T005c-runtime-measured.json"
+      ]
+    },
+    "B_local_ollama": {
+      "dimensions": [
+        768
+      ],
+      "model_bytes": 274302450,
+      "runtime_bytes": 0,
+      "temporary_model_bytes": 274302450,
+      "network": "descarga única del modelo (registry.ollama.ai); después ninguna",
+      "operational_dependency": "thyrox-ollama (corriendo) y el volumen thyrox-ollama-models, que hoy administra la otra sesión",
+      "profile": "ollama library/nomic-embed-text:latest, GGUF F16, 768, coseno",
+      "sources": [
+        "T005c-route-ollama-declared.json"
+      ]
+    },
+    "C_api": {
+      "dimensions": [
+        768,
+        1536
+      ],
+      "model_bytes": 0,
+      "runtime_bytes": 0,
+      "temporary_model_bytes": 0,
+      "network": "una llamada por lote durante toda la ingesta, y otra por consulta",
+      "operational_dependency": "el upstream OpenAI-compatible (THYROX_OPENAI_COMPAT_*); no consta que sirva /v1/embeddings ni con qué modelo y dimensión",
+      "profile": "desconocido hasta sondear el upstream",
+      "sources": []
+    }
+  },
+  "rows": [
+    {
+      "route": "A_local_onnx",
+      "scope": "semantic_content",
+      "dimensions": 768,
+      "persistent_disk_bytes": 850331410,
+      "temporary_disk_peak_bytes": 658109046,
+      "model_bytes": 548257603,
+      "runtime_bytes": 131839877,
+      "expected_postgres_bytes": 170233930,
+      "postgres_operational_headroom_bytes": 1107788610,
+      "estimated_chunks": 52695,
+      "required_bytes": 2616229066,
+      "fits_free_now": true,
+      "qualification": "none: embedding@1 not defined",
+      "network": "descarga única del modelo (Hugging Face) y de las ruedas (PyPI); después ninguna",
+      "operational_dependency": "runtime nuevo onnxruntime+tokenizers+numpy en el worker",
+      "embedding_profile": "nomic-ai/nomic-embed-text-v1.5@e9b6763023c6, ONNX fp32, 768, coseno"
+    },
+    {
+      "route": "A_local_onnx",
+      "scope": "semantic_content+durable_evidence",
+      "dimensions": 768,
+      "persistent_disk_bytes": 3262199818,
+      "temporary_disk_peak_bytes": 658109046,
+      "model_bytes": 548257603,
+      "runtime_bytes": 131839877,
+      "expected_postgres_bytes": 2582102338,
+      "postgres_operational_headroom_bytes": 1590162292,
+      "estimated_chunks": 799275,
+      "required_bytes": 5510471156,
+      "fits_free_now": false,
+      "qualification": "none: embedding@1 not defined",
+      "network": "descarga única del modelo (Hugging Face) y de las ruedas (PyPI); después ninguna",
+      "operational_dependency": "runtime nuevo onnxruntime+tokenizers+numpy en el worker",
+      "embedding_profile": "nomic-ai/nomic-embed-text-v1.5@e9b6763023c6, ONNX fp32, 768, coseno"
+    },
+    {
+      "route": "B_local_ollama",
+      "scope": "semantic_content",
+      "dimensions": 768,
+      "persistent_disk_bytes": 444536380,
+      "temporary_disk_peak_bytes": 341411314,
+      "model_bytes": 274302450,
+      "runtime_bytes": 0,
+      "expected_postgres_bytes": 170233930,
+      "postgres_operational_headroom_bytes": 1107788610,
+      "estimated_chunks": 52695,
+      "required_bytes": 1893736304,
+      "fits_free_now": true,
+      "qualification": "none: embedding@1 not defined",
+      "network": "descarga única del modelo (registry.ollama.ai); después ninguna",
+      "operational_dependency": "thyrox-ollama (corriendo) y el volumen thyrox-ollama-models, que hoy administra la otra sesión",
+      "embedding_profile": "ollama library/nomic-embed-text:latest, GGUF F16, 768, coseno"
+    },
+    {
+      "route": "B_local_ollama",
+      "scope": "semantic_content+durable_evidence",
+      "dimensions": 768,
+      "persistent_disk_bytes": 2856404788,
+      "temporary_disk_peak_bytes": 341411314,
+      "model_bytes": 274302450,
+      "runtime_bytes": 0,
+      "expected_postgres_bytes": 2582102338,
+      "postgres_operational_headroom_bytes": 1590162292,
+      "estimated_chunks": 799275,
+      "required_bytes": 4787978394,
+      "fits_free_now": false,
+      "qualification": "none: embedding@1 not defined",
+      "network": "descarga única del modelo (registry.ollama.ai); después ninguna",
+      "operational_dependency": "thyrox-ollama (corriendo) y el volumen thyrox-ollama-models, que hoy administra la otra sesión",
+      "embedding_profile": "ollama library/nomic-embed-text:latest, GGUF F16, 768, coseno"
+    },
+    {
+      "route": "C_api",
+      "scope": "semantic_content",
+      "dimensions": 768,
+      "persistent_disk_bytes": 170233930,
+      "temporary_disk_peak_bytes": 67108864,
+      "model_bytes": 0,
+      "runtime_bytes": 0,
+      "expected_postgres_bytes": 170233930,
+      "postgres_operational_headroom_bytes": 1107788610,
+      "estimated_chunks": 52695,
+      "required_bytes": 1345131404,
+      "fits_free_now": true,
+      "qualification": "none: embedding@1 not defined",
+      "network": "una llamada por lote durante toda la ingesta, y otra por consulta",
+      "operational_dependency": "el upstream OpenAI-compatible (THYROX_OPENAI_COMPAT_*); no consta que sirva /v1/embeddings ni con qué modelo y dimensión",
+      "embedding_profile": "desconocido hasta sondear el upstream"
+    },
+    {
+      "route": "C_api",
+      "scope": "semantic_content",
+      "dimensions": 1536,
+      "persistent_disk_bytes": 256232170,
+      "temporary_disk_peak_bytes": 67108864,
+      "model_bytes": 0,
+      "runtime_bytes": 0,
+      "expected_postgres_bytes": 256232170,
+      "postgres_operational_headroom_bytes": 1124988258,
+      "estimated_chunks": 52695,
+      "required_bytes": 1448329292,
+      "fits_free_now": true,
+      "qualification": "none: embedding@1 not defined",
+      "network": "una llamada por lote durante toda la ingesta, y otra por consulta",
+      "operational_dependency": "el upstream OpenAI-compatible (THYROX_OPENAI_COMPAT_*); no consta que sirva /v1/embeddings ni con qué modelo y dimensión",
+      "embedding_profile": "desconocido hasta sondear el upstream"
+    },
+    {
+      "route": "C_api",
+      "scope": "semantic_content+durable_evidence",
+      "dimensions": 768,
+      "persistent_disk_bytes": 2582102338,
+      "temporary_disk_peak_bytes": 67108864,
+      "model_bytes": 0,
+      "runtime_bytes": 0,
+      "expected_postgres_bytes": 2582102338,
+      "postgres_operational_headroom_bytes": 1590162292,
+      "estimated_chunks": 799275,
+      "required_bytes": 4239373494,
+      "fits_free_now": false,
+      "qualification": "none: embedding@1 not defined",
+      "network": "una llamada por lote durante toda la ingesta, y otra por consulta",
+      "operational_dependency": "el upstream OpenAI-compatible (THYROX_OPENAI_COMPAT_*); no consta que sirva /v1/embeddings ni con qué modelo y dimensión",
+      "embedding_profile": "desconocido hasta sondear el upstream"
+    },
+    {
+      "route": "C_api",
+      "scope": "semantic_content+durable_evidence",
+      "dimensions": 1536,
+      "persistent_disk_bytes": 3886519138,
+      "temporary_disk_peak_bytes": 67108864,
+      "model_bytes": 0,
+      "runtime_bytes": 0,
+      "expected_postgres_bytes": 3886519138,
+      "postgres_operational_headroom_bytes": 1851045652,
+      "estimated_chunks": 799275,
+      "required_bytes": 5804673654,
+      "fits_free_now": false,
+      "qualification": "none: embedding@1 not defined",
+      "network": "una llamada por lote durante toda la ingesta, y otra por consulta",
+      "operational_dependency": "el upstream OpenAI-compatible (THYROX_OPENAI_COMPAT_*); no consta que sirva /v1/embeddings ni con qué modelo y dimensión",
+      "embedding_profile": "desconocido hasta sondear el upstream"
+    }
+  ],
+  "note": "C no exige disco de modelo, pero PostgreSQL, HNSW, WAL, texto y lotes se presupuestan igual"
+}

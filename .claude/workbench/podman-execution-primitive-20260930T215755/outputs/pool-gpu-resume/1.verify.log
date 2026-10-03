@@ -1,0 +1,353 @@
+bun test v1.3.11 (af24e281)
+
+ 7 pass
+ 0 fail
+ 15 expect() calls
+Ran 7 tests across 1 file. [4.14s]
+test_gpu_admission_real: REHÚSA — nvidia-smi no responde (nvidia-smi): [Errno 2] No such file or directory: 'nvidia-smi'. No se midió nada.
+== 1. el backend NVIDIA habla con su binario, por dispositivo ==
+  ok    disponible con el binario que responde
+  ok    cada dispositivo con su UUID y su libre
+  ok    la mayor libre es la de un dispositivo, no la suma
+  ok    uso sólo de los PIDs pedidos
+  ok    uso pico entre GPUs
+  ok    la identidad nombra el binario
+  ok    un binario sin columna uuid identifica por índice
+  ok    sin ninguna GPU listada: lectura fallida, no lista vacía
+  ok    y no está disponible
+  ok    una cifra ilegible es lectura fallida, no una excepción suelta
+  ok    sin binario: no disponible
+  ok    sin binario, la lectura lanza con la causa y no da cifra
+== 2. la capacidad combina evidencia de hardware y backend ==
+  ok    ninguna evidencia, ningún backend: absent
+  ok    absent no lleva telemetría
+  ok    partial sin backend usable: unavailable
+  ok    GPU usable en el inventario sin backend: unavailable
+  ok    inventario sin veredicto y sin backend: error
+  ok    backend usable sin evidencia física: la telemetría decide
+  ok    con backend usable no se consulta el inventario
+== 3. partial + backend usable: capacidad y medida son dos etapas ==
+  ok    etapa 1 — partial con backend usable: telemetría available
+  ok    etapa 2 — lectura válida: measured
+  ok    etapa 2 — lectura que falla: error, sin cifra
+== 4. ninguna ausencia es un cero (invariantes 2, 5 y 11) ==
+  ok    sin backend la medida es el estado absent
+  ok    y lleva su causa
+  ok    y no es measured(0)
+  ok    measured(0) es una medida
+  ok    measured, absent, unavailable y error son cuatro estados
+  ok    un estado sin medida no tiene atributo de cantidad
+  ok    sin medida, la dimensión de anchura desaparece (None)
+  ok    measured(0) sí es una dimensión: 0
+== 5. el inventario es evidencia; su código y su veredicto tienen que coincidir ==
+  ok    nvidia-usable, exit 0
+  ok    none, exit 1
+  ok    partial, exit 3
+  ok    rehúsa, se contradice o no se entiende: sin evidencia (inv-refused)
+  ok    rehúsa, se contradice o no se entiende: sin evidencia (inv-contradiction)
+  ok    rehúsa, se contradice o no se entiende: sin evidencia (inv-unknown)
+  ok    el inventario real del árbol responde con un veredicto
+== 6. la ruta se decide ANTES de ejecutar, por el requisito declarado ==
+  ok    none con backend=True: unconstrained
+  ok    none con backend=False: unconstrained
+  ok    optional con backend=True: gpu
+  ok    optional con backend=False: cpu-fallback
+  ok    required con backend=True: gpu
+  ok    required con backend=False: refuse
+== 7. el historial conserva la ausencia de dimensión (contrato 10) ==
+  ok    sin pico de VRAM en la fila
+  ok    ningún ítem cuenta como medido en VRAM
+== 8. sin telemetría la anchura no se reduce (invariante 1) ==
+  ok    sin tope de VRAM
+  ok    ni petición de VRAM
+  ok    el tope es sólo el de RAM
+== 9. superficie: el binario de NVIDIA sólo en los archivos permitidos ==
+  ok    git grep respondió
+  ok    cada archivo que nombra el binario está en la lista
+
+test_gpu_backend: 50 ok, 0 falla(s)
+== 1. el árbol del ítem incluye a sus hijos ==
+  ok    el hijo está en el árbol del padre
+== 2. una muestra: VRAM de los PIDs pedidos y uso por GPU ==
+  ok    VRAM por PID
+  ok    uso pico entre GPUs
+== 3. watch cuenta SÓLO el árbol del ítem, y para cuando termina ==
+  ok    pico: los 300 MiB del hijo, no los 5000 ajenos
+  ok    media: positiva y no mayor que el pico
+  ok    uso pico de GPU
+  ok    varias muestras
+  ok    para al terminar el árbol, no después
+  ok    <n>.gpu con las cuatro cifras
+== 4. un árbol que no usó la GPU escribe CERO: eso es una medida ==
+  ok    pico cero, uso cero
+  ok    y el archivo existe
+== 5. sin telemetría no se escribe una cifra ==
+  ok    sin binario ni evidencia: absent
+  ok    absent: sin resumen
+  ok    absent: sin archivo
+  ok    unavailable: sin resumen
+  ok    unavailable: el archivo declara el estado
+  ok    y no lleva resumen
+== 7. la VRAM libre: la del dispositivo con más espacio ==
+  ok    la mayor entre GPUs, no la suma: un ítem no se reparte
+  ok    la CLI free la imprime
+  ok    la CLI free sin binario sale 2
+== 8. TRES estados: medido 0, ausente, y error al medir ==
+  ok    error al medir: sin resumen publicado
+  ok    el archivo declara el error y su causa
+  ok    read_gpu_file lo clasifica como error
+  ok    un .gpu con ceros es una medida
+  ok    sin archivo es ausente
+== 9. admisión por VRAM: espera a que haya sitio antes de arrancar ==
+  ok    sin sitio y sin plazo: no admite
+  ok    con sitio: admite enseguida
+  ok    se libera mientras espera: admite
+== 9b. el registro vive en un directorio que aún no existe: admit lo crea ==
+  ok    admite aunque el directorio no exista
+  ok    y release deja el registro vacío
+  ok    release sobre un directorio inexistente no lanza
+== 9c. el requisito del trabajo decide antes de ejecutar (invariantes 3 y 4) ==
+  ok    required sin telemetría: rehúsa
+  ok    y al instante, sin esperar el plazo
+  ok    y no se escribe reserva
+  ok    none con la GPU llena: entra sin la VRAM como dimensión
+  ok    none sin telemetría: igual
+  ok    none: el registro sigue sin existir
+  ok    optional sin telemetría: la ruta CPU declarada
+  ok    optional sin telemetría: sin reserva
+  ok    optional con telemetría y sitio: reserva
+  ok    y la reserva está en el registro, en su dispositivo
+  ok    optional con telemetría sin sitio: ruta CPU al vencer su plazo
+  ok    required con telemetría sin sitio: vence el plazo
+== 10. TOCTOU: dos admisiones simultáneas no reservan la misma VRAM (invariante 6) ==
+  ok    uno admitido y el otro esperó
+== 11. una reserva cuenta sólo lo que su árbol aún no usa: sin doble conteo ==
+  ok    el primero reserva
+  ok    con los 3000 ya visibles, 1500 caben en los 2000 libres
+== 12. soltar y dueños muertos liberan lo comprometido (invariante 7) ==
+  ok    A reserva 3000
+  ok    B no cabe mientras A tenga su reserva
+  ok    soltada la de A, B cabe
+  ok    con el dueño de B muerto, su reserva no cuenta
+== 13. la decisión es pura: se prueba sin telemetría ni registro ==
+  ok    5000 libres, nada comprometido, pide 3000: cabe
+  ok    5000 libres, 3000 comprometidos, pide 3000: no cabe
+  ok    sin lectura de VRAM libre: no se admite
+  ok    elige el dispositivo con más margen que alcance
+  ok    ninguno alcanza: None
+  ok    fijado a un dispositivo, sólo cuenta ése
+== 14. el registro: reservar, soltar, descartar dueños muertos ==
+  ok    sólo cuentan los dueños vivos
+  ok    soltada, no queda nada
+== 5b. un proceso que sale a mitad del recorrido no tumba tree() ==
+  ok    el hijo que desapareció cuenta y el recorrido sigue
+== 15. watch con la fuente de un contenedor: mide sus PIDs, no los del cliente ==
+  ok    pico: los 700 MiB del contenedor, no los 5000 del cliente
+  ok    para cuando el cgroup desaparece
+== 16. la fuente de contenedor que no puede dar PIDs: .gpu es error, nunca 0 ==
+  ok    sin resumen publicado
+  ok    el archivo es error con causa, no ceros
+== 17. la CLI: watch --container usa la fuente del contenedor ==
+  ok    la CLI mide el contenedor: pico 700
+== 18. la VRAM se atribuye por PIDs del anfitrión, no del contenedor (invariante 8) ==
+  ok    con los PIDs del anfitrión: 700
+  ok    con los del espacio del contenedor saldría otra cifra
+== 19. cada reserva nombra su dispositivo: se admite contra lo libre de ESE ==
+  ok    4 GiB en una y 10 en otra no admiten 12
+  ok    8 GiB entran en la de 10
+  ok    la siguiente de 3 GiB va a la de 4: en la de 10 quedan 2
+  ok    el registro guarda tipo, dispositivo y MiB
+== 20. los tres tipos: worker, residency y request ==
+  ok    una residency se reserva a nombre de su instancia y generación
+  ok    y vive sin PID que la sostenga
+  ok    la request va al dispositivo de su residency
+  ok    liberar la residency con una request viva se rehúsa
+  ok    y la residency sigue en el registro
+  ok    otra generación no la libera
+  ok    la de generación 2 sigue
+  ok    una request sin su residency se rehúsa
+  ok    muerto su dueño, la request deja de contar
+  ok    y la residency ya se puede liberar
+  ok    sin reservas vivas no queda archivo
+== 21. la CLI admit con requisito ==
+  ok    none: sale 0 sin tocar el registro
+  ok    optional sin telemetría: sale con su código de ruta CPU
+  ok    y lo dice por stderr
+  ok    sin requisito declarado es required: sale 2
+  ok    sin cifra en stdout
+  ok    y el registro no se escribe
+== 22. la CLI capability publica el estado, no una cifra ==
+  ok    con telemetría: available
+== 6. available() distingue las dos situaciones ==
+  ok    con el falso: sale 0
+  ok    sin él: sale 2
+
+test_gpu_monitor: 90 ok, 0 falla(s)
+== 1. la reserva se vuelve uso paso a paso: pendiente baja, lo usado sube, el margen no cambia ==
+  ok    A admitido
+  ok    tabla (usado, pendiente, libre, margen) por paso
+  ok    B de 3200 no cabe
+  ok    B de 2800 sí cabe
+== 2. un dueño que usa MÁS de lo reservado: su exceso ya está en lo libre ==
+  ok    A admitido con 3200
+  ok    (usado, pendiente, libre, margen)
+== 3. SIGKILL a mitad de la asignación, sin release: su reserva deja de contar ==
+  ok    A admitido
+  ok    B de 3200 no cabe mientras A vive
+  ok    B de 3200 entra tras el SIGKILL de A
+  ok    el registro guarda sólo a B
+== 4. un dueño zombi (terminó y nadie lo cosechó) no retiene su reserva ==
+  ok    A admitido mientras vive
+  ok    B de 3200 no cabe mientras A vive
+  ok    A es zombi (sigue en /proc)
+  ok    B de 3200 entra
+== 5. un proceso AJENO al registro: su VRAM ya resta de lo libre ==
+  ok    margen = 1000
+  ok    GPU casi llena: 3200 no entra
+  ok    800 sí entra
+== 6. sin lectura de la GPU no hay margen: None, no cero ==
+  ok    headroom sin medida es None
+== 7. dos admisiones SIMULTÁNEAS tras una barrera, 4000 + 4000 sobre 6000, 5 rondas ==
+  ok    en cada ronda entra exactamente uno
+test_gpu_scenarios: 19 ok, 0 falla(s)
+caso 1 — un historial por texto de comando
+  ok    el mismo comando da el mismo historial
+  ok    otro comando da otro historial
+  ok    vive bajo la base
+caso 2 — la base se declara por entorno
+  ok    THYROX_PARALLEL_MAP_HISTORY_DIR gana
+  ok    sin declararla cae en la caché del repo
+caso 3 — sin historial, derive_memory no inventa
+  ok    sin memfree
+  ok    sin tope de RAM
+  ok    dice por qué
+caso 4 — con una ejecución medida, memfree y tope de anchura
+  FALLA memfree = pico × 2, hacia arriba: esperado '586M', obtenido None
+  FALLA tope = RAM disponible / (pico × 2): esperado 3, obtenido None
+  FALLA cita el pico: esperado True, obtenido False
+  FALLA la reserva por ítem en kB = pico × 2: esperado 600000, obtenido None
+caso 5 — derive sigue dando el mismo memfree
+  ok    derive y derive_memory coinciden
+caso 6 — la CLI: dir, record y derive por tabuladores
+  ok    sale 0
+  FALLA memfree, tope y reserva en kB: esperado ['586M', '3', '600000'], obtenido ['', '', '']
+  ok    sin historial imprime campos vacíos
+  ok    dir imprime el historial del comando
+caso 7 — un paralelismo anidado respeta el límite de su cgroup (invariante 10)
+  ok    bajo 512 MiB de límite con 112 usados caben 2, no los 34 del anfitrión
+  ok    sin límite, la RAM del anfitrión: 34
+test_parallel_map_history: 14 ok, 5 fallos
+caso 1 — el registro es el mismo que usaba la GPU
+  ok    gpu_monitor reutiliza el bucle común
+  ok    y la decisión pura
+caso 2 — la reserva de un dueño muerto no compromete nada
+  ok    sólo queda la del vivo
+caso 3 — lo libre de RAM descuenta lo reservado que aún no reside
+  ok    10000 − (3000 − 1000)
+  ok    sin MemAvailable no hay margen
+caso 4 — dos que piden 3 GB sobre 5 GB libres: entra uno
+  ok    uno admitido (0) y uno vencido (3)
+  ok    una sola reserva en el registro
+caso 5 — soltar la reserva deja entrar al siguiente
+  ok    release sale 0
+  ok    el otro entra ahora
+caso 6 — muerto el dueño, su reserva deja de contar
+  ok    el vivo entra sin que nadie haya soltado
+caso 7 — el RSS de un árbol vivo se mide de /proc
+  ok    un proceso vivo reside algo
+  ok    un pid inexistente no suma
+caso 7d — un dueño en contenedor: lo pendiente descuenta el uso de SU cgroup, no el RSS del cliente
+  ok    10000 − (3000 − 2000 del cgroup)
+  ok    un dueño sin contenedor sigue midiéndose por su árbol
+  ok    cgroup ilegible: sin medida, no un cero
+caso 7e — la reserva de un ítem en contenedor la acota su --memory
+  ok    sin límite: la necesidad entera
+  ok    con --memory menor: el límite
+  ok    con --memory mayor: la necesidad
+caso 7f — la CLI: admit-ram --container registra al dueño y reserva acotado
+  ok    5000 pedidos, --memory 2000, 3000 libres: admitido
+  ok    la reserva es la acotada
+  ok    el dueño queda asociado a su contenedor
+  ok    otro de 2500 cabe en 3000 libres: el cgroup ya muestra la reserva
+caso 7b — soltada la última reserva viva, el registro desaparece: en reposo no queda archivo
+  ok    sin reservas vivas no queda el archivo
+  ok    con otra reserva viva el registro sigue
+caso 7c — sin medida, admit_with espera hasta el plazo: rehusar al instante es de la VRAM, no de aquí
+  ok    sin medida no admite
+  ok    y agota el plazo antes de responder
+caso 8 — el registro y la fuente de MemAvailable se declaran por entorno
+  ok    THYROX_RAM_ADMISSION_LEDGER gana
+  ok    THYROX_RAM_ADMISSION_MEMINFO gana
+  ok    sin declararlo, el registro vive en la caché del repo
+  ok    sin declararlo, MemAvailable sale del kernel
+caso 9 — disco: el techo sale de disk-headroom --ceiling-bytes
+  ok    un entero con exit 3 es el techo
+  ok    con exit 1 (reserva alcanzable) también
+  ok    exit 2 es «sin medida»
+  ok    una salida no entera es «sin medida»
+  ok    un binario ausente es «sin medida»
+caso 10 — disco: lo admisible es techo − piso − reservas vivas
+  ok    10000 − 1000 − 3000
+  ok    sin techo no hay margen
+caso 11 — disk-admit: cabe → 0 y queda la reserva; no cabe → 3
+  ok    cabe → 0
+  ok    la reserva queda registrada
+  ok    el piso en MiB se descuenta: 10 − 7 de piso no deja 4
+  ok    no cabe → 3
+  ok    el vencido publica necesidad y techo
+caso 12 — disk-release suelta la reserva
+  ok    disk-release sale 0
+  ok    el registro ya no la cuenta
+caso 13 — dos dueños vivos cuya suma no cabe: entra uno
+resource_admission disk-admit: no cabe la necesidad 3145728 bytes; techo 5242880 bytes, piso 0 bytes, reservado por otros 3145728 bytes
+  ok    uno admitido (0) y uno vencido (3)
+  ok    una sola reserva en el registro
+caso 14 — muerto el dueño, su reserva de disco deja de contar
+  ok    entra sin que nadie haya soltado
+caso 15 — disk-headroom rehúsa: 2, con la causa, sin tocar el registro
+  ok    sale 2
+  ok    nombra disk-headroom en stderr
+  ok    no crea el registro
+caso 16 — el registro, el piso y el medidor de disco se declaran por entorno
+  ok    sin declararlo, el registro vive en la caché del repo
+  ok    sin declararlo, el piso es el default con nombre
+  ok    sin declararlo, el medidor es el disk-headroom del árbol
+  ok    THYROX_DISK_ADMISSION_LEDGER gana
+  ok    THYROX_DISK_ADMISSION_FLOOR_MB gana, en MiB
+  ok    THYROX_DISK_ADMISSION_HEADROOM gana
+caso 17 — .env.example declara las tres variables del disco
+  ok    THYROX_DISK_ADMISSION_LEDGER figura en .env.example
+  ok    THYROX_DISK_ADMISSION_FLOOR_MB figura en .env.example
+  ok    THYROX_DISK_ADMISSION_HEADROOM figura en .env.example
+caso 18 — cgroups v1: el límite más restrictivo del cgroup y sus ancestros
+  ok    el ancestro deja 1 MiB aunque el propio deje 6
+  ok    con el ancestro sin límite manda el propio: 6 MiB
+  ok    el sentinela de v1 es «sin límite», no una cifra
+  ok    y sin límite la RAM es la del anfitrión
+  ok    uso por encima del límite: 0, no negativo
+  ok    «sin límite» no es 0
+caso 19 — cgroups v2 con un doble: memory.max y memory.current
+  ok    4 MiB libres bajo memory.max
+  ok    «max» en todos los niveles: sin límite
+caso 20 — un cgroup ilegible es «sin medida», no la RAM del anfitrión
+  ok    límite ilegible: None
+  ok    pertenencia ilegible: None
+caso 21 — sin cgroup de memoria observable, la RAM es la del anfitrión
+  ok    en la raíz de v2: sin límite
+  ok    un cgroup propio que no está montado: sin límite
+caso 22 — un límite holgado no promete más de lo que el anfitrión tiene
+  ok    64 MiB de límite con 10000 kB libres en el anfitrión: 10000
+caso 23 — la admisión de RAM lee el cgroup (invariante 9)
+  ok    10000 kB en /proc/meminfo, 2 MiB en el cgroup: 2048
+  ok    admit-ram bajo el límite: 3 GB no caben en 2 MiB
+  ok    admit-ram sin límite: caben en los 5 GB del anfitrión
+caso 24 — el cgroup real de este anfitrión se lee sin error
+  ok    un entero o «sin límite»
+test_resource_admission: 76 ok, 0 fallos
+ruff: 0 hallazgo(s) (alcance medido: 10 archivo(s))
+pyright: 2 hallazgo(s) (alcance medido: 10 archivo(s))
+    src/session/gpu_monitor.py:352: reportCallIssue No overloads for "max" match the provided arguments
+    src/session/gpu_monitor.py:352: reportArgumentType Argument of type "(device: str) -> (int | None)" cannot be assigned to parameter "key" of type "(_T@max) -> SupportsRichComparison" in function "max"
+  config: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 1 de 1 paquete(s))

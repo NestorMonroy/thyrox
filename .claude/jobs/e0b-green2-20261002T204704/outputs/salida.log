@@ -1,0 +1,8 @@
+test_execution_policy_enforcement.py rc=0 execution_policy: 63 ok, 0 fallas
+test_detect_client_background.py rc=0 12 ok, 0 fallos
+test_detect_agent_dispatch.py rc=0 11 caso(s); 0 fallo(s)
+lint rc=0
+ruff: 0 hallazgo(s) (alcance medido: 5 archivo(s))
+pyright: 0 hallazgo(s) (alcance medido: 5 archivo(s))
+execution thyrox-worker-test-murfoy31-28752 kind=test task=TASK-THYROX-0773 exit=0
+__BG_EXIT__=0

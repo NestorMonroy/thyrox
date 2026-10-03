@@ -266,6 +266,14 @@ import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flag
 import {
   textForResubmit,
   handleMessageFromStream,
+  isStreamItem,
+  thinkingAfterLanding,
+  estimateTokensFromChars,
+  CHARS_PER_ESTIMATED_TOKEN,
+  type ApiMetricsEvent,
+  type QueryEvent,
+  type StreamHandlerOptions,
+  type StreamItem,
   type StreamingToolUse,
   type StreamingThinking,
   isCompactBoundaryMessage,
@@ -2669,114 +2677,166 @@ export function REPL({
     onBackgroundQuery: handleBackgroundQuery,
   });
 
-  const onQueryEvent = useCallback(
-    (event: Parameters<typeof handleMessageFromStream>[0]) => {
-      handleMessageFromStream(
-        event,
-        newMessage => {
-          if (isCompactBoundaryMessage(newMessage)) {
-            // Fullscreen: keep pre-compact messages for scrollback. query.ts
-            // slices at the boundary for API calls, Messages.tsx skips the
-            // boundary filter in fullscreen, and useLogMessages treats this
-            // as an incremental append (first uuid unchanged). Cap at one
-            // compact-interval of scrollback — normalizeMessages/applyGrouping
-            // are O(n) per render, so drop everything before the previous
-            // boundary to keep n bounded across multi-day sessions.
-            if (isFullscreenEnvEnabled()) {
-              setMessages(old => [
-                ...getMessagesAfterCompactBoundary(old, {
-                  includeSnipped: true,
-                }),
-                newMessage,
-              ]);
-            } else {
-              setMessages(() => [newMessage]);
-            }
-            // Bump conversationId so Messages.tsx row keys change and
-            // stale memoized rows remount with post-compact content.
-            setConversationId(randomUUID());
-            // Compaction succeeded — clear the context-blocked flag so ticks resume
-            if (feature('PROACTIVE') || feature('KAIROS')) {
-              proactiveModule?.setContextBlocked(false);
-            }
-          } else if (
-            newMessage.type === 'progress' &&
+  /**
+   * Un mensaje completo que el bucle entrega: la lapida retira, el resumen de
+   * SDK se ignora y el resto entra al historial. La frontera de compactacion
+   * reemplaza; el progreso efimero sustituye al anterior del mismo tool.
+   */
+  const deliverCompleteMessage = useCallback(
+    (item: Exclude<QueryEvent, StreamItem>) => {
+      if (item.type === 'tombstone') {
+        const tombstonedMessage = item.message;
+        setMessages(oldMessages => oldMessages.filter(m => m !== tombstonedMessage));
+        void removeTranscriptMessage(tombstonedMessage.uuid);
+        return;
+      }
+      if (item.type === 'tool_use_summary') return;
+      const newMessage = item;
+      const landedThinking = thinkingAfterLanding(newMessage);
+      if (landedThinking) setStreamingThinking(landedThinking);
+      // El texto parcial se retira en el mismo lote en que llega el mensaje
+      // final, para que la vista pase de uno a otro sin hueco ni duplicado.
+      onStreamingText(() => null);
+      if (isCompactBoundaryMessage(newMessage)) {
+        // Fullscreen: keep pre-compact messages for scrollback. query.ts
+        // slices at the boundary for API calls, Messages.tsx skips the
+        // boundary filter in fullscreen, and useLogMessages treats this
+        // as an incremental append (first uuid unchanged). Cap at one
+        // compact-interval of scrollback — normalizeMessages/applyGrouping
+        // are O(n) per render, so drop everything before the previous
+        // boundary to keep n bounded across multi-day sessions.
+        if (isFullscreenEnvEnabled()) {
+          setMessages(old => [
+            ...getMessagesAfterCompactBoundary(old, {
+              includeSnipped: true,
+            }),
+            newMessage,
+          ]);
+        } else {
+          setMessages(() => [newMessage]);
+        }
+        // Bump conversationId so Messages.tsx row keys change and
+        // stale memoized rows remount with post-compact content.
+        setConversationId(randomUUID());
+        // Compaction succeeded — clear the context-blocked flag so ticks resume
+        if (feature('PROACTIVE') || feature('KAIROS')) {
+          proactiveModule?.setContextBlocked(false);
+        }
+      } else if (
+        newMessage.type === 'progress' &&
+        typeof newMessage.data === 'object' &&
+        newMessage.data !== null &&
+        'type' in newMessage.data &&
+        isEphemeralToolProgress(newMessage.data.type)
+      ) {
+        // Replace the previous ephemeral progress tick for the same tool
+        // call instead of appending. Sleep/Bash emit a tick per second and
+        // only the last one is rendered; appending blows up the messages
+        // array (13k+ observed) and the transcript (120MB of sleep_progress
+        // lines). useLogMessages tracks length, so same-length replacement
+        // also skips the transcript write.
+        // agent_progress / hook_progress / skill_progress are NOT ephemeral
+        // — each carries distinct state the UI needs (e.g. subagent tool
+        // history). Replacing those leaves the AgentTool UI stuck at
+        // "Initializing…" because it renders the full progress trail.
+        setMessages(oldMessages => {
+          const last = oldMessages.at(-1);
+          if (
+            last?.type === 'progress' &&
+            last.parentToolUseID === newMessage.parentToolUseID &&
+            last.data &&
+            typeof last.data === 'object' &&
+            'type' in last.data &&
+            newMessage.data &&
             typeof newMessage.data === 'object' &&
-            newMessage.data !== null &&
             'type' in newMessage.data &&
-            isEphemeralToolProgress(newMessage.data.type)
+            last.data.type === newMessage.data.type
           ) {
-            // Replace the previous ephemeral progress tick for the same tool
-            // call instead of appending. Sleep/Bash emit a tick per second and
-            // only the last one is rendered; appending blows up the messages
-            // array (13k+ observed) and the transcript (120MB of sleep_progress
-            // lines). useLogMessages tracks length, so same-length replacement
-            // also skips the transcript write.
-            // agent_progress / hook_progress / skill_progress are NOT ephemeral
-            // — each carries distinct state the UI needs (e.g. subagent tool
-            // history). Replacing those leaves the AgentTool UI stuck at
-            // "Initializing…" because it renders the full progress trail.
-            setMessages(oldMessages => {
-              const last = oldMessages.at(-1);
-              if (
-                last?.type === 'progress' &&
-                last.parentToolUseID === newMessage.parentToolUseID &&
-                last.data &&
-                typeof last.data === 'object' &&
-                'type' in last.data &&
-                newMessage.data &&
-                typeof newMessage.data === 'object' &&
-                'type' in newMessage.data &&
-                last.data.type === newMessage.data.type
-              ) {
-                const copy = oldMessages.slice();
-                copy[copy.length - 1] = newMessage;
-                return copy;
-              }
-              return [...oldMessages, newMessage];
-            });
-          } else {
-            setMessages(oldMessages => [...oldMessages, newMessage]);
+            const copy = oldMessages.slice();
+            copy[copy.length - 1] = newMessage;
+            return copy;
           }
-          // Block ticks on API errors to prevent tick → error → tick
-          // runaway loops (e.g., auth failure, rate limit, blocking limit).
-          // Cleared on compact boundary (above) or successful response (below).
-          if (feature('PROACTIVE') || feature('KAIROS')) {
-            if (newMessage.type === 'assistant' && 'isApiErrorMessage' in newMessage && newMessage.isApiErrorMessage) {
-              proactiveModule?.setContextBlocked(true);
-            } else if (newMessage.type === 'assistant') {
-              proactiveModule?.setContextBlocked(false);
-            }
-          }
-        },
-        newContent => {
-          // setResponseLength handles updating both responseLengthRef (for
-          // spinner animation) and apiMetricsRef (endResponseLength/lastTokenTime
-          // for OTPS). No separate metrics update needed here.
-          setResponseLength(length => length + newContent.length);
-        },
-        setStreamMode,
-        setStreamingToolUses,
-        tombstonedMessage => {
-          setMessages(oldMessages => oldMessages.filter(m => m !== tombstonedMessage));
-          void removeTranscriptMessage(tombstonedMessage.uuid);
-        },
-        setStreamingThinking,
-        metrics => {
+          return [...oldMessages, newMessage];
+        });
+      } else {
+        setMessages(oldMessages => [...oldMessages, newMessage]);
+      }
+      // Block ticks on API errors to prevent tick → error → tick
+      // runaway loops (e.g., auth failure, rate limit, blocking limit).
+      // Cleared on compact boundary (above) or successful response (below).
+      if (feature('PROACTIVE') || feature('KAIROS')) {
+        if (newMessage.type === 'assistant' && 'isApiErrorMessage' in newMessage && newMessage.isApiErrorMessage) {
+          proactiveModule?.setContextBlocked(true);
+        } else if (newMessage.type === 'assistant') {
+          proactiveModule?.setContextBlocked(false);
+        }
+      }
+    },
+    [setMessages, setStreamingThinking, onStreamingText],
+  );
+
+  // El pensamiento no pasa por onUpdateLength: llega como tokens estimados y
+  // se convierte a caracteres para el mismo largo que mide el spinner. La firma
+  // refina el bloque solo cuando estima mas que su texto (pensamiento
+  // redactado); content_block_start reinicia esa cuenta.
+  const thinkingBlockTokensRef = useRef(0);
+  const recordApiMetric = useCallback(
+    (event: ApiMetricsEvent) => {
+      switch (event.type) {
+        case 'start': {
           const now = Date.now();
           const baseline = responseLengthRef.current;
           apiMetricsRef.current.push({
-            ...metrics,
+            ttftMs: event.ttftMs,
             firstTokenTime: now,
             lastTokenTime: now,
             responseLengthBaseline: baseline,
             endResponseLength: baseline,
           });
-        },
-        onStreamingText,
-      );
+          return;
+        }
+        case 'content_block_start':
+          thinkingBlockTokensRef.current = 0;
+          return;
+        case 'thinking_progress':
+          thinkingBlockTokensRef.current += event.estimatedTokensDelta;
+          setResponseLength(length => length + event.estimatedTokensDelta * CHARS_PER_ESTIMATED_TOKEN);
+          return;
+        case 'thinking_signature': {
+          const signatureTokens = estimateTokensFromChars(event.chars);
+          const missingTokens = signatureTokens - thinkingBlockTokensRef.current;
+          if (missingTokens <= 0) return;
+          thinkingBlockTokensRef.current = signatureTokens;
+          setResponseLength(length => length + missingTokens * CHARS_PER_ESTIMATED_TOKEN);
+          return;
+        }
+      }
     },
-    [setMessages, setResponseLength, setStreamMode, setStreamingToolUses, setStreamingThinking, onStreamingText],
+    [setResponseLength],
+  );
+
+  const streamHandlerOptions = useMemo<StreamHandlerOptions>(
+    () => ({
+      onSetStreamMode: setStreamMode,
+      // setResponseLength actualiza responseLengthRef (animacion del spinner)
+      // y apiMetricsRef (endResponseLength/lastTokenTime para OTPS).
+      onUpdateLength: charactersStreamed => setResponseLength(length => length + charactersStreamed),
+      onStreamingToolUses: setStreamingToolUses,
+      onStreamingText,
+      onApiMetrics: recordApiMetric,
+    }),
+    [setStreamMode, setResponseLength, setStreamingToolUses, onStreamingText, recordApiMetric],
+  );
+
+  const onQueryEvent = useCallback(
+    (event: QueryEvent) => {
+      if (isStreamItem(event)) {
+        handleMessageFromStream(event, streamHandlerOptions);
+        return;
+      }
+      deliverCompleteMessage(event);
+    },
+    [streamHandlerOptions, deliverCompleteMessage],
   );
 
   const onQueryImpl = useCallback(

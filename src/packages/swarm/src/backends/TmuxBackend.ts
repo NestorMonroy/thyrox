@@ -29,6 +29,7 @@ import type { AgentColorName } from '../adapters/appRuntime.js'
 import {
   getSwarmSocketName,
   HIDDEN_SESSION_NAME,
+  SWARM_PANE_PLACEHOLDER_COMMAND,
   SWARM_SESSION_NAME,
   SWARM_VIEW_WINDOW_NAME,
   TMUX_COMMAND,
@@ -450,6 +451,8 @@ export class TmuxBackend implements PaneBackend {
         '-P',
         '-F',
         '#{pane_id}',
+      '--',
+      SWARM_PANE_PLACEHOLDER_COMMAND,
       ])
 
       if (result.code !== 0) {
@@ -499,6 +502,8 @@ export class TmuxBackend implements PaneBackend {
       '-P',
       '-F',
       '#{pane_id}',
+    '--',
+    SWARM_PANE_PLACEHOLDER_COMMAND,
     ])
 
     if (createResult.code !== 0) {
@@ -540,6 +545,8 @@ export class TmuxBackend implements PaneBackend {
         '-P',
         '-F',
         '#{pane_id}',
+      '--',
+      SWARM_PANE_PLACEHOLDER_COMMAND,
       ])
     } else {
       const listResult = await execFileNoThrow(TMUX_COMMAND, [
@@ -570,6 +577,8 @@ export class TmuxBackend implements PaneBackend {
         '-P',
         '-F',
         '#{pane_id}',
+      '--',
+      SWARM_PANE_PLACEHOLDER_COMMAND,
       ])
     }
 
@@ -642,6 +651,8 @@ export class TmuxBackend implements PaneBackend {
         '-P',
         '-F',
         '#{pane_id}',
+      '--',
+      SWARM_PANE_PLACEHOLDER_COMMAND,
       ])
 
       if (splitResult.code !== 0) {

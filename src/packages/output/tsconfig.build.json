@@ -135,7 +135,9 @@
     "**/*.test.ts",
     "**/*.test.tsx",
     "**/*.spec.ts",
-    "**/*.spec.tsx"
+    "**/*.spec.tsx",
+    "node_modules",
+    "dist"
   ],
   "files": [
     "../../types/build-globals.d.ts"

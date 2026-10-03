@@ -70,3 +70,17 @@ un trabajo del daemon se persiste por la API de su dominio (`@thyrox/task`,
 `@thyrox/finding`, `recordError` del error store de `@thyrox/local-observability`), que a su vez va
 a `@thyrox/store`. El daemon no abre bases ni guarda datos de dominio en sus
 archivos: sería volverlo el dueño de todo.
+
+## SQLite es local; lo compartido no viaja por git
+
+Revisión 1.3.0 de ADR-THYROX-006. SQLite guarda lo de una sesión o una
+instalación y las cachés reconstruibles; no hace de base compartida mediante
+archivos por sesión fusionados con `merge=sqlite-union`. `agent_sessions` y
+`tasks` van a la autoridad PostgreSQL de D4-B; el corpus semántico, a
+PostgreSQL + pgvector (ADR-008), nunca a SQLite.
+
+- Modo local: SQLite a propósito. Modo compartido: PostgreSQL obligatorio.
+- Con PostgreSQL caído en modo compartido se rehúsa con error; nunca se
+  escribe en SQLite local declarando éxito.
+- El archivo no se copia entero: cada tabla va según su naturaleza (la tabla
+  de destinos vive en el ADR).

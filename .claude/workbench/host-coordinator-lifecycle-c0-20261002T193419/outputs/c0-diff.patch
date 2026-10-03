@@ -1,0 +1,497 @@
+diff --git a/.env.example b/.env.example
+index 3d3fc0940..7147c50da 100644
+--- a/.env.example
++++ b/.env.example
+@@ -255,6 +255,12 @@ HEADLESS_POOL_RUNNER=
+ # el código de producción no la escribe.
+ THYROX_MANAGED_EXECUTION_RUNNER=
+ 
++# El daemon que aloja el coordinador de modelos del anfitrión, tal como lo
++# invoca `bin/model_coordinator` (`<argv> bg run|status|stop`). Vacía: el
++# daemon de thyrox con `--feature=DAEMON`. Sólo las suites la fijan, con un
++# doble que hable ese contrato; el código de producción no la escribe.
++THYROX_MODEL_COORDINATOR_DAEMON=
++
+ # `src/lib/managed_execution.sh`: la entrada por la que corre una unidad. La
+ # unidad la hereda porque el orquestador la pide como `--env` al runner, y su
+ # payload la escribe como campo `entry` en cada línea del manifiesto
+diff --git a/bin/model_coordinator b/bin/model_coordinator
+new file mode 100755
+index 000000000..8c680f2e2
+--- /dev/null
++++ b/bin/model_coordinator
+@@ -0,0 +1,6 @@
++#!/usr/bin/env bash
++# Generado por src/session/generate_bin.py — no editar a mano.
++THYROX_ROOT="${THYROX_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}"
++export THYROX_ROOT
++export PYTHONPATH="$THYROX_ROOT/src${PYTHONPATH:+:$PYTHONPATH}"
++exec "$THYROX_ROOT/src/session/model_coordinator.sh" "$@"
+diff --git a/src/packages/daemon/src/__tests__/bgDaemonTimers.test.ts b/src/packages/daemon/src/__tests__/bgDaemonTimers.test.ts
+index fb3e70609..1615d658e 100644
+--- a/src/packages/daemon/src/__tests__/bgDaemonTimers.test.ts
++++ b/src/packages/daemon/src/__tests__/bgDaemonTimers.test.ts
+@@ -37,6 +37,14 @@ describe('makeIdleActivityCount', () => {
+     state.workers = { size: 5 }
+     expect(count()).toBe(5)
+   })
++
++  test("counts the model coordinator admissions, so a live residency keeps the daemon", () => {
++    let admissions = 1
++    const count = makeIdleActivityCount({ leases: { size: 0 }, workers: { size: 0 }, detached: { size: 0 } }, () => admissions)
++    expect(count()).toBe(1)
++    admissions = 0
++    expect(count()).toBe(0)
++  })
+ })
+ 
+ describe('setupIdleExitWatchdog', () => {
+diff --git a/src/packages/daemon/src/__tests__/modelCoordinatorSupervision.test.ts b/src/packages/daemon/src/__tests__/modelCoordinatorSupervision.test.ts
+index eb407c3ae..a74c7a82e 100644
+--- a/src/packages/daemon/src/__tests__/modelCoordinatorSupervision.test.ts
++++ b/src/packages/daemon/src/__tests__/modelCoordinatorSupervision.test.ts
+@@ -22,7 +22,7 @@ function recordingLog(): SupervisorLogSink & { lines: string[] } {
+ function starterOf(outcome: { socketPath: string; sweptUnits: string[] } | Error, stops: string[]): ModelCoordinatorStarter {
+   return async () => {
+     if (outcome instanceof Error) throw outcome
+-    return { socketPath: outcome.socketPath, sweptUnits: outcome.sweptUnits, stop: async () => { stops.push('stop') } }
++    return { socketPath: outcome.socketPath, sweptUnits: outcome.sweptUnits, activeAdmissions: () => 2, stop: async () => { stops.push('stop') } }
+   }
+ }
+ 
+@@ -46,9 +46,16 @@ describe('startModelCoordinatorSupervision', () => {
+ 
+   test('un apagado que falla se declara y no lanza', async () => {
+     const log = recordingLog()
+-    const starter: ModelCoordinatorStarter = async () => ({ socketPath: '/s', sweptUnits: [], stop: async () => { throw new Error('podman rm falló') } })
++    const starter: ModelCoordinatorStarter = async () => ({ socketPath: '/s', sweptUnits: [], activeAdmissions: () => 0, stop: async () => { throw new Error('podman rm falló') } })
+     const supervision = await startModelCoordinatorSupervision(starter, log)
+     await supervision.shutdown()
+     expect(log.lines.at(-1)).toBe(`${MODEL_COORDINATOR_LOG_LABEL}: no se detuvo limpio (podman rm falló)`)
+   })
++
++  test('publica las admisiones vivas del coordinador como actividad; sin coordinador, cero', async () => {
++    const running = await startModelCoordinatorSupervision(starterOf({ socketPath: '/s', sweptUnits: [] }, []), recordingLog())
++    expect(running.activity()).toBe(2)
++    const inactive = await startModelCoordinatorSupervision(starterOf(new Error('sin podman'), []), recordingLog())
++    expect(inactive.activity()).toBe(0)
++  })
+ })
+diff --git a/src/packages/daemon/src/bgDaemon.ts b/src/packages/daemon/src/bgDaemon.ts
+index 472fc8cfa..0db400911 100644
+--- a/src/packages/daemon/src/bgDaemon.ts
++++ b/src/packages/daemon/src/bgDaemon.ts
+@@ -443,6 +443,8 @@ export async function bgDaemonMain(args: readonly string[], deps: BgDaemonDeps =
+   // inactividad + auto-reinicio al actualizar el binario. Las
+   // implementaciones viven en ./bgDaemonTimers.ts para mantener este
+   // archivo bajo el presupuesto de 800 LOC.
++  // El coordinador arranca más abajo; hasta entonces no aporta actividad.
++  let coordinatorActivity: () => number = () => 0
+   const upgradeWatchdog = setupUpgradeWatchdog(state.abort, {
+     busyWorkerCount: () => countBusyWorkers(state.workers),
+     busyDeferCapMs: thresholds.upgradeBusyDeferCapMs,
+@@ -452,7 +454,7 @@ export async function bgDaemonMain(args: readonly string[], deps: BgDaemonDeps =
+     abort: state.abort,
+     idleGraceMs: thresholds.idleGraceMs,
+     startupIdleGraceMs: thresholds.startupIdleGraceMs,
+-    countActivity: makeIdleActivityCount(state),
++    countActivity: makeIdleActivityCount(state, () => coordinatorActivity()),
+     isUpgradePending: upgradeWatchdog.isUpgradePending,
+   })
+   const idleProbeTimer = setInterval(idleExit.probe, IDLE_PROBE_INTERVAL_MS)
+@@ -1085,6 +1087,7 @@ export async function bgDaemonMain(args: readonly string[], deps: BgDaemonDeps =
+   // modelos locales (ADR-007 1.14.0). Si no arranca, el daemon sigue.
+   const coordinatorSupervision = await startModelCoordinatorSupervision(
+     deps.modelCoordinator ?? startHostModelCoordinator, supervisorLog)
++  coordinatorActivity = () => coordinatorSupervision.activity()
+ 
+   await new Promise<void>(resolve => {
+     if (state.abort.signal.aborted) {
+diff --git a/src/packages/daemon/src/bgDaemonTimers.ts b/src/packages/daemon/src/bgDaemonTimers.ts
+index 91bff10ee..f3c5a22e0 100644
+--- a/src/packages/daemon/src/bgDaemonTimers.ts
++++ b/src/packages/daemon/src/bgDaemonTimers.ts
+@@ -69,15 +69,20 @@ export function resolveStartupThresholds(
+ 
+ /**
+  * Cuenta todo lo que retiene al supervisor: leases (clientes conectados),
+- * workers vivos y workers desatendidos. Cero significa inactivo, y un
+- * daemon transitorio puede apagarse solo.
++ * workers vivos, workers desatendidos y las admisiones vivas del
++ * coordinador de modelos, porque una residencia en uso necesita al daemon
++ * que la aloja. Cero significa inactivo, y un daemon transitorio puede
++ * apagarse solo.
+  */
+-export function makeIdleActivityCount(state: {
+-  leases: { readonly size: number }
+-  workers: { readonly size: number }
+-  detached: { readonly size: number }
+-}): () => number {
+-  return () => state.leases.size + state.workers.size + state.detached.size
++export function makeIdleActivityCount(
++  state: {
++    leases: { readonly size: number }
++    workers: { readonly size: number }
++    detached: { readonly size: number }
++  },
++  coordinatorActivity: () => number = () => 0,
++): () => number {
++  return () => state.leases.size + state.workers.size + state.detached.size + coordinatorActivity()
+ }
+ 
+ export interface IdleExitOptions {
+diff --git a/src/packages/daemon/src/modelCoordinatorSupervision.ts b/src/packages/daemon/src/modelCoordinatorSupervision.ts
+index 08dddc155..97f260a64 100644
+--- a/src/packages/daemon/src/modelCoordinatorSupervision.ts
++++ b/src/packages/daemon/src/modelCoordinatorSupervision.ts
+@@ -20,17 +20,30 @@ import type { SupervisorLogSink, WorkerSupervision } from './podmanWorkerSupervi
+ export const MODEL_COORDINATOR_LOG_LABEL = 'model-coordinator'
+ 
+ /** Lo que el daemon necesita de un coordinador arrancado. */
+-export type RunningModelCoordinator = { socketPath: string; sweptUnits: readonly string[]; stop(): Promise<void> }
++export type RunningModelCoordinator = { socketPath: string; sweptUnits: readonly string[]; activeAdmissions(): number; stop(): Promise<void> }
++
++/** La supervisión del coordinador: además de apagarlo, publica su actividad para el watchdog de inactividad. */
++export interface ModelCoordinatorSupervision extends WorkerSupervision {
++  activity(): number
++}
+ 
+ export type ModelCoordinatorStarter = () => Promise<RunningModelCoordinator>
+ 
+-class InactiveCoordinatorSupervision implements WorkerSupervision {
++class InactiveCoordinatorSupervision implements ModelCoordinatorSupervision {
++  activity(): number {
++    return 0
++  }
++
+   async shutdown(): Promise<void> {}
+ }
+ 
+-class ActiveCoordinatorSupervision implements WorkerSupervision {
++class ActiveCoordinatorSupervision implements ModelCoordinatorSupervision {
+   constructor(private readonly coordinator: RunningModelCoordinator, private readonly log: SupervisorLogSink) {}
+ 
++  activity(): number {
++    return this.coordinator.activeAdmissions()
++  }
++
+   async shutdown(): Promise<void> {
+     try {
+       await this.coordinator.stop()
+@@ -42,7 +55,7 @@ class ActiveCoordinatorSupervision implements WorkerSupervision {
+ }
+ 
+ /** Arranca el coordinador; nunca lanza. */
+-export async function startModelCoordinatorSupervision(start: ModelCoordinatorStarter, log: SupervisorLogSink): Promise<WorkerSupervision> {
++export async function startModelCoordinatorSupervision(start: ModelCoordinatorStarter, log: SupervisorLogSink): Promise<ModelCoordinatorSupervision> {
+   let coordinator: RunningModelCoordinator
+   try {
+     coordinator = await start()
+@@ -71,5 +84,10 @@ function thyroxRoot(): string {
+ export const startHostModelCoordinator: ModelCoordinatorStarter = async () => {
+   const { options } = composeHostCoordinatorService(process.env, thyroxRoot())
+   const service = await startHostCoordinatorService(options)
+-  return { socketPath: service.server.socketPath, sweptUnits: service.sweptUnits, stop: () => service.stop() }
++  return {
++    socketPath: service.server.socketPath,
++    sweptUnits: service.sweptUnits,
++    activeAdmissions: () => service.activeAdmissions(),
++    stop: () => service.stop(),
++  }
+ }
+diff --git a/src/packages/model-scheduling/__tests__/hostCoordinatorService.test.ts b/src/packages/model-scheduling/__tests__/hostCoordinatorService.test.ts
+index e91cff98b..82aa2307e 100644
+--- a/src/packages/model-scheduling/__tests__/hostCoordinatorService.test.ts
++++ b/src/packages/model-scheduling/__tests__/hostCoordinatorService.test.ts
+@@ -131,4 +131,29 @@ describe('startHostCoordinatorService', () => {
+     expect(existsSync(socketPath)).toBe(false)
+     expect(coordinationClosed).toBe(1)
+   })
++
++  test("publica cuántas admisiones siguen vivas", async () => {
++    const service = await start()
++    expect(service.activeAdmissions()).toBe(0)
++    coordinator.admitLive("residency-1")
++    coordinator.admitLive("residency-2")
++    expect(service.activeAdmissions()).toBe(2)
++    await service.stop()
++  })
++
++  test("al detenerse retira también las unidades que quedaron calientes sin admisión", async () => {
++    const service = await start()
++    primitive.live.push(orphan("unit-warm", "residency-warm"))
++    await service.stop()
++    expect(await primitive.units()).toEqual([])
++    expect(journal).toContain("primitive.destroy unit-warm")
++  })
++
++  test("una unidad caliente que no se deja retirar al detenerse se declara, sin dejar el socket", async () => {
++    const service = await start()
++    primitive.live.push(orphan("unit-stuck", "residency-stuck"))
++    primitive.failDestroy = true
++    await expect(service.stop()).rejects.toBeInstanceOf(OrphanUnitSurvivedError)
++    expect(existsSync(socketPath)).toBe(false)
++  })
+ })
+diff --git a/src/packages/model-scheduling/hostCoordinatorService.ts b/src/packages/model-scheduling/hostCoordinatorService.ts
+index 826f7ac1e..cfc6a1630 100644
+--- a/src/packages/model-scheduling/hostCoordinatorService.ts
++++ b/src/packages/model-scheduling/hostCoordinatorService.ts
+@@ -10,8 +10,10 @@
+  * servir junto a una unidad que no controla rompería la cuenta de memoria.
+  *
+  * Al detenerse, desaloja cada residencia con admisiones vivas, cierra el
+- * servidor (que suelta los tickets de sus conexiones) y cierra la
+- * coordinación.
++ * servidor (que suelta los tickets de sus conexiones), retira con el mismo
++ * barrido del arranque toda unidad que siga listada —una residencia caliente
++ * sin admisión no la desaloja nadie más— y cierra la coordinación. Una unidad
++ * que no se deja retirar se declara con `OrphanUnitSurvivedError`.
+  */
+ import type { ModelSchedulingCoordination } from './coordination.ts'
+ import { startModelCoordinatorServer, type ModelCoordinatorServer, type ServedCoordinator } from './coordinatorServer.ts'
+@@ -32,6 +34,8 @@ export interface HostCoordinatorService {
+   readonly server: ModelCoordinatorServer
+   /** Las unidades de una encarnación anterior destruidas al arrancar. */
+   readonly sweptUnits: readonly string[]
++  /** Las admisiones vivas: trabajo que todavía necesita al coordinador. */
++  activeAdmissions(): number
+   stop(): Promise<void>
+ }
+ 
+@@ -46,7 +50,12 @@ export class OrphanUnitSurvivedError extends Error {
+ export async function startHostCoordinatorService(options: HostCoordinatorServiceOptions): Promise<HostCoordinatorService> {
+   const sweptUnits = await sweepOrphanUnits(options.primitive)
+   const server = await startModelCoordinatorServer(options.coordinator, { socketPath: options.socketPath })
+-  return { server, sweptUnits, stop: () => stopService(options, server) }
++  return {
++    server,
++    sweptUnits,
++    activeAdmissions: () => options.coordinator.admissions().length,
++    stop: () => stopService(options, server),
++  }
+ }
+ 
+ /** Destruye cada unidad listada y comprueba que ya no lo esté; una que sobrevive impide arrancar. */
+@@ -66,5 +75,9 @@ async function stopService(options: HostCoordinatorServiceOptions, server: Model
+   const residencies = new Set(options.coordinator.admissions().map(ticket => ticket.unit.residencyKey))
+   for (const residencyKey of residencies) await options.coordinator.evict(residencyKey)
+   await server.close()
+-  await options.coordination.close()
++  try {
++    await sweepOrphanUnits(options.primitive)
++  } finally {
++    await options.coordination.close()
++  }
+ }
+diff --git a/src/session/control_plane_entries.tsv b/src/session/control_plane_entries.tsv
+index 616f7403c..970b2433c 100644
+--- a/src/session/control_plane_entries.tsv
++++ b/src/session/control_plane_entries.tsv
+@@ -6,3 +6,4 @@ infrastructure_ensure	src/session/infrastructure_ensure.sh	orquesta el bootstrap
+ infrastructure-bootstrap	src/packages/infrastructure/bin/bootstrap.ts	entrega el estado deseado a ensureResource
+ podman_lock_recovery	src/session/podman_lock_recovery.sh	recuperación explícita del motor, pedida por un operador
+ task_continuation	src/session/task_continuation.py	materializa la frontera de un plan declarado con GNU Parallel; despacha, verifica e integra en unidades
++model_coordinator	src/session/model_coordinator.sh	ciclo de vida del coordinador de modelos del anfitrión; el daemon materializa sus unidades por la primitiva
+diff --git a/src/session/model_coordinator.sh b/src/session/model_coordinator.sh
+new file mode 100755
+index 000000000..208423c73
+--- /dev/null
++++ b/src/session/model_coordinator.sh
+@@ -0,0 +1,96 @@
++#!/usr/bin/env bash
++# =============================================================================
++# model_coordinator.sh — el ciclo de vida del coordinador de modelos del
++# anfitrión (ADR-007 1.14.0, TASK-THYROX-0910)
++# =============================================================================
++#
++#   model_coordinator start    lo lanza si no corre; imprime el socket canónico
++#   model_coordinator status   sale 0 si el coordinador corre
++#   model_coordinator stop     lo detiene por el RPC del daemon
++#   model_coordinator run      el daemon en primer plano (lo que `start` lanza)
++#
++# El coordinador vive dentro del daemon de thyrox, que es único por anfitrión
++# (`daemonLock`). Esta entrada no añade un supervisor: `start` entrega `run` a
++# `thyrox-bg`, que le da log, ledger y barrera, y `status`/`stop` hablan con el
++# daemon por su RPC (`daemon bg status|stop`). El origen es `service`: un
++# coordinador declarado no sale por inactividad entre dos clientes; lo detiene
++# quien lo declaró.
++#
++# El socket es el de `model-scheduling-socket-path`, el mismo que los
++# consumidores montan en una unidad (`headless-pool.sh`). `start` lo da por
++# arrancado cuando acepta conexiones, no cuando el archivo existe: un socket
++# de una encarnación muerta también existe.
++#
++# `THYROX_MODEL_COORDINATOR_DAEMON` sólo declara un doble que habla el
++# contrato `bg run|status|stop`, como `THYROX_MANAGED_EXECUTION_RUNNER`.
++#
++# Salidas: 0 hecho · 1 `status` sin coordinador · 2 uso · 3 el socket no
++# apareció a tiempo.
++# =============================================================================
++set -uo pipefail
++
++ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
++readonly JOB_NAME="model-coordinator"
++readonly START_TIMEOUT_SECONDS=120
++
++# @description El argv del daemon, un elemento por línea.
++daemon_argv() {
++  if [[ -n "${THYROX_MODEL_COORDINATOR_DAEMON:-}" ]]; then
++    printf '%s\n' "$THYROX_MODEL_COORDINATOR_DAEMON"
++    return
++  fi
++  source "$ROOT/src/lib/toolchain.sh"
++  THYROX_TOOLCHAIN_NODE_MODULES_HOME="${THYROX_TOOLCHAIN_NODE_MODULES_HOME:-$ROOT/node_modules}" \
++    thyrox_toolchain_require_bun >&2 || return 1
++  printf '%s\n' "${THYROX_TOOLCHAIN_BUN_BIN:-bun}" --feature=DAEMON --feature=UDS_INBOX \
++    "$ROOT/src/packages/cli/src/entry/cli.tsx" daemon
++}
++
++socket_path() {
++  bash "$ROOT/bin/model-scheduling-socket-path"
++}
++
++# @description ¿Acepta conexiones el socket? Un archivo sin servidor no cuenta.
++accepts_connections() {
++  python3 -c 'import socket, sys; s = socket.socket(socket.AF_UNIX); s.connect(sys.argv[1])' "$1" 2>/dev/null
++}
++
++daemon() {
++  local argv
++  mapfile -t argv < <(daemon_argv) || return 1
++  [[ ${#argv[@]} -gt 0 ]] || return 1
++  "${argv[@]}" bg "$@"
++}
++
++start() {
++  local socket
++  socket="$(socket_path)" || return 2
++  if accepts_connections "$socket"; then
++    echo "model_coordinator: ya corre" >&2
++    echo "$socket"
++    return 0
++  fi
++  bash "$ROOT/bin/thyrox-bg" start "$JOB_NAME" --grace 0 -- "$ROOT/bin/model_coordinator" run >&2 || return $?
++  local waited=0
++  until accepts_connections "$socket"; do
++    if [[ "$(bash "$ROOT/bin/thyrox-bg" status "$JOB_NAME" 2>/dev/null)" == done:* ]]; then
++      echo "model_coordinator: el daemon terminó sin abrir $socket; log: bash bin/thyrox-bg log $JOB_NAME" >&2
++      return 3
++    fi
++    if (( waited >= START_TIMEOUT_SECONDS * 10 )); then
++      echo "model_coordinator: el socket $socket no aceptó conexiones en ${START_TIMEOUT_SECONDS} s; log: bash bin/thyrox-bg log $JOB_NAME" >&2
++      return 3
++    fi
++    sleep 0.1
++    waited=$((waited + 1))
++  done
++  echo "$socket"
++}
++
++case "${1:-}" in
++  start) start ;;
++  status) daemon status ;;
++  stop) daemon stop ;;
++  run) shift; daemon run --origin service "$@" ;;
++  *) echo "uso: model_coordinator start|status|stop|run" >&2; exit 2 ;;
++esac
+diff --git a/tests/session/doubles/model-coordinator-daemon b/tests/session/doubles/model-coordinator-daemon
+new file mode 100755
+index 000000000..5e40c713c
+--- /dev/null
++++ b/tests/session/doubles/model-coordinator-daemon
+@@ -0,0 +1,33 @@
++#!/usr/bin/env bash
++# Doble del daemon que aloja el coordinador de modelos: habla el contrato que
++# `model_coordinator.sh` usa (`bg run --origin <o>`, `bg status`, `bg stop`).
++# `run` abre el socket declarado y atiende hasta SIGTERM; cada llamada queda en
++# `$MODEL_COORDINATOR_DOUBLE_DIR/calls`.
++set -uo pipefail
++dir="${MODEL_COORDINATOR_DOUBLE_DIR:?}"
++socket="${THYROX_MODEL_COORDINATOR_SOCKET:?}"
++shift   # `bg`
++verb="${1:-}"; shift || true
++echo "$verb $*" >> "$dir/calls"
++case "$verb" in
++  run)
++    exec python3 - "$socket" "$dir/daemon.pid" <<'PY'
++import os, signal, socket, sys
++path, pid_file = sys.argv[1], sys.argv[2]
++server = socket.socket(socket.AF_UNIX)
++server.bind(path)
++server.listen(8)
++open(pid_file, "w").write(str(os.getpid()))
++def stop(*_):
++    os.unlink(path)
++    sys.exit(0)
++signal.signal(signal.SIGTERM, stop)
++while True:
++    connection, _ = server.accept()
++    connection.close()
++PY
++    ;;
++  status) kill -0 "$(cat "$dir/daemon.pid" 2>/dev/null)" 2>/dev/null ;;
++  stop) kill -TERM "$(cat "$dir/daemon.pid")" ;;
++  *) exit 2 ;;
++esac
+diff --git a/tests/session/test-model-coordinator-entry.sh b/tests/session/test-model-coordinator-entry.sh
+new file mode 100755
+index 000000000..da0813bad
+--- /dev/null
++++ b/tests/session/test-model-coordinator-entry.sh
+@@ -0,0 +1,55 @@
++#!/usr/bin/env bash
++# =============================================================================
++# test-model-coordinator-entry.sh — el coordinador del anfitrión tiene una
++# entrada declarada del plano de control (TASK-THYROX-0910)
++# =============================================================================
++# Casos:
++#   1. `bin/model_coordinator` es una entrada declarada del plano de control;
++#   2. `start` sin coordinador lo lanza por `thyrox-bg` (queda en el ledger),
++#      con origen `service`, y espera el socket canónico de
++#      `model-scheduling-socket-path`;
++#   3. un segundo `start` con el coordinador vivo no lanza otro daemon;
++#   4. `status` sale 0 con el coordinador vivo;
++#   5. `stop` lo detiene: el socket desaparece y `status` deja de salir 0.
++# Control de anulación: sin la comprobación de vida en `start`, cae el caso 3.
++# =============================================================================
++set -uo pipefail
++cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 1
++ROOT="$PWD"
++ok=0; failures=0
++check() { if [[ "$2" == "$3" ]]; then echo "  ok    $1"; ok=$((ok+1));
++        else echo "  FALLA $1 — esperado [$3] obtenido [$2]"; failures=$((failures+1)); fi; }
++
++TMP="$(mktemp -d)"
++cleanup() { bash "$ROOT/bin/model_coordinator" stop >/dev/null 2>&1; rm -rf "${TMP:?}"; }
++trap cleanup EXIT
++source "$ROOT/src/lib/test_homes.sh"; thyrox_isolate_homes "$TMP/homes"
++export MODEL_COORDINATOR_DOUBLE_DIR="$TMP/double"; mkdir -p "$MODEL_COORDINATOR_DOUBLE_DIR"
++export THYROX_MODEL_COORDINATOR_SOCKET="$TMP/coordinator.sock"
++export THYROX_MODEL_COORDINATOR_DAEMON="$ROOT/tests/session/doubles/model-coordinator-daemon"
++
++source "$ROOT/src/lib/managed_execution.sh"
++thyrox_control_plane_entry "$ROOT/bin/model_coordinator"; check "1 es entrada declarada del plano de control" "$?" "0"
++
++canonical="$(bash "$ROOT/bin/model-scheduling-socket-path")"
++output="$(bash "$ROOT/bin/model_coordinator" start 2>&1)"; rc=$?
++check "2 start sale 0" "$rc" "0"
++check "2 imprime el socket canónico" "$(tail -1 <<<"$output")" "$canonical"
++check "2 el socket acepta conexiones" "$(python3 -c 'import socket,sys; s=socket.socket(socket.AF_UNIX); s.connect(sys.argv[1]); print("vivo")' "$canonical" 2>/dev/null)" "vivo"
++check "2 el daemon corre con origen service" "$(grep -c '^run --origin service' "$MODEL_COORDINATOR_DOUBLE_DIR/calls")" "1"
++check "2 el trabajo está en el ledger de thyrox-bg" "$(bash "$ROOT/bin/thyrox-bg" status model-coordinator 2>/dev/null)" "running"
++
++bash "$ROOT/bin/model_coordinator" start >/dev/null 2>&1; rc=$?
++check "3 un segundo start sale 0" "$rc" "0"
++check "3 no lanza un segundo daemon" "$(grep -c '^run ' "$MODEL_COORDINATOR_DOUBLE_DIR/calls")" "1"
++
++bash "$ROOT/bin/model_coordinator" status >/dev/null 2>&1; check "4 status vivo sale 0" "$?" "0"
++
++bash "$ROOT/bin/model_coordinator" stop >/dev/null 2>&1; check "5 stop sale 0" "$?" "0"
++for _ in $(seq 50); do [[ -S "$canonical" ]] || break; sleep 0.1; done
++check "5 el socket desaparece" "$([[ -S "$canonical" ]] && echo sigue || echo retirado)" "retirado"
++bash "$ROOT/bin/model_coordinator" status >/dev/null 2>&1; check "5 status detenido no sale 0" "$([[ $? -ne 0 ]] && echo detenido || echo vivo)" "detenido"
++bash "$ROOT/bin/thyrox-bg" wait model-coordinator >/dev/null 2>&1
++
++echo "model_coordinator: $ok ok, $failures fallas"
++[[ $failures -eq 0 ]]

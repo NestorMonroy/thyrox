@@ -20,7 +20,7 @@
 // NUNCA rompe el flujo: `main` traga todo error y el proceso sale 0.
 
 import { readFileSync, mkdirSync, appendFileSync, existsSync } from 'node:fs'
-import { join, basename } from 'node:path'
+import { join, basename, dirname } from 'node:path'
 
 /** El nombre del registro es del mecanismo; el directorio, del consumidor. */
 export const LOG_BASENAME = 'registro-de-agentes.md'
@@ -211,12 +211,24 @@ const CABECERA = '# Registro de agentes (auto)\n\n'
   + 'Reporte final de cada subagente, capturado por el hook SubagentStop. '
   + 'Append-only.\n\n---\n'
 
-/** Apenda la entrada, creando el directorio y la cabecera si hacen falta. */
+/**
+ * Apenda la entrada, creando el directorio y la cabecera si hacen falta.
+ *
+ * El consumidor es opcional para thyrox: su estado se recupera del store
+ * SQLite, y un clon retirado para liberar disco no se recrea. El destino tiene
+ * la forma `<raíz>/.claude/agent-results`; se crean como mucho esos dos
+ * niveles, nunca la raíz (H-THYROX-402). Devuelve si la entrada se escribió.
+ */
 export function appendEntry(logFile, entry) {
   const dir = logFile.slice(0, logFile.lastIndexOf('/'))
+  if (!existsSync(dirname(dirname(dir)))) {
+    process.stderr.write(`save_result: el consumidor de ${dir} no está en disco; no se registra\n`)
+    return false
+  }
   if (!existsSync(dir)) mkdirSync(dir, { recursive: true })
   if (!existsSync(logFile)) appendFileSync(logFile, CABECERA)
   appendFileSync(logFile, entry)
+  return true
 }
 
 export function main(argv = process.argv.slice(2), env = process.env) {

@@ -1,0 +1,3584 @@
+diff --git a/bun.lock b/bun.lock
+index 5cc34b633..d3447d98b 100644
+--- a/bun.lock
++++ b/bun.lock
+@@ -326,6 +326,7 @@
+         "@anthropic-ai/sdk": "^0.124.0",
+         "@thyrox/agent": "0.4.0",
+         "@thyrox/config": "0.1.0",
++        "@thyrox/podman-execution": "0.1.0",
+       },
+     },
+     "src/packages/finding": {
+@@ -571,6 +572,10 @@
+         "@types/bun": "^1.4.0",
+       },
+     },
++    "src/packages/podman-execution": {
++      "name": "@thyrox/podman-execution",
++      "version": "0.1.0",
++    },
+     "src/packages/provider": {
+       "name": "@thyrox/provider",
+       "version": "0.1.0",
+@@ -1278,6 +1283,8 @@
+ 
+     "@thyrox/plan": ["@thyrox/plan@workspace:src/packages/plan"],
+ 
++    "@thyrox/podman-execution": ["@thyrox/podman-execution@workspace:src/packages/podman-execution"],
++
+     "@thyrox/provider": ["@thyrox/provider@workspace:src/packages/provider"],
+ 
+     "@thyrox/repl": ["@thyrox/repl@workspace:src/packages/repl"],
+diff --git a/src/packages/daemon/package.json b/src/packages/daemon/package.json
+index 2e8048bda..a79590350 100644
+--- a/src/packages/daemon/package.json
++++ b/src/packages/daemon/package.json
+@@ -69,6 +69,7 @@
+   "dependencies": {
+     "@anthropic-ai/sdk": "^0.124.0",
+     "@thyrox/agent": "0.4.0",
+-    "@thyrox/config": "0.1.0"
++    "@thyrox/config": "0.1.0",
++    "@thyrox/podman-execution": "0.1.0"
+   }
+ }
+diff --git a/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts b/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts
+index 5f203ba68..0d0c458c6 100644
+--- a/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts
++++ b/src/packages/daemon/src/__tests__/podmanWorkerManager.test.ts
+@@ -21,6 +21,7 @@ import {
+ import {
+   InvalidWorkerContainerSpecError,
+   createWorkerContainerArgv,
++  daemonContainerOwner,
+   workerContainerName,
+   type PodmanCommandResult,
+   type PodmanExecutor,
+@@ -42,7 +43,7 @@ function fakePodman(
+       const answer = responses[args[0]]
+       if (answer) return answer
+       if (args[0] === 'inspect') {
+-        return { exitCode: 0, stdout: `running\t${CONTAINER_PID}\t${DAEMON_PID}\tw1`, stderr: '' }
++        return { exitCode: 0, stdout: `running\t${CONTAINER_PID}\tdaemon\t${DAEMON_PID}\t${DAEMON_PID}\tw1`, stderr: '' }
+       }
+       return OK
+     },
+@@ -122,7 +123,7 @@ describe('launch — ruta CPU', () => {
+     expect(podman.calls[0]).toEqual(createWorkerContainerArgv({
+       workerId: 'w1',
+       image: 'localhost/thyrox-worker:test',
+-      daemonPid: DAEMON_PID,
++      owner: daemonContainerOwner(DAEMON_PID),
+       resourceArgv: ['--network', 'none', '--read-only'],
+       command: ['/bin/worker'],
+     }))
+@@ -270,7 +271,7 @@ describe('retire / retireAll / reconcileOrphans', () => {
+     const orphanName = workerContainerName('old')
+     const podman = fakePodman({
+       ps: { exitCode: 0, stdout: `${orphanName}\n`, stderr: '' },
+-      inspect: { exitCode: 0, stdout: `running\t77\t9999\told`, stderr: '' },
++      inspect: { exitCode: 0, stdout: `running\t77\tdaemon\t9999\t9999\told`, stderr: '' },
+     })
+     const manager = new PodmanWorkerManager(deps(podman, { alive: [DAEMON_PID] }))
+     const retirements = await manager.reconcileOrphans()
+diff --git a/src/packages/daemon/src/__tests__/repositoryJobProfile.test.ts b/src/packages/daemon/src/__tests__/repositoryJobProfile.test.ts
+deleted file mode 100644
+index 36661aef7..000000000
+--- a/src/packages/daemon/src/__tests__/repositoryJobProfile.test.ts
++++ /dev/null
+@@ -1,122 +0,0 @@
+-import { describe, expect, test } from 'bun:test'
+-
+-import { DEFAULT_WORKER_RESOURCE_PROFILE, InvalidWorkerResourceProfileError } from '../podman/workerResourceProfile.js'
+-import {
+-  REPOSITORY_CONTAINER_PATH,
+-  UnsupportedRepositoryJobCredentialError,
+-  createRepositoryJobProfile,
+-  repositoryJobProfileArgv,
+-  validateRepositoryJobProfile,
+-  type RepositoryJobProfile,
+-} from '../podman/repositoryJobProfile.js'
+-
+-describe('createRepositoryJobProfile', () => {
+-  test('monta el repositorio en /w y usa los límites por defecto', () => {
+-    const profile = createRepositoryJobProfile('/host/repo')
+-    expect(profile.repositoryHostPath).toBe('/host/repo')
+-    expect(profile.resources).toBe(DEFAULT_WORKER_RESOURCE_PROFILE)
+-    expect(profile.credential).toBeUndefined()
+-  })
+-
+-  test('valida sin rehusar', () => {
+-    expect(() => validateRepositoryJobProfile(createRepositoryJobProfile('/host/repo'))).not.toThrow()
+-  })
+-})
+-
+-describe('repositoryJobProfileArgv', () => {
+-  test('argv exacto del perfil por defecto: límites de recursos + montaje overlay del repo', () => {
+-    const profile = createRepositoryJobProfile('/host/repo')
+-    expect(repositoryJobProfileArgv(profile)).toEqual([
+-      '--cpus', String(DEFAULT_WORKER_RESOURCE_PROFILE.cpus),
+-      '--memory', `${DEFAULT_WORKER_RESOURCE_PROFILE.memoryMib}m`,
+-      '--pids-limit', String(DEFAULT_WORKER_RESOURCE_PROFILE.pidsLimit),
+-      '--network', 'none',
+-      '--read-only', '--read-only-tmpfs=false',
+-      '-v', `/host/repo:${REPOSITORY_CONTAINER_PATH}:O`,
+-    ])
+-  })
+-
+-  test('REPOSITORY_CONTAINER_PATH es /w', () => {
+-    expect(REPOSITORY_CONTAINER_PATH).toBe('/w')
+-  })
+-
+-  test('argv de un perfil con red y montajes adicionales declarados explícitamente', () => {
+-    const profile: RepositoryJobProfile = {
+-      repositoryHostPath: '/host/other-repo',
+-      resources: {
+-        ...DEFAULT_WORKER_RESOURCE_PROFILE,
+-        network: 'bridge',
+-        mounts: [{ source: '/host/skills', destination: '/workspace/skills', mode: 'ro' }],
+-      },
+-    }
+-    expect(repositoryJobProfileArgv(profile)).toEqual([
+-      '--cpus', String(DEFAULT_WORKER_RESOURCE_PROFILE.cpus),
+-      '--memory', `${DEFAULT_WORKER_RESOURCE_PROFILE.memoryMib}m`,
+-      '--pids-limit', String(DEFAULT_WORKER_RESOURCE_PROFILE.pidsLimit),
+-      '--network', 'bridge',
+-      '--read-only', '--read-only-tmpfs=false',
+-      '-v', '/host/skills:/workspace/skills:ro',
+-      '-v', '/host/other-repo:/w:O',
+-    ])
+-  })
+-
+-  test('no emite ningún argumento cuando el perfil es inválido', () => {
+-    const profile: RepositoryJobProfile = { ...createRepositoryJobProfile('relative/path') }
+-    expect(() => repositoryJobProfileArgv(profile)).toThrow(InvalidWorkerResourceProfileError)
+-  })
+-})
+-
+-describe('validateRepositoryJobProfile — rehúsos', () => {
+-  test('repositoryHostPath no absoluto nombra el campo', () => {
+-    const profile = createRepositoryJobProfile('relative/path')
+-    try {
+-      validateRepositoryJobProfile(profile)
+-      throw new Error('debía rehusar')
+-    } catch (error) {
+-      expect(error).toBeInstanceOf(InvalidWorkerResourceProfileError)
+-      expect((error as InvalidWorkerResourceProfileError).field).toBe('repositoryHostPath')
+-    }
+-  })
+-
+-  test('un recurso inválido dentro del perfil también rehúsa, nombrando su propio campo', () => {
+-    const profile: RepositoryJobProfile = {
+-      repositoryHostPath: '/host/repo',
+-      resources: { ...DEFAULT_WORKER_RESOURCE_PROFILE, cpus: 0 },
+-    }
+-    try {
+-      validateRepositoryJobProfile(profile)
+-      throw new Error('debía rehusar')
+-    } catch (error) {
+-      expect((error as InvalidWorkerResourceProfileError).field).toBe('cpus')
+-    }
+-  })
+-
+-  test('declarar una credencial rehúsa: hoy ningún mecanismo mide efectivo', () => {
+-    const profile: RepositoryJobProfile = {
+-      repositoryHostPath: '/host/repo',
+-      credential: { name: 'github-token', target: 'GITHUB_TOKEN' },
+-      resources: DEFAULT_WORKER_RESOURCE_PROFILE,
+-    }
+-    expect(() => validateRepositoryJobProfile(profile)).toThrow(UnsupportedRepositoryJobCredentialError)
+-    try {
+-      validateRepositoryJobProfile(profile)
+-    } catch (error) {
+-      expect((error as UnsupportedRepositoryJobCredentialError).credentialName).toBe('github-token')
+-    }
+-  })
+-
+-  test('el valor de una credencial nunca aparece en el argv — el rehúso ocurre antes de componer nada', () => {
+-    const profile: RepositoryJobProfile = {
+-      repositoryHostPath: '/host/repo',
+-      credential: { name: 'github-token', target: 'GITHUB_TOKEN' },
+-      resources: DEFAULT_WORKER_RESOURCE_PROFILE,
+-    }
+-    let argv: string[] = []
+-    try {
+-      argv = repositoryJobProfileArgv(profile)
+-    } catch {
+-      // se espera el rehuso
+-    }
+-    expect(argv).toEqual([])
+-  })
+-})
+diff --git a/src/packages/daemon/src/__tests__/workerContainerLifecycle.real.test.ts b/src/packages/daemon/src/__tests__/workerContainerLifecycle.real.test.ts
+new file mode 100644
+index 000000000..9b74c7100
+--- /dev/null
++++ b/src/packages/daemon/src/__tests__/workerContainerLifecycle.real.test.ts
+@@ -0,0 +1,92 @@
++/**
++ * El barrido de huérfanos del daemon contra el Podman real: un contenedor
++ * de dueño `pool` no lo retira el daemon, y uno de un daemon muerto sí.
++ *
++ * El ejecutor real se envuelve para que `podman ps` sólo devuelva los
++ * contenedores de esta ejecución: el barrido no debe retirar los de otras
++ * suites que corren a la vez en el mismo anfitrión.
++ *
++ * Métrica: `podman container exists` tras el barrido.
++ * Ciega a: Podman rootless y a un daemon vivo real (su PID es el de esta
++ * prueba, que la sonda de `daemonLock.ts` ve vivo).
++ */
++
++import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
++
++import { buildHelperImage, canBuildHelperImage, type HelperImage } from '@thyrox/podman-execution/testing/helperImage.ts'
++
++import {
++  WORKER_CONTAINER_NAME_PREFIX,
++  createWorkerContainerArgv,
++  createWorkerContainerLifecycleDeps,
++  daemonContainerOwner,
++  retireDaemonOrphanedWorkerContainers,
++  workerContainerName,
++  type ContainerOwner,
++  type PodmanExecutor,
++} from '../podman/workerContainerLifecycle.js'
++
++const RUN_ID = `${process.pid}-${Date.now()}`
++const WORKER_PREFIX = `dsweep-${RUN_ID}`
++const REAL_TEST_TIMEOUT_MS = 60_000
++
++const podmanAvailable = await canBuildHelperImage()
++if (!podmanAvailable) console.error('workerContainerLifecycle.real: sin Podman o sin gcc; sin medir.')
++
++let helper: HelperImage
++
++function deadPid(): number {
++  const child = Bun.spawnSync(['true'])
++  return child.pid
++}
++
++/** Ejecutor real cuyo `ps` sólo ve los contenedores de esta ejecución. */
++function scopedPodman(podman: PodmanExecutor): PodmanExecutor {
++  const ownPrefix = `${WORKER_CONTAINER_NAME_PREFIX}${WORKER_PREFIX}`
++  return {
++    async run(args) {
++      const result = await podman.run(args)
++      if (args[0] !== 'ps') return result
++      const own = result.stdout.split('\n').filter(name => name.startsWith(ownPrefix))
++      return { ...result, stdout: own.join('\n') }
++    },
++  }
++}
++
++async function createStopped(workerId: string, owner: ContainerOwner): Promise<string> {
++  const argv = createWorkerContainerArgv({
++    workerId, image: helper.image, owner, resourceArgv: [], command: ['/bin/helper', 'exit', '0'],
++  })
++  const created = await helper.podman.run(argv)
++  if (created.exitCode !== 0) throw new Error(`create falló: ${created.stderr}`)
++  return workerContainerName(workerId)
++}
++
++async function containerExists(name: string): Promise<boolean> {
++  return (await helper.podman.run(['container', 'exists', name])).exitCode === 0
++}
++
++describe.skipIf(!podmanAvailable)('barrido del daemon contra Podman real — dueños distintos', () => {
++  beforeAll(async () => {
++    helper = await buildHelperImage(`dsweep-${RUN_ID}`)
++  })
++
++  afterAll(async () => {
++    const listing = await scopedPodman(helper.podman).run(['ps', '--all', '--format', '{{.Names}}'])
++    for (const name of listing.stdout.split('\n').filter(Boolean)) await helper.podman.run(['rm', '--force', name])
++    await helper.dispose()
++  })
++
++  test('el contenedor del pool sobrevive al barrido; el del daemon muerto no', async () => {
++    const orphanPid = deadPid()
++    const pooled = await createStopped(`${WORKER_PREFIX}-pool`, { kind: 'pool', id: `pool-${RUN_ID}`, pid: orphanPid })
++    const deadDaemon = await createStopped(`${WORKER_PREFIX}-daemon`, daemonContainerOwner(orphanPid))
++    const liveDaemon = await createStopped(`${WORKER_PREFIX}-live`, daemonContainerOwner(process.pid))
++    const deps = createWorkerContainerLifecycleDeps(scopedPodman(helper.podman))
++    const retired = await retireDaemonOrphanedWorkerContainers(deps, 1)
++    expect(retired.map(retirement => retirement.name)).toEqual([deadDaemon])
++    expect(await containerExists(pooled)).toBe(true)
++    expect(await containerExists(deadDaemon)).toBe(false)
++    expect(await containerExists(liveDaemon)).toBe(true)
++  }, REAL_TEST_TIMEOUT_MS)
++})
+diff --git a/src/packages/daemon/src/__tests__/workerContainerLifecycle.test.ts b/src/packages/daemon/src/__tests__/workerContainerLifecycle.test.ts
+index f37117a95..2064d37d8 100644
+--- a/src/packages/daemon/src/__tests__/workerContainerLifecycle.test.ts
++++ b/src/packages/daemon/src/__tests__/workerContainerLifecycle.test.ts
+@@ -1,353 +1,73 @@
+ import { describe, expect, test } from 'bun:test'
+ 
+ import {
+-  DAEMON_PID_LABEL_KEY,
+-  DEFAULT_STOP_TIMEOUT_SECONDS,
+-  InvalidWorkerContainerSpecError,
+-  WORKER_CONTAINER_NAME_PREFIX,
+-  WORKER_ID_LABEL_KEY,
+-  createWorkerContainer,
+-  createWorkerContainerArgv,
+-  findOrphanedWorkerContainers,
+-  inspectWorkerContainer,
+-  inspectWorkerContainerArgv,
+-  isWorkerContainerProcessAlive,
+-  listWorkerContainerNamesArgv,
+-  parseWorkerContainerInspection,
+-  removeWorkerContainer,
+-  removeWorkerContainerArgv,
+-  retireOrphanedWorkerContainers,
+-  retireWorkerContainer,
+-  stopWorkerContainer,
+-  stopWorkerContainerArgv,
+-  validateWorkerContainerSpec,
+-  workerContainerName,
++  createDaemonOrphanPredicate,
++  daemonContainerOwner,
++  retireDaemonOrphanedWorkerContainers,
+   type PodmanCommandResult,
+   type PodmanExecutor,
++  type PresentWorkerContainer,
+   type WorkerContainerLifecycleDeps,
+-  type WorkerContainerSpec,
+ } from '../podman/workerContainerLifecycle.js'
+ 
+-const OK: PodmanCommandResult = { exitCode: 0, stdout: '', stderr: '' }
++const LIVE_DAEMON_PID = 4100
++const DEAD_DAEMON_PID = 9999
+ 
+-/** Ejecutor de Podman de prueba: registra cada argv recibido y resuelve por una tabla de respuestas indexada por el primer argumento (el subcomando). */
+-function createFakePodmanExecutor(
+-  responses: Partial<Record<string, PodmanCommandResult>> = {},
+-): PodmanExecutor & { readonly calls: readonly (readonly string[])[] } {
+-  const calls: string[][] = []
+-  return {
+-    calls,
+-    async run(args: readonly string[]): Promise<PodmanCommandResult> {
+-      calls.push([...args])
+-      return responses[args[0]] ?? OK
+-    },
+-  }
++function container(owner: PresentWorkerContainer['owner']): PresentWorkerContainer {
++  return { present: true, status: 'running', pid: 77, owner, workerId: 'w1' }
+ }
+ 
+-function fakeDeps(
+-  podman: PodmanExecutor,
+-  aliveProcesses: readonly number[] = [],
+-): WorkerContainerLifecycleDeps & { readonly killedPids: readonly { pid: number; signal: NodeJS.Signals }[] } {
+-  const killedPids: { pid: number; signal: NodeJS.Signals }[] = []
+-  return {
+-    podman,
+-    isProcessAlive: pid => aliveProcesses.includes(pid),
+-    killProcess: (pid, signal) => {
+-      killedPids.push({ pid, signal })
+-    },
+-    killedPids,
+-  }
+-}
+-
+-function baseSpec(overrides: Partial<WorkerContainerSpec> = {}): WorkerContainerSpec {
+-  return {
+-    workerId: 'w1',
+-    image: 'thyrox-worker:latest',
+-    daemonPid: 4242,
+-    resourceArgv: ['--cpus', '1'],
+-    ...overrides,
+-  }
+-}
++const isOrphan = createDaemonOrphanPredicate(pid => pid === LIVE_DAEMON_PID)
+ 
+-describe('workerContainerName', () => {
+-  test('antepone el prefijo declarado al identificador del worker', () => {
+-    expect(workerContainerName('w1')).toBe(`${WORKER_CONTAINER_NAME_PREFIX}w1`)
++describe('daemonContainerOwner', () => {
++  test('el daemon se declara dueño de tipo daemon, con su PID como identificador y como PID', () => {
++    expect(daemonContainerOwner(LIVE_DAEMON_PID)).toEqual({ kind: 'daemon', id: String(LIVE_DAEMON_PID), pid: LIVE_DAEMON_PID })
+   })
+ })
+ 
+-describe('validateWorkerContainerSpec — rehúsos', () => {
+-  test('un workerId vacío rehúsa nombrando el campo', () => {
+-    try {
+-      validateWorkerContainerSpec(baseSpec({ workerId: '' }))
+-      throw new Error('debía rehusar')
+-    } catch (error) {
+-      expect(error).toBeInstanceOf(InvalidWorkerContainerSpecError)
+-      expect((error as InvalidWorkerContainerSpecError).field).toBe('workerId')
+-    }
+-  })
+-
+-  test('un workerId con caracteres fuera del patrón seguro rehúsa', () => {
+-    try {
+-      validateWorkerContainerSpec(baseSpec({ workerId: 'w1 con espacio' }))
+-      throw new Error('debía rehusar')
+-    } catch (error) {
+-      expect((error as InvalidWorkerContainerSpecError).field).toBe('workerId')
+-    }
+-  })
+-
+-  test('una imagen vacía rehúsa nombrando el campo', () => {
+-    try {
+-      validateWorkerContainerSpec(baseSpec({ image: '' }))
+-      throw new Error('debía rehusar')
+-    } catch (error) {
+-      expect((error as InvalidWorkerContainerSpecError).field).toBe('image')
+-    }
++describe('createDaemonOrphanPredicate — la política del daemon, intacta', () => {
++  test('un contenedor de un daemon muerto es huérfano', () => {
++    expect(isOrphan(container({ kind: 'daemon', id: 'd', pid: DEAD_DAEMON_PID }))).toBe(true)
+   })
+ 
+-  test('un daemonPid <= 0 rehúsa nombrando el campo', () => {
+-    try {
+-      validateWorkerContainerSpec(baseSpec({ daemonPid: 0 }))
+-      throw new Error('debía rehusar')
+-    } catch (error) {
+-      expect((error as InvalidWorkerContainerSpecError).field).toBe('daemonPid')
+-    }
++  test('un contenedor de un daemon vivo no es huérfano', () => {
++    expect(isOrphan(container({ kind: 'daemon', id: 'd', pid: LIVE_DAEMON_PID }))).toBe(false)
+   })
+ 
+-  test('un spec válido no rehúsa', () => {
+-    expect(() => validateWorkerContainerSpec(baseSpec())).not.toThrow()
+-  })
+-})
+-
+-describe('createWorkerContainerArgv', () => {
+-  test('compone nombre, etiquetas de daemon y worker, límites de recursos e imagen', () => {
+-    expect(createWorkerContainerArgv(baseSpec())).toEqual([
+-      'create',
+-      '--name', `${WORKER_CONTAINER_NAME_PREFIX}w1`,
+-      '--label', `${DAEMON_PID_LABEL_KEY}=4242`,
+-      '--label', `${WORKER_ID_LABEL_KEY}=w1`,
+-      '--cpus', '1',
+-      'thyrox-worker:latest',
+-    ])
++  test('un contenedor del pool nunca es huérfano para el daemon, aunque su PID esté muerto', () => {
++    expect(isOrphan(container({ kind: 'pool', id: 'p', pid: DEAD_DAEMON_PID }))).toBe(false)
++    expect(isOrphan(container({ kind: 'pool', id: 'p', pid: null }))).toBe(false)
+   })
+ 
+-  test('añade el comando declarado al final del argv', () => {
+-    const argv = createWorkerContainerArgv(baseSpec({ command: ['node', 'worker.js'] }))
+-    expect(argv.slice(-2)).toEqual(['node', 'worker.js'])
++  test('sin etiquetas de dueño no se atribuye a ningún daemon vivo: es huérfano, como antes', () => {
++    expect(isOrphan(container({ kind: null, id: null, pid: null }))).toBe(true)
+   })
+ 
+-  test('no emite ningún argumento cuando el spec es inválido', () => {
+-    expect(() => createWorkerContainerArgv(baseSpec({ image: '' }))).toThrow(InvalidWorkerContainerSpecError)
++  test('un dueño daemon sin PID legible es huérfano', () => {
++    expect(isOrphan(container({ kind: 'daemon', id: 'd', pid: null }))).toBe(true)
+   })
+ })
+ 
+-describe('inspectWorkerContainerArgv / stopWorkerContainerArgv / removeWorkerContainerArgv', () => {
+-  test('inspect pide status, pid y las dos etiquetas en una sola llamada', () => {
+-    const argv = inspectWorkerContainerArgv('thyrox-worker-w1')
+-    expect(argv[0]).toBe('inspect')
+-    expect(argv).toContain('thyrox-worker-w1')
+-    expect(argv.join(' ')).toContain('.State.Status')
+-    expect(argv.join(' ')).toContain('.State.Pid')
+-    expect(argv.join(' ')).toContain(DAEMON_PID_LABEL_KEY)
+-    expect(argv.join(' ')).toContain(WORKER_ID_LABEL_KEY)
+-  })
+-
+-  test('stop lleva el plazo declarado', () => {
+-    expect(stopWorkerContainerArgv('thyrox-worker-w1', 7)).toEqual(['stop', '--time', '7', 'thyrox-worker-w1'])
+-  })
+-
+-  test('remove siempre fuerza el retiro', () => {
+-    expect(removeWorkerContainerArgv('thyrox-worker-w1')).toEqual(['rm', '--force', 'thyrox-worker-w1'])
+-  })
+-
+-  test('listWorkerContainerNamesArgv filtra por el prefijo de nombre declarado', () => {
+-    const argv = listWorkerContainerNamesArgv()
+-    expect(argv).toContain(`name=^${WORKER_CONTAINER_NAME_PREFIX}`)
+-  })
+-})
+-
+-describe('parseWorkerContainerInspection', () => {
+-  test('un contenedor ausente (exit != 0) no está presente', () => {
+-    expect(parseWorkerContainerInspection({ exitCode: 1, stdout: '', stderr: 'no such container' })).toEqual({
+-      present: false,
+-    })
+-  })
+-
+-  test('un contenedor presente reporta status, pid y las dos etiquetas', () => {
+-    const result: PodmanCommandResult = { exitCode: 0, stdout: 'running\t555\t4242\tw1', stderr: '' }
+-    expect(parseWorkerContainerInspection(result)).toEqual({
+-      present: true,
+-      status: 'running',
+-      pid: 555,
+-      daemonPid: 4242,
+-      workerId: 'w1',
+-    })
+-  })
+-
+-  test('una etiqueta ausente ("<no value>") se lee como null, no como texto literal', () => {
+-    const result: PodmanCommandResult = { exitCode: 0, stdout: 'exited\t0\t<no value>\t<no value>', stderr: '' }
+-    const inspection = parseWorkerContainerInspection(result)
+-    expect(inspection).toEqual({ present: true, status: 'exited', pid: 0, daemonPid: null, workerId: null })
+-  })
+-})
+-
+-describe('isWorkerContainerProcessAlive — la vivacidad se mide sobre el PID, no sobre el status', () => {
+-  test('running + pid vivo => vivo', () => {
+-    expect(
+-      isWorkerContainerProcessAlive(
+-        { present: true, status: 'running', pid: 555, daemonPid: null, workerId: null },
+-        pid => pid === 555,
+-      ),
+-    ).toBe(true)
+-  })
+-
+-  test('TASK-THYROX-0605: running reportado pero el PID ya no existe => NO vivo', () => {
+-    expect(
+-      isWorkerContainerProcessAlive(
+-        { present: true, status: 'running', pid: 555, daemonPid: null, workerId: null },
+-        () => false,
+-      ),
+-    ).toBe(false)
+-  })
+-
+-  test('ausente => no vivo, sin llegar a consultar el PID', () => {
+-    let consulted = false
+-    expect(isWorkerContainerProcessAlive({ present: false }, () => ((consulted = true), true))).toBe(false)
+-    expect(consulted).toBe(false)
+-  })
+-})
+-
+-describe('createWorkerContainer', () => {
+-  test('crea y arranca el contenedor cuando el create sale 0', async () => {
+-    const podman = createFakePodmanExecutor()
+-    const deps = fakeDeps(podman)
+-    const result = await createWorkerContainer(deps, baseSpec())
+-    expect(result.exitCode).toBe(0)
+-    expect(podman.calls).toEqual([
+-      createWorkerContainerArgv(baseSpec()),
+-      ['start', `${WORKER_CONTAINER_NAME_PREFIX}w1`],
+-    ])
+-  })
+-
+-  test('no arranca el contenedor si el create falla', async () => {
+-    const podman = createFakePodmanExecutor({ create: { exitCode: 125, stdout: '', stderr: 'boom' } })
+-    const deps = fakeDeps(podman)
+-    const result = await createWorkerContainer(deps, baseSpec())
+-    expect(result.exitCode).toBe(125)
+-    expect(podman.calls).toHaveLength(1)
+-  })
+-})
+-
+-describe('inspectWorkerContainer / stopWorkerContainer / removeWorkerContainer', () => {
+-  test('inspectWorkerContainer invoca el argv exacto sobre el nombre dado', async () => {
+-    const podman = createFakePodmanExecutor({ inspect: { exitCode: 0, stdout: 'running\t9\t4242\tw1', stderr: '' } })
+-    const deps = fakeDeps(podman)
+-    const inspection = await inspectWorkerContainer(deps, 'thyrox-worker-w1')
+-    expect(inspection).toEqual({ present: true, status: 'running', pid: 9, daemonPid: 4242, workerId: 'w1' })
+-    expect(podman.calls).toEqual([inspectWorkerContainerArgv('thyrox-worker-w1')])
+-  })
+-
+-  test('stopWorkerContainer respeta el plazo declarado', async () => {
+-    const podman = createFakePodmanExecutor()
+-    const deps = fakeDeps(podman)
+-    await stopWorkerContainer(deps, 'thyrox-worker-w1', 5)
+-    expect(podman.calls).toEqual([['stop', '--time', '5', 'thyrox-worker-w1']])
+-  })
+-
+-  test('removeWorkerContainer siempre fuerza el retiro', async () => {
+-    const podman = createFakePodmanExecutor()
+-    const deps = fakeDeps(podman)
+-    await removeWorkerContainer(deps, 'thyrox-worker-w1')
+-    expect(podman.calls).toEqual([['rm', '--force', 'thyrox-worker-w1']])
+-  })
+-})
+-
+-describe('retireWorkerContainer — ningún contenedor ni proceso sobrevive a su worker', () => {
+-  test('un contenedor ausente no invoca stop ni remove', async () => {
+-    const podman = createFakePodmanExecutor({ inspect: { exitCode: 1, stdout: '', stderr: 'no such container' } })
+-    const deps = fakeDeps(podman)
+-    const outcome = await retireWorkerContainer(deps, 'thyrox-worker-w1')
+-    expect(outcome).toEqual({ name: 'thyrox-worker-w1', stopped: false, removed: false, killedStaleProcess: false })
+-    expect(podman.calls).toHaveLength(1)
+-  })
+-
+-  test('caso normal: stop y remove salen 0, y el PID ya no vive tras el retiro', async () => {
+-    const podman = createFakePodmanExecutor({
+-      inspect: { exitCode: 0, stdout: 'running\t9\t4242\tw1', stderr: '' },
+-    })
+-    const deps = fakeDeps(podman, [])
+-    const outcome = await retireWorkerContainer(deps, 'thyrox-worker-w1', 3)
+-    expect(outcome).toEqual({ name: 'thyrox-worker-w1', stopped: true, removed: true, killedStaleProcess: false })
+-    expect(deps.killedPids).toHaveLength(0)
+-    expect(podman.calls).toEqual([
+-      inspectWorkerContainerArgv('thyrox-worker-w1'),
+-      stopWorkerContainerArgv('thyrox-worker-w1', 3),
+-      removeWorkerContainerArgv('thyrox-worker-w1'),
+-    ])
+-  })
+-
+-  test('usa el plazo por defecto declarado cuando no se pasa ninguno', async () => {
+-    const podman = createFakePodmanExecutor({
+-      inspect: { exitCode: 0, stdout: 'running\t9\t4242\tw1', stderr: '' },
+-    })
+-    const deps = fakeDeps(podman)
+-    await retireWorkerContainer(deps, 'thyrox-worker-w1')
+-    expect(podman.calls[1]).toEqual(stopWorkerContainerArgv('thyrox-worker-w1', DEFAULT_STOP_TIMEOUT_SECONDS))
+-  })
+-
+-  test('TASK-THYROX-0605: si el PID sigue vivo tras stop+rm, se le manda SIGKILL directo — nada sobrevive', async () => {
+-    const podman = createFakePodmanExecutor({
+-      inspect: { exitCode: 0, stdout: 'running\t9\t4242\tw1', stderr: '' },
+-    })
+-    const deps = fakeDeps(podman, [9])
+-    const outcome = await retireWorkerContainer(deps, 'thyrox-worker-w1')
+-    expect(outcome.killedStaleProcess).toBe(true)
+-    expect(deps.killedPids).toEqual([{ pid: 9, signal: 'SIGKILL' }])
+-  })
+-})
+-
+-describe('findOrphanedWorkerContainers / retireOrphanedWorkerContainers', () => {
+-  test('un contenedor cuyo daemon dueño ya no vive es huérfano', async () => {
+-    const podman = createFakePodmanExecutor({
+-      ps: { exitCode: 0, stdout: 'thyrox-worker-w1\n', stderr: '' },
+-      inspect: { exitCode: 0, stdout: 'running\t9\t4242\tw1', stderr: '' },
+-    })
+-    const deps = fakeDeps(podman, [])
+-    const orphans = await findOrphanedWorkerContainers(deps)
+-    expect(orphans).toEqual([{ name: 'thyrox-worker-w1', workerId: 'w1', daemonPid: 4242 }])
+-  })
+-
+-  test('un contenedor cuyo daemon dueño sigue vivo NO es huérfano', async () => {
+-    const podman = createFakePodmanExecutor({
+-      ps: { exitCode: 0, stdout: 'thyrox-worker-w1\n', stderr: '' },
+-      inspect: { exitCode: 0, stdout: 'running\t9\t4242\tw1', stderr: '' },
+-    })
+-    const deps = fakeDeps(podman, [4242])
+-    expect(await findOrphanedWorkerContainers(deps)).toEqual([])
+-  })
+-
+-  test('una etiqueta de daemon ausente o inválida no se puede atribuir a un daemon vivo: es huérfano', async () => {
+-    const podman = createFakePodmanExecutor({
+-      ps: { exitCode: 0, stdout: 'thyrox-worker-w2\n', stderr: '' },
+-      inspect: { exitCode: 0, stdout: 'exited\t0\t<no value>\t<no value>', stderr: '' },
+-    })
+-    const deps = fakeDeps(podman, [1])
+-    expect(await findOrphanedWorkerContainers(deps)).toEqual([{ name: 'thyrox-worker-w2', workerId: null, daemonPid: 0 }])
+-  })
+-
+-  test('una lista vacía no produce huérfanos ni inspecciona nada', async () => {
+-    const podman = createFakePodmanExecutor({ ps: { exitCode: 0, stdout: '', stderr: '' } })
+-    const deps = fakeDeps(podman)
+-    expect(await findOrphanedWorkerContainers(deps)).toEqual([])
+-    expect(podman.calls).toEqual([listWorkerContainerNamesArgv()])
+-  })
+-
+-  test('retireOrphanedWorkerContainers retira cada huérfano encontrado', async () => {
+-    const podman = createFakePodmanExecutor({
+-      ps: { exitCode: 0, stdout: 'thyrox-worker-w1\n', stderr: '' },
+-      inspect: { exitCode: 0, stdout: 'running\t9\t4242\tw1', stderr: '' },
+-    })
+-    const deps = fakeDeps(podman, [])
+-    const retirements = await retireOrphanedWorkerContainers(deps)
+-    expect(retirements).toEqual([{ name: 'thyrox-worker-w1', stopped: true, removed: true, killedStaleProcess: false }])
++describe('retireDaemonOrphanedWorkerContainers', () => {
++  test('retira el contenedor del daemon muerto y deja el del pool', async () => {
++    const inspections: Record<string, string> = {
++      'thyrox-worker-dead': `running\t77\tdaemon\t${DEAD_DAEMON_PID}\t${DEAD_DAEMON_PID}\tdead`,
++      'thyrox-worker-pooled': `running\t78\tpool\tp1\t${DEAD_DAEMON_PID}\tpooled`,
++    }
++    const calls: string[][] = []
++    const podman: PodmanExecutor = {
++      async run(args): Promise<PodmanCommandResult> {
++        calls.push([...args])
++        if (args[0] === 'ps') return { exitCode: 0, stdout: Object.keys(inspections).join('\n'), stderr: '' }
++        if (args[0] === 'inspect') return { exitCode: 0, stdout: inspections[args.at(-1) ?? ''] ?? '', stderr: '' }
++        return { exitCode: 0, stdout: '', stderr: '' }
++      },
++    }
++    const deps: WorkerContainerLifecycleDeps = {
++      podman, isProcessAlive: pid => pid === LIVE_DAEMON_PID, killProcess: () => {},
++    }
++    const retirements = await retireDaemonOrphanedWorkerContainers(deps, 1)
++    expect(retirements.map(retirement => retirement.name)).toEqual(['thyrox-worker-dead'])
++    expect(calls.filter(call => call[0] === 'rm')).toEqual([['rm', '--force', 'thyrox-worker-dead']])
+   })
+ })
+diff --git a/src/packages/daemon/src/__tests__/workerResourceProfile.test.ts b/src/packages/daemon/src/__tests__/workerResourceProfile.test.ts
+deleted file mode 100644
+index 18635df00..000000000
+--- a/src/packages/daemon/src/__tests__/workerResourceProfile.test.ts
++++ /dev/null
+@@ -1,156 +0,0 @@
+-import { describe, expect, test } from 'bun:test'
+-
+-import {
+-  DEFAULT_WORKER_RESOURCE_PROFILE,
+-  InvalidWorkerResourceProfileError,
+-  validateWorkerResourceProfile,
+-  workerResourceLimitArgv,
+-  type WorkerResourceProfile,
+-} from '../podman/workerResourceProfile.js'
+-
+-describe('DEFAULT_WORKER_RESOURCE_PROFILE', () => {
+-  test('es el perfil más restrictivo medido: sin red, rootfs de sólo lectura, sin montajes', () => {
+-    expect(DEFAULT_WORKER_RESOURCE_PROFILE.network).toBe('none')
+-    expect(DEFAULT_WORKER_RESOURCE_PROFILE.readOnlyRootfs).toBe(true)
+-    expect(DEFAULT_WORKER_RESOURCE_PROFILE.mounts).toEqual([])
+-  })
+-
+-  test('valida sin rehusar', () => {
+-    expect(() => validateWorkerResourceProfile(DEFAULT_WORKER_RESOURCE_PROFILE)).not.toThrow()
+-  })
+-})
+-
+-describe('workerResourceLimitArgv', () => {
+-  test('argv exacto del perfil por defecto', () => {
+-    expect(workerResourceLimitArgv(DEFAULT_WORKER_RESOURCE_PROFILE)).toEqual([
+-      '--cpus', String(DEFAULT_WORKER_RESOURCE_PROFILE.cpus),
+-      '--memory', `${DEFAULT_WORKER_RESOURCE_PROFILE.memoryMib}m`,
+-      '--pids-limit', String(DEFAULT_WORKER_RESOURCE_PROFILE.pidsLimit),
+-      '--network', 'none',
+-      '--read-only', '--read-only-tmpfs=false',
+-    ])
+-  })
+-
+-  test('argv exacto de un perfil relajado, con red bridge, rootfs escribible y montajes', () => {
+-    const profile: WorkerResourceProfile = {
+-      cpus: 2,
+-      memoryMib: 2048,
+-      pidsLimit: 256,
+-      network: 'bridge',
+-      readOnlyRootfs: false,
+-      mounts: [
+-        { source: '/host/skills', destination: '/workspace/skills', mode: 'ro' },
+-        { source: '/host/scratch', destination: '/workspace/scratch', mode: 'rw' },
+-      ],
+-    }
+-    expect(workerResourceLimitArgv(profile)).toEqual([
+-      '--cpus', '2',
+-      '--memory', '2048m',
+-      '--pids-limit', '256',
+-      '--network', 'bridge',
+-      '-v', '/host/skills:/workspace/skills:ro',
+-      '-v', '/host/scratch:/workspace/scratch:rw',
+-    ])
+-  })
+-
+-  test('no emite ningún argumento cuando el perfil es inválido', () => {
+-    const profile: WorkerResourceProfile = { ...DEFAULT_WORKER_RESOURCE_PROFILE, cpus: 0 }
+-    expect(() => workerResourceLimitArgv(profile)).toThrow(InvalidWorkerResourceProfileError)
+-  })
+-})
+-
+-describe('validateWorkerResourceProfile — rehúsos, cada uno nombrando su campo', () => {
+-  test('cpus <= 0', () => {
+-    const profile: WorkerResourceProfile = { ...DEFAULT_WORKER_RESOURCE_PROFILE, cpus: 0 }
+-    expect(() => validateWorkerResourceProfile(profile)).toThrow(InvalidWorkerResourceProfileError)
+-    try {
+-      validateWorkerResourceProfile(profile)
+-    } catch (error) {
+-      expect((error as InvalidWorkerResourceProfileError).field).toBe('cpus')
+-    }
+-  })
+-
+-  test('cpus negativo', () => {
+-    const profile: WorkerResourceProfile = { ...DEFAULT_WORKER_RESOURCE_PROFILE, cpus: -0.5 }
+-    expect(() => validateWorkerResourceProfile(profile)).toThrow(InvalidWorkerResourceProfileError)
+-  })
+-
+-  test('memoryMib <= 0', () => {
+-    const profile: WorkerResourceProfile = { ...DEFAULT_WORKER_RESOURCE_PROFILE, memoryMib: 0 }
+-    try {
+-      validateWorkerResourceProfile(profile)
+-      throw new Error('debía rehusar')
+-    } catch (error) {
+-      expect((error as InvalidWorkerResourceProfileError).field).toBe('memoryMib')
+-    }
+-  })
+-
+-  test('pidsLimit < 1', () => {
+-    const profile: WorkerResourceProfile = { ...DEFAULT_WORKER_RESOURCE_PROFILE, pidsLimit: 0 }
+-    try {
+-      validateWorkerResourceProfile(profile)
+-      throw new Error('debía rehusar')
+-    } catch (error) {
+-      expect((error as InvalidWorkerResourceProfileError).field).toBe('pidsLimit')
+-    }
+-  })
+-
+-  test('pidsLimit no entero', () => {
+-    const profile: WorkerResourceProfile = { ...DEFAULT_WORKER_RESOURCE_PROFILE, pidsLimit: 1.5 }
+-    try {
+-      validateWorkerResourceProfile(profile)
+-      throw new Error('debía rehusar')
+-    } catch (error) {
+-      expect((error as InvalidWorkerResourceProfileError).field).toBe('pidsLimit')
+-    }
+-  })
+-
+-  test('montaje sin destino absoluto', () => {
+-    const profile: WorkerResourceProfile = {
+-      ...DEFAULT_WORKER_RESOURCE_PROFILE,
+-      mounts: [{ source: '/host/skills', destination: 'workspace/skills', mode: 'ro' }],
+-    }
+-    try {
+-      validateWorkerResourceProfile(profile)
+-      throw new Error('debía rehusar')
+-    } catch (error) {
+-      expect((error as InvalidWorkerResourceProfileError).field).toBe('mounts[0].destination')
+-    }
+-  })
+-
+-  test('montaje con origen vacío', () => {
+-    const profile: WorkerResourceProfile = {
+-      ...DEFAULT_WORKER_RESOURCE_PROFILE,
+-      mounts: [{ source: '', destination: '/workspace/skills', mode: 'ro' }],
+-    }
+-    try {
+-      validateWorkerResourceProfile(profile)
+-      throw new Error('debía rehusar')
+-    } catch (error) {
+-      expect((error as InvalidWorkerResourceProfileError).field).toBe('mounts[0].source')
+-    }
+-  })
+-
+-  test('modo de montaje desconocido', () => {
+-    const profile = {
+-      ...DEFAULT_WORKER_RESOURCE_PROFILE,
+-      mounts: [{ source: '/host/skills', destination: '/workspace/skills', mode: 'rx' }],
+-    } as unknown as WorkerResourceProfile
+-    try {
+-      validateWorkerResourceProfile(profile)
+-      throw new Error('debía rehusar')
+-    } catch (error) {
+-      expect((error as InvalidWorkerResourceProfileError).field).toBe('mounts[0].mode')
+-    }
+-  })
+-
+-  test('red desconocida', () => {
+-    const profile = { ...DEFAULT_WORKER_RESOURCE_PROFILE, network: 'host' } as unknown as WorkerResourceProfile
+-    try {
+-      validateWorkerResourceProfile(profile)
+-      throw new Error('debía rehusar')
+-    } catch (error) {
+-      expect((error as InvalidWorkerResourceProfileError).field).toBe('network')
+-    }
+-  })
+-})
+diff --git a/src/packages/daemon/src/podman/podmanWorkerManager.ts b/src/packages/daemon/src/podman/podmanWorkerManager.ts
+index b7f77c17c..bfd65a8ff 100644
+--- a/src/packages/daemon/src/podman/podmanWorkerManager.ts
++++ b/src/packages/daemon/src/podman/podmanWorkerManager.ts
+@@ -38,18 +38,19 @@
+  * Podman sin privilegios (rootless), que ninguna prueba de aquí ejercita.
+  */
+ 
+-import { spawn } from 'node:child_process'
+ import { join } from 'node:path'
+ 
+ import { admitVram, releaseVram, type VramAdmission } from '@thyrox/config/gpuAdmission'
++import { runCommand } from '@thyrox/podman-execution/podmanExecutor.ts'
+ 
+ import {
+   DEFAULT_STOP_TIMEOUT_SECONDS,
+   InvalidWorkerContainerSpecError,
+   createWorkerContainerArgv,
++  daemonContainerOwner,
+   inspectWorkerContainer,
+   isWorkerContainerProcessAlive,
+-  retireOrphanedWorkerContainers,
++  retireDaemonOrphanedWorkerContainers,
+   retireWorkerContainer,
+   validateWorkerContainerSpec,
+   workerContainerName,
+@@ -200,7 +201,7 @@ export class PodmanWorkerManager {
+ 
+   /** Retira los contenedores que dejó un daemon muerto; se llama al arrancar. */
+   async reconcileOrphans(): Promise<WorkerContainerRetirement[]> {
+-    return retireOrphanedWorkerContainers(this.deps.lifecycle, this.stopTimeout())
++    return retireDaemonOrphanedWorkerContainers(this.deps.lifecycle, this.stopTimeout())
+   }
+ 
+   private stopTimeout(): number {
+@@ -211,7 +212,7 @@ export class PodmanWorkerManager {
+     return {
+       workerId: request.workerId,
+       image: request.image,
+-      daemonPid: this.deps.daemonPid,
++      owner: daemonContainerOwner(this.deps.daemonPid),
+       resourceArgv: [...request.resourceArgv, ...deviceArgv],
+       command: request.command,
+     }
+@@ -282,24 +283,8 @@ function thyroxRoot(): string {
+   return process.env.THYROX_ROOT ?? join(import.meta.dir, '../../../../..')
+ }
+ 
+-function runProcess(bin: string, args: readonly string[]): Promise<PodmanCommandResult> {
+-  return new Promise((resolve, reject) => {
+-    const child = spawn(bin, [...args], { stdio: ['ignore', 'pipe', 'pipe'] })
+-    let stdout = ''
+-    let stderr = ''
+-    child.stdout.on('data', chunk => { stdout += chunk })
+-    child.stderr.on('data', chunk => { stderr += chunk })
+-    child.on('error', reject)
+-    child.on('close', code => resolve({ exitCode: code ?? -1, stdout, stderr }))
+-  })
+-}
+-
+-/** Ejecutor real: el binario que `thyrox_toolchain_require_podman` resolvió, o `podman` del PATH. */
+-export function createPodmanExecutor(): PodmanExecutor {
+-  return {
+-    run: args => runProcess(process.env.THYROX_TOOLCHAIN_PODMAN_BIN || 'podman', args),
+-  }
+-}
++/** Ejecutor real: el de la primitiva, reexportado para los importadores del daemon. */
++export { createPodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
+ 
+ /**
+  * Contrato de salida de `bin/hardware-inventory` (`src/session/hardware-inventory.sh`):
+@@ -320,7 +305,7 @@ function isMeasuredExitCode(exitCode: number): boolean {
+  * Exige que la línea `verdict` y el código de salida digan lo mismo: si discrepan, ninguno es fiable.
+  */
+ export async function readHardwareVerdict(): Promise<HardwareVerdict> {
+-  const result = await runProcess('bash', [join(thyroxRoot(), 'bin/hardware-inventory')])
++  const result = await runCommand('bash', [join(thyroxRoot(), 'bin/hardware-inventory')])
+   if (!isMeasuredExitCode(result.exitCode)) {
+     throw new Error(`hardware-inventory no pudo medir (salió ${result.exitCode}): ${commandDetail(result)}`)
+   }
+diff --git a/src/packages/daemon/src/podman/repositoryJobProfile.ts b/src/packages/daemon/src/podman/repositoryJobProfile.ts
+index f7ef93f7b..a7a1d141d 100644
+--- a/src/packages/daemon/src/podman/repositoryJobProfile.ts
++++ b/src/packages/daemon/src/podman/repositoryJobProfile.ts
+@@ -1,105 +1,7 @@
+ /**
+- * Perfil repository/job de un worker de Podman (ADR-THYROX-007 Regla 2-bis,
+- * TASK-THYROX-0613).
+- *
+- * Un worker repository/job trabaja SOBRE el repositorio: el árbol del
+- * anfitrión se monta `overlay` (`:O`) en `/w` — el worker lee el árbol y sus
+- * escrituras no llegan al anfitrión, medido en `overlay_mount`
+- * (`src/lib/podman_capabilities.sh`). Reutiliza el perfil de límites de
+- * `workerResourceProfile.ts` para CPU, memoria, PIDs, red y rootfs; aquí
+- * sólo se añade el montaje del repositorio y la credencial declarada.
+- *
+- * `--rootfs /:O` (overlay de la raíz completa, no sólo del repositorio)
+- * queda deliberadamente SIN modelar: la sonda `overlay_mount` mide un
+- * directorio propio, no `/`, y modelarlo sin esa medida sería declarar una
+- * capacidad no comprobada. Es opción evaluada, no default (decisión del
+- * ejecutor) — se modela cuando se mida.
++ * Adaptador: el perfil repository/job vive en `@thyrox/podman-execution`
++ * (TASK-THYROX-0667). Se reexporta para los importadores del daemon; no hay
++ * una segunda implementación.
+  */
+ 
+-import {
+-  DEFAULT_WORKER_RESOURCE_PROFILE,
+-  InvalidWorkerResourceProfileError,
+-  validateWorkerResourceProfile,
+-  workerResourceLimitArgv,
+-  type WorkerResourceProfile,
+-} from './workerResourceProfile.js'
+-
+-/** Destino fijo del montaje overlay del repositorio, por ADR-THYROX-007 Regla 2-bis. */
+-export const REPOSITORY_CONTAINER_PATH = '/w'
+-
+-/**
+- * Nombre de una credencial declarada en el perfil — NUNCA su valor: el tipo
+- * no tiene campo para el valor, así que no hay forma de que este perfil lo
+- * transporte por error.
+- */
+-export type RepositoryJobCredential = {
+-  name: string
+-  target: string
+-}
+-
+-export type RepositoryJobProfile = {
+-  repositoryHostPath: string
+-  credential?: RepositoryJobCredential
+-  resources: WorkerResourceProfile
+-}
+-
+-/**
+- * Ningún mecanismo mide hoy `efectivo` en la capacidad `credential_injection`
+- * de `src/lib/podman_capabilities.sh`: tanto `--env NAME` como
+- * `--secret NAME,type=env,target=NAME` entregan el valor al proceso, pero
+- * los dos lo dejan visible en `podman inspect` una vez que el contenedor
+- * corrió (medido 2026-09-29: `Config.Env` conserva el valor resuelto). El
+- * perfil rehúsa declarar la credencial en vez de exponerla en silencio.
+- */
+-export class UnsupportedRepositoryJobCredentialError extends Error {
+-  readonly credentialName: string
+-
+-  constructor(credentialName: string) {
+-    super(
+-      `la credencial '${credentialName}' no se declara: ni --env ni --secret miden efectivo hoy en ` +
+-        "'credential_injection' (src/lib/podman_capabilities.sh) — los dos exponen el valor en " +
+-        "'podman inspect' tras ejecutar el contenedor.",
+-    )
+-    this.name = 'UnsupportedRepositoryJobCredentialError'
+-    this.credentialName = credentialName
+-  }
+-}
+-
+-/** El perfil más restrictivo medido: sin credencial, límites por defecto de `workerResourceProfile.ts`. */
+-export function createRepositoryJobProfile(repositoryHostPath: string): RepositoryJobProfile {
+-  return {
+-    repositoryHostPath,
+-    resources: DEFAULT_WORKER_RESOURCE_PROFILE,
+-  }
+-}
+-
+-function requireAbsoluteHostPath(repositoryHostPath: string): void {
+-  if (!repositoryHostPath.startsWith('/')) {
+-    throw new InvalidWorkerResourceProfileError(
+-      'repositoryHostPath',
+-      `debe ser una ruta absoluta, recibido: ${repositoryHostPath}`,
+-    )
+-  }
+-}
+-
+-/** Valida el perfil completo; rehúsa en el primer campo inválido, nombrándolo. */
+-export function validateRepositoryJobProfile(profile: RepositoryJobProfile): void {
+-  requireAbsoluteHostPath(profile.repositoryHostPath)
+-  if (profile.credential) {
+-    throw new UnsupportedRepositoryJobCredentialError(profile.credential.name)
+-  }
+-  validateWorkerResourceProfile(profile.resources)
+-}
+-
+-function repositoryOverlayMountArgv(repositoryHostPath: string): string[] {
+-  return ['-v', `${repositoryHostPath}:${REPOSITORY_CONTAINER_PATH}:O`]
+-}
+-
+-/**
+- * Traduce un perfil validado al argv completo de `podman create`/`run`
+- * —límites + montaje overlay del repositorio— sin ejecutar nada.
+- */
+-export function repositoryJobProfileArgv(profile: RepositoryJobProfile): string[] {
+-  validateRepositoryJobProfile(profile)
+-  return [...workerResourceLimitArgv(profile.resources), ...repositoryOverlayMountArgv(profile.repositoryHostPath)]
+-}
++export * from '@thyrox/podman-execution/repositoryJobProfile.ts'
+diff --git a/src/packages/daemon/src/podman/workerContainerLifecycle.ts b/src/packages/daemon/src/podman/workerContainerLifecycle.ts
+index fa68aad8d..fa2d19030 100644
+--- a/src/packages/daemon/src/podman/workerContainerLifecycle.ts
++++ b/src/packages/daemon/src/podman/workerContainerLifecycle.ts
+@@ -1,329 +1,56 @@
+ /**
+- * Ciclo de vida de un contenedor de worker de Podman (ADR-THYROX-007
+- * Regla 2, TASK-THYROX-0616): crear, inspeccionar, detener y retirar un
+- * contenedor por orden del daemon, garantizar que ningún contenedor ni
+- * proceso sobrevive a su worker, y encontrar los huérfanos que deja un
+- * daemon muerto.
+- *
+- * El estado que reporta Podman NO es evidencia de vida —TASK-THYROX-0605
+- * midió `running` con el proceso ya muerto tras `podman start`—, así que
+- * toda decisión de vivacidad de este módulo pasa por el PID real
+- * (`isProcessAlive`, la misma sonda de `daemonLock.ts`), nunca sólo por
+- * `.State.Status`.
+- *
+- * El ejecutor de Podman (`WorkerContainerLifecycleDeps.podman`) es una
+- * dependencia inyectada: este módulo sólo compone el argv y lo entrega al
+- * ejecutor, nunca invoca el binario `podman` por su cuenta — así la suite
+- * corre con un doble y no requiere Podman real. Consume, sin modificarlos,
+- * el argv de límites de `workerResourceProfile.ts`/`repositoryJobProfile.ts`
+- * como `WorkerContainerSpec.resourceArgv`.
++ * El ciclo de vida de contenedores visto por el daemon (TASK-THYROX-0667).
++ * El mecanismo vive en `@thyrox/podman-execution`; aquí sólo queda lo que
++ * es del daemon como DUEÑO: cómo se declara en las etiquetas y su política
++ * de huérfanos —daemon muerto ⇒ huérfano—, entregada a la primitiva como
++ * predicado. Un contenedor de otro dueño (`pool`) nunca lo marca.
+  */
+ 
+-import { isProcessAlive } from '../daemonLock.js'
+-
+-export interface PodmanCommandResult {
+-  readonly exitCode: number
+-  readonly stdout: string
+-  readonly stderr: string
+-}
+-
+-/** El único punto por el que este módulo habla con Podman — inyectado para que la suite use un doble. */
+-export interface PodmanExecutor {
+-  run(args: readonly string[]): Promise<PodmanCommandResult>
+-}
+-
+-/** Prefijo de nombre de todo contenedor de worker que este módulo crea o reconoce como propio. */
+-export const WORKER_CONTAINER_NAME_PREFIX = 'thyrox-worker-'
+-
+-export function workerContainerName(workerId: string): string {
+-  return `${WORKER_CONTAINER_NAME_PREFIX}${workerId}`
+-}
+-
+-/** Etiqueta con el PID del daemon dueño — la fuente que permite reconocer un huérfano tras un daemon muerto. */
+-export const DAEMON_PID_LABEL_KEY = 'thyrox.daemon-pid'
+-/** Etiqueta con el identificador de worker — permite recuperarlo desde un `podman inspect`, sin estado propio. */
+-export const WORKER_ID_LABEL_KEY = 'thyrox.worker-id'
+-
+-/** Plazo por defecto de `podman stop` antes de que Podman escale a SIGKILL. */
+-export const DEFAULT_STOP_TIMEOUT_SECONDS = 10
+-
+-const WORKER_ID_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_.-]*$/
++import type { PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
++import {
++  DEFAULT_STOP_TIMEOUT_SECONDS,
++  createWorkerContainerLifecycleDeps as createLifecycleDepsWithProbe,
++  retireOrphanedWorkerContainers,
++  type ContainerOwner,
++  type OrphanPredicate,
++  type WorkerContainerLifecycleDeps,
++  type WorkerContainerRetirement,
++} from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+ 
+-/** Un campo del spec no pasó su validación; nombra el campo, nunca lo omite en silencio. */
+-export class InvalidWorkerContainerSpecError extends Error {
+-  readonly field: string
+-
+-  constructor(field: string, message: string) {
+-    super(message)
+-    this.name = 'InvalidWorkerContainerSpecError'
+-    this.field = field
+-  }
+-}
+-
+-export type WorkerContainerSpec = {
+-  workerId: string
+-  image: string
+-  /** PID del daemon que crea el contenedor — queda en la etiqueta que el barrido de huérfanos consulta. */
+-  daemonPid: number
+-  /** Argv de límites ya compuesto por `workerResourceProfile.ts`/`repositoryJobProfile.ts`. */
+-  resourceArgv: readonly string[]
+-  command?: readonly string[]
+-}
+-
+-function requireValidWorkerId(workerId: string): void {
+-  if (!WORKER_ID_PATTERN.test(workerId)) {
+-    throw new InvalidWorkerContainerSpecError('workerId', `identificador de worker inválido: ${workerId}`)
+-  }
+-}
+-
+-function requireNonEmptyImage(image: string): void {
+-  if (!image) {
+-    throw new InvalidWorkerContainerSpecError('image', 'la imagen no puede estar vacía')
+-  }
+-}
+-
+-function requirePositiveDaemonPid(daemonPid: number): void {
+-  if (!Number.isInteger(daemonPid) || daemonPid <= 0) {
+-    throw new InvalidWorkerContainerSpecError('daemonPid', `daemonPid debe ser un entero > 0, recibido: ${daemonPid}`)
+-  }
+-}
++import { isProcessAlive } from '../daemonLock.js'
+ 
+-/** Valida el spec completo; rehúsa en el primer campo inválido, nombrándolo. */
+-export function validateWorkerContainerSpec(spec: WorkerContainerSpec): void {
+-  requireValidWorkerId(spec.workerId)
+-  requireNonEmptyImage(spec.image)
+-  requirePositiveDaemonPid(spec.daemonPid)
+-}
++export * from '@thyrox/podman-execution/podmanExecutor.ts'
++export * from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+ 
+-function labelArgv(key: string, value: string): string[] {
+-  return ['--label', `${key}=${value}`]
+-}
+-
+-/** Traduce un spec validado al argv de `podman create` — nombre, etiquetas de daemon/worker, límites e imagen. */
+-export function createWorkerContainerArgv(spec: WorkerContainerSpec): string[] {
+-  validateWorkerContainerSpec(spec)
+-  return [
+-    'create',
+-    '--name', workerContainerName(spec.workerId),
+-    ...labelArgv(DAEMON_PID_LABEL_KEY, String(spec.daemonPid)),
+-    ...labelArgv(WORKER_ID_LABEL_KEY, spec.workerId),
+-    ...spec.resourceArgv,
+-    spec.image,
+-    ...(spec.command ?? []),
+-  ]
++/** El daemon se declara dueño con su PID, que también le sirve de identificador. */
++export function daemonContainerOwner(daemonPid: number): ContainerOwner {
++  return { kind: 'daemon', id: String(daemonPid), pid: daemonPid }
+ }
+ 
+ /**
+- * Formato de `podman inspect`: status, PID y las dos etiquetas propias, en
+- * una sola invocación — el mismo campo `{{.State.Status}}\t{{.State.Pid}}`
+- * que `src/lib/infrastructure.sh`, extendido con las etiquetas que el
+- * barrido de huérfanos necesita.
++ * La política del daemon: un contenedor suyo cuyo daemon ya no vive es
++ * huérfano. Sin etiqueta de tipo tampoco se puede atribuir a ningún daemon
++ * vivo, así que cuenta como huérfano, igual que antes de la primitiva; uno
++ * de tipo `pool` nunca es asunto del daemon.
+  */
+-const INSPECT_FORMAT =
+-  '{{.State.Status}}\t{{.State.Pid}}\t' +
+-  `{{index .Config.Labels "${DAEMON_PID_LABEL_KEY}"}}\t{{index .Config.Labels "${WORKER_ID_LABEL_KEY}"}}`
+-
+-export function inspectWorkerContainerArgv(name: string): string[] {
+-  return ['inspect', '--format', INSPECT_FORMAT, name]
+-}
+-
+-export function stopWorkerContainerArgv(name: string, timeoutSeconds: number): string[] {
+-  return ['stop', '--time', String(timeoutSeconds), name]
+-}
+-
+-/** Siempre fuerza el retiro: un contenedor de worker no queda a medio retirar por depender de que ya esté detenido. */
+-export function removeWorkerContainerArgv(name: string): string[] {
+-  return ['rm', '--force', name]
+-}
+-
+-/** Lista, por nombre, todo contenedor gestionado por este módulo — el universo que el barrido de huérfanos recorre. */
+-export function listWorkerContainerNamesArgv(): string[] {
+-  return ['ps', '--all', '--filter', `name=^${WORKER_CONTAINER_NAME_PREFIX}`, '--format', '{{.Names}}']
+-}
+-
+-export type WorkerContainerInspection =
+-  | { present: false }
+-  | {
+-      present: true
+-      status: string
+-      pid: number
+-      daemonPid: number | null
+-      workerId: string | null
+-    }
+-
+-function parseLabelPid(raw: string): number | null {
+-  const parsed = Number(raw)
+-  return Number.isInteger(parsed) && parsed > 0 ? parsed : null
+-}
+-
+-function parseLabelText(raw: string): string | null {
+-  return raw === '' || raw === '<no value>' ? null : raw
+-}
+-
+-/** Traduce la salida de `inspectWorkerContainerArgv` — ausente (exit != 0) o presente con sus cuatro campos. */
+-export function parseWorkerContainerInspection(result: PodmanCommandResult): WorkerContainerInspection {
+-  if (result.exitCode !== 0) return { present: false }
+-  const [status, pidRaw, daemonPidRaw, workerIdRaw] = result.stdout.trim().split('\t')
+-  return {
+-    present: true,
+-    status: status ?? '',
+-    pid: Number(pidRaw) || 0,
+-    daemonPid: parseLabelPid(daemonPidRaw ?? ''),
+-    workerId: parseLabelText(workerIdRaw ?? ''),
++export function createDaemonOrphanPredicate(checkProcessAlive: (pid: number) => boolean): OrphanPredicate {
++  return inspection => {
++    const { kind, pid } = inspection.owner
++    if (kind === 'pool') return false
++    if (kind === null || pid === null) return true
++    return !checkProcessAlive(pid)
+   }
+ }
+ 
+-function parseContainerNameList(stdout: string): string[] {
+-  return stdout
+-    .split('\n')
+-    .map(line => line.trim())
+-    .filter(line => line.length > 0)
+-}
+-
+-/**
+- * La regla que TASK-THYROX-0605 obligó a nombrar: un contenedor `running`
+- * con el PID muerto NO está vivo. `present`/`status`/`pid` solos nunca
+- * bastan — la sonda de PID es la que decide.
+- */
+-export function isWorkerContainerProcessAlive(
+-  inspection: WorkerContainerInspection,
+-  checkProcessAlive: (pid: number) => boolean,
+-): boolean {
+-  return inspection.present && inspection.status === 'running' && inspection.pid > 0 && checkProcessAlive(inspection.pid)
+-}
+-
+-/**
+- * Un contenedor gestionado sin daemon dueño vivo es huérfano. Una etiqueta
+- * de daemon ausente o inválida no se puede atribuir a ningún daemon vivo,
+- * así que también cuenta como huérfano: el único creador de esta etiqueta
+- * es este mismo módulo, y su ausencia es anómala, no un caso a tolerar en
+- * silencio.
+- */
+-function isOrphanedByDeadDaemon(inspection: WorkerContainerInspection, checkProcessAlive: (pid: number) => boolean): boolean {
+-  if (!inspection.present) return false
+-  if (inspection.daemonPid === null) return true
+-  return !checkProcessAlive(inspection.daemonPid)
+-}
+-
+-export interface WorkerContainerLifecycleDeps {
+-  podman: PodmanExecutor
+-  /** Inyectado — nunca se asume vivo por el status de Podman; ver `isWorkerContainerProcessAlive`. */
+-  isProcessAlive: (pid: number) => boolean
+-  /** Señal directa de última instancia cuando el PID sigue vivo tras `stop`+`rm` (estado stale de Podman). */
+-  killProcess: (pid: number, signal: NodeJS.Signals) => void
+-}
+-
+-/** Deps reales: la única sonda de vida de `daemonLock.ts` y `process.kill` — sin más lógica que la inyección. */
++/** Deps reales del daemon: la sonda de vida de `daemonLock.ts`. */
+ export function createWorkerContainerLifecycleDeps(podman: PodmanExecutor): WorkerContainerLifecycleDeps {
+-  return {
+-    podman,
+-    isProcessAlive,
+-    killProcess: (pid, signal) => process.kill(pid, signal),
+-  }
+-}
+-
+-/** Crea el contenedor y lo arranca; si el `create` falla, nunca se intenta el `start`. */
+-export async function createWorkerContainer(
+-  deps: WorkerContainerLifecycleDeps,
+-  spec: WorkerContainerSpec,
+-): Promise<PodmanCommandResult> {
+-  const created = await deps.podman.run(createWorkerContainerArgv(spec))
+-  if (created.exitCode !== 0) return created
+-  return deps.podman.run(['start', workerContainerName(spec.workerId)])
+-}
+-
+-export async function inspectWorkerContainer(
+-  deps: WorkerContainerLifecycleDeps,
+-  name: string,
+-): Promise<WorkerContainerInspection> {
+-  return parseWorkerContainerInspection(await deps.podman.run(inspectWorkerContainerArgv(name)))
+-}
+-
+-export async function stopWorkerContainer(
+-  deps: WorkerContainerLifecycleDeps,
+-  name: string,
+-  timeoutSeconds: number,
+-): Promise<PodmanCommandResult> {
+-  return deps.podman.run(stopWorkerContainerArgv(name, timeoutSeconds))
+-}
+-
+-export async function removeWorkerContainer(deps: WorkerContainerLifecycleDeps, name: string): Promise<PodmanCommandResult> {
+-  return deps.podman.run(removeWorkerContainerArgv(name))
++  return createLifecycleDepsWithProbe(podman, isProcessAlive)
+ }
+ 
+-export type WorkerContainerRetirement = {
+-  name: string
+-  stopped: boolean
+-  removed: boolean
+-  /** `true` si, tras `stop`+`rm`, el PID seguía vivo y hubo que matarlo directo (estado stale de Podman). */
+-  killedStaleProcess: boolean
+-}
+-
+-/** Envía SIGKILL directo si, tras `stop`+`rm`, el PID inspeccionado sigue vivo — la garantía de "nada sobrevive". */
+-function killStaleProcessIfAlive(deps: WorkerContainerLifecycleDeps, inspection: WorkerContainerInspection): boolean {
+-  if (!inspection.present || inspection.pid <= 0) return false
+-  if (!deps.isProcessAlive(inspection.pid)) return false
+-  deps.killProcess(inspection.pid, 'SIGKILL')
+-  return true
+-}
+-
+-/**
+- * Detiene y retira un contenedor por su nombre, y verifica al final —sobre
+- * el PID, no sobre lo que Podman reportó— que no quedó un proceso vivo. Un
+- * contenedor ya ausente no invoca ni `stop` ni `rm`.
+- */
+-export async function retireWorkerContainer(
+-  deps: WorkerContainerLifecycleDeps,
+-  name: string,
+-  timeoutSeconds: number = DEFAULT_STOP_TIMEOUT_SECONDS,
+-): Promise<WorkerContainerRetirement> {
+-  const inspection = await inspectWorkerContainer(deps, name)
+-  if (!inspection.present) {
+-    return { name, stopped: false, removed: false, killedStaleProcess: false }
+-  }
+-  const stopResult = await stopWorkerContainer(deps, name, timeoutSeconds)
+-  const removeResult = await removeWorkerContainer(deps, name)
+-  return {
+-    name,
+-    stopped: stopResult.exitCode === 0,
+-    removed: removeResult.exitCode === 0,
+-    killedStaleProcess: killStaleProcessIfAlive(deps, inspection),
+-  }
+-}
+-
+-export type OrphanedWorkerContainer = {
+-  name: string
+-  workerId: string | null
+-  /** `0` cuando la etiqueta faltaba o no era un PID válido — ver `isOrphanedByDeadDaemon`. */
+-  daemonPid: number
+-}
+-
+-/** Encuentra, sin retirar nada, los contenedores gestionados cuyo daemon dueño ya no vive. */
+-export async function findOrphanedWorkerContainers(deps: WorkerContainerLifecycleDeps): Promise<OrphanedWorkerContainer[]> {
+-  const listing = await deps.podman.run(listWorkerContainerNamesArgv())
+-  const names = parseContainerNameList(listing.stdout)
+-  const orphans: OrphanedWorkerContainer[] = []
+-  for (const name of names) {
+-    const inspection = await inspectWorkerContainer(deps, name)
+-    if (!isOrphanedByDeadDaemon(inspection, deps.isProcessAlive)) continue
+-    orphans.push({
+-      name,
+-      workerId: inspection.present ? inspection.workerId : null,
+-      daemonPid: inspection.present && inspection.daemonPid !== null ? inspection.daemonPid : 0,
+-    })
+-  }
+-  return orphans
+-}
+-
+-/** Encuentra y retira, uno por uno, los huérfanos que deja un daemon muerto. */
+-export async function retireOrphanedWorkerContainers(
++/** Retira los contenedores que dejó un daemon muerto, con la política del daemon. */
++export function retireDaemonOrphanedWorkerContainers(
+   deps: WorkerContainerLifecycleDeps,
+   timeoutSeconds: number = DEFAULT_STOP_TIMEOUT_SECONDS,
+ ): Promise<WorkerContainerRetirement[]> {
+-  const orphans = await findOrphanedWorkerContainers(deps)
+-  const retirements: WorkerContainerRetirement[] = []
+-  for (const orphan of orphans) {
+-    retirements.push(await retireWorkerContainer(deps, orphan.name, timeoutSeconds))
+-  }
+-  return retirements
++  return retireOrphanedWorkerContainers(deps, createDaemonOrphanPredicate(deps.isProcessAlive), timeoutSeconds)
+ }
+diff --git a/src/packages/daemon/src/podman/workerResourceProfile.ts b/src/packages/daemon/src/podman/workerResourceProfile.ts
+index 285c40ff9..690316487 100644
+--- a/src/packages/daemon/src/podman/workerResourceProfile.ts
++++ b/src/packages/daemon/src/podman/workerResourceProfile.ts
+@@ -1,142 +1,7 @@
+ /**
+- * Contrato del perfil de límites de recursos de un worker de Podman
+- * (ADR-THYROX-007 Regla 2, TASK-THYROX-0615).
+- *
+- * Cada bandera que este módulo compone ya se midió contra su control en
+- * `src/lib/podman_capabilities.sh` (`--pids-limit`, `--memory`, `--cpus`,
+- * `--network none`, `--read-only`, montajes `:ro`). Aquí sólo vive el
+- * CONTRATO del perfil —su validación y su traducción a argv—, nunca la
+- * ejecución: el `PodmanWorkerManager` que crea y lanza contenedores es
+- * trabajo futuro, no de este archivo.
++ * Adaptador: el perfil de límites vive en `@thyrox/podman-execution`
++ * (TASK-THYROX-0667). Se reexporta para los importadores del daemon; no hay
++ * una segunda implementación.
+  */
+ 
+-export type WorkerNetworkMode = 'none' | 'bridge'
+-export type WorkerMountMode = 'ro' | 'rw'
+-
+-export type WorkerResourceMount = {
+-  source: string
+-  destination: string
+-  mode: WorkerMountMode
+-}
+-
+-export type WorkerResourceProfile = {
+-  cpus: number
+-  memoryMib: number
+-  pidsLimit: number
+-  network: WorkerNetworkMode
+-  readOnlyRootfs: boolean
+-  mounts: WorkerResourceMount[]
+-}
+-
+-const KNOWN_NETWORK_MODES: readonly WorkerNetworkMode[] = ['none', 'bridge']
+-const KNOWN_MOUNT_MODES: readonly WorkerMountMode[] = ['ro', 'rw']
+-
+-/**
+- * El perfil más restrictivo medido: sin red, rootfs de sólo lectura, sin
+- * montajes declarados. Relajar cualquiera de los tres es explícito en el
+- * perfil que se declare — nunca el default silencioso.
+- */
+-export const DEFAULT_WORKER_RESOURCE_PROFILE: WorkerResourceProfile = {
+-  cpus: 1,
+-  memoryMib: 1024,
+-  pidsLimit: 128,
+-  network: 'none',
+-  readOnlyRootfs: true,
+-  mounts: [],
+-}
+-
+-/** Un campo del perfil no pasó su validación; nombra el campo, nunca lo omite en silencio. */
+-export class InvalidWorkerResourceProfileError extends Error {
+-  readonly field: string
+-
+-  constructor(field: string, message: string) {
+-    super(message)
+-    this.name = 'InvalidWorkerResourceProfileError'
+-    this.field = field
+-  }
+-}
+-
+-function requirePositiveNumber(field: string, value: number): void {
+-  if (!Number.isFinite(value) || value <= 0) {
+-    throw new InvalidWorkerResourceProfileError(field, `${field} debe ser un número > 0, recibido: ${value}`)
+-  }
+-}
+-
+-function requirePositiveInteger(field: string, value: number): void {
+-  if (!Number.isInteger(value) || value < 1) {
+-    throw new InvalidWorkerResourceProfileError(field, `${field} debe ser un entero >= 1, recibido: ${value}`)
+-  }
+-}
+-
+-function requireKnownNetwork(network: WorkerNetworkMode): void {
+-  if (!KNOWN_NETWORK_MODES.includes(network)) {
+-    throw new InvalidWorkerResourceProfileError('network', `red desconocida: ${network}`)
+-  }
+-}
+-
+-function requireValidMount(mount: WorkerResourceMount, index: number): void {
+-  const field = `mounts[${index}]`
+-  if (!mount.source) {
+-    throw new InvalidWorkerResourceProfileError(`${field}.source`, 'el origen del montaje no puede estar vacío')
+-  }
+-  if (!mount.destination.startsWith('/')) {
+-    throw new InvalidWorkerResourceProfileError(
+-      `${field}.destination`,
+-      `el destino del montaje debe ser una ruta absoluta, recibido: ${mount.destination}`,
+-    )
+-  }
+-  if (!KNOWN_MOUNT_MODES.includes(mount.mode)) {
+-    throw new InvalidWorkerResourceProfileError(`${field}.mode`, `modo de montaje desconocido: ${mount.mode}`)
+-  }
+-}
+-
+-/** Valida el perfil completo; rehúsa en el primer campo inválido, nombrándolo. */
+-export function validateWorkerResourceProfile(profile: WorkerResourceProfile): void {
+-  requirePositiveNumber('cpus', profile.cpus)
+-  requirePositiveNumber('memoryMib', profile.memoryMib)
+-  requirePositiveInteger('pidsLimit', profile.pidsLimit)
+-  requireKnownNetwork(profile.network)
+-  profile.mounts.forEach((mount, index) => requireValidMount(mount, index))
+-}
+-
+-function cpuLimitArgv(cpus: number): string[] {
+-  return ['--cpus', String(cpus)]
+-}
+-
+-function memoryLimitArgv(memoryMib: number): string[] {
+-  return ['--memory', `${memoryMib}m`]
+-}
+-
+-function pidsLimitArgv(pidsLimit: number): string[] {
+-  return ['--pids-limit', String(pidsLimit)]
+-}
+-
+-function networkArgv(network: WorkerNetworkMode): string[] {
+-  return ['--network', network]
+-}
+-
+-function rootfsArgv(readOnlyRootfs: boolean): string[] {
+-  return readOnlyRootfs ? ['--read-only', '--read-only-tmpfs=false'] : []
+-}
+-
+-function mountArgv(mount: WorkerResourceMount): string[] {
+-  return ['-v', `${mount.source}:${mount.destination}:${mount.mode}`]
+-}
+-
+-/**
+- * Traduce un perfil validado al argv de límites para `podman create`/`run`
+- * — no ejecuta nada, sólo compone el argv (mismo contrato que
+- * `thyrox_infrastructure_create_argv` en `src/lib/infrastructure.sh`: un
+- * perfil inválido rehúsa antes de emitir ningún argumento).
+- */
+-export function workerResourceLimitArgv(profile: WorkerResourceProfile): string[] {
+-  validateWorkerResourceProfile(profile)
+-  return [
+-    ...cpuLimitArgv(profile.cpus),
+-    ...memoryLimitArgv(profile.memoryMib),
+-    ...pidsLimitArgv(profile.pidsLimit),
+-    ...networkArgv(profile.network),
+-    ...rootfsArgv(profile.readOnlyRootfs),
+-    ...profile.mounts.flatMap(mountArgv),
+-  ]
+-}
++export * from '@thyrox/podman-execution/workerResourceProfile.ts'
+diff --git a/src/packages/podman-execution/__tests__/containerRun.test.ts b/src/packages/podman-execution/__tests__/containerRun.test.ts
+new file mode 100644
+index 000000000..7606d14a1
+--- /dev/null
++++ b/src/packages/podman-execution/__tests__/containerRun.test.ts
+@@ -0,0 +1,133 @@
++import { describe, expect, test } from 'bun:test'
++import { join } from 'node:path'
++
++import {
++  ContainerRunError,
++  exportArtifacts,
++  runJobAndCollect,
++  runToCompletion,
++  signalContainer,
++} from '../containerRun.js'
++import type { PodmanCommandResult, PodmanExecutor } from '../podmanExecutor.js'
++import { createWorkerContainerArgv, workerContainerName, type WorkerContainerSpec } from '../workerContainerLifecycle.js'
++
++const OK: PodmanCommandResult = { exitCode: 0, stdout: '', stderr: '' }
++const HOST_DIR = '/host/artifacts'
++
++function fakePodman(
++  responses: Partial<Record<string, PodmanCommandResult>> = {},
++): PodmanExecutor & { readonly calls: string[][] } {
++  const calls: string[][] = []
++  return {
++    calls,
++    async run(args: readonly string[]): Promise<PodmanCommandResult> {
++      calls.push([...args])
++      return responses[args[0]] ?? OK
++    },
++  }
++}
++
++function spec(): WorkerContainerSpec {
++  return {
++    workerId: 'job1',
++    image: 'localhost/helper',
++    owner: { kind: 'pool', id: 'p1', pid: 55 },
++    resourceArgv: ['--network', 'none'],
++    command: ['/bin/helper', 'exit', '42'],
++  }
++}
++
++const NAME = workerContainerName('job1')
++
++async function rejectionOf(promise: Promise<unknown>): Promise<ContainerRunError> {
++  try {
++    await promise
++  } catch (error) {
++    expect(error).toBeInstanceOf(ContainerRunError)
++    return error as ContainerRunError
++  }
++  throw new Error('debía rechazar')
++}
++
++describe('runToCompletion', () => {
++  test('crea, arranca y espera, y devuelve el código que da `podman wait`', async () => {
++    const podman = fakePodman({ wait: { exitCode: 0, stdout: '42\n', stderr: '' } })
++    expect(await runToCompletion(podman, spec())).toBe(42)
++    expect(podman.calls).toEqual([createWorkerContainerArgv(spec()), ['start', NAME], ['wait', NAME]])
++  })
++
++  test('un create fallido rechaza en la etapa create y no arranca nada', async () => {
++    const podman = fakePodman({ create: { exitCode: 125, stdout: '', stderr: 'no such image' } })
++    const error = await rejectionOf(runToCompletion(podman, spec()))
++    expect(error.stage).toBe('create')
++    expect(error.message).toContain('no such image')
++    expect(podman.calls).toHaveLength(1)
++  })
++
++  test('un start fallido rechaza en la etapa start y no espera', async () => {
++    const podman = fakePodman({ start: { exitCode: 126, stdout: '', stderr: 'oci runtime error' } })
++    expect((await rejectionOf(runToCompletion(podman, spec()))).stage).toBe('start')
++    expect(podman.calls.map(call => call[0])).toEqual(['create', 'start'])
++  })
++
++  test('una salida de `wait` que no es un entero rechaza: no poder leer el código no es 0', async () => {
++    const podman = fakePodman({ wait: { exitCode: 0, stdout: 'quizás\n', stderr: '' } })
++    expect((await rejectionOf(runToCompletion(podman, spec()))).stage).toBe('wait')
++  })
++})
++
++describe('signalContainer', () => {
++  test('envía la señal nombrada con `podman kill --signal`', async () => {
++    const podman = fakePodman()
++    await signalContainer(podman, NAME, 'SIGTERM')
++    expect(podman.calls).toEqual([['kill', '--signal', 'SIGTERM', NAME]])
++  })
++
++  test('un kill fallido rechaza en la etapa signal', async () => {
++    const podman = fakePodman({ kill: { exitCode: 125, stdout: '', stderr: 'not running' } })
++    expect((await rejectionOf(signalContainer(podman, NAME, 'SIGTERM'))).stage).toBe('signal')
++  })
++})
++
++describe('exportArtifacts', () => {
++  test('copia cada ruta con `podman cp` y devuelve su ruta en el anfitrión', async () => {
++    const podman = fakePodman()
++    const exported = await exportArtifacts(podman, NAME, ['/out/a.txt', '/out/b.log'], HOST_DIR)
++    expect(exported).toEqual([join(HOST_DIR, 'a.txt'), join(HOST_DIR, 'b.log')])
++    expect(podman.calls).toEqual([
++      ['cp', `${NAME}:/out/a.txt`, join(HOST_DIR, 'a.txt')],
++      ['cp', `${NAME}:/out/b.log`, join(HOST_DIR, 'b.log')],
++    ])
++  })
++
++  test('un cp fallido rechaza en la etapa export nombrando la ruta', async () => {
++    const podman = fakePodman({ cp: { exitCode: 125, stdout: '', stderr: 'no such container' } })
++    const error = await rejectionOf(exportArtifacts(podman, NAME, ['/out/a.txt'], HOST_DIR))
++    expect(error.stage).toBe('export')
++    expect(error.message).toContain('/out/a.txt')
++  })
++})
++
++describe('runJobAndCollect — exportar antes de limpiar', () => {
++  test('corre, exporta y sólo después retira el contenedor', async () => {
++    const podman = fakePodman({ wait: { exitCode: 0, stdout: '0\n', stderr: '' } })
++    const outcome = await runJobAndCollect(podman, spec(), { containerPaths: ['/out/a.txt'], hostDir: HOST_DIR })
++    expect(outcome).toEqual({ exitCode: 0, artifacts: [join(HOST_DIR, 'a.txt')] })
++    expect(podman.calls.map(call => call[0])).toEqual(['create', 'start', 'wait', 'cp', 'rm'])
++  })
++
++  test('si la ejecución falla, igual retira lo creado y propaga el error', async () => {
++    const podman = fakePodman({ start: { exitCode: 126, stdout: '', stderr: 'boom' } })
++    await rejectionOf(runJobAndCollect(podman, spec(), { containerPaths: [], hostDir: HOST_DIR }))
++    expect(podman.calls.map(call => call[0])).toEqual(['create', 'start', 'rm'])
++  })
++
++  test('si la exportación falla, igual retira el contenedor, después de intentarla', async () => {
++    const podman = fakePodman({
++      wait: { exitCode: 0, stdout: '0\n', stderr: '' },
++      cp: { exitCode: 125, stdout: '', stderr: 'boom' },
++    })
++    await rejectionOf(runJobAndCollect(podman, spec(), { containerPaths: ['/out/a.txt'], hostDir: HOST_DIR }))
++    expect(podman.calls.map(call => call[0])).toEqual(['create', 'start', 'wait', 'cp', 'rm'])
++  })
++})
+diff --git a/src/packages/podman-execution/__tests__/packageBoundary.test.ts b/src/packages/podman-execution/__tests__/packageBoundary.test.ts
+new file mode 100644
+index 000000000..65f85a1af
+--- /dev/null
++++ b/src/packages/podman-execution/__tests__/packageBoundary.test.ts
+@@ -0,0 +1,26 @@
++import { describe, expect, test } from 'bun:test'
++import { readFileSync, readdirSync } from 'node:fs'
++import { join } from 'node:path'
++
++const PACKAGE_ROOT = join(import.meta.dir, '..')
++const IMPORT_SPECIFIER = /from\s+'([^']+)'/g
++
++function sourceFiles(): string[] {
++  return readdirSync(PACKAGE_ROOT).filter(name => name.endsWith('.ts')).map(name => join(PACKAGE_ROOT, name))
++}
++
++function importSpecifiers(file: string): string[] {
++  return [...readFileSync(file, 'utf8').matchAll(IMPORT_SPECIFIER)].map(match => match[1] ?? '')
++}
++
++describe('frontera del paquete — la primitiva funciona sin el daemon', () => {
++  test('ningún módulo del paquete importa el daemon ni sale del paquete por ruta relativa', () => {
++    const files = sourceFiles()
++    expect(files.length).toBeGreaterThan(0)
++    const offenders = files.flatMap(file =>
++      importSpecifiers(file)
++        .filter(specifier => specifier.includes('daemon') || specifier.startsWith('../'))
++        .map(specifier => `${file}: ${specifier}`))
++    expect(offenders).toEqual([])
++  })
++})
+diff --git a/src/packages/podman-execution/__tests__/podmanExecution.real.test.ts b/src/packages/podman-execution/__tests__/podmanExecution.real.test.ts
+new file mode 100644
+index 000000000..fdfb2b734
+--- /dev/null
++++ b/src/packages/podman-execution/__tests__/podmanExecution.real.test.ts
+@@ -0,0 +1,153 @@
++/**
++ * La primitiva contra el Podman real del anfitrión, sin ningún daemon en
++ * marcha: ninguna de estas pruebas arranca ni consulta el daemon, y el
++ * dueño de cada contenedor es `pool`.
++ *
++ * Métrica: el código que llega al llamador, la existencia del contenedor
++ * (`podman container exists`) y los archivos del anfitrión tras cada paso.
++ * Ciega a: Podman rootless (este contenedor corre como root) y a una
++ * imagen con más de un proceso.
++ */
++
++import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
++import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import { runJobAndCollect, runToCompletion, signalContainer } from '../containerRun.js'
++import type { PodmanExecutor } from '../podmanExecutor.js'
++import { createRepositoryJobProfile, repositoryJobProfileArgv } from '../repositoryJobProfile.js'
++import { buildHelperImage, canBuildHelperImage, type HelperImage } from '../testing/helperImage.js'
++import {
++  WORKER_CONTAINER_NAME_PREFIX,
++  removeWorkerContainer,
++  workerContainerName,
++  type WorkerContainerLifecycleDeps,
++  type WorkerContainerSpec,
++} from '../workerContainerLifecycle.js'
++import { DEFAULT_WORKER_RESOURCE_PROFILE, workerResourceLimitArgv } from '../workerResourceProfile.js'
++
++const RUN_ID = `${process.pid}-${Date.now()}`
++const WORKER_PREFIX = `pe-real-${RUN_ID}`
++const EXPECTED_EXIT_CODE = 42
++const TERM_HANDLER_EXIT_CODE = 77
++const READY_POLL_ATTEMPTS = 100
++const READY_POLL_INTERVAL_MS = 50
++/** El contenedor vivo del caso SIGTERM no debe durar más que la prueba: su plazo, en ms. */
++const REAL_TEST_TIMEOUT_MS = 60_000
++
++const podmanAvailable = await canBuildHelperImage()
++if (!podmanAvailable) console.error('podmanExecution.real: sin Podman o sin gcc en el anfitrión; sin medir.')
++
++let helper: HelperImage
++const scratchDirs: string[] = []
++
++function scratchDir(): string {
++  const dir = mkdtempSync(join(tmpdir(), 'podman-execution-real-'))
++  scratchDirs.push(dir)
++  return dir
++}
++
++function writableRootfsArgv(): string[] {
++  return workerResourceLimitArgv({ ...DEFAULT_WORKER_RESOURCE_PROFILE, readOnlyRootfs: false })
++}
++
++function poolSpec(caseName: string, resourceArgv: readonly string[], command: readonly string[]): WorkerContainerSpec {
++  return {
++    workerId: `${WORKER_PREFIX}-${caseName}`,
++    image: helper.image,
++    owner: { kind: 'pool', id: `pool-${RUN_ID}`, pid: process.pid },
++    resourceArgv,
++    command,
++  }
++}
++
++function lifecycleDeps(podman: PodmanExecutor): WorkerContainerLifecycleDeps {
++  return { podman, isProcessAlive: () => false, killProcess: () => {} }
++}
++
++async function containerExists(name: string): Promise<boolean> {
++  return (await helper.podman.run(['container', 'exists', name])).exitCode === 0
++}
++
++async function runListedContainers(): Promise<string[]> {
++  const listing = await helper.podman.run(['ps', '--all', '--filter', `name=^${WORKER_CONTAINER_NAME_PREFIX}${WORKER_PREFIX}`,
++    '--format', '{{.Names}}'])
++  return listing.stdout.split('\n').filter(line => line.trim().length > 0)
++}
++
++async function waitForReady(name: string): Promise<void> {
++  for (let attempt = 0; attempt < READY_POLL_ATTEMPTS; attempt++) {
++    const logs = await helper.podman.run(['logs', name])
++    if (logs.stdout.includes('ready')) return
++    await Bun.sleep(READY_POLL_INTERVAL_MS)
++  }
++  throw new Error(`${name} no escribió «ready» a tiempo`)
++}
++
++async function removeQuietly(spec: WorkerContainerSpec): Promise<void> {
++  await removeWorkerContainer(lifecycleDeps(helper.podman), workerContainerName(spec.workerId))
++}
++
++describe.skipIf(!podmanAvailable)('primitiva de ejecución contra Podman real, sin daemon', () => {
++  beforeAll(async () => {
++    helper = await buildHelperImage(RUN_ID)
++  })
++
++  afterAll(async () => {
++    for (const name of await runListedContainers()) await helper.podman.run(['rm', '--force', name])
++    await helper.dispose()
++    for (const dir of scratchDirs) rmSync(dir, { recursive: true, force: true })
++  })
++
++  test('el código de salida del proceso (42) llega al llamador', async () => {
++    const spec = poolSpec('exit', writableRootfsArgv(), ['/bin/helper', 'exit', String(EXPECTED_EXIT_CODE)])
++    try {
++      expect(await runToCompletion(helper.podman, spec)).toBe(EXPECTED_EXIT_CODE)
++    } finally {
++      await removeQuietly(spec)
++    }
++  }, REAL_TEST_TIMEOUT_MS)
++
++  test('SIGTERM llega al proceso y el código es el que el proceso eligió', async () => {
++    const spec = poolSpec('term', writableRootfsArgv(), ['/bin/helper', 'term', String(TERM_HANDLER_EXIT_CODE)])
++    try {
++      const completion = runToCompletion(helper.podman, spec)
++      await waitForReady(workerContainerName(spec.workerId))
++      await signalContainer(helper.podman, workerContainerName(spec.workerId), 'SIGTERM')
++      expect(await completion).toBe(TERM_HANDLER_EXIT_CODE)
++    } finally {
++      await removeQuietly(spec)
++    }
++  }, REAL_TEST_TIMEOUT_MS)
++
++  test('una escritura en /w (overlay) no aparece en el anfitrión', async () => {
++    const repository = scratchDir()
++    writeFileSync(join(repository, 'seed.txt'), 'seed')
++    const argv = repositoryJobProfileArgv(createRepositoryJobProfile(repository))
++    const spec = poolSpec('overlay', argv, ['/bin/helper', 'write', '/w/leak.txt', 'leak'])
++    try {
++      expect(await runToCompletion(helper.podman, spec)).toBe(0)
++      expect(existsSync(join(repository, 'leak.txt'))).toBe(false)
++      expect(readFileSync(join(repository, 'seed.txt'), 'utf8')).toBe('seed')
++    } finally {
++      await removeQuietly(spec)
++    }
++  }, REAL_TEST_TIMEOUT_MS)
++
++  test('un artefacto se exporta antes de limpiar, sigue ahí tras la limpieza, y no queda contenedor', async () => {
++    const hostDir = scratchDir()
++    const spec = poolSpec('export', writableRootfsArgv(), ['/bin/helper', 'write', '/out/artifact.txt', 'artifact'])
++    const outcome = await runJobAndCollect(helper.podman, spec, { containerPaths: ['/out/artifact.txt'], hostDir })
++    expect(outcome.exitCode).toBe(0)
++    expect(outcome.artifacts).toEqual([join(hostDir, 'artifact.txt')])
++    expect(readFileSync(join(hostDir, 'artifact.txt'), 'utf8')).toBe('artifact')
++    expect(await containerExists(workerContainerName(spec.workerId))).toBe(false)
++  }, REAL_TEST_TIMEOUT_MS)
++
++  test('tras limpiar no queda ningún contenedor de esta ejecución listado', async () => {
++    const spec = poolSpec('cleanup', writableRootfsArgv(), ['/bin/helper', 'exit', '0'])
++    await runJobAndCollect(helper.podman, spec, { containerPaths: [], hostDir: scratchDir() })
++    expect(await runListedContainers()).toEqual([])
++  }, REAL_TEST_TIMEOUT_MS)
++})
+diff --git a/src/packages/podman-execution/__tests__/repositoryJobProfile.test.ts b/src/packages/podman-execution/__tests__/repositoryJobProfile.test.ts
+new file mode 100644
+index 000000000..44318479c
+--- /dev/null
++++ b/src/packages/podman-execution/__tests__/repositoryJobProfile.test.ts
+@@ -0,0 +1,122 @@
++import { describe, expect, test } from 'bun:test'
++
++import { DEFAULT_WORKER_RESOURCE_PROFILE, InvalidWorkerResourceProfileError } from '../workerResourceProfile.js'
++import {
++  REPOSITORY_CONTAINER_PATH,
++  UnsupportedRepositoryJobCredentialError,
++  createRepositoryJobProfile,
++  repositoryJobProfileArgv,
++  validateRepositoryJobProfile,
++  type RepositoryJobProfile,
++} from '../repositoryJobProfile.js'
++
++describe('createRepositoryJobProfile', () => {
++  test('monta el repositorio en /w y usa los límites por defecto', () => {
++    const profile = createRepositoryJobProfile('/host/repo')
++    expect(profile.repositoryHostPath).toBe('/host/repo')
++    expect(profile.resources).toBe(DEFAULT_WORKER_RESOURCE_PROFILE)
++    expect(profile.credential).toBeUndefined()
++  })
++
++  test('valida sin rehusar', () => {
++    expect(() => validateRepositoryJobProfile(createRepositoryJobProfile('/host/repo'))).not.toThrow()
++  })
++})
++
++describe('repositoryJobProfileArgv', () => {
++  test('argv exacto del perfil por defecto: límites de recursos + montaje overlay del repo', () => {
++    const profile = createRepositoryJobProfile('/host/repo')
++    expect(repositoryJobProfileArgv(profile)).toEqual([
++      '--cpus', String(DEFAULT_WORKER_RESOURCE_PROFILE.cpus),
++      '--memory', `${DEFAULT_WORKER_RESOURCE_PROFILE.memoryMib}m`,
++      '--pids-limit', String(DEFAULT_WORKER_RESOURCE_PROFILE.pidsLimit),
++      '--network', 'none',
++      '--read-only', '--read-only-tmpfs=false',
++      '-v', `/host/repo:${REPOSITORY_CONTAINER_PATH}:O`,
++    ])
++  })
++
++  test('REPOSITORY_CONTAINER_PATH es /w', () => {
++    expect(REPOSITORY_CONTAINER_PATH).toBe('/w')
++  })
++
++  test('argv de un perfil con red y montajes adicionales declarados explícitamente', () => {
++    const profile: RepositoryJobProfile = {
++      repositoryHostPath: '/host/other-repo',
++      resources: {
++        ...DEFAULT_WORKER_RESOURCE_PROFILE,
++        network: 'bridge',
++        mounts: [{ source: '/host/skills', destination: '/workspace/skills', mode: 'ro' }],
++      },
++    }
++    expect(repositoryJobProfileArgv(profile)).toEqual([
++      '--cpus', String(DEFAULT_WORKER_RESOURCE_PROFILE.cpus),
++      '--memory', `${DEFAULT_WORKER_RESOURCE_PROFILE.memoryMib}m`,
++      '--pids-limit', String(DEFAULT_WORKER_RESOURCE_PROFILE.pidsLimit),
++      '--network', 'bridge',
++      '--read-only', '--read-only-tmpfs=false',
++      '-v', '/host/skills:/workspace/skills:ro',
++      '-v', '/host/other-repo:/w:O',
++    ])
++  })
++
++  test('no emite ningún argumento cuando el perfil es inválido', () => {
++    const profile: RepositoryJobProfile = { ...createRepositoryJobProfile('relative/path') }
++    expect(() => repositoryJobProfileArgv(profile)).toThrow(InvalidWorkerResourceProfileError)
++  })
++})
++
++describe('validateRepositoryJobProfile — rehúsos', () => {
++  test('repositoryHostPath no absoluto nombra el campo', () => {
++    const profile = createRepositoryJobProfile('relative/path')
++    try {
++      validateRepositoryJobProfile(profile)
++      throw new Error('debía rehusar')
++    } catch (error) {
++      expect(error).toBeInstanceOf(InvalidWorkerResourceProfileError)
++      expect((error as InvalidWorkerResourceProfileError).field).toBe('repositoryHostPath')
++    }
++  })
++
++  test('un recurso inválido dentro del perfil también rehúsa, nombrando su propio campo', () => {
++    const profile: RepositoryJobProfile = {
++      repositoryHostPath: '/host/repo',
++      resources: { ...DEFAULT_WORKER_RESOURCE_PROFILE, cpus: 0 },
++    }
++    try {
++      validateRepositoryJobProfile(profile)
++      throw new Error('debía rehusar')
++    } catch (error) {
++      expect((error as InvalidWorkerResourceProfileError).field).toBe('cpus')
++    }
++  })
++
++  test('declarar una credencial rehúsa: hoy ningún mecanismo mide efectivo', () => {
++    const profile: RepositoryJobProfile = {
++      repositoryHostPath: '/host/repo',
++      credential: { name: 'github-token', target: 'GITHUB_TOKEN' },
++      resources: DEFAULT_WORKER_RESOURCE_PROFILE,
++    }
++    expect(() => validateRepositoryJobProfile(profile)).toThrow(UnsupportedRepositoryJobCredentialError)
++    try {
++      validateRepositoryJobProfile(profile)
++    } catch (error) {
++      expect((error as UnsupportedRepositoryJobCredentialError).credentialName).toBe('github-token')
++    }
++  })
++
++  test('el valor de una credencial nunca aparece en el argv — el rehúso ocurre antes de componer nada', () => {
++    const profile: RepositoryJobProfile = {
++      repositoryHostPath: '/host/repo',
++      credential: { name: 'github-token', target: 'GITHUB_TOKEN' },
++      resources: DEFAULT_WORKER_RESOURCE_PROFILE,
++    }
++    let argv: string[] = []
++    try {
++      argv = repositoryJobProfileArgv(profile)
++    } catch {
++      // se espera el rehuso
++    }
++    expect(argv).toEqual([])
++  })
++})
+diff --git a/src/packages/podman-execution/__tests__/workerContainerLifecycle.test.ts b/src/packages/podman-execution/__tests__/workerContainerLifecycle.test.ts
+new file mode 100644
+index 000000000..db84e9242
+--- /dev/null
++++ b/src/packages/podman-execution/__tests__/workerContainerLifecycle.test.ts
+@@ -0,0 +1,342 @@
++import { describe, expect, test } from 'bun:test'
++
++import type { PodmanCommandResult, PodmanExecutor } from '../podmanExecutor.js'
++import {
++  DEFAULT_STOP_TIMEOUT_SECONDS,
++  InvalidWorkerContainerSpecError,
++  OWNER_ID_LABEL_KEY,
++  OWNER_KIND_LABEL_KEY,
++  OWNER_PID_LABEL_KEY,
++  WORKER_CONTAINER_NAME_PREFIX,
++  WORKER_ID_LABEL_KEY,
++  createWorkerContainer,
++  createWorkerContainerArgv,
++  findOrphanedWorkerContainers,
++  inspectWorkerContainer,
++  inspectWorkerContainerArgv,
++  isWorkerContainerProcessAlive,
++  listWorkerContainerNamesArgv,
++  parseWorkerContainerInspection,
++  removeWorkerContainer,
++  removeWorkerContainerArgv,
++  retireOrphanedWorkerContainers,
++  retireWorkerContainer,
++  stopWorkerContainer,
++  stopWorkerContainerArgv,
++  validateWorkerContainerSpec,
++  workerContainerName,
++  type OrphanPredicate,
++  type WorkerContainerLifecycleDeps,
++  type WorkerContainerSpec,
++} from '../workerContainerLifecycle.js'
++
++const OK: PodmanCommandResult = { exitCode: 0, stdout: '', stderr: '' }
++const OWNER_PID = 4242
++const CONTAINER_PID = 9
++
++/** Ejecutor de Podman de prueba: registra cada argv y resuelve por subcomando. */
++function createFakePodmanExecutor(
++  responses: Partial<Record<string, PodmanCommandResult>> = {},
++): PodmanExecutor & { readonly calls: readonly (readonly string[])[] } {
++  const calls: string[][] = []
++  return {
++    calls,
++    async run(args: readonly string[]): Promise<PodmanCommandResult> {
++      calls.push([...args])
++      return responses[args[0]] ?? OK
++    },
++  }
++}
++
++function fakeDeps(
++  podman: PodmanExecutor,
++  aliveProcesses: readonly number[] = [],
++): WorkerContainerLifecycleDeps & { readonly killedPids: readonly { pid: number; signal: NodeJS.Signals }[] } {
++  const killedPids: { pid: number; signal: NodeJS.Signals }[] = []
++  return {
++    podman,
++    isProcessAlive: pid => aliveProcesses.includes(pid),
++    killProcess: (pid, signal) => {
++      killedPids.push({ pid, signal })
++    },
++    killedPids,
++  }
++}
++
++function baseSpec(overrides: Partial<WorkerContainerSpec> = {}): WorkerContainerSpec {
++  return {
++    workerId: 'w1',
++    image: 'thyrox-worker:latest',
++    owner: { kind: 'daemon', id: 'd1', pid: OWNER_PID },
++    resourceArgv: ['--cpus', '1'],
++    ...overrides,
++  }
++}
++
++function inspectOutput(status: string, fields: { kind?: string; id?: string; pid?: string; worker?: string } = {}): PodmanCommandResult {
++  const stdout = [status, String(CONTAINER_PID), fields.kind ?? 'daemon', fields.id ?? 'd1',
++    fields.pid ?? String(OWNER_PID), fields.worker ?? 'w1'].join('\t')
++  return { exitCode: 0, stdout, stderr: '' }
++}
++
++/** Predicado de prueba: huérfano todo contenedor cuyo dueño es del tipo dado. */
++function orphanWhenKind(kind: string): OrphanPredicate {
++  return inspection => inspection.owner.kind === kind
++}
++
++function expectSpecRejected(spec: WorkerContainerSpec, field: string): void {
++  try {
++    validateWorkerContainerSpec(spec)
++    throw new Error('debía rehusar')
++  } catch (error) {
++    expect(error).toBeInstanceOf(InvalidWorkerContainerSpecError)
++    expect((error as InvalidWorkerContainerSpecError).field).toBe(field)
++  }
++}
++
++describe('workerContainerName', () => {
++  test('antepone el prefijo declarado al identificador del worker', () => {
++    expect(workerContainerName('w1')).toBe(`${WORKER_CONTAINER_NAME_PREFIX}w1`)
++  })
++})
++
++describe('validateWorkerContainerSpec — rehúsos', () => {
++  test('un workerId vacío rehúsa nombrando el campo', () => {
++    expectSpecRejected(baseSpec({ workerId: '' }), 'workerId')
++  })
++
++  test('un workerId con caracteres fuera del patrón seguro rehúsa', () => {
++    expectSpecRejected(baseSpec({ workerId: 'w1 con espacio' }), 'workerId')
++  })
++
++  test('una imagen vacía rehúsa nombrando el campo', () => {
++    expectSpecRejected(baseSpec({ image: '' }), 'image')
++  })
++
++  test('un tipo de dueño desconocido rehúsa nombrando el campo', () => {
++    expectSpecRejected(baseSpec({ owner: { kind: 'otro' as 'pool', id: 'x', pid: 1 } }), 'owner.kind')
++  })
++
++  test('un identificador de dueño fuera del patrón seguro rehúsa', () => {
++    expectSpecRejected(baseSpec({ owner: { kind: 'pool', id: 'a b', pid: 1 } }), 'owner.id')
++  })
++
++  test('un PID de dueño <= 0 rehúsa nombrando el campo', () => {
++    expectSpecRejected(baseSpec({ owner: { kind: 'pool', id: 'p1', pid: 0 } }), 'owner.pid')
++  })
++
++  test('un spec válido no rehúsa, con dueño daemon o pool', () => {
++    expect(() => validateWorkerContainerSpec(baseSpec())).not.toThrow()
++    expect(() => validateWorkerContainerSpec(baseSpec({ owner: { kind: 'pool', id: 'p1', pid: 7 } }))).not.toThrow()
++  })
++})
++
++describe('createWorkerContainerArgv', () => {
++  test('compone nombre, las tres etiquetas del dueño, la del worker, límites e imagen', () => {
++    expect(createWorkerContainerArgv(baseSpec())).toEqual([
++      'create',
++      '--name', `${WORKER_CONTAINER_NAME_PREFIX}w1`,
++      '--label', `${OWNER_KIND_LABEL_KEY}=daemon`,
++      '--label', `${OWNER_ID_LABEL_KEY}=d1`,
++      '--label', `${OWNER_PID_LABEL_KEY}=${OWNER_PID}`,
++      '--label', `${WORKER_ID_LABEL_KEY}=w1`,
++      '--cpus', '1',
++      'thyrox-worker:latest',
++    ])
++  })
++
++  test('añade el comando declarado al final del argv', () => {
++    const argv = createWorkerContainerArgv(baseSpec({ command: ['node', 'worker.js'] }))
++    expect(argv.slice(-2)).toEqual(['node', 'worker.js'])
++  })
++
++  test('no emite ningún argumento cuando el spec es inválido', () => {
++    expect(() => createWorkerContainerArgv(baseSpec({ image: '' }))).toThrow(InvalidWorkerContainerSpecError)
++  })
++})
++
++describe('inspect / stop / remove / list — argv', () => {
++  test('inspect pide status, pid, las tres etiquetas del dueño y la del worker en una sola llamada', () => {
++    const joined = inspectWorkerContainerArgv('thyrox-worker-w1').join(' ')
++    expect(inspectWorkerContainerArgv('thyrox-worker-w1')[0]).toBe('inspect')
++    for (const fragment of ['.State.Status', '.State.Pid', OWNER_KIND_LABEL_KEY, OWNER_ID_LABEL_KEY,
++      OWNER_PID_LABEL_KEY, WORKER_ID_LABEL_KEY, 'thyrox-worker-w1']) {
++      expect(joined).toContain(fragment)
++    }
++  })
++
++  test('stop lleva el plazo declarado', () => {
++    expect(stopWorkerContainerArgv('thyrox-worker-w1', 7)).toEqual(['stop', '--time', '7', 'thyrox-worker-w1'])
++  })
++
++  test('remove siempre fuerza el retiro', () => {
++    expect(removeWorkerContainerArgv('thyrox-worker-w1')).toEqual(['rm', '--force', 'thyrox-worker-w1'])
++  })
++
++  test('list filtra por el prefijo de nombre declarado', () => {
++    expect(listWorkerContainerNamesArgv()).toContain(`name=^${WORKER_CONTAINER_NAME_PREFIX}`)
++  })
++})
++
++describe('parseWorkerContainerInspection', () => {
++  test('un contenedor ausente (exit != 0) no está presente', () => {
++    expect(parseWorkerContainerInspection({ exitCode: 1, stdout: '', stderr: 'no such container' })).toEqual({
++      present: false,
++    })
++  })
++
++  test('un contenedor presente reporta status, pid, dueño y worker', () => {
++    expect(parseWorkerContainerInspection(inspectOutput('running', { kind: 'pool', id: 'p1', pid: '77' }))).toEqual({
++      present: true,
++      status: 'running',
++      pid: CONTAINER_PID,
++      owner: { kind: 'pool', id: 'p1', pid: 77 },
++      workerId: 'w1',
++    })
++  })
++
++  test('etiquetas ausentes ("<no value>") o un tipo de dueño desconocido se leen como null', () => {
++    const result: PodmanCommandResult = {
++      exitCode: 0, stdout: 'exited\t0\totro\t<no value>\t<no value>\t<no value>', stderr: '',
++    }
++    expect(parseWorkerContainerInspection(result)).toEqual({
++      present: true, status: 'exited', pid: 0, owner: { kind: null, id: null, pid: null }, workerId: null,
++    })
++  })
++})
++
++describe('isWorkerContainerProcessAlive — la vivacidad se mide sobre el PID, no sobre el status', () => {
++  const running = parseWorkerContainerInspection(inspectOutput('running'))
++
++  test('running + pid vivo => vivo', () => {
++    expect(isWorkerContainerProcessAlive(running, pid => pid === CONTAINER_PID)).toBe(true)
++  })
++
++  test('TASK-THYROX-0605: running reportado pero el PID ya no existe => NO vivo', () => {
++    expect(isWorkerContainerProcessAlive(running, () => false)).toBe(false)
++  })
++
++  test('ausente => no vivo, sin llegar a consultar el PID', () => {
++    let consulted = false
++    expect(isWorkerContainerProcessAlive({ present: false }, () => ((consulted = true), true))).toBe(false)
++    expect(consulted).toBe(false)
++  })
++})
++
++describe('createWorkerContainer', () => {
++  test('crea y arranca el contenedor cuando el create sale 0', async () => {
++    const podman = createFakePodmanExecutor()
++    const result = await createWorkerContainer(fakeDeps(podman), baseSpec())
++    expect(result.exitCode).toBe(0)
++    expect(podman.calls).toEqual([createWorkerContainerArgv(baseSpec()), ['start', `${WORKER_CONTAINER_NAME_PREFIX}w1`]])
++  })
++
++  test('no arranca el contenedor si el create falla', async () => {
++    const podman = createFakePodmanExecutor({ create: { exitCode: 125, stdout: '', stderr: 'boom' } })
++    const result = await createWorkerContainer(fakeDeps(podman), baseSpec())
++    expect(result.exitCode).toBe(125)
++    expect(podman.calls).toHaveLength(1)
++  })
++})
++
++describe('inspectWorkerContainer / stopWorkerContainer / removeWorkerContainer', () => {
++  test('inspectWorkerContainer invoca el argv exacto sobre el nombre dado', async () => {
++    const podman = createFakePodmanExecutor({ inspect: inspectOutput('running') })
++    const inspection = await inspectWorkerContainer(fakeDeps(podman), 'thyrox-worker-w1')
++    expect(inspection).toEqual(parseWorkerContainerInspection(inspectOutput('running')))
++    expect(podman.calls).toEqual([inspectWorkerContainerArgv('thyrox-worker-w1')])
++  })
++
++  test('stopWorkerContainer respeta el plazo declarado', async () => {
++    const podman = createFakePodmanExecutor()
++    await stopWorkerContainer(fakeDeps(podman), 'thyrox-worker-w1', 5)
++    expect(podman.calls).toEqual([['stop', '--time', '5', 'thyrox-worker-w1']])
++  })
++
++  test('removeWorkerContainer siempre fuerza el retiro', async () => {
++    const podman = createFakePodmanExecutor()
++    await removeWorkerContainer(fakeDeps(podman), 'thyrox-worker-w1')
++    expect(podman.calls).toEqual([['rm', '--force', 'thyrox-worker-w1']])
++  })
++})
++
++describe('retireWorkerContainer — ningún contenedor ni proceso sobrevive a su worker', () => {
++  test('un contenedor ausente no invoca stop ni remove', async () => {
++    const podman = createFakePodmanExecutor({ inspect: { exitCode: 1, stdout: '', stderr: 'no such container' } })
++    const outcome = await retireWorkerContainer(fakeDeps(podman), 'thyrox-worker-w1')
++    expect(outcome).toEqual({ name: 'thyrox-worker-w1', stopped: false, removed: false, killedStaleProcess: false })
++    expect(podman.calls).toHaveLength(1)
++  })
++
++  test('caso normal: stop y remove salen 0, y el PID ya no vive tras el retiro', async () => {
++    const podman = createFakePodmanExecutor({ inspect: inspectOutput('running') })
++    const deps = fakeDeps(podman, [])
++    const outcome = await retireWorkerContainer(deps, 'thyrox-worker-w1', 3)
++    expect(outcome).toEqual({ name: 'thyrox-worker-w1', stopped: true, removed: true, killedStaleProcess: false })
++    expect(deps.killedPids).toHaveLength(0)
++    expect(podman.calls).toEqual([
++      inspectWorkerContainerArgv('thyrox-worker-w1'),
++      stopWorkerContainerArgv('thyrox-worker-w1', 3),
++      removeWorkerContainerArgv('thyrox-worker-w1'),
++    ])
++  })
++
++  test('usa el plazo por defecto declarado cuando no se pasa ninguno', async () => {
++    const podman = createFakePodmanExecutor({ inspect: inspectOutput('running') })
++    await retireWorkerContainer(fakeDeps(podman), 'thyrox-worker-w1')
++    expect(podman.calls[1]).toEqual(stopWorkerContainerArgv('thyrox-worker-w1', DEFAULT_STOP_TIMEOUT_SECONDS))
++  })
++
++  test('TASK-THYROX-0605: si el PID sigue vivo tras stop+rm, se le manda SIGKILL directo', async () => {
++    const podman = createFakePodmanExecutor({ inspect: inspectOutput('running') })
++    const deps = fakeDeps(podman, [CONTAINER_PID])
++    const outcome = await retireWorkerContainer(deps, 'thyrox-worker-w1')
++    expect(outcome.killedStaleProcess).toBe(true)
++    expect(deps.killedPids).toEqual([{ pid: CONTAINER_PID, signal: 'SIGKILL' }])
++  })
++})
++
++describe('findOrphanedWorkerContainers / retireOrphanedWorkerContainers — el dueño decide', () => {
++  test('el predicado del dueño decide: lo que marca huérfano se devuelve con su dueño', async () => {
++    const podman = createFakePodmanExecutor({
++      ps: { exitCode: 0, stdout: 'thyrox-worker-w1\n', stderr: '' },
++      inspect: inspectOutput('running', { kind: 'pool', id: 'p1', pid: '77' }),
++    })
++    const orphans = await findOrphanedWorkerContainers(fakeDeps(podman), orphanWhenKind('pool'))
++    expect(orphans).toEqual([{ name: 'thyrox-worker-w1', workerId: 'w1', owner: { kind: 'pool', id: 'p1', pid: 77 } }])
++  })
++
++  test('lo que el predicado no marca no es huérfano, aunque su dueño haya muerto', async () => {
++    const podman = createFakePodmanExecutor({
++      ps: { exitCode: 0, stdout: 'thyrox-worker-w1\n', stderr: '' },
++      inspect: inspectOutput('running', { kind: 'pool' }),
++    })
++    expect(await findOrphanedWorkerContainers(fakeDeps(podman, []), orphanWhenKind('daemon'))).toEqual([])
++  })
++
++  test('un contenedor que desaparece entre listar e inspeccionar no se consulta al predicado', async () => {
++    let consulted = false
++    const podman = createFakePodmanExecutor({
++      ps: { exitCode: 0, stdout: 'thyrox-worker-w1\n', stderr: '' },
++      inspect: { exitCode: 1, stdout: '', stderr: 'no such container' },
++    })
++    const orphans = await findOrphanedWorkerContainers(fakeDeps(podman), () => ((consulted = true), true))
++    expect(orphans).toEqual([])
++    expect(consulted).toBe(false)
++  })
++
++  test('una lista vacía no produce huérfanos ni inspecciona nada', async () => {
++    const podman = createFakePodmanExecutor({ ps: { exitCode: 0, stdout: '', stderr: '' } })
++    expect(await findOrphanedWorkerContainers(fakeDeps(podman), () => true)).toEqual([])
++    expect(podman.calls).toEqual([listWorkerContainerNamesArgv()])
++  })
++
++  test('retireOrphanedWorkerContainers retira cada huérfano que el predicado marca', async () => {
++    const podman = createFakePodmanExecutor({
++      ps: { exitCode: 0, stdout: 'thyrox-worker-w1\n', stderr: '' },
++      inspect: inspectOutput('running'),
++    })
++    const retirements = await retireOrphanedWorkerContainers(fakeDeps(podman, []), () => true)
++    expect(retirements).toEqual([{ name: 'thyrox-worker-w1', stopped: true, removed: true, killedStaleProcess: false }])
++  })
++})
+diff --git a/src/packages/podman-execution/__tests__/workerResourceProfile.test.ts b/src/packages/podman-execution/__tests__/workerResourceProfile.test.ts
+new file mode 100644
+index 000000000..0be2958a5
+--- /dev/null
++++ b/src/packages/podman-execution/__tests__/workerResourceProfile.test.ts
+@@ -0,0 +1,156 @@
++import { describe, expect, test } from 'bun:test'
++
++import {
++  DEFAULT_WORKER_RESOURCE_PROFILE,
++  InvalidWorkerResourceProfileError,
++  validateWorkerResourceProfile,
++  workerResourceLimitArgv,
++  type WorkerResourceProfile,
++} from '../workerResourceProfile.js'
++
++describe('DEFAULT_WORKER_RESOURCE_PROFILE', () => {
++  test('es el perfil más restrictivo medido: sin red, rootfs de sólo lectura, sin montajes', () => {
++    expect(DEFAULT_WORKER_RESOURCE_PROFILE.network).toBe('none')
++    expect(DEFAULT_WORKER_RESOURCE_PROFILE.readOnlyRootfs).toBe(true)
++    expect(DEFAULT_WORKER_RESOURCE_PROFILE.mounts).toEqual([])
++  })
++
++  test('valida sin rehusar', () => {
++    expect(() => validateWorkerResourceProfile(DEFAULT_WORKER_RESOURCE_PROFILE)).not.toThrow()
++  })
++})
++
++describe('workerResourceLimitArgv', () => {
++  test('argv exacto del perfil por defecto', () => {
++    expect(workerResourceLimitArgv(DEFAULT_WORKER_RESOURCE_PROFILE)).toEqual([
++      '--cpus', String(DEFAULT_WORKER_RESOURCE_PROFILE.cpus),
++      '--memory', `${DEFAULT_WORKER_RESOURCE_PROFILE.memoryMib}m`,
++      '--pids-limit', String(DEFAULT_WORKER_RESOURCE_PROFILE.pidsLimit),
++      '--network', 'none',
++      '--read-only', '--read-only-tmpfs=false',
++    ])
++  })
++
++  test('argv exacto de un perfil relajado, con red bridge, rootfs escribible y montajes', () => {
++    const profile: WorkerResourceProfile = {
++      cpus: 2,
++      memoryMib: 2048,
++      pidsLimit: 256,
++      network: 'bridge',
++      readOnlyRootfs: false,
++      mounts: [
++        { source: '/host/skills', destination: '/workspace/skills', mode: 'ro' },
++        { source: '/host/scratch', destination: '/workspace/scratch', mode: 'rw' },
++      ],
++    }
++    expect(workerResourceLimitArgv(profile)).toEqual([
++      '--cpus', '2',
++      '--memory', '2048m',
++      '--pids-limit', '256',
++      '--network', 'bridge',
++      '-v', '/host/skills:/workspace/skills:ro',
++      '-v', '/host/scratch:/workspace/scratch:rw',
++    ])
++  })
++
++  test('no emite ningún argumento cuando el perfil es inválido', () => {
++    const profile: WorkerResourceProfile = { ...DEFAULT_WORKER_RESOURCE_PROFILE, cpus: 0 }
++    expect(() => workerResourceLimitArgv(profile)).toThrow(InvalidWorkerResourceProfileError)
++  })
++})
++
++describe('validateWorkerResourceProfile — rehúsos, cada uno nombrando su campo', () => {
++  test('cpus <= 0', () => {
++    const profile: WorkerResourceProfile = { ...DEFAULT_WORKER_RESOURCE_PROFILE, cpus: 0 }
++    expect(() => validateWorkerResourceProfile(profile)).toThrow(InvalidWorkerResourceProfileError)
++    try {
++      validateWorkerResourceProfile(profile)
++    } catch (error) {
++      expect((error as InvalidWorkerResourceProfileError).field).toBe('cpus')
++    }
++  })
++
++  test('cpus negativo', () => {
++    const profile: WorkerResourceProfile = { ...DEFAULT_WORKER_RESOURCE_PROFILE, cpus: -0.5 }
++    expect(() => validateWorkerResourceProfile(profile)).toThrow(InvalidWorkerResourceProfileError)
++  })
++
++  test('memoryMib <= 0', () => {
++    const profile: WorkerResourceProfile = { ...DEFAULT_WORKER_RESOURCE_PROFILE, memoryMib: 0 }
++    try {
++      validateWorkerResourceProfile(profile)
++      throw new Error('debía rehusar')
++    } catch (error) {
++      expect((error as InvalidWorkerResourceProfileError).field).toBe('memoryMib')
++    }
++  })
++
++  test('pidsLimit < 1', () => {
++    const profile: WorkerResourceProfile = { ...DEFAULT_WORKER_RESOURCE_PROFILE, pidsLimit: 0 }
++    try {
++      validateWorkerResourceProfile(profile)
++      throw new Error('debía rehusar')
++    } catch (error) {
++      expect((error as InvalidWorkerResourceProfileError).field).toBe('pidsLimit')
++    }
++  })
++
++  test('pidsLimit no entero', () => {
++    const profile: WorkerResourceProfile = { ...DEFAULT_WORKER_RESOURCE_PROFILE, pidsLimit: 1.5 }
++    try {
++      validateWorkerResourceProfile(profile)
++      throw new Error('debía rehusar')
++    } catch (error) {
++      expect((error as InvalidWorkerResourceProfileError).field).toBe('pidsLimit')
++    }
++  })
++
++  test('montaje sin destino absoluto', () => {
++    const profile: WorkerResourceProfile = {
++      ...DEFAULT_WORKER_RESOURCE_PROFILE,
++      mounts: [{ source: '/host/skills', destination: 'workspace/skills', mode: 'ro' }],
++    }
++    try {
++      validateWorkerResourceProfile(profile)
++      throw new Error('debía rehusar')
++    } catch (error) {
++      expect((error as InvalidWorkerResourceProfileError).field).toBe('mounts[0].destination')
++    }
++  })
++
++  test('montaje con origen vacío', () => {
++    const profile: WorkerResourceProfile = {
++      ...DEFAULT_WORKER_RESOURCE_PROFILE,
++      mounts: [{ source: '', destination: '/workspace/skills', mode: 'ro' }],
++    }
++    try {
++      validateWorkerResourceProfile(profile)
++      throw new Error('debía rehusar')
++    } catch (error) {
++      expect((error as InvalidWorkerResourceProfileError).field).toBe('mounts[0].source')
++    }
++  })
++
++  test('modo de montaje desconocido', () => {
++    const profile = {
++      ...DEFAULT_WORKER_RESOURCE_PROFILE,
++      mounts: [{ source: '/host/skills', destination: '/workspace/skills', mode: 'rx' }],
++    } as unknown as WorkerResourceProfile
++    try {
++      validateWorkerResourceProfile(profile)
++      throw new Error('debía rehusar')
++    } catch (error) {
++      expect((error as InvalidWorkerResourceProfileError).field).toBe('mounts[0].mode')
++    }
++  })
++
++  test('red desconocida', () => {
++    const profile = { ...DEFAULT_WORKER_RESOURCE_PROFILE, network: 'host' } as unknown as WorkerResourceProfile
++    try {
++      validateWorkerResourceProfile(profile)
++      throw new Error('debía rehusar')
++    } catch (error) {
++      expect((error as InvalidWorkerResourceProfileError).field).toBe('network')
++    }
++  })
++})
+diff --git a/src/packages/podman-execution/bunfig.toml b/src/packages/podman-execution/bunfig.toml
+new file mode 100644
+index 000000000..51b90dff6
+--- /dev/null
++++ b/src/packages/podman-execution/bunfig.toml
+@@ -0,0 +1,5 @@
++# `bun test` lee sólo el bunfig del cwd: sin este archivo, una suite corrida
++# desde el paquete no pasaría por los grifos de la raíz y escribiría en el
++# store versionado. Los preloads son los mismos, en el mismo orden.
++[test]
++preload = ["../../../tests/preload/tmpdir.ts", "../../../tests/preload/store.ts"]
+diff --git a/src/packages/podman-execution/containerRun.ts b/src/packages/podman-execution/containerRun.ts
+new file mode 100644
+index 000000000..e90d6b113
+--- /dev/null
++++ b/src/packages/podman-execution/containerRun.ts
+@@ -0,0 +1,114 @@
++/**
++ * Correr un contenedor hasta que termine, señalarlo y exportar lo que dejó
++ * (ADR-THYROX-007, TASK-THYROX-0667): la parte de «ejecutar» de la
++ * primitiva, sin máquina de estados, generaciones ni recuperación — eso es
++ * del dueño.
++ *
++ * El orden que este módulo garantiza es exportar ANTES de limpiar: `podman
++ * cp` sólo lee de un contenedor que todavía existe, así que una limpieza
++ * adelantada pierde el artefacto sin error visible en el llamador.
++ */
++
++import { basename, join } from 'node:path'
++
++import type { PodmanCommandResult, PodmanExecutor } from './podmanExecutor.js'
++import {
++  createWorkerContainerArgv,
++  removeWorkerContainerArgv,
++  workerContainerName,
++  type WorkerContainerSpec,
++} from './workerContainerLifecycle.js'
++
++export type ContainerRunStage = 'create' | 'start' | 'wait' | 'signal' | 'export'
++
++/** Un paso de la ejecución falló; nombra la etapa y lo que Podman dijo. */
++export class ContainerRunError extends Error {
++  readonly stage: ContainerRunStage
++
++  constructor(stage: ContainerRunStage, subject: string, result: PodmanCommandResult) {
++    super(`falló la etapa ${stage} sobre ${subject}: ${result.stderr.trim() || `exit ${result.exitCode}`}`)
++    this.name = 'ContainerRunError'
++    this.stage = stage
++  }
++}
++
++const EXIT_CODE_PATTERN = /^-?\d+$/
++
++async function requireSuccess(
++  podman: PodmanExecutor,
++  stage: ContainerRunStage,
++  subject: string,
++  args: readonly string[],
++): Promise<PodmanCommandResult> {
++  const result = await podman.run(args)
++  if (result.exitCode !== 0) throw new ContainerRunError(stage, subject, result)
++  return result
++}
++
++/** Lee el código que imprime `podman wait`; una salida que no es un entero no se lee como 0. */
++function parseWaitExitCode(name: string, result: PodmanCommandResult): number {
++  const printed = result.stdout.trim()
++  if (!EXIT_CODE_PATTERN.test(printed)) {
++    throw new ContainerRunError('wait', name, { ...result, stderr: `salida de wait ilegible: «${printed}»` })
++  }
++  return Number(printed)
++}
++
++/** Crea, arranca y espera el contenedor; devuelve el código de salida de su proceso. No lo retira. */
++export async function runToCompletion(podman: PodmanExecutor, spec: WorkerContainerSpec): Promise<number> {
++  const name = workerContainerName(spec.workerId)
++  await requireSuccess(podman, 'create', name, createWorkerContainerArgv(spec))
++  await requireSuccess(podman, 'start', name, ['start', name])
++  return parseWaitExitCode(name, await requireSuccess(podman, 'wait', name, ['wait', name]))
++}
++
++/** Envía `signal` al proceso principal del contenedor (p. ej. SIGTERM para un apagado ordenado). */
++export async function signalContainer(podman: PodmanExecutor, name: string, signal: NodeJS.Signals): Promise<void> {
++  await requireSuccess(podman, 'signal', name, ['kill', '--signal', signal, name])
++}
++
++/** Copia cada ruta del contenedor a `hostDir` con su nombre base; devuelve las rutas en el anfitrión. */
++export async function exportArtifacts(
++  podman: PodmanExecutor,
++  name: string,
++  containerPaths: readonly string[],
++  hostDir: string,
++): Promise<string[]> {
++  const exported: string[] = []
++  for (const containerPath of containerPaths) {
++    const hostPath = join(hostDir, basename(containerPath))
++    await requireSuccess(podman, 'export', `${name}:${containerPath}`, ['cp', `${name}:${containerPath}`, hostPath])
++    exported.push(hostPath)
++  }
++  return exported
++}
++
++export type ArtifactRequest = {
++  containerPaths: readonly string[]
++  hostDir: string
++}
++
++export type JobOutcome = {
++  exitCode: number
++  artifacts: string[]
++}
++
++/**
++ * Corre el contenedor hasta que termine, exporta lo pedido y sólo entonces
++ * lo retira. La limpieza ocurre siempre —también si correr o exportar
++ * falla— y nunca antes de la exportación.
++ */
++export async function runJobAndCollect(
++  podman: PodmanExecutor,
++  spec: WorkerContainerSpec,
++  artifacts: ArtifactRequest,
++): Promise<JobOutcome> {
++  const name = workerContainerName(spec.workerId)
++  try {
++    const exitCode = await runToCompletion(podman, spec)
++    const exported = await exportArtifacts(podman, name, artifacts.containerPaths, artifacts.hostDir)
++    return { exitCode, artifacts: exported }
++  } finally {
++    await podman.run(removeWorkerContainerArgv(name))
++  }
++}
+diff --git a/src/packages/podman-execution/package.json b/src/packages/podman-execution/package.json
+new file mode 100644
+index 000000000..1bdec7a25
+--- /dev/null
++++ b/src/packages/podman-execution/package.json
+@@ -0,0 +1,17 @@
++{
++  "name": "@thyrox/podman-execution",
++  "version": "0.1.0",
++  "private": true,
++  "type": "module",
++  "description": "Primitiva neutral de ejecución Podman (ADR-THYROX-007, TASK-THYROX-0667): crear y correr un contenedor, perfil de recursos, montajes, red, señales, código de salida, exportación de artefactos y limpieza. El dueño (daemon o pool) decide qué es un huérfano.",
++  "exports": {
++    "./*.ts": {
++      "@thyrox/source": "./*.ts",
++      "types": "./dist/*.d.ts",
++      "default": "./*.ts"
++    }
++  },
++  "scripts": {
++    "test": "bun test"
++  }
++}
+diff --git a/src/packages/podman-execution/podmanExecutor.ts b/src/packages/podman-execution/podmanExecutor.ts
+new file mode 100644
+index 000000000..dbedaaee1
+--- /dev/null
++++ b/src/packages/podman-execution/podmanExecutor.ts
+@@ -0,0 +1,44 @@
++/**
++ * El único punto por el que la primitiva habla con Podman. Cada módulo del
++ * paquete compone argv y lo entrega a un `PodmanExecutor` inyectado, así que
++ * sus suites corren con un doble; el ejecutor real de este archivo lanza el
++ * binario que `thyrox_toolchain_require_podman` resolvió, o `podman` del PATH.
++ */
++
++import { spawn } from 'node:child_process'
++
++export interface PodmanCommandResult {
++  readonly exitCode: number
++  readonly stdout: string
++  readonly stderr: string
++}
++
++export interface PodmanExecutor {
++  run(args: readonly string[]): Promise<PodmanCommandResult>
++}
++
++/** Variable que el toolchain exporta con la ruta del binario de Podman medido. */
++const PODMAN_BIN_ENV = 'THYROX_TOOLCHAIN_PODMAN_BIN'
++const DEFAULT_PODMAN_BIN = 'podman'
++/** Código con que se reporta un proceso que terminó por señal y no dio código propio. */
++const NO_EXIT_CODE = -1
++
++/** Corre un binario sin stdin y recoge su salida completa; rechaza sólo si no se pudo lanzar. */
++export function runCommand(bin: string, args: readonly string[]): Promise<PodmanCommandResult> {
++  return new Promise((resolve, reject) => {
++    const child = spawn(bin, [...args], { stdio: ['ignore', 'pipe', 'pipe'] })
++    let stdout = ''
++    let stderr = ''
++    child.stdout.on('data', chunk => { stdout += chunk })
++    child.stderr.on('data', chunk => { stderr += chunk })
++    child.on('error', reject)
++    child.on('close', code => resolve({ exitCode: code ?? NO_EXIT_CODE, stdout, stderr }))
++  })
++}
++
++/** Ejecutor real: el binario del toolchain, o `podman` del PATH. */
++export function createPodmanExecutor(): PodmanExecutor {
++  return {
++    run: args => runCommand(process.env[PODMAN_BIN_ENV] || DEFAULT_PODMAN_BIN, args),
++  }
++}
+diff --git a/src/packages/podman-execution/repositoryJobProfile.ts b/src/packages/podman-execution/repositoryJobProfile.ts
+new file mode 100644
+index 000000000..f7ef93f7b
+--- /dev/null
++++ b/src/packages/podman-execution/repositoryJobProfile.ts
+@@ -0,0 +1,105 @@
++/**
++ * Perfil repository/job de un worker de Podman (ADR-THYROX-007 Regla 2-bis,
++ * TASK-THYROX-0613).
++ *
++ * Un worker repository/job trabaja SOBRE el repositorio: el árbol del
++ * anfitrión se monta `overlay` (`:O`) en `/w` — el worker lee el árbol y sus
++ * escrituras no llegan al anfitrión, medido en `overlay_mount`
++ * (`src/lib/podman_capabilities.sh`). Reutiliza el perfil de límites de
++ * `workerResourceProfile.ts` para CPU, memoria, PIDs, red y rootfs; aquí
++ * sólo se añade el montaje del repositorio y la credencial declarada.
++ *
++ * `--rootfs /:O` (overlay de la raíz completa, no sólo del repositorio)
++ * queda deliberadamente SIN modelar: la sonda `overlay_mount` mide un
++ * directorio propio, no `/`, y modelarlo sin esa medida sería declarar una
++ * capacidad no comprobada. Es opción evaluada, no default (decisión del
++ * ejecutor) — se modela cuando se mida.
++ */
++
++import {
++  DEFAULT_WORKER_RESOURCE_PROFILE,
++  InvalidWorkerResourceProfileError,
++  validateWorkerResourceProfile,
++  workerResourceLimitArgv,
++  type WorkerResourceProfile,
++} from './workerResourceProfile.js'
++
++/** Destino fijo del montaje overlay del repositorio, por ADR-THYROX-007 Regla 2-bis. */
++export const REPOSITORY_CONTAINER_PATH = '/w'
++
++/**
++ * Nombre de una credencial declarada en el perfil — NUNCA su valor: el tipo
++ * no tiene campo para el valor, así que no hay forma de que este perfil lo
++ * transporte por error.
++ */
++export type RepositoryJobCredential = {
++  name: string
++  target: string
++}
++
++export type RepositoryJobProfile = {
++  repositoryHostPath: string
++  credential?: RepositoryJobCredential
++  resources: WorkerResourceProfile
++}
++
++/**
++ * Ningún mecanismo mide hoy `efectivo` en la capacidad `credential_injection`
++ * de `src/lib/podman_capabilities.sh`: tanto `--env NAME` como
++ * `--secret NAME,type=env,target=NAME` entregan el valor al proceso, pero
++ * los dos lo dejan visible en `podman inspect` una vez que el contenedor
++ * corrió (medido 2026-09-29: `Config.Env` conserva el valor resuelto). El
++ * perfil rehúsa declarar la credencial en vez de exponerla en silencio.
++ */
++export class UnsupportedRepositoryJobCredentialError extends Error {
++  readonly credentialName: string
++
++  constructor(credentialName: string) {
++    super(
++      `la credencial '${credentialName}' no se declara: ni --env ni --secret miden efectivo hoy en ` +
++        "'credential_injection' (src/lib/podman_capabilities.sh) — los dos exponen el valor en " +
++        "'podman inspect' tras ejecutar el contenedor.",
++    )
++    this.name = 'UnsupportedRepositoryJobCredentialError'
++    this.credentialName = credentialName
++  }
++}
++
++/** El perfil más restrictivo medido: sin credencial, límites por defecto de `workerResourceProfile.ts`. */
++export function createRepositoryJobProfile(repositoryHostPath: string): RepositoryJobProfile {
++  return {
++    repositoryHostPath,
++    resources: DEFAULT_WORKER_RESOURCE_PROFILE,
++  }
++}
++
++function requireAbsoluteHostPath(repositoryHostPath: string): void {
++  if (!repositoryHostPath.startsWith('/')) {
++    throw new InvalidWorkerResourceProfileError(
++      'repositoryHostPath',
++      `debe ser una ruta absoluta, recibido: ${repositoryHostPath}`,
++    )
++  }
++}
++
++/** Valida el perfil completo; rehúsa en el primer campo inválido, nombrándolo. */
++export function validateRepositoryJobProfile(profile: RepositoryJobProfile): void {
++  requireAbsoluteHostPath(profile.repositoryHostPath)
++  if (profile.credential) {
++    throw new UnsupportedRepositoryJobCredentialError(profile.credential.name)
++  }
++  validateWorkerResourceProfile(profile.resources)
++}
++
++function repositoryOverlayMountArgv(repositoryHostPath: string): string[] {
++  return ['-v', `${repositoryHostPath}:${REPOSITORY_CONTAINER_PATH}:O`]
++}
++
++/**
++ * Traduce un perfil validado al argv completo de `podman create`/`run`
++ * —límites + montaje overlay del repositorio— sin ejecutar nada.
++ */
++export function repositoryJobProfileArgv(profile: RepositoryJobProfile): string[] {
++  validateRepositoryJobProfile(profile)
++  return [...workerResourceLimitArgv(profile.resources), ...repositoryOverlayMountArgv(profile.repositoryHostPath)]
++}
+diff --git a/src/packages/podman-execution/testing/helperImage.ts b/src/packages/podman-execution/testing/helperImage.ts
+new file mode 100644
+index 000000000..a53b03097
+--- /dev/null
++++ b/src/packages/podman-execution/testing/helperImage.ts
+@@ -0,0 +1,115 @@
++/**
++ * Imagen de ayuda para las pruebas contra el Podman real, construida SIN red
++ * con la técnica de `src/lib/podman_capabilities.sh`: un ayudante estático en
++ * C dentro de un tar propio, `podman import`.
++ *
++ * Modos del ayudante (`/bin/helper <modo> …`):
++ *
++ *   exit <n>            sale con el código n;
++ *   term <n>            instala un manejador de SIGTERM que sale con n,
++ *                       escribe `ready` en stdout y espera la señal;
++ *   write <ruta> <txt>  escribe txt en ruta y sale 0 (3 si no pudo).
++ *
++ * El manejador es obligatorio en `term`: el proceso es el PID 1 del
++ * contenedor y el kernel descarta una señal sin manejador dirigida a él.
++ */
++
++import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++import { createPodmanExecutor, runCommand, type PodmanExecutor } from '../podmanExecutor.js'
++
++/** Directorios que la imagen trae de fábrica: destino del repositorio y salida de artefactos. */
++const IMAGE_DIRECTORIES = ['bin', 'w', 'out'] as const
++
++const HELPER_SOURCE = `#include <fcntl.h>
++#include <signal.h>
++#include <stdlib.h>
++#include <string.h>
++#include <unistd.h>
++
++static int term_exit_code = 0;
++
++static void on_term(int signal_number) {
++    (void) signal_number;
++    _exit(term_exit_code);
++}
++
++int main(int argc, char **argv) {
++    if (argc >= 3 && strcmp(argv[1], "exit") == 0) return atoi(argv[2]);
++    if (argc >= 3 && strcmp(argv[1], "term") == 0) {
++        term_exit_code = atoi(argv[2]);
++        signal(SIGTERM, on_term);
++        write(1, "ready\\n", 6);
++        for (;;) pause();
++    }
++    if (argc >= 4 && strcmp(argv[1], "write") == 0) {
++        int fd = open(argv[2], O_WRONLY | O_CREAT | O_TRUNC, 0644);
++        if (fd < 0) return 3;
++        size_t length = strlen(argv[3]);
++        if (write(fd, argv[3], length) != (ssize_t) length) return 3;
++        close(fd);
++        return 0;
++    }
++    return 1;
++}
++`
++
++/** Una herramienta del anfitrión falló al construir la imagen; nombra el paso y su stderr. */
++export class HelperImageBuildError extends Error {
++  constructor(step: string, detail: string) {
++    super(`no se pudo construir la imagen de ayuda en el paso ${step}: ${detail}`)
++    this.name = 'HelperImageBuildError'
++  }
++}
++
++export type HelperImage = {
++  image: string
++  podman: PodmanExecutor
++  dispose(): Promise<void>
++}
++
++async function requireSuccess(step: string, bin: string, args: readonly string[]): Promise<void> {
++  const result = await runCommand(bin, args)
++  if (result.exitCode !== 0) throw new HelperImageBuildError(step, result.stderr.trim() || `exit ${result.exitCode}`)
++}
++
++function writeRootfs(workDir: string): string {
++  const rootfs = join(workDir, 'rootfs')
++  for (const directory of IMAGE_DIRECTORIES) mkdirSync(join(rootfs, directory), { recursive: true })
++  return rootfs
++}
++
++/** ¿Hay Podman y gcc en el anfitrión? Sin ellos las pruebas reales no pueden medir. */
++export async function canBuildHelperImage(): Promise<boolean> {
++  const probes = await Promise.all([
++    runCommand('sh', ['-c', 'command -v gcc']).catch(() => null),
++    createPodmanExecutor().run(['--version']).catch(() => null),
++  ])
++  return probes.every(result => result !== null && result.exitCode === 0)
++}
++
++/** Compila el ayudante, lo empaqueta y lo importa con un nombre que lleva `tag`. */
++export async function buildHelperImage(tag: string): Promise<HelperImage> {
++  const podman = createPodmanExecutor()
++  const workDir = mkdtempSync(join(tmpdir(), 'podman-helper-'))
++  const image = `localhost/thyrox-podman-execution-${tag}`
++  try {
++    writeFileSync(join(workDir, 'helper.c'), HELPER_SOURCE)
++    const rootfs = writeRootfs(workDir)
++    await requireSuccess('gcc', 'gcc', ['-static', '-O2', '-o', join(rootfs, 'bin/helper'), join(workDir, 'helper.c')])
++    await requireSuccess('tar', 'tar', ['-C', rootfs, '-cf', join(workDir, 'rootfs.tar'), '.'])
++    const imported = await podman.run(['import', join(workDir, 'rootfs.tar'), image])
++    if (imported.exitCode !== 0) throw new HelperImageBuildError('podman import', imported.stderr.trim())
++  } finally {
++    rmSync(workDir, { recursive: true, force: true })
++  }
++  return {
++    image,
++    podman,
++    async dispose() {
++      await podman.run(['rmi', '--force', image])
++    },
++  }
++}
+diff --git a/src/packages/podman-execution/tsconfig.build.json b/src/packages/podman-execution/tsconfig.build.json
+new file mode 100644
+index 000000000..2c100c473
+--- /dev/null
++++ b/src/packages/podman-execution/tsconfig.build.json
+@@ -0,0 +1,40 @@
++{
++  "compilerOptions": {
++    "declaration": true,
++    "emitDeclarationOnly": true,
++    "noEmit": false,
++    "skipLibCheck": true,
++    "strict": true,
++    "module": "esnext",
++    "target": "esnext",
++    "moduleResolution": "bundler",
++    "allowImportingTsExtensions": true,
++    "jsx": "react-jsx",
++    "types": [
++      "bun"
++    ],
++    "preserveSymlinks": true,
++    "rootDir": ".",
++    "outDir": "dist",
++    "paths": {
++      "@thyrox/podman-execution/*.ts": [
++        "./*.ts"
++      ]
++    }
++  },
++  "include": [
++    "**/*"
++  ],
++  "exclude": [
++    "**/__tests__/**",
++    "**/*.test.ts",
++    "**/*.test.tsx",
++    "**/*.spec.ts",
++    "**/*.spec.tsx",
++    "node_modules",
++    "dist"
++  ],
++  "files": [
++    "../../types/build-globals.d.ts"
++  ]
++}
+diff --git a/src/packages/podman-execution/tsconfig.test.json b/src/packages/podman-execution/tsconfig.test.json
+new file mode 100644
+index 000000000..de4a64e70
+--- /dev/null
++++ b/src/packages/podman-execution/tsconfig.test.json
+@@ -0,0 +1,19 @@
++{
++  "extends": "./tsconfig.build.json",
++  "compilerOptions": {
++    "noEmit": true,
++    "declaration": false,
++    "emitDeclarationOnly": false,
++    "rootDir": "."
++  },
++  "include": [
++    "**/*",
++    "**/*.test.ts",
++    "**/*.test.tsx",
++    "**/__tests__/**/*"
++  ],
++  "exclude": [
++    "node_modules",
++    "dist"
++  ]
++}
+diff --git a/src/packages/podman-execution/workerContainerLifecycle.ts b/src/packages/podman-execution/workerContainerLifecycle.ts
+new file mode 100644
+index 000000000..ca2f447e9
+--- /dev/null
++++ b/src/packages/podman-execution/workerContainerLifecycle.ts
+@@ -0,0 +1,365 @@
++/**
++ * Ciclo de vida de un contenedor de worker de Podman (ADR-THYROX-007
++ * Regla 2, TASK-THYROX-0616; dueño neutral desde TASK-THYROX-0667): crear,
++ * inspeccionar, detener y retirar un contenedor, garantizar que ningún
++ * contenedor ni proceso sobrevive a su worker, y encontrar huérfanos.
++ *
++ * Implementación compartida ≠ dueño compartido (ADR-007, «Mecanismo
++ * compartido, dueños distintos»). Cada contenedor lleva su dueño en tres
++ * etiquetas —tipo (`daemon` | `pool`), identificador y PID— y qué es un
++ * huérfano NO lo decide este módulo: el dueño entrega su predicado. Así el
++ * daemon conserva su política (daemon muerto ⇒ huérfano) sin que el barrido
++ * de un dueño retire nunca lo de otro.
++ *
++ * El estado que reporta Podman NO es evidencia de vida —TASK-THYROX-0605
++ * midió `running` con el proceso ya muerto tras `podman start`—, así que
++ * toda decisión de vivacidad pasa por el PID real (`isProcessAlive`
++ * inyectado), nunca sólo por `.State.Status`.
++ */
++
++import type { PodmanCommandResult, PodmanExecutor } from './podmanExecutor.js'
++
++/** Prefijo de nombre de todo contenedor de worker que este módulo crea o reconoce como propio. */
++export const WORKER_CONTAINER_NAME_PREFIX = 'thyrox-worker-'
++
++export function workerContainerName(workerId: string): string {
++  return `${WORKER_CONTAINER_NAME_PREFIX}${workerId}`
++}
++
++/** Etiquetas del dueño: su tipo, su identificador y el PID que su política de huérfanos consulta. */
++export const OWNER_KIND_LABEL_KEY = 'thyrox.owner-kind'
++export const OWNER_ID_LABEL_KEY = 'thyrox.owner-id'
++export const OWNER_PID_LABEL_KEY = 'thyrox.owner-pid'
++/** Etiqueta con el identificador de worker — permite recuperarlo desde un `podman inspect`, sin estado propio. */
++export const WORKER_ID_LABEL_KEY = 'thyrox.worker-id'
++
++/** Plazo por defecto de `podman stop` antes de que Podman escale a SIGKILL. */
++export const DEFAULT_STOP_TIMEOUT_SECONDS = 10
++
++export type ContainerOwnerKind = 'daemon' | 'pool'
++
++const OWNER_KINDS: readonly ContainerOwnerKind[] = ['daemon', 'pool']
++const SAFE_IDENTIFIER_PATTERN = /^[A-Za-z0-9][A-Za-z0-9_.-]*$/
++/** Valor que `podman inspect` imprime para una etiqueta que el contenedor no lleva. */
++const MISSING_LABEL_VALUE = '<no value>'
++
++export type ContainerOwner = {
++  kind: ContainerOwnerKind
++  id: string
++  pid: number
++}
++
++/** Un campo del spec no pasó su validación; nombra el campo, nunca lo omite en silencio. */
++export class InvalidWorkerContainerSpecError extends Error {
++  readonly field: string
++
++  constructor(field: string, message: string) {
++    super(message)
++    this.name = 'InvalidWorkerContainerSpecError'
++    this.field = field
++  }
++}
++
++export type WorkerContainerSpec = {
++  workerId: string
++  image: string
++  owner: ContainerOwner
++  /** Argv de límites ya compuesto por `workerResourceProfile.ts`/`repositoryJobProfile.ts`. */
++  resourceArgv: readonly string[]
++  command?: readonly string[]
++}
++
++function isOwnerKind(value: string): value is ContainerOwnerKind {
++  return (OWNER_KINDS as readonly string[]).includes(value)
++}
++
++function isPositiveInteger(value: number): boolean {
++  return Number.isInteger(value) && value > 0
++}
++
++function requireSafeIdentifier(field: string, value: string): void {
++  if (!SAFE_IDENTIFIER_PATTERN.test(value)) {
++    throw new InvalidWorkerContainerSpecError(field, `${field} inválido: ${value}`)
++  }
++}
++
++function requireNonEmptyImage(image: string): void {
++  if (!image) {
++    throw new InvalidWorkerContainerSpecError('image', 'la imagen no puede estar vacía')
++  }
++}
++
++function requireValidOwner(owner: ContainerOwner): void {
++  if (!isOwnerKind(owner.kind)) {
++    throw new InvalidWorkerContainerSpecError('owner.kind', `tipo de dueño desconocido: ${owner.kind}`)
++  }
++  requireSafeIdentifier('owner.id', owner.id)
++  if (!isPositiveInteger(owner.pid)) {
++    throw new InvalidWorkerContainerSpecError('owner.pid', `owner.pid debe ser un entero > 0, recibido: ${owner.pid}`)
++  }
++}
++
++/** Valida el spec completo; rehúsa en el primer campo inválido, nombrándolo. */
++export function validateWorkerContainerSpec(spec: WorkerContainerSpec): void {
++  requireSafeIdentifier('workerId', spec.workerId)
++  requireNonEmptyImage(spec.image)
++  requireValidOwner(spec.owner)
++}
++
++function labelArgv(key: string, value: string): string[] {
++  return ['--label', `${key}=${value}`]
++}
++
++function ownerLabelArgv(owner: ContainerOwner): string[] {
++  return [
++    ...labelArgv(OWNER_KIND_LABEL_KEY, owner.kind),
++    ...labelArgv(OWNER_ID_LABEL_KEY, owner.id),
++    ...labelArgv(OWNER_PID_LABEL_KEY, String(owner.pid)),
++  ]
++}
++
++/** Traduce un spec validado al argv de `podman create` — nombre, etiquetas de dueño y worker, límites e imagen. */
++export function createWorkerContainerArgv(spec: WorkerContainerSpec): string[] {
++  validateWorkerContainerSpec(spec)
++  return [
++    'create',
++    '--name', workerContainerName(spec.workerId),
++    ...ownerLabelArgv(spec.owner),
++    ...labelArgv(WORKER_ID_LABEL_KEY, spec.workerId),
++    ...spec.resourceArgv,
++    spec.image,
++    ...(spec.command ?? []),
++  ]
++}
++
++function labelField(key: string): string {
++  return `{{index .Config.Labels "${key}"}}`
++}
++
++/**
++ * Formato de `podman inspect`: status, PID y las cuatro etiquetas propias
++ * en una sola invocación — el mismo `{{.State.Status}}\t{{.State.Pid}}` que
++ * `src/lib/infrastructure.sh`, extendido con lo que el barrido necesita.
++ */
++const INSPECT_FORMAT = [
++  '{{.State.Status}}',
++  '{{.State.Pid}}',
++  labelField(OWNER_KIND_LABEL_KEY),
++  labelField(OWNER_ID_LABEL_KEY),
++  labelField(OWNER_PID_LABEL_KEY),
++  labelField(WORKER_ID_LABEL_KEY),
++].join('\t')
++
++export function inspectWorkerContainerArgv(name: string): string[] {
++  return ['inspect', '--format', INSPECT_FORMAT, name]
++}
++
++export function stopWorkerContainerArgv(name: string, timeoutSeconds: number): string[] {
++  return ['stop', '--time', String(timeoutSeconds), name]
++}
++
++/** Siempre fuerza el retiro: un contenedor no queda a medio retirar por depender de que ya esté detenido. */
++export function removeWorkerContainerArgv(name: string): string[] {
++  return ['rm', '--force', name]
++}
++
++/** Lista, por nombre, todo contenedor gestionado por este módulo, de cualquier dueño. */
++export function listWorkerContainerNamesArgv(): string[] {
++  return ['ps', '--all', '--filter', `name=^${WORKER_CONTAINER_NAME_PREFIX}`, '--format', '{{.Names}}']
++}
++
++/** El dueño tal como lo leen las etiquetas: cada campo es `null` si falta o no es válido. */
++export type InspectedOwner = {
++  kind: ContainerOwnerKind | null
++  id: string | null
++  pid: number | null
++}
++
++export type PresentWorkerContainer = {
++  present: true
++  status: string
++  pid: number
++  owner: InspectedOwner
++  workerId: string | null
++}
++
++export type WorkerContainerInspection = { present: false } | PresentWorkerContainer
++
++function parseLabelPid(raw: string): number | null {
++  const parsed = Number(raw)
++  return isPositiveInteger(parsed) ? parsed : null
++}
++
++function parseLabelText(raw: string): string | null {
++  return raw === '' || raw === MISSING_LABEL_VALUE ? null : raw
++}
++
++function parseOwnerKind(raw: string): ContainerOwnerKind | null {
++  return isOwnerKind(raw) ? raw : null
++}
++
++/** Traduce la salida de `inspectWorkerContainerArgv` — ausente (exit != 0) o presente con sus campos. */
++export function parseWorkerContainerInspection(result: PodmanCommandResult): WorkerContainerInspection {
++  if (result.exitCode !== 0) return { present: false }
++  const [status, pidRaw, kindRaw, idRaw, ownerPidRaw, workerIdRaw] = result.stdout.trim().split('\t')
++  return {
++    present: true,
++    status: status ?? '',
++    pid: Number(pidRaw) || 0,
++    owner: {
++      kind: parseOwnerKind(kindRaw ?? ''),
++      id: parseLabelText(idRaw ?? ''),
++      pid: parseLabelPid(ownerPidRaw ?? ''),
++    },
++    workerId: parseLabelText(workerIdRaw ?? ''),
++  }
++}
++
++function parseContainerNameList(stdout: string): string[] {
++  return stdout
++    .split('\n')
++    .map(line => line.trim())
++    .filter(line => line.length > 0)
++}
++
++/**
++ * La regla que TASK-THYROX-0605 obligó a nombrar: un contenedor `running`
++ * con el PID muerto NO está vivo. `present`/`status`/`pid` solos nunca
++ * bastan — la sonda de PID es la que decide.
++ */
++export function isWorkerContainerProcessAlive(
++  inspection: WorkerContainerInspection,
++  checkProcessAlive: (pid: number) => boolean,
++): boolean {
++  return inspection.present && inspection.status === 'running' && inspection.pid > 0 && checkProcessAlive(inspection.pid)
++}
++
++/** La política de huérfanos de un dueño: recibe un contenedor presente y decide si le toca retirarlo. */
++export type OrphanPredicate = (inspection: PresentWorkerContainer) => boolean
++
++export interface WorkerContainerLifecycleDeps {
++  podman: PodmanExecutor
++  /** Inyectado — nunca se asume vivo por el status de Podman; ver `isWorkerContainerProcessAlive`. */
++  isProcessAlive: (pid: number) => boolean
++  /** Señal directa de última instancia cuando el PID sigue vivo tras `stop`+`rm` (estado stale de Podman). */
++  killProcess: (pid: number, signal: NodeJS.Signals) => void
++}
++
++/** Deps reales con la sonda de vida que el dueño aporta, y `process.kill` como señal directa. */
++export function createWorkerContainerLifecycleDeps(
++  podman: PodmanExecutor,
++  isProcessAlive: (pid: number) => boolean,
++): WorkerContainerLifecycleDeps {
++  return {
++    podman,
++    isProcessAlive,
++    killProcess: (pid, signal) => process.kill(pid, signal),
++  }
++}
++
++/** Crea el contenedor y lo arranca; si el `create` falla, nunca se intenta el `start`. */
++export async function createWorkerContainer(
++  deps: WorkerContainerLifecycleDeps,
++  spec: WorkerContainerSpec,
++): Promise<PodmanCommandResult> {
++  const created = await deps.podman.run(createWorkerContainerArgv(spec))
++  if (created.exitCode !== 0) return created
++  return deps.podman.run(['start', workerContainerName(spec.workerId)])
++}
++
++export async function inspectWorkerContainer(
++  deps: Pick<WorkerContainerLifecycleDeps, 'podman'>,
++  name: string,
++): Promise<WorkerContainerInspection> {
++  return parseWorkerContainerInspection(await deps.podman.run(inspectWorkerContainerArgv(name)))
++}
++
++export async function stopWorkerContainer(
++  deps: Pick<WorkerContainerLifecycleDeps, 'podman'>,
++  name: string,
++  timeoutSeconds: number,
++): Promise<PodmanCommandResult> {
++  return deps.podman.run(stopWorkerContainerArgv(name, timeoutSeconds))
++}
++
++export async function removeWorkerContainer(
++  deps: Pick<WorkerContainerLifecycleDeps, 'podman'>,
++  name: string,
++): Promise<PodmanCommandResult> {
++  return deps.podman.run(removeWorkerContainerArgv(name))
++}
++
++export type WorkerContainerRetirement = {
++  name: string
++  stopped: boolean
++  removed: boolean
++  /** `true` si, tras `stop`+`rm`, el PID seguía vivo y hubo que matarlo directo (estado stale de Podman). */
++  killedStaleProcess: boolean
++}
++
++/** Envía SIGKILL directo si, tras `stop`+`rm`, el PID inspeccionado sigue vivo — la garantía de «nada sobrevive». */
++function killStaleProcessIfAlive(deps: WorkerContainerLifecycleDeps, inspection: WorkerContainerInspection): boolean {
++  if (!inspection.present || inspection.pid <= 0) return false
++  if (!deps.isProcessAlive(inspection.pid)) return false
++  deps.killProcess(inspection.pid, 'SIGKILL')
++  return true
++}
++
++/**
++ * Detiene y retira un contenedor por su nombre, y verifica al final —sobre
++ * el PID, no sobre lo que Podman reportó— que no quedó un proceso vivo. Un
++ * contenedor ya ausente no invoca ni `stop` ni `rm`.
++ */
++export async function retireWorkerContainer(
++  deps: WorkerContainerLifecycleDeps,
++  name: string,
++  timeoutSeconds: number = DEFAULT_STOP_TIMEOUT_SECONDS,
++): Promise<WorkerContainerRetirement> {
++  const inspection = await inspectWorkerContainer(deps, name)
++  if (!inspection.present) {
++    return { name, stopped: false, removed: false, killedStaleProcess: false }
++  }
++  const stopResult = await stopWorkerContainer(deps, name, timeoutSeconds)
++  const removeResult = await removeWorkerContainer(deps, name)
++  return {
++    name,
++    stopped: stopResult.exitCode === 0,
++    removed: removeResult.exitCode === 0,
++    killedStaleProcess: killStaleProcessIfAlive(deps, inspection),
++  }
++}
++
++export type OrphanedWorkerContainer = {
++  name: string
++  workerId: string | null
++  owner: InspectedOwner
++}
++
++/** Encuentra, sin retirar nada, los contenedores gestionados que el predicado del dueño marca como huérfanos. */
++export async function findOrphanedWorkerContainers(
++  deps: WorkerContainerLifecycleDeps,
++  isOrphan: OrphanPredicate,
++): Promise<OrphanedWorkerContainer[]> {
++  const listing = await deps.podman.run(listWorkerContainerNamesArgv())
++  const orphans: OrphanedWorkerContainer[] = []
++  for (const name of parseContainerNameList(listing.stdout)) {
++    const inspection = await inspectWorkerContainer(deps, name)
++    if (!inspection.present || !isOrphan(inspection)) continue
++    orphans.push({ name, workerId: inspection.workerId, owner: inspection.owner })
++  }
++  return orphans
++}
++
++/** Encuentra y retira, uno por uno, los huérfanos que el predicado del dueño marca. */
++export async function retireOrphanedWorkerContainers(
++  deps: WorkerContainerLifecycleDeps,
++  isOrphan: OrphanPredicate,
++  timeoutSeconds: number = DEFAULT_STOP_TIMEOUT_SECONDS,
++): Promise<WorkerContainerRetirement[]> {
++  const orphans = await findOrphanedWorkerContainers(deps, isOrphan)
++  const retirements: WorkerContainerRetirement[] = []
++  for (const orphan of orphans) {
++    retirements.push(await retireWorkerContainer(deps, orphan.name, timeoutSeconds))
++  }
++  return retirements
++}
+diff --git a/src/packages/podman-execution/workerResourceProfile.ts b/src/packages/podman-execution/workerResourceProfile.ts
+new file mode 100644
+index 000000000..285c40ff9
+--- /dev/null
++++ b/src/packages/podman-execution/workerResourceProfile.ts
+@@ -0,0 +1,142 @@
++/**
++ * Contrato del perfil de límites de recursos de un worker de Podman
++ * (ADR-THYROX-007 Regla 2, TASK-THYROX-0615).
++ *
++ * Cada bandera que este módulo compone ya se midió contra su control en
++ * `src/lib/podman_capabilities.sh` (`--pids-limit`, `--memory`, `--cpus`,
++ * `--network none`, `--read-only`, montajes `:ro`). Aquí sólo vive el
++ * CONTRATO del perfil —su validación y su traducción a argv—, nunca la
++ * ejecución: el `PodmanWorkerManager` que crea y lanza contenedores es
++ * trabajo futuro, no de este archivo.
++ */
++
++export type WorkerNetworkMode = 'none' | 'bridge'
++export type WorkerMountMode = 'ro' | 'rw'
++
++export type WorkerResourceMount = {
++  source: string
++  destination: string
++  mode: WorkerMountMode
++}
++
++export type WorkerResourceProfile = {
++  cpus: number
++  memoryMib: number
++  pidsLimit: number
++  network: WorkerNetworkMode
++  readOnlyRootfs: boolean
++  mounts: WorkerResourceMount[]
++}
++
++const KNOWN_NETWORK_MODES: readonly WorkerNetworkMode[] = ['none', 'bridge']
++const KNOWN_MOUNT_MODES: readonly WorkerMountMode[] = ['ro', 'rw']
++
++/**
++ * El perfil más restrictivo medido: sin red, rootfs de sólo lectura, sin
++ * montajes declarados. Relajar cualquiera de los tres es explícito en el
++ * perfil que se declare — nunca el default silencioso.
++ */
++export const DEFAULT_WORKER_RESOURCE_PROFILE: WorkerResourceProfile = {
++  cpus: 1,
++  memoryMib: 1024,
++  pidsLimit: 128,
++  network: 'none',
++  readOnlyRootfs: true,
++  mounts: [],
++}
++
++/** Un campo del perfil no pasó su validación; nombra el campo, nunca lo omite en silencio. */
++export class InvalidWorkerResourceProfileError extends Error {
++  readonly field: string
++
++  constructor(field: string, message: string) {
++    super(message)
++    this.name = 'InvalidWorkerResourceProfileError'
++    this.field = field
++  }
++}
++
++function requirePositiveNumber(field: string, value: number): void {
++  if (!Number.isFinite(value) || value <= 0) {
++    throw new InvalidWorkerResourceProfileError(field, `${field} debe ser un número > 0, recibido: ${value}`)
++  }
++}
++
++function requirePositiveInteger(field: string, value: number): void {
++  if (!Number.isInteger(value) || value < 1) {
++    throw new InvalidWorkerResourceProfileError(field, `${field} debe ser un entero >= 1, recibido: ${value}`)
++  }
++}
++
++function requireKnownNetwork(network: WorkerNetworkMode): void {
++  if (!KNOWN_NETWORK_MODES.includes(network)) {
++    throw new InvalidWorkerResourceProfileError('network', `red desconocida: ${network}`)
++  }
++}
++
++function requireValidMount(mount: WorkerResourceMount, index: number): void {
++  const field = `mounts[${index}]`
++  if (!mount.source) {
++    throw new InvalidWorkerResourceProfileError(`${field}.source`, 'el origen del montaje no puede estar vacío')
++  }
++  if (!mount.destination.startsWith('/')) {
++    throw new InvalidWorkerResourceProfileError(
++      `${field}.destination`,
++      `el destino del montaje debe ser una ruta absoluta, recibido: ${mount.destination}`,
++    )
++  }
++  if (!KNOWN_MOUNT_MODES.includes(mount.mode)) {
++    throw new InvalidWorkerResourceProfileError(`${field}.mode`, `modo de montaje desconocido: ${mount.mode}`)
++  }
++}
++
++/** Valida el perfil completo; rehúsa en el primer campo inválido, nombrándolo. */
++export function validateWorkerResourceProfile(profile: WorkerResourceProfile): void {
++  requirePositiveNumber('cpus', profile.cpus)
++  requirePositiveNumber('memoryMib', profile.memoryMib)
++  requirePositiveInteger('pidsLimit', profile.pidsLimit)
++  requireKnownNetwork(profile.network)
++  profile.mounts.forEach((mount, index) => requireValidMount(mount, index))
++}
++
++function cpuLimitArgv(cpus: number): string[] {
++  return ['--cpus', String(cpus)]
++}
++
++function memoryLimitArgv(memoryMib: number): string[] {
++  return ['--memory', `${memoryMib}m`]
++}
++
++function pidsLimitArgv(pidsLimit: number): string[] {
++  return ['--pids-limit', String(pidsLimit)]
++}
++
++function networkArgv(network: WorkerNetworkMode): string[] {
++  return ['--network', network]
++}
++
++function rootfsArgv(readOnlyRootfs: boolean): string[] {
++  return readOnlyRootfs ? ['--read-only', '--read-only-tmpfs=false'] : []
++}
++
++function mountArgv(mount: WorkerResourceMount): string[] {
++  return ['-v', `${mount.source}:${mount.destination}:${mount.mode}`]
++}
++
++/**
++ * Traduce un perfil validado al argv de límites para `podman create`/`run`
++ * — no ejecuta nada, sólo compone el argv (mismo contrato que
++ * `thyrox_infrastructure_create_argv` en `src/lib/infrastructure.sh`: un
++ * perfil inválido rehúsa antes de emitir ningún argumento).
++ */
++export function workerResourceLimitArgv(profile: WorkerResourceProfile): string[] {
++  validateWorkerResourceProfile(profile)
++  return [
++    ...cpuLimitArgv(profile.cpus),
++    ...memoryLimitArgv(profile.memoryMib),
++    ...pidsLimitArgv(profile.pidsLimit),
++    ...networkArgv(profile.network),
++    ...rootfsArgv(profile.readOnlyRootfs),
++    ...profile.mounts.flatMap(mountArgv),
++  ]
++}

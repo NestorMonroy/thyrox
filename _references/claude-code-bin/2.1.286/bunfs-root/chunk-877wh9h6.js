@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.286
+import{sj}from"/$bunfs/root/chunk-4hjp8tw4.js";import{w}from"/$bunfs/root/chunk-beptw75w.js";import{s,n,Ct}from"/$bunfs/root/chunk-fsx1dvsr.js";import{C,g,D}from"/$bunfs/root/chunk-mqace48v.js";import{Is}from"/$bunfs/root/chunk-tzqc6qr1.js";import{Fd}from"/$bunfs/root/chunk-h8t52m9z.js";import{wo}from"/$bunfs/root/chunk-3tadc0rf.js";import{e,r}from"/$bunfs/root/chunk-9av83rwa.js";import{S}from"/$bunfs/root/chunk-qr34qg3p.js";function fr(a){let i=w(10),{message:f,bold:t,dimColor:R,subtitle:m}=a,d=t===void 0?!1:t,u=R===void 0?!1:R,x;if(i[0]===S)x=e(Is,{}),i[0]=x;else x=i[0];let l;if(i[1]!==d||i[2]!==u||i[3]!==f)l=r(s,{flexDirection:"row",children:[x,r(n,{bold:d,dimColor:u,children:[" ",f]})]}),i[1]=d,i[2]=u,i[3]=f,i[4]=l;else l=i[4];let c;if(i[5]!==m)c=m&&e(n,{dimColor:!0,children:m}),i[5]=m,i[6]=c;else c=i[6];let p;if(i[7]!==l||i[8]!==c)p=r(s,{flexDirection:"column",children:[l,c]}),i[7]=l,i[8]=c,i[9]=p;else p=i[9];return p}D();function E(l,c){let p=l.match(L);if(!p){return e(n,{dimColor:!0,children:l},c)}let A=p[0];let I=p.index??0;let F=l.slice(0,I);let G=l.slice(I+A.length);return r(n,{dimColor:!0,children:[F,e(Ct,{url:A,children:A}),G]},c)}var L=/https?:\/\/\S+/;function gze(){let a=w(10),f;if(a[0]===S)f=sj.getInstance().getStatus(),a[0]=f;else f=a[0];let[t,R]=g(f),m,d;if(a[1]===S)m=()=>sj.getInstance().subscribe(R),d=[],a[1]=m,a[2]=d;else m=a[1],d=a[2];if(C(m,d),!t.isAuthenticating&&!t.error&&t.output.length===0){return null}if(!t.isAuthenticating&&!t.error){return null}let u;if(a[3]!==t.output)u=t.output.length>0&&e(s,{flexDirection:"column",children:t.output.slice(-5).map(E)}),a[3]=t.output,a[4]=u;else u=a[4];let i;if(a[5]!==t.error)i=t.error&&e(wo,{error:t.error}),a[5]=t.error,a[6]=i;else i=a[6];let x;if(a[7]!==u||a[8]!==i)x=e(s,{marginY:1,children:r(Fd,{color:"permission",title:"Authentication",children:[u,i]})}),a[7]=u,a[8]=i,a[9]=x;else x=a[9];return x}
+export{fr,gze};

@@ -18,10 +18,21 @@
  * por `pid_recycled` comparando el tiempo de arranque del proceso
  * (`Hx`/`nc`, que leen `/proc/<pid>/stat` con caché). Ese seguimiento no
  * existe en thyrox — aquí cualquier lock cuyo pid ya no responde a la señal
- * 0 se trata como obsoleto sin distinguir la causa. `Vt`'s outcome
- * `"timed-out"` tampoco es alcanzable desde `acquireDaemonLock`: sólo lo
- * produce un intento activo de parada (`kyt`, `chunk-kfkmbq3a.js`), que no
- * está portado — no hay wiring de `daemon stop` en esta tarea.
+ * 0 se trata como obsoleto sin distinguir la causa.
+ *
+ * El outcome `"timed-out"` de `Vt` lo produce el intento activo de parada
+ * (`kyt`/`Ayt`, `chunk-kfkmbq3a.js`): `stopDaemonHolder`,
+ * `stopTransientLockHolder` y `acquireDaemonLockStoppingTransient`. La
+ * referencia lo invoca desde los subcomandos de servicio (`wa`:
+ * `install`/`start`); thyrox no los tiene, así que su llamador natural es
+ * un futuro `daemon stop` en `daemonCli.ts`. Divergencia: `EJe` (verificar
+ * que el pid es de verdad el daemon por su `procStart`) no existe aquí, y
+ * un pid vivo se trata como verificado.
+ *
+ * El lado que PIDE el relevo del handshake `yield` (`xt`, antes de
+ * adquirir) es `requestTransientYield`; el lado que responde vive en
+ * `bgDaemon.ts`. El sondeo de desplazamiento del loop (`xt` `L`) es
+ * `probeLockDisplacement`.
  *
  * @dynamicRequire
  */
@@ -32,6 +43,8 @@ import { join } from 'node:path'
 import { PRODUCT_NAME } from '@thyrox/config/product'
 import { logEvent } from '@thyrox/local-observability'
 import { logError } from '@thyrox/local-observability/logging'
+
+import { isYieldAck, type Response } from './socketProto.js'
 
 /** Contenido persistido en `daemon.lock`. */
 export interface DaemonLockInfo {
@@ -78,6 +91,26 @@ export function readDaemonLock(lockPath: string): DaemonLockInfo | null {
   } catch {
     return null
   }
+  return parseDaemonLock(raw)
+}
+
+/**
+ * Lectura del lock que distingue «no hay lock» (`ENOENT` → `null`) de un
+ * fallo de lectura, que se propaga: el sondeo de desplazamiento reintenta
+ * ese fallo en vez de confundirlo con un lock ausente.
+ */
+export function readDaemonLockOrThrow(lockPath: string): DaemonLockInfo | null {
+  let raw: string
+  try {
+    raw = readFileSync(lockPath, 'utf8')
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'ENOENT') return null
+    throw error
+  }
+  return parseDaemonLock(raw)
+}
+
+function parseDaemonLock(raw: string): DaemonLockInfo | null {
   let parsed: unknown
   try {
     parsed = JSON.parse(raw)
@@ -351,4 +384,186 @@ export function writeSocketTokensFile(
     })
     return undefined
   }
+}
+
+/** `chunk-kfkmbq3a.js` `kyt` — gracia por defecto tras SIGTERM. */
+const STOP_GRACEFUL_MS = 2_000
+/** `chunk-kfkmbq3a.js` `kyt` — cadencia del sondeo de salida tras SIGTERM. */
+const STOP_POLL_MS = 50
+/** `chunk-92tvramn.js` `xt` — plazo para que el transitorio suelte el lock. */
+const YIELD_TAKEOVER_TIMEOUT_MS = 5_000
+/** `chunk-92tvramn.js` `xt` — cadencia del sondeo del lock durante el relevo. */
+const YIELD_POLL_MS = 100
+
+export type StopHolderOutcome = 'exited' | 'eperm' | 'timed-out'
+
+export interface StopHolderOptions {
+  gracefulMs?: number
+}
+
+/**
+ * `chunk-kfkmbq3a.js` `kyt` — SIGTERM al titular y espera activa a que
+ * salga. `EPERM` es el caso esperado de un titular de otro usuario; otro
+ * fallo de la señal (`ESRCH`) significa que ya no existe.
+ */
+export async function stopDaemonHolder(
+  pid: number,
+  opts: StopHolderOptions = {},
+): Promise<StopHolderOutcome> {
+  try {
+    process.kill(pid, 'SIGTERM')
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === 'EPERM') return 'eperm'
+    return 'exited'
+  }
+  const deadline = Date.now() + (opts.gracefulMs ?? STOP_GRACEFUL_MS)
+  while (Date.now() < deadline) {
+    if (!isProcessAlive(pid)) return 'exited'
+    await delay(STOP_POLL_MS)
+  }
+  return 'timed-out'
+}
+
+export type StopTransientResult =
+  | { kind: 'none' }
+  | { kind: 'service' | 'shell'; lock: DaemonLockInfo }
+  | { kind: 'stopped'; pid: number }
+  | { kind: 'not-stopped'; lock: DaemonLockInfo; outcome: Exclude<StopHolderOutcome, 'exited'> }
+
+/**
+ * `chunk-kfkmbq3a.js` `Ayt` — sólo un titular transitorio se puede parar
+ * para quitarle el lock; uno de servicio o en shell se devuelve intacto.
+ * Un lock ausente o de un pid muerto no tiene a quién parar.
+ */
+export async function stopTransientLockHolder(
+  lockPath: string,
+  opts: StopHolderOptions = {},
+): Promise<StopTransientResult> {
+  const held = readDaemonLock(lockPath)
+  if (!held || !isProcessAlive(held.pid)) return { kind: 'none' }
+  if (held.origin === 'service' || held.origin === 'shell') return { kind: held.origin, lock: held }
+  const outcome = await stopDaemonHolder(held.pid, opts)
+  if (outcome === 'exited') return { kind: 'stopped', pid: held.pid }
+  return { kind: 'not-stopped', lock: held, outcome }
+}
+
+/**
+ * Adquisición que, ante un lock vivo de un daemon transitorio, intenta
+ * pararlo (`Ayt`) y reintenta. Es el camino por el que el outcome
+ * `"timed-out"` de `Vt` llega al llamador: el titular recibió SIGTERM y
+ * no salió dentro de la gracia.
+ */
+export async function acquireDaemonLockStoppingTransient(
+  scopeDir: string,
+  origin: DaemonLockInfo['origin'],
+  opts: StopHolderOptions = {},
+): Promise<LockAcquireResult | LockConflictResult> {
+  const first = await acquireDaemonLock(scopeDir, origin)
+  if (first.ok) return first
+  const stop = await stopTransientLockHolder(getDaemonLockPath(scopeDir), opts)
+  if (stop.kind === 'stopped') return acquireDaemonLock(scopeDir, origin)
+  if (stop.kind === 'not-stopped') return { ok: false, lock: stop.lock, outcome: stop.outcome }
+  return first
+}
+
+export interface DisplacementProbeDeps {
+  readLock?: (lockPath: string) => DaemonLockInfo | null
+  retryDelayMs?: number
+  logEventFn?: (name: string, metadata?: Record<string, unknown>) => void
+}
+
+/**
+ * `chunk-92tvramn.js` `xt` (`L`) — pid del daemon que nos desplazó (el
+ * lock lo sostiene otro pid), o `null`. Un fallo de lectura se reintenta
+ * una vez; el segundo se registra con nivel y cuenta como no desplazado,
+ * igual que la referencia (`level:"warn"`).
+ */
+export async function probeLockDisplacement(
+  lockPath: string,
+  ownPid: number,
+  deps: DisplacementProbeDeps = {},
+): Promise<number | null> {
+  const { readLock = readDaemonLockOrThrow, retryDelayMs = RETRY_DELAY_MS, logEventFn = logEvent } = deps
+  for (let attempt = 0; ; attempt++) {
+    try {
+      const held = readLock(lockPath)
+      return held !== null && held.pid !== ownPid ? held.pid : null
+    } catch (error) {
+      if (attempt === 0) {
+        await delay(retryDelayMs)
+        continue
+      }
+      logEventFn('tengu_daemon_displacement_probe_failed', {
+        error: String(error instanceof Error ? error.message : error).slice(0, 120),
+      })
+      return null
+    }
+  }
+}
+
+export type YieldHandshakeResult =
+  | { kind: 'not-needed' }
+  | { kind: 'taken-over'; message: string }
+  | { kind: 'still-held' | 'refused' | 'unreachable'; message: string }
+
+export interface YieldHandshakeOptions {
+  lockPath: string
+  origin: DaemonLockInfo['origin']
+  sendYield: () => Promise<Response>
+  pollIntervalMs?: number
+  takeoverTimeoutMs?: number
+  logEventFn?: (name: string, metadata?: Record<string, unknown>) => void
+}
+
+function readLiveLock(lockPath: string): DaemonLockInfo | null {
+  const held = readDaemonLock(lockPath)
+  return held && isProcessAlive(held.pid) ? held : null
+}
+
+function needsYieldHandshake(held: DaemonLockInfo | null, origin: DaemonLockInfo['origin']): boolean {
+  return held !== null && held.origin === 'transient' && origin !== 'transient'
+}
+
+async function waitForLockRelease(lockPath: string, pollMs: number, timeoutMs: number): Promise<boolean> {
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    await delay(pollMs)
+    if (readLiveLock(lockPath) === null) return true
+  }
+  return readLiveLock(lockPath) === null
+}
+
+/**
+ * `chunk-92tvramn.js` `xt` — lado que PIDE el relevo: un daemon no
+ * transitorio que encuentra el lock en manos de uno transitorio le manda
+ * `yield` y sondea hasta que el lock se libera, antes de adquirirlo. El
+ * resultado describe el relevo; quien llama sigue con la adquisición, que
+ * rehúsa con su propio mensaje si el lock sigue tomado.
+ */
+export async function requestTransientYield(opts: YieldHandshakeOptions): Promise<YieldHandshakeResult> {
+  const held = readLiveLock(opts.lockPath)
+  if (!held || !needsYieldHandshake(held, opts.origin)) return { kind: 'not-needed' }
+  const response = await opts.sendYield()
+  if (!isYieldAck(response)) {
+    if (response.ok) {
+      return { kind: 'refused', message: 'existing daemon refused to yield (it reports origin!=transient)' }
+    }
+    return {
+      kind: 'unreachable',
+      message: `existing daemon unreachable on control socket (${response.error}); not taking over`,
+    }
+  }
+  const released = await waitForLockRelease(
+    opts.lockPath,
+    opts.pollIntervalMs ?? YIELD_POLL_MS,
+    opts.takeoverTimeoutMs ?? YIELD_TAKEOVER_TIMEOUT_MS,
+  )
+  ;(opts.logEventFn ?? logEvent)('tengu_daemon_yield_takeover', {
+    ok: String(released),
+    new_origin: opts.origin,
+  })
+  if (released) {
+    return { kind: 'taken-over', message: `transient daemon (pid=${held.pid}) yielded to origin=${opts.origin}` }
+  }
+  return { kind: 'still-held', message: 'yield acked but lock still held after the takeover window — refusing to start' }
 }

@@ -1,0 +1,619 @@
+bootstrap	tests/install/test_install.sh	21:check() {
+bootstrap	tests/install/test_install.sh	33:check_contains() {
+bootstrap	tests/install/test_install.sh	49:fake_tree() {
+bootstrap	tests/install/test_install.sh	58:fake_consumer() {
+bootstrap	tests/install/test_install.sh	318:spy_tree() {
+bootstrap	tests/install/test_install.sh	438:present_homes() {
+bootstrap	install.sh	101:info() { printf '  %s\n' "$1"; }
+bootstrap	install.sh	102:ok()   { printf '%s  ok%s %s\n' "$C_GREEN" "$C_RESET" "$1"; }
+bootstrap	install.sh	103:warn() { printf '%s  aviso%s %s\n' "$C_YELLOW" "$C_RESET" "$1" >&2; }
+bootstrap	install.sh	108:fatal() {
+bootstrap	install.sh	165:print_usage() {
+bootstrap	install.sh	232:ascend_to_marker() {
+bootstrap	install.sh	246:load_root_from_env_file() {
+bootstrap	install.sh	324:sync_bin() {
+bootstrap	install.sh	368:env_file_for() {
+bootstrap	install.sh	378:current_value() {
+bootstrap	install.sh	407:contract_keys() {
+bootstrap	install.sh	416:contract_coverage() {
+bootstrap	install.sh	448:write_declaration() {
+bootstrap	install.sh	542:ensure_provider_homes() {
+bootstrap	install.sh	589:is_git_clone() { git -C "$1" rev-parse --show-toplevel >/dev/null 2>&1; }
+bootstrap	install.sh	597:check_clone() {
+bootstrap	install.sh	615:prepare_clone() {
+bootstrap	install.sh	670:run_measure() {
+bootstrap	src/lib/toolchain.sh	50:thyrox_toolchain_load_declared() {
+bootstrap	src/lib/toolchain.sh	76:function thyrox_toolchain_provider_root() {
+bootstrap	src/lib/toolchain.sh	94:function thyrox_toolchain_provider_python() {
+bootstrap	src/lib/toolchain.sh	113:function thyrox_toolchain_consumer_root() {
+bootstrap	src/lib/toolchain.sh	142:function thyrox_toolchain_consumer_argv() {
+bootstrap	src/lib/toolchain.sh	153:function thyrox_toolchain_declare() {
+bootstrap	src/lib/toolchain.sh	184:function thyrox_toolchain_sudo_prefix() {
+bootstrap	src/lib/toolchain.sh	238:function thyrox_toolchain_parallel_home() {
+bootstrap	src/lib/toolchain.sh	257:function thyrox_toolchain_is_apt_install() {
+bootstrap	src/lib/toolchain.sh	280:function thyrox_toolchain_acquire_binary() {
+bootstrap	src/lib/toolchain.sh	326:function thyrox_toolchain_require_parallel() {
+bootstrap	src/lib/toolchain.sh	381:function thyrox_toolchain_require_pdf_text() {
+bootstrap	src/lib/toolchain.sh	400:function thyrox_toolchain_require_rsync() {
+bootstrap	src/lib/toolchain.sh	413:function thyrox_toolchain_pg_major() {
+bootstrap	src/lib/toolchain.sh	435:function thyrox_toolchain_pgvector_installed_version() {
+bootstrap	src/lib/toolchain.sh	454:function thyrox_toolchain_pgvector_apt_package() {
+bootstrap	src/lib/toolchain.sh	468:function thyrox_toolchain_pgvector_purge_apt_package() {
+bootstrap	src/lib/toolchain.sh	494:function thyrox_toolchain_pgvector_install_default() {
+bootstrap	src/lib/toolchain.sh	513:function thyrox_toolchain_pgvector_install_cmd() {
+bootstrap	src/lib/toolchain.sh	542:function thyrox_toolchain_require_pgvector() {
+bootstrap	src/lib/toolchain.sh	587:function thyrox_toolchain_postgres_url_usable() {
+bootstrap	src/lib/toolchain.sh	617:function thyrox_toolchain_require_postgres_test_db() {
+bootstrap	src/lib/toolchain.sh	680:function thyrox_toolchain_require_redis() {
+bootstrap	src/lib/toolchain.sh	733:function thyrox_toolchain_require_podman() {
+bootstrap	src/lib/toolchain.sh	796:function thyrox_toolchain_gnu_time_bin() {
+bootstrap	src/lib/toolchain.sh	810:function thyrox_toolchain_require_gnu_time() {
+bootstrap	src/lib/toolchain.sh	884:function thyrox_toolchain_awk_supports_intervals() {
+bootstrap	src/lib/toolchain.sh	920:function thyrox_toolchain_require_gawk() {
+bootstrap	src/lib/toolchain.sh	981:function thyrox_toolchain_poppler_works() {
+bootstrap	src/lib/toolchain.sh	1001:function thyrox_toolchain_poppler_missing() {
+bootstrap	src/lib/toolchain.sh	1021:function thyrox_toolchain_require_poppler() {
+bootstrap	src/lib/toolchain.sh	1068:function thyrox_toolchain_texlive_packages() {
+bootstrap	src/lib/toolchain.sh	1081:function thyrox_toolchain_texlive_compiles() {
+bootstrap	src/lib/toolchain.sh	1114:function thyrox_toolchain_require_texlive() {
+bootstrap	src/lib/toolchain.sh	1153:function thyrox_toolchain_probe_texlive() {
+bootstrap	src/lib/toolchain.sh	1180:function thyrox_toolchain_hunspell_works() {
+bootstrap	src/lib/toolchain.sh	1198:function thyrox_toolchain_require_hunspell() {
+bootstrap	src/lib/toolchain.sh	1222:function thyrox_toolchain_probe_hunspell() {
+bootstrap	src/lib/toolchain.sh	1264:function thyrox_toolchain_proxy_declared() {
+bootstrap	src/lib/toolchain.sh	1281:function thyrox_toolchain_family_has_ca() {
+bootstrap	src/lib/toolchain.sh	1306:function thyrox_toolchain_probe_proxy() {
+bootstrap	src/lib/toolchain.sh	1387:function thyrox_toolchain_degraded_notice() {
+bootstrap	src/lib/toolchain.sh	1420:function thyrox_toolchain_require_sqlite_reader() {
+bootstrap	src/lib/toolchain.sh	1488:function thyrox_toolchain_require_bun() {
+bootstrap	src/lib/toolchain.sh	1566:function thyrox_toolchain_manifest_remedy() {
+bootstrap	src/lib/toolchain.sh	1587:function thyrox_toolchain_require_manifests() {
+bootstrap	src/lib/toolchain.sh	1631:function thyrox_toolchain_require_githooks() {
+bootstrap	src/lib/toolchain.sh	1663:function thyrox_toolchain_require_commit_identity() {
+bootstrap	src/lib/toolchain.sh	1698:function thyrox_toolchain_normalize_package_name() {
+bootstrap	src/lib/toolchain.sh	1720:function thyrox_toolchain_python_package_declared() {
+bootstrap	tests/verify/test-toolchain-ready.sh	41:ok()  { thyrox_ok "$*"; }
+bootstrap	tests/verify/test-toolchain-ready.sh	42:bad() { thyrox_fail "$*" || true; }
+bootstrap	tests/verify/test-toolchain-ready.sh	58:run_subject() {
+bootstrap	src/packages/repl/src/interactiveHelpers/interactiveHelpers.tsx	64:export function completeOnboarding(): void {
+bootstrap	src/packages/repl/src/interactiveHelpers/interactiveHelpers.tsx	71:export function showDialog<T = void>(
+bootstrap	src/packages/repl/src/interactiveHelpers/interactiveHelpers.tsx	87:export async function exitWithError(
+bootstrap	src/packages/repl/src/interactiveHelpers/interactiveHelpers.tsx	101:export async function exitWithMessage(
+bootstrap	src/packages/repl/src/interactiveHelpers/interactiveHelpers.tsx	126:export function showSetupDialog<T = void>(
+bootstrap	src/packages/repl/src/interactiveHelpers/interactiveHelpers.tsx	142:export async function renderAndRun(
+bootstrap	src/packages/repl/src/interactiveHelpers/interactiveHelpers.tsx	152:export async function showSetupScreens(
+bootstrap	src/packages/repl/src/interactiveHelpers/interactiveHelpers.tsx	428:export function getRenderContext(exitOnCtrlC: boolean): {
+bootstrap	src/paths/reach.py	113:def _clones_parent(start: Path | None = None) -> Path:
+bootstrap	src/paths/reach.py	135:def derive_clone_prefix(start: Path | None = None) -> str | None:
+bootstrap	src/paths/reach.py	166:def clone_prefix(start: Path | None = None,
+bootstrap	src/paths/reach.py	217:class ReachRootError(RuntimeError):
+bootstrap	src/paths/reach.py	227:def read_env_file(path: Path) -> dict[str, str]:
+bootstrap	src/paths/reach.py	261:def env_file_path(start: Path | None = None) -> Path | None:
+bootstrap	src/paths/reach.py	281:class ForReadingDeclarations(Protocol):
+bootstrap	src/paths/reach.py	303:class ProcessEnvironment:
+bootstrap	src/paths/reach.py	310:class EnvFileDeclarations:
+bootstrap	src/paths/reach.py	323:class FixedEnvFileDeclarations:
+bootstrap	src/paths/reach.py	333:class FirstOfDeclarations:
+bootstrap	src/paths/reach.py	351:class ProviderEnvFileDeclarations:
+bootstrap	src/paths/reach.py	405:def clone_top_of(start: Path) -> Path:
+bootstrap	src/paths/reach.py	414:def _short_name(root: Path) -> str:
+bootstrap	src/paths/reach.py	438:def clone_root_of(start: str | Path | None) -> Path | None:
+bootstrap	src/paths/reach.py	468:def per_clone_base(start: str | Path | None) -> Path:
+bootstrap	src/paths/reach.py	475:def clone_short_name(start: str | Path | None) -> str | None:
+bootstrap	src/paths/reach.py	484:def clone_suffix_of(start: Path | None) -> str | None:
+bootstrap	src/paths/reach.py	502:def production_declarations(start: Path | None = None,
+bootstrap	src/paths/reach.py	538:def declared_with_prefix(prefixes: tuple[str, ...],
+bootstrap	src/paths/reach.py	560:def invoking_consumer(cwd: Path | None = None) -> Path | None:
+bootstrap	src/paths/reach.py	583:def consumer_env_file(cwd: Path | None = None) -> Path | None:
+bootstrap	src/paths/reach.py	592:def env_value(
+bootstrap	src/paths/reach.py	612:def derive_reach_roots(start: Path | None = None) -> tuple[str, ...]:
+bootstrap	src/paths/reach.py	644:def reach_roots(start: Path | None = None,
+bootstrap	src/paths/reach.py	668:def __getattr__(name: str):
+bootstrap	src/paths/reach.py	681:def clone_name(repo: str) -> str:
+bootstrap	src/paths/reach.py	691:def clone_names() -> tuple[str, ...]:
+bootstrap	src/paths/reach.py	696:def env_names(repo: str) -> tuple[str, ...]:
+bootstrap	src/paths/reach.py	713:def resolve_home(declared: str | Path, root: str | Path) -> Path:
+bootstrap	src/paths/reach.py	766:def ensure_home(path: str | Path) -> Path:
+bootstrap	src/paths/reach.py	803:def creates_home(resolve):
+bootstrap	src/paths/reach.py	822:def tree_root(start: Path | None = None) -> Path:
+bootstrap	src/paths/reach.py	879:def thyrox_root(start: Path | None = None) -> Path:
+bootstrap	src/paths/reach.py	929:class ConsumerUnknownError(Exception):
+bootstrap	src/paths/reach.py	975:def strict_consumer(start: Path | None = None) -> bool:
+bootstrap	src/paths/reach.py	994:def child_env(base: dict[str, str] | None = None,
+bootstrap	src/paths/reach.py	1029:def consumer_root(declared: str | Path | None = None,
+bootstrap	src/paths/reach.py	1110:def scratch_root(start: Path | None = None) -> Path:
+bootstrap	src/paths/reach.py	1136:def agent_store_path(start: Path | None = None, create: bool = True) -> Path:
+bootstrap	src/paths/reach.py	1179:def root(repo: str, start: Path | None = None) -> Path:
+bootstrap	src/paths/reach.py	1194:def roots(start: Path | None = None) -> dict[str, Path]:
+bootstrap	src/paths/reach.py	1204:def extra_roots() -> dict[str, Path]:
+bootstrap	src/paths/reach.py	1226:def reach(start: Path | None = None) -> dict[str, Path]:
+bootstrap	src/paths/reach.py	1236:def paths(start: Path | None = None) -> tuple[Path, ...]:
+bootstrap	src/paths/reach.py	1241:def require_all(start: Path | None = None) -> dict[str, Path]:
+bootstrap	src/paths/reach.py	1261:def main(argv: list[str]) -> int:
+bootstrap	src/paths/reach.py	1455:def _run(argv: list[str]) -> int:
+bootstrap	src/session/clone_bootstrap.py	77:def consumer_root_dir():
+bootstrap	src/session/clone_bootstrap.py	88:def payload_path(consumer=None):
+bootstrap	src/session/clone_bootstrap.py	106:def repo_settings_path(consumer=None):
+bootstrap	src/session/clone_bootstrap.py	117:def sync_module_path():
+bootstrap	src/session/clone_bootstrap.py	135:def __getattr__(name: str):
+bootstrap	src/session/clone_bootstrap.py	152:def load_sync_module():
+bootstrap	src/session/clone_bootstrap.py	165:def render(value: Any, docs_root: Any, root: Any, provider: Any) -> Any:
+bootstrap	src/session/clone_bootstrap.py	181:def to_placeholders(value, docs_root, root):
+bootstrap	src/session/clone_bootstrap.py	196:def absolutise(command, docs_root):
+bootstrap	src/session/clone_bootstrap.py	204:def build_hooks(repo_settings, sync_hooks, docs_root):
+bootstrap	src/session/clone_bootstrap.py	223:def count_commands(hooks):
+bootstrap	src/session/clone_bootstrap.py	231:def unresolved(hooks, docs_root):
+bootstrap	src/session/clone_bootstrap.py	255:def load_json(path):
+bootstrap	src/session/clone_bootstrap.py	264:def save_json(path, payload):
+bootstrap	src/session/clone_bootstrap.py	270:def capture(live_path, docs_root, root):
+bootstrap	src/session/clone_bootstrap.py	293:def describe(destination, hooks, allow_final, allow_live, allow_payload, missing):
+bootstrap	src/session/clone_bootstrap.py	312:def main(argv=None):
+bootstrap	src/verify/check_githooks_activos.py	63:def roster(provider):
+bootstrap	src/verify/check_githooks_activos.py	71:def remedy_for(raiz):
+bootstrap	src/verify/check_githooks_activos.py	83:def estado(raiz):
+bootstrap	src/verify/check_githooks_activos.py	106:def main():
+bootstrap	tests/lib/test-reach-pythonpath.sh	34:ok()  { thyrox_ok "$*"; }
+bootstrap	tests/lib/test-reach-pythonpath.sh	35:bad() { thyrox_fail "$*" || true; }
+bootstrap	tests/session/test-arranque-de-clon.sh	62:comprobar() {  # comprobar <descripcion> <esperado> <obtenido>
+bootstrap	tests/session/test-arranque-de-clon.sh	109:arranque() { python3 "$GUION" --docs-root "$CLON" --raiz "$TMP" "$@"; }
+bootstrap	tests/session/test-arranque-de-clon.sh	112:comandos() { python3 -c "
+bootstrap	src/lib/reach.sh	53:_thyrox_ascend() {
+bootstrap	src/lib/reach.sh	72:_thyrox_delegate() {
+bootstrap	src/lib/reach.sh	101:thyrox_root() { _thyrox_delegate --thyrox-root; }
+bootstrap	src/lib/reach.sh	106:thyrox_tree_root() { _thyrox_delegate --tree-root; }
+bootstrap	src/lib/reach.sh	125:thyrox_config_value() {
+bootstrap	src/lib/reach.sh	155:thyrox_config_home() {
+bootstrap	src/packages/cli/src/handlers/auth.ts	96:export async function installOAuthTokens(tokens: OAuthTokens): Promise<void> {
+bootstrap	src/packages/cli/src/handlers/auth.ts	214:export async function authLogin({
+bootstrap	src/packages/cli/src/handlers/auth.ts	358:export async function authStatus(opts: {
+bootstrap	src/packages/cli/src/handlers/auth.ts	447:export async function authLogout(): Promise<void> {
+bootstrap	src/packages/command-runtime/src/commands/login/login.tsx	27:export async function call(
+bootstrap	src/packages/command-runtime/src/commands/login/login.tsx	120:export function Login(props: {
+bootstrap	src/packages/config/plugin/pluginLoader.ts	125:export class InvalidManifestError extends Error {
+bootstrap	src/packages/config/plugin/pluginLoader.ts	136:export function getPluginCachePath(): string {
+bootstrap	src/packages/config/plugin/pluginLoader.ts	149:export function getVersionedCachePathIn(
+bootstrap	src/packages/config/plugin/pluginLoader.ts	182:export function getVersionedCachePath(
+bootstrap	src/packages/config/plugin/pluginLoader.ts	193:export function getVersionedZipCachePath(
+bootstrap	src/packages/config/plugin/pluginLoader.ts	230:export async function probeSeedCacheAnyVersion(
+bootstrap	src/packages/config/plugin/pluginLoader.ts	259:export function getLegacyCachePath(pluginName: string): string {
+bootstrap	src/packages/config/plugin/pluginLoader.ts	276:export async function resolvePluginPath(
+bootstrap	src/packages/config/plugin/pluginLoader.ts	303:export async function copyDir(src: string, dest: string): Promise<void> {
+bootstrap	src/packages/config/plugin/pluginLoader.ts	375:export async function copyPluginToVersionedCache(
+bootstrap	src/packages/config/plugin/pluginLoader.ts	502:export async function installFromNpm(
+bootstrap	src/packages/config/plugin/pluginLoader.ts	544:export async function gitClone(
+bootstrap	src/packages/config/plugin/pluginLoader.ts	734:export async function installFromGitSubdir(
+bootstrap	src/packages/config/plugin/pluginLoader.ts	889:export function generateTemporaryCacheNameForPlugin(
+bootstrap	src/packages/config/plugin/pluginLoader.ts	927:export async function cachePlugin(
+bootstrap	src/packages/config/plugin/pluginLoader.ts	1157:export async function loadPluginManifest(
+bootstrap	src/packages/config/plugin/pluginLoader.ts	1355:export async function createPluginFromPath(
+bootstrap	src/packages/config/plugin/pluginLoader.ts	3016:export function mergePluginSources(sources: {
+bootstrap	src/packages/config/plugin/pluginLoader.ts	3103:export const loadAllPlugins = memoize(async (): Promise<PluginLoadResult> => {
+bootstrap	src/packages/config/plugin/pluginLoader.ts	3144:export const loadAllPluginsCacheOnly = memoize(
+bootstrap	src/packages/config/plugin/pluginLoader.ts	3232:export function clearPluginCache(reason?: string): void {
+bootstrap	src/packages/config/plugin/pluginLoader.ts	3288:export function cachePluginSettings(plugins: LoadedPlugin[]): void {
+bootstrap	src/packages/ide/src/ide.ts	118:export type DetectedIDEInfo = {
+bootstrap	src/packages/ide/src/ide.ts	128:export type IdeType =
+bootstrap	src/packages/ide/src/ide.ts	285:export function isVSCodeIde(ide: IdeType | null): boolean {
+bootstrap	src/packages/ide/src/ide.ts	291:export function isJetBrainsIde(ide: IdeType | null): boolean {
+bootstrap	src/packages/ide/src/ide.ts	297:export const isSupportedVSCodeTerminal = memoize(() => {
+bootstrap	src/packages/ide/src/ide.ts	301:export const isSupportedJetBrainsTerminal = memoize(() => {
+bootstrap	src/packages/ide/src/ide.ts	305:export const isSupportedTerminal = memoize(() => {
+bootstrap	src/packages/ide/src/ide.ts	313:export function getTerminalIdeType(): IdeType | null {
+bootstrap	src/packages/ide/src/ide.ts	324:export async function getSortedIdeLockfiles(): Promise<string[]> {
+bootstrap	src/packages/ide/src/ide.ts	504:export async function getIdeLockfilesPaths(): Promise<string[]> {
+bootstrap	src/packages/ide/src/ide.ts	578:export async function cleanupStaleIdeLockfiles(): Promise<void> {
+bootstrap	src/packages/ide/src/ide.ts	642:export interface IDEExtensionInstallationStatus {
+bootstrap	src/packages/ide/src/ide.ts	649:export async function maybeInstallIDEExtension(
+bootstrap	src/packages/ide/src/ide.ts	688:export async function findAvailableIDE(): Promise<DetectedIDEInfo | null> {
+bootstrap	src/packages/ide/src/ide.ts	730:export async function detectIDEs(
+bootstrap	src/packages/ide/src/ide.ts	903:export async function maybeNotifyIDEConnected(client: Client) {
+bootstrap	src/packages/ide/src/ide.ts	912:export function hasAccessToIDEExtensionDiffFeature(
+bootstrap	src/packages/ide/src/ide.ts	926:export async function isIDEExtensionInstalled(
+bootstrap	src/packages/ide/src/ide.ts	1133:export async function isCursorInstalled(): Promise<boolean> {
+bootstrap	src/packages/ide/src/ide.ts	1139:export async function isWindsurfInstalled(): Promise<boolean> {
+bootstrap	src/packages/ide/src/ide.ts	1145:export async function isVSCodeInstalled(): Promise<boolean> {
+bootstrap	src/packages/ide/src/ide.ts	1242:export async function detectRunningIDEs(): Promise<IdeType[]> {
+bootstrap	src/packages/ide/src/ide.ts	1253:export async function detectRunningIDEsCached(): Promise<IdeType[]> {
+bootstrap	src/packages/ide/src/ide.ts	1264:export function resetDetectRunningIDEs(): void {
+bootstrap	src/packages/ide/src/ide.ts	1268:export function getConnectedIdeName(
+bootstrap	src/packages/ide/src/ide.ts	1277:export function getIdeClientName(
+bootstrap	src/packages/ide/src/ide.ts	1303:export function toIDEDisplayName(terminal: string | null): string {
+bootstrap	src/packages/ide/src/ide.ts	1341:export function getConnectedIdeClient(
+bootstrap	src/packages/ide/src/ide.ts	1360:export async function closeOpenDiffs(
+bootstrap	src/packages/ide/src/ide.ts	1381:export async function initializeIdeIntegration(
+bootstrap	src/packages/provider/src/accounts/antigravity/projectDiscovery.ts	23:export type ProjectDiscoveryOutcome = 'requires_manual_project' | 'discovery_failed'
+bootstrap	src/packages/provider/src/accounts/antigravity/projectDiscovery.ts	25:export interface DiscoveredProject {
+bootstrap	src/packages/provider/src/accounts/antigravity/projectDiscovery.ts	31:export interface CodeAssistEndpoints {
+bootstrap	src/packages/provider/src/accounts/antigravity/projectDiscovery.ts	36:export interface ProjectDiscoveryDeps {
+bootstrap	src/packages/provider/src/accounts/antigravity/projectDiscovery.ts	46:export const CODE_ASSIST_TIMEOUT_MS = 8_000
+bootstrap	src/packages/provider/src/accounts/antigravity/projectDiscovery.ts	53:export function isUsableProjectId(value: unknown): value is string {
+bootstrap	src/packages/provider/src/accounts/antigravity/projectDiscovery.ts	65:export function createProjectDiscovery(deps: ProjectDiscoveryDeps) {
+bootstrap	src/packages/provider/src/commands/logout/logout.tsx	18:export async function performLogout({
+bootstrap	src/packages/provider/src/commands/logout/logout.tsx	77:export async function clearAuthRelatedCaches(): Promise<void> {
+bootstrap	src/packages/provider/src/commands/logout/logout.tsx	99:export async function call(
+identity	src/verify/commit_identity.py	56:class IdentityUndeclared(RuntimeError):
+identity	src/verify/commit_identity.py	61:class Identity:
+identity	src/verify/commit_identity.py	73:class Violation:
+identity	src/verify/commit_identity.py	80:def parse_identity(text: str) -> Identity:
+identity	src/verify/commit_identity.py	89:def declared_identities(source: ForReadingDeclarations | None = None,
+identity	src/verify/commit_identity.py	102:def effective_identity(repo: Path, role: str, env: dict[str, str] | None = None) -> Identity:
+identity	src/verify/commit_identity.py	110:def agent_roles(identities: dict[str, Identity]) -> list[str]:
+identity	src/verify/commit_identity.py	115:def check_agent_invariant(repo: Path, env: dict[str, str] | None = None) -> list[str]:
+identity	src/verify/commit_identity.py	124:def check_identities(repo: Path, source: ForReadingDeclarations | None = None,
+identity	src/verify/commit_identity.py	153:def agent_trailers(message_file: Path, cwd: Path | None = None) -> list[str]:
+identity	src/verify/commit_identity.py	165:def export_lines(source: ForReadingDeclarations | None = None,
+identity	src/verify/commit_identity.py	180:def main(argv: list[str] | None = None) -> int:
+identity	tests/verify/test_commit_identity.py	35:def assert_equal(name: str, expected, obtained) -> None:
+identity	tests/verify/test_commit_identity.py	45:class FakeDeclarations:
+identity	tests/verify/test_commit_identity.py	60:def make_repo(root: pathlib.Path) -> pathlib.Path:
+identity	tests/verify/test_commit_identity.py	66:def git_env(author: str, committer: str) -> dict[str, str]:
+identity	tests/verify/test-toolchain-ready.sh	41:ok()  { thyrox_ok "$*"; }
+identity	tests/verify/test-toolchain-ready.sh	42:bad() { thyrox_fail "$*" || true; }
+identity	tests/verify/test-toolchain-ready.sh	58:run_subject() {
+identity	src/packages/coordination/branchIntegration.ts	36:export const EXPECTED_COMMITTER_NAME = 'jcg-admin'
+identity	src/packages/coordination/branchIntegration.ts	37:export const EXPECTED_COMMITTER_EMAIL = '169318663+jcg-admin@users.noreply.github.com'
+identity	src/packages/coordination/branchIntegration.ts	40:export interface IntegrationRepo {
+identity	src/packages/coordination/branchIntegration.ts	50:export interface CollisionCheck {
+identity	src/packages/coordination/branchIntegration.ts	58:export type CollisionGate = (repo: IntegrationRepo) => CollisionCheck
+identity	src/packages/coordination/branchIntegration.ts	61:export interface RenumberedLabel {
+identity	src/packages/coordination/branchIntegration.ts	77:export type LabelResolver = (repo: IntegrationRepo) => RenumberedLabel[]
+identity	src/packages/coordination/branchIntegration.ts	80:export interface ConflictResolution {
+identity	src/packages/coordination/branchIntegration.ts	92:export type ConflictResolver = (repo: IntegrationRepo, conflictFiles: string[]) => ConflictResolution | null
+identity	src/packages/coordination/branchIntegration.ts	100:export type StaticGate = (repo: IntegrationRepo) => { ok: boolean; detail: string }
+identity	src/packages/coordination/branchIntegration.ts	102:export interface IntegrationResult {
+identity	src/packages/coordination/branchIntegration.ts	117:export interface IntegrateOptions {
+identity	src/packages/coordination/branchIntegration.ts	180:export function docsLabelCollisionGate(repo: IntegrationRepo): CollisionCheck {
+identity	src/packages/coordination/branchIntegration.ts	206:export const defaultCollisionGate: CollisionGate = combineGates(
+identity	src/packages/coordination/branchIntegration.ts	212:export function committerMismatch(path: string): string | null {
+identity	src/packages/coordination/branchIntegration.ts	227:export function docsLabelRenumber(repo: IntegrationRepo): RenumberedLabel[] {
+identity	src/packages/coordination/branchIntegration.ts	251:export function unionConflictResolver(repo: IntegrationRepo, conflictFiles: string[]): ConflictResolution | null {
+identity	src/packages/coordination/branchIntegration.ts	279:export function integrate(repos: IntegrationRepo[], opts: IntegrateOptions = {}): IntegrationResult[] {
+identity	src/packages/coordination/branchIntegration.ts	467:export type RepoKind = 'python-api' | 'js-ui' | 'docs' | 'shell' | 'generic'
+identity	src/packages/coordination/branchIntegration.ts	469:export interface VerificationRepo {
+identity	src/packages/coordination/branchIntegration.ts	474:export interface VerificationStep {
+identity	src/packages/coordination/branchIntegration.ts	506:export function verificationPlan(repos: VerificationRepo[]): VerificationStep[] {
+identity	src/session/documentation_publisher.py	89:class PublisherError(Exception):
+identity	src/session/documentation_publisher.py	93:class PublishRefused(Exception):
+identity	src/session/documentation_publisher.py	97:class PlacementError(PublishRefused):
+identity	src/session/documentation_publisher.py	101:class BlobConflictError(PublishRefused):
+identity	src/session/documentation_publisher.py	105:class GateFailedError(PublishRefused):
+identity	src/session/documentation_publisher.py	109:class CommitRefusedError(PublishRefused):
+identity	src/session/documentation_publisher.py	113:class BranchMovedError(PublishRefused):
+identity	src/session/documentation_publisher.py	118:class PublishResult:
+identity	src/session/documentation_publisher.py	134:def _git(repo: Path, *args: str, env: dict[str, str] | None = None) -> subprocess.CompletedProcess:
+identity	src/session/documentation_publisher.py	138:def consumer_root_of(intent: intents.DocumentIntent) -> Path:
+identity	src/session/documentation_publisher.py	149:def assert_initiative_in_place(consumer: Path, intent: intents.DocumentIntent) -> None:
+identity	src/session/documentation_publisher.py	163:def lock_target(consumer: Path, target: str) -> Path:
+identity	src/session/documentation_publisher.py	171:def base_commit(consumer: Path, branch: str) -> tuple[str, bool]:
+identity	src/session/documentation_publisher.py	179:def assert_branch_not_checked_out(consumer: Path, branch: str) -> None:
+identity	src/session/documentation_publisher.py	188:def temporary_worktree(consumer: Path, base: str) -> Iterator[Path]:
+identity	src/session/documentation_publisher.py	204:def blob_at(worktree: Path, revision: str, target: str) -> str | None:
+identity	src/session/documentation_publisher.py	210:def assert_expected_blob(intent: intents.DocumentIntent, current: str | None) -> None:
+identity	src/session/documentation_publisher.py	216:def write_document(worktree: Path, target: str, body: str) -> Path:
+identity	src/session/documentation_publisher.py	223:def gate_commands(bin_dir: Path, document: Path) -> list[list[str]]:
+identity	src/session/documentation_publisher.py	230:def run_gates(bin_dir: Path, worktree: Path, document: Path) -> None:
+identity	src/session/documentation_publisher.py	238:def commit_environment(consumer: Path) -> dict[str, str]:
+identity	src/session/documentation_publisher.py	250:def commit_message(intent: intents.DocumentIntent, blob_before: str | None) -> str:
+identity	src/session/documentation_publisher.py	259:def commit_document(worktree: Path, target: str, message: str, env: dict[str, str]) -> str:
+identity	src/session/documentation_publisher.py	274:def advance_branch(consumer: Path, branch: str, new: str, base: str, existed: bool) -> bool:
+identity	src/session/documentation_publisher.py	282:def read_published(out_dir: Path, item: str) -> dict | None:
+identity	src/session/documentation_publisher.py	289:def write_published(out_dir: Path, result: PublishResult) -> None:
+identity	src/session/documentation_publisher.py	294:class DocumentationPublisher:
+identity	src/session/documentation_publisher.py	342:def _write_intent_command(args: argparse.Namespace) -> int:
+identity	src/session/documentation_publisher.py	359:def _publish_command(args: argparse.Namespace) -> int:
+identity	src/session/documentation_publisher.py	373:def main(argv: list[str] | None = None) -> int:
+identity	src/session/reconcile_user_hooks.py	44:class Patch:
+identity	src/session/reconcile_user_hooks.py	83:def _signature_only_applied(text: str) -> bool:
+identity	src/session/reconcile_user_hooks.py	89:def _signature_only_broken(text: str) -> bool:
+identity	src/session/reconcile_user_hooks.py	93:def _signature_only_apply(text: str) -> str:
+identity	src/session/reconcile_user_hooks.py	117:def user_claude_dir() -> pathlib.Path:
+identity	src/session/reconcile_user_hooks.py	125:def reconcile(root: pathlib.Path, check_only: bool) -> tuple[int, list[str]]:
+identity	src/session/reconcile_user_hooks.py	165:def main(argv: list[str]) -> int:
+identity	tests/agents/test-agent-store-fecha-apertura.sh	51:afirmar() {
+identity	tests/agents/test-agent-store-fecha-apertura.sh	59:cleanup() { [[ -n "${TMP:-}" ]] && rm -rf "$TMP"; }
+identity	tests/agents/test-agent-store-fecha-apertura.sh	68:col() {  # col <tabla> <columna> -> 1 si existe
+identity	tests/agents/test-agent-store-fecha-apertura.sh	75:leer() {  # leer <task_id> <columna>
+identity	tests/agents/test-agent-store-fecha-documento.sh	56:afirmar() {
+identity	tests/agents/test-agent-store-fecha-documento.sh	64:cleanup() { [[ -n "${TMP:-}" ]] && rm -rf "$TMP"; }
+identity	tests/agents/test-agent-store-fecha-documento.sh	72:leer() {  # leer <path> <columna>
+identity	tests/agents/test-agent-store-fecha-documento.sh	81:doc() {  # doc <ruta-rel> <fecha-declarada|-> <cuerpo>
+identity	tests/agents/test-agent-store-fecha-documento.sh	94:commit_en() {  # commit_en <fecha-iso> <mensaje>
+identity	tests/agents/test-agent-store-fecha-documento.sh	370:doc_sin_git() {
+identity	tests/session/test_documentation_publisher.py	56:def check(label: str, expected, obtained) -> None:
+identity	tests/session/test_documentation_publisher.py	66:def raises(error: type[Exception], call) -> bool:
+identity	tests/session/test_documentation_publisher.py	78:def git(repo: Path, *args: str) -> str:
+identity	tests/session/test_documentation_publisher.py	83:def executable(path: Path, text: str) -> None:
+identity	tests/session/test_documentation_publisher.py	89:def make_consumer(base: Path) -> Path:
+identity	tests/session/test_documentation_publisher.py	113:def make_bin(base: Path) -> Path:
+identity	tests/session/test_documentation_publisher.py	124:def close_item(out: Path, item: str, *, intent: dict, body: str = BODY,
+identity	tests/session/test_documentation_publisher.py	143:def base_intent(**changes) -> dict:
+identity	tests/session/test_documentation_publisher.py	150:def environment(base: Path, consumer: Path) -> None:
+identity	tests/session/test_documentation_publisher.py	166:def log_lines(base: Path, name: str) -> list[str]:
+identity	tests/session/test_documentation_publisher.py	171:def published(consumer: Path, branch: str = dp.PUBLISHER_BRANCH) -> list[str]:
+identity	tests/session/test_documentation_publisher.py	178:def branch_files(consumer: Path, branch: str = dp.PUBLISHER_BRANCH) -> list[str]:
+identity	tests/session/test_documentation_publisher.py	185:class Scene:
+identity	tests/session/test_documentation_publisher.py	205:def main() -> int:
+identity	tests/session/test_reconcile_user_hooks.py	43:def check(label: str, condition: bool) -> None:
+identity	tests/session/test_reconcile_user_hooks.py	53:def run(directory: pathlib.Path, *extra: str) -> subprocess.CompletedProcess:
+identity	tests/session/test_reconcile_user_hooks.py	59:def main() -> int:
+identity	tests/verify/test_pre_commit_hook.py	42:def with_sibling_imports(gates: tuple[str, ...]) -> tuple[str, ...]:
+identity	tests/verify/test_pre_commit_hook.py	65:def freeze_whole_tree_baselines(repo: pathlib.Path) -> None:
+identity	tests/verify/test_pre_commit_hook.py	100:def git(repo: pathlib.Path, *args: str) -> subprocess.CompletedProcess:
+identity	tests/verify/test_pre_commit_hook.py	113:class PreCommitHook(unittest.TestCase):
+identity	tests/verify/test_pre_commit_hook.py	300:class PreCommitReconcilesBoard(unittest.TestCase):
+identity	src/lib/toolchain.sh	50:thyrox_toolchain_load_declared() {
+identity	src/lib/toolchain.sh	76:function thyrox_toolchain_provider_root() {
+identity	src/lib/toolchain.sh	94:function thyrox_toolchain_provider_python() {
+identity	src/lib/toolchain.sh	113:function thyrox_toolchain_consumer_root() {
+identity	src/lib/toolchain.sh	142:function thyrox_toolchain_consumer_argv() {
+identity	src/lib/toolchain.sh	153:function thyrox_toolchain_declare() {
+identity	src/lib/toolchain.sh	184:function thyrox_toolchain_sudo_prefix() {
+identity	src/lib/toolchain.sh	238:function thyrox_toolchain_parallel_home() {
+identity	src/lib/toolchain.sh	257:function thyrox_toolchain_is_apt_install() {
+identity	src/lib/toolchain.sh	280:function thyrox_toolchain_acquire_binary() {
+identity	src/lib/toolchain.sh	326:function thyrox_toolchain_require_parallel() {
+identity	src/lib/toolchain.sh	381:function thyrox_toolchain_require_pdf_text() {
+identity	src/lib/toolchain.sh	400:function thyrox_toolchain_require_rsync() {
+identity	src/lib/toolchain.sh	413:function thyrox_toolchain_pg_major() {
+identity	src/lib/toolchain.sh	435:function thyrox_toolchain_pgvector_installed_version() {
+identity	src/lib/toolchain.sh	454:function thyrox_toolchain_pgvector_apt_package() {
+identity	src/lib/toolchain.sh	468:function thyrox_toolchain_pgvector_purge_apt_package() {
+identity	src/lib/toolchain.sh	494:function thyrox_toolchain_pgvector_install_default() {
+identity	src/lib/toolchain.sh	513:function thyrox_toolchain_pgvector_install_cmd() {
+identity	src/lib/toolchain.sh	542:function thyrox_toolchain_require_pgvector() {
+identity	src/lib/toolchain.sh	587:function thyrox_toolchain_postgres_url_usable() {
+identity	src/lib/toolchain.sh	617:function thyrox_toolchain_require_postgres_test_db() {
+identity	src/lib/toolchain.sh	680:function thyrox_toolchain_require_redis() {
+identity	src/lib/toolchain.sh	733:function thyrox_toolchain_require_podman() {
+identity	src/lib/toolchain.sh	796:function thyrox_toolchain_gnu_time_bin() {
+identity	src/lib/toolchain.sh	810:function thyrox_toolchain_require_gnu_time() {
+identity	src/lib/toolchain.sh	884:function thyrox_toolchain_awk_supports_intervals() {
+identity	src/lib/toolchain.sh	920:function thyrox_toolchain_require_gawk() {
+identity	src/lib/toolchain.sh	981:function thyrox_toolchain_poppler_works() {
+identity	src/lib/toolchain.sh	1001:function thyrox_toolchain_poppler_missing() {
+identity	src/lib/toolchain.sh	1021:function thyrox_toolchain_require_poppler() {
+identity	src/lib/toolchain.sh	1068:function thyrox_toolchain_texlive_packages() {
+identity	src/lib/toolchain.sh	1081:function thyrox_toolchain_texlive_compiles() {
+identity	src/lib/toolchain.sh	1114:function thyrox_toolchain_require_texlive() {
+identity	src/lib/toolchain.sh	1153:function thyrox_toolchain_probe_texlive() {
+identity	src/lib/toolchain.sh	1180:function thyrox_toolchain_hunspell_works() {
+identity	src/lib/toolchain.sh	1198:function thyrox_toolchain_require_hunspell() {
+identity	src/lib/toolchain.sh	1222:function thyrox_toolchain_probe_hunspell() {
+identity	src/lib/toolchain.sh	1264:function thyrox_toolchain_proxy_declared() {
+identity	src/lib/toolchain.sh	1281:function thyrox_toolchain_family_has_ca() {
+identity	src/lib/toolchain.sh	1306:function thyrox_toolchain_probe_proxy() {
+identity	src/lib/toolchain.sh	1387:function thyrox_toolchain_degraded_notice() {
+identity	src/lib/toolchain.sh	1420:function thyrox_toolchain_require_sqlite_reader() {
+identity	src/lib/toolchain.sh	1488:function thyrox_toolchain_require_bun() {
+identity	src/lib/toolchain.sh	1566:function thyrox_toolchain_manifest_remedy() {
+identity	src/lib/toolchain.sh	1587:function thyrox_toolchain_require_manifests() {
+identity	src/lib/toolchain.sh	1631:function thyrox_toolchain_require_githooks() {
+identity	src/lib/toolchain.sh	1663:function thyrox_toolchain_require_commit_identity() {
+identity	src/lib/toolchain.sh	1698:function thyrox_toolchain_normalize_package_name() {
+identity	src/lib/toolchain.sh	1720:function thyrox_toolchain_python_package_declared() {
+identity	src/rules/definitions/gitAuthorIdentity.ts	20:export const gitAuthorIdentity: RuleDefinition = {
+identity	tests/verify/test_tsc_cycle.py	27:def assert_equal(name: str, expected, obtained) -> None:
+identity	tests/verify/test_tsc_cycle.py	37:def publish(path: Path) -> Path:
+identity	tests/verify/test_tsc_cycle.py	47:def run(argv: list[str]) -> tuple[int, str, str]:
+identity	tests/verify/test_tsc_cycle.py	310:def route_of(text: str, duplicates: dict[str, list[str]] | None = None) -> str:
+identity	tests/verify/test_tsc_cycle.py	328:def route_after(text: str, exhausted: set[str], duplicates=None) -> str:
+identity	src/packages/agent/attribution.ts	37:export const PR_FOOTER = `\u{1F916} Generated with ${PRODUCT_NAME}`
+identity	src/packages/agent/attribution.ts	39:export type AttributionTexts = { commit: string; pr: string }
+identity	src/packages/agent/attribution.ts	42:export type AttributionSettings = {
+identity	src/packages/agent/attribution.ts	48:export function attributionModelName(model: string): string {
+identity	src/packages/agent/attribution.ts	54:export function buildAttributionTexts(settings: AttributionSettings, modelName: string): AttributionTexts {
+identity	src/packages/agent/attribution.ts	64:export function getAttributionTexts(): AttributionTexts {
+identity	src/packages/agent/attribution.ts	69:export function formatEnhancedPRAttribution({
+identity	src/packages/agent/attribution.ts	109:export function countMemoryAccesses(entries: ReadonlyArray<TranscriptEntry>, isMemoryPath: (path: string) => boolean): number {
+identity	src/packages/agent/attribution.ts	125:export function countSinceLastCompaction(
+identity	src/packages/agent/attribution.ts	139:export type EnhancedAttributionDeps = {
+identity	src/packages/agent/attribution.ts	158:export async function productionAttributionDeps(): Promise<EnhancedAttributionDeps> {
+identity	src/packages/agent/attribution.ts	188:export async function getEnhancedPRAttribution(
+identity	src/packages/agent/attribution.ts	245:export function countUserPromptsInMessages(
+preflight	src/lib/toolchain.sh	50:thyrox_toolchain_load_declared() {
+preflight	src/lib/toolchain.sh	76:function thyrox_toolchain_provider_root() {
+preflight	src/lib/toolchain.sh	94:function thyrox_toolchain_provider_python() {
+preflight	src/lib/toolchain.sh	113:function thyrox_toolchain_consumer_root() {
+preflight	src/lib/toolchain.sh	142:function thyrox_toolchain_consumer_argv() {
+preflight	src/lib/toolchain.sh	153:function thyrox_toolchain_declare() {
+preflight	src/lib/toolchain.sh	184:function thyrox_toolchain_sudo_prefix() {
+preflight	src/lib/toolchain.sh	238:function thyrox_toolchain_parallel_home() {
+preflight	src/lib/toolchain.sh	257:function thyrox_toolchain_is_apt_install() {
+preflight	src/lib/toolchain.sh	280:function thyrox_toolchain_acquire_binary() {
+preflight	src/lib/toolchain.sh	326:function thyrox_toolchain_require_parallel() {
+preflight	src/lib/toolchain.sh	381:function thyrox_toolchain_require_pdf_text() {
+preflight	src/lib/toolchain.sh	400:function thyrox_toolchain_require_rsync() {
+preflight	src/lib/toolchain.sh	413:function thyrox_toolchain_pg_major() {
+preflight	src/lib/toolchain.sh	435:function thyrox_toolchain_pgvector_installed_version() {
+preflight	src/lib/toolchain.sh	454:function thyrox_toolchain_pgvector_apt_package() {
+preflight	src/lib/toolchain.sh	468:function thyrox_toolchain_pgvector_purge_apt_package() {
+preflight	src/lib/toolchain.sh	494:function thyrox_toolchain_pgvector_install_default() {
+preflight	src/lib/toolchain.sh	513:function thyrox_toolchain_pgvector_install_cmd() {
+preflight	src/lib/toolchain.sh	542:function thyrox_toolchain_require_pgvector() {
+preflight	src/lib/toolchain.sh	587:function thyrox_toolchain_postgres_url_usable() {
+preflight	src/lib/toolchain.sh	617:function thyrox_toolchain_require_postgres_test_db() {
+preflight	src/lib/toolchain.sh	680:function thyrox_toolchain_require_redis() {
+preflight	src/lib/toolchain.sh	733:function thyrox_toolchain_require_podman() {
+preflight	src/lib/toolchain.sh	796:function thyrox_toolchain_gnu_time_bin() {
+preflight	src/lib/toolchain.sh	810:function thyrox_toolchain_require_gnu_time() {
+preflight	src/lib/toolchain.sh	884:function thyrox_toolchain_awk_supports_intervals() {
+preflight	src/lib/toolchain.sh	920:function thyrox_toolchain_require_gawk() {
+preflight	src/lib/toolchain.sh	981:function thyrox_toolchain_poppler_works() {
+preflight	src/lib/toolchain.sh	1001:function thyrox_toolchain_poppler_missing() {
+preflight	src/lib/toolchain.sh	1021:function thyrox_toolchain_require_poppler() {
+preflight	src/lib/toolchain.sh	1068:function thyrox_toolchain_texlive_packages() {
+preflight	src/lib/toolchain.sh	1081:function thyrox_toolchain_texlive_compiles() {
+preflight	src/lib/toolchain.sh	1114:function thyrox_toolchain_require_texlive() {
+preflight	src/lib/toolchain.sh	1153:function thyrox_toolchain_probe_texlive() {
+preflight	src/lib/toolchain.sh	1180:function thyrox_toolchain_hunspell_works() {
+preflight	src/lib/toolchain.sh	1198:function thyrox_toolchain_require_hunspell() {
+preflight	src/lib/toolchain.sh	1222:function thyrox_toolchain_probe_hunspell() {
+preflight	src/lib/toolchain.sh	1264:function thyrox_toolchain_proxy_declared() {
+preflight	src/lib/toolchain.sh	1281:function thyrox_toolchain_family_has_ca() {
+preflight	src/lib/toolchain.sh	1306:function thyrox_toolchain_probe_proxy() {
+preflight	src/lib/toolchain.sh	1387:function thyrox_toolchain_degraded_notice() {
+preflight	src/lib/toolchain.sh	1420:function thyrox_toolchain_require_sqlite_reader() {
+preflight	src/lib/toolchain.sh	1488:function thyrox_toolchain_require_bun() {
+preflight	src/lib/toolchain.sh	1566:function thyrox_toolchain_manifest_remedy() {
+preflight	src/lib/toolchain.sh	1587:function thyrox_toolchain_require_manifests() {
+preflight	src/lib/toolchain.sh	1631:function thyrox_toolchain_require_githooks() {
+preflight	src/lib/toolchain.sh	1663:function thyrox_toolchain_require_commit_identity() {
+preflight	src/lib/toolchain.sh	1698:function thyrox_toolchain_normalize_package_name() {
+preflight	src/lib/toolchain.sh	1720:function thyrox_toolchain_python_package_declared() {
+preflight	tests/lib/test-toolchain-texlive.sh	23:ok()  { thyrox_ok "$*"; }
+preflight	tests/lib/test-toolchain-texlive.sh	24:bad() { thyrox_fail "$*" || true; }
+preflight	tests/lib/test-toolchain-texlive.sh	44:fake() {  # fake <ruta> <modo: pdf|nopdf|missing-sty>
+preflight	install.sh	101:info() { printf '  %s\n' "$1"; }
+preflight	install.sh	102:ok()   { printf '%s  ok%s %s\n' "$C_GREEN" "$C_RESET" "$1"; }
+preflight	install.sh	103:warn() { printf '%s  aviso%s %s\n' "$C_YELLOW" "$C_RESET" "$1" >&2; }
+preflight	install.sh	108:fatal() {
+preflight	install.sh	165:print_usage() {
+preflight	install.sh	232:ascend_to_marker() {
+preflight	install.sh	246:load_root_from_env_file() {
+preflight	install.sh	324:sync_bin() {
+preflight	install.sh	368:env_file_for() {
+preflight	install.sh	378:current_value() {
+preflight	install.sh	407:contract_keys() {
+preflight	install.sh	416:contract_coverage() {
+preflight	install.sh	448:write_declaration() {
+preflight	install.sh	542:ensure_provider_homes() {
+preflight	install.sh	589:is_git_clone() { git -C "$1" rev-parse --show-toplevel >/dev/null 2>&1; }
+preflight	install.sh	597:check_clone() {
+preflight	install.sh	615:prepare_clone() {
+preflight	install.sh	670:run_measure() {
+preflight	tests/install/test_install.sh	21:check() {
+preflight	tests/install/test_install.sh	33:check_contains() {
+preflight	tests/install/test_install.sh	49:fake_tree() {
+preflight	tests/install/test_install.sh	58:fake_consumer() {
+preflight	tests/install/test_install.sh	318:spy_tree() {
+preflight	tests/install/test_install.sh	438:present_homes() {
+preflight	tests/lib/test-toolchain-manifests.sh	30:ok()  { thyrox_ok "$*"; }
+preflight	tests/lib/test-toolchain-manifests.sh	31:bad() { thyrox_fail "$*" || true; }
+preflight	tests/lib/test-toolchain-manifests.sh	106:probe_manifests() {
+preflight	tests/lib/test-toolchain-manifests.sh	206:probe_declared() {  # probe_declared <requeridos> <opcionales>
+preflight	src/corpus/pdf_to_text.py	65:def _pdftotext_bin() -> str | None:
+preflight	src/corpus/pdf_to_text.py	73:def extract_with_pdftotext(source: pathlib.Path, *, layout: bool = True) -> str:
+preflight	src/corpus/pdf_to_text.py	85:def extract_with_library(source: pathlib.Path) -> str:
+preflight	src/corpus/pdf_to_text.py	96:def pages(text: str) -> list[str]:
+preflight	src/corpus/pdf_to_text.py	110:def report(text: str) -> tuple[int, list[int]]:
+preflight	src/corpus/pdf_to_text.py	121:def main(argv: list[str] | None = None) -> int:
+preflight	src/corpus/xlsx_to_text.py	131:def column_index(ref: str) -> int:
+preflight	src/corpus/xlsx_to_text.py	147:def _open(source) -> zipfile.ZipFile:
+preflight	src/corpus/xlsx_to_text.py	152:def shared_strings(file_path: zipfile.ZipFile) -> list[str]:
+preflight	src/corpus/xlsx_to_text.py	163:def sheets(source) -> list[tuple[str, str]]:
+preflight	src/corpus/xlsx_to_text.py	183:def _cell_text(cell, table: list[str]) -> str:
+preflight	src/corpus/xlsx_to_text.py	202:def rows(source, sheet: str | None = None) -> list[list[str]]:
+preflight	src/corpus/xlsx_to_text.py	242:def to_tsv(row_list: list[list[str]]) -> str:
+preflight	src/corpus/xlsx_to_text.py	249:def main(argv: list[str] | None = None) -> int:
+preflight	src/hooks/detect_bare_awk.py	34:def invokes_bare_awk(command: str) -> bool:
+preflight	src/hooks/detect_bare_awk.py	46:def detect(payload: dict) -> str | None:
+preflight	src/packages/agent/bin/recommend.ts	76:class RefusalError extends Error {}
+preflight	src/session/headless-pool.sh	224:rehusa() { echo "headless-pool: REHUSA — $*" >&2; exit 2; }
+preflight	src/session/headless-pool.sh	309:derive_recommendation() {
+preflight	src/session/headless-pool.sh	329:ensure_local_runtime() {
+preflight	src/session/headless-pool.sh	338:announce_model() {
+preflight	src/session/headless-pool.sh	383:env_truthy() {
+preflight	src/session/headless-pool.sh	410:pool_history() { bash "$HP_BIN/pool_history" "$@"; }
+preflight	src/session/headless-pool.sh	524:stop_launched_proxies() {
+preflight	src/session/headless-pool.sh	530:wait_for_announcement() {
+preflight	src/session/headless-pool.sh	548:first_present_credential_variable() {
+preflight	src/session/headless-pool.sh	611:credential_proxy_command() {
+preflight	src/session/headless-pool.sh	683:_headless_item() {
+preflight	src/session/headless-pool.sh	706:_headless_item_drop_credentials() {
+preflight	src/session/headless-pool.sh	712:_headless_item_run() {
+preflight	src/session/headless-pool.sh	933:_headless_item_snapshot() {
+preflight	src/session/headless-pool.sh	953:_headless_item_periodic_snapshots() {
+preflight	src/session/headless-pool.sh	1055:drain_live_items() {
+preflight	src/session/headless-pool.sh	1064:item_shells_alive() {
+preflight	src/session/headless-pool.sh	1073:settle_item_shells() {
+preflight	src/session/headless-pool.sh	1077:on_exit_signal() {
+preflight	src/session/infrastructure_ensure.sh	61:_infra_list_contains() {
+preflight	src/session/infrastructure_ensure.sh	71:_infra_refuse_unknown_names() {
+preflight	src/session/infrastructure_ensure.sh	90:_infra_gate_locks() {
+preflight	src/session/infrastructure_ensure.sh	112:_infra_missing_images() {
+preflight	src/session/infrastructure_ensure.sh	124:_infra_admit_disk_or_refuse() {
+preflight	src/session/infrastructure_ensure.sh	141:_infra_desired_state() {
+preflight	src/session/infrastructure_ensure.sh	152:_infra_run_bootstrap() {
+preflight	src/session/user_wiring.py	68:def live_settings(root: Path | None = None) -> Path:
+preflight	src/session/user_wiring.py	83:def _how_to_declare_consumer() -> str:
+preflight	src/session/user_wiring.py	89:def _starting_point(start: Path | None) -> Path:
+preflight	src/session/user_wiring.py	94:def declared_consumer_candidates() -> tuple[Path, ...]:
+preflight	src/session/user_wiring.py	110:def clone_containing(start: Path, candidates: tuple[Path, ...]) -> Path | None:
+preflight	src/session/user_wiring.py	121:def is_sole_candidate(candidates: tuple[Path, ...]) -> bool:
+preflight	src/session/user_wiring.py	126:def contextual_consumer(candidates: tuple[Path, ...],
+preflight	src/session/user_wiring.py	144:def _consumer_refusal(candidates: tuple[Path, ...], start: Path | None) -> str:
+preflight	src/session/user_wiring.py	154:def resolve_consumer(declared: str | Path | None = None,
+preflight	src/session/user_wiring.py	186:def declared_wiring(root: Path | None = None,
+preflight	src/session/user_wiring.py	349:def cache_key_delta(current: dict, declared: dict,
+preflight	src/session/user_wiring.py	368:class WiringRefused(Exception):
+preflight	src/session/user_wiring.py	372:class ForBackingUp(Protocol):
+preflight	src/session/user_wiring.py	392:class BackgroundBackup:
+preflight	src/session/user_wiring.py	478:def merged_wiring(live: dict, declared: dict,
+preflight	src/session/user_wiring.py	488:def backup_path(live: Path, stamp: str, backups: Path | None = None) -> Path:
+preflight	src/session/user_wiring.py	500:def install(live: Path, declared: dict, backup: ForBackingUp, stamp: str,
+preflight	src/session/user_wiring.py	602:def hook_cwd() -> str:
+preflight	src/session/user_wiring.py	607:def _bases() -> dict:
+preflight	src/session/user_wiring.py	622:def _target_of(command: str, cwd: str | None = None,
+preflight	src/session/user_wiring.py	653:def broken_targets(settings: dict, cwd: str | None = None,
+preflight	src/session/user_wiring.py	680:def misdirected_store_destinations(hook_dir: Path) -> list[dict]:
+preflight	src/session/user_wiring.py	736:def _commands_by_event(settings: dict) -> dict:
+preflight	src/session/user_wiring.py	746:def wiring_drift(live: dict, declared: dict) -> dict:
+preflight	src/session/user_wiring.py	776:def _print_refusal(error: Exception) -> int:
+preflight	src/session/user_wiring.py	782:def _live_command_count(live_wiring: dict) -> int:
+preflight	src/session/user_wiring.py	788:def _print_drift(drift: dict) -> None:
+preflight	src/session/user_wiring.py	804:def _install_command(args, live: Path) -> int:
+preflight	src/session/user_wiring.py	843:def _measure_command(args, live: Path) -> int:
+preflight	src/session/user_wiring.py	878:def main() -> int:
+preflight	src/typescript/emit_declarations.py	133:def unmeasurable_reason(output: str):
+preflight	src/typescript/emit_declarations.py	141:def classify_errors(output: str, package_dir) -> dict:
+preflight	src/typescript/emit_declarations.py	187:class EmitResult:
+preflight	src/typescript/emit_declarations.py	253:def entry_directory(main_entry: str) -> str:
+preflight	src/typescript/emit_declarations.py	264:def declaration_entry(main_entry: str) -> str:
+preflight	src/typescript/emit_declarations.py	270:def _read_manifest(package_dir: Path) -> dict:
+preflight	src/typescript/emit_declarations.py	306:def self_paths(package_dir: Path) -> dict:
+preflight	src/typescript/emit_declarations.py	334:def _write_project(package_dir: Path, filename: str, options: dict, include: list) -> Path:
+preflight	src/typescript/emit_declarations.py	352:def write_test_project(package_dir: Path, include: list) -> Path:
+preflight	src/typescript/emit_declarations.py	371:def export_targets(manifest: dict):
+preflight	src/typescript/emit_declarations.py	415:def _project_shape(package_dir: Path):
+preflight	src/typescript/emit_declarations.py	478:def escaping_files(package_dir: Path, root_dir=None, include=None) -> tuple:
+preflight	src/typescript/emit_declarations.py	534:def check_package(package_dir: Path) -> EmitResult:
+preflight	src/typescript/emit_declarations.py	573:def emit_package(package_dir: Path) -> EmitResult:
+preflight	src/typescript/emit_declarations.py	638:def declaration_for(source_entry: str, root_dir: str = "") -> str:
+preflight	src/typescript/emit_declarations.py	675:def _declaration_exists(package_dir: Path, candidate: str,
+preflight	src/typescript/emit_declarations.py	737:def resolve_declaration(package_dir: Path, source_entry: str, root_dir: str):
+preflight	src/typescript/emit_declarations.py	766:def repoint_manifest(package_dir: Path) -> bool:
+preflight	src/typescript/emit_declarations.py	848:def source_packages(root: Path) -> list[Path]:
+preflight	src/typescript/emit_declarations.py	881:def _is_test(name: str) -> bool:
+preflight	src/typescript/emit_declarations.py	885:def source_digest(package_dir: Path) -> str:
+preflight	src/typescript/emit_declarations.py	912:def write_digest(package_dir: Path) -> None:
+preflight	src/typescript/emit_declarations.py	919:def is_stale(package_dir: Path) -> bool:
+preflight	src/typescript/emit_declarations.py	926:def _packages(root: Path):
+preflight	src/typescript/emit_declarations.py	930:def main(argv=None):
+preflight	src/verify/commit_identity.py	56:class IdentityUndeclared(RuntimeError):
+preflight	src/verify/commit_identity.py	61:class Identity:
+preflight	src/verify/commit_identity.py	73:class Violation:
+preflight	src/verify/commit_identity.py	80:def parse_identity(text: str) -> Identity:
+preflight	src/verify/commit_identity.py	89:def declared_identities(source: ForReadingDeclarations | None = None,
+preflight	src/verify/commit_identity.py	102:def effective_identity(repo: Path, role: str, env: dict[str, str] | None = None) -> Identity:
+preflight	src/verify/commit_identity.py	110:def agent_roles(identities: dict[str, Identity]) -> list[str]:
+preflight	src/verify/commit_identity.py	115:def check_agent_invariant(repo: Path, env: dict[str, str] | None = None) -> list[str]:
+preflight	src/verify/commit_identity.py	124:def check_identities(repo: Path, source: ForReadingDeclarations | None = None,
+preflight	src/verify/commit_identity.py	153:def agent_trailers(message_file: Path, cwd: Path | None = None) -> list[str]:
+preflight	src/verify/commit_identity.py	165:def export_lines(source: ForReadingDeclarations | None = None,
+preflight	src/verify/commit_identity.py	180:def main(argv: list[str] | None = None) -> int:
+preflight	tests/hooks/test_tool_use_preflight.py	28:def check(label: str, expected, obtained) -> None:
+preflight	tests/hooks/test_tool_use_preflight.py	38:def says(name: str, text: str):
+preflight	tests/hooks/test_tool_use_preflight.py	42:def context(result) -> str:
+preflight	tests/hooks/test_tool_use_preflight.py	66:def explodes(payload):
+preflight	tests/lib/test-toolchain-degraded.sh	47:ok()  { thyrox_ok "$*"; }
+preflight	tests/lib/test-toolchain-degraded.sh	48:bad() { thyrox_fail "$*" || true; }
+preflight	tests/lib/test-toolchain-hunspell.sh	22:ok()  { thyrox_ok "$*"; }
+preflight	tests/lib/test-toolchain-hunspell.sh	23:bad() { thyrox_fail "$*" || true; }
+preflight	tests/lib/test-toolchain-parallel.sh	21:ok()  { thyrox_ok "$*"; }
+preflight	tests/lib/test-toolchain-parallel.sh	22:bad() { thyrox_fail "$*" || true; }
+preflight	tests/lib/test-toolchain-poppler.sh	23:ok()  { thyrox_ok "$*"; }
+preflight	tests/lib/test-toolchain-poppler.sh	24:bad() { thyrox_fail "$*" || true; }
+preflight	tests/lib/test-toolchain-poppler.sh	114:sonda() { env -i PATH="$PATH" HOME="$HOME" "$@" \
+preflight	tests/session/test-gnu-time-launchers.sh	22:_es() { if [[ "$2" == "$3" ]]; then echo "  ok    $1"; ok=$((ok+1));
+preflight	tests/session/test-gnu-time-launchers.sh	24:_contiene() { if [[ "$2" == *"$3"* ]]; then echo "  ok    $1"; ok=$((ok+1));
+preflight	tests/session/test-gnu-time-launchers.sh	39:pico() { [[ -s "$1" ]] || { echo 0; return; }

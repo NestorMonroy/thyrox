@@ -36,33 +36,76 @@
  *    un entrypoint `--bg-spare` real que la invoque).
  */
 
-import { readdir, unlink } from 'node:fs/promises'
-import { connect, type Socket } from 'node:net'
+import { timingSafeEqual } from 'node:crypto'
+import { unlinkSync } from 'node:fs'
+import { readdir, readFile, unlink } from 'node:fs/promises'
+import { connect, createServer, type Socket } from 'node:net'
 import { platform as osPlatform } from 'node:os'
 import { join } from 'node:path'
 
 import { logEvent } from '@thyrox/local-observability'
+import { logForDebugging } from '@thyrox/local-observability/debug.js'
 
 import { encodeCtrlFrame, type CtrlFrame } from './internal/ptyFrame.js'
 
 /** ant 4644.js `xt` — nombre de la env var del secreto de claim (era `CLAUDE_BG_CLAIM_AUTH`). */
 export const SPARE_CLAIM_AUTH_ENV = 'THYROX_BG_CLAIM_AUTH'
 
+/** ant 4644.js `xt` — env var con la ruta del archivo de tokens de un solo uso (era `CLAUDE_BG_SOCKET_TOKENS_PATH`). */
+export const SPARE_SOCKET_TOKENS_PATH_ENV = 'THYROX_BG_SOCKET_TOKENS_PATH'
+
+/** Secretos que puede traer el archivo de tokens (`hYe`): sólo se conservan los campos string. */
+interface SocketTokens {
+  rvAuth?: string
+  ptyAuth?: string
+  claimAuth?: string
+}
+
+const SOCKET_TOKEN_KEYS = ['rvAuth', 'ptyAuth', 'claimAuth'] as const
+
 /**
- * ant 4644.js `xt` — resuelve el `claimAuth` del proceso `--bg-spare`
- * desde el entorno y lo BORRA tras leerlo, para que no quede visible a
- * subprocesos ni en `/proc/<pid>/environ`.
- *
- * Pendiente: la referencia también acepta `CLAUDE_BG_SOCKET_TOKENS_PATH`
- * (un archivo de tokens rotable, leído vía `hYe`, con aviso
- * `level:"warn"` si es ilegible) cuando la env var directa está ausente.
- * Ese archivo de tokens no tiene hoy equivalente en `@thyrox/*`; se omite
- * y sólo se porta la vía directa de la env var.
+ * ant `hYe` — lee el archivo de tokens. Un archivo ausente, ilegible o que
+ * no es un objeto JSON da `undefined`: silencio intencional como en la
+ * referencia (`catch{return}`); quien llama decide si avisar.
  */
-export function resolveClaimAuth(): string | undefined {
-  const auth = process.env[SPARE_CLAIM_AUTH_ENV]
-  delete process.env[SPARE_CLAIM_AUTH_ENV]
-  return auth
+async function readSocketTokens(path: string): Promise<SocketTokens | undefined> {
+  try {
+    const parsed: unknown = JSON.parse(await readFile(path, 'utf8'))
+    if (parsed === null || typeof parsed !== 'object') return undefined
+    const tokens: SocketTokens = {}
+    for (const key of SOCKET_TOKEN_KEYS) {
+      const value = (parsed as Record<string, unknown>)[key]
+      if (typeof value === 'string') tokens[key] = value
+    }
+    return tokens
+  } catch {
+    return undefined
+  }
+}
+
+/** Lee una env var y la borra del entorno en el mismo paso. */
+function takeEnv(name: string): string | undefined {
+  const value = process.env[name]
+  delete process.env[name]
+  return value
+}
+
+/**
+ * ant 4644.js `xt` — resuelve el `claimAuth` del proceso `--bg-spare` y
+ * BORRA del entorno las dos fuentes tras leerlas, para que no queden
+ * visibles a subprocesos ni en `/proc/<pid>/environ`. Si el lanzador pasó
+ * un archivo de tokens, éste gana a la env var directa y se borra del
+ * disco tras leerlo (un solo uso); si es ilegible se avisa con nivel
+ * `warn` y se cae a la env var.
+ */
+export async function resolveClaimAuth(): Promise<string | undefined> {
+  const directAuth = takeEnv(SPARE_CLAIM_AUTH_ENV)
+  const tokensPath = takeEnv(SPARE_SOCKET_TOKENS_PATH_ENV)
+  if (!tokensPath) return directAuth
+  const tokens = await readSocketTokens(tokensPath)
+  await unlink(tokensPath).catch(() => {})
+  if (!tokens?.claimAuth) logForDebugging('[bg-spare] tokens file unreadable; claim gate degraded', { level: 'warn' })
+  return tokens?.claimAuth ?? directAuth
 }
 
 /** ant 4644.js `it` — tabla de backoff (ms) entre reintentos de envío de la trama de claim. */
@@ -296,3 +339,291 @@ export async function sweepOrphanSpareSockets(
   return reaped
 }
 
+
+/** ant `Kjt` — tope (bytes) de una trama de claim sin salto de línea antes de cortar la conexión (8 MiB). */
+export const SPARE_CLAIM_MAX_BYTES = 8_388_608
+
+/**
+ * ant `v0` — compara el secreto recibido con el esperado en tiempo
+ * constante. Un secreto que no es string, vacío o de otra longitud se
+ * rechaza antes de comparar.
+ */
+export function isClaimAuthValid(received: unknown, expected: string): boolean {
+  if (typeof received !== 'string' || !expected || received.length === 0) return false
+  const receivedBytes = Buffer.from(received)
+  const expectedBytes = Buffer.from(expected)
+  if (receivedBytes.length !== expectedBytes.length) return false
+  return timingSafeEqual(receivedBytes, expectedBytes)
+}
+
+/** Parsea una línea como trama de claim; `undefined` si no es JSON de objeto. */
+function parseClaimLine(line: string): SpareClaimFrame | undefined {
+  try {
+    const parsed: unknown = JSON.parse(line)
+    return parsed !== null && typeof parsed === 'object' ? (parsed as SpareClaimFrame) : undefined
+  } catch {
+    return undefined
+  }
+}
+
+/**
+ * ant `Kjt` — escucha en `socketPath` hasta recibir UNA trama de claim
+ * (JSON terminado en salto de línea) y cierra el servidor.
+ *
+ * Con `expectedAuth`, el canal es hostil: una conexión que supera
+ * `SPARE_CLAIM_MAX_BYTES` sin salto de línea, que no trae JSON o cuyo
+ * `auth` no coincide se destruye y el servidor sigue escuchando; un error
+ * de esa conexión también se descarta (manejo esperado). Sin secreto, la
+ * primera línea decide: JSON inválido o un error de conexión rechazan.
+ */
+export function receiveSpareClaim(
+  socketPath: string,
+  opts: { expectedAuth?: string; onListening?: () => void },
+): Promise<SpareClaimFrame> {
+  const { expectedAuth, onListening } = opts
+  return new Promise((resolve, reject) => {
+    const fail = (e: unknown): void => {
+      server.close()
+      reject(e)
+    }
+    const server = createServer(conn => {
+      let buffered = ''
+      conn.setEncoding('utf8')
+      conn.on('data', (chunk: string) => {
+        buffered += chunk
+        if (expectedAuth && buffered.length > SPARE_CLAIM_MAX_BYTES) {
+          conn.destroy()
+          return
+        }
+        const newlineAt = buffered.indexOf('\n')
+        if (newlineAt < 0) return
+        const frame = parseClaimLine(buffered.slice(0, newlineAt))
+        if (expectedAuth) {
+          if (!frame || !isClaimAuthValid(frame.auth, expectedAuth)) {
+            conn.destroy()
+            return
+          }
+          server.close()
+          resolve(frame)
+          return
+        }
+        server.close()
+        if (frame) resolve(frame)
+        else reject(new Error('claim frame is not a JSON object'))
+      })
+      conn.on('error', expectedAuth ? () => conn.destroy() : fail)
+    })
+    server.on('error', fail)
+    if (onListening) {
+      server.once('listening', () => {
+        try {
+          onListening()
+        } catch (e) {
+          fail(e)
+        }
+      })
+    }
+    server.listen(socketPath)
+  })
+}
+
+export type ClaimEnvProblem = 'invalid-name' | 'non-string-value' | 'nul-in-value'
+
+export interface DroppedClaimEnv {
+  name: string
+  problem: ClaimEnvProblem
+}
+
+/** ant `jNo` — nombre de env var inválido: vacío, con `=` o con caracteres de control. */
+const INVALID_ENV_NAME = /^$|[=\x00-\x1f\x7f-\x9f]/
+const NUL_CHARACTER = '\x00'
+
+/** ant `c` — el problema que impide aplicar una variable, o `undefined` si se puede aplicar. */
+function classifyClaimEnvEntry(name: string, value: unknown): ClaimEnvProblem | undefined {
+  if (INVALID_ENV_NAME.test(name)) return 'invalid-name'
+  if (typeof value !== 'string') return 'non-string-value'
+  if (value.includes(NUL_CHARACTER)) return 'nul-in-value'
+  return undefined
+}
+
+/** ant `_cn` — separa el entorno del claim en lo aplicable y lo descartado, con su motivo. */
+export function partitionClaimEnv(env: Record<string, unknown>): {
+  kept: Record<string, string>
+  dropped: DroppedClaimEnv[]
+} {
+  const kept: Record<string, string> = {}
+  const dropped: DroppedClaimEnv[] = []
+  for (const [name, value] of Object.entries(env)) {
+    const problem = classifyClaimEnvEntry(name, value)
+    if (problem) dropped.push({ name, problem })
+    else kept[name] = value as string
+  }
+  return { kept, dropped }
+}
+
+/** Credenciales del repuesto que el claim reemplaza siempre (ant `Yjt`, `delete process.env.*`). */
+const REPLACED_CREDENTIAL_ENV = ['ANTHROPIC_AUTH_TOKEN', 'ANTHROPIC_API_KEY', 'THYROX_CODE_OAUTH_TOKEN'] as const
+
+/** El proceso sobre el que se aplica un claim; inyectable para probar sin tocar el proceso real. */
+export interface SpareClaimTarget {
+  env: NodeJS.ProcessEnv
+  argv: string[]
+  chdir(dir: string): void
+}
+
+/** Las dos primeras posiciones de `argv` (runtime y script) que el claim conserva. */
+const ARGV_RUNTIME_PREFIX = 2
+
+/**
+ * Mitad de `Yjt` que aplica el claim al proceso: cambia al `cwd` del
+ * claim, borra las credenciales propias del repuesto, aplica el entorno
+ * válido del claim y rearma `argv` con el del claim. Devuelve las
+ * variables descartadas para que el llamador las reporte.
+ *
+ * Divergencia declarada: la referencia, además, re-inicializa el estado de
+ * sesión (`mh`/`D1t`), la telemetría y los gates (`Ss`, `ICe`, `G4r`, …), y
+ * purga las variables del proveedor cuando
+ * `CLAUDE_CODE_PROVIDER_MANAGED_BY_HOST` está activo. En thyrox esa
+ * inicialización la hace `main()` del CLI al arrancar después del claim,
+ * y el concepto de proveedor gestionado por el anfitrión no existe.
+ */
+export function applySpareClaim(frame: SpareClaimFrame, target: SpareClaimTarget): DroppedClaimEnv[] {
+  if (frame.cwd) target.chdir(frame.cwd)
+  for (const name of REPLACED_CREDENTIAL_ENV) delete target.env[name]
+  const { kept, dropped } = partitionClaimEnv(frame.env ?? {})
+  Object.assign(target.env, kept)
+  target.argv.splice(ARGV_RUNTIME_PREFIX, target.argv.length, ...(frame.argv ?? []))
+  return dropped
+}
+
+/** ant `Yjt` `d` — cuántas variables descartadas se nombran una a una antes de resumir. */
+const DROPPED_ENV_NAMED_LIMIT = 8
+
+/**
+ * ant `Yjt` `_` — avisa con nivel `warn` de cada variable del claim que no
+ * se aplicó (hasta `DROPPED_ENV_NAMED_LIMIT`, el resto resumido) y emite
+ * `tengu_bg_claim_env_dropped` con el conteo por motivo.
+ */
+export function reportDroppedClaimEnv(dropped: readonly DroppedClaimEnv[]): void {
+  if (dropped.length === 0) return
+  for (const { name, problem } of dropped.slice(0, DROPPED_ENV_NAMED_LIMIT)) {
+    logForDebugging(`[bg-spare] environment variable ${JSON.stringify(name)} was not applied: ${problem}`, {
+      level: 'warn',
+    })
+  }
+  const unnamed = dropped.length - DROPPED_ENV_NAMED_LIMIT
+  if (unnamed > 0) logForDebugging(`[bg-spare] ...and ${unnamed} more environment variables not applied`, { level: 'warn' })
+  const countOf = (problem: ClaimEnvProblem): string => String(dropped.filter(d => d.problem === problem).length)
+  logEvent('tengu_bg_claim_env_dropped', {
+    dropped: String(dropped.length),
+    nul_in_value: countOf('nul-in-value'),
+    invalid_name: countOf('invalid-name'),
+    non_string_value: countOf('non-string-value'),
+  })
+}
+
+/** Lo que `runBgSpare` necesita del proceso; inyectable para probar sin salir ni recibir señales reales. */
+export interface SpareProcessHost {
+  exit(code: number): never
+  writeStderr(text: string): void
+  getPpid(): number
+  ppidPollMs: number
+  events: {
+    on(event: string, listener: (error?: unknown) => void): unknown
+    off(event: string, listener: (error?: unknown) => void): unknown
+  }
+}
+
+/** ant `AVo` — cadencia (ms) de la vigilancia de orfandad por ppid. */
+export const SPARE_PPID_POLL_MS = 2_000
+
+export const defaultSpareProcessHost: SpareProcessHost = {
+  exit: code => process.exit(code),
+  writeStderr: text => {
+    process.stderr.write(text)
+  },
+  getPpid: () => process.ppid,
+  ppidPollMs: SPARE_PPID_POLL_MS,
+  events: process,
+}
+
+const SPARE_EXIT_CLEAN = 0
+const SPARE_EXIT_FAILURE = 1
+const SPARE_EXIT_USAGE = 2
+const SPARE_TERMINATION_SIGNALS = ['SIGTERM', 'SIGHUP', 'SIGINT'] as const
+
+/** ant `It` en `AVo` — borra el socket de claim; silencio intencional si ya no existe. */
+function removeClaimSocket(socketPath: string): void {
+  try {
+    unlinkSync(socketPath)
+  } catch {
+    // silencio intencional, como la referencia: el socket pudo no llegar a crearse.
+  }
+}
+
+function describeError(e: unknown): string {
+  return e instanceof Error ? e.message : String(e)
+}
+
+/**
+ * ant `AVo` — entrypoint del proceso `--bg-spare`. `args[0]` es la ruta del
+ * socket de claim. Resuelve el secreto (`xt`), escucha el claim autenticado
+ * (`Kjt`) y, ya recibido, corre `postClaim` con la trama (`Yjt`).
+ *
+ * Mientras espera: una señal de terminación o la muerte del padre borran el
+ * socket y salen 0; una excepción no capturada lo borra, se reporta y sale 1.
+ * Recibido el claim, esas vigilancias se sueltan: desde ahí el proceso es
+ * una sesión normal. Un fallo al recibir sale 1; un fallo del post-claim se
+ * reporta y se relanza.
+ *
+ * Divergencia declarada: la referencia precarga módulos en paralelo con la
+ * espera y registra cada salida con `fh` (rastro de crash de la sesión
+ * bg); el rastro de crash no tiene equivalente en `@thyrox/daemon`.
+ */
+export async function runBgSpare(
+  args: readonly string[],
+  postClaim: (frame: SpareClaimFrame) => Promise<void>,
+  host: SpareProcessHost = defaultSpareProcessHost,
+): Promise<void> {
+  const socketPath = args[0]
+  if (!socketPath) {
+    host.writeStderr('[bg-spare] missing claim sock path\n')
+    host.exit(SPARE_EXIT_USAGE)
+    return
+  }
+  const expectedAuth = await resolveClaimAuth()
+  const removeSocket = (): void => removeClaimSocket(socketPath)
+  const onSignal = (): void => {
+    removeSocket()
+    host.exit(SPARE_EXIT_CLEAN)
+  }
+  const onUncaught = (e: unknown): void => {
+    removeSocket()
+    host.writeStderr(`[bg-spare] uncaughtException: ${describeError(e)}\n`)
+    host.exit(SPARE_EXIT_FAILURE)
+  }
+  const stopWatchdog = startPpidWatchdog(onSignal, host.ppidPollMs, () => host.getPpid())
+  for (const signal of SPARE_TERMINATION_SIGNALS) host.events.on(signal, onSignal)
+  host.events.on('uncaughtException', onUncaught)
+  const releaseWaitGuards = (): void => {
+    stopWatchdog()
+    for (const signal of SPARE_TERMINATION_SIGNALS) host.events.off(signal, onSignal)
+    host.events.off('uncaughtException', onUncaught)
+  }
+  let frame: SpareClaimFrame
+  try {
+    frame = await receiveSpareClaim(socketPath, { expectedAuth })
+  } catch (e) {
+    removeSocket()
+    host.writeStderr(`[bg-spare] claim recv failed: ${describeError(e)}\n`)
+    host.exit(SPARE_EXIT_FAILURE)
+    return
+  }
+  releaseWaitGuards()
+  try {
+    await postClaim(frame)
+  } catch (e) {
+    host.writeStderr(`[bg-spare] post-claim init failed: ${describeError(e)}\n`)
+    throw e
+  }
+}

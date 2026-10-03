@@ -1,0 +1,11 @@
+    242 .claude/workbench/container-image-distribution-20261002T234933/outputs/search-existing/A-candidates.tsv
+  15739 .claude/workbench/container-image-distribution-20261002T234933/outputs/search-existing/A-hits.tsv
+    132 .claude/workbench/container-image-distribution-20261002T234933/outputs/search-existing/B-candidates.txt
+    274 .claude/workbench/container-image-distribution-20261002T234933/outputs/search-existing/D-stores.txt
+     62 .claude/workbench/container-image-distribution-20261002T234933/outputs/search-existing/D-workbenches.txt
+  16449 total
+gawk: warning: escape sequence `\.' treated as plain `.'
+gawk: warning: escape sequence `\.' treated as plain `.'
+gawk: warning: escape sequence `\.' treated as plain `.'
+execution thyrox-worker-probe-murm9jv6-775 kind=probe task=TASK-THYROX-0901 exit=0
+__BG_EXIT__=0

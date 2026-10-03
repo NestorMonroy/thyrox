@@ -1,0 +1,25 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/admittedChat.test.ts:
+44 |     globalThis.fetch = (async (_url: string, init?: RequestInit) => {
+45 |       seen = init
+46 |       return new Response(JSON.stringify(REPLY))
+47 |     }) as typeof fetch
+48 |     await admittedChat(ticketTo('http://127.0.0.1:1'), { messages: [] })
+49 |     expect(seen?.timeout).toBe(false)
+                               ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/.thyrox/runtime/worktrees/e0b/src/packages/local-models/__tests__/admittedChat.test.ts:49:27)
+(fail) admittedChat > la petición no hereda el plazo de 300 s del runtime [0.80ms]
+(pass) admittedChat > sin plazo declarado no hay señal que corte [0.30ms]
+(pass) admittedChat > un plazo declarado corta la petición lenta [54.48ms]
+(pass) admittedChat > dentro del plazo la respuesta llega [2.87ms]
+
+ 3 pass
+ 1 fail
+ 4 expect() calls
+Ran 4 tests across 1 file. [92.00ms]

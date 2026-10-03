@@ -10,7 +10,7 @@ import { AccessManager, createConfigApiKeyProvider } from '../src/proxy/access.t
 import { FillFirstSelector, type ProxyCredential, RoundRobinSelector } from '../src/proxy/credentialSelectors.ts'
 import { SessionAffinitySelector } from '../src/proxy/session/affinitySelector.ts'
 import type { ProviderTraits } from '../src/proxy/resilience/errorClassifier.ts'
-import type { ForwardRequest } from '../src/proxy/server.ts'
+import { errorMessageOf, errorResponse, type ForwardRequest } from '../src/proxy/server.ts'
 // Ruta sustituible para los controles de anulación en paralelo (`src/verify/annul_parallel.sh`).
 const { createProxyHandler, SECURITY_HEADERS } = (await import(
   process.env.PROXY_SERVER_MODULE ?? '../src/proxy/server.ts'
@@ -119,10 +119,19 @@ describe('reenvío con conmutación (Bv)', () => {
     expect((await handlerWith(statuses)(post({ model: 'mx' }))).status).toBe(expected)
   })
 
-  test('todos en 5xx: 502 «all upstreams failed (2 attempted)»', async () => {
+  test('todos en 5xx: 502 «all upstreams failed (2 attempted)» con la razón de cada intento', async () => {
     const r = await handlerWith({ a: 500, b: 503 })(post({ model: 'mx' }))
     expect(r.status).toBe(502)
-    expect(await errorOf(r)).toEqual({ type: 'api_error', message: 'all upstreams failed (2 attempted)' })
+    const error = await errorOf(r) as { type: string; message: string }
+    expect(error.type).toBe('api_error')
+    expect(error.message).toStartWith('all upstreams failed (2 attempted): 500')
+    expect(error.message).toContain('; 503')
+  })
+
+  test('el error que fabrica el proxy declara su mensaje sin que haya que leer el cuerpo', () => {
+    const response = errorResponse(502, 'api_error', 'la admisión rehusó en la etapa resolve: modelo fuera del catálogo')
+    expect(errorMessageOf(response)).toBe('la admisión rehusó en la etapa resolve: modelo fuera del catálogo')
+    expect(errorMessageOf(new Response('', { status: 500 }))).toBeUndefined()
   })
 
   test('un 4xx que no es de conmutación se devuelve tal cual', async () => {

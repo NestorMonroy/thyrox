@@ -1,0 +1,6 @@
+## sweep-on-stop
+$ cd src/packages/model-scheduling && bun test __tests__/hostCoordinatorService.test.ts
+(fail) startHostCoordinatorService > al detenerse retira también las unidades que quedaron calientes sin admisión [4.19ms]
+(fail) startHostCoordinatorService > una unidad caliente que no se deja retirar al detenerse se declara, sin dejar el socket [2.59ms]
+ 6 pass
+ 2 fail

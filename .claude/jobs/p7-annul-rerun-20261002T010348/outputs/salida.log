@@ -1,0 +1,6 @@
+== loop-policy-readable:
+      FALLA tests/test_translation_loop.py::test_translate_asks_the_pool_for_units_under_the_consumer_po
+      FALLA tests/test_translation_loop.py::test_translate_refuses_without_a_readable_policy
+2 failed, 59 deselected in 0.21s
+execution thyrox-worker-test-muq9f98r-30718 kind=test work=ai-course-notes:es-mx/executor-qwen exit=0
+__BG_EXIT__=0

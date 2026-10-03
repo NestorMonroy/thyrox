@@ -1,0 +1,30 @@
+  ok    el sujeto existe y es ejecutable
+  ok    sin unshare en el PATH, rehusa con exit 2
+  ok    sin unshare, no imprime ninguna linea de veredicto
+  ok    el rechazo explica el motivo por stderr
+  ok    con el mecanismo real, sale 0
+  ok    publica exactamente 4 lineas
+  ok    'run' da efectivo: unshare --pid --fork corrio el ayudante y salio 0
+  ok    'pids_limit' da efectivo: logro 15/64 procesos con pids.max=16
+  ok    'escape_containment' da efectivo: el hijo con setsid() no sobrevivio a la salida del principal
+  ok    'cleanup' da efectivo: cgroup.procs vacio tras salir el principal y rmdir salio 0
+  ok    el limite de PIDs acoto a 15 de 64 (<= 16)
+  ok    no queda ningun cgroup de la sonda
+  ok    control 4a: la escritura de pids.max se retiro
+  ok    control 4a: sin pids.max cae 'pids_limit': logro 64/64 procesos con pids.max=max
+  ok    control 4a: sin limite crea los 64
+  ok    control 4a: 'run' sigue efectivo
+  ok    control 4a: 'escape_containment' sigue efectivo
+  ok    control 4a: 'cleanup' sigue efectivo
+  ok    control 4b: --pid se retiro
+  ok    control 4b: sin --pid cae 'escape_containment': el hijo con setsid() sobrevive al principal: pid 20515
+  ok    control 4b: sin --pid cae 'cleanup': cgroup.procs aun lista 20515 tras salir el principal
+  ok    control 4b: 'run' sigue efectivo
+  ok    control 4b: 'pids_limit' sigue efectivo
+  ok    control 4b: aun sin namespace, el trap retiro el cgroup
+  ok    control 4b: el trap retiro al escapado
+
+25 casos: 25 ok, 0 fallos
+bin/check_lint_zero: sin entorno del proveedor; corre con /usr/local/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/pool-worktrees/6c92eaa6e163/1" && uv sync
+check-lint-zero: falta el verificador `shellcheck`; instálalo con `uv sync --group lint`. NO se emite un conteo.

@@ -1,0 +1,51 @@
+# p1 RED — sólo pruebas y dobles de outputs/p1-recovered-wip.diff sobre HEAD 9429f0984
+Skipped patch 'src/packages/local-models/admittedChat.ts'.
+Skipped patch 'src/packages/local-models/hostCoordinatorComposition.ts'.
+Skipped patch 'src/packages/local-models/ollamaRuntimeAdapter.ts'.
+Skipped patch 'src/packages/model-scheduling/hostCoordinator.ts'.
+Skipped patch 'src/packages/model-scheduling/hostCoordinatorService.ts'.
+Skipped patch 'src/packages/model-scheduling/executionPrimitive.ts => src/packages/model-scheduling/modelUnitMaterializer.ts'.
+Skipped patch 'src/packages/model-scheduling/podmanModelExecutionPrimitive.ts => src/packages/model-scheduling/podmanModelUnitMaterializer.ts'.
+Skipped patch 'src/packages/model-scheduling/residencyController.ts'.
+Skipped patch 'src/packages/model-scheduling/scheduler.ts'.
+Skipped patch 'src/packages/podman-execution/containerRun.ts'.
+Skipped patch 'src/packages/podman-execution/executionAuthorization.ts'.
+Skipped patch 'src/packages/podman-execution/workerContainerLifecycle.ts'.
+Skipped patch 'src/packages/provider/src/proxy/openaiCompat/admittedUpstream.ts'.
+Checking patch src/packages/local-models/__tests__/ollamaRuntimeAdapter.test.ts...
+Checking patch src/packages/local-models/__tests__/residencyLifecycle.real.test.ts...
+Checking patch src/packages/model-scheduling/__tests__/hostCoordinatorService.test.ts...
+Checking patch src/packages/model-scheduling/__tests__/podmanModelExecutionPrimitive.test.ts => src/packages/model-scheduling/__tests__/podmanModelUnitMaterializer.test.ts...
+Checking patch src/packages/model-scheduling/__tests__/scheduler.test.ts...
+Checking patch src/packages/model-scheduling/testing/schedulerFakes.ts...
+Checking patch src/packages/podman-execution/__tests__/executionAuthorization.test.ts...
+Applied patch src/packages/local-models/__tests__/ollamaRuntimeAdapter.test.ts cleanly.
+Applied patch src/packages/local-models/__tests__/residencyLifecycle.real.test.ts cleanly.
+Applied patch src/packages/model-scheduling/__tests__/hostCoordinatorService.test.ts cleanly.
+Applied patch src/packages/model-scheduling/__tests__/podmanModelExecutionPrimitive.test.ts => src/packages/model-scheduling/__tests__/podmanModelUnitMaterializer.test.ts cleanly.
+Applied patch src/packages/model-scheduling/__tests__/scheduler.test.ts cleanly.
+Applied patch src/packages/model-scheduling/testing/schedulerFakes.ts cleanly.
+Applied patch src/packages/podman-execution/__tests__/executionAuthorization.test.ts cleanly.
+## archivos aplicados
+M	src/packages/local-models/__tests__/ollamaRuntimeAdapter.test.ts
+M	src/packages/local-models/__tests__/residencyLifecycle.real.test.ts
+M	src/packages/model-scheduling/__tests__/hostCoordinatorService.test.ts
+R088	src/packages/model-scheduling/__tests__/podmanModelExecutionPrimitive.test.ts	src/packages/model-scheduling/__tests__/podmanModelUnitMaterializer.test.ts
+M	src/packages/model-scheduling/__tests__/scheduler.test.ts
+M	src/packages/model-scheduling/testing/schedulerFakes.ts
+M	src/packages/podman-execution/__tests__/executionAuthorization.test.ts
+
+suite podman-execution exit=1  166 pass 4 fail 
+(fail) el contenedor que materializa una autorización > materializeExecution crea, arranca e inspecciona: devuelve la ExecutionUnit canónica y no espera ni retira [0.80ms]
+(fail) el contenedor que materializa una autorización > si la inspección falla, nombra la etapa inspect y deja el contenedor a su dueño [0.41ms]
+(fail) el contenedor que materializa una autorización > un contenedor sin proceso ni cgroup informado da una unidad sin PIDs ni cgroup [0.43ms]
+(fail) el contenedor que materializa una autorización > una inspección ilegible también es la etapa inspect, no un éxito sin identidad [0.33ms]
+suite model-scheduling exit=1  94 pass 2 fail 
+error: Cannot find module '../podmanModelUnitMaterializer.ts' from '/home/user/thyrox/src/packages/model-scheduling/__tests__/podmanModelUnitMaterializer.test.ts'
+suite local-models exit=1  178 pass 6 fail 
+(fail) local-models-qualify > --context declarado viaja como num_ctx [7.72ms]
+(fail) local-models-qualify > --isolated declara la medición aislada; sin él queda contended [6.89ms]
+(fail) local-models-qualify > seis aciertos: sale 0 y escribe la cualificación con el contexto acotado al máximo del modelo [8.75ms]
+(fail) local-models-qualify > suspendida: sale 1 y también se escribe [8.32ms]
+(fail) local-models-qualify > un modelo fuera del catálogo sale 2 sin medir [3.01ms]
+error: Cannot find module '@thyrox/model-scheduling/podmanModelUnitMaterializer.ts' from '/home/user/thyrox/src/packages/local-models/__tests__/residencyLifecycle.real.test.ts'

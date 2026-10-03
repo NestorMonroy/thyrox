@@ -1,0 +1,145 @@
+# managed-podman-execution-boundary — el encargo
+
+Tarea: TASK-THYROX-0743. Banco creado con `bin/manifest scaffold` dentro de una ExecutionUnit
+(`outputs/p0-scaffold-unit.txt`). Cada paso deja su línea en `manifest.jsonl` con la identidad de la
+unidad que lo ejecutó (`probes/unit_identity.sh`).
+
+## Invariante
+
+```
+managed task construction  =>  autorización canónica  =>  PodmanExecutionPrimitive  =>  ExecutionUnit
+```
+
+Incluye: creación del banco, inspección del código, creación y mutación de archivos, build, test,
+probe, verificación, generación de artefactos y mutación de git. El host controla y observa;
+`PodmanExecutionPrimitive` materializa; la `ExecutionUnit` construye. No existe una segunda ruta de
+construcción desde el shell del host. Esta regla se convierte en prueba arquitectónica (p2).
+
+## Orden (directiva del ejecutor, 2026-10-01)
+
+1. Reconciliar autorización / grant / unidad y retirar vocabulario duplicado — `p1`.
+2. Cerrar G1: `headless-pool -> managed execution -> primitive`, todo el payload del ítem dentro de
+   la unidad; GNU Parallel, lifecycle, generaciones, `run.lock`, snapshots, `<n>.closed` e
+   integración siguen en el plano de control — `p3`.
+3. Cerrar G2: ownership `pool` con los tipos existentes, `owner.kind = pool`, `owner.id = <run/ítem>`,
+   nunca `kind = "pool:<id>"` — `p3`.
+4. E2E nuevo que empieza en `manifest scaffold` dentro de una unidad — `p5`.
+5. Demostrar por PID/contenedor/cgroup la ausencia de payload en el host, también de los hijos — `p5`.
+6. Migrar `thyrox-bg` / `run-task-pool` / orquestadores restantes por la misma frontera — `p4`.
+7. Sólo entonces G3/G4: política opaca y provider-neutral, sin fallback implícito a Claude; el pool no
+   conoce `claude-cli`, DeepSeek, Qwen ni Ollama como política.
+8. Probar `claude disabled -> zero Claude executions` y `item launch count = 0` sin candidato.
+9. Finalmente G5, `search-existing` sobre el pool existente.
+
+No se empieza G3/G4 antes de que 1–6 estén verdes y publicados.
+
+## Requisitos de cada ítem `pN-*.md`
+
+Objetivo; estado inicial medido; archivos que puede modificar; mecanismos que reutiliza;
+invariantes; prueba RED; implementación mínima; prueba GREEN; control de anulación; evidencia que
+guarda (`outputs/pN-*`); criterio de cierre; qué NO le pertenece. Un ítem no se mezcla con otro en la
+misma unidad: contrato, implementación, evidencia y cierre, y después el siguiente.
+
+## M8 se resuelve declarativamente
+
+Lo que `thyrox -p` necesite dentro de la unidad (socket del coordinador, red, runtime gestionado)
+forma parte de la autorización que recibe la primitiva. `headless-pool` no monta sockets ni abre red
+por su cuenta, ni decide proveedor ni respaldo. Un candidato no disponible falla cerrado.
+
+## Deuda de arranque (única excepción declarada)
+
+`bin/podman-execution-execute` es la única vía que hoy alcanza la primitiva desde el plano de control,
+y este banco la usa para migrarse a sí mismo. Es deuda: `p2` la retira como entrada pública y añade
+una prueba que falla mientras exista en `bin/`, con caducidad atada al cierre de TASK-THYROX-0743.
+No se extiende código productivo alrededor de ese CLI.
+
+## Evidencia recuperada (no nacida en este banco)
+
+- `outputs/p1-recovered-wip.diff` / `.stat`: el trabajo en curso de p1 antes de este banco (renombre
+  `ModelExecutionPrimitive -> ModelUnitMaterializer`, `ExecutionUnit` canónica,
+  `ModelExecutionUnit extends ExecutionUnit`, `ownerFromLabels`). Se hizo dentro de unidades pero sin
+  banco; `src/` se devolvió al HEAD y p1 lo rehace con RED/GREEN/anulación propios.
+- `outputs/deferred-g3g4-execution-policy.patch`: la política de runtimes permitidos, retirada de la
+  rama por diseñar la API alrededor de `ollama | claude-cli`. Referencia para el paso 7, no código vigente.
+
+## Directiva operativa: corte de Claude (separada del futuro G3/G4)
+
+Desde 2026-10-01T18:01:51 UTC, commit `d95bca492`: las nuevas ejecuciones de juicio de TASK-THYROX-0743 no usan Claude
+(`claude -p`, `--runner claude`, `Agent`/subagentes). Proveedores permitidos: Qwen3.8-Flash y
+DeepSeek-V4.1-Flash por API. Sin proveedor permitido disponible: `no_candidate` /
+`runtime_unavailable`, fallo cerrado con la causa registrada; nunca respaldo a `claude-cli`. Los
+modelos caros (Qwen3.8-Max) sólo como escalamiento explícito. Las tarifas son evidencia económica, no
+constantes del scheduler. La autoridad de aceptación de P2–P5 son las pruebas deterministas de cada
+ítem (RED, GREEN, typecheck, invariantes, anulación, PID/cgroup, gates, diff), nunca un revisor Claude.
+
+Cada ejecución de juicio deja una línea en `outputs/cutover-executions.jsonl`: proveedor, modelo,
+unidad, salida, uso de tokens y entrada cacheada si el proveedor los informa, y conteo de
+invocaciones de Claude. Ninguna clave se guarda.
+
+Límite declarado: la sesión que orquesta este banco es en sí una sesión de Claude; el corte cubre lo
+que ella delega. Desde el corte no lanza `Agent`, `claude -p` ni `--runner claude`.
+
+### Corrección de la política de credenciales (2026-10-01T18:06:54 UTC)
+
+`credential_pending_rotation` = credencial operativa + deuda de rotación. Se usa durante esta
+implementación y se registra como aviso. Sólo se falla cerrado por credencial ausente, revocada o
+deshabilitada, autenticación rechazada, proveedor inaccesible o modelo inexistente/no permitido —
+y `no_candidate` sólo después de probar las rutas permitidas reales. La deuda vive en
+`credential-rotation.tsv` (nombre y estado, nunca el valor); su orden: P2–P5 verificados → flujos de
+proveedor verificados → corte sin Claude verificado → rotar → repetir las pruebas de autenticación.
+El resultado anterior (`no_candidate`) queda anulado y conservado. Control: `tests/test_credential_state.sh`.
+Ruta del proveedor: `thyrox -p` con `ANTHROPIC_BASE_URL` en el endpoint Anthropic-compatible del Token
+Plan (`https://token-plan.maas.qwencloudapi.com/apps/anthropic`); la clave llega a la unidad como
+`ExecutionSecret` montado, nunca en argv, `--env` ni evidencia.
+
+## Directiva de continuación (2026-10-01, ejecutor)
+
+El plan declarado es la autoridad: `plan.jsonl` (p2a..p2e, p3, p4a..p4c, p5a, p5b, en orden). Lo
+consume `bin/task_continuation run <banco> --task TASK-THYROX-0743`
+(`src/session/task_continuation.py`, `07593694f`, `e28bd01df`), lanzado como entrada declarada del
+plano de control con `thyrox-bg`. Nada se detiene entre tramos para reportar: el reporte es una
+proyección de `outputs/continuation.jsonl` y `outputs/cutover-executions.jsonl`.
+
+| Autoridad | Dónde |
+|---|---|
+| qué se hace | `plan.jsonl` + `p*-worker-prompt.md` (derivados de los contratos pN) |
+| transición | `task_continuation.transition` — commit · retry · next_candidate · stop |
+| candidato | Thompson sampling sobre la posterior Beta de `verify/tsc_schedule.py`, por `taskClass`, sólo entre los permitidos (Qwen, luego DeepSeek); 502 e infraestructura no cuentan |
+| clasificación | reglas deterministas; lo ambiguo, a `THYROX_OUTCOME_CLASSIFIER_COMMAND` (transformers en su unidad) cuando exista — nunca concede éxito ni pisa una regla; sin él, fallo de tarea |
+| aceptación | `verify/*.sh` del ítem, en su propia unidad |
+| materialización | `thyrox-bg --task` → `managed_execution.sh` → primitiva |
+| hallazgo fuera de alcance | el trabajador lo escribe en `outputs/<ítem>-findings.jsonl`; queda como `non_blocking_finding` en el log y el tramo sigue; su registro con ID se reconcilia después |
+| inactividad | `delegate.sh`: transcript en vivo + CPU del árbol; 125 tras `DELEGATE_STALL_SECONDS` sin cambio; nunca por stream vacío |
+| huérfanos | `podman-execution-execute reconcile-orphans` tras cada intento y al arrancar |
+
+Sólo `hard_block` (presupuesto agotado o sin candidato permitido) detiene y vuelve al ejecutor.
+
+Diferido, sin bloquear P2–P5: el clasificador aprendido (no hay corpus todavía: lo produce este
+log), el contexto semántico (`semantic_search_worker` existe sólo como perfil en
+`daemon/src/podman/specializedWorkerProfile.ts`), y reward model / DPO / GRPO.
+
+## Incidente: secretos del `.env` en un trabajador delegado (2026-10-01)
+
+Un trabajador Qwen de p2a ejecutó `env` en su unidad e imprimió dos valores del `.env` del árbol en
+su transcript, que viaja al proveedor: `thyrox -p` corre bajo bun, que carga el `.env` del directorio
+de trabajo, y cada herramienta del trabajador lo hereda. Push protection de GitHub rechazó el push;
+los commits locales que los contenían se reescribieron (autorización del ejecutor) en `cf7906b43`.
+
+| Credencial | Estado | Efecto |
+|---|---|---|
+| `THYROX_REGISTRY_PUBLISHER_TOKEN` | `exposed` | no se entrega a ningún trabajador; rotación como acción de seguridad aparte |
+| `THYROX_INFRA_POSTGRES_PASSWORD` | `exposed` | ídem |
+| `THYROX_OPENAI_COMPAT_API_KEY` | `pending` | sigue en uso, sólo como ExecutionSecret declarado |
+
+Invariante: entorno del trabajador = entorno no secreto declarado + ExecutionSecrets autorizados;
+nunca herencia transitiva del anfitrión o del árbol. Lo hacen cumplir:
+- la máscara de `.env` en el despacho (`ENV_FILE_MASK`, `task_continuation.py`);
+- `tests/session/test-delegated-worker-isolation.sh`: secreto del árbol ausente, del anfitrión
+  ausente, autorizado presente, y reenvío de un nombre de credencial rehusado; cada anulación
+  (`mask`, `host`, `secret`) cae exactamente en su aserción (`outputs/worker-isolation-annulment.log`);
+- `src/session/worker_secret_inheritance.sh`, preflight del controlador: siete fuentes medidas por
+  nombre (entorno, arranque del shell, credenciales montadas, configuración de proveedores, ayudantes
+  de git, auth de registros, entorno de procesos); sin máscara mide 3, con máscara 0;
+- `secret_exposure_detected` en el controlador: cuarentena (`.thyrox/runtime/quarantine/`, 0600),
+  redacción en su sitio con verificación, credencial a `exposed`, y el ítem sigue con el siguiente
+  candidato; un ítem que necesite una credencial expuesta queda `blocked` solo.

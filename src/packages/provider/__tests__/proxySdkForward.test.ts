@@ -7,10 +7,23 @@
  */
 import { APIError } from '@anthropic-ai/sdk'
 import { describe, expect, test } from 'bun:test'
+import { dirname, join } from 'node:path'
 // Ruta sustituible para los controles de anulación en paralelo (`src/verify/annul_parallel.sh`).
 const { bedrockBetaBody, forwardThroughSdk, sseFromEvents, upstreamErrorDetails } = (await import(
   process.env.SDK_FORWARD_MODULE ?? '../src/proxy/sdk/sdkForward.ts'
 )) as typeof import('../src/proxy/sdk/sdkForward.ts')
+
+/**
+ * La clase `APIError` de OTRA instancia del módulo del SDK: su build CommonJS,
+ * evaluado aparte del ESM que este archivo importa. Es la forma de la copia
+ * propia que un SDK de nube trae cuando el instalador no la deduplica —misma
+ * forma, otra identidad— y no depende de cómo se instaló `node_modules`: bun
+ * deduplica aquí, y una consulta en la URL no fuerza otra evaluación.
+ */
+const FOREIGN_SDK_ERROR_MODULE = 'core/error.js'
+const { APIError: ForeignApiError } = (await import(
+  join(dirname(Bun.resolveSync('@anthropic-ai/sdk', import.meta.dir)), FOREIGN_SDK_ERROR_MODULE)
+)) as { APIError: typeof APIError }
 
 type Call = { method: string; body: Record<string, unknown>; options: { signal?: AbortSignal; headers?: Record<string, string> } }
 
@@ -87,11 +100,10 @@ describe('/v1/messages con stream', () => {
     expect(text).toContain('event: error\ndata: {"type":"error","request_id":"req_9","error":{"type":"overloaded_error","message":"upstream overloaded"}}')
   })
   test('el error a mitad del stream de la copia de un SDK de nube conserva su estado', async () => {
-    const nested = Bun.resolveSync('@anthropic-ai/sdk', Bun.resolveSync('@anthropic-ai/vertex-sdk', import.meta.dir))
-    const { APIError: NestedApiError } = (await import(nested)) as typeof import('@anthropic-ai/sdk')
+    expect(ForeignApiError).not.toBe(APIError)
     async function* failing() {
       yield { type: 'message_start', message: { model: 'x' } }
-      throw NestedApiError.generate(529, { type: 'error', error: { type: 'overloaded_error', message: 'busy' } }, 'busy', new Headers())
+      throw ForeignApiError.generate(529, { type: 'error', error: { type: 'overloaded_error', message: 'busy' } }, 'busy', new Headers())
     }
     const text = await new Response(sseFromEvents(failing(), { requestId: 'req_9' })).text()
     expect(text).toContain('"error":{"type":"overloaded_error","message":"upstream overloaded"}')
@@ -174,12 +186,11 @@ describe('errores del SDK', () => {
     expect(body.error).toEqual({ type: 'api_error', message: 'upstream error' })
   })
   test('el error de la copia del SDK que trae un cliente de nube se reconoce igual', async () => {
-    // Cada SDK de nube instala su propia copia de `@anthropic-ai/sdk`: la
+    // Un SDK de nube puede traer su propia copia de `@anthropic-ai/sdk`: la
     // clase del error es otra, aunque la versión sea la misma.
-    const nested = Bun.resolveSync('@anthropic-ai/sdk', Bun.resolveSync('@anthropic-ai/vertex-sdk', import.meta.dir))
-    const { APIError: NestedApiError } = (await import(nested)) as typeof import('@anthropic-ai/sdk')
-    expect(NestedApiError).not.toBe(APIError)
-    const error = NestedApiError.generate(401, { message: 'secret detail' }, 'secret detail', new Headers())
+    expect(ForeignApiError).not.toBe(APIError)
+    const error = ForeignApiError.generate(401, { message: 'secret detail' }, 'secret detail', new Headers())
+    expect(error).not.toBeInstanceOf(APIError)
     const response = await forward(failWith(error))
     expect(response!.status).toBe(401)
     expect(((await response!.json()) as { request_id: string }).request_id).toBe('req_1')

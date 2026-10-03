@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts run --task TASK-THYROX-0743 --kind probe --network host --secret-from-env THYROX_OPENAI_COMPAT_API_KEY -- bash .claude/workbench/managed-podman-execution-boundary-20261001T164746/probes/request_size_limit.sh qwen3.8-flash 30 60 90 120", "started_at": "2026-10-01T19:20:13+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-01T19:20:40+00:00", "duration_seconds": 27.421084}

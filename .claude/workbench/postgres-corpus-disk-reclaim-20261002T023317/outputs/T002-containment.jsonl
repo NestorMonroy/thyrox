@@ -1,0 +1,10 @@
+{"gate": "ManagedExecutionContainmentGate", "step": "T002-counts-before", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T002-find-nul", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T002-nul-tests-green", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T002-nul-tests-annulment", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T002-typecheck", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T002-ingest", "passed": true, "executions": 2, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T002-counts-after", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T002-reingest", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T002-counts-after-reingest", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T002-verify", "passed": true, "executions": 1, "reasons": []}

@@ -1,0 +1,100 @@
+caso 1 — cada ítem escribe en su worktree; el árbol principal no cambia
+  ok    el árbol principal sigue limpio
+  ok    sin worktrees de ítem al terminar
+tests/session/test-headless-pool-worktree.sh: line 76: /home/user/thyrox/.thyrox/runtime/worktrees/e0b/.claude/cache/test-headless-pool-worktree/5201/out/1.verdict: No such file or directory
+tests/session/test-headless-pool-worktree.sh: line 76: /home/user/thyrox/.thyrox/runtime/worktrees/e0b/.claude/cache/test-headless-pool-worktree/5201/out/2.verdict: No such file or directory
+tests/session/test-headless-pool-worktree.sh: line 76: /home/user/thyrox/.thyrox/runtime/worktrees/e0b/.claude/cache/test-headless-pool-worktree/5201/out/3.verdict: No such file or directory
+tests/session/test-headless-pool-worktree.sh: line 76: /home/user/thyrox/.thyrox/runtime/worktrees/e0b/.claude/cache/test-headless-pool-worktree/5201/out/4.verdict: No such file or directory
+tests/session/test-headless-pool-worktree.sh: line 76: /home/user/thyrox/.thyrox/runtime/worktrees/e0b/.claude/cache/test-headless-pool-worktree/5201/out/5.verdict: No such file or directory
+tests/session/test-headless-pool-worktree.sh: line 76: /home/user/thyrox/.thyrox/runtime/worktrees/e0b/.claude/cache/test-headless-pool-worktree/5201/out/6.verdict: No such file or directory
+  FALLA veredictos en orden: esperado «verificado verificado sin-cambios rechazado fallido verificado », obtenido «      »
+cat: /home/user/thyrox/.thyrox/runtime/worktrees/e0b/.claude/cache/test-headless-pool-worktree/5201/out/1.files: No such file or directory
+  FALLA el parche nombra su archivo: esperado «a.txt», obtenido «»
+jq: error: Could not open file /home/user/thyrox/.thyrox/runtime/worktrees/e0b/.claude/cache/test-headless-pool-worktree/5201/out/1.snapshot.json: No such file or directory
+jq: error: Could not open file /home/user/thyrox/.thyrox/runtime/worktrees/e0b/.claude/cache/test-headless-pool-worktree/5201/out/5.snapshot.json: No such file or directory
+jq: error: Could not open file /home/user/thyrox/.thyrox/runtime/worktrees/e0b/.claude/cache/test-headless-pool-worktree/5201/out/1.snapshot.json: No such file or directory
+ls: cannot access '/home/user/thyrox/.thyrox/runtime/worktrees/e0b/.claude/cache/test-headless-pool-worktree/5201/out/*.snapshot.json': No such file or directory
+  FALLA cada ítem dejó su foto: esperado «6», obtenido «0»
+fatal: path 'a.txt' does not exist (neither on disk nor in the index)
+  FALLA la foto del ítem 1 trae su archivo: esperado «hola», obtenido «»
+  FALLA las seis refs de foto se conservan tras publicar: esperado «6», obtenido «0»
+fatal: ambiguous argument 'refs/thyrox/snapshots//1/1': unknown revision or path not in the working tree.
+Use '--' to separate paths from revisions, like this:
+'git <command> [<revision>...] -- [<file>...]'
+  FALLA la del ítem publicado con éxito apunta a su foto: esperado «», obtenido «refs/thyrox/snapshots//1/1»
+fatal: ambiguous argument 'refs/thyrox/snapshots//5/1': unknown revision or path not in the working tree.
+Use '--' to separate paths from revisions, like this:
+'git <command> [<revision>...] -- [<file>...]'
+  FALLA y la del que falló, a la suya: esperado «», obtenido «refs/thyrox/snapshots//5/1»
+  FALLA la línea de resumen cuenta los veredictos: esperado «1», obtenido «0»
+tests/session/test-headless-pool-worktree.sh: line 95: /home/user/thyrox/.thyrox/runtime/worktrees/e0b/.claude/cache/test-headless-pool-worktree/5201/tools.log: No such file or directory
+  FALLA el ítem escribe por Bash: esperado «1», obtenido «0»
+tests/session/test-headless-pool-worktree.sh: line 96: /home/user/thyrox/.thyrox/runtime/worktrees/e0b/.claude/cache/test-headless-pool-worktree/5201/tools.log: No such file or directory
+  ok    sin herramientas dedicadas de escritura
+caso 2 — la integración aplica lo verificado y disjunto, y declara el conflicto
+cat: /home/user/thyrox/.thyrox/runtime/worktrees/e0b/.claude/cache/test-headless-pool-worktree/5201/repo/a.txt: No such file or directory
+  FALLA aplica a.txt con el texto del primero: esperado «hola», obtenido «»
+  FALLA aplica b.txt: esperado «si», obtenido «»
+  ok    no aplica lo rechazado
+gawk: fatal: cannot open file `/home/user/thyrox/.thyrox/runtime/worktrees/e0b/.claude/cache/test-headless-pool-worktree/5201/out/integration.tsv' for reading: No such file or directory
+  FALLA el sexto es conflicto con el primero: esperado «conflicto: a.txt», obtenido «»
+  FALLA sale 1 si algo con cambios no se integró: esperado «1», obtenido «2»
+  FALLA resume la integración: esperado «1», obtenido «0»
+caso 3 — sin --verify el cambio queda sin verificar y no se aplica por defecto
+cat: /home/user/thyrox/.thyrox/runtime/worktrees/e0b/.claude/cache/test-headless-pool-worktree/5201/out3/1.verdict: No such file or directory
+  FALLA veredicto sin-verificar: esperado «sin-verificar», obtenido «»
+  ok    no se aplica sin --unverified
+  FALLA con --unverified se aplica: esperado «si», obtenido «no»
+caso 4 — rehúsa fuera de un árbol de git
+  ok    sale 2
+  ok    un modo desconocido sale 2
+caso 5 — un worktree que quedó de la ejecución se retira al terminar el pool
+item_worktree: no se enlaza node_modules: no existe en el árbol principal
+item_worktree: no se enlaza .venv: no existe en el árbol principal
+  FALLA el pool deja sólo el árbol principal: esperado «1», obtenido «2»
+caso 6 — finalize retira el worktree del ítem en cuanto termina
+item_worktree: no se enlaza node_modules: no existe en el árbol principal
+item_worktree: no se enlaza .venv: no existe en el árbol principal
+  ok    sin barrido, el worktree ya no está
+  ok    su parche nombra el archivo
+caso 7 — si el worktree no se prepara, el .err del ítem trae el motivo
+tests/session/test-headless-pool-worktree.sh: line 146: /home/user/thyrox/.thyrox/runtime/worktrees/e0b/.claude/cache/test-headless-pool-worktree/5201/out8/1.json: No such file or directory
+  FALLA el ítem sale sin json de resultado: esperado «0», obtenido «»
+gawk: fatal: cannot open file `/home/user/thyrox/.thyrox/runtime/worktrees/e0b/.claude/cache/test-headless-pool-worktree/5201/out8/1.err' for reading: No such file or directory
+  FALLA el .err nombra el motivo de git: esperado «1», obtenido «»
+caso 8 — los trabajos que lanza un ítem aislado quedan en su salida, no en el árbol principal
+  FALLA el trabajo aparece bajo la salida del ítem: esperado «1», obtenido «0»
+  ok    el árbol principal no recibe el trabajo
+caso 9 — el pool retiene el candado de su ejecución y no deja rastro al salir
+cat: /home/user/thyrox/.thyrox/runtime/worktrees/e0b/.claude/cache/test-headless-pool-worktree/5201/probe.log: No such file or directory
+  FALLA el ítem ve el candado tomado: esperado «1», obtenido «»
+  ok    sin directorio de la ejecución al terminar
+  ok    sin candado de la ejecución al terminar
+caso 10 — durante el verify: cwd, THYROX_ROOT y PYTHONPATH son los del worktree
+item_worktree: no se enlaza node_modules: no existe en el árbol principal
+item_worktree: no se enlaza .venv: no existe en el árbol principal
+  ok    el verify corre con el cwd en el worktree del item
+  ok    THYROX_ROOT durante el verify es el worktree, no el arbol principal
+  ok    PYTHONPATH durante el verify es solo el src del worktree
+caso 11 — modificar solo el árbol principal no cambia el veredicto del verify
+item_worktree: no se enlaza node_modules: no existe en el árbol principal
+item_worktree: no se enlaza .venv: no existe en el árbol principal
+  ok    el veredicto lee el worktree, no lo que cambió el árbol principal
+caso 12 — el verify no escribe en la cache/jobs/workbench/logs del árbol principal
+item_worktree: no se enlaza node_modules: no existe en el árbol principal
+item_worktree: no se enlaza .venv: no existe en el árbol principal
+  ok    veredicto verificado
+  ok    no escribe en la cache del árbol principal
+  ok    no escribe en jobs del árbol principal
+  ok    no escribe en workbench del árbol principal
+  ok    no escribe en logs del árbol principal
+caso 13 — las herramientas del ítem actúan sobre su worktree, no sobre el árbol principal
+gawk: fatal: cannot open file `/home/user/thyrox/.thyrox/runtime/worktrees/e0b/.claude/cache/test-headless-pool-worktree/5201/root.log' for reading: No such file or directory
+  FALLA THYROX_ROOT del ítem es su worktree: esperado «worktree», obtenido «»
+cut: /home/user/thyrox/.thyrox/runtime/worktrees/e0b/.claude/cache/test-headless-pool-worktree/5201/root.log: No such file or directory
+  FALLA su node_modules sigue siendo el del runner: esperado «/home/user/thyrox/.thyrox/runtime/worktrees/e0b/node_modules», obtenido «»
+caso 13c — control: sin el bloque, el ítem hereda la raíz del árbol principal
+  ok    control: el bloque se retiró
+cut: /home/user/thyrox/.thyrox/runtime/worktrees/e0b/.claude/cache/test-headless-pool-worktree/5201/root-c.log: No such file or directory
+  FALLA control: sin el bloque, THYROX_ROOT es el árbol principal: esperado «/home/user/thyrox/.thyrox/runtime/worktrees/e0b», obtenido «»
+test-headless-pool-worktree: 46 aserciones — 22 ok, 24 falla(s)

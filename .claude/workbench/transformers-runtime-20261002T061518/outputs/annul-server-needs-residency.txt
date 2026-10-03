@@ -1,0 +1,131 @@
+...----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 45340)
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/socketserver.py", line 692, in process_request_thread
+    self.finish_request(request, client_address)
+  File "/usr/lib/python3.12/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/usr/lib/python3.12/socketserver.py", line 761, in __init__
+    self.handle()
+  File "/usr/lib/python3.12/http/server.py", line 436, in handle
+    self.handle_one_request()
+  File "/usr/lib/python3.12/http/server.py", line 424, in handle_one_request
+    method()
+  File "/home/user/thyrox/src/packages/local-models/transformers-runtime/transformers_runtime_server.py", line 161, in do_POST
+    self._dispatch("POST")
+  File "/home/user/thyrox/src/packages/local-models/transformers-runtime/transformers_runtime_server.py", line 174, in _dispatch
+    self._reply(200, route(self._body()))
+                     ^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/packages/local-models/transformers-runtime/transformers_runtime_server.py", line 153, in <lambda>
+    ("POST", "/v1/seq2seq"): lambda body: runtime.generate(_inputs(body), _positive(body, "maxNewTokens")),
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/packages/local-models/transformers-runtime/transformers_runtime_server.py", line 139, in generate
+    return {"modelId": self._identity["modelId"], "outputs": self._backend.generate(inputs, max_new_tokens)}
+                       ~~~~~~~~~~~~~~^^^^^^^^^^^
+TypeError: 'NoneType' object is not subscriptable
+----------------------------------------
+E..----------------------------------------
+Exception occurred during processing of request from ('127.0.0.1', 52562)
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/socketserver.py", line 692, in process_request_thread
+    self.finish_request(request, client_address)
+  File "/usr/lib/python3.12/socketserver.py", line 362, in finish_request
+    self.RequestHandlerClass(request, client_address, self)
+  File "/usr/lib/python3.12/socketserver.py", line 761, in __init__
+    self.handle()
+  File "/usr/lib/python3.12/http/server.py", line 436, in handle
+    self.handle_one_request()
+  File "/usr/lib/python3.12/http/server.py", line 424, in handle_one_request
+    method()
+  File "/home/user/thyrox/src/packages/local-models/transformers-runtime/transformers_runtime_server.py", line 161, in do_POST
+    self._dispatch("POST")
+  File "/home/user/thyrox/src/packages/local-models/transformers-runtime/transformers_runtime_server.py", line 174, in _dispatch
+    self._reply(200, route(self._body()))
+                     ^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/packages/local-models/transformers-runtime/transformers_runtime_server.py", line 153, in <lambda>
+    ("POST", "/v1/seq2seq"): lambda body: runtime.generate(_inputs(body), _positive(body, "maxNewTokens")),
+                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/packages/local-models/transformers-runtime/transformers_runtime_server.py", line 139, in generate
+    return {"modelId": self._identity["modelId"], "outputs": self._backend.generate(inputs, max_new_tokens)}
+                       ~~~~~~~~~~~~~~^^^^^^^^^^^
+TypeError: 'NoneType' object is not subscriptable
+----------------------------------------
+E.
+======================================================================
+ERROR: test_generation_needs_a_residency (__main__.TransformersRuntimeServerTest.test_generation_needs_a_residency)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/local_models/test_transformers_runtime_server.py", line 107, in test_generation_needs_a_residency
+    self.assertEqual(self.call("POST", "/v1/seq2seq", request)[0], 409)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/tests/local_models/test_transformers_runtime_server.py", line 72, in call
+    with urllib.request.urlopen(request) as response:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 215, in urlopen
+    return opener.open(url, data, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 515, in open
+    response = self._open(req, data)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 532, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 492, in _call_chain
+    result = func(*args)
+             ^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 1373, in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 1348, in do_open
+    r = h.getresponse()
+        ^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/http/client.py", line 1457, in getresponse
+    response.begin()
+  File "/usr/lib/python3.12/http/client.py", line 336, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/http/client.py", line 305, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+======================================================================
+ERROR: test_unload_leaves_nothing_to_generate_with (__main__.TransformersRuntimeServerTest.test_unload_leaves_nothing_to_generate_with)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/tests/local_models/test_transformers_runtime_server.py", line 114, in test_unload_leaves_nothing_to_generate_with
+    self.assertEqual(self.call("POST", "/v1/seq2seq", {"inputs": ["x"], "maxNewTokens": 8})[0], 409)
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/tests/local_models/test_transformers_runtime_server.py", line 72, in call
+    with urllib.request.urlopen(request) as response:
+         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 215, in urlopen
+    return opener.open(url, data, timeout)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 515, in open
+    response = self._open(req, data)
+               ^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 532, in _open
+    result = self._call_chain(self.handle_open, protocol, protocol +
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 492, in _call_chain
+    result = func(*args)
+             ^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 1373, in http_open
+    return self.do_open(http.client.HTTPConnection, req)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/urllib/request.py", line 1348, in do_open
+    r = h.getresponse()
+        ^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/http/client.py", line 1457, in getresponse
+    response.begin()
+  File "/usr/lib/python3.12/http/client.py", line 336, in begin
+    version, status, reason = self._read_status()
+                              ^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/http/client.py", line 305, in _read_status
+    raise RemoteDisconnected("Remote end closed connection without"
+http.client.RemoteDisconnected: Remote end closed connection without response
+
+----------------------------------------------------------------------
+Ran 8 tests in 4.070s
+
+FAILED (errors=2)

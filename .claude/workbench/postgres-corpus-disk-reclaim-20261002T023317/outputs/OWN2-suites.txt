@@ -1,0 +1,62 @@
+podman-execution exit=0
+ 200 pass
+ 0 fail
+model-scheduling exit=1
+ 108 pass
+ 1 fail
+image-registry exit=0
+ 65 pass
+ 0 fail
+artifact-registry exit=0
+ 60 pass
+ 0 fail
+daemon-supervision exit=0
+ 8 pass
+ 0 fail
+      1 src/packages/agent/internalUtils.ts
+      1 src/packages/agent/messages/systemInit.ts
+      1 src/packages/agent/tasks.ts
+      1 src/packages/app-host/src/startup/startupProfiler.ts
+      5 src/packages/artifact-registry/testing/fakeOciRegistry.ts
+      2 src/packages/bridge/src/envLessBridgeConfig.ts
+      1 src/packages/cli/src/bg.ts
+      1 src/packages/cli/src/bg/spawnPty.ts
+      1 src/packages/cli/src/handlers/auth.ts
+      1 src/packages/command-runtime/src/skills/loadSkillsDir.ts
+      2 src/packages/config/env/utils.ts
+      2 src/packages/ink/src/components/Box.tsx
+      2 src/packages/ink/src/components/Link.tsx
+      2 src/packages/ink/src/components/Newline.tsx
+      1 src/packages/ink/src/components/RawAnsi.tsx
+      3 src/packages/ink/src/components/ScrollBox.tsx
+      2 src/packages/ink/src/components/Text.tsx
+      3 src/packages/local-observability/src/logging/error-log-sink.ts
+      1 src/packages/local-observability/src/uds/atomicWrite.ts
+      2 src/packages/local-observability/src/uds/registrySweep.ts
+      2 src/packages/mcp-runtime/src/clientRuntime.ts
+      1 src/packages/mcp-runtime/src/headersHelper.ts
+      1 src/packages/model-scheduling/__tests__/hostCoordinatorService.test.ts
+      2 src/packages/permission/src/internalPaths.ts
+      1 src/packages/podman-execution/__tests__/containerRun.test.ts
+      1 src/packages/podman-execution/__tests__/executionCommand.test.ts
+      1 src/packages/podman-execution/__tests__/workerContainerLifecycle.test.ts
+      1 src/packages/provider/src/fastMode.ts
+      2 src/packages/provider/src/logging.ts
+      1 src/packages/provider/src/user.ts
+      1 src/packages/provider/src/userAgent.ts
+      3 src/packages/repl/src/components/AutoUpdater.tsx
+      3 src/packages/repl/src/components/NativeAutoUpdater.tsx
+      2 src/packages/repl/src/components/PackageManagerAutoUpdater.tsx
+      1 src/packages/repl/src/components/StatusLine.tsx
+      9 src/packages/repl/src/doctorDiagnostic.ts
+      1 src/packages/repl/src/hooks/useUpdateNotification.ts
+      1 src/packages/repl/src/localInstaller.ts
+      1 src/packages/repl/src/uiHelpers/logoV2Utils.ts
+      1 src/packages/storage/src/plans.ts
+      1 src/packages/storage/src/sessionEnvironment.ts
+      1 src/packages/storage/src/sessionPaths.ts
+      1 src/packages/storage/src/sessionStart.ts
+      2 src/packages/storage/src/sessionStorage.ts
+      3 src/packages/updater/src/internal/envCompat.ts
+tsc-done
+execution thyrox-worker-test-muqet6vd-12812 kind=test task=TASK-THYROX-0758 exit=0

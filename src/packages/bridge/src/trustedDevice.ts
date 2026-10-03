@@ -35,22 +35,25 @@
  * Puerto fiel de `ccnmt: packages/bridge/src/trustedDevice.ts`.
  * `getOauthConfig`/`checkGate_CACHED_OR_BLOCKING`/
  * `getFeatureValue_CACHED_MAY_BE_STALE`/`isPolicyAllowed`/
- * `waitForPolicyLimitsToLoad`/`logForDebugging`/`errorMessage`/
- * `logForDiagnosticsNoPII`/`isEssentialTrafficOnly`/`getSecureStorage`/
- * `jsonStringify`/`getClaudeAIOAuthTokens` son sustitutos — ver
- * `internal/pendingCrossPackageDeps.ts`.
+ * `waitForPolicyLimitsToLoad`/`logForDebugging`/`logForDiagnosticsNoPII`/
+ * `getSecureStorage`/`jsonStringify`/`getClaudeAIOAuthTokens` son
+ * sustitutos — ver `internal/pendingCrossPackageDeps.ts`; `errorMessage`,
+ * `isEssentialTrafficOnly`, `getOauthConfig` y las banderas vienen de sus
+ * originales.
  */
 import axios from 'axios'
 import memoize from 'lodash-es/memoize.js'
 import { hostname } from 'node:os'
+import { getOauthConfig } from '@thyrox/agent/constants/oauth.js'
+import { isEssentialTrafficOnly } from '@thyrox/config/env/privacy-level'
 import {
   checkGate_CACHED_OR_BLOCKING,
-  errorMessage,
-  getClaudeAIOAuthTokens,
   getFeatureValue_CACHED_MAY_BE_STALE,
-  getOauthConfig,
+} from '@thyrox/config/feature-flags'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import {
+  getClaudeAIOAuthTokens,
   getSecureStorage,
-  isEssentialTrafficOnly,
   isPolicyAllowed,
   jsonStringify,
   logForDebugging,

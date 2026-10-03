@@ -1,0 +1,10 @@
+modelo: claude-opus-5-5 (derivado de --task-class analisis)
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+historial: última ejecución: 1 ítems, pared máx 459.3 s, pico 1879284 KB × 2 -> 3671M; TTL 1h: un hueco de 7.655 min caduca la caché de 5 m; una sola caducidad (≥ 0.60) ya paga la prima; RAM: (9021032 − 0) / (1879284 × 2) -> 2
+credencial: inherit (por defecto; sin variable de credencial en el entorno del pool: cada ítem la resuelve solo, y thyrox -p entra al proxy local)
+buzón: /home/user/thyrox/.thyrox/runtime/pool/a41339983d63-20260930T233402-2889/mailbox
+cache-ttl: 1h (constant)
+memfree: 3671M (history)
+items=1 ok=1 fallidos=0
+verificados=0 rechazados=1 sin-cambios=0 fallidos=0
+__BG_EXIT__=0

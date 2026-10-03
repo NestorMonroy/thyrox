@@ -1,0 +1,38 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/admittedChat.test.ts:
+44 |     globalThis.fetch = (async (_url: string, init?: RequestInit) => {
+45 |       seen = init
+46 |       return new Response(JSON.stringify(REPLY))
+47 |     }) as typeof fetch
+48 |     await admittedChat(ticketTo('http://127.0.0.1:1'), { messages: [] })
+49 |     expect(seen?.timeout).toBe(false)
+                               ^
+error: expect(received).toBe(expected)
+
+Expected: false
+Received: undefined
+
+      at <anonymous> (/home/user/thyrox/.thyrox/runtime/worktrees/e0b/src/packages/local-models/__tests__/admittedChat.test.ts:49:27)
+(fail) admittedChat > la petición no hereda el plazo de 300 s del runtime [1.14ms]
+(pass) admittedChat > sin plazo declarado no hay señal que corte [0.28ms]
+67 |         return new Response(JSON.stringify(REPLY))
+68 |       },
+69 |     })
+70 |     try {
+71 |       const reply = admittedChat(ticketTo(`http://127.0.0.1:${server.port}`), { messages: [] }, { deadlineMs: 50 })
+72 |       await expect(reply).rejects.toMatchObject({ name: 'TimeoutError' })
+                                       ^
+error: 
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (/home/user/thyrox/.thyrox/runtime/worktrees/e0b/src/packages/local-models/__tests__/admittedChat.test.ts:72:35)
+(fail) admittedChat > un plazo declarado corta la petición lenta [505.89ms]
+(pass) admittedChat > dentro del plazo la respuesta llega [2.76ms]
+
+ 2 pass
+ 2 fail
+ 4 expect() calls
+Ran 4 tests across 1 file. [564.00ms]

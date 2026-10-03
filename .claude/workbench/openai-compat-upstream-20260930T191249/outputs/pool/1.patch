@@ -1,0 +1,1251 @@
+diff --git a/.env.example b/.env.example
+index 77beca5a8..d8a8fdc16 100644
+--- a/.env.example
++++ b/.env.example
+@@ -1257,6 +1257,16 @@ THYROX_QODER_OAUTH_TOKEN_URL=
+ THYROX_QODER_OAUTH_USERINFO_URL=
+ # src/packages/provider/dist/proxy/netGuards.d.ts
+ THYROX_GATEWAY_ALLOW_LOOPBACK=
++# src/packages/provider/src/proxy/openaiCompat/declaration.ts
++# Upstream compatible con OpenAI del proxy local (`bin/provider-local-proxy`):
++# la base al estilo del SDK de OpenAI, con su `/v1` (Ollama:
++# http://<host>:11434/v1), y el único modelo que sirve; los demás siguen a
++# claude-cli. Las dos o ninguna: con una sola el proxy rehúsa con exit 2. La
++# clave es opcional; un servidor local no la pide. Un host de loopback exige
++# además THYROX_GATEWAY_ALLOW_LOOPBACK.
++THYROX_OPENAI_COMPAT_BASE_URL=
++THYROX_OPENAI_COMPAT_MODEL=
++THYROX_OPENAI_COMPAT_API_KEY=
+ # src/packages/provider/src/accounts/connectionStoreHome.ts — directorio del store de conexiones; vacía no cuenta y cae a <config home>/providers
+ THYROX_PROVIDERS_DATA_DIR=
+ # src/packages/provider/src/accounts/grok/grokBuild.ts
+diff --git a/src/packages/provider/bin/localProxy.ts b/src/packages/provider/bin/localProxy.ts
+index 482c8bc7d..0b3cc6983 100755
+--- a/src/packages/provider/bin/localProxy.ts
++++ b/src/packages/provider/bin/localProxy.ts
+@@ -19,6 +19,12 @@
+  * cada petición. Un modelo pasa tal cual sólo si se declaró con `--model`;
+  * los del catálogo resuelven por familia.
+  *
++ * Con `THYROX_OPENAI_COMPAT_BASE_URL` y `THYROX_OPENAI_COMPAT_MODEL`
++ * declaradas (y `THYROX_OPENAI_COMPAT_API_KEY` si el servidor la pide),
++ * conecta además un upstream compatible con OpenAI
++ * (`src/proxy/openaiCompat/`) que sirve sólo ese modelo; los demás siguen a
++ * `claude-cli`. Sin declararlas, nada cambia; con una sola, rehúsa con exit 2.
++ *
+  * Imprime `socket=<ruta>` cuando ya escucha y atiende hasta SIGTERM o SIGINT,
+  * cuando cierra, borra el socket y sale 0. Sin `claude` rehúsa con exit 2 y
+  * no escucha: un proxy sin ejecutable aceptaría peticiones que no puede
+@@ -26,9 +32,13 @@
+  */
+ import { randomUUID } from 'node:crypto'
+ import { startCredentialProxy } from '../src/credentialProxy.ts'
++import { openAICompatDeclarationOf, type OpenAICompatDeclaration } from '../src/proxy/openaiCompat/declaration.ts'
+ import { startProxyServer } from '../src/proxy/startServer.ts'
++import type { GatewayModelEntry, GatewayUpstream } from '../src/proxy/upstreamRouting.ts'
+ 
+ const UPSTREAM_NAME = 'claude-cli'
++const OPENAI_COMPAT_UPSTREAM_NAME = 'openai-compat'
++const OPENAI_COMPAT_PROVIDER = 'openai-compatible'
+ const LOOPBACK_HOST = '127.0.0.1'
+ const ANY_FREE_PORT = 0
+ const REFUSAL_EXIT_CODE = 2
+@@ -47,6 +57,24 @@ function refuse(message: string): never {
+   process.exit(REFUSAL_EXIT_CODE)
+ }
+ 
++function declarationOrRefuse(): OpenAICompatDeclaration | undefined {
++  try {
++    return openAICompatDeclarationOf(process.env)
++  } catch (error) {
++    return refuse(error instanceof Error ? error.message : String(error))
++  }
++}
++
++/** El upstream abierto va primero y sólo con su modelo: los demás caen a `claude-cli`. */
++function openUpstreams(open: OpenAICompatDeclaration | undefined): GatewayUpstream[] {
++  return open ? [{ name: OPENAI_COMPAT_UPSTREAM_NAME, provider: OPENAI_COMPAT_PROVIDER, models: [open.model] }] : []
++}
++
++function openModels(open: OpenAICompatDeclaration | undefined): GatewayModelEntry[] {
++  return open ? [{ id: open.model, upstream_model: { [OPENAI_COMPAT_UPSTREAM_NAME]: open.model } }] : []
++}
++
++const openModel = declarationOrRefuse()
+ const socketPath = argument('--socket') ?? refuse('falta --socket <ruta>')
+ const executable = argument('--cli') ?? Bun.which('claude') ?? refuse('sin ejecutable de claude: declara --cli <ruta> o ponlo en el PATH')
+ const passthroughModels = repeatedArgument('--model')
+@@ -60,8 +88,8 @@ const proxy = startProxyServer({
+   port: ANY_FREE_PORT,
+   accessKeys: [accessKey],
+   routing: {
+-    upstreams: [{ name: UPSTREAM_NAME, provider: 'anthropic' }],
+-    models: passthroughModels.map(id => ({ id, upstream_model: { [UPSTREAM_NAME]: id } })),
++    upstreams: [...openUpstreams(openModel), { name: UPSTREAM_NAME, provider: 'anthropic' }],
++    models: [...openModels(openModel), ...passthroughModels.map(id => ({ id, upstream_model: { [UPSTREAM_NAME]: id } }))],
+     auto_include_builtin_models: true,
+   },
+   endpoints: {},
+@@ -70,6 +98,9 @@ const proxy = startProxyServer({
+   version,
+   env: process.env,
+   claudeCli: { upstreams: [{ name: UPSTREAM_NAME, command: { executable }, cwd: process.cwd() }] },
++  openaiCompat: {
++    upstreams: openModel ? [{ name: OPENAI_COMPAT_UPSTREAM_NAME, baseUrl: openModel.baseUrl, apiKey: openModel.apiKey }] : [],
++  },
+ })
+ // Para el socket, la clave de acceso es «la credencial» que antepone: viaja
+ // como `x-api-key`, que es lo que `createConfigApiKeyProvider` lee.
+diff --git a/src/packages/provider/src/proxy/__tests__/fakeOpenAIUpstream.ts b/src/packages/provider/src/proxy/__tests__/fakeOpenAIUpstream.ts
+new file mode 100644
+index 000000000..0f3fbe919
+--- /dev/null
++++ b/src/packages/provider/src/proxy/__tests__/fakeOpenAIUpstream.ts
+@@ -0,0 +1,109 @@
++/**
++ * Un servidor OpenAI Chat Completions falso en loopback (`Bun.serve`, puerto
++ * 0) para las pruebas del upstream compatible con OpenAI del proxy local.
++ * Registra cada petición recibida y decide su respuesta por el último
++ * mensaje: sin mensaje `role: tool` y con `tools` declaradas pide la primera
++ * tool (`tool_calls`); con un mensaje `role: tool` responde texto que cita el
++ * `tool_call_id` y el contenido recibidos; en otro caso, eco del último texto.
++ * Contesta en SSE si la petición trae `stream: true`.
++ *
++ * `failure` fuerza una respuesta rota para probar el camino de error: un
++ * estado HTTP con cuerpo propio, un 200 cuyo cuerpo no es JSON, o un stream
++ * cuyo chunk `data:` no es JSON. `omitTrailingUsage` corta el stream tras el
++ * `finish_reason`, sin el chunk de uso tardío que algunos upstreams no envían.
++ */
++type JsonRecord = Record<string, unknown>
++
++export type FakeFailure = { kind: 'status'; status: number; body: string } | { kind: 'invalid-json' } | { kind: 'invalid-sse-chunk' }
++
++export type FakeOptions = { failure?: FakeFailure; omitTrailingUsage?: boolean }
++
++export type FakeOpenAIUpstream = {
++  /** La base al estilo del SDK de OpenAI: incluye `/v1`. */
++  baseUrl: string
++  received: JsonRecord[]
++  paths: string[]
++  authorizations: (string | null)[]
++  stop: () => void
++}
++
++export const FAKE_TOOL_CALL_ID = 'call_fake_1'
++export const FAKE_TOOL_ARGUMENTS = { path: '/etc' }
++const COMPLETION_ID = 'chatcmpl-fakeopenai01'
++const USAGE = { prompt_tokens: 11, completion_tokens: 7, total_tokens: 18 }
++
++type Reply = { content: string | null; toolCalls?: JsonRecord[]; finishReason: string }
++
++function lastMessage(body: JsonRecord): JsonRecord {
++  const messages = (body.messages as JsonRecord[] | undefined) ?? []
++  return messages[messages.length - 1] ?? {}
++}
++
++function firstToolName(body: JsonRecord): string | undefined {
++  const tools = body.tools as { function?: { name?: string } }[] | undefined
++  return tools?.[0]?.function?.name
++}
++
++function replyTo(body: JsonRecord): Reply {
++  const last = lastMessage(body)
++  if (last.role === 'tool') {
++    return { content: `resultado de ${String(last.tool_call_id)}: ${String(last.content)}`, finishReason: 'stop' }
++  }
++  const toolName = firstToolName(body)
++  if (toolName) {
++    const call = { id: FAKE_TOOL_CALL_ID, type: 'function', function: { name: toolName, arguments: JSON.stringify(FAKE_TOOL_ARGUMENTS) } }
++    return { content: null, toolCalls: [call], finishReason: 'tool_calls' }
++  }
++  return { content: `eco: ${typeof last.content === 'string' ? last.content : JSON.stringify(last.content)}`, finishReason: 'stop' }
++}
++
++function completion(model: unknown, reply: Reply): JsonRecord {
++  const message = { role: 'assistant', content: reply.content, ...(reply.toolCalls && { tool_calls: reply.toolCalls }) }
++  return { id: COMPLETION_ID, object: 'chat.completion', model, choices: [{ index: 0, message, finish_reason: reply.finishReason }], usage: USAGE }
++}
++
++/** Los chunks de un stream: el rol, el contenido o las llamadas partidas en dos (nombre y argumentos), y el cierre con uso. */
++function chunks(model: unknown, reply: Reply, omitTrailingUsage: boolean): JsonRecord[] {
++  const frame = (delta: JsonRecord, extra: JsonRecord = {}) => ({ id: COMPLETION_ID, object: 'chat.completion.chunk', model, choices: [{ index: 0, delta, ...extra }] })
++  const out: JsonRecord[] = [frame({ role: 'assistant' })]
++  if (reply.content) out.push(frame({ content: reply.content }))
++  for (const [index, call] of (reply.toolCalls ?? []).entries()) {
++    const fn = call.function as JsonRecord
++    out.push(frame({ tool_calls: [{ index, id: call.id, type: 'function', function: { name: fn.name, arguments: '' } }] }))
++    out.push(frame({ tool_calls: [{ index, function: { arguments: fn.arguments } }] }))
++  }
++  out.push(frame({}, { finish_reason: reply.finishReason }))
++  if (!omitTrailingUsage) out.push({ id: COMPLETION_ID, object: 'chat.completion.chunk', model, choices: [], usage: USAGE })
++  return out
++}
++
++function sse(frames: JsonRecord[]): Response {
++  const text = `${frames.map(frame => `data: ${JSON.stringify(frame)}\n\n`).join('')}data: [DONE]\n\n`
++  return new Response(text, { headers: { 'content-type': 'text/event-stream' } })
++}
++
++function failed(failure: FakeFailure): Response {
++  if (failure.kind === 'invalid-json') return new Response('<html>no soy json', { headers: { 'content-type': 'application/json' } })
++  if (failure.kind === 'invalid-sse-chunk') return new Response('data: {roto\n\n', { headers: { 'content-type': 'text/event-stream' } })
++  return new Response(failure.body, { status: failure.status, headers: { 'content-type': 'application/json' } })
++}
++
++export function startFakeOpenAIUpstream({ failure, omitTrailingUsage = false }: FakeOptions = {}): FakeOpenAIUpstream {
++  const received: JsonRecord[] = []
++  const paths: string[] = []
++  const authorizations: (string | null)[] = []
++  const server = Bun.serve({
++    hostname: '127.0.0.1',
++    port: 0,
++    async fetch(request) {
++      const body = (await request.json()) as JsonRecord
++      received.push(body)
++      paths.push(new URL(request.url).pathname)
++      authorizations.push(request.headers.get('authorization'))
++      if (failure) return failed(failure)
++      const reply = replyTo(body)
++      return body.stream === true ? sse(chunks(body.model, reply, omitTrailingUsage)) : Response.json(completion(body.model, reply))
++    },
++  })
++  return { baseUrl: `http://127.0.0.1:${server.port}/v1`, received, paths, authorizations, stop: () => server.stop(true) }
++}
+diff --git a/src/packages/provider/src/proxy/__tests__/openaiCompatDeclaration.test.ts b/src/packages/provider/src/proxy/__tests__/openaiCompatDeclaration.test.ts
+new file mode 100644
+index 000000000..be94e7314
+--- /dev/null
++++ b/src/packages/provider/src/proxy/__tests__/openaiCompatDeclaration.test.ts
+@@ -0,0 +1,23 @@
++/**
++ * La declaración por entorno del upstream compatible con OpenAI que
++ * `bin/localProxy.ts` lee: ausente, completa o a medias.
++ */
++import { describe, expect, test } from 'bun:test'
++import { BASE_URL_ENV, API_KEY_ENV, MODEL_ENV, openAICompatDeclarationOf } from '../openaiCompat/declaration.ts'
++
++describe('openAICompatDeclarationOf', () => {
++  test('sin base ni modelo no hay declaración', () => {
++    expect(openAICompatDeclarationOf({})).toBeUndefined()
++    expect(openAICompatDeclarationOf({ [BASE_URL_ENV]: '', [MODEL_ENV]: '' })).toBeUndefined()
++  })
++
++  test('base y modelo declaran el upstream; la clave es opcional', () => {
++    expect(openAICompatDeclarationOf({ [BASE_URL_ENV]: 'http://h:1/v1', [MODEL_ENV]: 'qwen' })).toEqual({ baseUrl: 'http://h:1/v1', model: 'qwen', apiKey: undefined })
++    expect(openAICompatDeclarationOf({ [BASE_URL_ENV]: 'http://h:1/v1', [MODEL_ENV]: 'qwen', [API_KEY_ENV]: 'k' })?.apiKey).toBe('k')
++  })
++
++  test('a medias rehúsa nombrando la variable que falta', () => {
++    expect(() => openAICompatDeclarationOf({ [BASE_URL_ENV]: 'http://h:1/v1' })).toThrow(MODEL_ENV)
++    expect(() => openAICompatDeclarationOf({ [MODEL_ENV]: 'qwen' })).toThrow(BASE_URL_ENV)
++  })
++})
+diff --git a/src/packages/provider/src/proxy/__tests__/openaiCompatForwarder.test.ts b/src/packages/provider/src/proxy/__tests__/openaiCompatForwarder.test.ts
+new file mode 100644
+index 000000000..3d0b63af7
+--- /dev/null
++++ b/src/packages/provider/src/proxy/__tests__/openaiCompatForwarder.test.ts
+@@ -0,0 +1,150 @@
++/**
++ * El forwarder compatible con OpenAI por sí solo, con una petición ya
++ * enrutada: los errores del upstream (conexión rechazada, 4xx, 5xx, JSON
++ * inválido, stream roto) vuelven como error Messages que nombra el upstream
++ * y la URL, nunca como una respuesta vacía; lo que no es suyo sigue a `next`.
++ */
++import { afterEach, describe, expect, test } from 'bun:test'
++import { ALLOW_LOOPBACK_ENV } from '../netGuards.ts'
++import { createOpenAICompatForwarder, type OpenAICompatUpstreamConfig } from '../openaiCompat/forwarder.ts'
++import type { ForwardRequest } from '../server.ts'
++import { startFakeOpenAIUpstream, type FakeFailure } from './fakeOpenAIUpstream.ts'
++
++type JsonRecord = Record<string, unknown>
++
++const ENV = { [ALLOW_LOOPBACK_ENV]: '1' }
++const HELLO = { model: 'm', max_tokens: 8, messages: [{ role: 'user', content: 'hola' }] }
++
++const cleanups: (() => void)[] = []
++afterEach(() => {
++  for (const cleanup of cleanups.splice(0)) cleanup()
++})
++
++function routed(body: JsonRecord, upstreamName = 'open', path = '/v1/messages'): ForwardRequest {
++  return {
++    upstream: { name: upstreamName, provider: 'openai-compatible' }, upstreamModel: 'qwen', credential: { id: `openai-compat:${upstreamName}` },
++    path, search: '', body, headers: new Headers(), signal: new AbortController().signal, requestId: 'req-1',
++  }
++}
++
++function forwarderTo(upstream: OpenAICompatUpstreamConfig, next: (request: ForwardRequest) => Promise<Response> = () => Promise.resolve(new Response('next'))) {
++  return createOpenAICompatForwarder({ next, upstreams: { [upstream.name]: upstream }, env: ENV })
++}
++
++function failingFake(failure: FakeFailure): string {
++  const fake = startFakeOpenAIUpstream({ failure })
++  cleanups.push(fake.stop)
++  return fake.baseUrl
++}
++
++/** Una base de loopback en la que nadie escucha: se abre un puerto y se cierra. */
++function refusedBaseUrl(): string {
++  const server = Bun.serve({ hostname: '127.0.0.1', port: 0, fetch: () => new Response('') })
++  const port = server.port
++  server.stop(true)
++  return `http://127.0.0.1:${port}/v1`
++}
++
++async function errorOf(response: Response): Promise<{ type: string; message: string }> {
++  const body = await response.json() as { type: string; error: { type: string; message: string } }
++  expect(body.type).toBe('error')
++  return body.error
++}
++
++describe('errores del upstream', () => {
++  test('conexión rechazada → 502 api_error con el upstream y la URL', async () => {
++    const baseUrl = refusedBaseUrl()
++    const response = await forwarderTo({ name: 'open', baseUrl })(routed(HELLO))
++    expect(response.status).toBe(502)
++    const error = await errorOf(response)
++    expect(error.type).toBe('api_error')
++    expect(error.message).toContain('"open"')
++    expect(error.message).toContain(`${baseUrl}/chat/completions`)
++  })
++
++  test('un 4xx conserva su estado, su tipo Messages y el cuerpo del upstream', async () => {
++    const baseUrl = failingFake({ kind: 'status', status: 404, body: '{"error":{"message":"model qwen not found"}}' })
++    const response = await forwarderTo({ name: 'open', baseUrl })(routed(HELLO))
++    expect(response.status).toBe(404)
++    const error = await errorOf(response)
++    expect(error.type).toBe('not_found_error')
++    expect(error.message).toContain('model qwen not found')
++    expect(error.message).toContain(`${baseUrl}/chat/completions`)
++  })
++
++  test('un 5xx es un 502 api_error con el estado del upstream y su cuerpo', async () => {
++    const baseUrl = failingFake({ kind: 'status', status: 500, body: 'se cayó el runner' })
++    const response = await forwarderTo({ name: 'open', baseUrl })(routed(HELLO))
++    expect(response.status).toBe(502)
++    const error = await errorOf(response)
++    expect(error.type).toBe('api_error')
++    expect(error.message).toContain('500')
++    expect(error.message).toContain('se cayó el runner')
++    expect(error.message).toContain('"open"')
++  })
++
++  test('un 200 cuyo cuerpo no es JSON → 502 que lo dice', async () => {
++    const baseUrl = failingFake({ kind: 'invalid-json' })
++    const response = await forwarderTo({ name: 'open', baseUrl })(routed(HELLO))
++    expect(response.status).toBe(502)
++    const error = await errorOf(response)
++    expect(error.message).toContain('JSON')
++    expect(error.message).toContain(`${baseUrl}/chat/completions`)
++  })
++
++  test('un JSON sin choices → 502, no un mensaje vacío', async () => {
++    const baseUrl = failingFake({ kind: 'status', status: 200, body: '{"id":"x","choices":[]}' })
++    const response = await forwarderTo({ name: 'open', baseUrl })(routed(HELLO))
++    expect(response.status).toBe(502)
++    expect((await errorOf(response)).message).toContain('choices')
++  })
++
++  test('con stream, un cuerpo que no es SSE JSON termina en un evento error con contexto', async () => {
++    const baseUrl = failingFake({ kind: 'invalid-json' })
++    const response = await forwarderTo({ name: 'open', baseUrl })(routed({ ...HELLO, stream: true }))
++    const text = await response.text()
++    expect(text).toContain('event: error')
++    expect(text).toContain(`${baseUrl}/chat/completions`)
++  })
++
++  test('con stream, un chunk data: que no es JSON termina en un evento error que lo dice', async () => {
++    const baseUrl = failingFake({ kind: 'invalid-sse-chunk' })
++    const response = await forwarderTo({ name: 'open', baseUrl })(routed({ ...HELLO, stream: true }))
++    const text = await response.text()
++    expect(text).toContain('event: error')
++    expect(text).toContain('no es JSON')
++    expect(text).toContain(`${baseUrl}/chat/completions`)
++  })
++
++  test('con stream, un 5xx no se abre como stream: es el mismo 502', async () => {
++    const baseUrl = failingFake({ kind: 'status', status: 503, body: 'ocupado' })
++    const response = await forwarderTo({ name: 'open', baseUrl })(routed({ ...HELLO, stream: true }))
++    expect(response.status).toBe(502)
++    expect((await errorOf(response)).message).toContain('ocupado')
++  })
++
++  test('una baseUrl insegura se rehúsa sin conectar', async () => {
++    const forward = createOpenAICompatForwarder({ next: () => Promise.resolve(new Response('')), upstreams: { open: { name: 'open', baseUrl: 'http://127.0.0.1:9/v1' } }, env: {} })
++    const response = await forward(routed(HELLO))
++    expect(response.status).toBe(502)
++    expect((await errorOf(response)).message).toContain('insegura')
++  })
++})
++
++describe('reparto', () => {
++  test('count_tokens no existe en Chat Completions: 501 con el upstream', async () => {
++    const response = await forwarderTo({ name: 'open', baseUrl: 'http://127.0.0.1:9/v1' })(routed(HELLO, 'open', '/v1/messages/count_tokens'))
++    expect(response.status).toBe(501)
++    expect((await errorOf(response)).message).toContain('"open"')
++  })
++
++  test('un upstream que no es suyo sigue a next', async () => {
++    const seen: string[] = []
++    const forward = forwarderTo({ name: 'open', baseUrl: 'http://127.0.0.1:9/v1' }, request => {
++      seen.push(request.upstream.name)
++      return Promise.resolve(new Response('next'))
++    })
++    expect(await (await forward(routed(HELLO, 'otro'))).text()).toBe('next')
++    expect(seen).toEqual(['otro'])
++  })
++})
+diff --git a/src/packages/provider/src/proxy/__tests__/openaiCompatLocalProxy.test.ts b/src/packages/provider/src/proxy/__tests__/openaiCompatLocalProxy.test.ts
+new file mode 100644
+index 000000000..d301b8060
+--- /dev/null
++++ b/src/packages/provider/src/proxy/__tests__/openaiCompatLocalProxy.test.ts
+@@ -0,0 +1,99 @@
++/**
++ * `bin/localProxy.ts` con y sin la declaración `THYROX_OPENAI_COMPAT_*`:
++ * declarada, el modelo abierto llega por el socket al servidor OpenAI falso;
++ * sin declarar, ese modelo no se enruta a ningún sitio; a medias, rehúsa con
++ * exit 2 nombrando la variable que falta.
++ */
++import { afterEach, describe, expect, test } from 'bun:test'
++import { mkdtempSync, rmSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++import { ALLOW_LOOPBACK_ENV } from '../netGuards.ts'
++import { BASE_URL_ENV, MODEL_ENV } from '../openaiCompat/declaration.ts'
++import { startFakeOpenAIUpstream, type FakeOpenAIUpstream } from './fakeOpenAIUpstream.ts'
++
++const LOCAL_PROXY = join(import.meta.dir, '..', '..', '..', 'bin', 'localProxy.ts')
++const OPEN_MODEL = 'qwen-local'
++const REFUSAL_EXIT_CODE = 2
++const SOCKET_ANNOUNCEMENT = /^socket=(.+)$/m
++
++const cleanups: (() => Promise<void> | void)[] = []
++afterEach(async () => {
++  for (const cleanup of cleanups.splice(0)) await cleanup()
++})
++
++function workDir(): string {
++  const dir = mkdtempSync(join(tmpdir(), 'openai-compat-local-proxy-'))
++  cleanups.push(() => rmSync(dir, { recursive: true, force: true }))
++  return dir
++}
++
++function fake(): FakeOpenAIUpstream {
++  const upstream = startFakeOpenAIUpstream()
++  cleanups.push(upstream.stop)
++  return upstream
++}
++
++function launch(env: Record<string, string>) {
++  const socket = join(workDir(), 'proxy.sock')
++  const child = Bun.spawn([process.execPath, LOCAL_PROXY, '--socket', socket, '--cli', process.execPath], {
++    env: { PATH: process.env.PATH ?? '', [ALLOW_LOOPBACK_ENV]: '1', ...env },
++    stdin: 'ignore',
++    stdout: 'pipe',
++    stderr: 'pipe',
++  })
++  return child
++}
++
++/** Arranca el proxy y espera su anuncio; lo detiene al final de la prueba. */
++async function listeningProxy(env: Record<string, string>): Promise<string> {
++  const child = launch(env)
++  cleanups.push(async () => {
++    child.kill('SIGTERM')
++    await child.exited
++  })
++  const decoder = new TextDecoder()
++  let seen = ''
++  for await (const chunk of child.stdout) {
++    seen += decoder.decode(chunk, { stream: true })
++    const announced = SOCKET_ANNOUNCEMENT.exec(seen)
++    if (announced) return announced[1] as string
++  }
++  throw new Error(`localProxy no anunció su socket: ${await new Response(child.stderr).text()}`)
++}
++
++function sendOverSocket(socket: string, body: unknown): Promise<Response> {
++  return fetch('http://localhost/v1/messages', {
++    unix: socket,
++    method: 'POST',
++    headers: { 'x-api-key': 'ssh-placeholder', 'content-type': 'application/json' },
++    body: JSON.stringify(body),
++  })
++}
++
++const HELLO = { model: OPEN_MODEL, max_tokens: 16, messages: [{ role: 'user', content: 'hola' }] }
++
++describe('localProxy con upstream compatible con OpenAI', () => {
++  test('declarado, el modelo abierto llega al fake por el socket y vuelve como Messages', async () => {
++    const upstream = fake()
++    const socket = await listeningProxy({ [BASE_URL_ENV]: upstream.baseUrl, [MODEL_ENV]: OPEN_MODEL })
++    const response = await sendOverSocket(socket, HELLO)
++    expect(response.status).toBe(200)
++    expect(((await response.json()) as { content: unknown }).content).toEqual([{ type: 'text', text: 'eco: hola' }])
++    expect(upstream.received[0]?.model).toBe(OPEN_MODEL)
++  })
++
++  test('sin declarar, el modelo abierto no se enruta y el fake no recibe nada', async () => {
++    const upstream = fake()
++    const socket = await listeningProxy({})
++    const response = await sendOverSocket(socket, HELLO)
++    expect(response.status).toBe(400)
++    expect(upstream.received).toHaveLength(0)
++  })
++
++  test('a medias rehúsa con exit 2 nombrando la variable que falta, sin escuchar', async () => {
++    const child = launch({ [BASE_URL_ENV]: 'http://127.0.0.1:9/v1' })
++    expect(await child.exited).toBe(REFUSAL_EXIT_CODE)
++    expect(await new Response(child.stderr).text()).toContain(MODEL_ENV)
++  })
++})
+diff --git a/src/packages/provider/src/proxy/__tests__/openaiCompatUpstream.test.ts b/src/packages/provider/src/proxy/__tests__/openaiCompatUpstream.test.ts
+new file mode 100644
+index 000000000..dc8c43112
+--- /dev/null
++++ b/src/packages/provider/src/proxy/__tests__/openaiCompatUpstream.test.ts
+@@ -0,0 +1,187 @@
++/**
++ * El upstream compatible con OpenAI del proxy local, de extremo a extremo por
++ * `startProxyServer` contra un servidor OpenAI falso en loopback
++ * (`./fakeOpenAIUpstream.ts`): enrutado por el modelo declarado, texto sin
++ * stream y con stream, y el recorrido de aceptación de la herramienta
++ * (`tool_calls` → `tool_use` → `tool_result` → mensaje `role: tool`).
++ */
++import { afterEach, describe, expect, test } from 'bun:test'
++import { ALLOW_LOOPBACK_ENV } from '../netGuards.ts'
++import { startProxyServer, type ProxyStartConfig, type RunningProxy } from '../startServer.ts'
++import { FAKE_TOOL_ARGUMENTS, FAKE_TOOL_CALL_ID, startFakeOpenAIUpstream, type FakeOpenAIUpstream, type FakeOptions } from './fakeOpenAIUpstream.ts'
++
++type JsonRecord = Record<string, unknown>
++
++const KEY = 'sk-local'
++const OPEN_MODEL = 'qwen-local'
++const UPSTREAM_MODEL = 'qwen2.5:0.5b'
++const LS_TOOL = { name: 'ls', description: 'lista', input_schema: { type: 'object', properties: { path: { type: 'string' } } } }
++
++const cleanups: (() => Promise<void> | void)[] = []
++afterEach(async () => {
++  for (const cleanup of cleanups.splice(0)) await cleanup()
++})
++
++function fake(options: FakeOptions = {}): FakeOpenAIUpstream {
++  const upstream = startFakeOpenAIUpstream(options)
++  cleanups.push(upstream.stop)
++  return upstream
++}
++
++function proxyFor(upstream: FakeOpenAIUpstream, apiKey?: string): RunningProxy {
++  const proxy = startProxyServer(configFor(upstream.baseUrl, apiKey, { [ALLOW_LOOPBACK_ENV]: '1' }))
++  cleanups.push(() => proxy.stop())
++  return proxy
++}
++
++function configFor(baseUrl: string, apiKey: string | undefined, env: Record<string, string>): ProxyStartConfig {
++  return {
++    host: '127.0.0.1',
++    port: 0,
++    accessKeys: [KEY],
++    routing: {
++      upstreams: [{ name: 'open', provider: 'openai-compatible', models: [OPEN_MODEL] }],
++      models: [{ id: OPEN_MODEL, upstream_model: { open: UPSTREAM_MODEL } }],
++      auto_include_builtin_models: false,
++    },
++    endpoints: {},
++    credentials: {},
++    selector: 'fill-first',
++    version: '0.1.0',
++    env,
++    openaiCompat: { upstreams: [{ name: 'open', baseUrl, apiKey }] },
++  }
++}
++
++function send(proxy: RunningProxy, body: unknown): Promise<Response> {
++  return fetch(`${proxy.url}/v1/messages`, {
++    method: 'POST',
++    headers: { 'x-api-key': KEY, 'content-type': 'application/json' },
++    body: JSON.stringify(body),
++  })
++}
++
++/** Los eventos de un cuerpo SSE de Messages, en orden, como `{ event, data }`. */
++async function sseEvents(response: Response): Promise<{ event: string; data: JsonRecord }[]> {
++  const text = await response.text()
++  return text.split('\n\n').filter(frame => frame.startsWith('event: ')).map(frame => {
++    const [eventLine, dataLine] = frame.split('\n')
++    return { event: (eventLine ?? '').slice('event: '.length), data: JSON.parse((dataLine ?? '').slice('data: '.length)) as JsonRecord }
++  })
++}
++
++function textOf(events: { event: string; data: JsonRecord }[]): string {
++  return events
++    .filter(({ data }) => data.type === 'content_block_delta' && (data.delta as JsonRecord).type === 'text_delta')
++    .map(({ data }) => (data.delta as JsonRecord).text as string)
++    .join('')
++}
++
++describe('texto sin stream', () => {
++  test('traduce a /chat/completions con el modelo del upstream y devuelve un mensaje Messages', async () => {
++    const upstream = fake()
++    const response = await send(proxyFor(upstream), { model: OPEN_MODEL, max_tokens: 64, system: 'eres breve', messages: [{ role: 'user', content: 'hola' }] })
++    expect(response.status).toBe(200)
++    const body = await response.json() as JsonRecord
++    expect(body).toMatchObject({ type: 'message', role: 'assistant', stop_reason: 'end_turn', usage: { input_tokens: 11, output_tokens: 7 } })
++    expect(body.content).toEqual([{ type: 'text', text: 'eco: hola' }])
++    expect(upstream.paths).toEqual(['/v1/chat/completions'])
++    expect(upstream.received[0]).toMatchObject({ model: UPSTREAM_MODEL, messages: [{ role: 'system', content: 'eres breve' }, { role: 'user', content: 'hola' }] })
++  })
++
++  test('la clave declarada viaja como Bearer; sin clave no hay authorization', async () => {
++    const keyed = fake()
++    await send(proxyFor(keyed, 'sk-open'), { model: OPEN_MODEL, max_tokens: 8, messages: [{ role: 'user', content: 'a' }] })
++    const open = fake()
++    await send(proxyFor(open), { model: OPEN_MODEL, max_tokens: 8, messages: [{ role: 'user', content: 'a' }] })
++    expect(keyed.authorizations).toEqual(['Bearer sk-open'])
++    expect(open.authorizations).toEqual([null])
++  })
++
++  test('una baseUrl insegura rehúsa arrancar el proxy', () => {
++    expect(() => startProxyServer(configFor('http://127.0.0.1:9/v1', undefined, {}))).toThrow('baseUrl insegura para el upstream "open"')
++  })
++
++  test('un modelo que el upstream no declara no llega al fake', async () => {
++    const upstream = fake()
++    const response = await send(proxyFor(upstream), { model: 'otro-modelo', max_tokens: 8, messages: [{ role: 'user', content: 'a' }] })
++    expect(response.status).toBe(400)
++    expect(upstream.received).toHaveLength(0)
++  })
++})
++
++describe('texto con stream', () => {
++  test('reenvía stream: true y devuelve eventos SSE Messages completos', async () => {
++    const upstream = fake()
++    const response = await send(proxyFor(upstream), { model: OPEN_MODEL, max_tokens: 64, stream: true, messages: [{ role: 'user', content: 'hola' }] })
++    expect(response.status).toBe(200)
++    expect(response.headers.get('content-type')).toContain('text/event-stream')
++    const events = await sseEvents(response)
++    expect(events[0]?.event).toBe('message_start')
++    expect(events[events.length - 1]?.event).toBe('message_stop')
++    expect(textOf(events)).toBe('eco: hola')
++    const delta = events.find(({ event }) => event === 'message_delta')?.data
++    expect(delta).toMatchObject({ delta: { stop_reason: 'end_turn' }, usage: { input_tokens: 11, output_tokens: 7 } })
++    expect(upstream.received[0]).toMatchObject({ stream: true })
++  })
++
++  test('sin chunk de uso tardío, el cierre diferido se purga y el stream termina con message_stop', async () => {
++    const upstream = fake({ omitTrailingUsage: true })
++    const events = await sseEvents(await send(proxyFor(upstream), { model: OPEN_MODEL, max_tokens: 64, stream: true, messages: [{ role: 'user', content: 'hola' }] }))
++    expect(events.find(({ event }) => event === 'message_delta')?.data).toMatchObject({ delta: { stop_reason: 'end_turn' } })
++    expect(events[events.length - 1]?.event).toBe('message_stop')
++  })
++})
++
++describe('recorrido de aceptación de la herramienta', () => {
++  const first = { role: 'user', content: 'lista /etc' }
++
++  async function toolUseTurn(proxy: RunningProxy): Promise<JsonRecord> {
++    const response = await send(proxy, { model: OPEN_MODEL, max_tokens: 64, tools: [LS_TOOL], messages: [first] })
++    expect(response.status).toBe(200)
++    return response.json() as Promise<JsonRecord>
++  }
++
++  function continuation(assistant: JsonRecord, stream: boolean): JsonRecord {
++    const toolResult = { role: 'user', content: [{ type: 'tool_result', tool_use_id: FAKE_TOOL_CALL_ID, content: 'passwd hosts' }] }
++    return { model: OPEN_MODEL, max_tokens: 64, stream, tools: [LS_TOOL], messages: [first, { role: 'assistant', content: assistant.content }, toolResult] }
++  }
++
++  test('tool_calls del upstream vuelven como tool_use con stop_reason tool_use', async () => {
++    const upstream = fake()
++    const assistant = await toolUseTurn(proxyFor(upstream))
++    expect(assistant.stop_reason).toBe('tool_use')
++    expect(assistant.content).toEqual([{ type: 'tool_use', id: FAKE_TOOL_CALL_ID, name: 'ls', input: FAKE_TOOL_ARGUMENTS }])
++    expect(upstream.received[0]?.tools).toEqual([{ type: 'function', function: { name: 'ls', description: 'lista', parameters: LS_TOOL.input_schema } }])
++  })
++
++  test('el tool_result llega al upstream como role: tool con el mismo id, y su texto vuelve al cliente', async () => {
++    const upstream = fake()
++    const proxy = proxyFor(upstream)
++    const assistant = await toolUseTurn(proxy)
++    const response = await send(proxy, continuation(assistant, false))
++    expect(response.status).toBe(200)
++    const body = await response.json() as JsonRecord
++    const toolMessage = (upstream.received[1]?.messages as JsonRecord[]).find(message => message.role === 'tool')
++    expect(toolMessage).toEqual({ role: 'tool', tool_call_id: FAKE_TOOL_CALL_ID, content: 'passwd hosts' })
++    expect(body.content).toEqual([{ type: 'text', text: `resultado de ${FAKE_TOOL_CALL_ID}: passwd hosts` }])
++    expect(body.stop_reason).toBe('end_turn')
++  })
++
++  test('con stream, el tool_use llega por eventos y la continuación también', async () => {
++    const upstream = fake()
++    const proxy = proxyFor(upstream)
++    const toolTurn = await sseEvents(await send(proxy, { model: OPEN_MODEL, max_tokens: 64, stream: true, tools: [LS_TOOL], messages: [first] }))
++    const start = toolTurn.find(({ data }) => data.type === 'content_block_start')?.data.content_block as JsonRecord
++    expect(start).toMatchObject({ type: 'tool_use', id: FAKE_TOOL_CALL_ID, name: 'ls' })
++    const argumentsJson = toolTurn
++      .filter(({ data }) => data.type === 'content_block_delta' && (data.delta as JsonRecord).type === 'input_json_delta')
++      .map(({ data }) => (data.delta as JsonRecord).partial_json as string)
++      .join('')
++    expect(JSON.parse(argumentsJson)).toEqual(FAKE_TOOL_ARGUMENTS)
++    expect(toolTurn.find(({ event }) => event === 'message_delta')?.data).toMatchObject({ delta: { stop_reason: 'tool_use' } })
++    const assistant = { content: [{ type: 'tool_use', id: FAKE_TOOL_CALL_ID, name: 'ls', input: FAKE_TOOL_ARGUMENTS }] }
++    const answer = await sseEvents(await send(proxy, continuation(assistant, true)))
++    expect(textOf(answer)).toBe(`resultado de ${FAKE_TOOL_CALL_ID}: passwd hosts`)
++  })
++})
+diff --git a/src/packages/provider/src/proxy/openaiCompat/declaration.ts b/src/packages/provider/src/proxy/openaiCompat/declaration.ts
+new file mode 100644
+index 000000000..68c0ba86f
+--- /dev/null
++++ b/src/packages/provider/src/proxy/openaiCompat/declaration.ts
+@@ -0,0 +1,26 @@
++/**
++ * La declaración por entorno del upstream compatible con OpenAI que el proxy
++ * local (`bin/localProxy.ts`) conecta: una base URL y el modelo que sirve,
++ * más una clave opcional. Sin ninguna de las dos obligatorias no hay
++ * upstream y el proxy queda como estaba; con una sola se rehúsa, porque un
++ * upstream sin modelo no enruta nada y un modelo sin base no tiene a dónde ir.
++ */
++export const BASE_URL_ENV = 'THYROX_OPENAI_COMPAT_BASE_URL'
++export const MODEL_ENV = 'THYROX_OPENAI_COMPAT_MODEL'
++export const API_KEY_ENV = 'THYROX_OPENAI_COMPAT_API_KEY'
++
++export type OpenAICompatDeclaration = { baseUrl: string; model: string; apiKey: string | undefined }
++
++function declared(env: Record<string, string | undefined>, name: string): string | undefined {
++  const value = env[name]
++  return value === undefined || value === '' ? undefined : value
++}
++
++export function openAICompatDeclarationOf(env: Record<string, string | undefined>): OpenAICompatDeclaration | undefined {
++  const baseUrl = declared(env, BASE_URL_ENV)
++  const model = declared(env, MODEL_ENV)
++  if (baseUrl === undefined && model === undefined) return undefined
++  if (baseUrl === undefined) throw new Error(`${MODEL_ENV} está declarada sin ${BASE_URL_ENV}`)
++  if (model === undefined) throw new Error(`${BASE_URL_ENV} está declarada sin ${MODEL_ENV}`)
++  return { baseUrl, model, apiKey: declared(env, API_KEY_ENV) }
++}
+diff --git a/src/packages/provider/src/proxy/openaiCompat/forwarder.ts b/src/packages/provider/src/proxy/openaiCompat/forwarder.ts
+new file mode 100644
+index 000000000..96137f1ab
+--- /dev/null
++++ b/src/packages/provider/src/proxy/openaiCompat/forwarder.ts
+@@ -0,0 +1,140 @@
++/**
++ * El upstream compatible con OpenAI del proxy local: atiende `/v1/messages`
++ * traduciendo la petición Messages a `/chat/completions` con los traductores
++ * de `../translators/` y la respuesta de vuelta a Messages, con y sin
++ * stream. El `tool_result` de la petición siguiente viaja como mensaje
++ * `role: tool` con el mismo id; eso lo hace `messagesToOpenAIRequest`.
++ *
++ * Reparte como `../claudeCli/forwarder.ts`: lo que no es un upstream suyo
++ * sigue a `next`. Todo fallo del upstream —conexión, estado HTTP, JSON o SSE
++ * ilegible, respuesta sin `choices`— vuelve como error Messages que nombra el
++ * upstream y la URL, nunca como una respuesta vacía.
++ *
++ * Divergencias declaradas:
++ * - `count_tokens` no existe en Chat Completions: 501.
++ * - Un 5xx del upstream es un 502: el que falla es el upstream, no el proxy.
++ * - La clave del upstream es la de su configuración (`Authorization:
++ *   Bearer`), no la credencial que elige el selector: un servidor local como
++ *   Ollama no la necesita, y el selector sólo recibe una identidad sintética.
++ */
++import { messagesToOpenAIRequest, openaiMessageToMessagesApiMessage } from '../translators/index.ts'
++import { isSafeUpstreamUrl } from '../netGuards.ts'
++import { errorResponse, type ForwardRequest } from '../server.ts'
++import { sseFromEvents } from '../sdk/sdkForward.ts'
++import { messagesEventsFromOpenAISse } from './streamTranslation.ts'
++
++type Forwarder = (request: ForwardRequest) => Promise<Response>
++type JsonRecord = Record<string, unknown>
++
++export type OpenAICompatUpstreamConfig = {
++  name: string
++  /** La base al estilo del SDK de OpenAI, con su `/v1`: se le añade `/chat/completions`. */
++  baseUrl: string
++  apiKey?: string
++  headers?: Record<string, string>
++}
++
++export type OpenAICompatForwarderConfig = {
++  next: Forwarder
++  upstreams: Record<string, OpenAICompatUpstreamConfig | undefined>
++  env?: Record<string, string | undefined>
++  fetch?: typeof fetch
++}
++
++const MESSAGES_PATH = '/v1/messages'
++const COMPLETIONS_PATH = '/chat/completions'
++const SSE_HEADERS = { 'content-type': 'text/event-stream', 'cache-control': 'no-cache' }
++const BAD_GATEWAY = 502
++const NOT_IMPLEMENTED = 501
++const FIRST_SERVER_ERROR = 500
++/** El tipo de error Messages de cada 4xx; el resto de 4xx es `invalid_request_error`. */
++const CLIENT_ERROR_TYPES: Record<number, string> = {
++  401: 'authentication_error',
++  403: 'permission_error',
++  404: 'not_found_error',
++  429: 'rate_limit_error',
++}
++const DEFAULT_CLIENT_ERROR_TYPE = 'invalid_request_error'
++
++/** Lo que identifica una llamada en los mensajes de error: el upstream y la URL. */
++type Target = { upstream: string; url: string }
++
++function describe(target: Target): string {
++  return `upstream "${target.upstream}" (${target.url})`
++}
++
++export function completionsUrlOf(baseUrl: string): string {
++  return `${baseUrl.replace(/\/$/, '')}${COMPLETIONS_PATH}`
++}
++
++function requestHeadersOf(upstream: OpenAICompatUpstreamConfig): Headers {
++  const headers = new Headers({ 'content-type': 'application/json' })
++  for (const [name, value] of Object.entries(upstream.headers ?? {})) headers.set(name, value)
++  if (upstream.apiKey) headers.set('authorization', `Bearer ${upstream.apiKey}`)
++  return headers
++}
++
++function isServerError(status: number): boolean {
++  return status >= FIRST_SERVER_ERROR
++}
++
++/** El error Messages de un estado HTTP de fallo del upstream, con su cuerpo. */
++function upstreamStatusError(target: Target, status: number, text: string, requestId?: string): Response {
++  const message = `${describe(target)} respondió ${status}: ${text}`
++  if (isServerError(status)) return errorResponse(BAD_GATEWAY, 'api_error', message, requestId)
++  return errorResponse(status, CLIENT_ERROR_TYPES[status] ?? DEFAULT_CLIENT_ERROR_TYPE, message, requestId)
++}
++
++function hasChoices(completion: unknown): boolean {
++  const choices = (completion as JsonRecord | null)?.choices
++  return Array.isArray(choices) && choices.length > 0
++}
++
++async function messageResponseOf(target: Target, upstream: Response, requestId?: string): Promise<Response> {
++  const text = await upstream.text()
++  let completion: unknown
++  try {
++    completion = JSON.parse(text)
++  } catch {
++    return errorResponse(BAD_GATEWAY, 'api_error', `${describe(target)} devolvió un cuerpo que no es JSON: ${text.slice(0, 200)}`, requestId)
++  }
++  if (!hasChoices(completion)) {
++    return errorResponse(BAD_GATEWAY, 'api_error', `${describe(target)} devolvió una respuesta sin choices: ${text.slice(0, 200)}`, requestId)
++  }
++  return Response.json(openaiMessageToMessagesApiMessage(completion as JsonRecord))
++}
++
++function streamResponseOf(target: Target, upstream: Response, requestId?: string): Response {
++  const events = messagesEventsFromOpenAISse(upstream.body, describe(target))
++  return new Response(sseFromEvents(events, { requestId }), { headers: SSE_HEADERS })
++}
++
++export function createOpenAICompatForwarder(config: OpenAICompatForwarderConfig): Forwarder {
++  const send = config.fetch ?? fetch
++
++  async function serve(upstream: OpenAICompatUpstreamConfig, request: ForwardRequest): Promise<Response> {
++    const target = { upstream: upstream.name, url: completionsUrlOf(upstream.baseUrl) }
++    if (request.path !== MESSAGES_PATH) {
++      return errorResponse(NOT_IMPLEMENTED, 'not_supported', `${describe(target)} no sirve ${request.path}`, request.requestId)
++    }
++    if (!isSafeUpstreamUrl(upstream.baseUrl, config.env)) {
++      return errorResponse(BAD_GATEWAY, 'api_error', `baseUrl insegura para el ${describe(target)}`, request.requestId)
++    }
++    const wantsStream = request.body.stream === true
++    const body = messagesToOpenAIRequest(request.upstreamModel, request.body, wantsStream)
++    let response: Response
++    try {
++      response = await send(target.url, { method: 'POST', headers: requestHeadersOf(upstream), body: JSON.stringify(body), signal: request.signal })
++    } catch (error) {
++      const cause = error instanceof Error ? error.message : String(error)
++      return errorResponse(BAD_GATEWAY, 'api_error', `no se pudo conectar con el ${describe(target)}: ${cause}`, request.requestId)
++    }
++    if (!response.ok) return upstreamStatusError(target, response.status, await response.text(), request.requestId)
++    return wantsStream ? streamResponseOf(target, response, request.requestId) : messageResponseOf(target, response, request.requestId)
++  }
++
++  return request => {
++    const upstream = config.upstreams[request.upstream.name]
++    return upstream ? serve(upstream, request) : config.next(request)
++  }
++}
+diff --git a/src/packages/provider/src/proxy/openaiCompat/streamTranslation.ts b/src/packages/provider/src/proxy/openaiCompat/streamTranslation.ts
+new file mode 100644
+index 000000000..77d75ae3a
+--- /dev/null
++++ b/src/packages/provider/src/proxy/openaiCompat/streamTranslation.ts
+@@ -0,0 +1,62 @@
++/**
++ * El stream SSE de Chat Completions leído como eventos Messages: cada línea
++ * `data:` pasa por `openaiToMessagesResponse`, y al terminar se purga el
++ * cierre diferido (el traductor espera un chunk de uso tardío). Un `data:`
++ * que no es JSON, o un stream que termina sin un solo chunk, se entregan como
++ * un evento `error` que nombra al upstream, en vez de un stream vacío.
++ */
++import { createOpenAIToMessagesState, openaiToMessagesResponse } from '../translators/index.ts'
++
++type JsonRecord = Record<string, unknown>
++
++const DATA_PREFIX = 'data:'
++const DONE_MARKER = '[DONE]'
++
++class UpstreamStreamError extends Error {}
++
++/** El texto de cada línea `data:` del stream, hasta `[DONE]` o el final. */
++async function* dataLinesOf(body: ReadableStream<Uint8Array>): AsyncGenerator<string> {
++  const decoder = new TextDecoder()
++  let pending = ''
++  for await (const chunk of body) {
++    pending += decoder.decode(chunk, { stream: true })
++    const lines = pending.split('\n')
++    pending = lines.pop() ?? ''
++    for (const line of lines) if (line.startsWith(DATA_PREFIX)) yield line.slice(DATA_PREFIX.length).trim()
++  }
++  if (pending.startsWith(DATA_PREFIX)) yield pending.slice(DATA_PREFIX.length).trim()
++}
++
++function parsedChunk(data: string, source: string): JsonRecord {
++  try {
++    return JSON.parse(data) as JsonRecord
++  } catch {
++    throw new UpstreamStreamError(`${source} emitió un chunk SSE que no es JSON: ${data.slice(0, 200)}`)
++  }
++}
++
++async function* translatedEvents(body: ReadableStream<Uint8Array> | null, source: string): AsyncGenerator<JsonRecord> {
++  if (!body) throw new UpstreamStreamError(`${source} respondió sin cuerpo`)
++  const state = createOpenAIToMessagesState()
++  let chunks = 0
++  for await (const data of dataLinesOf(body)) {
++    if (data === DONE_MARKER) break
++    chunks += 1
++    yield* openaiToMessagesResponse(parsedChunk(data, source), state) ?? []
++  }
++  if (chunks === 0) throw new UpstreamStreamError(`${source} terminó el stream sin ningún chunk SSE`)
++  yield* openaiToMessagesResponse(null, state) ?? []
++}
++
++function errorEvent(message: string): JsonRecord {
++  return { type: 'error', error: { type: 'api_error', message } }
++}
++
++export async function* messagesEventsFromOpenAISse(body: ReadableStream<Uint8Array> | null, source: string): AsyncGenerator<JsonRecord> {
++  try {
++    yield* translatedEvents(body, source)
++  } catch (error) {
++    const message = error instanceof UpstreamStreamError ? error.message : `${source} cortó el stream: ${error instanceof Error ? error.message : String(error)}`
++    yield errorEvent(message)
++  }
++}
+diff --git a/src/packages/provider/src/proxy/startServer.ts b/src/packages/provider/src/proxy/startServer.ts
+index b53880023..5bd2888fc 100644
+--- a/src/packages/provider/src/proxy/startServer.ts
++++ b/src/packages/provider/src/proxy/startServer.ts
+@@ -4,7 +4,9 @@
+  * credenciales (`./credentialSelectors.ts`) y el reenvío propio —HTTP
+  * (`./upstreamForwarder.ts`) o por SDK para los upstreams de nube
+  * (`./sdk/cloudForwarder.ts`) o por `claude -p` para los upstreams
+- * `claude-cli` (`./claudeCli/forwarder.ts`)— en un `Bun.serve`.
++ * `claude-cli` (`./claudeCli/forwarder.ts`) o por Chat Completions para los
++ * upstreams compatibles con OpenAI (`./openaiCompat/forwarder.ts`)— en un
++ * `Bun.serve`.
+  *
+  * Sólo escucha en loopback, y la razón es de thyrox: el proxy lleva las
+  * credenciales de sus upstreams, y escuchar fuera de la máquina las
+@@ -47,6 +49,7 @@ import { BRIDGE_PATH_PREFIX } from './claudeCli/bridge.ts'
+ import type { SpawnCli } from './claudeCli/claudeProcess.ts'
+ import { type CliUpstreamConfig, createCliUpstreamForwarder } from './claudeCli/forwarder.ts'
+ import type { GatewayRoutingConfig } from './upstreamRouting.ts'
++import { createOpenAICompatForwarder, type OpenAICompatUpstreamConfig } from './openaiCompat/forwarder.ts'
+ 
+ export type SelectorName = 'fill-first' | 'round-robin' | 'weighted-round-robin'
+ 
+@@ -102,6 +105,13 @@ export type ProxyStartConfig = {
+    * sólo lo sustituyen las pruebas.
+    */
+   claudeCli?: { upstreams: readonly CliUpstreamConfig[]; spawn?: SpawnCli }
++  /**
++   * Los upstreams compatibles con OpenAI (`./openaiCompat/forwarder.ts`):
++   * atienden `/v1/messages` traduciendo a `/chat/completions` de su
++   * `baseUrl`. Como los de nube, no declaran endpoint y reciben una
++   * credencial sintética; su clave, si la tienen, va en su configuración.
++   */
++  openaiCompat?: { upstreams: readonly OpenAICompatUpstreamConfig[] }
+   /**
+    * El store de conexiones de proveedor. Un upstream sin credenciales
+    * declaradas toma las conexiones de su proveedor, releídas en cada petición:
+@@ -227,8 +237,12 @@ export function startProxyServer(config: ProxyStartConfig): RunningProxy {
+   if (keyProvider === null) throw new Error('el proxy local exige al menos una clave de acceso')
+   const cloud = Object.fromEntries((config.cloud?.upstreams ?? []).map(upstream => [upstream.name, upstream]))
+   const claudeCliUpstreams = Object.fromEntries((config.claudeCli?.upstreams ?? []).map(upstream => [upstream.name, upstream]))
++  const openaiCompatUpstreams = Object.fromEntries((config.openaiCompat?.upstreams ?? []).map(upstream => [upstream.name, upstream]))
++  for (const upstream of config.openaiCompat?.upstreams ?? []) {
++    if (!isSafeUpstreamUrl(upstream.baseUrl, config.env)) throw new Error(`baseUrl insegura para el upstream "${upstream.name}"`)
++  }
+   for (const upstream of config.routing.upstreams) {
+-    if (cloud[upstream.name] || claudeCliUpstreams[upstream.name]) continue
++    if (cloud[upstream.name] || claudeCliUpstreams[upstream.name] || openaiCompatUpstreams[upstream.name]) continue
+     const endpoint = config.endpoints[upstream.name]
+     if (!endpoint) throw new Error(`el upstream "${upstream.name}" no declara endpoint`)
+     if (!isSafeUpstreamUrl(endpoint.baseUrl, config.env)) {
+@@ -238,6 +252,7 @@ export function startProxyServer(config: ProxyStartConfig): RunningProxy {
+   const credentials = withSyntheticCredentials(config.credentials, [
+     ...Object.keys(cloud).map(name => ({ name, id: `cloud:${name}` })),
+     ...Object.keys(claudeCliUpstreams).map(name => ({ name, id: `claude-cli:${name}` })),
++    ...Object.keys(openaiCompatUpstreams).map(name => ({ name, id: `openai-compat:${name}` })),
+   ])
+   // Antes de `Bun.serve`: un THYROX_PROXY_MODE=multi sin THYROX_REDIS_URL
+   // rehúsa aquí, sin dejar ningún puerto abierto.
+@@ -258,15 +273,19 @@ export function startProxyServer(config: ProxyStartConfig): RunningProxy {
+   // La URL del puente sale del servidor ya escuchando: se rellena tras `Bun.serve`.
+   const listening = { url: '' }
+   const claudeCli = createCliUpstreamForwarder({
+-    next: createCloudAwareForwarder({
+-      http: createHttpForwarder({
+-        upstreams: config.endpoints,
+-        version: config.version,
+-        firstByteTimeoutMs: config.firstByteTimeoutMs,
+-        env: config.env,
++    next: createOpenAICompatForwarder({
++      next: createCloudAwareForwarder({
++        http: createHttpForwarder({
++          upstreams: config.endpoints,
++          version: config.version,
++          firstByteTimeoutMs: config.firstByteTimeoutMs,
++          env: config.env,
++        }),
++        cloud,
++        options: { fetch: config.cloud?.fetch, processHeaders: config.cloud?.processHeaders },
+       }),
+-      cloud,
+-      options: { fetch: config.cloud?.fetch, processHeaders: config.cloud?.processHeaders },
++      upstreams: openaiCompatUpstreams,
++      env: config.env,
+     }),
+     upstreams: claudeCliUpstreams,
+     bridgeUrlOf: token => `${listening.url}${BRIDGE_PATH_PREFIX}${token}`,
+diff --git a/src/packages/shell/tsconfig.check.json b/src/packages/shell/tsconfig.check.json
+new file mode 100644
+index 000000000..47f9d945e
+--- /dev/null
++++ b/src/packages/shell/tsconfig.check.json
+@@ -0,0 +1,216 @@
++{
++  "compilerOptions": {
++    "noEmit": true,
++    "skipLibCheck": true,
++    "strict": true,
++    "module": "esnext",
++    "target": "esnext",
++    "moduleResolution": "bundler",
++    "allowImportingTsExtensions": true,
++    "jsx": "react-jsx",
++    "types": [
++      "bun"
++    ],
++    "preserveSymlinks": true,
++    "paths": {
++      "@thyrox/shell": [
++        "./src/index.ts"
++      ],
++      "@thyrox/shell/process.js": [
++        "./src/process.ts"
++      ],
++      "@thyrox/shell/subprocessEnv.js": [
++        "./src/subprocessEnv.ts"
++      ],
++      "@thyrox/shell/bash/heredoc.js": [
++        "./src/bash/heredoc.ts"
++      ],
++      "@thyrox/shell/bash/registry.js": [
++        "./src/bash/registry.ts"
++      ],
++      "@thyrox/shell/bash/shellPrefix.js": [
++        "./src/bash/shellPrefix.ts"
++      ],
++      "@thyrox/shell/bash/shellQuote.js": [
++        "./src/bash/shellQuote.ts"
++      ],
++      "@thyrox/shell/bash/shellQuoting.js": [
++        "./src/bash/shellQuoting.ts"
++      ],
++      "@thyrox/shell/bash/internal.js": [
++        "./src/bash/internal.ts"
++      ],
++      "@thyrox/shell/bash/unicodeDashes.js": [
++        "./src/bash/unicodeDashes.ts"
++      ],
++      "@thyrox/shell/bash/specs/index.js": [
++        "./src/bash/specs/index.ts"
++      ],
++      "@thyrox/shell/execFileNoThrow.js": [
++        "./src/execFileNoThrow.ts"
++      ],
++      "@thyrox/shell/execFileNoThrowPortable.js": [
++        "./src/execFileNoThrowPortable.ts"
++      ],
++      "@thyrox/shell/genericProcessUtils.js": [
++        "./src/genericProcessUtils.ts"
++      ],
++      "@thyrox/shell/which.js": [
++        "./src/which.ts"
++      ],
++      "@thyrox/shell/errors.js": [
++        "./src/errors.ts"
++      ],
++      "@thyrox/shell/types.js": [
++        "./src/types.ts"
++      ],
++      "@thyrox/shell/context.js": [
++        "./src/context.ts"
++      ],
++      "@thyrox/shell/findExecutable.js": [
++        "./src/findExecutable.ts"
++      ],
++      "@thyrox/shell/immediateCommand.js": [
++        "./src/immediateCommand.ts"
++      ],
++      "@thyrox/shell/commandLifecycle.js": [
++        "./src/commandLifecycle.ts"
++      ],
++      "@thyrox/shell/taskOutputPort.js": [
++        "./src/taskOutputPort.ts"
++      ],
++      "@thyrox/shell/execSyncWrapper.js": [
++        "./src/execSyncWrapper.ts"
++      ],
++      "@thyrox/shell/sandboxUiUtils.js": [
++        "./src/sandboxUiUtils.ts"
++      ],
++      "@thyrox/shell/sandbox/sandboxRipgrepResolver.js": [
++        "./src/sandbox/sandboxRipgrepResolver.ts"
++      ],
++      "@thyrox/shell/terminal/iTermBackup.js": [
++        "./src/terminal/iTermBackup.ts"
++      ],
++      "@thyrox/shell/terminal/appleTerminalBackup.js": [
++        "./src/terminal/appleTerminalBackup.ts"
++      ],
++      "@thyrox/shell/providers/outputLimits.js": [
++        "./src/providers/outputLimits.ts"
++      ],
++      "@thyrox/shell/providers/resolveDefaultShell.js": [
++        "./src/providers/resolveDefaultShell.ts"
++      ],
++      "@thyrox/shell/providers/shellToolUtils.js": [
++        "./src/providers/shellToolUtils.ts"
++      ],
++      "@thyrox/shell/providers/shellProvider.js": [
++        "./src/providers/shellProvider.ts"
++      ],
++      "@thyrox/shell/providers/powershellDetection.js": [
++        "./src/providers/powershellDetection.ts"
++      ],
++      "@thyrox/shell/providers/powershellProvider.js": [
++        "./src/providers/powershellProvider.ts"
++      ],
++      "@thyrox/shell/legacy/outputLimits.js": [
++        "./src/legacy/outputLimits.ts"
++      ],
++      "@thyrox/shell/legacy/resolveDefaultShell.js": [
++        "./src/legacy/resolveDefaultShell.ts"
++      ],
++      "@thyrox/shell/legacy/shellToolUtils.js": [
++        "./src/legacy/shellToolUtils.ts"
++      ],
++      "@thyrox/shell/legacy/shellProvider.js": [
++        "./src/legacy/shellProvider.ts"
++      ],
++      "@thyrox/shell/legacy/powershellDetection.js": [
++        "./src/legacy/powershellDetection.ts"
++      ],
++      "@thyrox/shell/legacy/powershellProvider.js": [
++        "./src/legacy/powershellProvider.ts"
++      ],
++      "@thyrox/shell/testing": [
++        "./src/testing/index.ts"
++      ],
++      "@thyrox/shell/testing.js": [
++        "./src/testing/index.ts"
++      ],
++      "@thyrox/shell/bash/specs": [
++        "./src/bash/specs/index.ts"
++      ],
++      "@thyrox/shell/Shell.js": [
++        "./src/Shell.ts"
++      ],
++      "@thyrox/shell/bash/ParsedCommand.js": [
++        "./src/bash/ParsedCommand.ts"
++      ],
++      "@thyrox/shell/bash/ast-alias.js": [
++        "./src/bash/ast-alias.ts"
++      ],
++      "@thyrox/shell/bash/commands.js": [
++        "./src/bash/commands.ts"
++      ],
++      "@thyrox/shell/bash/parser.js": [
++        "./src/bash/parser.ts"
++      ],
++      "@thyrox/shell/bash/prefix.js": [
++        "./src/bash/prefix.ts"
++      ],
++      "@thyrox/shell/bash/shellCompletion.js": [
++        "./src/bash/shellCompletion.ts"
++      ],
++      "@thyrox/shell/bash/treeSitterAnalysis.js": [
++        "./src/bash/treeSitterAnalysis.ts"
++      ],
++      "@thyrox/shell/collapseBackgroundBashNotifications.js": [
++        "./src/collapseBackgroundBashNotifications.ts"
++      ],
++      "@thyrox/shell/legacy/readOnlyCommandValidation.js": [
++        "./src/legacy/readOnlyCommandValidation.ts"
++      ],
++      "@thyrox/shell/powershell/dangerousCmdlets.js": [
++        "./src/powershell/dangerousCmdlets.ts"
++      ],
++      "@thyrox/shell/powershell/parser.js": [
++        "./src/powershell/parser.ts"
++      ],
++      "@thyrox/shell/powershell/staticPrefix.js": [
++        "./src/powershell/staticPrefix.ts"
++      ],
++      "@thyrox/shell/sandbox.js": [
++        "./src/sandbox.ts"
++      ],
++      "@thyrox/shell/sandbox/sandbox-adapter.js": [
++        "./src/sandbox/sandbox-adapter.ts"
++      ],
++      "@thyrox/shell/shellCommand.js": [
++        "./src/shellCommand.ts"
++      ],
++      "@thyrox/shell/shellConfig.js": [
++        "./src/shellConfig.ts"
++      ],
++      "@thyrox/shell/terminal/ShellCommand.js": [
++        "./src/terminal/ShellCommand.ts"
++      ],
++      "@thyrox/shell/terminal/terminalPanel.js": [
++        "./src/terminal/terminalPanel.ts"
++      ]
++    }
++  },
++  "include": [
++    "src/**/*"
++  ],
++  "exclude": [
++    "**/__tests__/**",
++    "**/*.test.ts",
++    "**/*.test.tsx",
++    "**/*.spec.ts",
++    "**/*.spec.tsx",
++    "node_modules",
++    "dist"
++  ],
++  "files": [
++    "../../types/build-globals.d.ts"
++  ]
++}

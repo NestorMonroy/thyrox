@@ -1,0 +1,17 @@
+[
+  {
+    "store": "agent-results/agent_store.sqlite3",
+    "textCellsScanned": 132501,
+    "tables": 8
+  },
+  {
+    "store": ".claude/agent-results/agent_store.sqlite3",
+    "textCellsScanned": 28,
+    "tables": 7
+  },
+  {
+    "store": "/root/.claude/providers/connections.sqlite3",
+    "textCellsScanned": 2,
+    "tables": 2
+  }
+]

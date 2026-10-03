@@ -1,0 +1,788 @@
+math	src/agents/agent_store.py	128:def valid_repos() -> tuple[str, ...]:
+math	src/agents/agent_store.py	388:def now_iso() -> str:
+math	src/agents/agent_store.py	401:def date_columns(conn: sqlite3.Connection, table: str) -> list:
+math	src/agents/agent_store.py	419:def last_write(conn: sqlite3.Connection, table: str):
+math	src/agents/agent_store.py	435:def document_root(args: argparse.Namespace) -> Path:
+math	src/agents/agent_store.py	461:def resolve_store_dir(args: argparse.Namespace, create: bool = True) -> Path:
+math	src/agents/agent_store.py	784:def _migrate_agent_sessions_usage_columns(conn: sqlite3.Connection) -> None:
+math	src/agents/agent_store.py	906:def _cargar_senales() -> tuple:
+math	src/agents/agent_store.py	939:def derive_submodule(subject: str, description: str,
+math	src/agents/agent_store.py	985:def _migrate_tasks_layer_columns(conn: sqlite3.Connection) -> None:
+math	src/agents/agent_store.py	1001:def _migrate_tasks_citation_columns(conn: sqlite3.Connection) -> None:
+math	src/agents/agent_store.py	1026:def _migrate_tasks_board_ordinal_column(conn: sqlite3.Connection) -> None:
+math	src/agents/agent_store.py	1057:def _migrate_tasks_opening_columns(conn: sqlite3.Connection) -> None:
+math	src/agents/agent_store.py	1083:def _migrate_documents_series_columns(conn: sqlite3.Connection) -> None:
+math	src/agents/agent_store.py	1100:def _migrate_documents_drop_scanned_at(conn: sqlite3.Connection) -> None:
+math	src/agents/agent_store.py	1123:def _migrate_tasks_composite_pk(conn: sqlite3.Connection) -> None:
+math	src/agents/agent_store.py	1178:def _migrate_tasks_status_check(conn: sqlite3.Connection) -> None:
+math	src/agents/agent_store.py	1264:class MigrationError(RuntimeError):
+math	src/agents/agent_store.py	1271:class Migration:
+math	src/agents/agent_store.py	1301:def _migrations_control_ddl(table: str) -> str:
+math	src/agents/agent_store.py	1308:def _table_exists(conn: sqlite3.Connection, table: str) -> bool:
+math	src/agents/agent_store.py	1314:def _index_exists(conn: sqlite3.Connection, name: str) -> bool:
+math	src/agents/agent_store.py	1320:def _trigger_exists(conn: sqlite3.Connection, name: str) -> bool:
+math	src/agents/agent_store.py	1326:def _columns(conn: sqlite3.Connection, table: str) -> set:
+math	src/agents/agent_store.py	1330:def _assert_valid_migrations(migrations) -> None:
+math	src/agents/agent_store.py	1364:def _read_migrations_ledger(conn: sqlite3.Connection, table: str) -> dict:
+math	src/agents/agent_store.py	1368:def _assert_no_newer_database(table: str, applied_versions, migrations) -> None:
+math	src/agents/agent_store.py	1382:def _assert_migration_provenance(table: str, applied: dict, migrations) -> None:
+math	src/agents/agent_store.py	1399:def run_migrations(conn: sqlite3.Connection, table: str = MIGRATIONS_TABLE,
+math	src/agents/agent_store.py	1480:def _core_schema_already_applied(conn: sqlite3.Connection) -> bool:
+math	src/agents/agent_store.py	1484:def _apply_core_schema(conn: sqlite3.Connection) -> None:
+math	src/agents/agent_store.py	1489:def _agent_sessions_usage_columns_already_applied(conn: sqlite3.Connection) -> bool:
+math	src/agents/agent_store.py	1494:def _tasks_composite_pk_already_applied(conn: sqlite3.Connection) -> bool:
+math	src/agents/agent_store.py	1502:def _tasks_layer_columns_already_applied(conn: sqlite3.Connection) -> bool:
+math	src/agents/agent_store.py	1507:def _tasks_opening_columns_already_applied(conn: sqlite3.Connection) -> bool:
+math	src/agents/agent_store.py	1512:def _tasks_citation_columns_already_applied(conn: sqlite3.Connection) -> bool:
+math	src/agents/agent_store.py	1522:def _tasks_board_ordinal_column_already_applied(conn: sqlite3.Connection) -> bool:
+math	src/agents/agent_store.py	1531:def _tasks_status_check_already_applied(conn: sqlite3.Connection) -> bool:
+math	src/agents/agent_store.py	1540:def _documents_series_columns_already_applied(conn: sqlite3.Connection) -> bool:
+math	src/agents/agent_store.py	1545:def _documents_drop_scanned_at_already_applied(conn: sqlite3.Connection) -> bool:
+math	src/agents/agent_store.py	1550:def _task_session_highwater_already_applied(conn: sqlite3.Connection) -> bool:
+math	src/agents/agent_store.py	1554:def _apply_task_session_highwater(conn: sqlite3.Connection) -> None:
+math	src/agents/agent_store.py	1559:def _task_highwater_legacy_already_applied(conn: sqlite3.Connection) -> bool:
+math	src/agents/agent_store.py	1564:def _adopt_task_highwater_legacy(conn: sqlite3.Connection) -> None:
+math	src/agents/agent_store.py	1593:def _cleared_tool_results_already_applied(conn: sqlite3.Connection) -> bool:
+math	src/agents/agent_store.py	1597:def _apply_cleared_tool_results(conn: sqlite3.Connection) -> None:
+math	src/agents/agent_store.py	1616:def _agent_sessions_stamp_updated_already_applied(conn: sqlite3.Connection) -> bool:
+math	src/agents/agent_store.py	1620:def _apply_agent_sessions_stamp_updated(conn: sqlite3.Connection) -> None:
+math	src/agents/agent_store.py	1662:def connect(store_dir: Path) -> sqlite3.Connection:
+math	src/agents/agent_store.py	1686:class StoreNotFound(FileNotFoundError):
+math	src/agents/agent_store.py	1696:def connect_readonly(store_dir: Path) -> sqlite3.Connection:
+math	src/agents/agent_store.py	1729:def _create_fts_schema(conn: sqlite3.Connection) -> None:
+math	src/agents/agent_store.py	1752:def fts_available(conn: sqlite3.Connection) -> bool:
+math	src/agents/agent_store.py	1766:def _resync_fts(conn: sqlite3.Connection) -> None:
+math	src/agents/agent_store.py	1785:def _fts5_match_query(raw: str) -> str:
+math	src/agents/agent_store.py	1813:def _fts5_match_query_any(raw: str, max_terms: int = 8) -> str:
+math	src/agents/agent_store.py	1840:def cmd_init(args: argparse.Namespace) -> None:
+math	src/agents/agent_store.py	1847:def cmd_migrate_db(args: argparse.Namespace) -> None:
+math	src/agents/agent_store.py	1870:def cmd_register_session(args: argparse.Namespace) -> None:
+math	src/agents/agent_store.py	1934:def _asignacion_metadata(args: argparse.Namespace) -> tuple:
+math	src/agents/agent_store.py	1973:def cmd_update_session(args: argparse.Namespace) -> None:
+math	src/agents/agent_store.py	2147:def citation_reassignments(conn, session: str, tasks_dir: Path) -> list:
+math	src/agents/agent_store.py	2214:def _numeric_stem(ruta: Path):
+math	src/agents/agent_store.py	2227:def _reanchor_citations_by_subject(conn, session: str, citas_antes: dict) -> int:
+math	src/agents/agent_store.py	2290:def _board_ordinal_of(task_id: str):
+math	src/agents/agent_store.py	2306:def cmd_snapshot_tasks(args: argparse.Namespace) -> None:
+math	src/agents/agent_store.py	2523:def cota_ficha(tasks_dir: Path) -> dict:
+math	src/agents/agent_store.py	2559:def cota_tablero(repo: Path, ruta: str = RUTA_TABLERO) -> dict:
+math	src/agents/agent_store.py	2592:def cmd_date_opening(args: argparse.Namespace) -> None:
+math	src/agents/agent_store.py	2663:def _parse_declared_date(texto: str):
+math	src/agents/agent_store.py	2684:def _is_shallow_repo(repo: Path) -> bool | None:
+math	src/agents/agent_store.py	2706:def _last_commit_dates(repo: Path, subtree: str) -> dict:
+math	src/agents/agent_store.py	2764:def cmd_date_documents(args: argparse.Namespace) -> None:
+math	src/agents/agent_store.py	2885:def _document_section(rel: str, subtree: str):
+math	src/agents/agent_store.py	2899:def _document_type(rel: str) -> str:
+math	src/agents/agent_store.py	2911:def cmd_classify_documents(args: argparse.Namespace) -> None:
+math	src/agents/agent_store.py	2987:def cmd_search_tasks(args: argparse.Namespace) -> None:
+math	src/agents/agent_store.py	3056:def cmd_derive_submodule(args: argparse.Namespace) -> None:
+math	src/agents/agent_store.py	3136:def _row_value(fila, columna: str):
+math	src/agents/agent_store.py	3151:def _celda_rst(valor: object) -> str:
+math	src/agents/agent_store.py	3170:def _orden_id(texto: str) -> tuple:
+math	src/agents/agent_store.py	3175:def firma_estados(tasks_dir: Path) -> str:
+math	src/agents/agent_store.py	3219:def _celda_bloqueada(bruto) -> str:
+math	src/agents/agent_store.py	3242:def _tabla_de_sesion(filas: list) -> list:
+math	src/agents/agent_store.py	3285:def cmd_render_tablero(args: argparse.Namespace) -> None:
+math	src/agents/agent_store.py	3485:def _invertir(texto: str) -> str:
+math	src/agents/agent_store.py	3503:def cmd_table_census(args: argparse.Namespace) -> None:
+math	src/agents/agent_store.py	3565:def stop_reason_provenance(conn: sqlite3.Connection) -> dict:
+math	src/agents/agent_store.py	3627:def cmd_stop_reason_census(args: argparse.Namespace) -> None:
+math	src/agents/agent_store.py	3668:def cmd_usage_census(args: argparse.Namespace) -> None:
+math	src/agents/agent_store.py	3821:def cmd_list_sessions(args: argparse.Namespace) -> None:
+math	src/agents/agent_store.py	3847:def existing_finding_summary(conn: sqlite3.Connection,
+math	src/agents/agent_store.py	3863:def cmd_add_finding(args: argparse.Namespace) -> None:
+math	src/agents/agent_store.py	3927:def cmd_search_findings(args: argparse.Namespace) -> None:
+math	src/agents/agent_store.py	3978:def cmd_auto_recall(args: argparse.Namespace) -> None:
+math	src/agents/agent_store.py	4051:def add_target_args(p: argparse.ArgumentParser) -> None:
+math	src/agents/agent_store.py	4066:def build_parser() -> argparse.ArgumentParser:
+math	src/agents/agent_store.py	4366:def main(argv: "list[str] | None" = None) -> None:
+math	src/packages/cli/src/headless/sdk/session/run-streaming.ts	330:export function runHeadlessStreaming(
+math	src/packages/cli/src/headless/sdk/session/run-streaming.ts	3529:export async function handleRewindFiles(
+math	src/packages/provider/src/cost/policy.ts	56:export type SwitchCost = {
+math	src/packages/provider/src/cost/policy.ts	76:export function switchCost(
+math	src/packages/provider/src/cost/policy.ts	117:export function effortSwitchCost(modelId: string, contextTokens: number): SwitchCost {
+math	src/packages/provider/src/cost/policy.ts	134:export function ttlBreakEvenExpiries(modelId: string): number {
+math	src/packages/provider/src/cost/policy.ts	139:export type TtlChoice = { ttl: CacheTtl; why: string; breakEvenExpiries: number }
+math	src/packages/provider/src/cost/policy.ts	148:export function chooseCacheTtl(modelId: string, expectedGapMinutes: number): TtlChoice {
+math	src/packages/provider/src/cost/policy.ts	163:export const TASK_KINDS = ['mecanica', 'analisis', 'adversarial', 'frontera'] as const
+math	src/packages/provider/src/cost/policy.ts	164:export type TaskKind = (typeof TASK_KINDS)[number]
+math	src/packages/provider/src/cost/policy.ts	173:export type TaskRequirement = { minAdvisorRank: number; effort: EffortLevel }
+math	src/packages/provider/src/cost/policy.ts	175:export const TASK_REQUIREMENTS: Record<TaskKind, TaskRequirement> = {
+math	src/packages/provider/src/cost/policy.ts	182:export type TurnProfile = {
+math	src/packages/provider/src/cost/policy.ts	198:export type Candidate = {
+math	src/packages/provider/src/cost/policy.ts	214:export type Exclusion = { model: string; why: string }
+math	src/packages/provider/src/cost/policy.ts	216:export type Recommendation = {
+math	src/packages/provider/src/cost/policy.ts	254:export function candidates(
+math	src/packages/provider/src/cost/policy.ts	326:export function recommend(kind: TaskKind, profile: TurnProfile): Recommendation {
+math	src/packages/provider/src/cost/policy.ts	349:export type LocalModelInventory = {
+math	src/packages/provider/src/cost/policy.ts	355:export type LocalExecution = {
+math	src/packages/provider/src/cost/policy.ts	369:export type ProviderExecution = Recommendation & {
+math	src/packages/provider/src/cost/policy.ts	379:export type BlockedExecution = {
+math	src/packages/provider/src/cost/policy.ts	386:export type ExecutionRecommendation = LocalExecution | ProviderExecution | BlockedExecution
+math	src/packages/provider/src/cost/policy.ts	389:export function providerExecution(kind: TaskKind, profile: TurnProfile): ProviderExecution {
+math	src/packages/provider/src/cost/policy.ts	419:export function recommendExecution(
+math	src/packages/provider/src/cost/policy.ts	451:export type DispatchGroup = {
+math	src/packages/provider/src/cost/policy.ts	461:export type DispatchPlan = {
+math	src/packages/provider/src/cost/policy.ts	483:export function dispatchPlan(
+math	src/packages/agent/messages.ts	71:export function stripPromptXMLTags(content: string): string {
+math	src/packages/agent/messages.ts	84:export function isEmptyMessageText(text: string): boolean {
+math	src/packages/agent/messages.ts	97:export function getLastAssistantMessage(
+math	src/packages/agent/messages.ts	116:export function hasToolCallsInLastAssistantTurn(messages: Message[]): boolean {
+math	src/packages/agent/messages.ts	219:export function deriveShortMessageId(uuid: string): string {
+math	src/packages/agent/messages.ts	239:export function isSyntheticMessage(message: Message): boolean {
+math	src/packages/agent/messages.ts	254:export const INTERRUPT_MESSAGE = '[Request interrupted by user]'
+math	src/packages/agent/messages.ts	257:export const INTERRUPT_MESSAGE_FOR_TOOL_USE =
+math	src/packages/agent/messages.ts	261:export const CANCEL_MESSAGE =
+math	src/packages/agent/messages.ts	268:export const REJECT_MESSAGE =
+math	src/packages/agent/messages.ts	272:export const REJECT_MESSAGE_WITH_REASON_PREFIX =
+math	src/packages/agent/messages.ts	279:export const SUBAGENT_REJECT_MESSAGE =
+math	src/packages/agent/messages.ts	283:export const SUBAGENT_REJECT_MESSAGE_WITH_REASON_PREFIX =
+math	src/packages/agent/messages.ts	287:export const PLAN_REJECTION_PREFIX =
+math	src/packages/agent/messages.ts	295:export const DENIAL_WORKAROUND_GUIDANCE =
+math	src/packages/agent/messages.ts	304:export function AUTO_REJECT_MESSAGE(toolName: string): string {
+math	src/packages/agent/messages.ts	309:export function DONT_ASK_REJECT_MESSAGE(toolName: string): string {
+math	src/packages/agent/messages.ts	314:export const NO_RESPONSE_REQUESTED = 'No response requested.'
+math	src/packages/agent/messages.ts	322:export const SYNTHETIC_TOOL_RESULT_PLACEHOLDER =
+math	src/packages/agent/messages.ts	344:export function createUserMessage({
+math	src/packages/agent/messages.ts	424:export function createSyntheticUserCaveatMessage(): UserMessage {
+math	src/packages/agent/messages.ts	436:export function formatCommandInputTags(
+math	src/packages/agent/messages.ts	454:export function createModelSwitchBreadcrumbs(
+math	src/packages/agent/messages.ts	478:export function createProgressMessage<P>({
+math	src/packages/agent/messages.ts	505:export function createToolResultStopMessage(
+math	src/packages/agent/messages.ts	524:export function deriveUUID(parentUUID: UUID, index: number): UUID {
+math	src/packages/agent/messages.ts	542:export function extractTag(html: string, tagName: string): string | null {
+math	src/packages/agent/messages.ts	605:export type { ContentBlockParam }
+math	src/packages/agent/messages.ts	616:export function isNotEmptyMessage(message: Message): boolean {
+math	src/packages/agent/messages.ts	662:export function isClassifierDenial(content: string): boolean {
+math	src/packages/agent/messages.ts	674:export function buildYoloRejectionMessage(reason: string): string {
+math	src/packages/agent/messages.ts	691:export function buildClassifierUnavailableMessage(
+math	src/packages/agent/messages.ts	704:export function isToolUseRequestMessage(
+math	src/packages/agent/messages.ts	716:export function isToolUseResultMessage(
+math	src/packages/agent/messages.ts	733:export function extractTextContent(
+math	src/packages/agent/messages.ts	749:export function getContentText(
+math	src/packages/agent/messages.ts	762:export function getUserMessageText(message: Message): string | null {
+math	src/packages/agent/messages.ts	777:export function textForResubmit(
+math	src/packages/agent/messages.ts	811:export function getToolUseID(message: NormalizedMessage): string | null {
+math	src/packages/agent/messages.ts	857:export function getToolResultIDs(
+math	src/packages/agent/messages.ts	891:export function isCompactBoundaryMessage(
+math	src/packages/agent/messages.ts	989:export function createAssistantMessage({
+math	src/packages/agent/messages.ts	1013:export function createAssistantAPIErrorMessage({
+math	src/packages/agent/messages.ts	1038:export function createUserInterruptionMessage({
+math	src/packages/agent/messages.ts	1060:export function createSystemMessage(
+math	src/packages/agent/messages.ts	1079:export function createPermissionRetryMessage(
+math	src/packages/agent/messages.ts	1094:export function createBridgeStatusMessage(
+math	src/packages/agent/messages.ts	1110:export function createScheduledTaskFireMessage(
+math	src/packages/agent/messages.ts	1123:export function createStopHookSummaryMessage(
+math	src/packages/agent/messages.ts	1153:export function createTurnDurationMessage(
+math	src/packages/agent/messages.ts	1172:export function createAwaySummaryMessage(
+math	src/packages/agent/messages.ts	1185:export function createMemorySavedMessage(
+math	src/packages/agent/messages.ts	1198:export function createAgentsKilledMessage(): SystemAgentsKilledMessage {
+math	src/packages/agent/messages.ts	1208:export function createApiMetricsMessage(metrics: {
+math	src/packages/agent/messages.ts	1241:export function createCommandInputMessage(
+math	src/packages/agent/messages.ts	1255:export function createCompactBoundaryMessage(
+math	src/packages/agent/messages.ts	1282:export function createMicrocompactBoundaryMessage(
+math	src/packages/agent/messages.ts	1310:export function createSystemAPIErrorMessage(
+math	src/packages/agent/messages.ts	1334:export function createToolUseSummaryMessage(
+math	src/packages/agent/messages.ts	1387:export function prepareUserContent({
+math	src/packages/agent/messages.ts	1407:export function normalizeMessages(messages: Message[]): NormalizedMessage[] {
+math	src/packages/agent/messages.ts	1544:export function filterUnresolvedToolUses<M extends Message>(messages: M[]): M[] {
+math	src/packages/agent/messages.ts	1566:export function getAssistantMessageText(message: Message): string | null {
+math	src/packages/agent/messages.ts	1585:export const MEMORY_CORRECTION_HINT =
+math	src/packages/agent/messages.ts	1615:export function withMemoryCorrectionHint(message: string): string {
+math	src/packages/agent/messages.ts	1633:export type MessageLookups = {
+math	src/packages/agent/messages.ts	1646:export const EMPTY_STRING_SET: ReadonlySet<string> = Object.freeze(new Set<string>())
+math	src/packages/agent/messages.ts	1649:export const EMPTY_LOOKUPS: MessageLookups = {
+math	src/packages/agent/messages.ts	1712:export function buildSubagentLookups(entries: Array<{ message: AnyMessage }>): {
+math	src/packages/agent/messages.ts	1780:export function buildMessageLookups(normalizedMessages: AnyMessage[], messages: AnyMessage[]): MessageLookups {
+math	src/packages/agent/messages.ts	1855:export function getSiblingToolUseIDsFromLookup(message: AnyMessage, lookups: MessageLookups): ReadonlySet<string> {
+math	src/packages/agent/messages.ts	1862:export function getProgressMessagesFromLookup(message: AnyMessage, lookups: MessageLookups): AnyMessage[] {
+math	src/packages/agent/messages.ts	1869:export function hasUnresolvedHooksFromLookup(toolUseID: string, hookEvent: string, lookups: MessageLookups): boolean {
+math	src/packages/agent/messages.ts	1876:export function getToolUseIDs(message: AnyMessage): string[] {
+math	src/packages/agent/messages.ts	1936:export function filterOrphanedThinkingOnlyMessages<T extends AnyMessage>(messages: T[], preserveTrailing = false): T[] {
+math	src/packages/agent/messages.ts	2014:export function filterWhitespaceOnlyAssistantMessages<T extends AnyMessage>(
+math	src/packages/agent/messages.ts	2050:export function getMessagesAfterCompactBoundary<T extends AnyMessage>(messages: T[], _options?: { includeSnipped?: boolean }): T[] {
+math	src/packages/agent/messages.ts	2075:export function stripSignatureBlocks<M>(messages: M[]): M[] {
+math	src/packages/agent/messages.ts	2091:export function isSystemLocalCommandMessage(message: Message): message is SystemLocalCommandMessage {
+math	src/packages/agent/messages.ts	2115:export function shouldShowUserMessage(message: Message, isTranscriptMode: boolean): boolean {
+math	src/packages/agent/messages.ts	2159:export function reorderMessagesInUI<M>(messages: M[], syntheticStreamingToolUseMessages: M[]): M[] {
+math	src/packages/agent/messages.ts	2235:export type StreamingToolUse = {
+math	src/packages/agent/messages.ts	2241:export type StreamingThinking = {
+math	src/packages/agent/messages.ts	2248:export type ResponseLengthEvent =
+math	src/packages/agent/messages.ts	2253:export type CompactEvent = {
+math	src/packages/agent/messages.ts	2261:export type ApiMetricsEvent =
+math	src/packages/agent/messages.ts	2272:export type DisplayTransform = {
+math	src/packages/agent/messages.ts	2283:export type AuthoringProgressSurface = {
+math	src/packages/agent/messages.ts	2291:export type StreamHandlerOptions = {
+math	src/packages/agent/messages.ts	2304:export type StreamHandlerContext = {
+math	src/packages/agent/messages.ts	2309:export type StreamItem = RequestStartEvent | StreamEvent | ResponseLengthEvent | CompactEvent
+math	src/packages/agent/messages.ts	2312:export type QueryEvent = Message | TombstoneMessage | ToolUseSummaryMessage | StreamItem
+math	src/packages/agent/messages.ts	2322:export function isStreamItem(item: { type: string }): item is StreamItem {
+math	src/packages/agent/messages.ts	2327:export const MAX_TOOL_USE_BLOCK_JSON_CHARS = 32768
+math	src/packages/agent/messages.ts	2329:export const MAX_STREAMING_TOOL_USES = 256
+math	src/packages/agent/messages.ts	2331:export const MAX_STREAMING_TEXT_CHARS = 1_000_000
+math	src/packages/agent/messages.ts	2333:export const CHARS_PER_ESTIMATED_TOKEN = 4
+math	src/packages/agent/messages.ts	2382:export function handleMessageFromStream(
+math	src/packages/agent/messages.ts	2564:export function estimateTokensFromChars(charCount: number): number {
+math	src/packages/agent/messages.ts	2573:export function thinkingAfterLanding(message: Message): StreamingThinking | null {
+math	src/packages/agent/messages.ts	2606:export function hasSuccessfulToolCall(messages: Message[], toolName: string): boolean {
+math	src/packages/agent/messages.ts	2753:export function wrapInSystemReminder(content: string): string {
+math	src/packages/agent/messages.ts	2758:export function wrapMessagesInSystemReminder(messages: UserMessage[]): UserMessage[] {
+math	src/packages/agent/messages.ts	2781:export function reorderAttachmentsForAPI(messages: Message[]): Message[] {
+math	src/packages/agent/messages.ts	2909:export function stripToolReferenceBlocksFromUserMessage(message: UserMessage): UserMessage {
+math	src/packages/agent/messages.ts	2943:export function stripCallerFieldFromAssistantMessage(message: AssistantMessage): AssistantMessage {
+math	src/packages/agent/messages.ts	3135:export function normalizeMessagesForAPI(messages: Message[], tools: Tools = []): ApiMessage[] {
+math	src/packages/agent/messages.ts	3366:export function mergeUserMessagesAndToolResults(a: UserMessage, b: UserMessage): UserMessage {
+math	src/packages/agent/messages.ts	3376:export function mergeAssistantMessages(a: AssistantMessage, b: AssistantMessage): AssistantMessage {
+math	src/packages/agent/messages.ts	3397:export function mergeUserMessages(a: UserMessage, b: UserMessage): UserMessage {
+math	src/packages/agent/messages.ts	3550:export function mergeUserContentBlocks(a: ContentBlockParam[], b: ContentBlockParam[]): ContentBlockParam[] {
+math	src/packages/agent/messages.ts	3706:export function normalizeAttachmentForAPI(attachment: ApiAttachment): UserMessage[] {
+math	src/packages/agent/messages.ts	4153:export function countToolCalls(
+math	src/packages/agent/messages.ts	4196:export function ensureToolResultPairing(
+math	src/packages/agent/messages.ts	4528:export function findLastCompactBoundaryIndex<
+math	src/packages/agent/messages.ts	4606:export function hasUnresolvedHooks(
+math	src/packages/agent/messages.ts	4628:export function getSiblingToolUseIDs(
+math	src/packages/agent/messages.ts	4661:export function isThinkingMessage(message: Message): boolean {
+math	src/packages/agent/messages.ts	4668:export function normalizeContentFromAPI(
+math	src/packages/agent/messages.ts	4773:export function stripAdvisorBlocks(
+math	src/packages/agent/messages.ts	4818:export function stripCrossConnectionThinkingBlocks(
+math	src/packages/agent/messages.ts	4856:export function stripInvalidThinkingBlocks(messages: Message[]): Message[] {
+math	src/packages/agent/messages.ts	4890:export const PLAN_PHASE4_CONTROL = `### Phase 4: Final Plan
+math	src/packages/command-runtime/src/commands/insights/insights.ts	814:export function deduplicateSessionBranches(
+math	src/packages/command-runtime/src/commands/insights/insights.ts	1064:export function detectMultiClauding(
+math	src/packages/command-runtime/src/commands/insights/insights.ts	2657:export type InsightsExport = {
+math	src/packages/command-runtime/src/commands/insights/insights.ts	2681:export function buildExportData(
+math	src/packages/command-runtime/src/commands/insights/insights.ts	2798:export async function generateUsageReport(options?: {
+math	src/packages/local-models/qualifyModel.ts	28:export const QUALIFICATION_SEED = 7
+math	src/packages/local-models/qualifyModel.ts	33:export interface MeasurementSettings {
+math	src/packages/local-models/qualifyModel.ts	42:export interface QualificationRequest extends MeasurementSettings {
+math	src/packages/local-models/qualifyModel.ts	46:export interface TaskQualificationRequest extends MeasurementSettings {
+math	src/packages/local-models/qualifyModel.ts	50:export interface EmbeddingQualificationRequest extends MeasurementSettings {
+math	src/packages/local-models/qualifyModel.ts	54:export interface CaseOutcome {
+math	src/packages/local-models/qualifyModel.ts	60:export interface QualificationRun {
+math	src/packages/local-models/qualifyModel.ts	65:export class UnmeasuredSpeedError extends Error {
+math	src/packages/local-models/qualifyModel.ts	73:export class ContextBeyondGrantError extends Error {
+math	src/packages/local-models/qualifyModel.ts	90:export async function runQualification(request: QualificationRequest): Promise<QualificationRun> {
+math	src/packages/local-models/qualifyModel.ts	96:export async function runTaskQualification(request: TaskQualificationRequest): Promise<QualificationRun> {
+math	src/packages/local-models/qualifyModel.ts	107:export async function runEmbeddingQualification(request: EmbeddingQualificationRequest): Promise<QualificationRun> {
+math	src/packages/mcp-runtime/src/clientRuntime.ts	179:export class McpAuthError extends Error {
+math	src/packages/mcp-runtime/src/clientRuntime.ts	192:class McpSessionExpiredError extends Error {
+math	src/packages/mcp-runtime/src/clientRuntime.ts	204:export class McpToolCallError_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS extends TelemetrySafeError_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPAT
+math	src/packages/mcp-runtime/src/clientRuntime.ts	225:export function skipsMcpToolPrefix(configType: string | undefined): boolean {
+math	src/packages/mcp-runtime/src/clientRuntime.ts	229:export function isMcpSessionExpiredError(error: Error): boolean {
+math	src/packages/mcp-runtime/src/clientRuntime.ts	312:export function getServerCacheKey(
+math	src/packages/mcp-runtime/src/clientRuntime.ts	326:export const connectToServer = memoize(
+math	src/packages/mcp-runtime/src/clientRuntime.ts	1383:export async function clearServerCache(
+math	src/packages/mcp-runtime/src/clientRuntime.ts	1423:export async function ensureConnectedClient(
+math	src/packages/mcp-runtime/src/clientRuntime.ts	1445:export function areMcpConfigsEqual(
+math	src/packages/mcp-runtime/src/clientRuntime.ts	1468:export function mcpToolInputToAutoClassifierInput(
+math	src/packages/mcp-runtime/src/clientRuntime.ts	1478:export const fetchToolsForClient = memoizeWithLRU(
+math	src/packages/mcp-runtime/src/clientRuntime.ts	1751:export const fetchResourcesForClient = memoizeWithLRU(
+math	src/packages/mcp-runtime/src/clientRuntime.ts	1781:export const fetchCommandsForClient = memoizeWithLRU(
+math	src/packages/mcp-runtime/src/clientRuntime.ts	1864:export async function callIdeRpc(
+math	src/packages/mcp-runtime/src/clientRuntime.ts	1885:export async function reconnectMcpServerImpl(
+math	src/packages/mcp-runtime/src/clientRuntime.ts	1974:export async function getMcpToolsCommandsAndResources(
+math	src/packages/mcp-runtime/src/clientRuntime.ts	2156:export function prefetchAllMcpResources(
+math	src/packages/mcp-runtime/src/clientRuntime.ts	2223:export type McpDiscoverySnapshot = {
+math	src/packages/mcp-runtime/src/clientRuntime.ts	2230:export async function connectAll(
+math	src/packages/mcp-runtime/src/clientRuntime.ts	2240:export async function discover(
+math	src/packages/mcp-runtime/src/clientRuntime.ts	2269:export async function prefetchResources(
+math	src/packages/mcp-runtime/src/clientRuntime.ts	2275:export async function executeTool(call: {
+math	src/packages/mcp-runtime/src/clientRuntime.ts	2315:export async function transformResultContent(
+math	src/packages/mcp-runtime/src/clientRuntime.ts	2469:export type MCPResultType = 'toolResult' | 'structuredContent' | 'contentArray'
+math	src/packages/mcp-runtime/src/clientRuntime.ts	2471:export type TransformedMCPResult = {
+math	src/packages/mcp-runtime/src/clientRuntime.ts	2483:export function inferCompactSchema(value: unknown, depth = 2): string {
+math	src/packages/mcp-runtime/src/clientRuntime.ts	2501:export async function transformMCPResult(
+math	src/packages/mcp-runtime/src/clientRuntime.ts	2574:export async function processMCPResult(
+math	src/packages/mcp-runtime/src/clientRuntime.ts	2667:export async function callMCPToolWithUrlElicitationRetry({
+math	src/packages/mcp-runtime/src/clientRuntime.ts	3116:export async function setupSdkMcpClients(
+math	src/packages/tool-registry/src/tools/SkillTool/prompt.ts	21:export const SKILL_BUDGET_CONTEXT_PERCENT = 0.01
+math	src/packages/tool-registry/src/tools/SkillTool/prompt.ts	22:export const CHARS_PER_TOKEN = 4
+math	src/packages/tool-registry/src/tools/SkillTool/prompt.ts	23:export const DEFAULT_CHAR_BUDGET = 8_000 // Fallback: 1% of 200k × 4
+math	src/packages/tool-registry/src/tools/SkillTool/prompt.ts	29:export const MAX_LISTING_DESC_CHARS = 250
+math	src/packages/tool-registry/src/tools/SkillTool/prompt.ts	31:export function getCharBudget(contextWindowTokens?: number): number {
+math	src/packages/tool-registry/src/tools/SkillTool/prompt.ts	70:export function formatCommandsWithinBudget(
+math	src/packages/tool-registry/src/tools/SkillTool/prompt.ts	178:export function computeSkillsBudgetStats(
+math	src/packages/tool-registry/src/tools/SkillTool/prompt.ts	241:export const getPrompt = memoize(async (_cwd: string): Promise<string> => {
+math	src/packages/tool-registry/src/tools/SkillTool/prompt.ts	266:export async function getSkillToolInfo(cwd: string): Promise<{
+math	src/packages/tool-registry/src/tools/SkillTool/prompt.ts	281:export function getLimitedSkillToolCommands(cwd: string): Promise<Command[]> {
+math	src/packages/tool-registry/src/tools/SkillTool/prompt.ts	285:export function clearPromptCache(): void {
+math	src/packages/tool-registry/src/tools/SkillTool/prompt.ts	289:export async function getSkillInfo(cwd: string): Promise<{
+math	.claude/skills/dmaic-control/scripts/check_control_limits.py	34:class Violation:
+math	.claude/skills/dmaic-control/scripts/check_control_limits.py	41:def read_csv_column(filepath: str, column: str | None) -> list[float]:
+math	.claude/skills/dmaic-control/scripts/check_control_limits.py	81:def compute_stats(data: list[float]) -> tuple[float, float]:
+math	.claude/skills/dmaic-control/scripts/check_control_limits.py	88:def check_rules(data: list[float], mu: float, sigma: float) -> list[Violation]:
+math	.claude/skills/dmaic-control/scripts/check_control_limits.py	219:def main() -> None:
+math	src/conformance/checklist.ts	25:export type Status = 'met' | 'unmet' | 'unmeasured'
+math	src/conformance/checklist.ts	27:export type Predicate = {
+math	src/conformance/checklist.ts	43:export const SECTIONS = ['A.1', 'A.2', 'A.3', 'A.4', 'A.5', 'A.6', 'A.7', 'A.8'] as const
+math	src/conformance/checklist.ts	45:export const CHECKLIST: readonly Predicate[] = [
+math	src/conformance/checklist.ts	98:export type Coverage = {
+math	src/conformance/checklist.ts	118:export function coverage(lista: readonly Predicate[] = CHECKLIST): Coverage {
+math	src/packages/agent/bin/recommend.ts	76:class RefusalError extends Error {}
+math	src/packages/agent/coordinatorMode.ts	110:export function isCoordinatorMode(): boolean {
+math	src/packages/agent/coordinatorMode.ts	123:export function matchSessionMode(
+math	src/packages/agent/coordinatorMode.ts	165:export function getCoordinatorUserContext(
+math	src/packages/agent/coordinatorMode.ts	196:export function getCoordinatorSystemPrompt(): string {
+math	src/packages/agent/effort.ts	65:export type { EffortLevel, NamedEffortLevel } from './effortLevels.ts'
+math	src/packages/agent/effort.ts	66:export type EffortValue = EffortLevel | number
+math	src/packages/agent/effort.ts	68:export function isEffortLevel(value: string): value is EffortLevel {
+math	src/packages/agent/effort.ts	76:export function normalizeReasoningEffort(value: unknown): EffortLevel | undefined {
+math	src/packages/agent/effort.ts	83:export function isValidNumericEffort(value: number): boolean {
+math	src/packages/agent/effort.ts	87:export function parseEffortValue(value: unknown): EffortValue | undefined {
+math	src/packages/agent/effort.ts	109:export function toPersistableEffort(
+math	src/packages/agent/effort.ts	125:export function convertEffortValueToLevel(value: EffortValue): EffortLevel {
+math	src/packages/agent/effort.ts	147:export type ApiProvider =
+math	src/packages/agent/effort.ts	162:export function getAPIProvider(): ApiProvider {
+math	src/packages/agent/effort.ts	178:export function isFirstPartyAnthropicBaseUrl(): boolean {
+math	src/packages/agent/effort.ts	203:export function isFirstPartyAnthropicEndpoint(_modelId?: string): boolean {
+math	src/packages/agent/effort.ts	215:export function modelSupportsNoneEffort(_model: string): boolean {
+math	src/packages/agent/effort.ts	225:export function modelSupportsMaxEffort(model: string): boolean {
+math	src/packages/agent/effort.ts	235:export function modelSupportsXhighEffort(model: string): boolean {
+math	src/packages/agent/effort.ts	245:export function getEffortEnvOverride(): EffortValue | null | undefined {
+math	src/packages/agent/effort.ts	263:export function resolveAppliedEffort(
+math	src/packages/agent/effort.ts	335:export function modelSupportsEffort(model: string): boolean {
+math	src/packages/agent/effort.ts	344:export function getDefaultEffortForModel(model: string): EffortLevel {
+math	src/packages/agent/effort.ts	366:export function resolveModelEffort(
+math	src/packages/agent/effort.ts	380:export function getDisplayedEffortLevel(
+math	src/packages/agent/effort.ts	389:export function getEffortSuffix(
+math	src/packages/agent/effort.ts	401:export function getEffortLevelDescription(level: EffortLevel): string | undefined {
+math	src/packages/agent/effort.ts	423:export function getEffortValueDescription(value: EffortValue): string | undefined {
+math	src/packages/agent/effort.ts	442:export function resolvePickerEffortPersistence(
+math	src/packages/agent/effort.ts	453:export type OpusDefaultEffortConfig = {
+math	src/packages/agent/effort.ts	464:export function getOpusDefaultEffortConfig(): OpusDefaultEffortConfig {
+math	src/packages/command-runtime/src/skills/loadSkillsDir.ts	140:export type SettingSource =
+math	src/packages/command-runtime/src/skills/loadSkillsDir.ts	150:export function getSkillsPath(
+math	src/packages/command-runtime/src/skills/loadSkillsDir.ts	189:export type SkillFrontmatter = {
+math	src/packages/command-runtime/src/skills/loadSkillsDir.ts	199:export function estimateSkillFrontmatterTokens(
+math	src/packages/command-runtime/src/skills/loadSkillsDir.ts	216:export type EffortValue = EffortLevel | number
+math	src/packages/command-runtime/src/skills/loadSkillsDir.ts	269:export function parseSkillPaths(frontmatter: FrontmatterData): string[] | undefined {
+math	src/packages/command-runtime/src/skills/loadSkillsDir.ts	309:export function parseSkillFrontmatterFields(
+math	src/packages/command-runtime/src/skills/loadSkillsDir.ts	389:export type LoadedFrom =
+math	src/packages/command-runtime/src/skills/loadSkillsDir.ts	404:export function buildSkillPromptText({
+math	src/packages/command-runtime/src/skills/loadSkillsDir.ts	437:export function createSkillCommand({
+math	src/packages/command-runtime/src/skills/loadSkillsDir.ts	570:export type SkillWithPath = {
+math	src/packages/command-runtime/src/skills/loadSkillsDir.ts	582:export async function loadSkillsFromSkillsDir(
+math	src/packages/command-runtime/src/skills/loadSkillsDir.ts	818:export function getSkillDirCommands(cwd: string): Promise<Command[]> {
+math	src/packages/command-runtime/src/skills/loadSkillsDir.ts	990:export function clearSkillCaches(): void {
+math	src/packages/command-runtime/src/skills/loadSkillsDir.ts	997:export function getConditionalSkillCount(): number {
+math	src/packages/local-models/taskSuite.ts	24:export type TaskCheck =
+math	src/packages/local-models/taskSuite.ts	29:export interface TaskCase {
+math	src/packages/local-models/taskSuite.ts	35:export interface TaskSuite {
+math	src/packages/local-models/taskSuite.ts	41:export interface TaskScore {
+math	src/packages/local-models/taskSuite.ts	47:export class InvalidTaskSuiteError extends Error {
+math	src/packages/local-models/taskSuite.ts	58:export async function loadTaskSuite(path: string): Promise<TaskSuite> {
+math	src/packages/local-models/taskSuite.ts	70:export function scoreTaskReply(checks: readonly TaskCheck[], content: string): TaskScore {
+math	src/packages/mcp-runtime/src/useManageMCPConnections.ts	143:export function useManageMCPConnections(
+math	src/packages/model-artifacts/modelQualification.ts	23:export const LOCAL_TASK_CLASSES = ['mecanica', 'analisis', 'adversarial', 'frontera'] as const
+math	src/packages/model-artifacts/modelQualification.ts	24:export type LocalTaskClass = (typeof LOCAL_TASK_CLASSES)[number]
+math	src/packages/model-artifacts/modelQualification.ts	27:export type QualificationKind = 'protocol' | 'task' | 'embedding'
+math	src/packages/model-artifacts/modelQualification.ts	30:export type MeasurementCondition = 'isolated' | 'contended'
+math	src/packages/model-artifacts/modelQualification.ts	32:export interface ModelQualification {
+math	src/packages/model-artifacts/modelQualification.ts	51:export class InvalidQualificationError extends Error {
+math	src/packages/model-artifacts/modelQualification.ts	109:export function validateQualification(value: unknown, path = 'qualification'): ModelQualification {
+math	src/packages/model-artifacts/modelQualification.ts	143:export function parseQualifications(text: string): ModelQualification[] {
+math	src/packages/model-artifacts/modelQualification.ts	160:export function serializeQualifications(qualifications: readonly ModelQualification[]): string {
+math	src/packages/model-artifacts/modelQualification.ts	175:export interface QualifiedLocalModel<Entry extends { readonly name: string } = ModelCatalogEntry> {
+math	src/packages/model-artifacts/modelQualification.ts	203:export function qualifiedModels<Entry extends { readonly name: string } = ModelCatalogEntry>(
+math	src/packages/model-artifacts/modelQualification.ts	222:export interface CapabilityDeclaringModel {
+math	src/packages/model-artifacts/modelQualification.ts	227:export interface QualifiedEmbeddingModel<Entry extends CapabilityDeclaringModel = CapabilityDeclaringModel> {
+math	src/packages/model-artifacts/modelQualification.ts	238:export function qualifiedEmbeddingModels<Entry extends CapabilityDeclaringModel>(
+math	src/packages/repl/src/suggestions/commandSuggestions.ts	114:export function findMidInputSlashCommand(
+math	src/packages/repl/src/suggestions/commandSuggestions.ts	164:export function getBestCommandMatch(
+math	src/packages/repl/src/suggestions/commandSuggestions.ts	200:export function isCommandInput(input: string): boolean {
+math	src/packages/repl/src/suggestions/commandSuggestions.ts	301:export function generateCommandSuggestions(
+math	src/packages/repl/src/suggestions/commandSuggestions.ts	512:export function applyCommandSuggestion(
+math	src/packages/repl/src/suggestions/commandSuggestions.ts	570:export function findSlashCommandPositions(
+math	src/packages/tool-registry/src/tools/BashTool/bashSecurity.ts	522:export function stripSafeHeredocSubstitutions(command: string): string | null {
+math	src/packages/tool-registry/src/tools/BashTool/bashSecurity.ts	582:export function hasSafeHeredocSubstitution(command: string): boolean {
+math	src/packages/tool-registry/src/tools/BashTool/bashSecurity.ts	2254:export function bashCommandIsSafe(
+math	src/packages/tool-registry/src/tools/BashTool/bashSecurity.ts	2423:export async function bashCommandIsSafeAsync(
+math	src/packages/tool-registry/src/tools/BashTool/readOnlyValidation.ts	1246:export function isCommandSafeViaFlagParsing(command: string): boolean {
+math	src/packages/tool-registry/src/tools/BashTool/readOnlyValidation.ts	1876:export function checkReadOnlyConstraints(
+math	src/packages/tool-registry/src/tools/PowerShellTool/powershellSecurity.ts	1042:export function powershellCommandIsSafe(
+math	tests/agents/test_recommend_cli.py	69:def check(label: str, condition: bool, extra: str = "") -> None:
+math	tests/agents/test_recommend_cli.py	79:class LocalHome:
+math	tests/agents/test_recommend_cli.py	107:def run(home: LocalHome, *args: str) -> subprocess.CompletedProcess:
+math	tests/agents/test_recommend_cli.py	114:def parse_json(text: str) -> dict:
+math	tests/agents/test_recommend_cli.py	121:def check_provider_catalog(home: LocalHome) -> None:
+math	tests/agents/test_recommend_cli.py	137:def check_refusals(home: LocalHome) -> None:
+math	tests/agents/test_recommend_cli.py	154:def check_fallback_json(home: LocalHome) -> None:
+math	tests/agents/test_recommend_cli.py	167:def check_local_choice(home: LocalHome) -> None:
+math	tests/agents/test_recommend_cli.py	199:def check_unreadable_files(home: LocalHome) -> None:
+math	tests/agents/test_recommend_cli.py	215:def check_policy(home: LocalHome) -> None:
+math	tests/agents/test_recommend_cli.py	231:def check_declared_policy(home: LocalHome) -> None:
+math	tests/agents/test_recommend_cli.py	242:def main() -> int:
+math	.claude/skills/dmaic-measure/scripts/calculate_capability.py	28:def read_csv_column(filepath: str, column: str | None) -> list[float]:
+math	.claude/skills/dmaic-measure/scripts/calculate_capability.py	69:def mean(data: list[float]) -> float:
+math	.claude/skills/dmaic-measure/scripts/calculate_capability.py	73:def stdev_sample(data: list[float], mu: float) -> float:
+math	.claude/skills/dmaic-measure/scripts/calculate_capability.py	78:def interpret_cpk(cpk: float) -> str:
+math	.claude/skills/dmaic-measure/scripts/calculate_capability.py	91:def compute_capability(
+math	.claude/skills/dmaic-measure/scripts/calculate_capability.py	163:def main() -> None:
+runtime	src/packages/model-scheduling/__tests__/podmanModelUnitMaterializer.test.ts	48:class RecordingPodman implements PodmanExecutor {
+runtime	src/packages/local-models/hostCoordinatorComposition.ts	45:export const MODEL_COORDINATOR_OWNER_KIND = 'model-coordinator'
+runtime	src/packages/local-models/hostCoordinatorComposition.ts	47:export const OLLAMA_RUNTIME_IMAGE = 'docker.io/ollama/ollama:0.35.0'
+runtime	src/packages/local-models/hostCoordinatorComposition.ts	49:export const TRANSFORMERS_RUNTIME_IMAGE = 'localhost/thyrox-transformers-runtime:dev'
+runtime	src/packages/local-models/hostCoordinatorComposition.ts	61:export type ComposedHostCoordinator = {
+runtime	src/packages/local-models/hostCoordinatorComposition.ts	66:export type CompositionDependencies = { podman?: PodmanExecutor }
+runtime	src/packages/local-models/hostCoordinatorComposition.ts	76:export function cpuPlacementOf(resolved: ResolvedModel): PlacementDecision {
+runtime	src/packages/local-models/hostCoordinatorComposition.ts	80:export function composeHostCoordinatorService(env: Environment, thyroxRoot: string, dependencies: CompositionDependencies = {}): Composed
+runtime	src/packages/local-models/hostCoordinatorComposition.ts	134:export function snapshotDirectory(artifactCache: string, artifactId: string): string {
+runtime	src/packages/local-models/__tests__/qualifyCommand.test.ts	30:class FakeCoordinator implements ServedCoordinator {
+runtime	src/packages/model-artifacts/modelCatalog.ts	21:export class InvalidCatalogEntryError extends Error {
+runtime	src/packages/model-artifacts/modelCatalog.ts	28:export class CatalogEntryConflictError extends Error {
+runtime	src/packages/model-artifacts/modelCatalog.ts	35:export class CatalogFileError extends Error {
+runtime	src/packages/model-artifacts/modelCatalog.ts	43:export interface GgufCatalogDeclaration {
+runtime	src/packages/model-artifacts/modelCatalog.ts	72:export function validateCatalogEntry(value: unknown): ModelCatalogEntry {
+runtime	src/packages/model-artifacts/modelCatalog.ts	96:export async function catalogEntryFromGguf(declaration: GgufCatalogDeclaration): Promise<ModelCatalogEntry> {
+runtime	src/packages/model-artifacts/modelCatalog.ts	119:export class ModelCatalog {
+runtime	src/packages/model-artifacts/modelCatalog.ts	156:export async function loadModelCatalog(path: string): Promise<ModelCatalog> {
+runtime	src/packages/model-artifacts/modelCatalog.ts	163:export async function saveModelCatalog(path: string, catalog: ModelCatalog): Promise<void> {
+runtime	src/packages/model-scheduling/podmanModelUnitMaterializer.ts	40:export const MODEL_UNIT_CONTAINER_PREFIX = WORKER_CONTAINER_NAME_PREFIX
+runtime	src/packages/model-scheduling/podmanModelUnitMaterializer.ts	43:export const MODEL_UNIT_LABELS = {
+runtime	src/packages/model-scheduling/podmanModelUnitMaterializer.ts	76:export interface RuntimeContainerProfile {
+runtime	src/packages/model-scheduling/podmanModelUnitMaterializer.ts	98:export interface ArtifactMount {
+runtime	src/packages/model-scheduling/podmanModelUnitMaterializer.ts	104:export interface ModelUnitLimits {
+runtime	src/packages/model-scheduling/podmanModelUnitMaterializer.ts	110:export interface PodmanModelUnitMaterializerOptions {
+runtime	src/packages/model-scheduling/podmanModelUnitMaterializer.ts	133:export function modelUnitId(grantId: string): string {
+runtime	src/packages/model-scheduling/podmanModelUnitMaterializer.ts	137:export function modelUnitContainerName(unitId: string): string {
+runtime	src/packages/model-scheduling/podmanModelUnitMaterializer.ts	203:export function modelUnitAuthorization(spec: ModelUnitContainerSpec): ExecutionAuthorization {
+runtime	src/packages/model-scheduling/podmanModelUnitMaterializer.ts	296:export class PodmanModelUnitMaterializer implements ModelUnitMaterializer {
+runtime	src/packages/model-artifacts/catalogEntry.ts	15:export type { AttentionShape }
+runtime	src/packages/model-artifacts/catalogEntry.ts	22:export type ArtifactFormat = 'gguf' | 'ollama-registry' | 'safetensors'
+runtime	src/packages/model-artifacts/catalogEntry.ts	25:export type ModelCapability = 'completion' | 'tools' | 'embeddings'
+runtime	src/packages/model-artifacts/catalogEntry.ts	28:export interface CatalogArtifact {
+runtime	src/packages/model-artifacts/catalogEntry.ts	35:export interface ModelCatalogEntry {
+runtime	src/packages/model-artifacts/executionGrant.ts	15:export type ModelRuntime = 'ollama' | 'llama.cpp' | 'transformers'
+runtime	src/packages/model-artifacts/executionGrant.ts	18:export type ExecutionPlacement =
+runtime	src/packages/model-artifacts/executionGrant.ts	31:export interface ResidencyAssignment {
+runtime	src/packages/model-artifacts/executionGrant.ts	37:export interface ExecutionGrant {
+runtime	src/packages/model-artifacts/memoryEstimate.ts	15:export const KV_CACHE_BYTES_PER_ELEMENT = {
+runtime	src/packages/model-artifacts/memoryEstimate.ts	22:export type KvCacheType = keyof typeof KV_CACHE_BYTES_PER_ELEMENT
+runtime	src/packages/model-artifacts/memoryEstimate.ts	32:export const SERVING_BUFFER_MARGIN_BYTES = 256 * 1024 * 1024
+runtime	src/packages/model-artifacts/memoryEstimate.ts	37:export interface ServingMemoryInput {
+runtime	src/packages/model-artifacts/memoryEstimate.ts	44:export interface ServingMemoryEstimate {
+runtime	src/packages/model-artifacts/memoryEstimate.ts	51:export class MissingGgufKeyError extends Error {
+runtime	src/packages/model-artifacts/memoryEstimate.ts	58:export class InvalidMemoryEstimateInputError extends Error {
+runtime	src/packages/model-artifacts/memoryEstimate.ts	66:export interface AttentionShape {
+runtime	src/packages/model-artifacts/memoryEstimate.ts	73:export interface ShapeServingMemoryInput {
+runtime	src/packages/model-artifacts/memoryEstimate.ts	81:export function estimateServingMemory(input: ServingMemoryInput): ServingMemoryEstimate {
+runtime	src/packages/model-artifacts/memoryEstimate.ts	91:export function estimateServingMemoryFromShape(input: ShapeServingMemoryInput): ServingMemoryEstimate {
+runtime	src/packages/model-artifacts/memoryEstimate.ts	110:export function attentionShapeOf(metadata: GgufMetadata): AttentionShape {
+runtime	src/packages/model-scheduling/hostCoordinator.ts	30:export interface AdmissionRequest {
+runtime	src/packages/model-scheduling/hostCoordinator.ts	40:export interface AdmissionTicket {
+runtime	src/packages/model-scheduling/hostCoordinator.ts	48:export type CoordinatorStage = 'resolve' | 'placement' | ResidencyStage
+runtime	src/packages/model-scheduling/hostCoordinator.ts	50:export type CoordinatorAdmission =
+runtime	src/packages/model-scheduling/hostCoordinator.ts	56:export interface PlacementDecision {
+runtime	src/packages/model-scheduling/hostCoordinator.ts	63:export interface ModelSchedulingCoordinatorDependencies {
+runtime	src/packages/model-scheduling/hostCoordinator.ts	104:export function residencyKeyOf(artifact: ResolvedModelArtifact, placement: ExecutionPlacement, contextLength: number): string {
+runtime	src/packages/model-scheduling/hostCoordinator.ts	108:export class ModelSchedulingCoordinator {
+runtime	src/packages/model-scheduling/memoryGrantIssuer.ts	19:export interface MemoryGrantIssuerOptions {
+runtime	src/packages/model-scheduling/memoryGrantIssuer.ts	27:export class MemoryGrantIssuer implements GrantIssuer {
+runtime	src/packages/model-scheduling/scheduler.ts	23:export interface ExecutionPlan {
+runtime	src/packages/model-scheduling/scheduler.ts	38:export type IssueOutcome = { readonly status: 'issued'; readonly grant: ExecutionGrant } | { readonly status: 'failed'; readonly reason: 
+runtime	src/packages/model-scheduling/scheduler.ts	41:export interface GrantIssuer {
+runtime	src/packages/model-scheduling/scheduler.ts	46:export type ScheduleStage = 'reconcile' | 'lease' | 'reserve' | 'grant' | 'materialize' | 'load'
+runtime	src/packages/model-scheduling/scheduler.ts	49:export interface ReconciliationMark {
+runtime	src/packages/model-scheduling/scheduler.ts	55:export type ScheduleOutcome =
+runtime	src/packages/model-scheduling/scheduler.ts	68:export interface ReconciliationReport {
+runtime	src/packages/model-scheduling/scheduler.ts	74:export interface ModelSchedulerDependencies {
+runtime	src/packages/model-scheduling/scheduler.ts	91:export class CompensationStack {
+runtime	src/packages/model-scheduling/scheduler.ts	109:export async function markOnThrow(resource: ReconciliationMark['resource'], id: string, undo: () => Promise<ReconciliationMark | undefin
+runtime	src/packages/model-scheduling/scheduler.ts	130:export class ModelScheduler {
+runtime	src/packages/model-scheduling/testing/schedulerFakes.ts	18:export const FAKE_UNIT_OWNER = { kind: 'model-coordinator', id: 'coordinator', pid: 7 } as const
+runtime	src/packages/model-scheduling/testing/schedulerFakes.ts	20:export type Journal = string[]
+runtime	src/packages/model-scheduling/testing/schedulerFakes.ts	22:export class FakeCoordination implements ModelSchedulingCoordination {
+runtime	src/packages/model-scheduling/testing/schedulerFakes.ts	79:export class FakeLedger implements ResidencyVramLedger {
+runtime	src/packages/model-scheduling/testing/schedulerFakes.ts	131:export class FakeIssuer implements GrantIssuer {
+runtime	src/packages/model-scheduling/testing/schedulerFakes.ts	164:export class FakePrimitive implements ModelUnitMaterializer {
+runtime	src/packages/model-scheduling/testing/schedulerFakes.ts	214:export const SINGLE_RESIDENCY_CAPABILITIES: RuntimeCapabilities = {
+runtime	src/packages/model-scheduling/testing/schedulerFakes.ts	219:export class FakeRuntime implements RuntimeAdapter {
+runtime	src/packages/provider/src/proxy/__tests__/admittedUpstream.test.ts	45:class FakeSource implements AdmissionSource {
+runtime	src/packages/provider/src/proxy/__tests__/localModelProxy.test.ts	58:class FakeCoordinator implements ServedCoordinator {
+runtime	src/packages/local-models/declareInstalledModel.ts	33:export const OLLAMA_DEFAULT_KV_CACHE_TYPE: KvCacheType = 'f16'
+runtime	src/packages/local-models/declareInstalledModel.ts	46:export class ModelDeclarationError extends Error {
+runtime	src/packages/local-models/declareInstalledModel.ts	53:export interface DeclarationContext {
+runtime	src/packages/local-models/declareInstalledModel.ts	61:export interface DeclarationOptions {
+runtime	src/packages/local-models/declareInstalledModel.ts	74:export async function declareInstalledModel(ollamaName: string, context: DeclarationContext, options: DeclarationOptions = {}): Promise<M
+runtime	src/packages/local-models/qualifyModel.ts	28:export const QUALIFICATION_SEED = 7
+runtime	src/packages/local-models/qualifyModel.ts	33:export interface MeasurementSettings {
+runtime	src/packages/local-models/qualifyModel.ts	42:export interface QualificationRequest extends MeasurementSettings {
+runtime	src/packages/local-models/qualifyModel.ts	46:export interface TaskQualificationRequest extends MeasurementSettings {
+runtime	src/packages/local-models/qualifyModel.ts	50:export interface EmbeddingQualificationRequest extends MeasurementSettings {
+runtime	src/packages/local-models/qualifyModel.ts	54:export interface CaseOutcome {
+runtime	src/packages/local-models/qualifyModel.ts	60:export interface QualificationRun {
+runtime	src/packages/local-models/qualifyModel.ts	65:export class UnmeasuredSpeedError extends Error {
+runtime	src/packages/local-models/qualifyModel.ts	73:export class ContextBeyondGrantError extends Error {
+runtime	src/packages/local-models/qualifyModel.ts	90:export async function runQualification(request: QualificationRequest): Promise<QualificationRun> {
+runtime	src/packages/local-models/qualifyModel.ts	96:export async function runTaskQualification(request: TaskQualificationRequest): Promise<QualificationRun> {
+runtime	src/packages/local-models/qualifyModel.ts	107:export async function runEmbeddingQualification(request: EmbeddingQualificationRequest): Promise<QualificationRun> {
+runtime	src/packages/model-artifacts/modelResolver.ts	18:export interface ModelRepositoryRequest {
+runtime	src/packages/model-artifacts/modelResolver.ts	25:export interface ModelExecutionRequest {
+runtime	src/packages/model-artifacts/modelResolver.ts	33:export interface ResolvedModel {
+runtime	src/packages/model-artifacts/modelResolver.ts	42:export class ModelNotDeclaredError extends Error {
+runtime	src/packages/model-artifacts/modelResolver.ts	49:export class AmbiguousModelRequestError extends Error {
+runtime	src/packages/model-artifacts/modelResolver.ts	56:export class MissingCapabilityError extends Error {
+runtime	src/packages/model-artifacts/modelResolver.ts	63:export class ContextLengthExceededError extends Error {
+runtime	src/packages/model-artifacts/modelResolver.ts	73:export function resolveModel(request: ModelExecutionRequest, entries: readonly ModelCatalogEntry[]): ResolvedModel {
+runtime	src/packages/model-artifacts/testing/resolvedArtifactFixture.ts	14:export const QWEN_REPOSITORY = 'Qwen/Qwen2.5-0.5B-Instruct'
+runtime	src/packages/model-artifacts/testing/resolvedArtifactFixture.ts	15:export const QWEN_REVISION = '7ae557604adf67be50417f59c2c2f167def9a775'
+runtime	src/packages/model-artifacts/testing/resolvedArtifactFixture.ts	16:export const DEEPSEEK_REPOSITORY = 'TheBloke/deepseek-coder-6.7B-instruct-GGUF'
+runtime	src/packages/model-artifacts/testing/resolvedArtifactFixture.ts	17:export const DEEPSEEK_REVISION = '0123456789abcdef0123456789abcdef01234567'
+runtime	src/packages/model-artifacts/testing/resolvedArtifactFixture.ts	19:export interface ArtifactParts {
+runtime	src/packages/model-artifacts/testing/resolvedArtifactFixture.ts	28:export function resolvedArtifact(parts: ArtifactParts = {}): ResolvedModelArtifact {
+runtime	src/packages/model-artifacts/testing/resolvedArtifactFixture.ts	45:export function catalogEntry(parts: ArtifactParts = {}): ModelCatalogEntry {
+runtime	src/packages/model-scheduling/modelUnitMaterializer.ts	20:export interface ModelExecutionUnit extends ExecutionUnit {
+runtime	src/packages/model-scheduling/modelUnitMaterializer.ts	40:export interface RuntimeCapabilities {
+runtime	src/packages/model-scheduling/modelUnitMaterializer.ts	50:export function admitsSharedUnits(capabilities: RuntimeCapabilities): boolean {
+runtime	src/packages/model-scheduling/modelUnitMaterializer.ts	54:export type MaterializationOutcome =
+runtime	src/packages/model-scheduling/modelUnitMaterializer.ts	59:export interface ModelUnitMaterializer {
+runtime	src/packages/model-scheduling/modelUnitMaterializer.ts	74:export interface ResidencyBinding {
+runtime	src/packages/model-scheduling/modelUnitMaterializer.ts	81:export type HealthObservation = { readonly status: 'healthy' } | { readonly status: 'unhealthy'; readonly reason: string }
+runtime	src/packages/model-scheduling/modelUnitMaterializer.ts	84:export type RuntimeMutationOutcome =
+runtime	src/packages/model-scheduling/modelUnitMaterializer.ts	95:export interface ObservedArtifactIdentity {
+runtime	src/packages/model-scheduling/modelUnitMaterializer.ts	102:export type ArtifactIdentityVerification =
+runtime	src/packages/model-scheduling/modelUnitMaterializer.ts	108:export interface ExpectedResidency {
+runtime	src/packages/model-scheduling/modelUnitMaterializer.ts	115:export type ObservedResidency =
+runtime	src/packages/model-scheduling/modelUnitMaterializer.ts	131:export interface RuntimeAdapter {
+runtime	src/packages/provider/src/proxy/resilience/errorClassifier.ts	35:export const PROVIDER_ERROR_TYPES = {
+runtime	src/packages/provider/src/proxy/resilience/errorClassifier.ts	55:export type ProviderErrorType = (typeof PROVIDER_ERROR_TYPES)[keyof typeof PROVIDER_ERROR_TYPES]
+runtime	src/packages/provider/src/proxy/resilience/errorClassifier.ts	58:export type ErrorTypeContract = ProviderErrorType | 'unknown'
+runtime	src/packages/provider/src/proxy/resilience/errorClassifier.ts	59:export const ERROR_TYPE_CONTRACT: readonly ErrorTypeContract[] = Object.freeze([...Object.values(PROVIDER_ERROR_TYPES), 'unknown'])
+runtime	src/packages/provider/src/proxy/resilience/errorClassifier.ts	60:export const ERROR_TYPE_CONTRACT_VERSION = 1
+runtime	src/packages/provider/src/proxy/resilience/errorClassifier.ts	63:export type ProviderTraits = {
+runtime	src/packages/provider/src/proxy/resilience/errorClassifier.ts	69:export type ClassifierOptions = {
+runtime	src/packages/provider/src/proxy/resilience/errorClassifier.ts	93:export function isEmptyContentResponse(responseBody: unknown, opts?: { provider?: string | null }): boolean {
+runtime	src/packages/provider/src/proxy/resilience/errorClassifier.ts	126:export const CONTEXT_OVERFLOW_SIGNALS: readonly string[] = [
+runtime	src/packages/provider/src/proxy/resilience/errorClassifier.ts	130:export const CONTEXT_OVERFLOW_REGEX = new RegExp(CONTEXT_OVERFLOW_SIGNALS.join('|'), 'i')
+runtime	src/packages/provider/src/proxy/resilience/errorClassifier.ts	132:export function isContextOverflow(errorText: string): boolean {
+runtime	src/packages/provider/src/proxy/resilience/errorClassifier.ts	139:export function containsModelUnavailableMessage(errorMessage: string): boolean {
+runtime	src/packages/provider/src/proxy/resilience/errorClassifier.ts	149:export function isGeoBlockedError(errorMessage: string): boolean {
+runtime	src/packages/provider/src/proxy/resilience/errorClassifier.ts	195:export function isCloudflareChallengeInterstitial(errorText: string): boolean {
+runtime	src/packages/provider/src/proxy/resilience/errorClassifier.ts	200:export function isCloudflareFingerprintRejection(errorText: string): boolean {
+runtime	src/packages/provider/src/proxy/resilience/errorClassifier.ts	207:export function isAnthropicOAuthProvider(provider?: string | null): boolean {
+runtime	src/packages/provider/src/proxy/resilience/errorClassifier.ts	211:export function isAnthropicRequestNotAllowed(errorText: string): boolean {
+runtime	src/packages/provider/src/proxy/resilience/errorClassifier.ts	238:export function isResourceNotFoundResponse(responseBody: unknown): boolean {
+runtime	src/packages/provider/src/proxy/resilience/errorClassifier.ts	284:export function classifyProviderError(
+runtime	src/packages/provider/src/proxy/resilience/errorClassifier.ts	345:export function isFakeSuccessBodyAllowlistedProvider(provider?: string | null): boolean {
+runtime	src/packages/provider/src/proxy/resilience/errorClassifier.ts	358:export function classifyFakeSuccessBody(content: string, provider?: string | null): ProviderErrorType | null {
+runtime	src/packages/provider/src/proxy/resilience/errorClassifier.ts	383:export function blamesRequest(statusCode: number, responseBody: unknown, provider?: string | null, options: ClassifierOptions = {}): boo
+runtime	tests/agents/test_recommend_cli.py	69:def check(label: str, condition: bool, extra: str = "") -> None:
+runtime	tests/agents/test_recommend_cli.py	79:class LocalHome:
+runtime	tests/agents/test_recommend_cli.py	107:def run(home: LocalHome, *args: str) -> subprocess.CompletedProcess:
+runtime	tests/agents/test_recommend_cli.py	114:def parse_json(text: str) -> dict:
+runtime	tests/agents/test_recommend_cli.py	121:def check_provider_catalog(home: LocalHome) -> None:
+runtime	tests/agents/test_recommend_cli.py	137:def check_refusals(home: LocalHome) -> None:
+runtime	tests/agents/test_recommend_cli.py	154:def check_fallback_json(home: LocalHome) -> None:
+runtime	tests/agents/test_recommend_cli.py	167:def check_local_choice(home: LocalHome) -> None:
+runtime	tests/agents/test_recommend_cli.py	199:def check_unreadable_files(home: LocalHome) -> None:
+runtime	tests/agents/test_recommend_cli.py	215:def check_policy(home: LocalHome) -> None:
+runtime	tests/agents/test_recommend_cli.py	231:def check_declared_policy(home: LocalHome) -> None:
+runtime	tests/agents/test_recommend_cli.py	242:def main() -> int:
+stdin	src/packages/shell/src/bash/bashPipeCommand.ts	14:export function rearrangePipeCommand(command: string): string {
+stdin	src/packages/shell/src/bash/ast-alias.ts	25:export type Redirect = {
+stdin	src/packages/shell/src/bash/ast-alias.ts	31:export type SimpleCommand = {
+stdin	src/packages/shell/src/bash/ast-alias.ts	42:export type ParseForSecurityResult =
+stdin	src/packages/shell/src/bash/ast-alias.ts	213:export function nodeTypeId(nodeType: string | undefined): number {
+stdin	src/packages/shell/src/bash/ast-alias.ts	382:export async function parseForSecurity(
+stdin	src/packages/shell/src/bash/ast-alias.ts	401:export function parseForSecurityFromAst(
+stdin	src/packages/shell/src/bash/ast-alias.ts	2206:export type SemanticCheckResult = { ok: true } | { ok: false; reason: string }
+stdin	src/packages/shell/src/bash/ast-alias.ts	2213:export function checkSemantics(commands: SimpleCommand[]): SemanticCheckResult {
+stdin	src/packages/shell/src/bash/ast.ts	25:export type Redirect = {
+stdin	src/packages/shell/src/bash/ast.ts	31:export type SimpleCommand = {
+stdin	src/packages/shell/src/bash/ast.ts	42:export type ParseForSecurityResult =
+stdin	src/packages/shell/src/bash/ast.ts	213:export function nodeTypeId(nodeType: string | undefined): number {
+stdin	src/packages/shell/src/bash/ast.ts	382:export async function parseForSecurity(
+stdin	src/packages/shell/src/bash/ast.ts	402:export function parseForSecurityFromAst(
+stdin	src/packages/shell/src/bash/ast.ts	2207:export type SemanticCheckResult = { ok: true } | { ok: false; reason: string }
+stdin	src/packages/shell/src/bash/ast.ts	2214:export function checkSemantics(commands: SimpleCommand[]): SemanticCheckResult {
+stdin	src/packages/tool-registry/src/tools/BashTool/readOnlyValidation.ts	1246:export function isCommandSafeViaFlagParsing(command: string): boolean {
+stdin	src/packages/tool-registry/src/tools/BashTool/readOnlyValidation.ts	1876:export function checkReadOnlyConstraints(
+stdin	src/hooks/detect_stdin_reading_interpreter.py	75:def _segments(command: str) -> list[str]:
+stdin	src/hooks/detect_stdin_reading_interpreter.py	104:def _stages(segment: str) -> list[str]:
+stdin	src/hooks/detect_stdin_reading_interpreter.py	124:def _stdin_reader(stage: str) -> str | None:
+stdin	src/hooks/detect_stdin_reading_interpreter.py	151:def _substituted_variables(command: str) -> dict[str, str]:
+stdin	src/hooks/detect_stdin_reading_interpreter.py	157:def _empty_operand(stage: str, substituted: dict[str, str]) -> tuple[str, str] | None:
+stdin	src/hooks/detect_stdin_reading_interpreter.py	183:def _empty_operand_notices(command: str) -> list[str]:
+stdin	src/hooks/detect_stdin_reading_interpreter.py	203:def has_provided_input(segment: str) -> bool:
+stdin	src/hooks/detect_stdin_reading_interpreter.py	212:def detect(payload: dict) -> str | None:
+stdin	src/packages/cli/src/bg/attachClient.ts	82:export async function runAttach(
+stdin	src/packages/cli/src/headless/sdk/session/run-streaming.ts	330:export function runHeadlessStreaming(
+stdin	src/packages/cli/src/headless/sdk/session/run-streaming.ts	3529:export async function handleRewindFiles(
+stdin	src/packages/output/src/render-options.ts	69:export function getBaseRenderOptions(
+stdin	src/packages/shell/src/bash/bashParser.ts	12:export type TsNode = {
+stdin	src/packages/shell/src/bash/bashParser.ts	39:export function ensureParserInitialized(): Promise<void> {
+stdin	src/packages/shell/src/bash/bashParser.ts	44:export function getParserModule(): ParserModule | null {
+stdin	src/packages/shell/src/bash/bashParser.ts	87:export const SHELL_KEYWORDS = new Set([
+stdin	src/packages/shell/src/bash/commands.ts	84:export type { CommandPrefixResult, CommandSubcommandPrefixResult }
+stdin	src/packages/shell/src/bash/commands.ts	86:export function splitCommandWithOperators(command: string): string[] {
+stdin	src/packages/shell/src/bash/commands.ts	252:export function filterControlOperators(
+stdin	src/packages/shell/src/bash/commands.ts	266:export function splitCommand(command: string): string[] {
+stdin	src/packages/shell/src/bash/commands.ts	389:export function isHelpCommand(command: string): boolean {
+stdin	src/packages/shell/src/bash/commands.ts	511:export const getCommandSubcommandPrefix = createSubcommandPrefixExtractor(
+stdin	src/packages/shell/src/bash/commands.ts	519:export function clearCommandPrefixCaches(): void {
+stdin	src/packages/shell/src/bash/commands.ts	607:export function isUnsafeCompoundCommand(command: string): boolean {
+stdin	src/packages/shell/src/bash/commands.ts	632:export function extractOutputRedirections(cmd: string): {
+stdin	src/packages/shell/src/legacy/bashProvider.ts	58:export async function createBashShellProvider(
+stdin	src/packages/shell/src/providers/bashProvider.ts	55:export async function createBashShellProvider(
+stdin	src/packages/stdin-napi/src/index.ts	49:export function activeReaderCount(): number {
+stdin	src/packages/stdin-napi/src/index.ts	65:export function pinFd0Raw(): void {
+stdin	src/packages/stdin-napi/src/index.ts	81:export function unpinFd0Raw(): void {
+stdin	src/packages/stdin-napi/src/index.ts	139:export function isReaderSupported(): boolean {
+stdin	src/packages/stdin-napi/src/index.ts	158:export function startReader(
+stdin	src/packages/stdin-napi/src/index.ts	171:export type { ReaderHandle }
+stdin	tests/roster/test_stdin_probe.py	34:def check(label: str, expected, obtained) -> None:
+stdin	tests/roster/test_stdin_probe.py	44:def fake_process(proc: Path, pid: int, stdin: str, state: str = "S", ticks: tuple[int, int] = (7, 3)) -> None:
+stdin	tests/roster/test_stdin_probe.py	52:def fake_fd(proc: Path, pid: int, fd: int, target: str, flags: str) -> None:
+stdin	src/packages/agent/hooks.ts	85:export interface HookBlockingError {
+stdin	src/packages/agent/hooks.ts	96:export function getPreToolHookBlockingMessage(
+stdin	src/packages/agent/hooks.ts	108:export function getStopHookMessage(blockingError: HookBlockingError): string {
+stdin	src/packages/agent/hooks.ts	117:export function getTeammateIdleHookMessage(
+stdin	src/packages/agent/hooks.ts	128:export function getTaskCreatedHookMessage(
+stdin	src/packages/agent/hooks.ts	139:export function getTaskCompletedHookMessage(
+stdin	src/packages/agent/hooks.ts	150:export function getUserPromptSubmitHookBlockingMessage(
+stdin	src/packages/agent/hooks.ts	174:export const DEFAULT_HOOK_TIMEOUT_MS = 600_000
+stdin	src/packages/agent/hooks.ts	177:export const SESSION_END_HOOK_TIMEOUT_MS_DEFAULT = 1500
+stdin	src/packages/agent/hooks.ts	199:export type HookOutsideReplResult = {
+stdin	src/packages/agent/hooks.ts	211:export type HookAttachmentMessage = AgentMessage & {
+stdin	src/packages/agent/hooks.ts	221:export type PermissionRequestHookDecision =
+stdin	src/packages/agent/hooks.ts	232:export type HookResult = {
+stdin	src/packages/agent/hooks.ts	249:export type AggregatedHookResult = Omit<HookResult, 'outcome' | 'additionalContext' | 'message'> & {
+stdin	src/packages/agent/hooks.ts	266:export function hookMatcherMatches(matcher: string | undefined, query: string | undefined): boolean {
+stdin	src/packages/agent/hooks.ts	297:export function createBaseHookInput(
+stdin	src/packages/agent/hooks.ts	357:export function hasHookForEvent(event: string): boolean {
+stdin	src/packages/agent/hooks.ts	472:export async function executeHooksOutsideREPL(params: {
+stdin	src/packages/agent/hooks.ts	488:export function hasBlockingResult(results: HookOutsideReplResult[]): boolean {
+stdin	src/packages/agent/hooks.ts	855:export async function executeNotificationHooks(
+stdin	src/packages/agent/hooks.ts	869:export async function executeConfigChangeHooks(
+stdin	src/packages/agent/hooks.ts	888:export async function executeCwdChangedHooks(
+stdin	src/packages/agent/hooks.ts	898:export async function executeFileChangedHooks(
+stdin	src/packages/agent/hooks.ts	913:export async function executePreCompactHooks(
+stdin	src/packages/agent/hooks.ts	951:export async function executePostCompactHooks(
+stdin	src/packages/agent/hooks.ts	981:export function getSessionEndHookTimeoutMs(): number {
+stdin	src/packages/agent/hooks.ts	993:export async function executeSessionEndHooks(
+stdin	src/packages/agent/hooks.ts	1009:export function hasWorktreeCreateHook(): boolean {
+stdin	src/packages/agent/hooks.ts	1014:export async function executeWorktreeCreateHook(name: string): Promise<{ worktreePath: string }> {
+stdin	src/packages/agent/hooks.ts	1026:export async function executeWorktreeRemoveHook(worktreePath: string): Promise<boolean> {
+stdin	src/packages/agent/hooks.ts	1045:export async function executeStatusLineCommand(
+stdin	src/packages/agent/hooks.ts	1061:export async function executeFileSuggestionCommand(
+stdin	src/packages/agent/hooks.ts	1084:export async function execCommandHook(
+stdin	src/packages/agent/hooks.ts	1784:export async function executeElicitationHooks({
+stdin	src/packages/agent/hooks.ts	1838:export async function executeElicitationResultHooks({
+stdin	src/packages/agent/hooks.ts	1991:export async function executeInstructionsLoadedHooks(
+stdin	src/packages/agent/hooks.ts	2088:export async function executeStopFailureHooks(
+stdin	src/packages/agent/hooks.ts	2288:export async function getMatchingHooks(
+stdin	src/packages/agent/hooks.ts	2571:export function hasInstructionsLoadedHook(): boolean {
+stdin	src/packages/agent/hooks.ts	2789:export function shouldSkipHookDueToTrust(): boolean {
+stdin	src/packages/agent/hooks.ts	2798:export type ConfigChangeSource =
+stdin	src/packages/agent/hooks.ts	2806:export type ElicitationHookResult = {
+stdin	src/packages/agent/hooks.ts	2812:export type ElicitationResponse = ElicitResult
+stdin	src/packages/agent/hooks.ts	2815:export type ElicitationResultHookResult = {
+stdin	src/packages/agent/hooks.ts	2827:export type InstructionsLoadReason =
+stdin	src/packages/agent/hooks.ts	2834:export type InstructionsMemoryType = 'User' | 'Project' | 'Local' | 'Managed'
+stdin	src/packages/app-host/src/bootstrap/gracefulShutdown.ts	82:export function cleanupTerminalModes(): void {
+stdin	src/packages/app-host/src/bootstrap/gracefulShutdown.ts	272:export const setupGracefulShutdown = memoize(() => {
+stdin	src/packages/app-host/src/bootstrap/gracefulShutdown.ts	463:export function gracefulShutdownSync(
+stdin	src/packages/app-host/src/bootstrap/gracefulShutdown.ts	496:export function isShuttingDown(): boolean {
+stdin	src/packages/app-host/src/bootstrap/gracefulShutdown.ts	501:export function resetShutdownState(): void {
+stdin	src/packages/app-host/src/bootstrap/gracefulShutdown.ts	515:export function getPendingShutdownForTesting(): Promise<void> | undefined {
+stdin	src/packages/app-host/src/bootstrap/gracefulShutdown.ts	520:export async function gracefulShutdown(
+stdin	src/packages/app-host/src/bootstrap/gracefulShutdown.ts	665:class CleanupTimeoutError extends Error {
+stdin	src/packages/app-host/src/runtime/installNativeStdinReader.ts	48:export function installNativeStdinReader(): void {
+stdin	src/packages/cli/src/bg/openAgentsFromRepl.ts	57:export async function openAgentsFromReplLeftArrow(
+stdin	src/packages/cli/src/bg/spawnPty.ts	42:export function describeCwdGone(cwd: string): string {
+stdin	src/packages/cli/src/bg/spawnPty.ts	50:export function classifyBreadcrumbOpenErrno(error: unknown): string | undefined {
+stdin	src/packages/cli/src/bg/spawnPty.ts	61:export function resolveSpawnStdio(breadcrumbPath: string): {
+stdin	src/packages/cli/src/bg/spawnPty.ts	79:export interface SpawnPtyResult {
+stdin	src/packages/cli/src/bg/spawnPty.ts	103:export function spawnPtyHost(opts: {
+stdin	src/packages/cli/src/entry/printDelegation.ts	28:export const LOCAL_PROXY_SOCKET_ENV = 'THYROX_LOCAL_PROXY_SOCKET'
+stdin	src/packages/cli/src/entry/printDelegation.ts	40:export const TUNNEL_BASE_URL = 'http://localhost'
+stdin	src/packages/cli/src/entry/printDelegation.ts	44:export type PrintRoute =
+stdin	src/packages/cli/src/entry/printDelegation.ts	59:export function decidePrintRoute(argv: string[], env: Env, readFd?: ReadFd, store?: ConnectionStore): PrintRoute {
+stdin	src/packages/cli/src/entry/printDelegation.ts	68:export function tunnelEnv(env: Env, socketPath: string): Env {
+stdin	src/packages/cli/src/entry/printDelegation.ts	75:export type LocalProxyChild = {
+stdin	src/packages/cli/src/entry/printDelegation.ts	82:export type SpawnLocalProxy = (argv: string[], options: { env: Env; cwd: string }) => LocalProxyChild
+stdin	src/packages/cli/src/entry/printDelegation.ts	85:export const spawnLocalProxy: SpawnLocalProxy = (argv, options) =>
+stdin	src/packages/cli/src/entry/printDelegation.ts	94:export type CredentialEnvironmentOptions = {
+stdin	src/packages/cli/src/entry/printDelegation.ts	108:export type CredentialEnvironment = { env: Env; close: () => Promise<void> }
+stdin	src/packages/cli/src/entry/printDelegation.ts	190:export async function credentialEnvironmentFor(route: PrintRoute, options: CredentialEnvironmentOptions): Promise<CredentialEnvironment>
+stdin	src/packages/cli/src/handlers/agentsFleet.ts	48:export function fleetFocusSeed(): { focusedShort: string | undefined; originSessionId: string } {
+stdin	src/packages/cli/src/handlers/agentsFleet.ts	56:export async function agentsFleetHandler(): Promise<void> {
+stdin	src/packages/ink/src/core/ink.tsx	140:export type Logger = {
+stdin	src/packages/ink/src/core/ink.tsx	145:export type Options = {
+stdin	src/packages/ink/src/core/ink.tsx	2064:export function drainStdin(stdin: NodeJS.ReadStream = process.stdin): void {
+stdin	src/packages/mitm/src/inspector/httpProxyServer.ts	31:export function defaultHttpProxyPort(): number {
+stdin	src/packages/mitm/src/inspector/httpProxyServer.ts	36:export interface HttpProxyServerHandle {
+stdin	src/packages/mitm/src/inspector/httpProxyServer.ts	223:export function startHttpProxyServer(port: number = defaultHttpProxyPort()): Promise<HttpProxyServerHandle> {
+stdin	src/packages/mitm/src/tproxy/captureMode.ts	32:export function normalizeDest(localAddress: string | undefined): string {
+stdin	src/packages/mitm/src/tproxy/captureMode.ts	36:export interface TproxyInterceptInfo {
+stdin	src/packages/mitm/src/tproxy/captureMode.ts	41:export interface TproxyDeps {
+stdin	src/packages/mitm/src/tproxy/captureMode.ts	59:export interface TproxyDecryptOptions {
+stdin	src/packages/mitm/src/tproxy/captureMode.ts	65:export interface TproxyCaptureOptions {
+stdin	src/packages/mitm/src/tproxy/captureMode.ts	72:export interface TproxyCaptureHandle {
+stdin	src/packages/mitm/src/tproxy/captureMode.ts	81:export function connectViaEgress(egressPort: number, ip: string, port: number): Promise<net.Socket> {
+stdin	src/packages/mitm/src/tproxy/captureMode.ts	96:export function handleTproxyConnection(
+stdin	src/packages/mitm/src/tproxy/captureMode.ts	140:export async function startTproxyCapture(cfg: TproxyConfig, options: TproxyCaptureOptions = {}): Promise<TproxyCaptureHandle> {
+stdin	src/packages/podman-execution/podmanExecutor.ts	14:export interface PodmanCommandResult {
+stdin	src/packages/podman-execution/podmanExecutor.ts	21:export interface PodmanRunOptions {
+stdin	src/packages/podman-execution/podmanExecutor.ts	25:export interface PodmanExecutor {
+stdin	src/packages/podman-execution/podmanExecutor.ts	54:export async function runCommand(bin: string, args: readonly string[], options: PodmanRunOptions = {}): Promise<PodmanCommandResult> {
+stdin	src/packages/podman-execution/podmanExecutor.ts	102:export function createPodmanExecutor(): PodmanExecutor {
+stdin	src/packages/provider/src/accounts/cursor/cursorAgent.ts	18:export interface CursorAgentRun {
+stdin	src/packages/provider/src/accounts/cursor/cursorAgent.ts	25:export function runCursorAgent(binary: string, args: string[], timeoutMs: number, options: { sigkillFollowupMs?: number } = {}): Promise<
+stdin	src/packages/provider/src/accounts/cursor/cursorAgent.ts	71:export interface CursorAgentLookup {
+stdin	src/packages/provider/src/accounts/cursor/cursorAgent.ts	80:export function resolveCursorAgentBinary(lookup: CursorAgentLookup = {}): string | null {
+stdin	src/packages/provider/src/accounts/cursor/cursorAgent.ts	98:export function humanizeCursorModelId(id: string): string {
+stdin	src/packages/provider/src/accounts/cursor/cursorAgent.ts	112:export function parseCursorAgentModels(text: string): string[] {
+stdin	src/packages/provider/src/accounts/cursor/cursorAgent.ts	128:export interface CursorAgentModel {
+stdin	src/packages/provider/src/accounts/cursor/cursorAgent.ts	134:export async function fetchCursorAgentModels(options: { binary?: string; timeoutMs?: number; resolveBinary?: () => string | null } = {})
+stdin	src/packages/provider/src/authFileDescriptor.ts	23:export const CCR_SESSION_INGRESS_TOKEN_PATH = `${CCR_TOKEN_DIR}/.session_ingress_token`
+stdin	src/packages/provider/src/authFileDescriptor.ts	30:export function maybePersistTokenForSubprocesses(
+stdin	src/packages/provider/src/authFileDescriptor.ts	57:export function readTokenFromWellKnownFile(
+stdin	src/packages/provider/src/authFileDescriptor.ts	173:export function getOAuthTokenFromFileDescriptor(): string | null {
+stdin	src/packages/provider/src/authFileDescriptor.ts	188:export function getApiKeyFromFileDescriptor(): string | null {
+stdin	src/packages/provider/src/sessionIngressAuth.ts	102:export function getSessionIngressAuthToken(): string | null {
+stdin	src/packages/provider/src/sessionIngressAuth.ts	118:export function getSessionIngressAuthHeaders(): Record<string, string> {
+stdin	src/packages/provider/src/sessionIngressAuth.ts	139:export function updateSessionIngressAuthToken(token: string): void {
+stdin	src/packages/shell/src/bash/ShellSnapshot.ts	54:export function createRipgrepShellIntegration(
+stdin	src/packages/shell/src/bash/ShellSnapshot.ts	144:export function createFindGrepShellIntegration(
+stdin	src/packages/shell/src/bash/ShellSnapshot.ts	411:export const createAndSaveSnapshot = async (
+stdin	src/packages/shell/src/bash/shellQuoting.ts	46:export function quoteShellCommand(
+stdin	src/packages/shell/src/bash/shellQuoting.ts	81:export function hasStdinRedirect(command: string): boolean {
+stdin	src/packages/shell/src/bash/shellQuoting.ts	93:export function shouldAddStdinRedirect(command: string): boolean {
+stdin	src/packages/shell/src/bash/shellQuoting.ts	126:export function rewriteWindowsNullRedirect(command: string): string {
+stdin	src/packages/shell/src/terminal/ShellCommand.ts	14:export type ExecResult = {
+stdin	src/packages/shell/src/terminal/ShellCommand.ts	33:export type ShellCommand = {
+stdin	src/packages/shell/src/terminal/ShellCommand.ts	71:class StreamWrapper {
+stdin	src/packages/shell/src/terminal/ShellCommand.ts	119:class ShellCommandImpl implements ShellCommand {
+stdin	src/packages/shell/src/terminal/ShellCommand.ts	395:export function wrapSpawn(
+stdin	src/packages/shell/src/terminal/ShellCommand.ts	416:class AbortedShellCommand implements ShellCommand {
+stdin	src/packages/shell/src/terminal/ShellCommand.ts	445:export function createAbortedCommand(
+stdin	src/packages/shell/src/terminal/ShellCommand.ts	455:export function createFailedCommand(preSpawnError: string): ShellCommand {
+stdin	src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts	94:export const MAX_SUBCOMMANDS_FOR_SECURITY_CHECK = 50
+stdin	src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts	101:export const MAX_SUGGESTED_RULES_FOR_COMPOUND = 5
+stdin	src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts	152:export function getSimpleCommandPrefix(command: string): string | null {
+stdin	src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts	234:export function getFirstWordPrefix(command: string): string | null {
+stdin	src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts	338:export const permissionRuleExtractPrefix = sharedPermissionRuleExtractPrefix
+stdin	src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts	344:export function matchWildcardPattern(
+stdin	src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts	355:export const bashPermissionRule: (
+stdin	src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts	515:export function stripSafeWrappers(command: string): string {
+stdin	src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts	669:export function stripWrappersFromArgv(argv: string[]): string[] {
+stdin	src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts	699:export const BINARY_HIJACK_VARS = /^(LD_|DYLD_|PATH$)/
+stdin	src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts	724:export function stripAllLeadingEnvVars(
+stdin	src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts	982:export const bashToolCheckExactMatchPermission = (
+stdin	src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts	1041:export const bashToolCheckPermission = (
+stdin	src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts	1174:export async function checkCommandAndSuggestRules(
+stdin	src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts	1482:export function peekSpeculativeClassifierCheck(
+stdin	src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts	1488:export function startSpeculativeClassifierCheck(
+stdin	src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts	1524:export function consumeSpeculativeClassifierCheck(
+stdin	src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts	1534:export function clearSpeculativeChecks(): void {
+stdin	src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts	1546:export async function awaitClassifierAutoApproval(
+stdin	src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts	1596:export async function executeAsyncClassifierCheck(
+stdin	src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts	1654:export async function bashToolHasPermission(
+stdin	src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts	2569:export function isNormalizedGitCommand(command: string): boolean {
+stdin	src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts	2605:export function isNormalizedCdCommand(command: string): boolean {
+stdin	src/packages/tool-registry/src/tools/BashTool/bashPermissions.ts	2619:export function commandHasAnyCd(command: string): boolean {
+stdin	src/packages/tool-registry/src/tools/BashTool/bashSecurity.ts	522:export function stripSafeHeredocSubstitutions(command: string): string | null {
+stdin	src/packages/tool-registry/src/tools/BashTool/bashSecurity.ts	582:export function hasSafeHeredocSubstitution(command: string): boolean {
+stdin	src/packages/tool-registry/src/tools/BashTool/bashSecurity.ts	2254:export function bashCommandIsSafe(
+stdin	src/packages/tool-registry/src/tools/BashTool/bashSecurity.ts	2423:export async function bashCommandIsSafeAsync(

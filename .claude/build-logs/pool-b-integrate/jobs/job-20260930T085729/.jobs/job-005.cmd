@@ -1,0 +1,1 @@
+timeout 900 bash bin/check_package_typecheck --strict cli storage provider > .claude/build-logs/pool-b-integrate/typecheck.log 2>&1; echo "rc=$?" >> .claude/build-logs/pool-b-integrate/typecheck.log

@@ -1,0 +1,383 @@
+diff --git a/src/packages/model-scheduling/residency.ts b/src/packages/model-scheduling/residency.ts
+index 6aa0cd74f..f915c27e1 100644
+--- a/src/packages/model-scheduling/residency.ts
++++ b/src/packages/model-scheduling/residency.ts
+@@ -52,6 +52,13 @@ export class InvalidResidencyTransitionError extends Error {
+   }
+ }
+ 
++export class UnknownResidencyError extends Error {
++  constructor(readonly residencyKey: string) {
++    super(`la residencia ${residencyKey} no está registrada`)
++    this.name = 'UnknownResidencyError'
++  }
++}
++
+ export type ResidencyChanges = Partial<Pick<ModelResidency, 'grantId' | 'unitId' | 'reservationId' | 'activeRequests' | 'reason'>>
+ 
+ /** Las residencias que este coordinador conoce; la verdad material la reconcilia contra las unidades. */
+@@ -68,13 +75,32 @@ export class ResidencyRegistry {
+ 
+   /** Abre una residencia `planned` en la generación del lease que la coordina; reemplaza a una `absent`. */
+   plan(residencyKey: string, generation: number, model: string): ModelResidency {
+-    void residencyKey; void generation; void model
+-    throw new Error('ResidencyRegistry.plan: por implementar')
++    const existing = this.residencies.get(residencyKey)
++    if (existing && existing.state !== 'absent') throw new InvalidResidencyTransitionError(residencyKey, existing.state, 'planned')
++    return this.store({ residencyKey, generation, model, state: 'planned', activeRequests: 0 })
+   }
+ 
+   /** Mueve la residencia si la generación presentada es la vigente y la tabla admite el paso. */
+   transition(residencyKey: string, generation: number, target: ResidencyState, changes: ResidencyChanges = {}): ModelResidency {
+-    void residencyKey; void generation; void target; void changes
+-    throw new Error('ResidencyRegistry.transition: por implementar')
++    const residency = this.currentFor(residencyKey, generation)
++    if (!RESIDENCY_TRANSITIONS[residency.state].includes(target)) throw new InvalidResidencyTransitionError(residencyKey, residency.state, target)
++    return this.store({ ...residency, ...changes, state: target })
++  }
++
++  /** Aplica cambios sin mover el estado (p. ej. el contador de peticiones); exige la generación vigente. */
++  amend(residencyKey: string, generation: number, changes: ResidencyChanges): ModelResidency {
++    return this.store({ ...this.currentFor(residencyKey, generation), ...changes })
++  }
++
++  private currentFor(residencyKey: string, generation: number): ModelResidency {
++    const residency = this.residencies.get(residencyKey)
++    if (!residency) throw new UnknownResidencyError(residencyKey)
++    if (residency.generation !== generation) throw new StaleGenerationError(residencyKey, generation, residency.generation)
++    return residency
++  }
++
++  private store(residency: ModelResidency): ModelResidency {
++    this.residencies.set(residency.residencyKey, residency)
++    return residency
+   }
+ }
+diff --git a/src/packages/model-scheduling/residencyController.ts b/src/packages/model-scheduling/residencyController.ts
+index f0ae5ee52..0550554e8 100644
+--- a/src/packages/model-scheduling/residencyController.ts
++++ b/src/packages/model-scheduling/residencyController.ts
+@@ -18,11 +18,15 @@
+  * fallido no la impide. La VRAM no se suelta mientras la ausencia de la unidad
+  * no esté confirmada.
+  */
+-import type { ModelSchedulingCoordination } from './coordination.ts'
+-import type { ExecutionUnit, ModelExecutionPrimitive, RuntimeAdapter } from './executionPrimitive.ts'
+-import type { ModelResidency, ResidencyRegistry } from './residency.ts'
+-import type { ExecutionPlan, GrantIssuer, ReconciliationMark } from './scheduler.ts'
+-import type { RequestAllocation, ResidencyVramLedger } from './vramLedger.ts'
++import type { ExecutionGrant } from '@thyrox/model-artifacts/executionGrant.ts'
++
++import type { GenerationLease, LeaseAcquisition, ModelSchedulingCoordination } from './coordination.ts'
++import type {
++  ExecutionUnit, ExpectedResidency, HealthObservation, ModelExecutionPrimitive, ResidencyBinding, RuntimeAdapter, RuntimeMutationOutcome,
++} from './executionPrimitive.ts'
++import { type ModelResidency, type ResidencyRegistry, type ResidencyState, UnknownResidencyError } from './residency.ts'
++import { CompensationStack, type ExecutionPlan, type GrantIssuer, markOnThrow, type ReconciliationMark } from './scheduler.ts'
++import type { RequestAllocation, ResidencyVramLedger, VramReservation } from './vramLedger.ts'
+ 
+ /** La política de espera de salud: la decide el controlador, el adapter sólo observa una vez. */
+ export interface HealthPolicy {
+@@ -70,24 +74,273 @@ export type EvictionOutcome =
+   /** La unidad no se pudo confirmar ausente: la VRAM sigue reservada y queda marcada. */
+   | { readonly status: 'failed'; readonly reason: string; readonly marks: readonly ReconciliationMark[] }
+ 
++/** Lo que una residencia establecida retiene y que su desalojo suelta. */
++interface EstablishedResidency {
++  readonly lease: GenerationLease
++  readonly reservation: VramReservation
++  readonly grant: ExecutionGrant
++  readonly unit: ExecutionUnit
++}
++
++/** Una residencia en curso de establecerse: su lease y las compensaciones de lo creado. */
++interface Establishment {
++  readonly plan: ExecutionPlan
++  readonly lease: GenerationLease
++  readonly compensations: CompensationStack
++}
++
++
++/** Estados desde los que se puede iniciar o continuar un desalojo. */
++const EVICTABLE_STATES: readonly ResidencyState[] = ['resident', 'draining']
++
++function defaultSleep(ms: number): Promise<void> {
++  return new Promise(resolve => setTimeout(resolve, ms))
++}
++
++function leaseId(lease: GenerationLease): string {
++  return `${lease.residencyKey}#${lease.generation}`
++}
++
++function bindingOf(unit: ExecutionUnit): ResidencyBinding {
++  return { unit, residencyKey: unit.residencyKey, generation: unit.generation }
++}
++
++function expectedResidencyOf(unit: ExecutionUnit): ExpectedResidency {
++  return { residencyKey: unit.residencyKey, generation: unit.generation, model: unit.model, sha256: unit.artifactSha256 }
++}
++
++function mutationFailure(outcome: Exclude<RuntimeMutationOutcome, { status: 'done' }>): string {
++  return outcome.status === 'failed' ? outcome.reason : `generación vieja, vigente ${outcome.currentGeneration}`
++}
++
++function leaseRefusal(acquisition: Exclude<LeaseAcquisition, { status: 'acquired' }>): string {
++  if (acquisition.status === 'unavailable') return `coordinación no disponible: ${acquisition.reason}`
++  if (acquisition.status === 'held') return `la residencia la tiene ${acquisition.holder}`
++  return `generación vieja, vigente ${acquisition.currentGeneration}`
++}
++
++function unitMark(unitId: string, reason: string): ReconciliationMark {
++  return { resource: 'unit', id: unitId, reason }
++}
++
+ export class ResidencyController {
+-  constructor(private readonly dependencies: ResidencyControllerDependencies) {}
++  private readonly established = new Map<string, EstablishedResidency>()
++  private readonly sleep: (ms: number) => Promise<void>
++
++  constructor(private readonly dependencies: ResidencyControllerDependencies) {
++    this.sleep = dependencies.sleep ?? defaultSleep
++  }
+ 
+   /** Admite la petición del plan: reutiliza la residencia `resident` o la establece. */
+   async admit(plan: ExecutionPlan): Promise<AdmissionOutcome> {
+-    void plan; void this.dependencies
+-    throw new Error('ResidencyController.admit: por implementar')
++    const residency = this.dependencies.registry.get(plan.residencyKey)
++    const held = this.established.get(plan.residencyKey)
++    if (residency?.state === 'resident' && held) return this.allocate(plan, held, true)
++    if (residency && residency.state !== 'absent') {
++      return { status: 'refused', stage: 'lease', reason: `la residencia ${plan.residencyKey} está ${residency.state}: no admite peticiones nuevas` }
++    }
++    return this.establish(plan)
+   }
+ 
+   /** Suelta la VRAM de la petición y descuenta la residencia. */
+   async finish(admission: Admission): Promise<void> {
+-    void admission
+-    throw new Error('ResidencyController.finish: por implementar')
++    await this.dependencies.ledger.releaseRequest(admission.allocation)
++    const residency = this.dependencies.registry.get(admission.residency.residencyKey)
++    if (!residency) return
++    this.dependencies.registry.amend(residency.residencyKey, residency.generation, { activeRequests: residency.activeRequests - 1 })
+   }
+ 
+   /** Inicia o continúa el desalojo de la residencia. */
+   async evict(residencyKey: string): Promise<EvictionOutcome> {
+-    void residencyKey
+-    throw new Error('ResidencyController.evict: por implementar')
++    const residency = this.dependencies.registry.get(residencyKey)
++    const held = this.established.get(residencyKey)
++    if (!residency || !held || !EVICTABLE_STATES.includes(residency.state)) {
++      return { status: 'refused', reason: `la residencia ${residencyKey} no está resident ni draining` }
++    }
++    const { registry } = this.dependencies
++    if (residency.state === 'resident') registry.transition(residencyKey, residency.generation, 'draining')
++    if (residency.activeRequests > 0) return { status: 'draining', activeRequests: residency.activeRequests }
++    registry.transition(residencyKey, residency.generation, 'evicting')
++    return this.retire(residency, held)
++  }
++
++  private async establish(plan: ExecutionPlan): Promise<AdmissionOutcome> {
++    const acquisition = await this.dependencies.coordination.acquireResidency(plan.residencyKey, plan.owner, this.dependencies.leaseTtlMs)
++    if (acquisition.status !== 'acquired') return { status: 'refused', stage: 'lease', reason: leaseRefusal(acquisition) }
++    const compensations = new CompensationStack()
++    compensations.push(() => this.releaseLease(acquisition.lease))
++    this.dependencies.registry.plan(plan.residencyKey, acquisition.lease.generation, plan.model)
++    return this.reserveAndIssue({ plan, lease: acquisition.lease, compensations })
++  }
++
++  private async reserveAndIssue(establishment: Establishment): Promise<AdmissionOutcome> {
++    const { plan, lease, compensations } = establishment
++    const reserved = await this.dependencies.ledger.reserve({
++      residencyKey: plan.residencyKey,
++      owner: plan.owner,
++      generation: lease.generation,
++      devices: plan.placement.kind === 'gpu' ? plan.placement.devices : [],
++      vramMib: plan.residencyVramMib,
++    })
++    if (reserved.status !== 'reserved') return this.fail(establishment, 'reserve', `la reserva salió ${reserved.status}`)
++    compensations.push(() => this.releaseReservation(reserved.reservation))
++    const issued = await this.dependencies.issuer.issue(plan, lease.generation)
++    if (issued.status !== 'issued') return this.fail(establishment, 'grant', issued.reason)
++    compensations.push(() => this.revokeGrant(issued.grant))
++    this.dependencies.registry.transition(plan.residencyKey, lease.generation, 'materializing', {
++      grantId: issued.grant.grantId, reservationId: reserved.reservation.reservationId,
++    })
++    return this.materialize(establishment, reserved.reservation, issued.grant)
++  }
++
++  private async materialize(establishment: Establishment, reservation: VramReservation, grant: ExecutionGrant): Promise<AdmissionOutcome> {
++    const materialization = await this.dependencies.primitive.materialize(grant)
++    if (materialization.status === 'rejected') return this.fail(establishment, 'materialize', `${materialization.reason}: ${materialization.detail}`)
++    if (materialization.status === 'failed') {
++      if (materialization.partial) establishment.compensations.push(() => this.retirePartialUnit(materialization.unitId, grant))
++      return this.fail(establishment, 'materialize', materialization.reason)
++    }
++    const unit = materialization.unit
++    establishment.compensations.push(() => this.retireUnit(unit.unitId))
++    const current = await this.dependencies.coordination.currentGeneration(establishment.plan.residencyKey)
++    if (current !== establishment.lease.generation) {
++      return this.fail(establishment, 'generation', `el lease era de la generación ${establishment.lease.generation}, vigente ${current}`)
++    }
++    this.dependencies.registry.transition(establishment.plan.residencyKey, establishment.lease.generation, 'loading', { unitId: unit.unitId })
++    return this.bringUp(establishment, { lease: establishment.lease, reservation, grant, unit })
++  }
++
++  /** La cadena del adapter: salud, artefacto, identidad, carga y observación. */
++  private async bringUp(establishment: Establishment, held: EstablishedResidency): Promise<AdmissionOutcome> {
++    const { runtime } = this.dependencies
++    const { unit, grant } = held
++    const health = await this.awaitHealth(unit)
++    if (health.status !== 'healthy') return this.fail(establishment, 'health', health.reason)
++    const prepared = await runtime.prepareRuntimeArtifact(bindingOf(unit), grant)
++    if (prepared.status !== 'done') return this.fail(establishment, 'prepare', mutationFailure(prepared))
++    const identity = await runtime.verifyArtifactIdentity(unit, grant)
++    if (identity.status === 'failed') return this.fail(establishment, 'verify', identity.reason)
++    if (identity.status === 'mismatch') return this.fail(establishment, 'verify', `el runtime sirve ${identity.observed?.sha256}, el grant concede ${identity.expected.sha256}`)
++    const loaded = await runtime.loadResidency(bindingOf(unit), grant)
++    if (loaded.status !== 'done') return this.fail(establishment, 'load', mutationFailure(loaded))
++    const observed = await runtime.observeResidency(unit, expectedResidencyOf(unit))
++    if (observed.status !== 'resident') return this.fail(establishment, 'observe', `el runtime muestra la residencia ${observed.status}`)
++    this.dependencies.registry.transition(establishment.plan.residencyKey, establishment.lease.generation, 'resident')
++    this.established.set(establishment.plan.residencyKey, held)
++    return this.allocate(establishment.plan, held, false)
++  }
++
++  /** Sondea la salud hasta `attempts` veces, esperando `intervalMs` entre sondas y no tras la última. */
++  private async awaitHealth(unit: ExecutionUnit): Promise<HealthObservation> {
++    const { attempts, intervalMs } = this.dependencies.health
++    let observation = await this.dependencies.runtime.probeHealth(unit)
++    for (let attempt = 1; attempt < attempts && observation.status !== 'healthy'; attempt += 1) {
++      await this.sleep(intervalMs)
++      observation = await this.dependencies.runtime.probeHealth(unit)
++    }
++    return observation
++  }
++
++  /**
++   * Asigna la VRAM de la petición sobre una residencia ya `resident`. Si no
++   * cabe, la petición se rehúsa y la residencia sigue establecida: no hay nada
++   * de la petición que deshacer.
++   */
++  private async allocate(plan: ExecutionPlan, held: EstablishedResidency, reused: boolean): Promise<AdmissionOutcome> {
++    const allocated = await this.dependencies.ledger.allocateRequest(held.reservation, plan.requestId, plan.requestVramMib)
++    if (allocated.status !== 'allocated') return { status: 'refused', stage: 'allocate', reason: `la asignación de la petición salió ${allocated.status}` }
++    const { registry } = this.dependencies
++    const residency = registry.get(plan.residencyKey)
++    if (!residency) throw new UnknownResidencyError(plan.residencyKey)
++    const counted = registry.amend(plan.residencyKey, residency.generation, { activeRequests: residency.activeRequests + 1 })
++    return { status: 'admitted', requestId: plan.requestId, residency: counted, unit: held.unit, allocation: allocated.allocation, reused }
++  }
++
++  /** Deshace lo creado y deja la residencia `absent`, o `error` si algo quedó marcado. */
++  private async fail(establishment: Establishment, stage: ResidencyStage, reason: string): Promise<AdmissionOutcome> {
++    const marks = await establishment.compensations.unwind()
++    const target: ResidencyState = marks.length === 0 ? 'absent' : 'error'
++    this.dependencies.registry.transition(establishment.plan.residencyKey, establishment.lease.generation, target, { reason })
++    return { status: 'failed', stage, reason, marks }
++  }
++
++  /**
++   * Desaloja una residencia sin peticiones. La destrucción de la unidad es la
++   * frontera: hasta confirmarla ausente la VRAM no se suelta.
++   */
++  private async retire(residency: ModelResidency, held: EstablishedResidency): Promise<EvictionOutcome> {
++    await this.unloadGracefully(held.unit)
++    const unitLeft = await this.confirmUnitGone(held.unit.unitId)
++    if (unitLeft) return this.failEviction(residency, [unitLeft])
++    this.established.delete(residency.residencyKey)
++    const marks: ReconciliationMark[] = []
++    for (const release of [() => this.releaseReservation(held.reservation), () => this.revokeGrant(held.grant), () => this.releaseLease(held.lease)]) {
++      const mark = await release()
++      if (mark) marks.push(mark)
++    }
++    if (marks.length > 0) return this.failEviction(residency, marks)
++    this.dependencies.registry.transition(residency.residencyKey, residency.generation, 'absent')
++    return { status: 'evicted' }
++  }
++
++  /** La descarga es cortesía: su fallo no impide destruir la unidad. */
++  private async unloadGracefully(unit: ExecutionUnit): Promise<void> {
++    await markOnThrow('unit', unit.unitId, async () => {
++      await this.dependencies.runtime.unloadResidency(bindingOf(unit))
++      return undefined
++    })
++  }
++
++  /** Destruye la unidad y comprueba en `units()` que ya no existe; devuelve la marca si sigue. */
++  private confirmUnitGone(unitId: string): Promise<ReconciliationMark | undefined> {
++    return markOnThrow('unit', unitId, async () => {
++      const destroyed = await this.dependencies.primitive.destroy(unitId)
++      if (destroyed === 'failed') return unitMark(unitId, 'la primitiva no pudo destruir la unidad; la VRAM sigue reservada')
++      const units = await this.dependencies.primitive.units()
++      if (units.some(unit => unit.unitId === unitId)) return unitMark(unitId, `destroy respondió ${destroyed} y la unidad sigue listada; la VRAM sigue reservada`)
++      return undefined
++    })
++  }
++
++  private failEviction(residency: ModelResidency, marks: readonly ReconciliationMark[]): EvictionOutcome {
++    const reason = marks.map(mark => mark.reason).join('; ')
++    this.dependencies.registry.transition(residency.residencyKey, residency.generation, 'error', { reason })
++    return { status: 'failed', reason, marks }
++  }
++
++  private retirePartialUnit(unitId: string | undefined, grant: ExecutionGrant): Promise<ReconciliationMark | undefined> {
++    if (unitId === undefined) {
++      return Promise.resolve(unitMark(grant.grantId, 'materialización parcial sin unitId: la unidad del grant no se pudo retirar'))
++    }
++    return this.retireUnit(unitId)
++  }
++
++  private retireUnit(unitId: string): Promise<ReconciliationMark | undefined> {
++    return markOnThrow('unit', unitId, async () => {
++      const destroyed = await this.dependencies.primitive.destroy(unitId)
++      return destroyed === 'failed' ? unitMark(unitId, 'la primitiva no pudo destruir la unidad') : undefined
++    })
++  }
++
++  private revokeGrant(grant: ExecutionGrant): Promise<ReconciliationMark | undefined> {
++    return markOnThrow('grant', grant.grantId, async () => {
++      await this.dependencies.issuer.revoke(grant.grantId)
++      return undefined
++    })
++  }
++
++  private releaseReservation(reservation: VramReservation): Promise<ReconciliationMark | undefined> {
++    return markOnThrow('reservation', reservation.reservationId, async () => {
++      await this.dependencies.ledger.release(reservation)
++      return undefined
++    })
++  }
++
++  /** `stale` no se marca: el lease ya no es nuestro y no queda nada que soltar. */
++  private releaseLease(lease: GenerationLease): Promise<ReconciliationMark | undefined> {
++    return markOnThrow('lease', leaseId(lease), async () => {
++      const validity = await this.dependencies.coordination.release(lease)
++      return validity === 'unavailable' ? { resource: 'lease', id: leaseId(lease), reason: 'coordinación no disponible al soltar el lease' } : undefined
++    })
+   }
+ }
+diff --git a/src/packages/model-scheduling/scheduler.ts b/src/packages/model-scheduling/scheduler.ts
+index 793a344c8..42b7d7a3b 100644
+--- a/src/packages/model-scheduling/scheduler.ts
++++ b/src/packages/model-scheduling/scheduler.ts
+@@ -89,7 +89,7 @@ type Compensation = () => Promise<ReconciliationMark | undefined>
+  * recurso y se deshacen en orden inverso. Una que no se completa no detiene a
+  * las siguientes: queda como marca (M18).
+  */
+-class CompensationStack {
++export class CompensationStack {
+   private readonly pending: Compensation[] = []
+ 
+   push(compensation: Compensation): void {
+@@ -107,7 +107,7 @@ class CompensationStack {
+ }
+ 
+ /** Ejecuta una compensación y convierte su excepción en una marca con contexto. */
+-async function markOnThrow(resource: ReconciliationMark['resource'], id: string, undo: () => Promise<ReconciliationMark | undefined>): Promise<ReconciliationMark | undefined> {
++export async function markOnThrow(resource: ReconciliationMark['resource'], id: string, undo: () => Promise<ReconciliationMark | undefined>): Promise<ReconciliationMark | undefined> {
+   try {
+     return await undo()
+   } catch (error) {

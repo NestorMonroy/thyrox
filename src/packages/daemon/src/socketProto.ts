@@ -140,3 +140,12 @@ export function createLineDecoder(
     }
   }
 }
+
+/**
+ * `chunk-92tvramn.js` `xt` — el daemon que pide el relevo sólo lo toma si
+ * la respuesta a `yield` es ok, del op `yield` y con `yielding: true`;
+ * cualquier otra forma (rechazo, error de conexión) no es un acuse.
+ */
+export function isYieldAck(response: Response): boolean {
+  return response.ok && response.op === 'yield' && response.yielding === true
+}

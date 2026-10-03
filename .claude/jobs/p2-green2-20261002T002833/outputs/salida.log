@@ -1,0 +1,22 @@
+ok
+
+10 ok · 0 falla(s) (alcance medido: headless-pool --execution unit)
+== unit-branch:
+      FALLA caso 1: cada ítem pide su ejecución a la primitiva — esperado [2] obtenido []
+      FALLA caso 1: con la referencia de trabajo del consumidor y dueño pool — esperado [--work ai-course-notes:cs
+      FALLA caso 1: ningún ítem ve la credencial del anfitrión — esperado [] obtenido [credencial]
+      FALLA caso 1: la autorización no pide secretos — esperado [0] obtenido []
+      FALLA caso 2: si la primitiva no ejecuta, nada corre en el anfitrión — esperado [0] obtenido [1]
+== work-reference:
+      FALLA caso 3: --execution unit sin referencia de trabajo se rehúsa con 2 — esperado [2] obtenido [1]
+== named-env-only:
+      FALLA caso 1: ningún ítem ve la credencial del anfitrión — esperado [] obtenido [credencial]
+Traceback (most recent call last):
+  File "/scratch/p2/impl.py", line 69, in <module>
+    sub("""         exec setsid ${HP_TIME:+"$HP_TIME" -q -f "%M %e %U %S" -o "$HP_LIVE/$n.time"} \\
+  File "/scratch/p2/impl.py", line 5, in sub
+    assert s.count(old) == 1, old[:80]
+           ^^^^^^^^^^^^^^^^^
+AssertionError:          exec setsid ${HP_TIME:+"$HP_TIME" -q -f "%M %e %U %S" -o "$HP_LIVE/$n.t
+execution thyrox-worker-test-muq85x4r-19657 kind=test task=TASK-THYROX-0757 exit=0
+__BG_EXIT__=0

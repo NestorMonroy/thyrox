@@ -1,0 +1,2 @@
+thyrox-ollama action=recreated drift=configuration created=yes started=yes health=healthy provision=not-declared volumes=thyrox-ollama-bench-models:preserved
+__BG_EXIT__=0

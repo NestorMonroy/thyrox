@@ -1,0 +1,2 @@
+tests/daemon/podman_worker_manager_probe.ts
+tests/daemon/test-podman-worker-manager-real.sh

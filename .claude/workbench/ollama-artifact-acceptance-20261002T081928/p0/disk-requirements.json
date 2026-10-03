@@ -1,0 +1,19 @@
+{
+  "schemaVersion": 1,
+  "filesystemPaths": ["."],
+  "worktreeItems": ["A1", "A2", "A3", "A4", "A5", "A7"],
+  "worktreeRetentionSource": "src/session/task_continuation.py integrate_worktree: a worktree is removed only after a successful integration; a failed item keeps it, so every worktree item is counted",
+  "dependencyTree": "node_modules",
+  "evidenceSampleBank": ".claude/workbench/mechanism-registry-20261002T061646",
+  "attemptsCeilingPerItem": 18,
+  "attemptsCeilingSource": "TRANSIENT_BUDGET 12 plus TRANSIENT_RETRIES+1 per declared candidate (2 candidates x 3)",
+  "storeFiles": ["catalogPath", "qualificationStorePath"],
+  "storeGrowthFactor": 2,
+  "qualificationSampleBank": ".claude/workbench/task-qualification-20261002T073959",
+  "capabilitiesToQualify": ["tool-calling", "translation", "summarization", "code"],
+  "modelArtifact": "already-present: A6 registers the blob the catalog already declares; the gate refuses if the catalog does not declare ownsArtifactSha256",
+  "requiredImageTag": "thyrox-task-runner",
+  "imageLayers": "already-present: the gate refuses if no image carries requiredImageTag, because a pull of unknown size cannot be admitted",
+  "safetyMarginFloorBytes": 2147483648,
+  "safetyMarginFraction": 0.10
+}

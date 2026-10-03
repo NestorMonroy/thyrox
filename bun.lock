@@ -142,12 +142,26 @@
         "signal-exit": "^4.1.0",
       },
     },
+    "src/packages/artifact-registry": {
+      "name": "@thyrox/artifact-registry",
+      "version": "0.1.0",
+      "dependencies": {
+        "@thyrox/bounded-download": "0.1.0",
+        "@thyrox/paths": "0.1.0",
+        "@thyrox/podman-execution": "0.1.0",
+        "@thyrox/registry-credentials": "0.1.0",
+      },
+    },
     "src/packages/audio-capture-napi": {
       "name": "@thyrox/audio-capture-napi",
       "version": "1.0.0",
     },
     "src/packages/binary": {
       "name": "@thyrox/binary",
+      "version": "0.1.0",
+    },
+    "src/packages/bounded-download": {
+      "name": "@thyrox/bounded-download",
       "version": "0.1.0",
     },
     "src/packages/bridge": {
@@ -191,6 +205,7 @@
         "@thyrox/mcp-runtime": "0.1.0",
         "@thyrox/memory": "0.1.0",
         "@thyrox/mitm": "0.1.0",
+        "@thyrox/model-artifacts": "0.1.0",
         "@thyrox/observability": "0.1.0",
         "@thyrox/output": "0.1.0",
         "@thyrox/paths": "0.1.0",
@@ -326,6 +341,16 @@
         "@anthropic-ai/sdk": "^0.124.0",
         "@thyrox/agent": "0.4.0",
         "@thyrox/config": "0.1.0",
+        "@thyrox/local-models": "0.1.0",
+        "@thyrox/model-scheduling": "0.1.0",
+        "@thyrox/podman-execution": "0.1.0",
+      },
+    },
+    "src/packages/execution-records": {
+      "name": "@thyrox/execution-records",
+      "version": "0.1.0",
+      "dependencies": {
+        "@thyrox/store": "0.1.0",
       },
     },
     "src/packages/finding": {
@@ -380,6 +405,23 @@
       "name": "@thyrox/image-processor-napi",
       "version": "1.0.0",
     },
+    "src/packages/image-registry": {
+      "name": "@thyrox/image-registry",
+      "version": "0.1.0",
+      "dependencies": {
+        "@thyrox/podman-execution": "0.1.0",
+      },
+      "devDependencies": {
+        "@thyrox/registry-credentials": "0.1.0",
+      },
+    },
+    "src/packages/infrastructure": {
+      "name": "@thyrox/infrastructure",
+      "version": "0.1.0",
+      "dependencies": {
+        "@thyrox/podman-execution": "0.1.0",
+      },
+    },
     "src/packages/ink": {
       "name": "@anthropic/ink",
       "version": "1.0.0",
@@ -409,6 +451,17 @@
         "type-fest": "^5.5.0",
         "usehooks-ts": "^3.1.1",
         "wrap-ansi": "^10.0.0",
+      },
+    },
+    "src/packages/local-models": {
+      "name": "@thyrox/local-models",
+      "version": "0.1.0",
+      "dependencies": {
+        "@thyrox/artifact-registry": "0.1.0",
+        "@thyrox/model-artifacts": "0.1.0",
+        "@thyrox/model-scheduling": "0.1.0",
+        "@thyrox/podman-execution": "0.1.0",
+        "@thyrox/shared-state": "0.1.0",
       },
     },
     "src/packages/local-observability": {
@@ -491,6 +544,20 @@
         "zod": "^4.3.6",
       },
     },
+    "src/packages/model-artifacts": {
+      "name": "@thyrox/model-artifacts",
+      "version": "0.1.0",
+    },
+    "src/packages/model-scheduling": {
+      "name": "@thyrox/model-scheduling",
+      "version": "0.1.0",
+      "dependencies": {
+        "@thyrox/config": "0.1.0",
+        "@thyrox/model-artifacts": "0.1.0",
+        "@thyrox/podman-execution": "0.1.0",
+        "@thyrox/shared-state": "0.1.0",
+      },
+    },
     "src/packages/modifiers-napi": {
       "name": "@thyrox/modifiers-napi",
       "version": "1.0.0",
@@ -502,6 +569,7 @@
         "@thyrox/agent": "0.4.0",
         "@thyrox/paths": "0.1.0",
         "@thyrox/store": "0.1.0",
+        "@thyrox/task": "0.1.0",
       },
       "devDependencies": {
         "@types/bun": "^1.4.0",
@@ -571,6 +639,10 @@
         "@types/bun": "^1.4.0",
       },
     },
+    "src/packages/podman-execution": {
+      "name": "@thyrox/podman-execution",
+      "version": "0.1.0",
+    },
     "src/packages/provider": {
       "name": "@thyrox/provider",
       "version": "0.1.0",
@@ -585,7 +657,10 @@
         "@thyrox/headless-sdk": "0.1.0",
         "@thyrox/local-observability": "0.1.0",
         "@thyrox/mcp-runtime": "0.1.0",
+        "@thyrox/model-artifacts": "0.1.0",
+        "@thyrox/model-scheduling": "0.1.0",
         "@thyrox/output": "0.1.0",
+        "@thyrox/paths": "0.1.0",
         "@thyrox/permission": "0.1.0",
         "@thyrox/repl": "0.0.0",
         "@thyrox/shared-state": "0.1.0",
@@ -603,6 +678,13 @@
       },
       "devDependencies": {
         "@types/bun": "^1.4.0",
+      },
+    },
+    "src/packages/registry-credentials": {
+      "name": "@thyrox/registry-credentials",
+      "version": "0.1.0",
+      "dependencies": {
+        "@thyrox/podman-execution": "0.1.0",
       },
     },
     "src/packages/repl": {
@@ -659,6 +741,13 @@
     "src/packages/ripgrep-napi": {
       "name": "@thyrox/ripgrep-napi",
       "version": "1.0.0",
+    },
+    "src/packages/semantic-search": {
+      "name": "@thyrox/semantic-search",
+      "version": "0.1.0",
+      "dependencies": {
+        "@thyrox/store": "0.1.0",
+      },
     },
     "src/packages/server": {
       "name": "@thyrox/server",
@@ -775,6 +864,7 @@
       "version": "0.1.0",
       "dependencies": {
         "@thyrox/paths": "0.1.0",
+        "@thyrox/store": "0.1.0",
       },
     },
     "src/packages/teleport": {
@@ -1223,9 +1313,13 @@
 
     "@thyrox/app-host": ["@thyrox/app-host@workspace:src/packages/app-host"],
 
+    "@thyrox/artifact-registry": ["@thyrox/artifact-registry@workspace:src/packages/artifact-registry"],
+
     "@thyrox/audio-capture-napi": ["@thyrox/audio-capture-napi@workspace:src/packages/audio-capture-napi"],
 
     "@thyrox/binary": ["@thyrox/binary@workspace:src/packages/binary"],
+
+    "@thyrox/bounded-download": ["@thyrox/bounded-download@workspace:src/packages/bounded-download"],
 
     "@thyrox/bridge": ["@thyrox/bridge@workspace:src/packages/bridge"],
 
@@ -1243,6 +1337,8 @@
 
     "@thyrox/daemon": ["@thyrox/daemon@workspace:src/packages/daemon"],
 
+    "@thyrox/execution-records": ["@thyrox/execution-records@workspace:src/packages/execution-records"],
+
     "@thyrox/finding": ["@thyrox/finding@workspace:src/packages/finding"],
 
     "@thyrox/headless-sdk": ["@thyrox/headless-sdk@workspace:src/packages/headless-sdk"],
@@ -1251,6 +1347,12 @@
 
     "@thyrox/image-processor-napi": ["@thyrox/image-processor-napi@workspace:src/packages/image-processor-napi"],
 
+    "@thyrox/image-registry": ["@thyrox/image-registry@workspace:src/packages/image-registry"],
+
+    "@thyrox/infrastructure": ["@thyrox/infrastructure@workspace:src/packages/infrastructure"],
+
+    "@thyrox/local-models": ["@thyrox/local-models@workspace:src/packages/local-models"],
+
     "@thyrox/local-observability": ["@thyrox/local-observability@workspace:src/packages/local-observability"],
 
     "@thyrox/mcp-runtime": ["@thyrox/mcp-runtime@workspace:src/packages/mcp-runtime"],
@@ -1258,6 +1360,10 @@
     "@thyrox/memory": ["@thyrox/memory@workspace:src/packages/memory"],
 
     "@thyrox/mitm": ["@thyrox/mitm@workspace:src/packages/mitm"],
+
+    "@thyrox/model-artifacts": ["@thyrox/model-artifacts@workspace:src/packages/model-artifacts"],
+
+    "@thyrox/model-scheduling": ["@thyrox/model-scheduling@workspace:src/packages/model-scheduling"],
 
     "@thyrox/modifiers-napi": ["@thyrox/modifiers-napi@workspace:src/packages/modifiers-napi"],
 
@@ -1271,11 +1377,17 @@
 
     "@thyrox/plan": ["@thyrox/plan@workspace:src/packages/plan"],
 
+    "@thyrox/podman-execution": ["@thyrox/podman-execution@workspace:src/packages/podman-execution"],
+
     "@thyrox/provider": ["@thyrox/provider@workspace:src/packages/provider"],
+
+    "@thyrox/registry-credentials": ["@thyrox/registry-credentials@workspace:src/packages/registry-credentials"],
 
     "@thyrox/repl": ["@thyrox/repl@workspace:src/packages/repl"],
 
     "@thyrox/ripgrep-napi": ["@thyrox/ripgrep-napi@workspace:src/packages/ripgrep-napi"],
+
+    "@thyrox/semantic-search": ["@thyrox/semantic-search@workspace:src/packages/semantic-search"],
 
     "@thyrox/server": ["@thyrox/server@workspace:src/packages/server"],
 

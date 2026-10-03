@@ -3,7 +3,7 @@
 # contra el proxy local, sin credencial real.
 #
 #   printf '%s\n' <items> | bash bin/pool-calibrate --prompt <plantilla.md> \
-#       --model <claude-…> --runs N [--width W] [--out <dir>]
+#       --task-class <clase> --runs N [--width W] [--out <dir>]
 #
 # GNU Time mide el proceso LOCAL de cada ítem; el modelo corre en el servidor.
 # Por eso un servidor de loopback (`bin/provider-anthropic-mock-server`) basta
@@ -27,14 +27,14 @@ set -uo pipefail
 
 HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 BIN="$HERE/../../bin"
-PROMPT=""; MODEL=""; RUNS=3; WIDTH=""; OUT=""
+PROMPT=""; TASK_CLASS=""; RUNS=3; WIDTH=""; OUT=""
 
 refuse() { echo "pool-calibrate: REHUSA — $*" >&2; exit 2; }
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --prompt) PROMPT="${2:-}"; shift 2 ;;
-        --model) MODEL="${2:-}"; shift 2 ;;
+        --task-class) TASK_CLASS="${2:-}"; shift 2 ;;
         --runs) RUNS="${2:-}"; shift 2 ;;
         --width) WIDTH="${2:-}"; shift 2 ;;
         --out) OUT="${2:-}"; shift 2 ;;
@@ -43,7 +43,7 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 [[ -n "$PROMPT" && -f "$PROMPT" ]] || refuse "la plantilla no existe: ${PROMPT:-(sin --prompt)}"
-[[ -n "$MODEL" ]] || refuse "falta --model"
+[[ -n "$TASK_CLASS" ]] || refuse "falta --task-class: el pool deriva de ella el modelo de los ítems"
 [[ "$RUNS" =~ ^[1-9][0-9]*$ ]] || refuse "--runs es un entero positivo, no: $RUNS"
 [[ -n "$OUT" ]] || OUT="$(mktemp -d)"
 mkdir -p "$OUT"
@@ -84,7 +84,7 @@ for run in $(seq 1 "$RUNS"); do
     env -u ANTHROPIC_AUTH_TOKEN -u THYROX_CODE_OAUTH_TOKEN -u THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR \
         -u CLAUDE_CODE_OAUTH_TOKEN -u CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR \
         ANTHROPIC_API_KEY=local-proxy-placeholder ANTHROPIC_BASE_URL="$URL" HEADLESS_POOL_TIME="$TIME_BIN" \
-        bash "$HERE/headless-pool.sh" --prompt "$PROMPT" --out "$OUT/run-$run" --model "$MODEL" \
+        bash "$HERE/headless-pool.sh" --prompt "$PROMPT" --out "$OUT/run-$run" --task-class "$TASK_CLASS" \
         ${WIDTH:+--width "$WIDTH"} < "$OUT/items.txt" > "$OUT/run-$run.log" 2>&1 || STATUS=1
 done
 

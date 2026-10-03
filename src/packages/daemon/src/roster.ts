@@ -40,6 +40,7 @@ import { logEvent } from '@thyrox/local-observability'
 import type { WorkerRecord } from './bgWorkerRegistry.js'
 import { getDaemonHomeDir } from './socketPaths.js'
 import { PROTO_VERSION } from './socketProto.js'
+import { sanitizeCliVersion } from './upgradeProbe.js'
 
 /**
  * Roster entry for one worker. Subset of WorkerRecord fields that
@@ -108,11 +109,34 @@ export function recordToRosterEntry(r: WorkerRecord): RosterEntry {
     // the rv client no-ops on an absent socket (degrades to pid-poll).
     rendezvousSock: r.rendezvousSocket,
     ptySock: r.ptySocket,
-    cliVersion: r.cliVersion,
+    cliVersion: sanitizeOptionalCliVersion(r.cliVersion),
     startedAt: r.startedAt,
     attempt: r.attempt ?? 0,
     cwd: r.cwd,
   }
+}
+
+/**
+ * Sanea la `cliVersion` que el roster persiste o expone con el patrón `kr`
+ * (chunk-92tvramn.js); una versión ausente sigue ausente. La referencia
+ * sanea sólo al mostrarla (`Ve`); aquí se sanea en la frontera del roster
+ * porque el archivo lo puede escribir otro proceso y su contenido acaba en
+ * líneas de log y en telemetría.
+ */
+function sanitizeOptionalCliVersion(cliVersion: string | undefined): string | undefined {
+  return cliVersion === undefined ? undefined : sanitizeCliVersion(cliVersion)
+}
+
+/**
+ * Decide si un worker corre un CLI distinto del daemon. Getter
+ * `isVersionStale` (chunk-ygx717jg.js): `!!cliVersion && cliVersion !== VERSION`
+ * — sin versión registrada no hay desfase que afirmar.
+ */
+export function isCliVersionStale(
+  workerCliVersion: string | undefined,
+  daemonCliVersion: string,
+): boolean {
+  return Boolean(workerCliVersion) && workerCliVersion !== daemonCliVersion
 }
 
 /**
@@ -142,7 +166,8 @@ function validateRoster(v: unknown): Roster | null {
       rendezvousSock:
         typeof w.rendezvousSock === 'string' ? w.rendezvousSock : undefined,
       ptySock: typeof w.ptySock === 'string' ? w.ptySock : undefined,
-      cliVersion: typeof w.cliVersion === 'string' ? w.cliVersion : undefined,
+      cliVersion:
+        typeof w.cliVersion === 'string' ? sanitizeCliVersion(w.cliVersion) : undefined,
       startedAt: w.startedAt,
       attempt: w.attempt,
       cwd: w.cwd,

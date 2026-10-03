@@ -1,0 +1,22 @@
+task_ids duplicates: 93 sujeto(s) con mas de una cita (alcance medido: 2300 sujeto(s) con cita en el store)
+  3x  TASK-API-0002,TASK-DOCS-0332,TASK-GEN-0631
+      Decidir la conducta del harness ante thinking_delta en el stream SSE
+  2x  TASK-DB-0003,TASK-DOCS-0378
+      Add a closed lexicon to the filename language gate; it only sees morphology
+  2x  TASK-API-0032,TASK-GEN-0616
+      Adoptar plantillas de temp-holding que llenan huecos de kaupamex
+  2x  TASK-DOCS-0377,TASK-GEN-0038
+      Adoptar trabajos huérfanos en el ledger: hoy un olvidar previo los deja sin registro
+  2x  TASK-API-0025,TASK-GEN-0611
+      Analizar en el binario 2.1.258 el flujo de reanudación y reconciliación de estado tras un reinic
+  2x  TASK-API-0034,TASK-DOCS-0365
+      Analizar en el binario 2.1.258 los primitivos de cowork y documentar
+  2x  TASK-API-0026,TASK-DOCS-0356
+      Analizar en la referencia (ccb, hccw, ccnmt) el flujo de reanudación y reconciliación de estado
+  2x  TASK-DOCS-0366,TASK-GEN-0020
+      Analizar en la referencia los primitivos de coordinación humana y documentar
+  2x  TASK-API-0035,TASK-GEN-0624
+      Analizar y rediseñar el subsistema de TASK del harness: hoy persiste las tareas
+  2x  TASK-API-0387,TASK-GEN-0012
+      Aplicar el sustrato a los skills que citan el hogar inexistente, en los tres repos
+  … y 83 mas

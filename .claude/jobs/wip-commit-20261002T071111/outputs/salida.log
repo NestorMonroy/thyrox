@@ -1,0 +1,5 @@
+97548467e Record H-THYROX-312 and start the candle runtime bench
+  tampoco se bloquea, porque es secundaria (README D4-A, §8).
+pushed
+execution thyrox-worker-test-muqmjppc-9217 kind=test task=TASK-THYROX-0764 exit=0
+__BG_EXIT__=0

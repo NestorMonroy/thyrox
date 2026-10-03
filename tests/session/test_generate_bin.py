@@ -1105,6 +1105,61 @@ def test_typescript_wrapper_degrades_without_bun(base: pathlib.Path) -> None:
           "NO deberia correr" not in r.stdout, r.stdout)
 
 
+def test_typescript_wrapper_runs_its_own_tree(base: pathlib.Path) -> None:
+    """El envoltorio .ts ejecuta el codigo que tiene al lado, no el de THYROX_ROOT.
+
+    Son dos raices distintas y el envoltorio las confundia: la de su CODIGO
+    —de donde salen el ``.ts`` y su ``node_modules``— y la del ARBOL sobre el
+    que actua, que es la que hereda cada hijo. Un item del pool corre el
+    ``bin/cli`` del arbol principal con ``THYROX_ROOT`` apuntando a su
+    worktree: el runner necesita el ``node_modules`` principal, y las
+    herramientas que lanza tienen que escribir en el worktree. Con una sola
+    raiz, o el runner no arranca o sus hijos escriben en el arbol principal.
+    """
+    trees = {}
+    for label in ("own", "declared"):
+        tree = _make_tree(base / f"ts-raiz-{label}")
+        (tree / "src/lib").mkdir(parents=True, exist_ok=True)
+        for dependency in ("toolchain.sh", "reach.sh", "assert.sh"):
+            source = ROOT / "src/lib" / dependency
+            if source.is_file():
+                shutil.copy2(source, tree / "src/lib" / dependency)
+        (tree / "node_modules").mkdir(exist_ok=True)
+        (tree / "node_modules/.keep").write_text("")
+        d = tree / "src/packages/demo/bin"
+        d.mkdir(parents=True, exist_ok=True)
+        (d / "tool.ts").write_text(
+            "#!/usr/bin/env bun\n"
+            f"console.log('CODE={label} ROOT=' + process.env.THYROX_ROOT)\n")
+        trees[label] = tree
+    own = trees["own"]
+    wrapper_dir = own / "bin"
+    wrapper_dir.mkdir(exist_ok=True)
+    wrapper = wrapper_dir / "demo-tool"
+    wrapper.write_text(gb.typescript_wrapper_body(
+        own / "src/packages/demo/bin/tool.ts", own, "demo-tool"))
+    wrapper.chmod(0o755)
+
+    entorno = {k: v for k, v in os.environ.items()
+               if k not in ("THYROX_ROOT", "THYROX_TOOLCHAIN_NODE_MODULES_HOME")}
+    entorno["THYROX_ROOT"] = str(trees["declared"])
+    r = subprocess.run(["bash", str(wrapper)], capture_output=True, text=True,
+                       cwd="/", env=entorno)
+    check("el envoltorio .ts ejecuta su propio codigo",
+          "CODE=own" in r.stdout, f"dio {r.stdout!r} {r.stderr!r}")
+    check("y deja a sus hijos la raiz declarada",
+          f"ROOT={trees['declared']}" in r.stdout, f"dio {r.stdout!r}")
+
+    # Sin node_modules junto al codigo, rehusa aunque la raiz declarada lo
+    # tenga: el node_modules que cuenta es el del codigo que se ejecuta.
+    shutil.rmtree(own / "node_modules")
+    r2 = subprocess.run(["bash", str(wrapper)], capture_output=True, text=True,
+                        cwd="/", env=entorno)
+    check("sin node_modules junto al codigo, rehusa",
+          r2.returncode == 1 and "CODE=" not in r2.stdout,
+          f"dio {r2.returncode}: {r2.stdout!r}")
+
+
 def test_typescript_entrypoints_reach_bin_on_real_tree() -> None:
     """Los 14 del arbol real tienen envoltorio, y ninguno choca con los 184.
 
@@ -1195,6 +1250,89 @@ def test_wrapper_exports_root_across_exec(base: pathlib.Path) -> None:
           f"dio {r2.stdout!r} (esperaba {alias_root})")
 
 
+def _make_launcher_tree(base: pathlib.Path) -> pathlib.Path:
+    """Un árbol con su biblioteca de toolchain y ``node_modules``, para correr un envoltorio .ts."""
+    tree = _make_tree(base)
+    (tree / "src/lib").mkdir(parents=True, exist_ok=True)
+    for dependency in ("toolchain.sh", "reach.sh", "assert.sh"):
+        source = ROOT / "src/lib" / dependency
+        if source.is_file():
+            shutil.copy2(source, tree / "src/lib" / dependency)
+    (tree / "node_modules").mkdir(exist_ok=True)
+    (tree / "node_modules/.keep").write_text("")
+    return tree
+
+
+def _run_feature_probe(tree: pathlib.Path, relative: str, bin_name: str) -> str:
+    """Escribe una sonda de ``feature('UDS_INBOX')`` en ``relative``, la envuelve y devuelve su stdout."""
+    target = tree / relative
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(
+        "#!/usr/bin/env bun\n"
+        "import { feature } from 'bun:bundle'\n"
+        "console.log('UDS_INBOX=' + (feature('UDS_INBOX') ? 'on' : 'off'))\n")
+    wrapper = tree / "bin" / bin_name
+    wrapper.parent.mkdir(exist_ok=True)
+    wrapper.write_text(gb.typescript_wrapper_body(target, tree, bin_name))
+    wrapper.chmod(0o755)
+    entorno = {k: v for k, v in os.environ.items()
+               if k not in ("THYROX_ROOT", "THYROX_TOOLCHAIN_NODE_MODULES_HOME", "BUN_OPTIONS")}
+    r = subprocess.run(["bash", str(wrapper)], capture_output=True, text=True,
+                       cwd="/", env=entorno)
+    return r.stdout + r.stderr
+
+
+def test_cli_launcher_compiles_the_delivery_features(base: pathlib.Path) -> None:
+    """El lanzador de ``cli`` compila las banderas de entrega; los demás, ninguna.
+
+    ``feature('UDS_INBOX')`` es un macro de compilación de ``bun:bundle``: sin
+    ``--feature=UDS_INBOX`` en la línea de ``bun`` el buzón entre sesiones no
+    existe en ``bin/cli``, aunque la compuerta de tiempo de ejecución esté
+    abierta. La sonda mide el macro dentro del proceso que el envoltorio lanza,
+    no el texto del envoltorio.
+    """
+    tree = _make_launcher_tree(base / "delivery-features")
+    cli_output = _run_feature_probe(tree, "src/packages/cli/src/entry/cli.tsx", "cli")
+    check("bin/cli enciende feature('UDS_INBOX')",
+          "UDS_INBOX=on" in cli_output, cli_output)
+    other_output = _run_feature_probe(tree, "src/packages/demo/bin/tool.ts", "demo-tool")
+    check("otro lanzador .ts no recibe las banderas de entrega",
+          "UDS_INBOX=off" in other_output, other_output)
+
+
+def test_real_cli_plan_carries_the_delivery_features() -> None:
+    """El ``bin/cli`` del plan real lleva cada bandera de ``DELIVERY_BUILD_FEATURES``."""
+    body = gb.planned_files(ROOT).get("cli", "")
+    missing = [name for name in gb.DELIVERY_BUILD_FEATURES
+               if f"--feature={name}" not in body]
+    check("el plan real de bin/cli declara UDS_INBOX",
+          "UDS_INBOX" in gb.DELIVERY_BUILD_FEATURES and not missing,
+          f"faltan: {missing}")
+
+
+def test_typescript_entrypoints_listing_is_the_discovered_map() -> None:
+    """``--typescript-entrypoints`` publica el mismo mapa que el descubrimiento.
+
+    Lo consume ``src/packaging/reachability.ts``: la lista de wrappers TS
+    tiene una sola definición, y la herramienta de alcance la pide aquí en
+    vez de volver a recorrer ``src/``.
+    """
+    r = subprocess.run(
+        [sys.executable, str(ROOT / "src/session/generate_bin.py"), "--typescript-entrypoints"],
+        capture_output=True, text=True, cwd=str(ROOT),
+        env={**os.environ, "PYTHONPATH": str(ROOT / "src")},
+    )
+    check("--typescript-entrypoints sale 0", r.returncode == 0, r.stderr)
+    pairs = [line.split("\t", 1) for line in r.stdout.splitlines() if "\t" in line]
+    listed = {name: path for name, path in pairs}
+    expected = {name: str(path.relative_to(ROOT))
+                for name, path in gb.discover_typescript_entrypoints(ROOT).items()}
+    check("el listado TSV coincide con discover_typescript_entrypoints",
+          listed == expected, f"listado={len(listed)} esperado={len(expected)}")
+    check("y la entrada de cli apunta a entry/cli.tsx",
+          listed.get("cli") == "src/packages/cli/src/entry/cli.tsx", listed.get("cli"))
+
+
 def main() -> int:
     with tempfile.TemporaryDirectory() as tmp:
         base = pathlib.Path(tmp)
@@ -1219,6 +1357,8 @@ def main() -> int:
         test_typescript_discriminator_is_shebang_and_parent(base)
         test_typescript_names_resolve_stem_collisions(base)
         test_typescript_wrapper_degrades_without_bun(base)
+        test_typescript_wrapper_runs_its_own_tree(base)
+        test_cli_launcher_compiles_the_delivery_features(base)
         test_wrapper_exports_root_across_exec(base)
         test_inherited_root_does_not_redirect_the_generator(base)
     test_builtin_collision_on_real_tree()
@@ -1231,6 +1371,8 @@ def main() -> int:
     test_relative_import_entrypoints_reach_bin_on_real_tree()
     test_exercise_on_real_tree_is_green()
     test_typescript_entrypoints_reach_bin_on_real_tree()
+    test_real_cli_plan_carries_the_delivery_features()
+    test_typescript_entrypoints_listing_is_the_discovered_map()
     test_no_wrapper_asks_to_block_on_the_real_tree()
 
     print(f"\n{passed} aprobada(s) · {failed} fallida(s) "

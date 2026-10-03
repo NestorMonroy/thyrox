@@ -11,7 +11,7 @@
 import { describe, expect, test } from 'bun:test'
 import { createCipheriv, createHash, randomBytes, scryptSync } from 'node:crypto'
 
-import { type ConnectionFields, createFieldCipher, fieldCipherFromEnv, looksEncrypted } from '../../src/accounts/fieldCipher.ts'
+import { type ConnectionFields, createFieldCipher, fieldCipherFromEnv, looksEncrypted, StorageKeyMissingError } from '../../src/accounts/fieldCipher.ts'
 
 function encryptWithLegacyDynamicSalt(secret: string, plaintext: string): string {
   const key = scryptSync(secret, createHash('sha256').update(secret).digest().subarray(0, 16), 32)
@@ -27,18 +27,28 @@ function reporting() {
 }
 
 describe('without a key', () => {
-  test('values pass through unchanged, and the plaintext storage is reported once', () => {
-    const { reports, report } = reporting()
-    const cipher = createFieldCipher(undefined, report)
+  test('a credential is refused instead of being stored in plain text', () => {
+    const cipher = createFieldCipher(undefined)
     expect(cipher.enabled).toBe(false)
-    expect(cipher.encrypt('plain-text')).toBe('plain-text')
-    expect(cipher.encrypt('other')).toBe('other')
-    expect(cipher.decrypt('plain-text')).toBe('plain-text')
+    expect(() => cipher.encrypt('plain-text')).toThrow(StorageKeyMissingError)
+    expect(() => cipher.encrypt('plain-text')).toThrow('THYROX_STORAGE_ENCRYPTION_KEY')
     expect(cipher.encrypt('')).toBe('')
+    expect(cipher.encrypt(null)).toBeNull()
+  })
+
+  test('a connection with a credential is refused; one without credentials is stored', () => {
+    const cipher = createFieldCipher(undefined)
+    expect(() => cipher.encryptConnectionFields({ id: 'c1', provider: 'p', apiKey: 'sk-test-value' })).toThrow(StorageKeyMissingError)
+    expect(cipher.encryptConnectionFields({ id: 'c2', provider: 'p', displayName: 'no secrets' })).toEqual({ id: 'c2', provider: 'p', displayName: 'no secrets' })
+  })
+
+  test('legacy plaintext and already sealed values still read back unchanged', () => {
+    const cipher = createFieldCipher(undefined)
+    expect(cipher.decrypt('plain-text')).toBe('plain-text')
     expect(cipher.decrypt(null)).toBeNull()
     expect(cipher.decrypt(undefined)).toBeUndefined()
-    expect(reports).toHaveLength(1)
-    expect(reports[0]).toContain('THYROX_STORAGE_ENCRYPTION_KEY')
+    const sealed = createFieldCipher('secret').encrypt('token')!
+    expect(cipher.encryptConnectionFields({ id: 'c3', apiKey: sealed })).toEqual({ id: 'c3', apiKey: sealed })
   })
 
   test('a stored ciphertext cannot be read back, and says so', () => {

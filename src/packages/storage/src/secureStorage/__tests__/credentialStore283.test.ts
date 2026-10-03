@@ -6,7 +6,7 @@
  * backend del sistema (`Un`).
  */
 import { afterEach, describe, expect, test } from 'bun:test'
-import { mkdtempSync, rmSync, statSync, writeFileSync } from 'fs'
+import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'fs'
 import { tmpdir } from 'os'
 import { join } from 'path'
 import { NodeFsOperations, setFsImplementation, setOriginalFsImplementation } from '../../fsOperations.js'
@@ -118,6 +118,8 @@ describe('gWr: forzado de Windows CredMan por THYROX_CODE_FORCE_WINDOWS_CREDMAN'
 
 describe('mutateCredentials (Et): una lectura fallida no se escribe encima', () => {
   test('con READ_FAILED no llama a update() y devuelve un fallo transitorio', async () => {
+    originalConfigDir = process.env.THYROX_CONFIG_DIR
+    useTmpConfigDir()
     const updates: SecureStorageData[] = []
     const storage = {
       ...plainTextStorage,
@@ -311,5 +313,169 @@ describe('Un: selector de backend del sistema', () => {
     }
     registerSystemSecureStorage(fakeSystemBackend)
     expect(getSecureStorage()).toBe(fakeSystemBackend)
+  })
+})
+
+function errnoError(code: string): NodeJS.ErrnoException {
+  const err = new Error(code) as NodeJS.ErrnoException
+  err.code = code
+  return err
+}
+
+describe('Et: mutateCredentials pasa las opciones y el backend de la fuente', () => {
+  test('readAsyncStrict recibe { inaccessibleAs: "failureIfTransient" } y update recibe el backend', async () => {
+    originalConfigDir = process.env.THYROX_CONFIG_DIR
+    useTmpConfigDir()
+    const backend: CredentialBackend = {
+      readCredentials: async () => ({ state: 'absent' }),
+      readCredentialsStrict: async () => ({ state: 'absent' }),
+      writeCredentials: async () => ({ state: 'written' }),
+      deleteCredentials: async () => ({ state: 'deleted' }),
+    }
+    const seen: { readOptions?: unknown; readBackend?: unknown; updateBackend?: unknown } = {}
+    const storage = {
+      ...plainTextStorage,
+      readAsyncStrict: async (givenBackend?: CredentialBackend, options?: unknown) => {
+        seen.readBackend = givenBackend
+        seen.readOptions = options
+        return null
+      },
+      update: (_data: SecureStorageData, givenBackend?: CredentialBackend) => {
+        seen.updateBackend = givenBackend
+        return { success: true }
+      },
+    } as SecureStorage
+
+    await mutateCredentials(storage, data => ({ ...data, token: 'nuevo' }), backend)
+
+    expect(seen.readOptions).toEqual({ inaccessibleAs: 'failureIfTransient' })
+    expect(seen.readBackend).toBe(backend)
+    expect(seen.updateBackend).toBe(backend)
+  })
+
+  test('sobre plaintext, un archivo con EACCES se lee como ausente ($i) y la mutación se escribe', async () => {
+    originalConfigDir = process.env.THYROX_CONFIG_DIR
+    useTmpConfigDir()
+    setFsImplementation({
+      ...NodeFsOperations,
+      async readFile(): Promise<string> {
+        throw errnoError('EACCES')
+      },
+    })
+
+    const result = await plainTextStorage.mutate(data => ({ ...data, token: 'escrito' }))
+
+    expect(result).toEqual({ success: true, warning: 'Warning: Storing credentials in plaintext.' })
+    expect(JSON.parse(readFileSync(join(dir, '.credentials.json'), 'utf8'))).toEqual({ token: 'escrito' })
+  })
+
+  test('sobre plaintext, un archivo con EIO es READ_FAILED y la mutación no se escribe', async () => {
+    originalConfigDir = process.env.THYROX_CONFIG_DIR
+    useTmpConfigDir()
+    setFsImplementation({
+      ...NodeFsOperations,
+      async readFile(): Promise<string> {
+        throw errnoError('EIO')
+      },
+    })
+
+    const result = await plainTextStorage.mutate(data => ({ ...data, token: 'escrito' }))
+
+    expect(result).toEqual({ success: false, transient: true })
+    expect(readdirSync(dir)).not.toContain('.credentials.json')
+  })
+})
+
+describe('ji.readStrict: qué lectura del backend llama cada bandera', () => {
+  function distinguishingBackend(): CredentialBackend {
+    return {
+      readCredentials: async () => ({ state: 'read-failed' }),
+      readCredentialsStrict: async () => ({ state: 'absent' }),
+      writeCredentials: async () => ({ state: 'written' }),
+      deleteCredentials: async () => ({ state: 'deleted' }),
+    }
+  }
+
+  test('con la bandera en falso llama a readCredentialsStrict (mapeo laxo) y resuelve null', async () => {
+    const host = {}
+    const tracked = withGenerationTracking(distinguishingBackend(), () => ({ storagePath: '/fake/.credentials.json' }), host)
+
+    expect(await tracked.readStrict(false)).toBeNull()
+  })
+
+  test('con la bandera en verdadero llama a readCredentials (mapeo estricto) y resuelve READ_FAILED', async () => {
+    const host = {}
+    const tracked = withGenerationTracking(distinguishingBackend(), () => ({ storagePath: '/fake/.credentials.json' }), host)
+
+    expect(await tracked.readStrict(true)).toBe(READ_FAILED)
+  })
+})
+
+describe('backend de archivo: los dos mapeadores de errno y el JSON null', () => {
+  function backendOver(configDir: string): CredentialBackend {
+    return createFileCredentialBackend(() => ({ storageDir: configDir, storagePath: join(configDir, '.credentials.json') }))
+  }
+
+  test('readCredentialsStrict con EACCES es absent; readCredentials con EACCES es read-failed', async () => {
+    originalConfigDir = process.env.THYROX_CONFIG_DIR
+    useTmpConfigDir()
+    setFsImplementation({
+      ...NodeFsOperations,
+      async readFile(): Promise<string> {
+        throw errnoError('EACCES')
+      },
+    })
+    const backend = backendOver(dir)
+
+    expect(await backend.readCredentialsStrict()).toEqual({ state: 'absent' })
+    expect(await backend.readCredentials()).toEqual({ state: 'read-failed' })
+  })
+
+  test('un archivo cuyo JSON es null se lee como absent, no como present', async () => {
+    originalConfigDir = process.env.THYROX_CONFIG_DIR
+    useTmpConfigDir()
+    writeFileSync(join(dir, '.credentials.json'), 'null')
+
+    expect(await backendOver(dir).readCredentials()).toEqual({ state: 'absent' })
+  })
+
+  test('writeCredentials publica por staging y rename: no deja temporal y el contenido es el escrito', async () => {
+    originalConfigDir = process.env.THYROX_CONFIG_DIR
+    useTmpConfigDir()
+
+    await backendOver(dir).writeCredentials({ token: 'publicado' })
+
+    expect(readdirSync(dir)).toEqual(['.credentials.json'])
+    expect(JSON.parse(readFileSync(join(dir, '.credentials.json'), 'utf8'))).toEqual({ token: 'publicado' })
+  })
+
+  test('si el rename falla, el archivo anterior queda intacto, no hay temporal y el estado es failed', async () => {
+    originalConfigDir = process.env.THYROX_CONFIG_DIR
+    useTmpConfigDir()
+    writeFileSync(join(dir, '.credentials.json'), JSON.stringify({ token: 'anterior' }))
+    setFsImplementation({
+      ...NodeFsOperations,
+      async rename(): Promise<void> {
+        throw errnoError('EIO')
+      },
+    })
+
+    const result = await backendOver(dir).writeCredentials({ token: 'nuevo' })
+
+    expect(result).toEqual({ state: 'failed' })
+    expect(readdirSync(dir)).toEqual(['.credentials.json'])
+    expect(JSON.parse(readFileSync(join(dir, '.credentials.json'), 'utf8'))).toEqual({ token: 'anterior' })
+  })
+})
+
+describe('In.read({ fromStoreCopy: true }) con una copia corrupta', () => {
+  test('una copia cuyo texto no es JSON resuelve null en vez de lanzar', () => {
+    originalConfigDir = process.env.THYROX_CONFIG_DIR
+    useTmpConfigDir()
+    const storagePath = join(dir, '.credentials.json')
+    __setMultiHostAwareForTests(true)
+    setCopy(getHostGenerationState(), storagePath, '{no es json')
+
+    expect(plainTextStorage.read({ fromStoreCopy: true })).toBeNull()
   })
 })

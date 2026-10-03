@@ -1,10 +1,13 @@
 /**
- * Los datos de una conexión de clave de API nueva. El nombre, si falta, es el
- * proveedor; la prioridad es un entero positivo; los datos propios del
- * proveedor, un objeto JSON.
+ * Los datos de una conexión de clave de API nueva. El proveedor se guarda por
+ * su id canónico (`providerId.ts`: `anthropic` y `claude` son uno); el
+ * nombre, si falta, es ese id; la prioridad es un entero positivo; los datos
+ * propios del proveedor, un objeto JSON.
  *
  * Porte de `buildProviderPayload` en `omniroute: bin/cli/commands/provider-crud.mjs` (MIT).
  */
+import { canonicalProviderId } from './providerId.ts'
+
 type Row = Record<string, unknown>
 
 export interface ConnectionPayloadOptions {
@@ -34,7 +37,8 @@ function parseProviderData(value: unknown): Row {
 }
 
 export function buildConnectionPayload(provider: string, options: ConnectionPayloadOptions, credential: string | undefined): Row {
-  const payload: Row = { provider: provider.trim(), name: String(isBlank(options.name) ? provider : options.name).trim(), authType: 'apikey' }
+  const providerId = canonicalProviderId(provider)
+  const payload: Row = { provider: providerId, name: String(isBlank(options.name) ? providerId : options.name).trim(), authType: 'apikey' }
   if (!isBlank(credential)) payload.apiKey = credential
   if (!isBlank(options.defaultModel)) payload.defaultModel = String(options.defaultModel).trim()
   if (!isBlank(options.priority)) payload.priority = parsePriority(options.priority)

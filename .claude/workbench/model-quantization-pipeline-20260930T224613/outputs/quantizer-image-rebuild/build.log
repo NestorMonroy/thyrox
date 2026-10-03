@@ -1,0 +1,48 @@
+[1/2] STEP 1/1: FROM ghcr.io/ggml-org/llama.cpp@sha256:88ef2d9c2a221e80d5eb96f707a719524e9fc522d34b272bf2852dde4898d2dc AS llama
+--> 9ace0117e8ff
+[2/2] STEP 1/16: FROM docker.io/library/ubuntu:24.04
+[2/2] STEP 2/16: ARG HTTPS_PROXY
+--> Using cache b78504eefd22adbeb9b87013f5740fbe103e83030b1d5a1242f7d9cc929f0732
+--> b78504eefd22
+[2/2] STEP 3/16: ARG https_proxy
+--> Using cache efc2db794f6d3d2d903ff8e5dc1f7d68714a63b5ca879d70bfb5cc91798d7bbb
+--> efc2db794f6d
+[2/2] STEP 4/16: ARG PIP_CERT
+--> Using cache 2af5de6d521fde3902ac4396992c529ddcf5e07296ce6794b8895bdb151a55d5
+--> 2af5de6d521f
+[2/2] STEP 5/16: RUN apt-get update  && apt-get install -y --no-install-recommends python3 python3-venv libgomp1 libssl3t64 ca-certificates  && rm -rf /var/lib/apt/lists/*
+--> Using cache 8f8efcfd9bcfc2cadf4979b43441a473716902bd591436f73b1df4c012cf17d1
+--> 8f8efcfd9bcf
+[2/2] STEP 6/16: COPY --from=llama /app/llama-quantize /app/llama-perplexity /app/
+--> Using cache 8f7f65176514da66f27a79fbba5f689e0f215f9ec2748ce78707b62fe4921d63
+--> 8f7f65176514
+[2/2] STEP 7/16: COPY --from=llama /app/libllama-quantize-impl.so /app/libllama-perplexity-impl.so /app/
+--> Using cache 0a829950cd5181a68f290ebf3a1157314e93b14d6590da25683bd33373bb6467
+--> 0a829950cd51
+[2/2] STEP 8/16: COPY --from=llama /app/libllama-common.so.0 /app/libllama.so.0 /app/libggml.so.0 /app/libggml-base.so.0 /app/
+--> Using cache eef293cd6643c01453f93b5b6e0f969e6a9533d3b3f960616c32e0bddb541fc3
+--> eef293cd6643
+[2/2] STEP 9/16: COPY --from=llama /app/libggml-cpu-*.so /app/
+--> Using cache a7e93b19c8c3f444ca1067e98159e6ea412b98ed2bc22d05b6cc2b65e92a9afe
+--> a7e93b19c8c3
+[2/2] STEP 10/16: COPY --from=llama /app/convert_hf_to_gguf.py /app/
+--> Using cache bcffef11e5b4a20d4a9a243109d5a14b9dd3d2dd8a02adfac283f09dfe414c01
+--> bcffef11e5b4
+[2/2] STEP 11/16: COPY --from=llama /app/conversion /app/conversion
+--> Using cache 16917d594fb0d756554a65fa3e9d0689850ef7d5d9bb0ef8095d4df611f0436a
+--> 16917d594fb0
+[2/2] STEP 12/16: COPY --from=llama /app/gguf-py /app/gguf-py
+--> Using cache c836eff6528cf6dae3ee58c5d2c4ab4a88152412cea50e31573bec5e31bb4dc3
+--> c836eff6528c
+[2/2] STEP 13/16: RUN python3 -m venv /opt/venv  && /opt/venv/bin/pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.11.0  && /opt/venv/bin/pip install --no-cache-dir numpy==2.2.6 sentencepiece==0.2.2 transformers==4.57.6       protobuf==4.25.9 safetensors==0.8.0 tokenizers==0.22.2 huggingface_hub==0.36.2 regex==2026.9.29       pyyaml==6.0.3 tqdm==4.70.1 requests==2.32.5  && /opt/venv/bin/pip install --no-cache-dir --no-deps /app/gguf-py
+--> Using cache e9287f72638197384e1cb45890d9191ab701ada8bdec41da2625dcbf372f09ed
+--> e9287f726381
+[2/2] STEP 14/16: COPY --from=llama /app/llama-simple /app/
+--> 6f01f65a1688
+[2/2] STEP 15/16: ENV PATH=/opt/venv/bin:/app:$PATH     LD_LIBRARY_PATH=/app
+--> 6a743396463c
+[2/2] STEP 16/16: WORKDIR /work
+[2/2] COMMIT localhost/thyrox-model-quantizer:dev
+--> ddf16d444d8b
+Successfully tagged localhost/thyrox-model-quantizer:dev
+ddf16d444d8bd2ac8cb4cfd94b7dd966b7da1de15e5a0ab9137a97d16fcf9156

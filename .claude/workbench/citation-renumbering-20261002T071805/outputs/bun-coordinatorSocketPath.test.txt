@@ -1,0 +1,12 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/coordinatorSocketPath.test.ts:
+(pass) modelCoordinatorSocketPath > el socket declarado gana a la ruta derivada del runtime [0.10ms]
+(pass) modelCoordinatorSocketPath > sin declararlo, se deriva del runtime como hoy [0.07ms]
+(pass) modelCoordinatorSocketPath > la variable se publica por su nombre [0.02ms]
+(pass) modelCoordinatorSocketPath > el entrypoint imprime la ruta del anfitrión [28.02ms]
+
+ 4 pass
+ 0 fail
+ 5 expect() calls
+Ran 4 tests across 1 file. [190.00ms]

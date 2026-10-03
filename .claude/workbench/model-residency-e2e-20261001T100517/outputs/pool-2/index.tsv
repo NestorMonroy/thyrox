@@ -1,0 +1,1 @@
+1	Fuente: .claude/workbench/model-residency-e2e-20261001T100517/p2-neutral-primitive.md. Archivos: src/packages/podman-execution/workerResourceProfile.ts, workerContainerLifecycle.ts, src/packages/model-scheduling/podmanModelExecutionPrimitive.ts. Orden: neutrales, luego la de modelos.

@@ -1,0 +1,64 @@
+cambiar el contrato del pool ni del proxy.
+
+Mecanismo compartido, dueños distintos (enmienda 1.5.0)
+--------------------------------------------------------
+
+Decidido por el ejecutor el 2026-09-30, al preguntar por qué los ítems pesados
+del pool no corren en Podman. Se descartan dos formas:
+
+- **Que el pool pida el worker al daemon.** El pool pasaría a requerir un
+  servicio de larga duración para materializar un contenedor —«daemon caído»
+  sería un fallo nuevo aunque el pool y Podman estén sanos— y el ciclo de vida
+  de los trabajos de repositorio se acercaría al daemon, que no gestiona
+  worktrees, snapshots ni salidas del pool.
+- **Que ``PodmanWorkerManager`` pase a ser dueño de los trabajos de
+  repositorio.** Reutilizar su código es correcto; darle su ciclo de vida, no.
+
+La forma decidida: **implementación compartida ≠ dueño compartido**.
+
+.. code-block:: text
+
+                    primitiva de ejecución Podman (neutral)
+                                   │
+                  ┌────────────────┴────────────────┐
+                  ▼                                 ▼
+   daemon → PodmanWorkerManager        headless-pool → ciclo de vida del ítem
+            → worker especializado              → perfil repository/job
+
+La primitiva sólo crea y corre el contenedor, aplica el perfil de recursos,
+monta el repositorio, configura la red, envía señales, recoge el código de
+salida, exporta los artefactos pedidos y limpia. **No** posee máquina de
+estados, generaciones, snapshots, recuperación, publicación ni admisión: eso
+sigue siendo del pool (``pool_lifecycle``) y, para los workers especializados,
+del daemon.
+
+**Medido antes de decidir** (P0, 2026-09-30):
+``workerContainerLifecycle.ts`` ya es ese mecanismo, pero vive en
+``@thyrox/daemon`` con la propiedad del daemon incrustada: ``daemonPid`` es
+obligatorio, «huérfano» significa «daemon muerto» e importa ``isProcessAlive``
+de ``daemonLock.ts``. Los perfiles (``repositoryJobProfile.ts``,
+``workerResourceProfile.ts``) no tienen dueño y se reutilizan. Faltan: correr
+hasta terminar y recoger el código, exportar artefactos antes de limpiar, y la
+red medida hacia el proxy local.
+
+**El contenedor no sustituye el ciclo de vida.** El ítem sigue
+``preparar → ejecutar → exportar → quiescencia → snapshot → publicar →
+<n>.closed``: los artefactos que el cierre necesita (parche, salida, tiempos,
+veredicto, metadatos) se exportan al runtime **antes** de destruir el
+contenedor, y la existencia de un contenedor o de un parche no significa ítem
+publicado.
+
+**Red, credencial e imagen.**
+
+- La red es la **mínima medida** para alcanzar el proxy local y el PostgreSQL
+  de pruebas. Si ``host`` es hoy lo único efectivo, se usa como implementación
+  medida y documentada, no como propiedad del perfil.
+- El ítem no recibe credencial: entra al proxy local, que la resuelve. Que
+  Podman no pueda inyectar un secreto sin exponerlo en ``inspect`` no bloquea
+  este camino.
+- La imagen se define por contrato mínimo reproducible (bun, git, Python, el
+  toolchain declarado), no por el checkout accidental. El repositorio llega
+  montado en ``/w``; ``node_modules`` no es requisito de la imagen si el
+  empaquetado (ADR-010, P5) acaba incluyendo las dependencias en el artefacto.
+
+Tareas y contrato

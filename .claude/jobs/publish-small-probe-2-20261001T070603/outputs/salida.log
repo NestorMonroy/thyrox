@@ -1,0 +1,26 @@
+publish-artifact: → HEAD https://registry-1.docker.io/v2/th3rox/thyrox-artifact-probe/blobs/sha256:4023aa259c40946eb6c04fd61e28a74666b1295c73dd6c4f391d371940446711
+publish-artifact: ← 401 HEAD /v2/th3rox/thyrox-artifact-probe/blobs/sha256:4023aa259c40946eb6c04fd61e28a74666b1295c73dd6c4f391d371940446711 471ms
+publish-artifact: → GET https://auth.docker.io/token
+publish-artifact: ← 200 GET /token 218ms
+publish-artifact: → HEAD https://registry-1.docker.io/v2/th3rox/thyrox-artifact-probe/blobs/sha256:4023aa259c40946eb6c04fd61e28a74666b1295c73dd6c4f391d371940446711
+publish-artifact: ← 404 HEAD /v2/th3rox/thyrox-artifact-probe/blobs/sha256:4023aa259c40946eb6c04fd61e28a74666b1295c73dd6c4f391d371940446711 121ms
+publish-artifact: → POST https://registry-1.docker.io/v2/th3rox/thyrox-artifact-probe/blobs/uploads/
+publish-artifact: ← 202 POST /v2/th3rox/thyrox-artifact-probe/blobs/uploads/ 197ms
+publish-artifact: → PUT https://registry-1.docker.io/v2/th3rox/thyrox-artifact-probe/blobs/uploads/dc718d19-d587-4bb0-92fb-24fa0ccb12e0
+publish-artifact: ← 201 PUT /v2/th3rox/thyrox-artifact-probe/blobs/uploads/dc718d19-d587-4bb0-92fb-24fa0ccb12e0 787ms
+publish-artifact: → HEAD https://registry-1.docker.io/v2/th3rox/thyrox-artifact-probe/blobs/sha256:638cfb65d5deb7673dfe9ab39d05d5c950d2a1a838c3ac4c4d435e634a577521
+publish-artifact: ← 404 HEAD /v2/th3rox/thyrox-artifact-probe/blobs/sha256:638cfb65d5deb7673dfe9ab39d05d5c950d2a1a838c3ac4c4d435e634a577521 150ms
+publish-artifact: → POST https://registry-1.docker.io/v2/th3rox/thyrox-artifact-probe/blobs/uploads/
+publish-artifact: ← 202 POST /v2/th3rox/thyrox-artifact-probe/blobs/uploads/ 197ms
+publish-artifact: → PUT https://registry-1.docker.io/v2/th3rox/thyrox-artifact-probe/blobs/uploads/44255f36-496a-41bb-8f9c-aaf7fcf0a8b0
+publish-artifact: ← 201 PUT /v2/th3rox/thyrox-artifact-probe/blobs/uploads/44255f36-496a-41bb-8f9c-aaf7fcf0a8b0 679ms
+publish-artifact: → HEAD https://registry-1.docker.io/v2/th3rox/thyrox-artifact-probe/blobs/sha256:f0af601c3afb2b8ee899d8697d907a48a696c4191835213d83bf756804014b6d
+publish-artifact: ← 404 HEAD /v2/th3rox/thyrox-artifact-probe/blobs/sha256:f0af601c3afb2b8ee899d8697d907a48a696c4191835213d83bf756804014b6d 119ms
+publish-artifact: → POST https://registry-1.docker.io/v2/th3rox/thyrox-artifact-probe/blobs/uploads/
+publish-artifact: ← 202 POST /v2/th3rox/thyrox-artifact-probe/blobs/uploads/ 187ms
+publish-artifact: → PUT https://registry-1.docker.io/v2/th3rox/thyrox-artifact-probe/blobs/uploads/114a2f7e-e91d-4960-8388-ca7f07e79d7e
+publish-artifact: ← 201 PUT /v2/th3rox/thyrox-artifact-probe/blobs/uploads/114a2f7e-e91d-4960-8388-ca7f07e79d7e 686ms
+publish-artifact: → PUT https://registry-1.docker.io/v2/th3rox/thyrox-artifact-probe/manifests/publish-small-probe
+publish-artifact: ← 201 PUT /v2/th3rox/thyrox-artifact-probe/manifests/publish-small-probe 1543ms
+publish-artifact: verified docker.io/th3rox/thyrox-artifact-probe@sha256:3ca7b560d632838ac9168b8c0b19fe5b517c929a63e3f9d1e99d230e7f2a10ff
+__BG_EXIT__=0

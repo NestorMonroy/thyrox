@@ -1,0 +1,8 @@
+F=/tmp/tmp.fR4p3V1x6z
+FAIL sin disco declarado, el ítem se rehúsa sin esperar — expected 'yes', got ''
+grep: /tmp/tmp.fR4p3V1x6z/repo/.claude/workbench/b/run7/1.err: No such file or directory
+FAIL el rechazo nombra la admisión por disco — expected '1', got ''
+FAIL el ítem rehusado quedó publicado — expected '1', got ''
+OK   control: con espera de 6 s, el rechazo tarda al menos 6 s
+result: 1 of 4 assertions green
+__BG_EXIT__=1

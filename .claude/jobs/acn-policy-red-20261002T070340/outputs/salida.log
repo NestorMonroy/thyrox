@@ -1,0 +1,5 @@
+=========================== short test summary info ============================
+FAILED tests/test_translation_loop.py::test_the_shipped_policy_allows_only_qwen_without_fallback
+1 failed, 60 deselected in 0.22s
+execution thyrox-worker-test-muqma1a8-4397 kind=test work=ai-course-notes:es-mx/qwen-library-policy exit=0
+__BG_EXIT__=0

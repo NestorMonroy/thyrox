@@ -25,6 +25,8 @@ Controles de anulación, medidos (cada uno junto a su caso en el cuerpo):
 """
 from __future__ import annotations
 
+import contextlib
+import io
 import json
 import sys
 import tempfile
@@ -125,6 +127,13 @@ with tempfile.TemporaryDirectory() as tmp:
     check("other, que no depende de base, no", False, "other" in report.blocked)
     check("el fallido no se sella", True, ed.is_stale(base))
     check("el fallo se nombra", ["base"], report.failed)
+    # Anulación: sin guardar el motivo, el rechazo no se puede atribuir (un
+    # tsc que agotó el plazo y uno con errores se leían igual).
+    check("y su motivo se conserva", {"base": "rehusado"}, report.failure_reasons)
+    printed = io.StringIO()
+    with contextlib.redirect_stderr(printed):
+        gate.print_refresh(report)
+    check("el aviso publica el motivo", True, "provider base: la reconstruccion no emitio: rehusado" in printed.getvalue())
     # Y el gate lo respeta: sin medir al bloqueado, sin veredicto.
     measured: list[str] = []
     code = gate.run_with_refresh(

@@ -301,8 +301,9 @@ export default class Ink {
     // synchronously. Deferring to a microtask runs onRender after layout
     // effects have committed, so the native cursor tracks the caret without
     // a one-keystroke lag. Same event-loop tick, so throughput is unchanged.
-    // Test env uses onImmediateRender (direct onRender, no throttle) so
-    // existing synchronous lastFrame() tests are unaffected.
+    // `onImmediateRender` (onRender directo, sin throttle) ya no lo elige el
+    // reconciler por NODE_ENV: quien necesite render síncrono lo asigna como
+    // `rootNode.onRender`.
     const deferredRender = (): void => queueMicrotask(this.onRender)
     this.scheduleRender = throttle(deferredRender, FRAME_INTERVAL_MS, {
       leading: true,

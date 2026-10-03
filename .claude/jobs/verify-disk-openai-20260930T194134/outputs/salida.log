@@ -1,0 +1,40 @@
+== bash tests/repo/test-disk-headroom.sh
+  ok    la ayuda documenta --ceiling-bytes
+
+ok=43 fallo=0
+exit=0
+== python3 tests/session/test_resource_admission.py
+  ok    THYROX_DISK_ADMISSION_FLOOR_MB figura en .env.example
+  ok    THYROX_DISK_ADMISSION_HEADROOM figura en .env.example
+test_resource_admission: 49 ok, 0 fallos
+exit=0
+== bash tests/lib/test-infrastructure.sh
+  ok    inspect usa THYROX_TOOLCHAIN_PODMAN_BIN y publica estado y pid
+
+33 casos: 33 ok, 0 fallos
+exit=0
+== bash tests/session/test-infrastructure-ensure.sh
+  ok    caso 12: .env.example declara THYROX_INFRA_DISK_ADMISSION_BIN
+
+39 casos: 39 ok, 0 fallos
+exit=0
+== bash -c cd src/packages/provider && bun test src/proxy/__tests__/openaiCompatDeclaration.test.ts src/proxy/__tests__/openaiCompatForwarder.test.ts src/proxy/__tests__/openaiCompatLocalProxy.test.ts src/proxy/__tests__/openaiCompatUpstream.test.ts src/proxy/__tests__/claudeCliUpstream.test.ts src/proxy/__tests__/startServerSharedState.test.ts
+ 0 fail
+ 154 expect() calls
+Ran 44 tests across 6 files. [2.89s]
+exit=0
+== bash bin/check_lint_zero src/repo/disk-headroom.sh src/session/resource_admission.py src/lib/infrastructure.sh src/session/infrastructure_ensure.sh tests/repo/test-disk-headroom.sh tests/session/test_resource_admission.py tests/lib/test-infrastructure.sh tests/session/test-infrastructure-ensure.sh
+shellcheck: 0 hallazgo(s) (alcance medido: 6 archivo(s))
+ruff: 0 hallazgo(s) (alcance medido: 2 archivo(s))
+pyright: 0 hallazgo(s) (alcance medido: 2 archivo(s))
+exit=0
+== bash bin/check_package_typecheck --strict provider
+  provider: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 1 de 1 paquete(s))
+exit=0
+== python3 src/verify/check_env_example_coverage.py
+check_env_example_coverage: 0 clave(s) sin declarar (alcance medido: 15 clave(s) en 1 archivo(s) ignorado(s), 529 declarada(s) en .env.example)
+exit=0
+suites-fallidas=0
+__BG_EXIT__=0

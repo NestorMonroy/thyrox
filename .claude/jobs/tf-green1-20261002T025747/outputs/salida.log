@@ -1,0 +1,10 @@
+ok
+ 17 pass
+ 0 fail
+ 6 pass
+ 0 fail
+tsc model-artifacts: 0 0
+tsc model-scheduling: 0 0
+tsc local-models: 0 0
+execution thyrox-worker-test-muqdhu35-7150 kind=test task=TASK-THYROX-0761 exit=0
+__BG_EXIT__=0

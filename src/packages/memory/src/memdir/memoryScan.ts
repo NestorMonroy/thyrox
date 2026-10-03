@@ -1,10 +1,9 @@
 /**
- * Puerto de `ccnmt: packages/memory/src/memdir/memoryScan.ts`, con
- * `parseFrontmatter` y `readFileInRange` desde el sustituto local
+ * `readFileInRange` desde `@thyrox/repl/readFileInRange.js` y
+ * `parseFrontmatter` desde el sustituto local
  * `../internal/pendingCrossPackageDeps.js` — ver su docstring de
- * procedencia (ninguno de los dos paquetes de origen,
- * `@claude-code-how-works/agent` y `@claude-code-how-works/repl`, tiene
- * portados esos símbolos en `@thyrox`).
+ * procedencia (el original de `@thyrox/agent` cerraría un ciclo de módulos
+ * con este paquete).
  *
  * Primitivas de escaneo de directorio de memoria. Separado de
  * findRelevantMemories.ts para que extractMemories pueda importar el
@@ -14,7 +13,8 @@
 
 import { readdir } from 'node:fs/promises'
 import { basename, join } from 'node:path'
-import { parseFrontmatter, readFileInRange } from '../internal/pendingCrossPackageDeps.js'
+import { readFileInRange } from '@thyrox/repl/readFileInRange.js'
+import { parseFrontmatter } from '../internal/pendingCrossPackageDeps.js'
 import { type MemoryType, parseMemoryType } from '../memoryTypes.js'
 
 export type MemoryHeader = {

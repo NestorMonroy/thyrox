@@ -14,6 +14,9 @@
  * cuando hay texto escondería justo las ejecuciones que cuestan sin entregar.
  */
 import { describe, expect, test } from 'bun:test'
+import { existsSync, mkdtempSync, readFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import * as sr from '../../src/agents/save_result.mjs'
 
 const linea = (id: string, texto: string, uso: Record<string, number>) =>
@@ -134,5 +137,21 @@ describe('E. Los CUATRO tipos de costo se declaran — no uno rotulado «el cost
     // Su precio depende del modelo y del TTL; fabricarlo con los pesos de un
     // solo tier sería publicar una cifra que ningún modelo cobra.
     expect(Object.keys(sr).some((k) => /usd/i.test(k))).toBe(false)
+  })
+})
+
+describe('F. El consumidor es opcional: un clon retirado no se recrea', () => {
+  test('sin la raíz del consumidor no escribe ni crea nada', () => {
+    const tmp = mkdtempSync(join(tmpdir(), 'save-result-'))
+    const root = join(tmp, 'retired-consumer')
+    const log = join(root, '.claude', 'agent-results', 'registro-de-agentes.md')
+    expect(sr.appendEntry(log, 'entry\n')).toBe(false)
+    expect(existsSync(root)).toBe(false)
+  })
+  test('con la raíz presente crea .claude/agent-results y escribe', () => {
+    const root = mkdtempSync(join(tmpdir(), 'save-result-'))
+    const log = join(root, '.claude', 'agent-results', 'registro-de-agentes.md')
+    expect(sr.appendEntry(log, 'entry\n')).toBe(true)
+    expect(readFileSync(log, 'utf8')).toContain('entry')
   })
 })

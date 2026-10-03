@@ -1,32 +1,38 @@
 #!/usr/bin/env bash
 # =============================================================================
 # infrastructure_ensure.sh — bootstrap idempotente de la infraestructura
-# gestionada (TASK-THYROX-0606, ADR-THYROX-007 v1.2.0 Regla 4)
+# gestionada (TASK-THYROX-0606, 0740; ADR-THYROX-007 Regla 4, enmienda 1.15.0)
 # =============================================================================
 #
 # Aqui no hay systemd (PID 1 es `process_api`): nada de lo que declara
-# `src/lib/infrastructure.sh` vuelve solo tras reiniciar la VM. Este guion es
-# el CONSUMIDOR de esa declaracion — la unica pieza que de verdad invoca
-# `podman` — con el flujo exacto del ADR, por contenedor:
+# `src/lib/infrastructure.sh` vuelve solo tras reiniciar la VM. Este guion
+# ORQUESTA esa vuelta y no materializa nada: la unica via que crea, arranca,
+# recrea y comprueba la salud de un recurso Podman gestionado es la primitiva
+# de `@thyrox/podman-execution`, a la que llega por InfrastructureBootstrap
+# (`bin/infrastructure-bootstrap`).
 #
-#   cargar la declaracion -> inspeccionar -> validar el proceso real (estado
-#   reportado + PID vivo) -> ausente o stale (running con el PID muerto) ->
-#   rm -f + recrear -> arrancar -> correr el health check explicitamente,
-#   repetido hasta sano o hasta el plazo -> declararlo listo; si no, fallar
-#   con causa y diagnostico.
+#   seleccion y credencial -> preflight de podman -> balance de locks ->
+#   admision del disco de las imagenes que faltan -> estado deseado (JSON)
+#   -> InfrastructureBootstrap -> primitiva -> Podman
 #
-# La decision de conservar o recrear NUNCA sale solo del estado reportado:
-# `running` con el PID muerto es stale (medido, TASK-THYROX-0605: `podman
-# start` sobre ese estado sale 0 sin arrancar nada), y se recrea igual que un
-# contenedor ausente.
+# Lo que este guion invoca de `podman` es sólo medida: `info`, `version`,
+# `ps`, `inspect`, `volume ls` e `image exists`. No repara el motor: ante un
+# desfase de locks sale con exit 3 y nombra `bin/podman_lock_recovery`.
 #
-# Salida: una linea por contenedor en stdout (nombre, estado reportado, si
-# el PID vive, la accion tomada y el resultado de salud); el diagnostico de
-# lo que no llego a sano va a stderr.
+# Salida: la del bootstrap, una linea por recurso (accion, deriva, creado,
+# arrancado, salud, volumenes); su diagnostico va a stderr.
 #
-# Exit 0  todos los contenedores quedaron sanos.
-# Exit 1  alguno no llego a sano dentro del plazo (nombrado en stderr).
-# Exit 2  falta podman o la credencial de PostgreSQL — no se toca nada.
+# Uso: infrastructure_ensure [contenedor...] — sin argumentos, todos los que
+#       declara `infrastructure.sh`; con nombres, sólo esos.
+#
+# Exit 0  todos los recursos seleccionados quedaron sanos.
+# Exit 1  alguno fallo (el bootstrap lo nombra).
+# Exit 2  rehusado sin tocar nada: contenedor desconocido, falta podman, falta
+#         la credencial de PostgreSQL con PostgreSQL seleccionado, o las
+#         imagenes que faltan no caben en disco (TASK-THYROX-0671); o el
+#         bootstrap rehuso por una colision de dueño.
+# Exit 3  colision de locks de Podman: desfase medido (con o sin contenedores
+#         vivos), o el bootstrap choco con un lock ajeno.
 # =============================================================================
 set -uo pipefail
 
@@ -35,146 +41,162 @@ _INFRA_ENSURE_HERE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$_INFRA_ENSURE_HERE/../lib/toolchain.sh"
 # shellcheck source=/dev/null
 source "$_INFRA_ENSURE_HERE/../lib/infrastructure.sh"
+# shellcheck source=/dev/null
+source "$_INFRA_ENSURE_HERE/../lib/podman_locks.sh"
 
-# Plazo e intervalo del health check, con prefijo THYROX_INFRA_ como el resto
-# de la declaracion. `THYROX_INFRA_ENSURE_SLEEP_BIN` no es un parametro de
-# produccion: es el punto de inyeccion que permite a la suite recorrer el
-# bucle de reintentos sin dormir de verdad.
-HEALTH_TIMEOUT="${THYROX_INFRA_HEALTH_TIMEOUT:-60}"
-HEALTH_INTERVAL="${THYROX_INFRA_HEALTH_INTERVAL:-2}"
-SLEEP_BIN="${THYROX_INFRA_ENSURE_SLEEP_BIN:-sleep}"
+# La admision de disco antes de bajar imagenes (TASK-THYROX-0671), con su
+# contrato `disk-admit`/`disk-release`, y el bootstrap que materializa. Las dos
+# se declaran para que la suite ejercite el orden sin tocar el disco ni Podman.
+DISK_ADMISSION_BIN="$(thyrox_infrastructure_setting THYROX_INFRA_DISK_ADMISSION_BIN "$_INFRA_ENSURE_HERE/../../bin/resource_admission")"
+BOOTSTRAP_BIN="$(thyrox_infrastructure_setting THYROX_INFRA_BOOTSTRAP_BIN "$_INFRA_ENSURE_HERE/../../bin/infrastructure-bootstrap")"
+# El banco que mide por que el techo es `Avail` y no el tamaño del dispositivo.
+readonly DISK_ADMISSION_BENCH="disk-reserve-reach-20260930T191002"
+readonly POSTGRES_PASSWORD_KEY="THYROX_INFRA_POSTGRES_PASSWORD"
+readonly EXIT_REFUSED=2
+readonly EXIT_LOCK_COLLISION=3
 
-# --- precondiciones: NADA se toca hasta que las dos esten satisfechas ---
-if [[ -z "${THYROX_INFRA_POSTGRES_PASSWORD:-}" ]]; then
-  echo "infrastructure_ensure: falta THYROX_INFRA_POSTGRES_PASSWORD (credencial de PostgreSQL)." >&2
-  echo "                       No se invoca podman ni se toca nada." >&2
-  exit 2
+# @description Exit 0 si el nombre esta en la lista que siguen los argumentos.
+# @arg $1 string nombre buscado.
+# @arg $@ string la lista, desde el segundo argumento.
+_infra_list_contains() {
+  local wanted="$1" candidate
+  shift
+  for candidate in "$@"; do
+    [[ "$candidate" == "$wanted" ]] && return 0
+  done
+  return 1
+}
+
+# @description Rehusa, sin tocar nada, un nombre que la declaracion no conoce.
+_infra_refuse_unknown_names() {
+  local selected
+  for selected in "${SELECTED_CONTAINERS[@]}"; do
+    _infra_list_contains "$selected" "${DECLARED_CONTAINERS[@]}" && continue
+    echo "infrastructure_ensure: contenedor desconocido: $selected" >&2
+    echo "                       declarados: ${DECLARED_CONTAINERS[*]}. No se toca nada." >&2
+    exit "$EXIT_REFUSED"
+  done
+}
+
+# @description Locks desfasados tras reiniciar la VM: la memoria compartida
+# de Podman se rehace vacía y la base conserva el número de lock de cada
+# objeto, así que el siguiente objeto nuevo recibe un lock ocupado. Se mide
+# ANTES de materializar. El ensure DETECTA y DIAGNOSTICA; nunca repara el
+# motor: converger el estado declarado de thyrox y reparar el runtime de
+# Podman son dos contratos (decisión del ejecutor 2026-10-02). Con el desfase
+# sale con exit 3, publica la medida y el diagnóstico real, reconoce las
+# precondiciones de H-THYROX-308 si coinciden, y nombra la reparación
+# explícita. Sin medida no hay desfase que afirmar: sigue.
+_infra_gate_locks() {
+  local balance allocated objects live version backend volumes
+  balance="$(thyrox_podman_lock_balance)" || return 0
+  read -r allocated objects <<< "$balance"
+  (( allocated >= objects )) && return 0
+  live="$(thyrox_podman_live_containers | paste -sd, -)"
+  version="$("$PODMAN" version --format '{{.Client.Version}}' 2>/dev/null)"
+  backend="$("$PODMAN" info --format '{{.Host.DatabaseBackend}}' 2>/dev/null)"
+  volumes="$("$PODMAN" volume ls --format '{{.Name}}' 2>/dev/null | grep -c .)"
+  echo "infrastructure_ensure: locks de Podman desfasados (asignados $allocated, referenciados $objects); no se materializa nada." >&2
+  echo "                       Podman ${version:-?} · backend ${backend:-?} · $volumes volumen(es) · vivos: ${live:-ninguno}" >&2
+  if [[ "$backend" == sqlite && "$version" == 4.9.* && "$volumes" -gt 0 ]]; then
+    echo "                       Coincide con las precondiciones de H-THYROX-308: con backend sqlite, \`podman system renumber\` se detiene en el primer volumen." >&2
+  fi
+  [[ -z "$live" ]] || echo "                       Detener antes los contenedores vivos ($live): la reparación los rehúsa." >&2
+  echo "                       El ensure no repara el motor. Reparación explícita: $_INFRASTRUCTURE_LOCK_RECOVERY (sin --confirm muestra el plan); después, volver a correr el ensure." >&2
+  exit "$EXIT_LOCK_COLLISION"
+}
+
+# @description Contenedores seleccionados cuya imagen falta en el almacen
+# local: sólo esos obligan a bajar una imagen y a reservar disco.
+# @stdout un nombre por linea.
+_infra_missing_images() {
+  local name image
+  for name in "${SELECTED_CONTAINERS[@]}"; do
+    image="$(thyrox_infrastructure_image "$name")" || { echo "$name"; continue; }
+    "$PODMAN" image exists "$image" >/dev/null 2>&1 || echo "$name"
+  done
+}
+
+# @description Reserva, a nombre de este proceso, el disco que exige bajar
+# todas las imagenes que faltan. Si no se admite, rehusa con exit 2 nombrando
+# los contenedores, la necesidad, el techo y el banco, sin invocar el bootstrap.
+# @arg $@ string los contenedores cuya imagen falta.
+_infra_admit_disk_or_refuse() {
+  local need=0 name verdict
+  for name in "$@"; do
+    need=$(( need + $(thyrox_infrastructure_disk_need_bytes "$name") ))
+  done
+  if verdict="$("$DISK_ADMISSION_BIN" disk-admit --need-bytes "$need" --owner "$$" 2>&1)"; then
+    return 0
+  fi
+  echo "infrastructure_ensure: $* no cabe(n) en disco: necesidad $need bytes; $verdict" >&2
+  echo "                       El techo es el que el sistema de archivos declara accesible" >&2
+  echo "                       (banco $DISK_ADMISSION_BENCH). No se invoca el bootstrap." >&2
+  exit "$EXIT_REFUSED"
+}
+
+# @description El estado deseado de la seleccion, como el arreglo JSON que
+# lee InfrastructureBootstrap. Declara los secretos por nombre; nunca su valor.
+# @stdout el arreglo.
+_infra_desired_state() {
+  local name
+  for name in "${SELECTED_CONTAINERS[@]}"; do
+    thyrox_infrastructure_desired_resource "$name" || return 1
+  done | jq -s .
+}
+
+# @description Entrega el estado deseado al bootstrap. La credencial de
+# PostgreSQL viaja sólo por su entorno, y sólo si PostgreSQL esta seleccionado.
+# @arg $1 string el estado deseado.
+# @exitcode el del bootstrap.
+_infra_run_bootstrap() {
+  local desired="$1"
+  if [[ -n "$POSTGRES_PASSWORD" ]]; then
+    printf '%s' "$desired" | env "$POSTGRES_PASSWORD_KEY=$POSTGRES_PASSWORD" "$BOOTSTRAP_BIN"
+  else
+    printf '%s' "$desired" | env -u "$POSTGRES_PASSWORD_KEY" "$BOOTSTRAP_BIN"
+  fi
+}
+
+mapfile -t DECLARED_CONTAINERS < <(thyrox_infrastructure_container_names)
+if [[ "$#" -gt 0 ]]; then
+  SELECTED_CONTAINERS=("$@")
+else
+  SELECTED_CONTAINERS=("${DECLARED_CONTAINERS[@]}")
+fi
+_infra_refuse_unknown_names
+
+POSTGRES_PASSWORD=""
+if _infra_list_contains "$_INFRASTRUCTURE_POSTGRES_NAME" "${SELECTED_CONTAINERS[@]}"; then
+  POSTGRES_PASSWORD="$(thyrox_infrastructure_setting "$POSTGRES_PASSWORD_KEY" '')"
+  if [[ -z "$POSTGRES_PASSWORD" ]]; then
+    echo "infrastructure_ensure: falta $POSTGRES_PASSWORD_KEY (credencial de PostgreSQL)." >&2
+    echo "                       No se invoca podman ni se toca nada." >&2
+    exit "$EXIT_REFUSED"
+  fi
 fi
 
 if ! thyrox_toolchain_require_podman; then
   echo "infrastructure_ensure: podman no esta disponible; no se toca nada." >&2
-  exit 2
+  exit "$EXIT_REFUSED"
 fi
 PODMAN="$THYROX_TOOLCHAIN_PODMAN_BIN"
 
-# @description Asegura la red propia de la infraestructura: existe -> nada,
-# falta -> se crea. La red vive en la misma declaracion que los contenedores
-# (`_INFRASTRUCTURE_NETWORK`, ya en scope tras sourcear infrastructure.sh).
-_infra_ensure_network() {
-  if "$PODMAN" network exists "$_INFRASTRUCTURE_NETWORK" >/dev/null 2>&1; then
-    return 0
-  fi
-  "$PODMAN" network create "$_INFRASTRUCTURE_NETWORK" >/dev/null 2>&1
-}
+_infra_gate_locks
 
-if ! _infra_ensure_network; then
-  echo "infrastructure_ensure: no se pudo asegurar la red $_INFRASTRUCTURE_NETWORK." >&2
-  exit 1
+if ! DESIRED_STATE="$(_infra_desired_state)"; then
+  echo "infrastructure_ensure: no se pudo componer el estado deseado; no se toca nada." >&2
+  exit "$EXIT_REFUSED"
 fi
 
-# @description Corre el comando de salud declarado, repitiendolo hasta que
-# responda sano o se agote el plazo. El plazo se mide en INTENTOS
-# (plazo/intervalo), no en reloj de pared: asi la espera entre intentos es lo
-# UNICO que hay que inyectar para que la suite no duerma.
-# @arg $1 string nombre del contenedor.
-# @stdout `healthy`, o `unhealthy: <ultima salida>`.
-# @exitcode 0 sano dentro del plazo.
-# @exitcode 1 nunca respondio sano.
-_infra_run_health_check() {
-  local name="$1"
-  local -a health_argv
-  mapfile -t health_argv < <(thyrox_infrastructure_health_check_argv "$name")
-
-  local max_attempts=$(( (HEALTH_TIMEOUT + HEALTH_INTERVAL - 1) / HEALTH_INTERVAL ))
-  (( max_attempts < 1 )) && max_attempts=1
-
-  local attempt=1 output="" rc=1
-  while (( attempt <= max_attempts )); do
-    output="$("$PODMAN" exec "$name" "${health_argv[@]}" 2>&1)"; rc=$?
-    if (( rc == 0 )); then
-      printf 'healthy'
-      return 0
-    fi
-    if (( attempt < max_attempts )); then
-      "$SLEEP_BIN" "$HEALTH_INTERVAL"
-    fi
-    attempt=$(( attempt + 1 ))
-  done
-  printf 'unhealthy: %s' "$output"
-  return 1
-}
-
-# @description Asegura un contenedor: inspecciona, decide kept/created/
-# recreated/started, ejecuta el health check y publica su linea de estado.
-# Acumula en FAILED_CONTAINERS cualquier contenedor que no llego a sano.
-# @arg $1 string nombre del contenedor (uno de los que declara infrastructure.sh).
-_infra_ensure_container() {
-  local name="$1"
-  local status pid pid_alive action inspect_out
-
-  if inspect_out="$("$PODMAN" inspect --format '{{.State.Status}}\t{{.State.Pid}}' "$name" 2>/dev/null)"; then
-    status="${inspect_out%%$'\t'*}"
-    pid="${inspect_out##*$'\t'}"
-  else
-    status="absent"
-    pid="0"
-  fi
-
-  pid_alive="no"
-  if [[ "$status" == "running" && "$pid" != "0" ]] && kill -0 "$pid" 2>/dev/null; then
-    pid_alive="yes"
-  fi
-
-  if [[ "$status" == "running" && "$pid_alive" == "yes" ]]; then
-    action="kept"
-  else
-    if [[ "$status" == "absent" ]]; then
-      action="created"
-    elif [[ "$status" == "running" ]]; then
-      # running reportado, PID muerto: stale. rm -f SOLO retira el
-      # contenedor — el volumen con nombre (verdad durable de postgres)
-      # nunca aparece en este comando.
-      action="recreated"
-      "$PODMAN" rm -f "$name" >/dev/null 2>&1
-    else
-      action="started"
-    fi
-
-    if [[ "$action" == "created" || "$action" == "recreated" ]]; then
-      local -a create_argv
-      mapfile -t create_argv < <(thyrox_infrastructure_create_argv "$name")
-      if [[ "${#create_argv[@]}" -eq 0 ]]; then
-        printf '%s status=%s pid_alive=%s action=error health=no-intentado\n' \
-          "$name" "$status" "$pid_alive"
-        FAILED_CONTAINERS+=("$name: no se pudo componer el argv de creacion")
-        return
-      fi
-      "$PODMAN" "${create_argv[@]}" >/dev/null 2>&1
-    fi
-    "$PODMAN" start "$name" >/dev/null 2>&1
-  fi
-
-  local health_result
-  if health_result="$(_infra_run_health_check "$name")"; then
-    printf '%s status=%s pid_alive=%s action=%s health=healthy\n' \
-      "$name" "$status" "$pid_alive" "$action"
-  else
-    printf '%s status=%s pid_alive=%s action=%s health=%s\n' \
-      "$name" "$status" "$pid_alive" "$action" "$health_result"
-    FAILED_CONTAINERS+=("$name: $health_result")
-  fi
-}
-
-FAILED_CONTAINERS=()
-while IFS= read -r _infra_container_name; do
-  _infra_ensure_container "$_infra_container_name"
-done < <(thyrox_infrastructure_container_names)
-
-if [[ "${#FAILED_CONTAINERS[@]}" -gt 0 ]]; then
-  for _infra_failure in "${FAILED_CONTAINERS[@]}"; do
-    echo "infrastructure_ensure: $_infra_failure" >&2
-  done
-  exit 1
+mapfile -t MISSING_IMAGES < <(_infra_missing_images)
+if [[ "${#MISSING_IMAGES[@]}" -gt 0 ]]; then
+  _infra_admit_disk_or_refuse "${MISSING_IMAGES[@]}"
+  _infra_run_bootstrap "$DESIRED_STATE"
+  bootstrap_rc=$?
+  "$DISK_ADMISSION_BIN" disk-release --owner "$$" >/dev/null 2>&1
+else
+  _infra_run_bootstrap "$DESIRED_STATE"
+  bootstrap_rc=$?
 fi
-
-exit 0
+exit "$bootstrap_rc"

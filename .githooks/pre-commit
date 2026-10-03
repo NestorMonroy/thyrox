@@ -159,7 +159,7 @@ if [ "${#MUTANT_CANDIDATES[@]}" -gt 0 ]; then
     python3 "$GATES/check_mutante_en_staging.py" "${MUTANT_CANDIDATES[@]}" || CODE=1
 fi
 
-# El idioma de los identificadores, sobre los .py y .ts staged de src/ y tests/.
+# El idioma de los identificadores, sobre los .py, .ts y .sh staged.
 # El gate vivía en el proveedor y ningún hook lo corría sobre el proveedor:
 # 2081 identificadores en español en 574 archivos, medidos el 2026-09-27. La
 # deuda heredada está congelada en el baseline que declara el .env; uno nuevo
@@ -176,8 +176,18 @@ for f in "${STAGED[@]}"; do
         src/*.ts|src/*.tsx|src/*.mts|tests/*.ts) [[ -f "$f" ]] && IDENTIFIERS+=("${f#"$ROOT"/}") ;;
     esac
 done
+# Y los .sh staged de src/, tests/ y bin/: la extracción es léxica
+# (`src/verify/shell_declared_identifiers.py`) y el léxico, el mismo.
+for f in "${STAGED[@]}"; do
+    case "${f#"$ROOT"/}" in
+        src/*.sh|tests/*.sh|bin/*.sh) [[ -f "$f" ]] && IDENTIFIERS+=("${f#"$ROOT"/}") ;;
+    esac
+done
 if [[ ${#IDENTIFIERS[@]} -gt 0 ]]; then
-    (cd "$ROOT" && python3 "$GATES/check_identifier_language.py" "${IDENTIFIERS[@]}") || CODE=1
+    # El léxico abierto (`spacy-lookups-data`) vive en el entorno del
+    # proveedor: el envoltorio de `bin/` lo resuelve; un `python3` a secas
+    # depende del PATH de quien commitea y rehúsa sin él.
+    (cd "$ROOT" && bash "$ROOT/bin/check_identifier_language" "${IDENTIFIERS[@]}") || CODE=1
 fi
 
 # El vocabulario de la prosa del propio proveedor: reglas, skills, README y
@@ -192,7 +202,7 @@ for f in "${STAGED[@]}"; do
     esac
 done
 if [[ ${#PROSE[@]} -gt 0 ]]; then
-    (cd "$ROOT" && python3 "$GATES/check_vocabulario_prosa.py" --strict --quiet "${PROSE[@]}") || CODE=1
+    (cd "$ROOT" && bash "$ROOT/bin/check_vocabulario_prosa" --strict --quiet "${PROSE[@]}") || CODE=1
 fi
 
 # Un paquete se entra por su `exports`, nunca por el `src/` del vecino. El gate
@@ -224,6 +234,11 @@ python3 "$GATES/check_bench_untracked.py" --repo "$ROOT" || CODE=1
 # es un verde.
 python3 "$GATES/check_staged_live_writers.py" --repo "$ROOT" || CODE=1
 
+# Una suite que exporta sólo la clave GLOBAL de un hogar (`THYROX_JOBS_DIR`…)
+# escribe en el hogar real si el `.env` declara la clave por clon, que gana.
+# Mira sólo las suites que el commit toca: la deuda heredada se paga al tocar.
+python3 "$GATES/check_test_home_isolation.py" --repo "$ROOT" || CODE=1
+
 # Cada unidad de `.claude/cache/` en su carpeta con un README que dice qué
 # guarda, de qué episodio sale y cómo se regenera. Estaba cableado sólo en el
 # pre-commit compartido de los consumidores (`src/verify/pre-commit.sh`), así
@@ -243,6 +258,22 @@ python3 "$GATES/check_single_workspace_root.py" --root "$ROOT" || CODE=1
 # (claude.ai, Claude in Chrome, Claude Desktop, el consentimiento de
 # Anthropic) no cuentan; su lista y su razón están en el gate.
 python3 "$GATES/check_product_word.py" --repo "$ROOT" --strict || CODE=1
+
+# Sólo @thyrox/podman-execution crea, arranca, ejecuta o construye un
+# contenedor gestionado (ADR-007 Regla 4, enmienda 1.16.0). Un sitio que aún
+# no migró vale mientras su tarea siga abierta en el store.
+python3 "$GATES/check_podman_materialization.py" --root "$ROOT" --strict || CODE=1
+
+# Y sólo él HABLA con Podman, también para observar (P3/P4): un consumidor
+# pide a `podman-execution observe`, nunca emite `podman inspect`/`ps`/`volume`.
+# Mide src/ y los guiones de banco que el commit trae.
+ownership_includes=()
+for f in "${STAGED[@]}"; do
+    [[ "$f" == "$ROOT"/.claude/workbench/*/probes/* ]] && ownership_includes+=(--include "$f")
+done
+python3 "$GATES/check_podman_access_ownership.py" --root "$ROOT" --strict "${ownership_includes[@]}" || CODE=1
+# Por la primitiva, pero sin ExecutionAuthorization: la segunda ruta (TASK-THYROX-0743).
+python3 "$GATES/check_execution_authorization.py" --root "$ROOT" --strict || CODE=1
 
 # Cada enlace relativo de las skills y las reglas apunta a un archivo que
 # existe: una mudanza de directorio los rompe sin que nada falle.

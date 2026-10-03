@@ -1,0 +1,3 @@
+scope: p2d cambió 1 ruta(s) fuera de su alcance:
+  node_modules
+EXIT=1

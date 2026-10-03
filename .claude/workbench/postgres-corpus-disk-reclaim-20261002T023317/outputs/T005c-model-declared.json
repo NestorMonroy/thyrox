@@ -1,0 +1,47 @@
+{
+  "id": "nomic-ai/nomic-embed-text-v1.5",
+  "sha": "e9b6763023c676ca8431644204f50c2b100d9aab",
+  "license": "apache-2.0",
+  "files": [
+    {
+      "path": "config.json",
+      "bytes": 2538,
+      "sha256": null
+    },
+    {
+      "path": "model.safetensors",
+      "bytes": 546938168,
+      "sha256": "9e7d262b1fe5ea350782829496efa831901b77486bbde1cea54a4c822d010d5c"
+    },
+    {
+      "path": "onnx/model.onnx",
+      "bytes": 547310275,
+      "sha256": "147d5aa88c2101237358e17796cf3a227cead1ec304ec34b465bb08e9d952965"
+    },
+    {
+      "path": "onnx/model_fp16.onnx",
+      "bytes": 273859028,
+      "sha256": "cf5b5a86edb00f895561803cfc04729090a958340b8ca2ad76c143f565f6bb04"
+    },
+    {
+      "path": "special_tokens_map.json",
+      "bytes": 695,
+      "sha256": null
+    },
+    {
+      "path": "tokenizer.json",
+      "bytes": 711396,
+      "sha256": null
+    },
+    {
+      "path": "tokenizer_config.json",
+      "bytes": 1191,
+      "sha256": null
+    },
+    {
+      "path": "vocab.txt",
+      "bytes": 231508,
+      "sha256": null
+    }
+  ]
+}

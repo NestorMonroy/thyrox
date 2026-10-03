@@ -1,0 +1,9 @@
+7 passed in 0.06s
+han-excluded: 1 caen ['test_a_case_demands_the_markers_and_no_chinese']
+reference-kept-structure: 1 caen ['test_it_demands_only_the_structure_the_reference_kept']
+comments-are-not-structure: 1 caen ['test_it_demands_only_the_structure_the_reference_kept']
+initial-case: 2 caen ['test_forbidden_forms_are_excluded_with_either_initial_case', 'test_patterns_escape_only_what_javascript_unicode_mode_accepts']
+javascript-escape: 2 caen ['test_forbidden_forms_are_excluded_with_either_initial_case', 'test_patterns_escape_only_what_javascript_unicode_mode_accepts']
+usable-needs-reference: 1 caen ['test_selection_is_deterministic_and_skips_unusable_fragments']
+execution thyrox-worker-test-muqo90x2-8630 kind=test work=ai-course-notes:es-mx/qwen-qualification exit=0
+__BG_EXIT__=0

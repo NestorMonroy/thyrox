@@ -1,0 +1,8 @@
+== worktree
+rc=2
+== main
+rc=2
+recommend: política de ejecución /home/user/thyrox/.thyrox/runtime/worktrees/e0b/tests/fixtures/execution_policy_unrestricted.json: `controller.implementation` es una de bootstrap-exception, managed-only
+recommend: política de ejecución /home/user/thyrox/.thyrox/runtime/worktrees/e0b/tests/fixtures/execution_policy_unrestricted.json: `controller.implementation` es una de bootstrap-exception, managed-only
+execution thyrox-worker-probe-murg5ev5-11166 kind=probe task=TASK-THYROX-0773 exit=0
+__BG_EXIT__=0

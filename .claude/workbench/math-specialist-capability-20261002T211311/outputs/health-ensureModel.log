@@ -1,0 +1,21 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/ensureModel.test.ts:
+(pass) ensureModel > un nombre fuera del catálogo es not_declared, sin resolver ni descargar [1.37ms]
+(pass) ensureModel > 1. sin distribución es not_materializable, sin descargar ni instalar [0.66ms]
+(pass) ensureModel > 2. caché vacía: una descarga, verifica, instala desde la caché y queda READY [5.42ms]
+(pass) ensureModel > 3. caché correcta: cero descargas [3.09ms]
+(pass) ensureModel > 4. caché con otro contenido: no se usa, se reconstruye [3.26ms]
+(pass) ensureModel > 5. runtime vacío: instala [2.02ms]
+(pass) ensureModel > 6. runtime con el contenido correcto: cero instalaciones [1.34ms]
+(pass) ensureModel > 7. el mismo nombre con otro contenido no cuenta como READY: se reinstala [1.39ms]
+(pass) ensureModel > 8. un fallo de descarga es failed en materialize y no deja caché parcial válida [1.01ms]
+(pass) ensureModel > 8b. una descarga con otro contenido es failed en materialize, nunca READY [1.15ms]
+(pass) ensureModel > 9. un fallo de instalación es failed en install, nunca READY [1.17ms]
+(pass) ensureModel > un instalador que dice installed pero sirve otro contenido no deja READY [1.48ms]
+(pass) ensureModel > 10. la segunda llamada: cero descargas, cero instalaciones, READY con la misma evidencia [1.71ms]
+
+ 13 pass
+ 0 fail
+ 29 expect() calls
+Ran 13 tests across 1 file. [235.00ms]

@@ -6,6 +6,7 @@ import type {
 } from '@thyrox/agent/messageShapes'
 import { getQuerySourceForAgent } from '@thyrox/agent/promptCategory.js'
 import { z } from 'zod/v4'
+import { agentNameSchema } from './agentNameValidation.js'
 import {
   clearInvokedSkillsForAgent,
   getSdkAgentProgressSummariesEnabled,
@@ -192,8 +193,7 @@ const baseInputSchema = lazySchema(() =>
 const fullInputSchema = lazySchema(() => {
   // Multi-agent parameters
   const multiAgentInputSchema = z.object({
-    name: z
-      .string()
+    name: agentNameSchema()
       .optional()
       .describe(
         'Name for the spawned agent. Makes it addressable via SendMessage({to: name}) while running.',

@@ -1,0 +1,10 @@
+{
+  "route": "B_local_ollama",
+  "scope": "semantic_content",
+  "required_bytes": 1893736304,
+  "margin_bytes": 2147483648,
+  "free_bytes_observed": 4726816768,
+  "deletion_required": false,
+  "deleted": [],
+  "source": "T005c-route-comparison.json"
+}

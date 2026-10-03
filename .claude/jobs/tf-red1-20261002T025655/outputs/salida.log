@@ -1,0 +1,8 @@
+ok
+ 0 fail
+ 1 fail
+ 14 pass
+ 5 pass
+(fail) cpuPlacementOf por formato del artefacto (TASK-THYROX-0761) > un snapshot de safetensors va a Transformers [0.21ms]
+execution thyrox-worker-test-muqdgpom-6246 kind=test task=TASK-THYROX-0761 exit=0
+__BG_EXIT__=0

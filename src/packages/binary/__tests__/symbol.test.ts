@@ -100,14 +100,14 @@ describe('resolveSymbol', () => {
 })
 
 // Control positivo REAL: el caso que se resolvió a mano al verificar los
-// portes (H-THYROX-172). `chunk-q2gh92k2.js` importa `So`; su definición vive
-// en `chunk-4qqe0nh4.js`.
-const CORPUS = join(import.meta.dir, '../../../../_references/claude-code-bin/2.1.275/bunfs-root')
-describe.skipIf(!existsSync(join(CORPUS, 'chunk-q2gh92k2.js')))('corpus 2.1.275', () => {
-  test('So se resuelve a través de los imports hasta su chunk', () => {
-    const [d] = resolveSymbol(CORPUS, 'chunk-q2gh92k2.js', 'So')
+// portes (H-THYROX-172), re-anclado en 2.1.283: `chunk-t6pwageh.js` importa `Ho`;
+// su definición vive en `chunk-nvht7ckf.js`.
+const CORPUS = join(import.meta.dir, '../../../../_references/claude-code-bin/2.1.283/bunfs-root')
+describe.skipIf(!existsSync(join(CORPUS, 'chunk-t6pwageh.js')))('corpus 2.1.283', () => {
+  test('Ho se resuelve a través de los imports hasta su chunk', () => {
+    const [d] = resolveSymbol(CORPUS, 'chunk-t6pwageh.js', 'Ho')
     expect([d!.file, d!.text]).toEqual([
-      'chunk-4qqe0nh4.js', 'function So(){return n().host.launchOptions.projectConfigRoot()}',
+      'chunk-nvht7ckf.js', 'function Ho(){return n().host.launchOptions.projectConfigRoot()}',
     ])
   })
 })

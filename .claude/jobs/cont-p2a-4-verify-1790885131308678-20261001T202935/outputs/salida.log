@@ -1,0 +1,3 @@
+suite artifact-registry: 0 fallas (admitidas 0)
+execution thyrox-worker-maintenance-mupzmlgl-15700 kind=maintenance task=TASK-THYROX-0743 exit=0
+__BG_EXIT__=0

@@ -1,0 +1,8 @@
+Ran 8 tests in 4.091s
+
+OK
+ 3 pass
+ 0 fail
+tsc=0 0
+execution thyrox-worker-test-muqdkmn5-7908 kind=test task=TASK-THYROX-0761 exit=0
+__BG_EXIT__=0

@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts run --task TASK-THYROX-0769 --kind probe --env THYROX_EXECUTION_ENTRY -- bash -c command -v uv || echo \"uv: ausente\"; uv --version 2>&1; ls -d /home/user/thyrox/.venv 2>&1; echo probe-exit=$?", "started_at": "2026-10-02T06:18:12+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-02T06:18:16+00:00", "duration_seconds": 4.406728}

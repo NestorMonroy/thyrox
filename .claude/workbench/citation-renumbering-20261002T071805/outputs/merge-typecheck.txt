@@ -1,0 +1,30 @@
+  provider agent: la reconstruccion no emitio: sin salida
+  provider app-host: la reconstruccion no emitio: sin salida
+  provider bridge: la reconstruccion no emitio: sin salida
+  provider cli: la reconstruccion no emitio: sin salida
+  provider command-runtime: la reconstruccion no emitio: sin salida
+  provider computer-use-mcp: la reconstruccion no emitio: sin salida
+  provider config: la reconstruccion no emitio: sin salida
+  provider daemon: la reconstruccion no emitio: sin salida
+  provider ide: la reconstruccion no emitio: sin salida
+  provider local-observability: la reconstruccion no emitio: sin salida
+  provider mcp-runtime: la reconstruccion no emitio: sin salida
+  provider memory: la reconstruccion no emitio: sin salida
+  provider mitm: la reconstruccion no emitio: sin salida
+  provider output: la reconstruccion no emitio: sin salida
+  provider permission: la reconstruccion no emitio: sin salida
+  provider provider: la reconstruccion no emitio: sin salida
+  provider repl: la reconstruccion no emitio: sin salida
+  provider server: la reconstruccion no emitio: sin salida
+  provider shell: la reconstruccion no emitio: sin salida
+  provider storage: la reconstruccion no emitio: sin salida
+  provider swarm: la reconstruccion no emitio: sin salida
+  provider teleport: la reconstruccion no emitio: sin salida
+  provider tool-registry: la reconstruccion no emitio: sin salida
+  provider tools: la reconstruccion no emitio: sin salida
+  provider updater: la reconstruccion no emitio: sin salida
+  SIN TIPAR por un provider roto: local-models, model-scheduling, provider
+  NO se emite veredicto: un consumidor bloqueado por un provider roto
+  tiparia contra un contrato que no corresponde a su fuente.
+check-package-typecheck: 29 provider(s) reconstruido(s) por viejos: artifact-registry, audio-capture-napi, claude-for-chrome-mcp, color-diff-napi, computer-use-input, computer-use-swift, context-compression, coordination, headless-sdk, image-processor-napi, ink, local-models, model-artifacts, model-scheduling, modifiers-napi, observability, paths, plan, podman-execution, registry-credentials, shared-state, skills, stdin-napi, store, task, transparent-napi, url-handler-napi, voice, workbench
+  podman-execution: 0 propio(s) · 0 de hermano · 0 fuera (total 0)  <- sin baseline

@@ -1,0 +1,3 @@
+local-models-qualify: la cualificación pide 16384 tokens de contexto y el grant concede 8192
+execution thyrox-worker-probe-murh556m-842 kind=probe task=TASK-THYROX-0710 exit=2
+__BG_EXIT__=2

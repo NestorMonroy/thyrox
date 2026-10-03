@@ -1,0 +1,13 @@
+parallel_map: memoria: reserva 8208 kB por ítem (última ejecución: 3 ítems, pared máx 0.01 s, pico 4104 KB × 2 -> 9M; RAM: (11400248 − 0) / (4104 × 2) -> 1388)
+parallel_map: memoria: reserva 8208 kB por ítem (última ejecución: 3 ítems, pared máx 0.01 s, pico 4104 KB × 2 -> 9M; RAM: (14333228 − 0) / (4104 × 2) -> 1746)
+parallel_map: memoria: reserva 8208 kB por ítem (última ejecución: 3 ítems, pared máx 0.01 s, pico 4104 KB × 2 -> 9M; RAM: (14406548 − 0) / (4104 × 2) -> 1755)
+  FALLA una fila en el historial del comando: esperado «1», obtenido «0»
+  FALLA con los tres ítems medidos: esperado «1», obtenido «»
+  FALLA el ítem ve una reserva viva: esperado «1», obtenido «0»
+parallel_map: memoria: sin ejecución previa de este historial: nada que derivar; no se reserva
+  FALLA los tres fallan: esperado «3», obtenido «0»
+  FALLA nombra la admisión: esperado «si», obtenido «»
+  FALLA anuncia la reserva en kB: esperado «1», obtenido «0»
+parallel_map: memoria: reserva 7680 kB por ítem (última ejecución: 1 ítems, pared máx 0 s, pico 3840 KB × 2 -> 8M; RAM: (14625136 − 0) / (3840 × 2) -> 1904)
+parallel_map: 28/34
+__BG_EXIT__=0

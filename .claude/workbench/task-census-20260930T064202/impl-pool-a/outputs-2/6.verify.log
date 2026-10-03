@@ -1,0 +1,15 @@
+bun test v1.3.11 (af24e281)
+
+ 30 pass
+ 0 fail
+ 62 expect() calls
+Ran 30 tests across 1 file. [5.83s]
+bin/check_package_typecheck: sin entorno del proveedor; corre con /usr/local/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/pool-worktrees/6c92eaa6e163/6" && uv sync
+check-package-typecheck: 1 provider(s) reconstruido(s) por viejos: repl
+  agent: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  repl: 28 propio(s) · 0 de hermano · 0 fuera (total 28)  <- sube desde 0
+
+check-package-typecheck: 28 error(es) propio(s) (alcance medido: 2 de 2 paquete(s))
+  1 paquete(s) suben sobre su baseline:
+    repl: 0 -> 28

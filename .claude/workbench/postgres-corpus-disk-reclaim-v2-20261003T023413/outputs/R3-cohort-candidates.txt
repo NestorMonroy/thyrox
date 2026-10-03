@@ -1,0 +1,30 @@
+# grupos por clase/safe/owner/prefijo (MB, filas)
+2381	1	binary_non_indexable	False	runtime	.thyrox/models/artifacts/sha256-3e4cb14174460404e7a233e531675303b2fbf7749c02f91864fe311ab6344e4f.gguf
+2381	1	duplicate	False	duplicate-of:.thyrox/models/artifacts/sha256-3e4cb14174460404e7a233e531675303b2fbf7749c02f91864fe311ab6344e4f.gguf	.thyrox/runtime/local-bootstrap/qwen3-4b-publish
+940	1	binary_non_indexable	False	runtime	.thyrox/models/artifacts/sha256-47c034a0322d82f6361df5f1d67497246bed41836ac4daf154c5a19957a8fa17.gguf
+379	1	binary_non_indexable	False	runtime	.thyrox/models/artifacts/sha256-b8d6f5cbac92ca386bee2a3911140bc5cbfd1aa9879888fb6e395a134ce05e88.gguf
+261	1	binary_non_indexable	False	runtime	.thyrox/models/artifacts/sha256-f7af6f66802f4df86eda10fe9bbcfc75c39562bed48ef6ace719a251cf1c2fdb.gguf
+98	1	duplicate	False	duplicate-of:.claude/workbench/daemon-wave1-20260929T071810/outputs/4.patch	.thyrox/runtime/continuation/worktrees
+44	63	binary_non_indexable	False	runtime	.thyrox/runtime/worktrees/e0b
+18	1	duplicate	False	duplicate-of:.claude/workbench/postgres-corpus-disk-reclaim-20261002T023317/outputs/T005b-corpus-inventory.json	.thyrox/runtime/continuation/worktrees
+12	1	binary_non_indexable	False	git	.claude/workbench/store-diff-20260918T194113/head.sqlite3
+12	1	duplicate	False	duplicate-of:.claude/workbench/store-diff-20260918T194113/head.sqlite3	.thyrox/runtime/continuation/worktrees
+6	9	duplicate	False	duplicate-of:.claude/workbench/copia-desde-ccnmt/lote-01/bisect-11.log	.thyrox/runtime/continuation/worktrees
+4	7	duplicate	False	duplicate-of:.claude/workbench/copia-desde-ccnmt/lote-01/bisect-11.log	.claude/workbench/copia-desde-ccnmt/lote-01
+4	6	duplicate	False	duplicate-of:.claude/workbench/copia-desde-ccnmt/lote-05/confirma-tras-pruebas.log	.thyrox/runtime/continuation/worktrees
+3	3	duplicate	False	duplicate-of:.claude/workbench/declarar-cuatro-types-20260919T023100/outputs/tsc-after.log	.thyrox/runtime/continuation/worktrees
+3	3	duplicate	False	duplicate-of:.claude/workbench/global-config-contract-census-20260922T184128/outputs/typecheck-after.log	.thyrox/runtime/continuation/worktrees
+3	4	duplicate	False	duplicate-of:.claude/workbench/tsc-zero-loop/run-20260924T175031/step-023/batch.log	.thyrox/runtime/continuation/worktrees
+2	2	duplicate	False	duplicate-of:.claude/workbench/jsx-and-the-639-unread-tsx-20260919T014816/outputs/tsc-applied-root.log	.thyrox/runtime/continuation/worktrees
+2	2	duplicate	False	duplicate-of:.claude/workbench/workspace-pairs-beyond-thyrox-scope-20260919T020054/outputs/tsc-after-declare.log	.thyrox/runtime/continuation/worktrees
+2	2	duplicate	False	duplicate-of:.claude/workbench/hookcallbackmatcher-port-20260919T022625/outputs/tsc-after-port.log	.thyrox/runtime/continuation/worktrees
+2	3	duplicate	False	duplicate-of:.claude/workbench/tsc-zero-loop/run-20260924T175031/step-012/batch.log	.claude/workbench/tsc-zero-loop/run-20260924T175031
+2	3	duplicate	False	duplicate-of:.claude/workbench/tsc-zero-loop/run-20260924T175031/step-023/batch.log	.claude/workbench/tsc-zero-loop/run-20260924T175031
+2	3	duplicate	False	duplicate-of:.claude/workbench/tsc-zero-loop/run-20260924T175031/step-031/batch.log	.claude/workbench/tsc-zero-loop/run-20260924T175031
+2	2	duplicate	False	duplicate-of:.thyrox/runtime/continuation/worktrees/local-models-publication-20261002T114251/L0-1790945810848326/.claude/jobs/tsdiv-20260919T095331/outputs/salida.log	.thyrox/runtime/continuation/worktrees
+2	2	duplicate	False	duplicate-of:.claude/workbench/swarm-root-public-surface-20260922T203848/outputs/green-typecheck.log	.thyrox/runtime/continuation/worktrees
+2	1	duplicate	False	duplicate-of:.claude/workbench/task-census-20260930T064202/impl-pool-a/outputs-2/7.stream.jsonl	.thyrox/runtime/continuation/worktrees
+# por motivo
+4021	binary_non_indexable	None	binario o formato no indexable
+3009	duplicate	None	mismo contenido que otra fila; se conserva mientras la original no esté preservada
+7	reconstructible_cache	None	caché regenerable; versionada, la conserva git

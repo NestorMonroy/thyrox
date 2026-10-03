@@ -1,0 +1,20 @@
+local-models-import: falta la clave GGUF «nomic-bert.attention.head_count_kv» para estimar la memoria
+142 |   requirePositiveInteger(key, value)
+143 |   return value
+144 | }
+145 | 
+146 | function requireKey(metadata: GgufMetadata, key: string): GgufValue {
+147 |   if (!Object.hasOwn(metadata, key)) throw new MissingGgufKeyError(key)
+                                                 ^
+MissingGgufKeyError: falta la clave GGUF «nomic-bert.attention.head_count_kv» para estimar la memoria
+  key: "nomic-bert.attention.head_count_kv",
+
+      at requireKey (/home/user/thyrox/src/packages/model-artifacts/memoryEstimate.ts:147:44)
+      at positiveIntegerKey (/home/user/thyrox/src/packages/model-artifacts/memoryEstimate.ts:140:17)
+      at attentionShapeOf (/home/user/thyrox/src/packages/model-artifacts/memoryEstimate.ts:121:18)
+      at catalogEntryFromGguf (/home/user/thyrox/src/packages/model-artifacts/modelCatalog.ts:98:21)
+      at async register (/home/user/thyrox/src/packages/local-models/externalArtifact.ts:330:23)
+      at async acquire (/home/user/thyrox/src/packages/local-models/externalArtifact.ts:246:49)
+
+Bun v1.3.11 (Linux x64)
+EXIT=1

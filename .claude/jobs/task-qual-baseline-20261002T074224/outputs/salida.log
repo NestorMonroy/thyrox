@@ -1,0 +1,4 @@
+con el cambio:  18 pass  5 fail 
+en HEAD:        18 pass  5 fail 
+execution thyrox-worker-test-muqnnuq1-2463 kind=test task=TASK-THYROX-0780 exit=0
+__BG_EXIT__=0

@@ -1,0 +1,12 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.285
+import{p}from"/$bunfs/root/chunk-z10rc4tf.js";import{Q}from"/$bunfs/root/chunk-055ns4k8.js";import{o,le,ue}from"/$bunfs/root/chunk-ea52y7e7.js";var YVo='<wake reason="external-event"';function XVo(n){return n.startsWith(YVo)}var y=/^[a-z0-9-]{1,32}$/,b=/^[a-z0-9_.-]{1,64}$/,x=2048,c=/([a-z][a-z-]*)="([^"\s]{0,256})"/g,w=new Set(["reason","current-time"]),R=new Set(["source","kind","from","trust","untrusted-keys"]),W=p(()=>ue(o(),le()));function s(n){return n.trim()===""}function Mmr(n){if(!XVo(n))return null;let l=n.indexOf(">");if(l===-1||l>x)return null;let k=n.slice(5,l);if(!s(k.replace(c," ")))return null;for(let e of k.matchAll(c))if(!w.has(e[1]))return null;let i=n.indexOf("<event ",l+1);if(i===-1||!s(n.slice(l+1,i)))return null;let u=n.indexOf(">",i);if(u===-1||u-i>x)return null;let f=n.indexOf("</event>",u+1);if(f===-1)return null;let T=f+8,d=n.indexOf("</wake>",T);if(d===-1||!s(n.slice(T,d)))return null;if(!s(n.slice(d+7)))return null;let t=new Map,h=n.slice(i+6,u);if(!s(h.replace(c," ")))return null;for(let e of h.matchAll(c)){if(!R.has(e[1]))return null;let _=e[1];if(!t.has(_))t.set(_,e[2])}let E=t.get("source"),m=t.get("kind");if(E===void 0||m===void 0||!y.test(E)||!b.test(m))return null;let r=n.slice(u+1,f),g=r.indexOf("<!--");if(g!==-1){if(!s(r.slice(0,g)))return null;let e=r.indexOf("-->",g+4);if(e===-1)return null;r=r.slice(e+3)}let A=r.trim();if(!A.startsWith("{"))return null;let a;try{a=Q(A)}catch{return null}if(typeof a!=="object"||a===null||Array.isArray(a))return null;let v=W().safeParse(a);if(!v.success)return null;let S=t.get("from"),O=(t.get("untrusted-keys")??"").split(",").filter((e)=>e!=="");return{source:E,kind:m,...S!==void 0&&{from:S},data:v.data,untrustedKeys:O}}function TTt(n){return n.source==="session-inbox"&&n.kind==="message.received"}
+export{YVo,XVo,Mmr,TTt};

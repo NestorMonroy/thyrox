@@ -1,0 +1,8 @@
+  ok    cae el de thyrox-bg y ninguno más
+
+12 ok, 0 fallos
+tests/hooks/test_detect_client_background.py exit=0
+  ok    15 media identidad no es un worker: deny
+  ok    15 durante la excepción el worker tampoco se niega fuera
+execution_policy: 65 ok, 0 fallas
+tests/hooks/test_execution_policy_enforcement.py exit=0

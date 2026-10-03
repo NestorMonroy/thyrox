@@ -1,0 +1,42 @@
+2026-10-02T15:19:20 antes:
+  PID  PPID   SID     ELAPSED COMMAND
+12095     1 12095       03:55 bash -c /usr/bin/time -q -f %M\ %e\ %U\ %S -o /home/user/thyrox/.thyrox/runtime/jobs/cont-L1-4-1790954124812791-20261002T151524/salida.log.time bun /home/user/thyrox/src/
+12102 12095 12095       03:55 /usr/bin/time -q -f %M %e %U %S -o /home/user/thyrox/.thyrox/runtime/jobs/cont-L1-4-1790954124812791-20261002T151524/salida.log.time bun /home/user/thyrox/src/packages/po
+12103 12102 12095       03:55 bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts run --task TASK-THYROX-0907 --kind maintenance --network host --workdir /home/user/thyrox/.thyrox/runti
+12104 32584 32046       03:55 /bin/bash /home/user/thyrox/src/session/bg.sh wait cont-L1-4-1790954124812791
+12140 12104 32046       03:55 timeout 600 tail -f --pid=12095 /dev/null
+12141 12140 32046       03:55 tail -f --pid=12095 /dev/null
+12168 12154 12168       03:55 bash /home/user/thyrox/.claude/workbench/local-models-publication-20261002T114251/probes/delegate.sh /home/user/thyrox/.claude/workbench/local-models-publication-20261002
+12186 12103 12095       03:55 podman wait thyrox-worker-maintenance-mur3uf3a-12103
+12205 12168 12168       03:55 timeout 2700 bash /home/user/thyrox/bin/cli -p --model deepseek-v4.1-flash --setting-sources project --tools Read,Bash --allowedTools Read,Bash --max-turns 150 --output-f
+12210 12205 12168       03:55 bun --feature=UDS_INBOX /home/user/thyrox/src/packages/cli/src/entry/cli.tsx -p --model deepseek-v4.1-flash --setting-sources project --tools Read,Bash --allowedTools Rea
+12753 12168 12168       00:25 sleep 30
+32046     1 32046    01:01:07 bash -c /usr/bin/time -q -f %M\ %e\ %U\ %S -o /home/user/thyrox/.thyrox/runtime/jobs/local-models-l1-20261002T141813/salida.log.time bin/task_continuation run .claude/wor
+32050 32046 32046    01:01:07 /usr/bin/time -q -f %M %e %U %S -o /home/user/thyrox/.thyrox/runtime/jobs/local-models-l1-20261002T141813/salida.log.time bin/task_continuation run .claude/workbench/loca
+32051 32050 32046    01:01:07 /home/user/thyrox/.venv/bin/python /home/user/thyrox/src/session/task_continuation.py run .claude/workbench/local-models-publication-20261002T114251 --task TASK-THYROX-09
+32447 32051 32046    01:01:03 bash /home/user/thyrox/src/session/parallel_map.sh --width 2 bash /home/user/thyrox/bin/task_continuation run-one /home/user/thyrox/.claude/workbench/local-models-publica
+32571 32447 32046    01:01:03 /usr/bin/perl /usr/bin/parallel -j 2 -k bash /home/user/thyrox/bin/task_continuation run-one /home/user/thyrox/.claude/workbench/local-models-publication-20261002T114251 
+32582 32571 32046    01:01:02 bash /home/user/thyrox/.claude/cache/parallel-map/command-261e9e7d15d2/run.veM3Ui/item-shell -c bash /home/user/thyrox/bin/task_continuation run-one /home/user/thyrox/.cl
+32583 32582 32046    01:01:02 /usr/bin/time -f %M %e %U %S -o /home/user/thyrox/.claude/cache/parallel-map/command-261e9e7d15d2/run.veM3Ui/1.time bash -c bash /home/user/thyrox/bin/task_continuation r
+32584 32583 32046    01:01:02 /home/user/thyrox/.venv/bin/python /home/user/thyrox/src/session/task_continuation.py run-one /home/user/thyrox/.claude/workbench/local-models-publication-20261002T114251
+2026-10-02T15:19:20 sesión 32046: TERM a 12104 12140 12141 32046 32050 32051 32447 32571 32582 32583 32584
+2026-10-02T15:19:22 sesión 32046: vacía
+2026-10-02T15:19:22 sesión 12095: TERM a 12095 12102 12103 12186
+2026-10-02T15:19:24 sesión 12095: vacía
+2026-10-02T15:19:24 sesión 12168: TERM a 12168 12205 12210 12753
+2026-10-02T15:19:44 sesión 12168: KILL a 12168 13011 tras 20s
+2026-10-02T15:19:45 sesión 12168: vacía
+2026-10-02T15:19:45 unidades de tarea antes de reconciliar:
+thyrox-worker-maintenance-mur3uf3a-12103	12103
+retirado thyrox-worker-maintenance-mur3uf3a-12103 removed=true
+1 huérfano(s) retirado(s)
+2026-10-02T15:19:47 sin unidades de tarea
+2026-10-02T15:19:47 estado del trabajo: unknown
+escritor	12935	1	/home/user/thyrox/.claude/workbench/local-models-publication-20261002T114251/outputs/stop-l1.log
+escritor	12935	2	/home/user/thyrox/.claude/workbench/local-models-publication-20261002T114251/outputs/stop-l1.log
+escritor	12936	1	/home/user/thyrox/.claude/workbench/local-models-publication-20261002T114251/outputs/stop-l1.log
+escritor	12936	2	/home/user/thyrox/.claude/workbench/local-models-publication-20261002T114251/outputs/stop-l1.log
+escritor	13448	1	/home/user/thyrox/.claude/workbench/local-models-publication-20261002T114251/outputs/stop-l1.log
+escritor	13448	2	/home/user/thyrox/.claude/workbench/local-models-publication-20261002T114251/outputs/stop-l1.log
+2026-10-02T15:19:47 hay escritores vivos sobre la evidencia
+2026-10-02T15:19:47 exit=1

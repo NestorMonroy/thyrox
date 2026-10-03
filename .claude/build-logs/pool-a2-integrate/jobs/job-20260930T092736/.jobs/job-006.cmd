@@ -1,0 +1,1 @@
+cd src/packages/bridge && timeout 600 bun test src/__tests__/trustedDevice.test.ts > /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0309-bridge.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0309-bridge.log

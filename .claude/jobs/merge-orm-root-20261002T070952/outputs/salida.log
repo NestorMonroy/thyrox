@@ -1,0 +1,16 @@
+merge_sqlite_union: agent_sessions: identical=1945, inserted=5, updated=0, deleted=0, conflict=0
+merge_sqlite_union: cleared_tool_results: identical=2639, inserted=257, updated=0, deleted=0, conflict=0
+merge_sqlite_union: documents: identical=6515, inserted=0, updated=0, deleted=0, conflict=0
+merge_sqlite_union: findings_history: identical=1686, inserted=2, updated=2, deleted=0, conflict=1
+merge_sqlite_union: findings_history: conflicto en {'finding_id': 'H-THYROX-311'}
+merge_sqlite_union: schema_migrations: identical=14, inserted=0, updated=0, deleted=0, conflict=0
+merge_sqlite_union: task_session_highwater: identical=0, inserted=0, updated=0, deleted=0, conflict=0
+merge_sqlite_union: tasks: identical=2364, inserted=26, updated=4, deleted=0, conflict=0
+error: Your local changes to the following files would be overwritten by merge:
+	agent-results/agent_store.sqlite3
+Please commit your changes or stash them before you merge.
+Aborting
+Merge with strategy ort failed.
+---
+execution thyrox-worker-test-muqmi0hp-8130 kind=test task=TASK-THYROX-0764 exit=0
+__BG_EXIT__=0

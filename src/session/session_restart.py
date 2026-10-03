@@ -42,8 +42,9 @@ import os
 import pathlib
 import re
 import subprocess
+import sys
 
-from session import transcripts
+from session import transcripts, user_wiring
 
 #: La forma DECLARADA del entorno: la clave, su separador —que el transcript
 #: escapa (``\"environment_id\":\"env_…\"``) o no, segun quien la escribio— y
@@ -316,6 +317,11 @@ DEFAULT_PROMPT = "Continua el trabajo de la sesion anterior en esta rama."
 #: sincronizar dependencias, instalar el cableado declarado, y por ultimo
 #: MEDIR que dispara — no basta con instalarlo, `wiring_drift` compara contra
 #: lo declarado, no contra lo que de verdad se ejecuta en un turno.
+#:
+#: `bin/user_wiring --write` va sin consumidor a proposito: la sesion nueva lo
+#: resuelve por su contexto (`user_wiring.resolve_consumer`) y, si es ambiguo,
+#: rehusa nombrando THYROX_CONSUMER. Un clon fijo aqui seria el default que
+#: TASK-THYROX-0261 retiro del proveedor.
 SETUP_STEPS = (
     "uv sync",
     "bin/user_wiring --write",
@@ -434,6 +440,11 @@ def main(argv=None) -> int:
                              "deriva de CLAUDE_CODE_SESSION_ID")
     parser.add_argument("--root", default=".",
                         help="el arbol del que derivar repo y rama")
+    parser.add_argument("--consumer", default=None,
+                        help="la raiz del clon consumidor con que se compone "
+                             "el cableado declarado; sin ella, THYROX_CONSUMER "
+                             "y el contexto (`user_wiring.resolve_consumer`), "
+                             "que rehusa si es ambiguo")
     parser.add_argument("--session-json", default=None,
                         help="la salida de get_session (ccr.environment_id y "
                              "session_context.sources[]); con esto, MEMBRESIA "
@@ -460,12 +471,18 @@ def main(argv=None) -> int:
     print(f"hooks del arbol que dispararon: {hooks['matched']} "
           f"de {hooks['seen']} resumen(es) de hook")
 
-    from session import user_wiring  # noqa: PLC0415
     live_settings_path = user_wiring.live_settings(pathlib.Path(args.root))
     live_wiring = (json.loads(live_settings_path.read_text(encoding="utf-8"))
                   if live_settings_path.exists() else {})
-    drift = user_wiring.wiring_drift(
-        live_wiring, user_wiring.declared_wiring(pathlib.Path(args.root)))
+    try:
+        declared_wiring = user_wiring.declared_wiring(
+            pathlib.Path(args.root), consumer=args.consumer)
+    except user_wiring.WiringRefused as error:
+        # Sin consumidor no hay cableado declarado que comparar, y un relevo
+        # que lo adivinara instalaria las rutas de otro clon (TASK-THYROX-0261).
+        print(f"REHUSA — {error}", file=sys.stderr)
+        return 2
+    drift = user_wiring.wiring_drift(live_wiring, declared_wiring)
     verdict = wiring_verdict(hooks, drift)
     if verdict == "instalar primero":
         pending = sorted({command for sides in drift.values()

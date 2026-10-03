@@ -19,12 +19,10 @@
  * ruta relativa se retira por una importación de paquete cuando ambos
  * sean miembros del workspace.
  *
- * `getClaudeAIOAuthTokens` (de
- * `@claude-code-how-works/provider/authAlias.js`) y `errorMessage` (de
- * `@claude-code-how-works/local-observability/errorHelpers.js`) sí son de
- * paquetes AJENOS ya portados (`@thyrox/provider`, `@thyrox/local-observability`)
- * — para ésos aplica el punto de inyección / reimplementación fiel de
- * `internal/pendingCrossPackageDeps.js`, no la ruta relativa.
+ * `getClaudeAIOAuthTokens` (de `@claude-code-how-works/provider/authAlias.js`)
+ * queda detrás del punto de inyección de `internal/pendingCrossPackageDeps.js`;
+ * `errorMessage` se importa de su original,
+ * `@thyrox/local-observability/errorHelpers.js`.
  */
 
 import { resolve } from 'node:path'
@@ -34,7 +32,8 @@ import {
   runBridgeHeadless,
 } from '@thyrox/bridge/bridgeMain.js'
 import { logError } from '@thyrox/local-observability/logging'
-import { errorMessage, getClaudeAIOAuthTokens } from './internal/pendingCrossPackageDeps.js'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import { getClaudeAIOAuthTokens } from './internal/pendingCrossPackageDeps.js'
 
 /**
  * Códigos de salida que usa el supervisor para decidir retry vs aparcar.

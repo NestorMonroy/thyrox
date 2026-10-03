@@ -1,0 +1,6 @@
+FALLA falta p2d-red
+FALLA falta p2d-green
+FALLA falta p2d-annulment
+scope: p2d dentro de su alcance (alcance medido: 129 ruta(s) cambiada(s))
+execution thyrox-worker-maintenance-muqk828a-13361 kind=maintenance task=TASK-THYROX-0743 exit=1
+__BG_EXIT__=1

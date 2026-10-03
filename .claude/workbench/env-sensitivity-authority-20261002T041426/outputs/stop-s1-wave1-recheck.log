@@ -1,0 +1,13 @@
+# Re-medición independiente tras la parada (2026-10-02T04:45:25). Salida escrita fuera del
+# universo medido y movida al banco después. El exit=1 de stop-s1-wave1.log lo produjo el guion
+# midiendo su propio registro (pids 3366, 3835); corregido con STOP_LOG en probes/stop_wave.sh.
+$ ps (task_continuation|delegate.sh|cont-s1|bin/cli -p|execute.ts run)
+0
+$ bin/podman-execution-execute observe containers
+thyrox-redis	infrastructure
+thyrox-ollama	infrastructure
+thyrox-postgres	infrastructure
+$ bin/writer_inspector <95 archivos de evidencia>
+exit=0
+$ bin/thyrox-bg status s1-wave1
+unknown

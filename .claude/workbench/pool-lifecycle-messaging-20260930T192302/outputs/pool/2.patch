@@ -1,0 +1,509 @@
+diff --git a/src/session/headless-pool.sh b/src/session/headless-pool.sh
+index dc0ee7c08..fbb467ccc 100755
+--- a/src/session/headless-pool.sh
++++ b/src/session/headless-pool.sh
+@@ -121,7 +121,11 @@
+ # con la reserva de VRAM en HEADLESS_POOL_VRAM_RESERVE_MIB. Sin nvidia-smi se
+ # declara y no se mide.
+ #
+-# El prompt de cada item es la plantilla seguida de `Item: <linea>`. Mientras
++# El prompt de cada item es el párrafo del buzón (`HP_MAILBOX_PREAMBLE`), la
++# plantilla y `Item: <linea>`. Cada ejecución tiene un buzón durable
++# (`bin/inbox`, publicado en la línea `buzón:`): el ítem lo recibe como
++# THYROX_MAILBOX_DIR con su dirección THYROX_POOL_ITEM_ADDRESS=item-<n>, y
++# `pool_lifecycle` deja en él un sobre al orquestador por cada cambio. Mientras
+ # corre, el item escribe en el runtime de la ejecución
+ # (`$THYROX_RUNTIME_DIR/pool/<run-id>/`, ignorado por git), no en `<out>`: su
+ # `<n>.stream.jsonl` (una linea por evento de `--output-format stream-json`,
+@@ -541,6 +545,14 @@ export HP_LIFECYCLE="$HP_BIN/pool_lifecycle"
+ HP_LIVE="$(bash "$HP_LIFECYCLE" open-run "$OUT" --owner $$)" \
+     || rehusa "no se pudo abrir el runtime de la ejecución para $OUT"
+ export HP_LIVE
++# El buzón durable de la ejecución (`bin/inbox`): el ciclo de vida deja en él
++# un sobre al orquestador por cada cambio, y el orquestador escribe a un ítem
++# vivo por su dirección `item-<n>`. Se publica en la cabecera para que quien
++# lanzó el pool lo encuentre sin conocer el runtime.
++HP_MAILBOX="$(bash "$HP_LIFECYCLE" mailbox-dir "$HP_LIVE")" \
++    || rehusa "no se pudo resolver el buzón de la ejecución en $HP_LIVE"
++export HP_MAILBOX
++echo "buzón: $HP_MAILBOX"
+ : > "$HP_LIVE/index.tsv"
+ for i in "${!ITEMS[@]}"; do
+     printf '%d\t%s\n' "$((i + 1))" "${ITEMS[$i]}" >> "$HP_LIVE/index.tsv"
+@@ -627,7 +639,7 @@ _headless_item_run() {
+             { echo "no se pudo preparar el worktree del item:"; cat "$HP_LIVE/$n.prepare.err"; } > "$HP_LIVE/$n.err"
+             : > "$HP_LIVE/$n.json"; return 4; }
+     fi
+-    { cat "$HP_PROMPT"; printf '\nItem: %s\n' "$item"; } \
++    { printf '%s\n\n' "$HP_MAILBOX_PREAMBLE"; cat "$HP_PROMPT"; printf '\nItem: %s\n' "$item"; } \
+       | (cd "$workdir" || exit 1
+          # Los trabajos que lance un item aislado, su ledger y su archivo van a
+          # la salida del item: ni al arbol ni al parche.
+@@ -638,6 +650,9 @@ _headless_item_run() {
+          export THYROX_POOL_DOCUMENT_INTENT="$HP_LIVE/$n.intent.json" \
+                 THYROX_POOL_RUN_ID="${HP_LIVE##*/}" THYROX_POOL_ITEM="$n" \
+                 THYROX_POOL_ITEM_GENERATION="$HP_ITEM_GENERATION"
++         # El buzón de la ejecución y la dirección del ítem en él: el
++         # párrafo que antecede al prompt le dice cómo usarlos.
++         export THYROX_MAILBOX_DIR="$HP_MAILBOX" THYROX_POOL_ITEM_ADDRESS="item-$n"
+          if [[ "$HP_ISOLATION" == worktree ]]; then
+              # >>> item-root
+              # El item actua sobre su worktree: THYROX_ROOT lo heredan sus
+@@ -812,6 +827,19 @@ _headless_item_periodic_snapshots() {
+     done
+ }
+ export -f _headless_item_periodic_snapshots
++# El párrafo fijo que antecede a la plantilla de cada ítem: entre paso y paso
++# lee su buzón, aplica y acusa lo que llegue, y escribe al orquestador una
++# pregunta o un bloqueo en vez de dejarlo sólo en su salida final. Las
++# variables las resuelve el shell del ítem, no este guion.
++# shellcheck disable=SC2016,SC2089
++HP_MAILBOX_PREAMBLE='Buzón de esta ejecución: el orquestador puede escribirte mientras trabajas. Entre paso y paso, lee tus mensajes con
++`bash "$THYROX_ROOT/bin/inbox" --dir "$THYROX_MAILBOX_DIR" pending --as "$THYROX_POOL_ITEM_ADDRESS"`.
++Aplica lo que llegue y acúsalo con
++`bash "$THYROX_ROOT/bin/inbox" --dir "$THYROX_MAILBOX_DIR" ack --as "$THYROX_POOL_ITEM_ADDRESS" --id <id>`.
++Para una pregunta o un bloqueo, escribe al orquestador con
++`bash "$THYROX_ROOT/bin/inbox" --dir "$THYROX_MAILBOX_DIR" post --from "$THYROX_POOL_ITEM_ADDRESS" --to orchestrator --body "<texto>"`.'
++# shellcheck disable=SC2090  # texto para el prompt, no palabras de un comando
++export HP_MAILBOX_PREAMBLE
+ HP_PROMPT="$(cd "$(dirname "$PROMPT")" && pwd)/$(basename "$PROMPT")"
+ HP_OUT="$(cd "$OUT" && pwd)"
+ HP_RUNNER="$(command -v "$RUNNER_BIN")"
+diff --git a/src/session/pool_lifecycle.py b/src/session/pool_lifecycle.py
+index c184a6e74..b6992cf9a 100644
+--- a/src/session/pool_lifecycle.py
++++ b/src/session/pool_lifecycle.py
+@@ -41,6 +41,18 @@ artefacto que ya está en la salida con el hash del plan no se vuelve a mover.
+ Un proceso que muere en medio deja el estado en ``PUBLISHING`` y ``reconcile``
+ retoma el mismo plan.
+ 
++Buzón de la ejecución
++---------------------
++Cada ejecución tiene un buzón durable (``<runtime>/mailbox``, el medio de
++``peer_mailbox.inbox``) que sobrevive al cierre de la ejecución. En cada cambio
++—``begin``, ``transition``, ``claim``, ``publish`` y ``close-run``— el ciclo de
++vida deja un sobre al destinatario ``orchestrator`` con ``request_id``
++``<run>:<ítem>:<evento>:<generación>``: un reintento del mismo evento en la
++misma generación no duplica, y por eso una transición repetida en la misma
++generación (las fotos periódicas) se anuncia una sola vez. Las transiciones
++internas de ``begin`` y ``publish`` no se anuncian: el evento es la operación.
++Un runtime sin buzón, anterior a él, no recibe sobres ni se le crea uno.
++
+ *Ciega a:* un escritor que no pertenece a la sesión del ítem y escribe en la
+ salida por su cuenta; eso lo mide ``writer_inspector``, no este módulo.
+ """
+@@ -60,6 +72,7 @@ from contextlib import contextmanager
+ from dataclasses import dataclass
+ from pathlib import Path
+ 
++from peer_mailbox.inbox import Inbox
+ from session.writer_inspector import LiveWriterError, UnprovableAbsenceError, find_open_writers
+ 
+ CREATED = "CREATED"
+@@ -91,6 +104,18 @@ PLAN_SUFFIX = ".plan.json"
+ CLOSED_SUFFIX = ".closed"
+ RUN_METADATA = "run.json"
+ RUN_CLOSED = "run.closed"
++#: El buzón de la ejecución, dentro de su runtime.
++MAILBOX_DIR = "mailbox"
++#: Quien recibe los sobres del ciclo de vida, y quien los firma.
++ORCHESTRATOR_ADDRESS = "orchestrator"
++LIFECYCLE_SENDER = "pool-lifecycle"
++#: La dirección de un ítem en el buzón es ``item-<n>``.
++ITEM_ADDRESS_PREFIX = "item-"
++#: El ``request_id`` de un evento de la ejecución entera lleva este ámbito en
++#: el lugar del ítem y esta generación, que la ejecución no tiene.
++RUN_SCOPE = "run"
++RUN_GENERATION = 0
++RUN_PENDING = "PENDING"
+ #: Artefactos de la ejecución entera, no de un ítem.
+ RUN_ARTIFACTS = ("index.tsv", "joblog.tsv", "unexpected-stashes")
+ #: El nombre de un artefacto de ítem tal como lo escriben ``headless-pool`` e
+@@ -233,8 +258,52 @@ def _assert_current_generation(state: ItemState, generation: int | None) -> None
+             f"un actor de la generación {generation} ya no puede actuar sobre él")
+ 
+ 
++def mailbox_dir(live_dir: Path) -> Path:
++    """El buzón de una ejecución."""
++    return live_dir / MAILBOX_DIR
++
++
++def item_address(item: str) -> str:
++    """La dirección de un ítem en el buzón de su ejecución."""
++    return f"{ITEM_ADDRESS_PREFIX}{item}"
++
++
++def _utc_now() -> str:
++    return time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())
++
++
++def _has_mailbox(live_dir: Path) -> bool:
++    """Un runtime abierto antes del buzón no lo tiene, y no se le crea."""
++    return mailbox_dir(live_dir).is_dir()
++
++
++def _notify_orchestrator(live_dir: Path, scope: str, event: str, generation: int,
++                         fields: dict[str, object]) -> None:
++    """Deja un sobre al orquestador; el ``request_id`` estable hace idempotente el reintento."""
++    if not _has_mailbox(live_dir):
++        return
++    body = {"event": event, "run": live_dir.name, **fields, "at": _utc_now()}
++    Inbox(mailbox_dir(live_dir)).post(
++        LIFECYCLE_SENDER, ORCHESTRATOR_ADDRESS, json.dumps(body, sort_keys=True),
++        request_id=f"{live_dir.name}:{scope}:{event}:{generation}")
++
++
++def _notify_item_event(live_dir: Path, event: str, state: ItemState) -> None:
++    _notify_orchestrator(live_dir, state.item, event, state.generation,
++                         {"item": state.item, "address": item_address(state.item),
++                          "state": state.state, "generation": state.generation})
++
++
+ def transition(live_dir: Path, item: str, target: str, *, generation: int | None = None,
+                **changes: object) -> ItemState:
++    """Cambia el estado del ítem y lo anuncia al orquestador."""
++    updated = _apply_transition(live_dir, item, target, generation=generation, **changes)
++    _notify_item_event(live_dir, f"transition-{target.lower()}", updated)
++    return updated
++
++
++def _apply_transition(live_dir: Path, item: str, target: str, *, generation: int | None = None,
++                      **changes: object) -> ItemState:
+     current = read_state(live_dir, item)
+     if current is None:
+         raise LifecycleError(f"el ítem {item} no tiene estado en {live_dir}")
+@@ -307,7 +376,9 @@ def begin(live_dir: Path, out_dir: Path, item: str, owner_pid: int) -> ItemState
+     generation = closed_generation(out_dir, item) + 1
+     state = ItemState(item=item, state=CREATED, generation=generation, owner_pid=owner_pid)
+     write_state(live_dir, state)
+-    return transition(live_dir, item, RUNNING)
++    running = _apply_transition(live_dir, item, RUNNING)
++    _notify_item_event(live_dir, "begin", running)
++    return running
+ 
+ 
+ def claim(live_dir: Path, out_dir: Path, item: str, owner_pid: int) -> ItemState:
+@@ -327,6 +398,7 @@ def claim(live_dir: Path, out_dir: Path, item: str, owner_pid: int) -> ItemState
+                             generation=max(state.generation, closed_generation(out_dir, item)) + 1,
+                             owner_pid=owner_pid, exit_code=state.exit_code)
+         write_state(live_dir, claimed)
++        _notify_item_event(live_dir, "claim", claimed)
+         return claimed
+ 
+ 
+@@ -386,9 +458,22 @@ def publish(live_dir: Path, out_dir: Path, item: str, *, exit_code: int | None =
+             staged: bool = True) -> dict:
+     """Cierra y publica el ítem; idempotente y reanudable desde su plan.
+ 
++    Al terminar lo anuncia al orquestador: repetir la publicación repite el
++    ``request_id`` y no deja un segundo sobre.
++
+     ``staged=False`` escribe cada artefacto directamente con su nombre final;
+     existe sólo como control de anulación de la etapa oculta.
+     """
++    manifest = _publish_item(live_dir, out_dir, item, exit_code=exit_code, generation=generation,
++                             fail_after_moves=fail_after_moves, staged=staged)
++    published = read_state(live_dir, item)
++    if published is not None:
++        _notify_item_event(live_dir, "publish", published)
++    return manifest
++
++
++def _publish_item(live_dir: Path, out_dir: Path, item: str, *, exit_code: int | None,
++                  generation: int | None, fail_after_moves: int | None, staged: bool) -> dict:
+     out_dir.mkdir(parents=True, exist_ok=True)
+     with _out_lock(out_dir, item):
+         state = read_state(live_dir, item)
+@@ -402,7 +487,7 @@ def publish(live_dir: Path, out_dir: Path, item: str, *, exit_code: int | None =
+         plan = _read_json(plan_path)
+         if plan is None:
+             if state.state in (RUNNING, SNAPSHOTTING, ABANDONED_RECOVERABLE):
+-                state = transition(live_dir, item, CLOSING,
++                state = _apply_transition(live_dir, item, CLOSING,
+                                    exit_code=exit_code if exit_code is not None else state.exit_code)
+             if state.state != CLOSING:
+                 raise LifecycleError(f"el ítem {item} está en {state.state}; no se puede publicar")
+@@ -417,17 +502,17 @@ def publish(live_dir: Path, out_dir: Path, item: str, *, exit_code: int | None =
+                     "artifacts": {name: artifact_digest(live_dir / name)
+                                   for name in item_artifacts(live_dir, item)}}
+             _write_atomic(plan_path, json.dumps(plan, sort_keys=True) + "\n")
+-            state = transition(live_dir, item, PUBLISHING)
++            state = _apply_transition(live_dir, item, PUBLISHING)
+         elif state.state not in (PUBLISHING, PARTIALLY_PUBLISHED):
+             raise LifecycleError(f"el ítem {item} tiene plan pero está en {state.state}")
+         elif state.state == PARTIALLY_PUBLISHED:
+-            state = transition(live_dir, item, PUBLISHING)
++            state = _apply_transition(live_dir, item, PUBLISHING)
+         generation = int(plan["generation"])
+         # Al reanudar se vuelve a mirar la salida: otra ejecución pudo cerrar una
+         # generación posterior entre la caída y este intento.
+         published = closed_generation(out_dir, item)
+         if published == generation:
+-            transition(live_dir, item, CLOSED)
++            _apply_transition(live_dir, item, CLOSED)
+             plan_path.unlink(missing_ok=True)
+             return read_closed(out_dir, item) or {}
+         if published > generation:
+@@ -456,7 +541,7 @@ def publish(live_dir: Path, out_dir: Path, item: str, *, exit_code: int | None =
+                 continue
+             if not (staged_path.exists() and artifact_digest(staged_path) == expected):
+                 if not (source.exists() or source.is_symlink()):
+-                    transition(live_dir, item, PARTIALLY_PUBLISHED)
++                    _apply_transition(live_dir, item, PARTIALLY_PUBLISHED)
+                     raise LifecycleError(f"el artefacto {name} del ítem {item} no está ni en el "
+                                          f"runtime ni en la salida con el hash del plan")
+                 _remove(staged_path)
+@@ -484,7 +569,7 @@ def publish(live_dir: Path, out_dir: Path, item: str, *, exit_code: int | None =
+                 os.replace(staged_path, dest)
+                 step()
+             if not dest.exists() or artifact_digest(dest) != expected:
+-                transition(live_dir, item, PARTIALLY_PUBLISHED)
++                _apply_transition(live_dir, item, PARTIALLY_PUBLISHED)
+                 raise LifecycleError(f"el artefacto {name} del ítem {item} no llegó íntegro a {out_dir}")
+         _fsync_dir(out_dir)
+         manifest = {"item": item, "generation": plan["generation"], "exit_code": plan["exit_code"],
+@@ -492,7 +577,7 @@ def publish(live_dir: Path, out_dir: Path, item: str, *, exit_code: int | None =
+                     "closed_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime())}
+         _write_atomic(out_dir / f"{item}{CLOSED_SUFFIX}", json.dumps(manifest, sort_keys=True) + "\n")
+         step()
+-        transition(live_dir, item, CLOSED)
++        _apply_transition(live_dir, item, CLOSED)
+         plan_path.unlink(missing_ok=True)
+         return manifest
+ 
+@@ -549,6 +634,7 @@ def open_run(out_dir: Path, owner_pid: int, run_id: str | None = None) -> Path:
+     run_id = run_id or f"{out_key(out_dir)}-{time.strftime('%Y%m%dT%H%M%S', time.gmtime())}-{owner_pid}"
+     live_dir = runtime_root() / "pool" / run_id
+     live_dir.mkdir(parents=True, exist_ok=False)
++    mailbox_dir(live_dir).mkdir()
+     _write_atomic(live_dir / RUN_METADATA, json.dumps(
+         {"run_id": run_id, "out_dir": str(out_dir.resolve()), "owner_pid": owner_pid}) + "\n")
+     return live_dir
+@@ -558,7 +644,9 @@ def close_run(live_dir: Path, out_dir: Path) -> list[str]:
+     """Publica los artefactos de la ejecución y ``run.closed`` al final.
+ 
+     Rehúsa si algún ítem no llegó a ``CLOSED``: su runtime se conserva y el
+-    directorio de la ejecución no se retira.
++    directorio de la ejecución no se retira. En los dos desenlaces lo anuncia
++    al orquestador, y al retirar el runtime conserva el buzón: quien lo espera
++    por la ruta que el pool publicó sigue encontrándolo.
+     """
+     pending = [s.name[: -len(STATE_SUFFIX)] for s in live_dir.glob(f"*{STATE_SUFFIX}")
+                if (read_state(live_dir, s.name[: -len(STATE_SUFFIX)]) or ItemState("", "", 0, 0)).state != CLOSED]
+@@ -570,14 +658,29 @@ def close_run(live_dir: Path, out_dir: Path) -> list[str]:
+             shutil.rmtree(live_dir / name)
+         else:
+             _place(live_dir / name, dest)
++    items = closed_items(out_dir)
+     if pending:
++        _notify_orchestrator(live_dir, RUN_SCOPE, "close-run-refused", RUN_GENERATION,
++                             {"state": RUN_PENDING, "items": items, "pending": sorted(pending)})
+         return sorted(pending)
+     _write_atomic(out_dir / RUN_CLOSED, json.dumps(
+-        {"run_id": live_dir.name, "items": closed_items(out_dir), "artifacts": names}) + "\n")
+-    shutil.rmtree(live_dir)
++        {"run_id": live_dir.name, "items": items, "artifacts": names}) + "\n")
++    _notify_orchestrator(live_dir, RUN_SCOPE, "close-run", RUN_GENERATION,
++                         {"state": CLOSED, "items": items})
++    _retire_run(live_dir)
+     return []
+ 
+ 
++def _retire_run(live_dir: Path) -> None:
++    """Retira el runtime de una ejecución cerrada salvo su buzón."""
++    if not _has_mailbox(live_dir):
++        shutil.rmtree(live_dir)
++        return
++    for entry in live_dir.iterdir():
++        if entry.name != MAILBOX_DIR:
++            _remove(entry)
++
++
+ def main(argv: list[str] | None = None) -> int:
+     parser = argparse.ArgumentParser(description=(__doc__ or "").splitlines()[0])
+     sub = parser.add_subparsers(dest="command", required=True)
+@@ -610,6 +713,10 @@ def main(argv: list[str] | None = None) -> int:
+     p = sub.add_parser("close-run", help="publica index/joblog y run.closed")
+     p.add_argument("live_dir", type=Path)
+     p.add_argument("out_dir", type=Path)
++    p = sub.add_parser("mailbox-dir", help="el buzón de una ejecución")
++    p.add_argument("live_dir", type=Path)
++    p = sub.add_parser("item-address", help="la dirección de un ítem en el buzón")
++    p.add_argument("item")
+     sub.add_parser("reconcile", help="completa publicaciones y declara ítems huérfanos")
+     p = sub.add_parser("closed-items", help="los ítems publicados de una salida")
+     p.add_argument("out_dir", type=Path)
+@@ -640,6 +747,10 @@ def main(argv: list[str] | None = None) -> int:
+                 print(f"pool_lifecycle: ítems sin cerrar, runtime conservado en {args.live_dir}: "
+                       + " ".join(pending), file=sys.stderr)
+                 return EXIT_UNRECOVERABLE
++        elif args.command == "mailbox-dir":
++            print(mailbox_dir(args.live_dir))
++        elif args.command == "item-address":
++            print(item_address(args.item))
+         elif args.command == "reconcile":
+             print("\n".join(reconcile()) or "reconcile: nada pendiente")
+         elif args.command == "closed-items":
+diff --git a/tests/session/test-headless-pool-lifecycle.sh b/tests/session/test-headless-pool-lifecycle.sh
+index 81307028b..37e148d16 100755
+--- a/tests/session/test-headless-pool-lifecycle.sh
++++ b/tests/session/test-headless-pool-lifecycle.sh
+@@ -25,6 +25,10 @@
+ #      suite, no el disco del anfitrión: con una reserva imposible y espera 0,
+ #      el pool rehúsa el ítem al instante en vez de esperar los 600 s del
+ #      default.
++#   8. (TASK-THYROX-0672) el ítem recibe el buzón de la ejecución y su
++#      dirección, su prompt empieza por el párrafo del buzón, un mensaje
++#      enviado antes de que lea aparece como pendiente para él, y el
++#      orquestador recibe un sobre por cada cambio del ciclo de vida.
+ #   Controles de anulación:
+ #   1c. con el runtime dentro del banco, el mismo pool ensucia `git status`.
+ #   2c. sin la guarda de `pool_integrate`, el ítem sin cerrar se aplica.
+@@ -37,11 +41,16 @@ check() { total=$((total+1)); if [[ "$2" == "$3" ]]; then echo "OK   $1"; else e
+ F="$(mktemp -d)"; trap 'rm -rf "${F:?}"' EXIT
+ cat > "$F/runner" <<'SH'
+ #!/usr/bin/env bash
+-cat > /dev/null
++cat > "${LIFECYCLE_TEST_PROMPT:-/dev/null}"
+ jq -cn '{type:"system",subtype:"init"}'
+ [[ -z "${LIFECYCLE_TEST_WRITE:-}" ]] || echo "trabajo a mitad" > "$LIFECYCLE_TEST_WRITE"
+ echo started > "$LIFECYCLE_TEST_STARTED"
+ read -r _ < "$LIFECYCLE_TEST_RELEASE"
++if [[ -n "${LIFECYCLE_TEST_INBOX:-}" ]]; then
++  printf '%s\t%s\n' "${THYROX_MAILBOX_DIR:-sin}" "${THYROX_POOL_ITEM_ADDRESS:-sin}" > "$LIFECYCLE_TEST_INBOX.env"
++  bash "$THYROX_ROOT/bin/inbox" --dir "$THYROX_MAILBOX_DIR" pending --as "$THYROX_POOL_ITEM_ADDRESS" \
++    > "$LIFECYCLE_TEST_INBOX" 2>/dev/null
++fi
+ jq -cn '{type:"result",subtype:"success",result:"done"}'
+ SH
+ chmod +x "$F/runner"
+@@ -264,5 +273,28 @@ check "el ítem rehusado quedó publicado" "$(bash "$ROOT/bin/pool_lifecycle" cl
+ elapsed7c="$(refused_pool run7c THYROX_ITEM_WORKTREE_DISK_WAIT_SECONDS=6)"
+ check "control: con espera de 6 s, el rechazo tarda al menos 6 s" "$([[ "$elapsed7c" -ge 6 ]] && echo yes)" yes
+ 
++# --- caso 8 (TASK-THYROX-0672): el ítem lee su buzón; el orquestador, el suyo -
++LIFECYCLE_TEST_PROMPT="$F/run8.prompt" LIFECYCLE_TEST_INBOX="$F/run8.inbox" \
++  start_pool run8 "$F/runtime8"
++mailbox8="$(gawk 'sub(/^buzón: /, "")' "$F/run8.log")"
++check "la cabecera publica el buzón de la ejecución" "$([[ -n "$mailbox8" && -d "$mailbox8" ]] && echo yes)" yes
++bash "$ROOT/bin/inbox" --dir "$mailbox8" post --from orchestrator --to item-1 \
++  --body "cambio de especificación" > /dev/null 2>&1
++release run8
++wait "$POOL_PID"; code8=$?
++check "con un mensaje, el pool termina bien" "$code8" 0
++check "el ítem recibe el buzón y su dirección" "$(cat "$F/run8.inbox.env" 2>/dev/null)" "$mailbox8	item-1"
++check "el mensaje enviado antes de que el ítem leyera le aparece pendiente" \
++  "$(jq -r '.[].body' "$F/run8.inbox" 2>/dev/null)" "cambio de especificación"
++check "el prompt empieza por el párrafo del buzón" \
++  "$(head -1 "$F/run8.prompt" | grep -c 'Buzón de esta ejecución')" 1
++check "el párrafo dice cómo leer, acusar y escribir al orquestador" \
++  "$(grep -cE 'pending --as "\$THYROX_POOL_ITEM_ADDRESS"|ack --as "\$THYROX_POOL_ITEM_ADDRESS"|post --from "\$THYROX_POOL_ITEM_ADDRESS" --to orchestrator' "$F/run8.prompt")" 3
++check "la plantilla del usuario va después del párrafo y antes del ítem" \
++  "$(gawk '/Buzón de esta ejecución/{p=NR} /^Read\.$/{t=NR} /^Item: one$/{i=NR} END{print (p && p < t && t < i) ? "yes" : "no"}' "$F/run8.prompt")" yes
++check "el orquestador recibió begin, publish y close-run" \
++  "$(bash "$ROOT/bin/inbox" --dir "$mailbox8" pending --as orchestrator 2>/dev/null \
++      | jq -r '.[].body | fromjson | .event' | grep -cxE 'begin|publish|close-run')" 3
++
+ echo "result: $((total - failures)) of $total assertions green"
+ [[ "$failures" -eq 0 ]]
+diff --git a/tests/session/test-headless-pool.sh b/tests/session/test-headless-pool.sh
+index fb2179f9c..0041d7a71 100644
+--- a/tests/session/test-headless-pool.sh
++++ b/tests/session/test-headless-pool.sh
+@@ -99,6 +99,10 @@ check "sin sesion persistida y en stream-json" "$(cat "$F/out"/*.json | jq -r .r
+ check "el .json es la linea result del stream, sola" "$(cat "$F/out"/*.json | jq -r .type | sort -u)" "result"
+ check "un stream por item, una linea por peticion" "$(cat "$F/out"/*.stream.jsonl 2>/dev/null | jq -rR 'fromjson? | select(.type=="assistant") | .message.usage.cache_read_input_tokens' | sort | uniq -c | gawk '{print $1"x"$2}' | paste -sd,)" "3x111,3x500"
+ check "el indice empareja numero e item" "$(gawk -F'\t' '{print $2}' "$F/out/index.tsv" | paste -sd,)" "alfa,beta,gamma"
++# Sin mensajes, lo único nuevo en la salida es la línea del buzón de la
++# ejecución (TASK-THYROX-0672), que apunta a un directorio que existe.
++buzon="$(printf '%s\n' "$SALIDA" | gawk 'sub(/^buzón: /, ""){n++; path=$0} END{if (n == 1) print path}')"
++check "sin mensajes: una sola línea buzón, con un directorio real" "$([[ -n "$buzon" && -d "$buzon" ]] && echo si || echo no)" "si"
+ 
+ # 2 — un item que falla: exit 1 y se nombra, los demas siguen contando.
+ rm -rf "$F/out"; corre alfa FALLA-beta gamma
+diff --git a/tests/session/test_pool_lifecycle.py b/tests/session/test_pool_lifecycle.py
+index 00ce48f23..2f3147e5a 100644
+--- a/tests/session/test_pool_lifecycle.py
++++ b/tests/session/test_pool_lifecycle.py
+@@ -30,6 +30,7 @@ from pathlib import Path
+ ROOT = Path(__file__).resolve().parents[2]
+ sys.path.insert(0, str(ROOT / "src"))
+ 
++from peer_mailbox.inbox import Inbox  # noqa: E402
+ from session import pool_lifecycle as lc  # noqa: E402
+ 
+ OK = 0
+@@ -228,7 +229,8 @@ with tempfile.TemporaryDirectory() as scratch:
+           ((out4 / "index.tsv").exists(), (out4 / "joblog.tsv").exists()))
+     closed = json.loads((out4 / lc.RUN_CLOSED).read_text())
+     check("run.closed nombra los ítems cerrados", ["1"], closed["items"])
+-    check("el runtime de la ejecución se retira", False, live9.exists())
++    check("el runtime de la ejecución se retira salvo su buzón", [lc.MAILBOX_DIR],
++          sorted(p.name for p in live9.iterdir()))
+ 
+ # I5 con el fallo inyectado entre CADA operación de la publicación, no sólo
+ # tras la primera. Con tres artefactos en el mismo sistema de archivos son
+@@ -323,5 +325,63 @@ with tempfile.TemporaryDirectory() as scratch:
+     check("el nuevo dueño publica su generación", ([], old + 1),
+           (lc.verify_closed(out, "5"), lc.closed_generation(out, "5")))
+ 
++# Caso 10 (TASK-THYROX-0672): cada cambio del ciclo de vida deja un sobre al
++# orquestador en el buzón de la ejecución, con un request_id estable.
++def envelopes(live: Path) -> list[dict]:
++    """Los sobres que el orquestador tiene pendientes en el buzón de la ejecución."""
++    return Inbox(lc.mailbox_dir(live)).pending(lc.ORCHESTRATOR_ADDRESS)
++
++
++def request_ids(live: Path) -> list[str]:
++    return [message.get("request_id", "") for message in envelopes(live)]
++
++
++with tempfile.TemporaryDirectory() as scratch:
++    base = Path(scratch)
++    os.environ["THYROX_RUNTIME_DIR"] = str(base / "runtime")
++    print("caso 10: cada cambio del ciclo de vida deja un sobre al orquestador")
++    out = base / "out"
++    out.mkdir()
++    live = lc.open_run(out, os.getpid(), run_id="m1")
++    check("open-run crea el buzón de la ejecución", True, lc.mailbox_dir(live).is_dir())
++    check("la dirección de un ítem es item-<n>", "item-1", lc.item_address("1"))
++    lc.begin(live, out, "1", owner_pid=os.getpid())
++    check("begin deja exactamente un sobre", ["m1:1:begin:1"], request_ids(live))
++    body = json.loads(envelopes(live)[0]["body"])
++    check("el cuerpo lleva ítem, dirección, estado, generación y hora",
++          ("begin", "1", "item-1", lc.RUNNING, 1, True),
++          (body["event"], body["item"], body["address"], body["state"], body["generation"],
++           bool(body["at"])))
++    check("el remitente es el ciclo de vida", lc.LIFECYCLE_SENDER, envelopes(live)[0]["from"])
++    lc.transition(live, "1", lc.SNAPSHOTTING)
++    check("transition deja su sobre", "m1:1:transition-snapshotting:1", request_ids(live)[-1])
++    lc.transition(live, "1", lc.RUNNING)
++    lc.transition(live, "1", lc.SNAPSHOTTING)
++    check("repetir la misma transición en la misma generación no duplica", 3, len(envelopes(live)))
++    lc.transition(live, "1", lc.RUNNING)
++    lc.transition(live, "1", lc.ABANDONED_RECOVERABLE)
++    lc.claim(live, out, "1", owner_pid=os.getpid())
++    check("claim deja un sobre con la generación nueva", "m1:1:claim:2", request_ids(live)[-1])
++    lc.claim(live, out, "1", owner_pid=os.getpid())
++    check("un claim con otra generación nueva deja otro", "m1:1:claim:3", request_ids(live)[-1])
++    before_publish = len(envelopes(live))
++    lc.publish(live, out, "1", exit_code=0)
++    check("publish deja un sobre, y ninguno por sus transiciones internas",
++          (before_publish + 1, "m1:1:publish:3"), (len(envelopes(live)), request_ids(live)[-1]))
++    lc.publish(live, out, "1", exit_code=0)
++    check("publicar de nuevo no duplica", before_publish + 1, len(envelopes(live)))
++    lc.close_run(live, out)
++    check("close-run deja su sobre", "m1:run:close-run:0", request_ids(live)[-1])
++    check("... que nombra los ítems cerrados", ["1"], json.loads(envelopes(live)[-1]["body"])["items"])
++    check("el buzón sobrevive al cierre de la ejecución", True, lc.mailbox_dir(live).is_dir())
++
++    print("caso 10b: un runtime sin buzón —anterior al buzón— sigue funcionando")
++    legacy = lc.open_run(out, os.getpid(), run_id="m2")
++    lc.mailbox_dir(legacy).rmdir()
++    lc.begin(legacy, out, "2", owner_pid=os.getpid())
++    lc.transition(legacy, "2", lc.SNAPSHOTTING)
++    check("sin buzón no se crea uno ni se rehúsa", (lc.SNAPSHOTTING, False),
++          (state_of(legacy, "2").state, lc.mailbox_dir(legacy).exists()))
++
+ print(f"resultado: {OK} de {OK + FAILED} aserciones en verde")
+ sys.exit(1 if FAILED else 0)

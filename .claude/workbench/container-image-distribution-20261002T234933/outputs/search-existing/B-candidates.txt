@@ -1,0 +1,132 @@
+== src/packages/image-registry (31 archivos versionados)
+  src/packages/image-registry/dockerHubAdminApi.ts :: DOCKER_HUB_API_BASE,HubCredentials,HubFetch,DockerHubApiError,createDockerHubAdminApi
+  src/packages/image-registry/dockerHubRegistry.ts :: DOCKER_HUB_PROVIDER,DOCKER_HUB_REGISTRY,normalizeDockerHubReference,DockerHubRegistryOptions,createDockerHubRegistry
+  src/packages/image-registry/imageCollector.ts :: releaseOwnedImages,sweepOrphanImages,CacheEviction,evictCacheImages
+  src/packages/image-registry/imageLifecycle.ts :: IMAGE_LIFECYCLES,ImageLifecycle,LIFECYCLE_LABEL,OWNER_KIND_LABEL,OWNER_ID_LABEL,CACHE_KEY_LABEL,OWNER_KINDS,ImageOwner
+  src/packages/image-registry/imageLocation.ts :: ImageLocation,locationReference,locationCanonicalReference
+  src/packages/image-registry/imageReference.ts :: ImageReference,PinnedImageReference,InvalidImageReferenceError,isDigest,parseImageReference,isPinned,pin,taggedReference
+  src/packages/image-registry/imageRegistry.ts :: CORE_CAPABILITIES,ADMINISTRATIVE_CAPABILITIES,CoreCapability,AdministrativeCapability,RegistryCapability,RepositoryVisibility,ImageDescription,RegistryAuth
+  src/packages/image-registry/imageRequirement.ts :: BuildDefinition,EphemeralImageRequirement,CacheImageRequirement,PermanentImageRequirement,InfrastructureImageRequirement,ImageRequirement,BuiltImageRequirement,InvalidImageRequirementError
+  src/packages/image-registry/imageResolver.ts :: ResolvedImage,DiskAdmission,ImageResolverOptions,ImageAdmissionRefusedError,ImageResolver,createImageResolver
+  src/packages/image-registry/ociRegistry.ts :: OciRegistryOptions,createOciRegistry
+  src/packages/image-registry/promotion.ts :: BUILD_ENVIRONMENT_KEYS,PublishGuard,PromotionEvidence,PromotedImage,PromotionRefusedError,ImageLeakError,assertImageFreeOf,promoteCandidate
+  src/packages/image-registry/registryFactory.ts :: GENERIC_OCI_PROVIDER,RegistryConfig,RegistryDependencies,UnknownRegistryProviderError,InvalidRegistryConfigError,REGISTRY_PROVIDERS,createImageRegistry
+
+== src/packages/artifact-registry (32 archivos versionados)
+  src/packages/artifact-registry/artifactFiles.ts :: ArtifactFile,sha256OfPath,describeArtifactFile
+  src/packages/artifact-registry/artifactRegistry.ts :: OCI_MANIFEST_MEDIA_TYPE,TITLE_ANNOTATION,ArtifactLocation,PinnedArtifact,ArtifactConfig,ArtifactPush,ArtifactLayer,ArtifactManifest
+  src/packages/artifact-registry/artifactVerifier.ts :: Verification,VerificationJobFailure,VerificationFailure,VerificationOutcome,ArtifactVerifier,VerificationContext,verifyPublishedArtifact,createInProcessVerifier
+  src/packages/artifact-registry/bin/fetchLayer.ts :: 
+  src/packages/artifact-registry/bin/publishArtifact.ts :: 
+  src/packages/artifact-registry/bin/verifyArtifact.ts :: 
+  src/packages/artifact-registry/diskAdmission.ts :: DiskAdmission,DiskAdmissionOptions,createDiskAdmission
+  src/packages/artifact-registry/dockerHubArtifactRegistry.ts :: DOCKER_HUB_REGISTRY_URL,dockerHubRepository,DockerHubArtifactRegistryOptions,createDockerHubArtifactRegistry
+  src/packages/artifact-registry/jobEgress.ts :: JOB_EGRESS_ENV,JobEgress,JobEgressError,resolveJobEgress,CONTAINER_CA_BUNDLE,JobNetworkProfile,jobNetworkProfile
+  src/packages/artifact-registry/ociArtifactRegistry.ts :: OciArtifactRegistryOptions,createOciArtifactRegistry
+  src/packages/artifact-registry/ociDistribution.ts :: RegistryCredential,RetryPolicy,OciDistributionOptions,ManifestHead,DEFAULT_UPLOAD_CHUNK_BYTES,OciDistributionClient
+  src/packages/artifact-registry/podmanJobVerifier.ts :: VERIFICATION_REPORT_NAME,DEFAULT_VERIFICATION_TASK_CITATION,PodmanJobVerifierOptions,verificationAuthorization,createPodmanJobVerifier
+  src/packages/artifact-registry/publishArtifact.ts :: PublishPlan,AdmissionVerdict,PublishDependencies,RECORD_MEDIA_TYPE,PublicationOutcome,describeDirectory,publishAndVerify
+  src/packages/artifact-registry/publishCommand.ts :: PUBLICATION_RECORD_MEDIA_TYPE,publicationExitCode,registryBaseUrl,mediaTypeOf,publicationRecord
+  src/packages/artifact-registry/readerCredential.ts :: READER_ENV,ReaderCredentialError,resolveReaderCredential
+  src/packages/artifact-registry/registryResult.ts :: RateLimitKind,RateLimit,RegistryResult,RegistryFailure,classifyResponse
+
+== src/packages/podman-execution (36 archivos versionados)
+  src/packages/podman-execution/bin/execute.ts :: 
+  src/packages/podman-execution/containerRun.ts :: ContainerRunStage,ContainerRunError,MaterializedContainer,InspectedContainerState,inspectContainerState,materializeContainer,runToCompletion,JobOutput
+  src/packages/podman-execution/executionAuthorization.ts :: EXECUTION_KINDS,ExecutionKind,EXECUTION_KIND_LABEL_KEY,EXECUTION_REFERENCE_LABEL_KEY,EXECUTION_ID_LABEL_KEY,TASK_CITATION_PATTERN,WORK_CONSUMER_PATTERN,WORK_ID_PATTERN
+  src/packages/podman-execution/executionCommand.ts :: DEFAULT_EXECUTION_IMAGE,PROXY_CA_BUILD_PATH,ExecutionCommandOutput,ExecutionCommandDeps,parseMount,executionSecretName,PRIMITIVE_MATERIALIZER,runExecutionCommand
+  src/packages/podman-execution/imageStore.ts :: StoredImage,ImageBuild,ImageStoreError,InvalidImageBuildError,buildImage,imageExists,listImages,removeImage
+  src/packages/podman-execution/imageTransfer.ts :: ImageTransferStage,ImageTransferError,pushImage,pullImage,storedDigest
+  src/packages/podman-execution/podmanExecutor.ts :: PodmanCommandResult,PodmanRunOptions,PodmanExecutor,runCommand,createPodmanExecutor
+  src/packages/podman-execution/podmanLockCollision.ts :: PODMAN_LOCK_COLLISION_LITERAL,PODMAN_RENUMBER_COMMAND,PODMAN_LOCK_RELEASE_LITERAL,isLockCollision,lockCollisionRemedy
+  src/packages/podman-execution/podmanObservation.ts :: PodmanObservationError,ObservedMount,ObservedContainer,ObservedVolume,ObservedImage,ObservedStorage,ImageUsage,inspectContainerDocument
+  src/packages/podman-execution/repositoryJobProfile.ts :: REPOSITORY_CONTAINER_PATH,RepositoryJobCredential,RepositoryJobProfile,UnsupportedRepositoryJobCredentialError,createRepositoryJobProfile,validateRepositoryJobProfile,repositoryJobProfileArgv
+  src/packages/podman-execution/resourceMaterialization.ts :: ResourceKind,NamedVolumeMount,BindMount,SecretFileMount,HealthDeclaration,ResourceNetwork,RestartPolicy,DesiredResource
+  src/packages/podman-execution/workerContainerLifecycle.ts :: WORKER_CONTAINER_NAME_PREFIX,workerContainerName,OWNER_KIND_LABEL_KEY,OWNER_ID_LABEL_KEY,OWNER_PID_LABEL_KEY,WORKER_ID_LABEL_KEY,DEFAULT_STOP_TIMEOUT_SECONDS,ContainerOwnerKind
+  src/packages/podman-execution/workerResourceProfile.ts :: WorkerNetworkMode,WorkerMountMode,WorkerResourceMount,WorkerResourceProfile,WorkerPublishedPort,DEFAULT_WORKER_RESOURCE_PROFILE,InvalidWorkerResourceProfileError,validateWorkerResourceProfile
+
+== src/packages/infrastructure (9 archivos versionados)
+  src/packages/infrastructure/bin/bootstrap.ts :: 
+  src/packages/infrastructure/bootstrapCommand.ts :: CommandOutput,BootstrapCommandContext,runBootstrapCommand
+  src/packages/infrastructure/infrastructureBootstrap.ts :: INFRASTRUCTURE_OWNER_ID,EXIT_HEALTHY,EXIT_FAILED,EXIT_REFUSED,EXIT_LOCK_COLLISION,DeclaredSecret,InfrastructureDeclaration,BootstrapReport
+
+== src/packages/registry-credentials (7 archivos versionados)
+  src/packages/registry-credentials/registryAuthFile.ts :: AuthFileOptions,AuthFileLocationError,secretForms,redactSecret,withRegistryAuthFile,registryAuthFor,credentialPairOf
+  src/packages/registry-credentials/registryCredential.ts :: PUBLISHER_ENV,DEFAULT_REGISTRY,RegistryRole,MissingRegistryCredentialError,RegistryCredential,resolvePublisherCredential
+
+== src/packages/local-models — AUSENTE
+
+== src/packages/model-artifacts (36 archivos versionados)
+  src/packages/model-artifacts/artifactManifest.ts :: SourceFileDigest,ConverterProvenance,GgufDigest,ArtifactValidation,ArtifactManifest,InvalidArtifactManifestError,serializeArtifactManifest,parseArtifactManifest
+  src/packages/model-artifacts/catalogEntry.ts :: ArtifactFormat,ModelCapability,CatalogArtifact,ModelCatalogEntry
+  src/packages/model-artifacts/evaluationIdentity.ts :: EvaluationIdentity,comparisonRefusal
+  src/packages/model-artifacts/executionGrant.ts :: ModelRuntime,ExecutionPlacement,ResidencyAssignment,ExecutionGrant
+  src/packages/model-artifacts/ggufMetadata.ts :: GgufValue,GgufMetadata,GgufHeader,InvalidGgufError,MAX_GGUF_HEADER_BYTES,readGgufMetadata
+  src/packages/model-artifacts/localModelHome.ts :: MODEL_CATALOG_VAR,MODEL_QUALIFICATIONS_VAR,MODEL_ARTIFACT_CACHE_DIR_VAR,MODEL_ARTIFACT_LOCATIONS_VAR,LocalModelHome,LocalArtifactHome,localModelHome,localArtifactHome
+  src/packages/model-artifacts/memoryEstimate.ts :: KV_CACHE_BYTES_PER_ELEMENT,KvCacheType,SERVING_BUFFER_MARGIN_BYTES,ServingMemoryInput,ServingMemoryEstimate,MissingGgufKeyError,InvalidMemoryEstimateInputError,AttentionShape
+  src/packages/model-artifacts/modelArtifactResolver.ts :: ArtifactLocation,PinnedModelArtifact,ArtifactResolution,ModelArtifactResolver,InvalidArtifactLocationError,ArtifactLocationConflictError,ArtifactLocationIndex,createIndexedArtifactResolver
+  src/packages/model-artifacts/modelCatalog.ts :: InvalidCatalogEntryError,CatalogEntryConflictError,CatalogFileError,GgufCatalogDeclaration,validateCatalogEntry,catalogEntryFromGguf,ModelCatalog,loadModelCatalog
+  src/packages/model-artifacts/modelName.ts :: ModelSource,ThyroxModelNameParts,ParsedThyroxModelName,THYROX_MODEL_PREFIX,OLLAMA_NAME_PART_MAX_LENGTH,InvalidModelNameInputError,thyroxModelName,parseThyroxModelName
+  src/packages/model-artifacts/modelQualification.ts :: LOCAL_TASK_CLASSES,LocalTaskClass,QualificationKind,MeasurementCondition,ModelQualification,InvalidQualificationError,validateQualification,parseQualifications
+  src/packages/model-artifacts/modelResolver.ts :: ModelRepositoryRequest,ModelExecutionRequest,ResolvedModel,ModelNotDeclaredError,AmbiguousModelRequestError,MissingCapabilityError,ContextLengthExceededError,resolveModel
+  src/packages/model-artifacts/quantizationLevel.ts :: QuantizationBackend,QuantizationLevel,QUANTIZATION_LEVELS,UnknownQuantizationLevelError,normalizeQuantizationLevel,quantizationBackend
+  src/packages/model-artifacts/quantizationPlan.ts :: QuantizationMethod,QUANTIZATION_METHODS,QuantizationStep,QUANTIZATION_STEPS,SourceDigest,SourceFile,SourceSpec,Q4_K_M_BITS_PER_WEIGHT
+  src/packages/model-artifacts/quantizer-image/build.sh :: 
+  src/packages/model-artifacts/resolvedModelArtifact.ts :: ResolvedModelArtifact,InconsistentModelIdentityError,resolvedArtifactOf,assertConsistentIdentity,sameArtifactIdentity
+
+== src/packages/daemon — AUSENTE
+
+== src/packages/storage — AUSENTE
+
+== src/packages/semantic-search (38 archivos versionados)
+  src/packages/semantic-search/analysisRuns.ts :: AnalysisCandidateInput,AnalysisRunInput,AnalysisCandidate,CorpusVersion,AnalysisRun,recordAnalysisRun,getAnalysisRun
+  src/packages/semantic-search/bin/ingest.ts :: 
+  src/packages/semantic-search/config.ts :: SEMANTIC_SEARCH_DATABASE_URL_VAR,REPRESENTATIONS,Representation,SchemaConfig,EmbeddingShape,SPACE_STATES,SpaceState,SemanticSearchConfigError
+  src/packages/semantic-search/contentHash.ts :: documentHash,chunkHash
+  src/packages/semantic-search/corpus.ts :: Metadata,DOMAIN_WIDE_SCOPE,DocumentIdentity,DocumentInput,IngestStatus,IngestResult,StoredDocument,scopeOf
+  src/packages/semantic-search/corpusPolicy.ts :: CorpusVisibility,DurableVisibility,DomainDeclaration,CorpusPolicy,Admission,INITIAL_CORPUS_POLICY,admitDocument
+  src/packages/semantic-search/corpusSql.ts :: MIGRATIONS_TABLE,CORPUS_MIGRATION_VERSION,CORPUS_MIGRATION_NAME,DOMAIN_IDENTITY_MIGRATION_VERSION,DOMAIN_IDENTITY_MIGRATION_NAME,VISIBILITY_MIGRATION_VERSION,VISIBILITY_MIGRATION_NAME,SEARCHABLE_CHUNK_CONDITION
+  src/packages/semantic-search/errors.ts :: NoActiveEmbeddingSpaceError,UnknownEmbeddingSpaceError,EmbeddingSpaceStateError,InvalidCorpusInputError,UndeclaredCorpusDomainError,EphemeralContentError
+  src/packages/semantic-search/extension.ts :: MINIMUM_PGVECTOR_VERSION,VectorExtensionState,UsableVectorExtension,VectorExtensionProbe,VectorExtensionUnavailableError,VectorExtensionNotEnabledError,VectorExtensionVersionError,compareVersions
+  src/packages/semantic-search/findingIngestion.ts :: FINDING_DOMAIN,ERROR_DOMAIN,IngestionSource,RecognizedDocument,Recognition,IngestionSummary,recognizedDomains,recognizeDocuments
+  src/packages/semantic-search/ingestCommand.ts :: SEMANTIC_SEARCH_SCHEMA_VAR,DEFAULT_SEMANTIC_SEARCH_SCHEMA,INGEST_EXIT_OK,INGEST_EXIT_REFUSED,INGEST_USAGE,IngestCommandContext,runIngestCommand
+  src/packages/semantic-search/legacyIdentity.ts :: DomainIdentity,LegacyIdentityResolver,ReconciliationResult,reconcileLegacyIdentities
+  src/packages/semantic-search/rerank.ts :: RerankCandidate,Reranked,cosineSimilarity,rerankByCosine
+  src/packages/semantic-search/rstDocument.ts :: ParsedRstDocument,MAX_CHUNK_CHARACTERS,parseRstDocument
+  src/packages/semantic-search/spaces.ts :: EmbeddingSpace,SpaceDeclaration,PendingChunk,ChunkEmbedding,Activation,getEmbeddingSpace,activeEmbeddingSpace,createEmbeddingSpace
+  src/packages/semantic-search/store.ts :: BinaryCandidate,NearestResult,SemanticSearchStoreOptions,SearchVisibility,SemanticSearchStoreDeps,SemanticSearchStore,openSemanticSearchStore
+  src/packages/semantic-search/vectorSql.ts :: spaceTableName,spaceIndexName,vectorType,createSpaceTableStatements,dropSpaceTableStatement,putEmbeddingQuery,chunksWithoutEmbeddingQuery,binaryCandidatesQuery
+
+== src/packages/store (17 archivos versionados)
+  src/packages/store/db.ts :: BUSY_TIMEOUT_MS,OpenLocalOptions,openLocal,StoreProbe,probeStore
+  src/packages/store/migrationContract.ts :: Migration,CONTROL_TABLE_DDL,ADD_NAME_COLUMN_DDL,assertValidTable,assertValidVersions,assertNoNewerDatabase,assertProvenance,migrationFailedError
+  src/packages/store/migrationLedger.ts :: LedgerRow,LedgerState,readLedgerAsync,readLedgerSync,validateMigrationLedger,validateMigrationLedgerSync
+  src/packages/store/migrations.ts :: Migration,runMigrations
+  src/packages/store/migrationsSync.ts :: Migration,runMigrationsSync
+  src/packages/store/sql.ts :: DIALECTS,Dialect,dialectOf,jsonParam,readJson,readTimestamp,readId,StoreCapabilities
+
+== bin/artifact-registry-publish-artifact -> src/packages/artifact-registry/bin/publishArtifact.ts
+== bin/podman-execution-execute -> src/packages/podman-execution/bin/execute.ts
+== bin/podman_capabilities -> src/lib/podman_capabilities.sh
+== bin/infrastructure-bootstrap -> src/packages/infrastructure/bin/bootstrap.ts
+== bin/infrastructure_ensure -> src/session/infrastructure_ensure.sh
+== bin/clone_bootstrap -> src/session/clone_bootstrap.py
+== bin/packaging-reachability -> src/packaging/bin/reachability.ts
+== bin/container_measure -> src/session/container_measure.py
+== bin/storage -> src/packages/storage/bin/storage.ts
+
+== bin/ con vocabulario de imagen, registry, cache, install
+artifact-registry-publish-artifact
+cache_probe
+check-agent-artifacts
+check_cache_layout
+clone_bootstrap
+ensure_homes
+infrastructure-bootstrap
+infrastructure_ensure
+install-hooks
+local-models-ensure
+probe_model_switch_cache
+register_session
+semantic-search-ingest
+tool-registry-apply-edits

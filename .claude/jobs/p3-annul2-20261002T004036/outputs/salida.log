@@ -1,0 +1,13 @@
+ 5 files changed, 133 insertions(+), 11 deletions(-)
+== no-fallback: 1 caen
+    (fail) recommendExecution con una política de ejecución declarada (TASK-THYROX-0758) > sin candidato permitido cualificado y sin respaldo: bloqueada c
+== fallback-required: 1 caen
+    (fail) parseExecutionPolicy > el respaldo no tiene valor por defecto: sin declararlo se rehúsa [1.38ms]
+== local-only: 0 caen
+== cli-runtime-guard: 2 caen
+    (fail) --runtime claude-cli contra una política sin respaldo rehúsa con 2 — 0
+    (fail) y no nombra ningún claude- como recomendación —   runtime claude-cli (declarado con --runtime claude-cli)
+== cli-exit-blocked: 1 caen
+    (fail) sin candidato permitido sale 3 — 0 recommend: bloqueada — la política no permite respaldo y ningún modelo permitido cumple: catálogo local vací
+execution thyrox-worker-test-muq8levs-12317 kind=test task=TASK-THYROX-0758 exit=0
+__BG_EXIT__=0

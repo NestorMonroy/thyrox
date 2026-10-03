@@ -1,0 +1,231 @@
+diff --git a/src/packages/config/__tests__/gpuAdmission.test.ts b/src/packages/config/__tests__/gpuAdmission.test.ts
+index 21e0a4816..e36eec502 100644
+--- a/src/packages/config/__tests__/gpuAdmission.test.ts
++++ b/src/packages/config/__tests__/gpuAdmission.test.ts
+@@ -92,6 +92,15 @@ describe('admitVram', () => {
+     expect(existsSync(ledger) ? Object.keys(JSON.parse(readFileSync(ledger, 'utf8'))).length : 0).toBe(0)
+   })
+ 
++  test('sin nvidia-smi que medir, exit 2: una excepción al instante, no un plazo vencido', async () => {
++    const { dir, ledger } = fakeGpu()
++    const started = Date.now()
++    await expect(admitVram({ needMib: 100, ledger, ownerPid: process.pid, nvidiaSmi: join(dir, 'no-existe'), timeoutS: 5 }))
++      .rejects.toThrow(/salió 2 .*nvidia-smi no responde/)
++    expect(Date.now() - started).toBeLessThan(1000)
++    expect(existsSync(ledger)).toBe(false)
++  })
++
+   test('si la herramienta no corre, es un error y no un «no admitido»', async () => {
+     const { smi, ledger } = fakeGpu()
+     const empty = mkdtempSync(join(tmpdir(), 'no-thyrox-'))
+diff --git a/src/packages/config/gpuAdmission.ts b/src/packages/config/gpuAdmission.ts
+index 5b22356b2..0bca2dc7b 100644
+--- a/src/packages/config/gpuAdmission.ts
++++ b/src/packages/config/gpuAdmission.ts
+@@ -11,7 +11,8 @@
+  *
+  *   0 -> 'admitted' (reservó)   3 -> 'timeout' (venció el plazo sin sitio)
+  *   cualquier otro -> excepción con el stderr: no pudo medir, y eso no es
+- *   un «no admitido».
++ *   un «no admitido». El 2 es el caso de una máquina sin GPU: `nvidia-smi` no
++ *   responde y `admit` rehúsa al instante, sin esperar el plazo.
+  */
+ import { spawn } from 'node:child_process'
+ import { join } from 'node:path'
+diff --git a/src/session/gpu_monitor.py b/src/session/gpu_monitor.py
+index 88883d39c..3e737ff19 100644
+--- a/src/session/gpu_monitor.py
++++ b/src/session/gpu_monitor.py
+@@ -184,6 +184,12 @@ def headroom(live: dict[str, int], nvidia_smi: str) -> int | None:
+     return free - pending(live, usage, trees)
+ 
+ 
++def require_gpu(nvidia_smi: str) -> None:
++    """Lanza ``GpuUnavailable`` con su causa si ``nvidia-smi`` no da la VRAM
++    libre: sin GPU que medir no falta sitio, falta GPU."""
++    _query(nvidia_smi, FREE_QUERY)
++
++
+ def admit(need_mib: int, ledger: Path, owner_pid: int, nvidia_smi: str = "nvidia-smi",
+           timeout_s: float = 600.0, interval_s: float = DEFAULT_INTERVAL_S) -> bool:
+     """La admisión por VRAM SIN carrera de comprobar-y-usar.
+@@ -192,7 +198,13 @@ def admit(need_mib: int, ledger: Path, owner_pid: int, nvidia_smi: str = "nvidia
+     3000 veían sitio los dos y arrancaban los dos (sonda:
+     ``.claude/workbench/vram-toctou-*/probe-toctou.sh``). El registro y el
+     bucle de comprobar-y-reservar bajo lock son los de ``resource_admission``;
+-    la VRAM sólo aporta su medida, ``headroom``."""
++    la VRAM sólo aporta su medida, ``headroom``.
++
++    Una GPU AUSENTE al empezar no es una GPU sin sitio: se rehúsa con
++    ``GpuUnavailable`` antes de tocar el registro, en vez de sondear hasta el
++    plazo para informar una causa falsa. Una lectura que falla a mitad de la
++    espera sigue siendo «sin medida» y no admite."""
++    require_gpu(nvidia_smi)
+     return admit_with(ledger, need_mib, owner_pid, lambda live: headroom(live, nvidia_smi),
+                       "vram-admission", timeout_s, interval_s)
+ 
+@@ -202,6 +214,23 @@ def release(ledger: Path, owner_pid: int) -> None:
+     release_from(ledger, owner_pid, "vram-admission")
+ 
+ 
++EXIT_ADMITTED = 0
++EXIT_ABSENT = 2
++EXIT_TIMEOUT = 3
++
++
++def admit_exit_code(args: argparse.Namespace) -> int:
++    """``admit`` como código de salida: 0 reservó, 3 venció el plazo sin sitio,
++    2 no hay GPU que medir — con la causa por stderr, como ``available``."""
++    try:
++        admitted = admit(args.need, args.ledger, args.owner, args.nvidia_smi, args.timeout, args.interval)
++    except GpuUnavailable as error:
++        print(f"gpu_monitor admit: nvidia-smi no responde ({args.nvidia_smi}): {error}; "
++              "sin GPU que medir no se espera", file=sys.stderr)
++        return EXIT_ABSENT
++    return EXIT_ADMITTED if admitted else EXIT_TIMEOUT
++
++
+ def main(argv: list[str]) -> int:
+     parser = argparse.ArgumentParser(prog="gpu_monitor", description=(__doc__ or "").splitlines()[0])
+     sub = parser.add_subparsers(dest="order", required=True)
+@@ -212,7 +241,7 @@ def main(argv: list[str]) -> int:
+     p_watch.add_argument("--interval", type=float, default=DEFAULT_INTERVAL_S)
+     p_avail = sub.add_parser("available", help="sale 0 si hay con qué medir, 2 si no")
+     p_avail.add_argument("--nvidia-smi", default="nvidia-smi")
+-    p_admit = sub.add_parser("admit", help="reserva NEED MiB en el registro; sale 0, o 3 al vencer el plazo")
++    p_admit = sub.add_parser("admit", help="reserva NEED MiB en el registro; sale 0, 3 al vencer el plazo, o 2 sin GPU que medir")
+     p_admit.add_argument("need", type=int)
+     p_admit.add_argument("--ledger", type=Path, required=True)
+     p_admit.add_argument("--owner", type=int, required=True)
+@@ -226,7 +255,7 @@ def main(argv: list[str]) -> int:
+     p_free.add_argument("--nvidia-smi", default="nvidia-smi")
+     args = parser.parse_args(argv)
+     if args.order == "admit":
+-        return 0 if admit(args.need, args.ledger, args.owner, args.nvidia_smi, args.timeout, args.interval) else 3
++        return admit_exit_code(args)
+     if args.order == "release":
+         release(args.ledger, args.owner)
+         return 0
+diff --git a/tests/session/test-gpu-admission-cli.sh b/tests/session/test-gpu-admission-cli.sh
+index 1b8e4025d..0ab608dd5 100644
+--- a/tests/session/test-gpu-admission-cli.sh
++++ b/tests/session/test-gpu-admission-cli.sh
+@@ -5,13 +5,15 @@
+ # con 5000 MiB libres, dos admisiones simultáneas de 3000 no pueden entrar las
+ # dos. Aquí se mide la cara de shell, que es la que usa `headless-pool.sh`:
+ #   admit NEED --ledger L --owner PID   sale 0 si reservó, 3 si venció el plazo;
+-#   release --ledger L --owner PID      suelta la reserva.
++#   release --ledger L --owner PID      suelta la reserva;
++# y sin `nvidia-smi` que responda, admit sale 2 al instante: una ausencia no
++# es una espera, y el registro no se escribe.
+ set -uo pipefail
+-RAIZ="$(cd "$(dirname "$0")/../.." && pwd)"
+-GPU="$RAIZ/bin/gpu_monitor"
+-T="$(mktemp -d)"; trap 'rm -rf "$T"' EXIT
+-total=0; fallos=0
+-check() { total=$((total+1)); if [[ "$2" == "$3" ]]; then echo "OK   $1"; else echo "FALLA $1 — esperado '$3', obtenido '$2'"; fallos=$((fallos+1)); fi; }
++ROOT="$(cd "$(dirname "$0")/../.." && pwd)"
++GPU="$ROOT/bin/gpu_monitor"
++T="$(mktemp -d)"; trap 'rm -rf "${T:?}"' EXIT
++total=0; failures=0
++check() { total=$((total+1)); if [[ "$2" == "$3" ]]; then echo "OK   $1"; else echo "FALLA $1 — esperado '$3', obtenido '$2'"; failures=$((failures+1)); fi; }
+ 
+ cat > "$T/nvidia-smi" <<'SH'
+ #!/usr/bin/env bash
+@@ -45,7 +47,50 @@ echo "== 3. sin sitio y con plazo corto, admit sale 3 =="
+ bash "$GPU" admit 3000 --ledger "$T/vram.json" --owner "$admitted" --nvidia-smi "$T/nvidia-smi" --timeout 0.3 --interval 0.1
+ check "vencido: exit 3" "$?" "3"
+ 
++# Mide en milisegundos el `admit` de sus argumentos; deja el código en $rc y
++# el stderr en $T/err.
++timed_admit() {
++  local started
++  started=$(date +%s%N)
++  bash "$GPU" "$@" 2> "$T/err"; rc=$?
++  elapsed_ms=$(( ($(date +%s%N) - started) / 1000000 ))
++}
++
++echo "== 4. --nvidia-smi hacia una ruta inexistente: exit 2 al instante, registro intacto =="
++timed_admit admit 100 --ledger "$T/absent/vram.json" --owner "$owner_a" --nvidia-smi "$T/no-existe" --timeout 5
++check "sin nvidia-smi: exit 2" "$rc" "2"
++check "en menos de un segundo" "$(( elapsed_ms < 1000 ))" "1"
++check "el registro no se escribe" "$([[ -e "$T/absent" ]] && echo escrito || echo intacto)" "intacto"
++check "el stderr nombra la ausencia" "$(grep -c 'nvidia-smi no responde' "$T/err")" "1"
++
++echo "== 5. un PATH sin nvidia-smi, con el nombre por defecto: exit 2 al instante =="
++mkdir -p "$T/bin-empty"
++started=$(date +%s%N)
++PATH="$T/bin-empty:/usr/bin:/bin" bash "$GPU" admit 100 --ledger "$T/nopath/vram.json" --owner "$owner_a" \
++  --timeout 5 2> "$T/err"; rc=$?
++elapsed_ms=$(( ($(date +%s%N) - started) / 1000000 ))
++if PATH="$T/bin-empty:/usr/bin:/bin" command -v nvidia-smi >/dev/null; then
++  echo "OMITIDO 5 — este anfitrión tiene nvidia-smi en /usr/bin o /bin"
++else
++  check "PATH sin nvidia-smi: exit 2" "$rc" "2"
++  check "en menos de un segundo" "$(( elapsed_ms < 1000 ))" "1"
++  check "el registro no se escribe" "$([[ -e "$T/nopath" ]] && echo escrito || echo intacto)" "intacto"
++fi
++
++echo "== 6. el nvidia-smi falso con estado, con sitio: exit 0 =="
++STATEFUL="$ROOT/tests/session/fakes/stateful-nvidia-smi.sh"
++export GPU_STATE="$T/gpu-state"
++mkdir -p "$GPU_STATE/used"; echo 5000 > "$GPU_STATE/total"
++timed_admit admit 100 --ledger "$T/stateful.json" --owner "$owner_a" --nvidia-smi "$STATEFUL" --timeout 1 --interval 0.1
++check "con sitio: exit 0" "$rc" "0"
++
++echo "== 7. el mismo falso sin sitio: exit 3 al vencer el plazo =="
++echo 5000 > "$GPU_STATE/used/$owner_b"
++timed_admit admit 100 --ledger "$T/stateful-full.json" --owner "$owner_b" --nvidia-smi "$STATEFUL" --timeout 0.3 --interval 0.1
++check "sin sitio: exit 3" "$rc" "3"
++check "tras esperar el plazo, no antes" "$(( elapsed_ms >= 300 ))" "1"
++
+ kill "$owner_a" "$owner_b" 2>/dev/null
+ echo
+-echo "aserciones: $((total - fallos)) de $total · fallos: $fallos"
+-exit $((fallos > 0))
++echo "aserciones: $((total - failures)) de $total · failures: $failures"
++exit $((failures > 0))
+diff --git a/tests/session/test_gpu_monitor.py b/tests/session/test_gpu_monitor.py
+index 90620073a..ea9a1f812 100644
+--- a/tests/session/test_gpu_monitor.py
++++ b/tests/session/test_gpu_monitor.py
+@@ -174,6 +174,20 @@ with tempfile.TemporaryDirectory() as raw:
+     check("release sobre un directorio inexistente no lanza", None,
+           gm.release(tmp / "otra-base" / "vram.json", os.getpid()))
+ 
++    print("== 9c. sin nvidia-smi que responda, admit rehúsa al instante: una ausencia no es una espera ==")
++    # Sin GPU que medir no falta sitio, falta GPU: esperar el plazo informaría
++    # una causa falsa. El registro no se escribe.
++    absent_ledger = tmp / "absent" / "vram.json"
++    started = time.monotonic()
++    try:
++        gm.admit(100, absent_ledger, os.getpid(), str(tmp / "no-existe"), timeout_s=5, interval_s=0.1)
++        refusal = "admitió o venció"
++    except gm.GpuUnavailable:
++        refusal = "GpuUnavailable"
++    check("sin nvidia-smi: GpuUnavailable, no un plazo vencido", "GpuUnavailable", refusal)
++    check("y en menos de un segundo", True, time.monotonic() - started < 1.0)
++    check("el registro no se escribe", False, absent_ledger.parent.exists())
++
+     print("== 10. TOCTOU: dos admisiones simultáneas no reservan la misma VRAM ==")
+     # 5000 libres y dos ítems de 3000 a la vez: comprobar sin reservar deja
+     # arrancar a los dos (3000 + 3000 > 5000). Con el registro de lo comprometido,
+diff --git a/tests/session/test_resource_admission.py b/tests/session/test_resource_admission.py
+index ffba4f7b4..5a9f5af61 100644
+--- a/tests/session/test_resource_admission.py
++++ b/tests/session/test_resource_admission.py
+@@ -120,6 +120,14 @@ with tempfile.TemporaryDirectory() as idle:
+     ra.release_from(idle_ledger, os.getpid(), "ram-admission")
+     check("con otra reserva viva el registro sigue", True, idle_ledger.exists())
+ 
++print("caso 7c — sin medida, admit_with espera hasta el plazo: rehusar al instante es de la VRAM, no de aquí")
++with tempfile.TemporaryDirectory() as unmeasured:
++    started = time.monotonic()
++    waited = ra.admit_with(Path(unmeasured) / "ledger.json", 1, os.getpid(), lambda live: None,
++                           "ram-admission", timeout_s=0.3, interval_s=0.1)
++    check("sin medida no admite", False, waited)
++    check("y agota el plazo antes de responder", True, time.monotonic() - started >= 0.3)
++
+ print("caso 8 — el registro y la fuente de MemAvailable se declaran por entorno")
+ os.environ["THYROX_RAM_ADMISSION_LEDGER"] = "/x/ledger.json"
+ os.environ["THYROX_RAM_ADMISSION_MEMINFO"] = "/x/meminfo"

@@ -1,0 +1,10 @@
+podman-execution-execute: credencial ausente: THYROX_OPENAI_COMPAT_API_KEY
+uso: podman-execution-execute run --task TASK-<CAPA>-NNNN --kind <tipo> [--image REF] [--network none|host] [--attest ARCHIVO]
+                    [--mount ORIGEN[:DESTINO][:ro|rw]]... [--workdir DIR] [--env NOMBRE]...
+                    [--cpus N] [--memory-mib N] [--pids N] [--output RUTA]... [--secret-from-env NOMBRE]...
+                    (--script-stdin | -- ARGV...)
+     podman-execution-execute reconcile-orphans
+     podman-execution-execute observe container NOMBRE [--raw] | volume NOMBRE | secret-labels NOMBRE | containers | volumes | images | storage | snapshot
+     podman-execution-execute remove-image --task TASK-<CAPA>-NNNN --id ID
+     podman-execution-execute build-image --task TASK-<CAPA>-NNNN --context DIR --tag TAG [--containerfile F] [--network host] [--lifecycle cache|permanent]
+__BG_EXIT__=2

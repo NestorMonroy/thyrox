@@ -2227,13 +2227,14 @@ export function reorderMessagesInUI<M>(messages: M[], syntheticStreamingToolUseM
 }
 
 /**
- * Un tool use que el modelo esta emitiendo: su bloque de apertura y el JSON de
- * entrada acumulado hasta ahora, todavia sin parsear.
+ * Un tool use que el modelo esta emitiendo: el indice de su bloque y el bloque
+ * de apertura. El JSON parcial de su entrada no se acumula aqui: viaja a la
+ * superficie de autoria (`AuthoringProgressSurface.onInputJsonDelta`), asi que
+ * la lista cambia al abrir un bloque y no en cada delta.
  */
 export type StreamingToolUse = {
   index: number
   contentBlock: BetaToolUseBlock
-  unparsedToolInput: string
 }
 
 /** El bloque de pensamiento visible mientras se emite y despues de cerrarse. */
@@ -2243,15 +2244,98 @@ export type StreamingThinking = {
   streamingEndedAt?: number
 }
 
-type StreamedItem =
-  | Message
-  | TombstoneMessage
-  | StreamEvent
-  | RequestStartEvent
-  | ToolUseSummaryMessage
+/** Cambio del largo de la respuesta que mide el spinner: reinicio o suma. */
+export type ResponseLengthEvent =
+  | { type: 'response_length'; op: 'reset' }
+  | { type: 'response_length'; op: 'add'; delta: number }
+
+/** Los eventos que la compactacion emite por el mismo canal que el stream. */
+export type CompactEvent = {
+  type: 'compact_progress' | 'sdk_status' | 'stream_mode'
+  [key: string]: unknown
+}
+
+const COMPACT_EVENT_TYPES: ReadonlySet<string> = new Set(['compact_progress', 'sdk_status', 'stream_mode'])
+
+/** Las metricas del API, una por momento del stream. */
+export type ApiMetricsEvent =
+  | { type: 'start'; ttftMs: number; messageId: string }
+  | { type: 'content_block_start' }
+  | { type: 'thinking_progress'; estimatedTokensDelta: number }
+  | { type: 'thinking_signature'; chars: number }
+  | { type: 'end'; outputTokens: number }
+
+/**
+ * La transformacion de lo que se muestra: abre con el id del mensaje, recibe
+ * cada delta de texto, cierra al parar y ve el mensaje completo al aterrizar.
+ */
+export type DisplayTransform = {
+  begin: (messageId: string) => void
+  delta: (text: string) => void
+  finalize: () => void
+  entryLanded: (message: AssistantMessage) => void
+}
+
+/**
+ * La superficie de progreso de autoria (L0): recibe cada tool use en curso, su
+ * JSON parcial y su cierre, y se reinicia por mensaje.
+ */
+export type AuthoringProgressSurface = {
+  onToolUseStart: (index: number, toolName: string) => void
+  onInputJsonDelta: (index: number, partialJson: string) => void
+  onToolUseStop: (index: number) => void
+  resetAuthoringProgress: () => void
+}
+
+/** Lo que el manejador del stream sabe llamar; todo es opcional. */
+export type StreamHandlerOptions = {
+  onSetStreamMode?: (mode: SpinnerMode) => void
+  onApiMetrics?: (event: ApiMetricsEvent) => void
+  onUpdateLength?: (charactersStreamed: number) => void
+  onStreamingToolUses?: (reduce: (current: StreamingToolUse[]) => StreamingToolUse[]) => void
+  onStreamingText?: (reduce: (current: string | null) => string | null) => void
+  onCompactEvent?: (event: CompactEvent) => void
+  onResponseLength?: (event: ResponseLengthEvent) => void
+  displayTransform?: DisplayTransform
+  authoringProgressSurface?: AuthoringProgressSurface
+}
+
+/** Quien corre el stream, para la telemetria que lo distingue. */
+export type StreamHandlerContext = {
+  isSubagent?: boolean
+}
+
+/** Los items del bucle que son del stream y no un mensaje completo. */
+export type StreamItem = RequestStartEvent | StreamEvent | ResponseLengthEvent | CompactEvent
+
+/** Todo lo que el bucle de consulta entrega: mensajes completos e items del stream. */
+export type QueryEvent = Message | TombstoneMessage | ToolUseSummaryMessage | StreamItem
+
+const STREAM_ITEM_TYPES: ReadonlySet<string> = new Set([
+  'stream_request_start',
+  'stream_event',
+  'response_length',
+  ...COMPACT_EVENT_TYPES,
+])
+
+/** Si el item va al manejador del stream; un mensaje completo lo entrega quien llama. */
+export function isStreamItem(item: { type: string }): item is StreamItem {
+  return STREAM_ITEM_TYPES.has(item.type)
+}
+
+/** Tope del JSON de un bloque `tool_use` que se retiene en curso. */
+export const MAX_TOOL_USE_BLOCK_JSON_CHARS = 32768
+/** Tope de tool uses en curso que se retienen. */
+export const MAX_STREAMING_TOOL_USES = 256
+/** Tope del texto parcial que se acumula para mostrarlo. */
+export const MAX_STREAMING_TEXT_CHARS = 1_000_000
+/** Caracteres por token en la estimacion del spinner. */
+export const CHARS_PER_ESTIMATED_TOKEN = 4
+/** Fraccion de los caracteres de una firma que cuenta como pensamiento. */
+const SIGNATURE_CHARS_RATIO = 0.75
 
 /** Los bloques de herramienta del servidor: el spinner pasa a `tool-input`. */
-const SERVER_TOOL_BLOCKS = new Set([
+const SERVER_TOOL_BLOCKS: ReadonlySet<string> = new Set([
   'server_tool_use',
   'web_search_tool_result',
   'code_execution_tool_result',
@@ -2262,154 +2346,253 @@ const SERVER_TOOL_BLOCKS = new Set([
   'bash_code_execution_tool_result',
   'text_editor_code_execution_tool_result',
   'tool_search_tool_result',
+  'advisor_tool_result',
   'compaction',
 ])
+
+type StreamContentBlock = { type: string; [key: string]: unknown }
+
+type StreamDelta = {
+  type: string
+  text?: string
+  partial_json?: string
+  thinking?: string
+  estimated_tokens?: number
+  signature?: string
+}
 
 type StreamEventPayload = {
   type: string
   index?: number
-  content_block?: { type: string; [key: string]: unknown }
-  delta?: { type: string; text?: string; partial_json?: string; thinking?: string }
-}
-
-type StreamCallbacks = {
-  onMessage: (message: Message) => void
-  onUpdateLength: (newContent: string) => void
-  onSetStreamMode: (mode: SpinnerMode) => void
-  onStreamingToolUses: (f: (current: StreamingToolUse[]) => StreamingToolUse[]) => void
-  onTombstone?: (message: Message) => void
-  onStreamingThinking?: (f: (current: StreamingThinking | null) => StreamingThinking | null) => void
-  onApiMetrics?: (metrics: { ttftMs: number }) => void
-  onStreamingText?: (f: (current: string | null) => string | null) => void
+  message?: { id: string }
+  usage?: { output_tokens?: number }
+  content_block?: StreamContentBlock
+  delta?: StreamDelta
 }
 
 /**
- * Enruta cada elemento que llega del stream a la parte de la interfaz que lo
- * pinta: los mensajes completos se entregan, los eventos de stream mueven el
- * modo del spinner, el largo de la respuesta, el texto parcial y los tool uses
- * en curso.
+ * Enruta cada item del stream a la parte de la interfaz que lo pinta: el modo
+ * del spinner, el largo de la respuesta, el texto parcial, los tool uses en
+ * curso, las metricas del API y las superficies de display y de autoria.
  *
- * Contrato de `ccnmt: packages/agent/messages.ts:3008-3179` (v2.1.88), que es
- * el que llaman los consumidores de este arbol con argumentos posicionales. En
- * 2.1.281 la funcion (`bcr`) solo recibe eventos de stream y trae su propio
- * contrato; la migracion es una tarea aparte.
+ * Solo recibe items del stream; un mensaje completo lo entrega quien llama
+ * (`isStreamItem` separa los dos). Contrato de `hwr` en el binario 2.1.283
+ * (`chunk-csayct82.js`), con las opciones por objeto y el contexto aparte.
  */
 export function handleMessageFromStream(
-  item: StreamedItem,
-  onMessage: StreamCallbacks['onMessage'],
-  onUpdateLength: StreamCallbacks['onUpdateLength'],
-  onSetStreamMode: StreamCallbacks['onSetStreamMode'],
-  onStreamingToolUses: StreamCallbacks['onStreamingToolUses'],
-  onTombstone?: StreamCallbacks['onTombstone'],
-  onStreamingThinking?: StreamCallbacks['onStreamingThinking'],
-  onApiMetrics?: StreamCallbacks['onApiMetrics'],
-  onStreamingText?: StreamCallbacks['onStreamingText'],
+  item: StreamItem,
+  options: StreamHandlerOptions,
+  context?: StreamHandlerContext,
 ): void {
-  const callbacks: StreamCallbacks = {
-    onMessage, onUpdateLength, onSetStreamMode, onStreamingToolUses,
-    onTombstone, onStreamingThinking, onApiMetrics, onStreamingText,
+  if (isCompactEvent(item)) {
+    options.onCompactEvent?.(item)
+    return
+  }
+  if (item.type === 'response_length') {
+    options.onResponseLength?.(item)
+    return
   }
   if (item.type === 'stream_request_start') {
-    onSetStreamMode('requesting')
+    options.onSetStreamMode?.('requesting')
     return
   }
-  if (item.type === 'stream_event') {
-    handleStreamEvent(item as { event: StreamEventPayload; ttftMs?: number }, callbacks)
-    return
-  }
-  deliverMessage(item, callbacks)
-}
-
-/** Un mensaje completo: se entrega, salvo la lapida (retira) y el resumen de SDK. */
-function deliverMessage(
-  item: Message | TombstoneMessage | ToolUseSummaryMessage,
-  cb: StreamCallbacks,
-): void {
-  if (item.type === 'tombstone') {
-    cb.onTombstone?.(item.message)
-    return
-  }
-  if (item.type === 'tool_use_summary') return
-  const message = item as Message
-  if (message.type === 'assistant') {
-    const content = message.message.content
-    const thinking = Array.isArray(content)
-      ? (content as readonly unknown[]).find((block): block is { type: 'thinking'; thinking: string } =>
-          typeof block === 'object' && block !== null && (block as { type?: unknown }).type === 'thinking')
-      : undefined
-    if (thinking) {
-      cb.onStreamingThinking?.(() => ({ thinking: thinking.thinking, isStreaming: false, streamingEndedAt: Date.now() }))
-    }
-  }
-  // El texto parcial se retira en el mismo lote en que llega el mensaje final,
-  // para que la vista pase de uno a otro sin hueco ni duplicado.
-  cb.onStreamingText?.(() => null)
-  cb.onMessage(message)
-}
-
-function handleStreamEvent(item: { event: StreamEventPayload; ttftMs?: number }, cb: StreamCallbacks): void {
-  const event = item.event
-  if (event.type === 'message_start' && item.ttftMs != null) cb.onApiMetrics?.({ ttftMs: item.ttftMs })
+  const event = item.event as StreamEventPayload
+  if (isPingEvent(event)) return
   switch (event.type) {
+    case 'message_start':
+      startMessage(event, item.ttftMs, options)
+      options.onSetStreamMode?.('responding')
+      return
     case 'message_stop':
-      cb.onSetStreamMode('tool-use')
-      cb.onStreamingToolUses(() => [])
+      stopMessage(options)
       return
     case 'content_block_start':
-      startContentBlock(event, cb)
+      startContentBlock(event, options)
       return
     case 'content_block_delta':
-      applyContentDelta(event, cb)
+      applyContentDelta(event, options)
       return
     case 'content_block_stop':
+      options.authoringProgressSurface?.onToolUseStop(event.index ?? 0)
+      return
+    case 'message_delta':
+      reportMessageDelta(event, options, context)
       return
     default:
-      // message_delta y cualquier evento desconocido: el modelo sigue respondiendo.
-      cb.onSetStreamMode('responding')
+      // Cualquier evento desconocido: el modelo sigue respondiendo.
+      options.onSetStreamMode?.('responding')
   }
 }
 
-function startContentBlock(event: StreamEventPayload, cb: StreamCallbacks): void {
-  cb.onStreamingText?.(() => null)
+function isCompactEvent(item: StreamItem): item is CompactEvent {
+  return COMPACT_EVENT_TYPES.has(item.type)
+}
+
+function isPingEvent(event: StreamEventPayload): boolean {
+  return event.type === 'ping'
+}
+
+/**
+ * Arranca un mensaje: la metrica de primer token, el estado en curso vacio
+ * (conservando la identidad si ya lo estaba) y la apertura del display.
+ */
+function startMessage(event: StreamEventPayload, ttftMs: number | undefined, options: StreamHandlerOptions): void {
+  const messageId = event.message?.id ?? ''
+  if (ttftMs != null) options.onApiMetrics?.({ type: 'start', ttftMs, messageId })
+  options.onStreamingToolUses?.(current => (current.length > 0 ? [] : current))
+  options.authoringProgressSurface?.resetAuthoringProgress()
+  options.onStreamingText?.(current => (current !== null ? null : current))
+  options.displayTransform?.begin(messageId)
+}
+
+function stopMessage(options: StreamHandlerOptions): void {
+  options.displayTransform?.finalize()
+  options.onSetStreamMode?.('tool-use')
+  options.onStreamingToolUses?.(() => [])
+  options.authoringProgressSurface?.resetAuthoringProgress()
+}
+
+function startContentBlock(event: StreamEventPayload, options: StreamHandlerOptions): void {
+  options.onApiMetrics?.({ type: 'content_block_start' })
+  options.onStreamingText?.(() => null)
   const block = event.content_block
   if (!block) return
   if (feature('CONNECTOR_TEXT') && isConnectorTextBlock(block)) {
-    cb.onSetStreamMode('responding')
+    options.onSetStreamMode?.('responding')
     return
   }
-  if (block.type === 'thinking' || block.type === 'redacted_thinking') {
-    cb.onSetStreamMode('thinking')
-  } else if (block.type === 'text') {
-    cb.onSetStreamMode('responding')
-  } else if (block.type === 'tool_use') {
-    cb.onSetStreamMode('tool-input')
-    const index = event.index ?? 0
-    const contentBlock = block as unknown as BetaToolUseBlock
-    cb.onStreamingToolUses(current => [...current, { index, contentBlock, unparsedToolInput: '' }])
-  } else if (SERVER_TOOL_BLOCKS.has(block.type)) {
-    cb.onSetStreamMode('tool-input')
+  if (isThinkingParam(block)) {
+    options.onSetStreamMode?.('thinking')
+    return
+  }
+  if (block.type === 'text') {
+    options.onSetStreamMode?.('responding')
+    return
+  }
+  if (block.type === 'tool_use') {
+    options.onSetStreamMode?.('tool-input')
+    startToolUse(event.index ?? 0, block, options)
+    return
+  }
+  if (SERVER_TOOL_BLOCKS.has(block.type)) options.onSetStreamMode?.('tool-input')
+}
+
+/** Retiene el tool use en curso si tiene nombre y cabe en el tope; si no, se descarta. */
+function startToolUse(index: number, block: StreamContentBlock, options: StreamHandlerOptions): void {
+  const toolName = block.name
+  if (typeof toolName !== 'string') return
+  if (!fitsToolUseBlockCap(block)) return
+  const contentBlock = block as unknown as BetaToolUseBlock
+  options.onStreamingToolUses?.(current => withStreamingToolUse(current, { index, contentBlock }))
+  options.authoringProgressSurface?.onToolUseStart(index, toolName)
+}
+
+function fitsToolUseBlockCap(block: StreamContentBlock): boolean {
+  try {
+    return JSON.stringify(block).length <= MAX_TOOL_USE_BLOCK_JSON_CHARS
+  } catch {
+    return false
   }
 }
 
-function applyContentDelta(event: StreamEventPayload, cb: StreamCallbacks): void {
+/** Sustituye por indice si ya estaba; anade si hay sitio; al tope, la lista queda igual. */
+function withStreamingToolUse(current: StreamingToolUse[], toolUse: StreamingToolUse): StreamingToolUse[] {
+  const position = current.findIndex(candidate => candidate.index === toolUse.index)
+  if (position !== -1) return current.with(position, toolUse)
+  const hasRoom = current.length < MAX_STREAMING_TOOL_USES
+  return hasRoom ? [...current, toolUse] : current
+}
+
+function applyContentDelta(event: StreamEventPayload, options: StreamHandlerOptions): void {
   const delta = event.delta
   if (!delta) return
-  if (delta.type === 'text_delta') {
-    const text = delta.text ?? ''
-    cb.onUpdateLength(text)
-    cb.onStreamingText?.(current => (current ?? '') + text)
-  } else if (delta.type === 'input_json_delta') {
-    const json = delta.partial_json ?? ''
-    cb.onUpdateLength(json)
-    cb.onStreamingToolUses(current => {
-      const target = current.find(toolUse => toolUse.index === event.index)
-      if (!target) return current
-      return [...current.filter(toolUse => toolUse !== target), { ...target, unparsedToolInput: target.unparsedToolInput + json }]
-    })
-  } else if (delta.type === 'thinking_delta') {
-    cb.onUpdateLength(delta.thinking ?? '')
+  switch (delta.type) {
+    case 'text_delta':
+      applyTextDelta(delta.text ?? '', options)
+      return
+    case 'input_json_delta':
+      applyInputJsonDelta(event.index ?? 0, delta.partial_json ?? '', options)
+      return
+    case 'thinking_delta':
+      reportThinkingProgress(delta, options)
+      return
+    case 'signature_delta':
+      options.onApiMetrics?.({ type: 'thinking_signature', chars: signatureCharsAsThinking(delta.signature ?? '') })
+      return
+    default:
+      return
   }
-  // signature_delta no es salida del modelo: no cuenta para el largo.
+}
+
+function applyTextDelta(text: string, options: StreamHandlerOptions): void {
+  options.onUpdateLength?.(text.length)
+  options.onStreamingText?.(current => appendWithinTextCap(current, text))
+  options.displayTransform?.delta(text)
+}
+
+/** Al llegar al tope el texto en curso deja de crecer: se recorta el delta, no se descarta lo acumulado. */
+function appendWithinTextCap(current: string | null, text: string): string | null {
+  const currentLength = current?.length ?? 0
+  const isFull = currentLength >= MAX_STREAMING_TEXT_CHARS
+  if (isFull) return current
+  return (current ?? '') + text.slice(0, MAX_STREAMING_TEXT_CHARS - currentLength)
+}
+
+function applyInputJsonDelta(index: number, partialJson: string, options: StreamHandlerOptions): void {
+  options.onUpdateLength?.(partialJson.length)
+  options.authoringProgressSurface?.onInputJsonDelta(index, partialJson)
+}
+
+function reportThinkingProgress(delta: StreamDelta, options: StreamHandlerOptions): void {
+  const estimatedTokensDelta = thinkingTokensDelta(delta)
+  if (estimatedTokensDelta === null) return
+  options.onApiMetrics?.({ type: 'thinking_progress', estimatedTokensDelta })
+}
+
+/**
+ * La estimacion del servidor si viene; si no, la del texto emitido. `null`
+ * cuando no hay ninguna: un delta vacio no es progreso y no se reporta.
+ */
+function thinkingTokensDelta(delta: StreamDelta): number | null {
+  if (typeof delta.estimated_tokens === 'number') return delta.estimated_tokens
+  const thinking = delta.thinking
+  const hasThinkingText = typeof thinking === 'string' && thinking.length > 0
+  return hasThinkingText ? estimateTokensFromChars(thinking.length) : null
+}
+
+/** Tokens estimados de un conteo de caracteres: cuatro por token, redondeando arriba. */
+export function estimateTokensFromChars(charCount: number): number {
+  return Math.ceil(charCount / CHARS_PER_ESTIMATED_TOKEN)
+}
+
+/**
+ * El pensamiento que la vista conserva cuando un mensaje del asistente
+ * aterriza: el de su bloque `thinking`, ya cerrado. `null` si no trae ninguno,
+ * que es el caso normal y no un fallo.
+ */
+export function thinkingAfterLanding(message: Message): StreamingThinking | null {
+  if (message.type !== 'assistant') return null
+  const content = message.message.content
+  if (!Array.isArray(content)) return null
+  const blocks = content as readonly { type?: unknown; thinking?: unknown }[]
+  const block = blocks.find(candidate => candidate.type === 'thinking')
+  if (!block || typeof block.thinking !== 'string') return null
+  return { thinking: block.thinking, isStreaming: false, streamingEndedAt: Date.now() }
+}
+
+function signatureCharsAsThinking(signature: string): number {
+  return Math.round(signature.length * SIGNATURE_CHARS_RATIO)
+}
+
+/** El cierre del mensaje trae los tokens de salida; si faltan, se registra, no se inventa un cero. */
+function reportMessageDelta(event: StreamEventPayload, options: StreamHandlerOptions, context: StreamHandlerContext | undefined): void {
+  options.onSetStreamMode?.('responding')
+  const outputTokens = event.usage?.output_tokens
+  if (typeof outputTokens === 'number') {
+    options.onApiMetrics?.({ type: 'end', outputTokens })
+    return
+  }
+  logEvent('tengu_message_delta_usage_missing', { is_subagent: context?.isSubagent === true })
 }
 
 /**

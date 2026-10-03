@@ -1,0 +1,16 @@
+  ok   caso 1: el pool sale 0
+  ok   caso 1: resumen
+  ok   caso 1: cada ítem pide su ejecución a la primitiva
+  ok   caso 1: con la referencia de trabajo del consumidor y dueño pool
+  ok   caso 1: el ejecutor corre dentro de la ejecución con el modelo local
+  ok   caso 1: cada ítem recibe su texto
+  ok   caso 1: ningún ítem ve la credencial del anfitrión
+  ok   caso 1: la autorización no pide secretos
+  ok   caso 2: si la primitiva no ejecuta, nada corre en el anfitrión
+  ok   caso 3: --execution unit sin referencia de trabajo se rehúsa con 2
+  ok   caso 4: la unidad monta el directorio del socket de sólo lectura
+  ok   caso 4: y nombra el socket del coordinador
+  ok   caso 4: no monta el runtime entero
+  FALLA caso 5: el .err de cada ítem conserva su referencia de trabajo — esperado [work=ai-course-notes:es-mx/cs224r/translate/20261002T000000/1 work=ai-course-notes:es-mx/cs224r/translate/20261002T000000/2 ] obtenido []
+
+13 ok · 1 falla(s) (alcance medido: headless-pool --execution unit)

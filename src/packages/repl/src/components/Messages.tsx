@@ -503,8 +503,9 @@ const MessagesImpl = ({
     return null
   }, [normalizedMessages])
 
-  // streamingToolUses updates on every input_json_delta while normalizedMessages
-  // stays stable — precompute the Set so the filter is O(k) not O(n×k) per chunk.
+  // streamingToolUses cambia al abrir cada bloque tool_use y al cerrar el
+  // mensaje, mientras normalizedMessages queda estable — el Set precomputado
+  // deja el filtro en O(k) y no en O(n×k) por cambio.
   const normalizedToolUseIDs = useMemo(
     () => new Set(normalizedMessages.flatMap(getToolUseIDs)),
     [normalizedMessages],
@@ -1036,7 +1037,7 @@ function expandKey(msg: RenderableMessage): string {
 // Custom comparator to prevent unnecessary re-renders during streaming.
 // Default React.memo does shallow comparison which fails when:
 // 1. onOpenRateLimitOptions callback is recreated (doesn't affect render output)
-// 2. streamingToolUses array is recreated on every delta, but only contentBlock matters for rendering
+// 2. streamingToolUses se recrea al abrir cada bloque tool_use (ya no en cada delta: el JSON parcial no vive en el), y solo contentBlock importa para pintar
 // 3. streamingThinking changes on every delta - we DO want to re-render for this
 function setsEqual<T>(a: Set<T>, b: Set<T>): boolean {
   if (a.size !== b.size) return false

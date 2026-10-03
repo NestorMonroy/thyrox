@@ -19,7 +19,9 @@
  */
 import type { AssistantTurn, ContentBlock, Provider, ProviderRequest, StopReason, Usage } from '@thyrox/agent/loop/types'
 import { accumulate, parseSseEvents, type TextDelta } from './sse.ts'
+import type { ConnectionStore } from './accounts/connectionStore.ts'
 import { authHeaders, resolveCredential, type Credential, type ReadFd } from './credentials.ts'
+import { getDefaultMaxRetries, getRetryDelay } from './retryPolicy.ts'
 
 export { parseSseEvents } from './sse.ts'
 export type { SseEvent, TextDelta } from './sse.ts'
@@ -33,11 +35,16 @@ export type HttpProviderOptions = {
   /** El entorno del que se resuelve la credencial (por defecto, `process.env`). */
   env?: Record<string, string | undefined>
   readFd?: ReadFd
+  /** El store de conexiones: la última fuente de la cadena (`PROVIDER_CONNECTION`). */
+  store?: ConnectionStore
   baseUrl?: string
   version?: string
   /** Cuántas veces se reintenta antes de rendirse (o de caer al respaldo). */
   maxRetries?: number
+  /** Espera base declarada (`base * 2 ** intento`); sin declarar, la da `getRetryDelay`. `0` es sin espera. */
   retryDelayMs?: number
+  /** Cómo se espera entre intentos: la costura de las pruebas, que registran la espera sin dormir. */
+  sleep?: (ms: number) => Promise<void>
   /** El `fallback_3p` del catálogo: a dónde caer si el destino sigue sobrecargado. */
   fallbackModel?: string
   fetchImpl?: FetchImpl
@@ -57,7 +64,8 @@ export class AnthropicHttpProvider implements Provider {
   private baseUrl: string
   private version: string
   private maxRetries: number
-  private retryDelayMs: number
+  private retryDelayMs: number | undefined
+  private sleep: (ms: number) => Promise<void>
   private fallbackModel?: string
   private fetchImpl: FetchImpl
 
@@ -65,7 +73,7 @@ export class AnthropicHttpProvider implements Provider {
     const env = opts.env ?? process.env
     const credential: Credential = opts.apiKey
       ? { source: 'ANTHROPIC_API_KEY', kind: 'api_key', secret: opts.apiKey, unixSocket: env.ANTHROPIC_UNIX_SOCKET?.trim() || undefined }
-      : resolveCredential(env, opts.readFd)
+      : resolveCredential(env, opts.readFd, opts.store)
     if (credential.source === 'none') {
       throw new Error(
         'AnthropicHttpProvider exige credencial: ninguna de ANTHROPIC_AUTH_TOKEN, THYROX_CODE_OAUTH_TOKEN, ' +
@@ -77,8 +85,9 @@ export class AnthropicHttpProvider implements Provider {
     this.credential = credential
     this.baseUrl = opts.baseUrl ?? env.ANTHROPIC_BASE_URL ?? 'https://api.anthropic.com'
     this.version = opts.version ?? '2023-06-01'
-    this.maxRetries = opts.maxRetries ?? 3
-    this.retryDelayMs = opts.retryDelayMs ?? 1000
+    this.maxRetries = opts.maxRetries ?? getDefaultMaxRetries()
+    this.retryDelayMs = opts.retryDelayMs
+    this.sleep = opts.sleep ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)))
     this.fallbackModel = opts.fallbackModel
     this.fetchImpl = opts.fetchImpl ?? ((u, i) => fetch(u, i))
   }
@@ -138,11 +147,18 @@ export class AnthropicHttpProvider implements Provider {
       ultimo = `${res.status} ${texto}`
       // un 4xx que no sea 408/429 es nuestro: el mismo cuerpo dará el mismo error
       if (!REINTENTABLES.has(res.status)) throw new Error(ultimo)
-      if (intento < this.maxRetries && this.retryDelayMs > 0) {
-        await new Promise((r) => setTimeout(r, this.retryDelayMs * 2 ** intento))
+      if (intento < this.maxRetries) {
+        const delayMs = this.delayBeforeAttempt(intento + 1, res.headers.get('retry-after'))
+        if (delayMs > 0) await this.sleep(delayMs)
       }
     }
     return { ultimo }
+  }
+
+  /** La espera declarada si la hay; si no, la de la autoridad de reintentos, que respeta `retry-after`. */
+  private delayBeforeAttempt(attempt: number, retryAfter: string | null): number {
+    if (this.retryDelayMs !== undefined) return this.retryDelayMs * 2 ** (attempt - 1)
+    return getRetryDelay(attempt, retryAfter)
   }
 
   /**

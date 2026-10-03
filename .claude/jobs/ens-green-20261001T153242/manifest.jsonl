@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c for t in tests/session/test-infrastructure-ensure.sh tests/lib/test-infrastructure.sh tests/lib/test-infrastructure-desired.sh tests/session/test-podman-lock-recovery.sh; do echo \"== $t\"; bash $t > /dev/null 2>\"$t.err.tmp\"; r=$?; bash $t 2>&1 | grep -E \"FALLO|casos:\"; echo \"EXIT $t=$r\"; rm -f \"$t.err.tmp\"; done; echo SUITE_DONE", "started_at": "2026-10-01T15:32:42+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-01T15:33:05+00:00", "duration_seconds": 23.590039}

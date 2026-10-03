@@ -1,0 +1,589 @@
+# Autoridad de sensibilidad de nombres de entorno (TASK-THYROX-0743, S1).
+# clave<TAB>clase<TAB>alcance<TAB>razón. clase: credential | secret-reference | sensitive-config | config.
+# alcance: env (declarada en .env.example; toda clave de ese archivo tiene que estar aquí) | external
+# (nombre ajeno que llega a una frontera: entorno de un contenedor, build-arg).
+# La clase la decide esta tabla; el nombre sólo alimenta el lint de bin/env_sensitivity check.
+# Un nombre ausente es una violación de contrato y una frontera lo rechaza.
+HEADLESS_POOL_GPU_INTERVAL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+HEADLESS_POOL_HISTORY_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+HEADLESS_POOL_ITEM_DRAIN_SECONDS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+HEADLESS_POOL_MEMFREE_RESERVE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+HEADLESS_POOL_NVIDIA_SMI	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+HEADLESS_POOL_RECOMMEND	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+HEADLESS_POOL_RUNNER	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+HEADLESS_POOL_VRAM_LEDGER	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+HEADLESS_POOL_VRAM_MIN_MIB	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+HEADLESS_POOL_VRAM_RESERVE_MIB	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+IDENTIFIER_LANGUAGE_BASELINE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+IDENTIFIER_LANGUAGE_ROOTS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+ODOO_TOOLS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_AFTER_LAST_COMPACT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_AGENTS_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_AGENTS_SELECT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_AGENT_SDK_CLIENT_APP	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_AGENT_SDK_DISABLE_BUILTIN_AGENTS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_AGENT_SDK_MCP_NO_PREFIX	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_AGENT_SDK_VERSION	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_AGENT_STORE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_ANNUL_TEST_TIMEOUT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_ANTIGRAVITY_BUILTIN_OAUTH_CLIENT_ID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_ANTIGRAVITY_BUILTIN_OAUTH_CLIENT_SECRET	credential	env	secreto de cliente OAuth
+THYROX_ANTIGRAVITY_OAUTH_CLIENT_ID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_ANTIGRAVITY_OAUTH_CLIENT_SECRET	credential	env	secreto de cliente OAuth
+THYROX_ARTIFACT_VERIFIER_IMAGE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_AUTOCOMPACT_PCT_OVERRIDE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_AUTO_BACKGROUND_TASKS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_BACKGROUND_LOG_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_BACKGROUND_LOG_DOCS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_BACKGROUND_MARKER	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_BACKGROUND_OUTPUT_ROOT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_BACKGROUND_SESSION	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_BASH_MAINTAIN_PROJECT_WORKING_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_BG_BACKEND	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_BG_CLAIM_AUTH	credential	env	secreto con que un hijo --bg-spare autentica su claim
+THYROX_BG_GRACE_SECONDS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_BG_MEMFREE_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_BG_MEMFREE_POLL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_BG_RENDEZVOUS_SOCK	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_BG_SOCKET_TOKENS_PATH	secret-reference	env	archivo de tokens de un solo uso del daemon
+THYROX_BG_SOURCE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_BG_STARTUP_WEDGE_MS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_BINARY_REQUIRE_LIVE_MEASURED	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_BOARD_ROOT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_BRIDGE_BASE_URL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_BRIDGE_OAUTH_TOKEN	credential	env	token OAuth del bridge
+THYROX_BRIDGE_SESSION_INGRESS_URL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_BRIDGE_USE_CCR_V2	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CACHE_API	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CACHE_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CACHE_DOCS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CENSUS_REFERENCE_ROOT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CENSUS_ROOT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CENSUS_UNIT_BASES	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CENSUS_UNIT_MARKER	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CHROME_PERMISSION_MODE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CLAUDE_OAUTH_CLIENT_ID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CLI	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CLIPROXYAPI_CONFIG_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CLONE_PREFIX	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODEX_OAUTH_CLIENT_ID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_ABLATION_BASELINE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_ACCESSIBILITY	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_ACCOUNT_TAGGED_ID	sensitive-config	env	identificador de cuenta
+THYROX_CODE_ACCOUNT_UUID	sensitive-config	env	identificador de cuenta
+THYROX_CODE_ACTION	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_ADDITIONAL_PROTECTION	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_AGENT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_AGENT_COLOR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_AGENT_LIST_IN_MESSAGES	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_ALWAYS_ENABLE_EFFORT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_API_BASE_URL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_API_KEY_FILE_DESCRIPTOR	secret-reference	env	descriptor por el que llega la clave de API
+THYROX_CODE_API_KEY_HELPER_TTL_MS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_ATTRIBUTION_HEADER	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_AUTO_COMPACT_WINDOW	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_AUTO_CONNECT_IDE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_AUTO_MODE_MODEL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_AX_SCREEN_READER	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_BASE_REF	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_BASH_SANDBOX_SHOW_INDICATOR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_BG_CLASSIFIER	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_BG_CLASSIFIER_ENGINE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_BG_JOB_SHORT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_BG_LOW_MEM_MB	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_BG_SPARE_POOL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_BLOCKING_LIMIT_OVERRIDE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_BRIEF	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_BRIEF_UPLOAD	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_BUBBLEWRAP	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_CCR_MIRROR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_CHILD_SESSION	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_CLIENT_CERT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_CLIENT_KEY	secret-reference	env	ruta a la clave privada mTLS
+THYROX_CODE_CLIENT_KEY_PASSPHRASE	credential	env	frase de paso de la clave privada mTLS
+THYROX_CODE_COMMIT_LOG	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_CONTAINER_ID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_COORDINATOR_MODE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_COWORK_FRAME_ARTIFACTS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_CUSTOM_OAUTH_URL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DEBUG_LOGS_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DEBUG_LOG_LEVEL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DEBUG_REPAINTS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DECLARED_CONTEXT_WINDOW	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DESKTOP_APP_VERSION	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DIAGNOSTICS_FILE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_1M_CONTEXT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_ADVISOR_TOOL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_ALTERNATE_SCREEN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_ATTACHMENTS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_AUTO_MEMORY	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_BACKGROUND_TASKS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_CLAUDE_MDS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_COMMAND_INJECTION_CHECK	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_CRON	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_EXPERIMENTAL_BETAS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_EXTRA_USAGE_COMMAND	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_FAST_MODE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_FILE_CHECKPOINTING	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_GIT_INSTRUCTIONS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_GOAL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_LEGACY_MODEL_REMAP	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_MESSAGE_ACTIONS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_MOUSE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_MOUSE_CLICKS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_NONESSENTIAL_TRAFFIC	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_OFFICIAL_MARKETPLACE_AUTOINSTALL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_POLICY_SKILLS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_PRECOMPACT_SKIP	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_TERMINAL_TITLE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_THINKING	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DISABLE_VIRTUAL_SCROLL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DONT_INHERIT_ENV	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_DUMP_AUTO_MODE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_EAGER_FLUSH	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_EFFORT_LEVEL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_EMIT_SESSION_STATE_EVENTS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_EMIT_TOOL_USE_SUMMARIES	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_ENABLE_CFC	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_ENABLE_CHANNELS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_ENABLE_FINE_GRAINED_TOOL_STREAMING	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_ENABLE_GATEWAY_MODEL_DISCOVERY	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_ENABLE_PROMPT_SUGGESTION	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_ENABLE_SDK_FILE_CHECKPOINTING	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_ENABLE_TASKS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_ENABLE_TELEMETRY	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_ENABLE_TOKEN_USAGE_ATTACHMENT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_ENABLE_XAA	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_ENTRYPOINT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_ENVIRONMENT_KIND	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_ENVIRONMENT_RUNNER_VERSION	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_ESSENTIAL_TRAFFIC_ONLY	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_EVAL_CONFINED	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_EXCLUDE_DYNAMIC_SYSTEM_PROMPT_SECTIONS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_EXIT_AFTER_FIRST_RENDER	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_EXIT_AFTER_STOP_DELAY	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_EXTRA_BODY	sensitive-config	env	cuerpo extra de petición: puede llevar datos de cuenta
+THYROX_CODE_EXTRA_METADATA	sensitive-config	env	metadatos de petición: pueden identificar a la persona
+THYROX_CODE_FEATURE_OVERRIDES	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_FILE_READ_MAX_OUTPUT_TOKENS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_FORCE_FULL_LOGO	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_FORCE_WINDOWS_CREDMAN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_FORK_SUBAGENT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_FRAME_TIMING_LOG	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_GIT_BASH_PATH	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_GLOB_HIDDEN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_GLOB_NO_IGNORE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_HARBOR_KITE_PACING_OFF	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_HIDE_SETTINGS_HINT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_HOST_CREDS_FILE	secret-reference	env	archivo de credenciales del anfitrión
+THYROX_CODE_HOST_GATEWAY_LINEAGE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_HOST_PLATFORM	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_HOST_SCHEDULED_RUN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_IDE_HOST_OVERRIDE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_IDE_SKIP_AUTO_INSTALL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_IDE_SKIP_VALID_CHECK	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_IDLE_THRESHOLD_MINUTES	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_IDLE_TOKEN_THRESHOLD	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_IS_COWORK	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_JSONL_TRANSCRIPT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_LOCAL_TELEMETRY	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_LOCAL_TELEMETRY_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_LOOP_PERSISTENT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_MANAGED_SETTINGS_PATH	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_MAX_CONTEXT_TOKENS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_MAX_OUTPUT_TOKENS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_MAX_RETRIES	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_MAX_TOOL_USE_CONCURRENCY	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_MAX_TURNS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_MCP_INSTR_DELTA	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_MESSAGING_SOCKET	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_MESSAGING_TOKEN	credential	env	token del buzón entre sesiones
+THYROX_CODE_MID_CONVERSATION_SYSTEM	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_MODEL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_MODEL_CAPABILITIES	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_MODEL_SCOPE_LISTED_MODELS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_NATIVE_STDIN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_NEW_INIT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_NO_FLICKER	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_OAUTH_CLIENT_ID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_OAUTH_REFRESH_TOKEN	credential	env	token de refresco OAuth
+THYROX_CODE_OAUTH_SCOPES	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_OAUTH_TOKEN	credential	env	token OAuth del bucle propio
+THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR	secret-reference	env	descriptor por el que llega el token OAuth
+THYROX_CODE_ORGANIZATION_UUID	sensitive-config	env	identificador de organización
+THYROX_CODE_OTEL_HEADERS_HELPER_DEBOUNCE_MS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_OVERRIDE_DATE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_PACKAGE_MANAGER_AUTO_UPDATE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_PERMISSION_MODE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_PLAN_MODE_INTERVIEW_PHASE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_PLAN_MODE_REQUIRED	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_PLAN_V2_AGENT_COUNT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_PLAN_V2_EXPLORE_AGENT_COUNT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_PLUGIN_CACHE_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_PLUGIN_GIT_TIMEOUT_MS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_PLUGIN_PREFER_HTTPS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_PLUGIN_SEED_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_PLUGIN_USE_ZIP_CACHE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_POST_FOR_SESSION_INGRESS_V2	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_PROACTIVE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_PROFILE_QUERY	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_PROFILE_STARTUP	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_PROMPT_CACHE_TTL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_PROVIDER_MANAGED_BY_HOST	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_PROXY_RESOLVES_HOSTS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_PWSH_PARSE_TIMEOUT_MS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_QUESTION_PREVIEW_FORMAT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_RATE_LIMIT_TIER	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_REDIRECT_URI	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_REMOTE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_REMOTE_CONTROL_SESSION_NAME_PREFIX	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_REMOTE_ENVIRONMENT_TYPE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_REMOTE_MEMORY_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_REMOTE_SEND_KEEPALIVES	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_REMOTE_SESSION_ID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_REPL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_RESUME_INTERRUPTED_TURN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_RESUME_PROMPT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_RETRY_WATCHDOG	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SAVE_HOOK_ADDITIONAL_CONTEXT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SCROLL_SPEED	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SESSIONEND_HOOKS_TIMEOUT_MS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SESSION_ACCESS_TOKEN	credential	env	token de acceso de una sesión remota
+THYROX_CODE_SESSION_ATTENDED	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SESSION_ID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SESSION_KIND	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SESSION_LOG	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SESSION_NAME	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SHELL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SHELL_PREFIX	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SIMPLE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SKIP_BEDROCK_AUTH	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SKIP_FAST_MODE_NETWORK_ERRORS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SKIP_FAST_MODE_ORG_CHECK	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SKIP_FOUNDRY_AUTH	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SKIP_PROMPT_HISTORY	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SKIP_VERTEX_AUTH	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SLOW_OPERATION_THRESHOLD_MS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SSE_PORT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_STALL_TIMEOUT_MS_FOR_TESTING	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_STOP_HOOK_BLOCK_CAP	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_STREAMLINED_OUTPUT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SUBAGENT_MODEL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SUBAGENT_PROMPT_CACHE_TTL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SUBPROCESS_ENV_SCRUB	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SUBSCRIPTION_TYPE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SYNC_PLUGIN_INSTALL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SYNC_PLUGIN_INSTALL_TIMEOUT_MS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_SYNTAX_HIGHLIGHT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_TASK_LIST_ID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_TEAMMATE_COLOR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_TEAMMATE_COMMAND	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_TEAMMATE_NAME	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_TEAM_ALLOWED_PATHS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_TEAM_NAME	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_TERMINAL_RECORDING	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_TEST_FIXTURES_ROOT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_TMPDIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_TMUX_PREFIX	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_TMUX_PREFIX_CONFLICTS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_TMUX_SESSION	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_TMUX_TRUECOLOR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_TWO_STAGE_CLASSIFIER	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_UNATTENDED_RETRY	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_USER_EMAIL	sensitive-config	env	correo de la persona
+THYROX_CODE_USER_ID	sensitive-config	env	identificador de la persona
+THYROX_CODE_USE_ANTHROPIC_AWS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_USE_BEDROCK	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_USE_CCR_V2	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_USE_COWORK_PLUGINS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_USE_FOUNDRY	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_USE_GATEWAY	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_USE_GEMINI	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_USE_MANTLE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_USE_NATIVE_FILE_SEARCH	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_USE_OPENAI	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_USE_POWERSHELL_TOOL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_USE_VERTEX	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_VERIFY_PLAN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_VERSION	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_VOICE_FORWARD_INTERIMS_TYPED	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_WEBSOCKET_AUTH_FILE_DESCRIPTOR	secret-reference	env	descriptor por el que llega la autenticación del websocket
+THYROX_CODE_WORKER_EPOCH	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_WORKFLOWS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CODE_WORKSPACE_HOST_PATHS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_COMMANDS_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_COMMIT_AUTHOR	sensitive-config	env	identidad de autor de commits
+THYROX_COMMIT_COMMITTER	sensitive-config	env	identidad de committer
+THYROX_CONFIG_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CONSUMER	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CONSUMER_STRICT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CONTEXT_KEEP_LATEST_IMAGES	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CONTEXT_LENGTH_DEFAULT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CONTEXT_RESERVE_TOKENS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CONTINUATION_TASK	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CONTINUATION_TRANSIENT_BUDGET	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_CONTROL_PLANE_ENTRIES	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_COUNTERPART_DECLARATION	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_COWORK_MEMORY_EXTRA_GUIDELINES	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_COWORK_MEMORY_PATH_OVERRIDE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_DEBUG	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_DISABLE_TOKEN_HEALTHCHECK	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_DISK_ADMISSION_FLOOR_MB	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_DISK_ADMISSION_HEADROOM	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_DISK_ADMISSION_LEDGER	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_ENABLE_PROMPT_CACHING_1H	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_ENABLE_PROMPT_CACHING_1H_BEDROCK	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_ENV_FILE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_EVIDENCE_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_EXEC_IMAGE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_EXPOSURE_EVIDENCE_DIR	config	env	ruta del hogar de la evidencia; el valor es una ruta, no la evidencia
+THYROX_EXTRA_REACH_ROOTS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_FEATURE_FLAGS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_FIXTURE_LEAK_SHARED	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_FORCE_PROMPT_CACHING_5M	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_GEMINI_BUILTIN_OAUTH_CLIENT_ID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_GEMINI_BUILTIN_OAUTH_CLIENT_SECRET	credential	env	secreto de cliente OAuth
+THYROX_GEMINI_OAUTH_CLIENT_ID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_GEMINI_OAUTH_CLIENT_SECRET	credential	env	secreto de cliente OAuth
+THYROX_GHE_COPILOT_OAUTH_CLIENT_ID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_GITHUB_COPILOT_CLI_VERSION	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_GITHUB_OAUTH_CLIENT_ID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_GITHUB_OAUTH_CLIENT_SECRET	credential	env	secreto de cliente OAuth
+THYROX_GITLAB_BASE_URL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_GITLAB_DUO_BASE_URL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_GITLAB_DUO_OAUTH_CLIENT_ID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_GITLAB_DUO_OAUTH_CLIENT_SECRET	credential	env	secreto de cliente OAuth
+THYROX_GITLAB_OAUTH_CLIENT_ID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_GITLAB_OAUTH_CLIENT_SECRET	credential	env	secreto de cliente OAuth
+THYROX_GROK_OAUTH_CLIENT_ID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_HIDE_HEALTHCHECK_LOGS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_HOOK_CWD	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INFRA_BOOTSTRAP_BIN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INFRA_DISK_ADMISSION_BIN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INFRA_HEALTH_INTERVAL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INFRA_HEALTH_TIMEOUT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INFRA_OLLAMA_IMAGE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INFRA_OLLAMA_PORT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INFRA_OLLAMA_VOLUME	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INFRA_PODMAN_NUM_LOCKS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INFRA_POSTGRES_DB	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INFRA_POSTGRES_IMAGE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INFRA_POSTGRES_PASSWORD	credential	env	contraseña del rol de PostgreSQL gestionado
+THYROX_INFRA_POSTGRES_PORT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INFRA_POSTGRES_USER	sensitive-config	env	usuario de base de datos
+THYROX_INFRA_PROXY_CA_BUNDLE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INFRA_REDIS_IMAGE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INFRA_REDIS_PORT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INSPECTOR_BUFFER_SIZE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INSPECTOR_HTTP_PROXY_PORT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INSPECTOR_MAX_BODY_KB	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INSPECTOR_TLS_INTERCEPT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INSTALL_GAWK	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INSTALL_HUNSPELL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INSTALL_PARALLEL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INSTALL_PGVECTOR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INSTALL_PODMAN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INSTALL_POPPLER	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INSTALL_POSTGRES_TEST_DB	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INSTALL_REDIS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INSTALL_TEXLIVE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_INTERNAL_MODEL_REPOS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_ITEM_WORKTREE_DISK_RESERVE_MB	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_ITEM_WORKTREE_DISK_WAIT_SECONDS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_ITEM_WORKTREE_LINK	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_ITEM_WORKTREE_RETRY_SECONDS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_ITEM_WORKTREE_SPARSE_EXCLUDE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_JOBS_API	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_JOBS_ARCHIVE_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_JOBS_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_JOBS_DOCS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_JOBS_LEDGER_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_JOBS_THYROX	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_JOB_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_JOB_EGRESS_CA_BUNDLE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_JOB_EGRESS_PROXY_URL	credential	env	URL de proxy de salida: puede llevar usuario:contraseña
+THYROX_KIMI_CLI_VERSION	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_KIMI_CODING_DEVICE_ID	sensitive-config	env	identificador de dispositivo
+THYROX_KIMI_CODING_OAUTH_CLIENT_ID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_KIMI_WEB_BASE_URL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_LAYER_SIGNALS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_LIB_REACH	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_LIB_TOOLCHAIN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_LINT_BIN_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_LIVE_SETTINGS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_LOCAL_OAUTH_API_BASE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_LOCAL_OAUTH_APPS_BASE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_LOCAL_OAUTH_CONSOLE_BASE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_LOCAL_PROXY_SOCKET	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_LOCATOR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_MAILBOX_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_MANAGED_EXECUTION_RUNNER	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_MIGRATION_ROOT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_MITM_DATA_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_MITM_IDLE_TIMEOUT_MS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_MITM_LOCAL_PORT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_MITM_NO_SUDO	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_MITM_ROOT_CA_ENABLED	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_MITM_SKIP_ANTIGRAVITY_DNS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_MITM_SKIP_DNS_WRITE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_MITM_SKIP_SYSTEM_TRUST	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_MOCK_HEADERLESS_429	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_MODEL_ARTIFACT_CACHE_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_MODEL_ARTIFACT_LOCATIONS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_MODEL_CATALOG	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_MODEL_QUALIFICATIONS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_MODEL_SCHEDULING_COORDINATION	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_MORERIGHT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_MUSE_CODE_OAUTH_CLIENT_ID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_NODE_API_HEADERS	credential	env	cabeceras HTTP: pueden llevar Authorization
+THYROX_OBSERVABILITY_DATABASE_URL	credential	env	URL de base de datos: puede llevar usuario:contraseña
+THYROX_OBSERVABILITY_DATA_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_OPENAI_COMPAT_API_KEY	credential	env	clave de API del upstream compatible con OpenAI
+THYROX_OPENAI_COMPAT_BASE_URL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_OPENAI_COMPAT_MODEL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_OPENFERENCE_OAUTH_CLIENT_ID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_OUTCOME_CLASSIFIER_COMMAND	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_PARALLEL_MAP_ADMISSION_TIMEOUT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_PARALLEL_MAP_HISTORY_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_PGVECTOR_SOURCE_URL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_PGVECTOR_VERSION	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_PODMAN_LIBPOD_TMP_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_PODMAN_LOCK_RECOVERY_UID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_POOL_DOCUMENT_INTENT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_POOL_GUARDED_GIT_COMMON_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_POOL_ITEM	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_POOL_ITEM_ADDRESS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_POOL_ITEM_GENERATION	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_POOL_ITEM_SNAPSHOT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_POOL_MEMINFO_PATH	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_POOL_RUN_ID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_POOL_SNAPSHOT_INTERVAL_SECONDS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_POOL_STASH_ATTEMPTS_FILE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_POOL_WORKTREES_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_PROVIDERS_DATA_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_PROVIDER_PAYG_API_KEY	credential	env	clave de API del método Pay-As-You-Go del proveedor de API; fuente transitoria de providers add --credential-env
+THYROX_PROXY_MODE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_PUBLIC_BASE_URL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_PYTHON_FALLBACK	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_QODER_OAUTH_AUTHORIZE_URL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_QODER_OAUTH_CLIENT_ID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_QODER_OAUTH_CLIENT_SECRET	credential	env	secreto de cliente OAuth
+THYROX_QODER_OAUTH_TOKEN_URL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_QODER_OAUTH_USERINFO_URL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_QUANTIZER_IMAGE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_RAM_ADMISSION_LEDGER	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_RAM_ADMISSION_MEMINFO	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_REACH_API	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_REACH_ROOT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_REACH_ROOTS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_REACH_SERVER	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_REDIS_URL	credential	env	URL de Redis: puede llevar usuario:contraseña
+THYROX_REGISTRY_INTEGRATION	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_REGISTRY_PUBLISHER_REGISTRY	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_REGISTRY_PUBLISHER_TOKEN	credential	env	token de publicación del registro de imágenes
+THYROX_REGISTRY_PUBLISHER_USERNAME	sensitive-config	env	usuario del registro
+THYROX_REGISTRY_READER_TOKEN	credential	env	token de lectura del registro de artefactos
+THYROX_REGISTRY_READER_USERNAME	sensitive-config	env	usuario del registro
+THYROX_REPL_MODE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_RESULTS_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_ROOT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_RULES_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_RUNTIME_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_SEMANTIC_SEARCH_DATABASE_URL	credential	env	URL de PostgreSQL: lleva usuario:contraseña
+THYROX_SEMANTIC_SEARCH_SCHEMA	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_SESSION_ID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_SESSION_INGRESS_TOKEN_FILE	secret-reference	env	archivo que contiene el token de ingreso
+THYROX_SESSION_LEDGER_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_SKILLS_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_STATE_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_STOP_TESTS_RUNNING	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_STORAGE_ENCRYPTION_KEY	credential	env	clave de cifrado del almacén de cuentas
+THYROX_STORE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_STORE_PROXY_ACCESS_KEY	credential	env	clave de acceso al proxy del almacén
+THYROX_STREAM_RECOVERY_TOOLCALL_ORDER_FIX	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_SUITE_TIMEOUT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_SUITE_WIDTH	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_SURFACE_CONSUMERS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TARGET_REPO	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TEST_POSTGRES_URL	credential	env	URL de PostgreSQL de pruebas: lleva usuario:contraseña
+THYROX_TEST_REQUIRE_POSTGRES	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TEST_RUNNER	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_APT_GET_BIN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_AWK_BIN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_BUN_BIN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_DPKG_BIN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_EFFECTIVE_UID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_GAWK_INSTALL_CMD	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_HUNSPELL_BIN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_HUNSPELL_DICTIONARY	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_HUNSPELL_INSTALL_CMD	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_HUNSPELL_PROBE_ACCEPT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_HUNSPELL_PROBE_REJECT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_INDEX_REFRESH_CMD	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_INTERPRETER_PATH	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_IPROUTE2_INSTALL_CMD	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_IP_BIN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_MANIFESTS_OPTIONAL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_MANIFESTS_REQUIRED	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_NODE_MODULES_HOME	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_PARALLEL_BIN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_PARALLEL_INSTALL_CMD	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_PDFTOPPM_BIN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_PDFTOTEXT_BIN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_PDF_TEXT_INSTALL_CMD	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_PGVECTOR_INSTALL_CMD	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_PG_CONFIG_BIN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_PODMAN_BIN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_PODMAN_INSTALL_CMD	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_POPPLER_INSTALL_CMD	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_POPPLER_PROBE_PDF_B64	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_POPPLER_PROBE_TEXT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_POSTGRES_ADMIN_CMD	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_PSQL_BIN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_PYTHON_BIN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_REDIS_BIN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_REDIS_INSTALL_CMD	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_RSYNC_BIN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_RSYNC_INSTALL_CMD	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_SUDO_BIN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_TEXLIVE_INSTALL_CMD	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_TEXLIVE_PACKAGES	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_TEXLIVE_PROBE_DOC	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_TEXLIVE_PROBE_FILE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_TIME_BIN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_TIME_INSTALL_CMD	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TOOLCHAIN_XELATEX_BIN	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TRANSCRIPTS_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TRANSCRIPT_PATH	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TRUSTED_DEVICE_TOKEN	credential	env	token de dispositivo de confianza
+THYROX_TS_IDENTIFIER_EXTRACTOR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_TS_WIDTH	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_UNDERCOVER	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_USER_CLAUDE_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_WATCHED_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_WORKBENCH_API	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_WORKBENCH_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_WORKBENCH_DOCS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_WORKBENCH_THYROX	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+HOME	config	external	ruta del hogar dentro de la unidad
+OLLAMA_HOST	config	external	dirección de escucha del runtime
+HTTPS_PROXY	sensitive-config	external	URL de proxy: puede llevar usuario:contraseña
+https_proxy	sensitive-config	external	URL de proxy: puede llevar usuario:contraseña
+HTTP_PROXY	sensitive-config	external	URL de proxy: puede llevar usuario:contraseña
+http_proxy	sensitive-config	external	URL de proxy: puede llevar usuario:contraseña
+ALL_PROXY	sensitive-config	external	URL de proxy: puede llevar usuario:contraseña
+all_proxy	sensitive-config	external	URL de proxy: puede llevar usuario:contraseña
+NO_PROXY	config	external	lista de exclusiones del proxy
+no_proxy	config	external	lista de exclusiones del proxy
+NODE_EXTRA_CA_CERTS	config	external	ruta a un bundle de CA público
+SSL_CERT_FILE	config	external	ruta a un bundle de CA público
+GIT_SSL_CAINFO	config	external	ruta a un bundle de CA público
+GIT_AUTHOR_NAME	sensitive-config	external	identidad de autor de git
+GIT_AUTHOR_EMAIL	sensitive-config	external	correo de autor de git
+GIT_TERMINAL_PROMPT	config	external	bandera de git
+GIT_EDITOR	config	external	editor de git
+POSTGRES_PASSWORD	credential	external	contraseña de PostgreSQL de la imagen oficial
+POSTGRES_PASSWORD_FILE	secret-reference	external	ruta al secreto montado de PostgreSQL
+POSTGRES_USER	sensitive-config	external	usuario de PostgreSQL
+POSTGRES_DB	config	external	nombre de la base

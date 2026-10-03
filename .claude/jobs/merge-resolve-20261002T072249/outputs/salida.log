@@ -1,0 +1,7 @@
+17 | <<<<<<< HEAD
+     ^
+error: Unexpected <<
+    at /home/user/thyrox/src/packages/podman-execution/executionCommand.ts:17:1
+
+Bun v1.3.11 (Linux x64)
+__BG_EXIT__=1

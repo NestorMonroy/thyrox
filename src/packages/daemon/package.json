@@ -69,6 +69,9 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
     "@thyrox/agent": "0.4.0",
-    "@thyrox/config": "0.1.0"
+    "@thyrox/config": "0.1.0",
+    "@thyrox/local-models": "0.1.0",
+    "@thyrox/model-scheduling": "0.1.0",
+    "@thyrox/podman-execution": "0.1.0"
   }
 }

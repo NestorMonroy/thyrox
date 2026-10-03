@@ -1,0 +1,71 @@
+run-task-pool: 13 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/pool-a2-integrate/jobs/job-20260930T092736
+  job-20260930T092736/job-001 PYTHONDONTWRITEBYTECODE=1 timeout 300 python3 tests/session/test_documentation_publisher.py > /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0624-publisher.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0624-publisher.log
+  job-20260930T092736/job-002 timeout 900 bash tests/session/test-headless-pool.sh > /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0624-headless-pool.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0624-headless-pool.log
+  job-20260930T092736/job-003 cd src/packages/local-observability && timeout 600 bun test __tests__/udsMessaging.test.ts src/uds/__tests__/udsLiveSessionRegistry.test.ts > /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0448-0507-uds.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0448-0507-uds.log
+  job-20260930T092736/job-004 cd src/packages/tool-registry && timeout 600 bun test src/tools/ListAgentsTool > /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0600-listagents.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0600-listagents.log
+  job-20260930T092736/job-005 timeout 600 bash tests/session/test-list-agents-two-cli.sh > /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0600-two-cli.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0600-two-cli.log
+  job-20260930T092736/job-006 cd src/packages/bridge && timeout 600 bun test src/__tests__/trustedDevice.test.ts > /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0309-bridge.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0309-bridge.log
+  job-20260930T092736/job-007 cd src/packages/daemon && timeout 600 bun test src/__tests__/workerExitOutcome.test.ts src/__tests__/workerPhaseGuard.test.ts > /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0309-daemon.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0309-daemon.log
+  job-20260930T092736/job-008 cd src/packages/repl && timeout 600 bun test src/__tests__/readFileInRange.test.ts > /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0309-repl.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0309-repl.log
+  job-20260930T092736/job-009 PYTHONDONTWRITEBYTECODE=1 timeout 600 python3 tests/verify/test_stand_ins_cleared.py > /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0309-stand-ins.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0309-stand-ins.log
+  job-20260930T092736/job-010 cd src/packages/permission && timeout 600 bun test src/__tests__/fileToolPermissions.test.ts src/__tests__/pathLanding.test.ts > /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0281-permission.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0281-permission.log
+  job-20260930T092736/job-011 cd src/packages/storage && timeout 600 bun test src/__tests__/fsOperations.test.ts > /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0281-storage.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-a2-integrate/0281-storage.log
+  job-20260930T092736/job-012 timeout 1800 bash bin/check_package_typecheck --strict local-observability tool-registry bridge daemon ide memory provider permission storage repl > /home/user/thyrox/.claude/build-logs/pool-a2-integrate/typecheck.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-a2-integrate/typecheck.log
+  job-20260930T092736/job-013 timeout 300 bash bin/generate_bin --check > /home/user/thyrox/.claude/build-logs/pool-a2-integrate/bin-check.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-a2-integrate/bin-check.log
+run-task-pool: lanzados 13 de 13; esperando en PRIMER PLANO (timeout 1667s)
+asentado: job-20260930T092736_job-001 -> OK (2 de 14)
+asentado: job-20260930T092736_job-002 -> OK (3 de 14)
+asentado: job-20260930T092736_job-003 -> OK (4 de 14)
+asentado: job-20260930T092736_job-004 -> OK (5 de 14)
+asentado: job-20260930T092736_job-005 -> OK (6 de 14)
+asentado: job-20260930T092736_job-006 -> OK (7 de 14)
+asentado: job-20260930T092736_job-007 -> OK (8 de 14)
+asentado: job-20260930T092736_job-008 -> OK (9 de 14)
+asentado: job-20260930T092736_job-009 -> OK (10 de 14)
+asentado: job-20260930T092736_job-010 -> OK (11 de 14)
+asentado: job-20260930T092736_job-011 -> OK (12 de 14)
+asentado: job-20260930T092736_job-012 -> OK (13 de 14)
+asentado: job-20260930T092736_job-013 -> OK (14 de 14)
+== 14 trabajos asentados ==
+OLVIDADO job-20260930T092736
+       | (vacío — no emitió nada)
+OK     job-20260930T092736_job-001 exit=0
+       | EXIT=0
+       memoria pico: 27688 KB (27 MB) · pared 3.07s
+OK     job-20260930T092736_job-002 exit=0
+       | EXIT=0
+       memoria pico: 22320 KB (22 MB) · pared 132.98s
+OK     job-20260930T092736_job-003 exit=0
+       | EXIT=0
+       memoria pico: 196196 KB (192 MB) · pared 2.16s
+OK     job-20260930T092736_job-004 exit=0
+       | EXIT=0
+       memoria pico: 194260 KB (190 MB) · pared 1.94s
+OK     job-20260930T092736_job-005 exit=0
+       | EXIT=0
+       memoria pico: 224604 KB (219 MB) · pared 6.23s
+OK     job-20260930T092736_job-006 exit=0
+       | EXIT=0
+       memoria pico: 84776 KB (83 MB) · pared 0.46s
+OK     job-20260930T092736_job-007 exit=0
+       | EXIT=0
+       memoria pico: 70112 KB (68 MB) · pared 0.32s
+OK     job-20260930T092736_job-008 exit=0
+       | EXIT=0
+       memoria pico: 80716 KB (79 MB) · pared 0.35s
+OK     job-20260930T092736_job-009 exit=0
+       | EXIT=0
+       memoria pico: 35480 KB (35 MB) · pared 7.41s
+OK     job-20260930T092736_job-010 exit=0
+       | EXIT=0
+       memoria pico: 194868 KB (190 MB) · pared 1.92s
+OK     job-20260930T092736_job-011 exit=0
+       | EXIT=0
+       memoria pico: 65208 KB (64 MB) · pared 0.27s
+OK     job-20260930T092736_job-012 exit=0
+       | EXIT=0
+       memoria pico: 855932 KB (836 MB) · pared 109.90s
+OK     job-20260930T092736_job-013 exit=0
+       | EXIT=0
+       memoria pico: 25148 KB (25 MB) · pared 1.10s
+__BG_EXIT__=0

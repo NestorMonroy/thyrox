@@ -1,0 +1,3 @@
+local-models-qualify: The operation timed out.
+execution thyrox-worker-probe-murf8dvi-3262 kind=probe task=TASK-THYROX-0710 exit=2
+__BG_EXIT__=2

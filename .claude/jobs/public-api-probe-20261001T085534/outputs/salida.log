@@ -1,0 +1,14 @@
+version={"version":"0.35.0"}
+head_before=404
+post_mismatch=400
+post_blob=201
+post_seconds=.589247079
+head_after=200
+create={"status":"success"}
+show_from=['FROM /root/.ollama/models/blobs/sha256-b8d6f5cbac92ca386bee2a3911140bc5cbfd1aa9879888fb6e395a134ce05e88'] Q4_K_M
+load=True load None
+ps=[('probe-model:latest', 'fa1be24f1eee', '2319')]
+generate=True '2+2的结果' None
+unit_models_bytes=397812289
+cache_links=1
+__BG_EXIT__=0

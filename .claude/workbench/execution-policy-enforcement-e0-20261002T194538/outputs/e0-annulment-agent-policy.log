@@ -1,0 +1,5 @@
+## agent-policy
+  FALLA 1 Agent con fallback prohibido: deny — esperado 'deny' obtenido None
+  FALLA 12 política ilegible: se niega (no abre lo que cierra) — esperado 'deny' obtenido None
+  FALLA 13 sin variable lee la política versionada: Agent negado — esperado 'deny' obtenido None
+execution_policy: 11 ok, 3 fallas

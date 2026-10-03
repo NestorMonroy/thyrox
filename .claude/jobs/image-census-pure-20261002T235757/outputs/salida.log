@@ -1,0 +1,4 @@
+{"images": 38, "tagged": 7, "untagged": 31, "untaggedLayersArePrefixOfFinal": 31, "untaggedByFinal": {"26af4d189984948a92ebc88a2c8b69e1fda2b089ea52a87818b3b1c094177d64": 8, "2bb9f235830eb30689864b5447eeea083ae1e3607a18fdca353b5c91de5e5e5a": 8, "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8": 15}, "historyWithProxyAssignments": ["26af4d189984"]}
+docker.io/th3rox/thyrox-task-runner:ubuntu24.04-bun1.3.11-uv0.8.17	sha256:1cced65c16b40c7ac5fc73a6908ce0353ec450618251cac1893ef8c82ad25ba5	match
+execution thyrox-worker-probe-murmieq7-4359 kind=probe task=TASK-THYROX-0726 exit=0
+__BG_EXIT__=0

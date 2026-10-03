@@ -1,0 +1,18 @@
+bun test v1.3.11 (af24e281)
+
+ 23 pass
+ 0 fail
+ 48 expect() calls
+Ran 23 tests across 1 file. [1034.00ms]
+bun test v1.3.11 (af24e281)
+
+ 2 pass
+ 0 fail
+ 3 expect() calls
+Ran 2 tests across 1 file. [2.53s]
+bin/check_package_typecheck: sin entorno del proveedor; corre con /usr/local/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/pool-worktrees/d8dda5fc002a/2" && uv sync
+  local-observability: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+  tool-registry: 0 propio(s) · 0 de hermano · 0 fuera (total 0)
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 2 de 2 paquete(s))

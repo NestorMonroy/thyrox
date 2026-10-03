@@ -1,0 +1,95 @@
+diff --git a/README.md b/README.md
+index fa4276ded..17b554339 100644
+--- a/README.md
++++ b/README.md
+@@ -236,8 +236,17 @@ bash bin/check_env_contract_keys --strict   # 3. contrato cerrado
+ bash install.sh                             # 4. activa los githooks del proveedor y de cada clon
+ bash bin/check_githooks_activos --strict    # 5. ¿corren de verdad? exit 1 nombra el clon y su arreglo
+ bash tests/run.sh                           # 6. el árbol funciona
++bash bin/cli providers add anthropic --credential-env <VAR>   # 7. opcional: credencial propia del pool
+ ```
+ 
++**El paso 7 da al pool una credencial propia, por una de dos vías.** Con
++`--credential-env <VAR>` la clave se lee de esa variable; sin la opción, de un
++prompt oculto. En los dos casos queda cifrada en el store de conexiones, y
++`resolveCredential` la lee cuando el entorno no declara ninguna variable de
++credencial. Sin él, un pool corre igual en `inherit` a través del proxy local:
++`--credential-proxy` es opcional, y `bin/provider-credential-proxy` lo recuerda
++al rehusar sin credencial.
++
+ **Sin el paso 4 ningún gate de commit corre, y nada lo dice.** `core.hooksPath`
+ vive en `.git/config`, que no se clona: un clon nuevo trae `.githooks/` escrito
+ y git no lo mira. Medido el 2026-09-30: `kaupamex-docs` tenía los hooks
+diff --git a/src/packages/provider/__tests__/credentialProxyProcess.test.ts b/src/packages/provider/__tests__/credentialProxyProcess.test.ts
+index 7e933b9c8..488fcdb92 100644
+--- a/src/packages/provider/__tests__/credentialProxyProcess.test.ts
++++ b/src/packages/provider/__tests__/credentialProxyProcess.test.ts
+@@ -76,4 +76,27 @@ describe('provider-credential-proxy', () => {
+     expect(await new Response(child.stderr).text()).toContain('ANTHROPIC_API_KEY')
+     expect(existsSync(socket)).toBe(false)
+   })
++
++  test('3. el rechazo nombra la vía del store de conexiones, con variable y con prompt oculto', async () => {
++    dir = mkdtempSync(join(tmpdir(), 'credential-proxy-process-'))
++    const child = Bun.spawn(['bun', ENTRY, '--socket', join(dir, 'api.sock'), '--upstream', 'http://127.0.0.1:9'], {
++      env: { PATH: process.env.PATH ?? '', HOME: dir }, stdout: 'pipe', stderr: 'pipe',
++    })
++    expect(await child.exited).toBe(2)
++    const refusal = await new Response(child.stderr).text()
++    expect(refusal).toContain('bash bin/cli providers add anthropic --credential-env <VAR>')
++    expect(refusal).toContain('sin --credential-env')
++    expect(refusal).toContain('prompt oculto')
++  })
++
++  test('4. el rechazo declara que un pool no necesita --credential-proxy', async () => {
++    dir = mkdtempSync(join(tmpdir(), 'credential-proxy-process-'))
++    const child = Bun.spawn(['bun', ENTRY, '--socket', join(dir, 'api.sock'), '--upstream', 'http://127.0.0.1:9'], {
++      env: { PATH: process.env.PATH ?? '', HOME: dir }, stdout: 'pipe', stderr: 'pipe',
++    })
++    expect(await child.exited).toBe(2)
++    const refusal = await new Response(child.stderr).text()
++    expect(refusal).toContain('--credential-proxy es opcional')
++    expect(refusal).toContain('inherit')
++  })
+ })
+diff --git a/src/packages/provider/bin/credentialProxy.ts b/src/packages/provider/bin/credentialProxy.ts
+index b7a08d01f..bddedb447 100644
+--- a/src/packages/provider/bin/credentialProxy.ts
++++ b/src/packages/provider/bin/credentialProxy.ts
+@@ -19,6 +19,23 @@ import { openExistingConnectionStore } from '../src/accounts/connectionStoreHome
+ import { resolveCredential } from '../src/credentials.ts'
+ import { startCredentialProxy } from '../src/credentialProxy.ts'
+ 
++// Las dos vías de dar al proxy una credencial propia, y por qué un pool no la
++// necesita: sin variable de credencial, en `inherit` cada ítem entra al proxy
++// local (C7) y `--credential-proxy` sobra.
++const ENV_ROUTE =
++  'declara ANTHROPIC_AUTH_TOKEN, THYROX_CODE_OAUTH_TOKEN, THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR ' +
++  'o ANTHROPIC_API_KEY en el entorno del proxy'
++const STORE_ROUTE =
++  'o guárdala cifrada en el store de conexiones con ' +
++  '`bash bin/cli providers add anthropic --credential-env <VAR>` (sin --credential-env, por prompt oculto)'
++const POOL_NOTE =
++  'Un pool no lo exige: --credential-proxy es opcional, y en inherit cada ítem usa el proxy local'
++
++function refusalMessage(cause: string | undefined): string {
++  const detail = cause ? ` (${cause})` : ''
++  return `credentialProxy: sin credencial propia${detail} — ${ENV_ROUTE}, ${STORE_ROUTE}. ${POOL_NOTE}. NO se escucha.\n`
++}
++
+ function argument(name: string): string | undefined {
+   const index = process.argv.indexOf(name)
+   return index >= 0 ? process.argv[index + 1] : undefined
+@@ -36,11 +53,7 @@ const opened = openExistingConnectionStore()
+ const credential = resolveCredential(process.env, undefined, opened?.store)
+ opened?.close()
+ if (credential.source === 'none' || credential.source === 'proxy') {
+-  process.stderr.write(
+-    'credentialProxy: sin credencial propia — declara ANTHROPIC_AUTH_TOKEN, THYROX_CODE_OAUTH_TOKEN, ' +
+-      'THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR o ANTHROPIC_API_KEY en el entorno del proxy' +
+-      (credential.error ? ` (${credential.error})` : '') + '. NO se escucha.\n',
+-  )
++  process.stderr.write(refusalMessage(credential.error))
+   process.exit(2)
+ }
+ 

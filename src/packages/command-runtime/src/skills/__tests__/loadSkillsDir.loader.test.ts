@@ -5,6 +5,7 @@ import { tmpdir } from 'os'
 import { join } from 'path'
 
 import type { Command } from '@thyrox/agent/command.js'
+import { installConfigHostBindings } from '@thyrox/config/host'
 
 import {
   clearSkillCaches,
@@ -90,6 +91,10 @@ describe('getSkillDirCommands', () => {
   const savedConfigDir = process.env.THYROX_CONFIG_DIR
   let configDir = ''
   beforeAll(() => {
+    // La lectura de política pasa por el estado de carga remota (`lgn` → `le()`
+    // en 2.1.283), que exige un host de `@thyrox/config` instalado, como en
+    // cualquier arranque real.
+    installConfigHostBindings({})
     configDir = realpathSync(mkdtempSync(join(tmpdir(), 'claude-config-')))
     process.env.THYROX_CONFIG_DIR = configDir
   })

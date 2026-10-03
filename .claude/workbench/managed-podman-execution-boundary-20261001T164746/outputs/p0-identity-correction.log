@@ -1,0 +1,26 @@
+## GREEN — manifest corregido
+0 violación(es) (alcance medido: 8 línea(s) de manifest.jsonl)
+exit=0
+## anulación 1 — la línea retirada reintroducida (paso con identidad de una unidad posterior)
+FALLA p0/scaffold atribuido a c29b895a8e8a, que no es el de outputs/p0-scaffold-unit.txt
+1 violación(es) (alcance medido: 8 línea(s) de tmp.ObUo53n0io)
+## corrección 2 (2026-10-01): las líneas p0/scaffold escritas hasta ahora llevaban el cgroup truncado
+## por 'gawk -F=' y una era un duplicado escrito por una ejecución de depuración (bash -x). Se retiran:
+{"item":"p0","step":"scaffold","utc":"2026-10-01T16:47:46","hostname":"9b70780b2fc5","pid":1,"cgroup":"9:name","containerId":"9b70780b2fc511735f42ba0c6ec95e50c6fb6ade1fe3e9200947d1f38048d8d8","recordedBy":"02b4a43063794c4850e06c624a2ff62617591d99258df458ba6f33f8fb906141","inUnit":true,"source":"outputs/p0-scaffold-unit.txt"}
+{"item":"p0","step":"scaffold","utc":"2026-10-01T16:47:46","hostname":"9b70780b2fc5","pid":1,"cgroup":"9:name","containerId":"9b70780b2fc511735f42ba0c6ec95e50c6fb6ade1fe3e9200947d1f38048d8d8","recordedBy":"7bb4244c440ffe16dc890fdd63f9936c91020dc7cff8df372cd23a11dc73bcab","inUnit":true,"source":"outputs/p0-scaffold-unit.txt"}
+## GREEN — manifest corregido
+0 violación(es) (alcance medido: 9 línea(s) de manifest.jsonl)
+exit=0
+## anulación 1 — la línea retirada reintroducida como p0/scaffold (identidad de una unidad posterior, sin fuente)
+FALLA p0/scaffold atribuido a c29b895a8e8a, que no es el de outputs/p0-scaffold-unit.txt
+1 violación(es) (alcance medido: 9 línea(s) de tmp.rjidprF3U2)
+exit=1
+## anulación 2 — transcripción con un contenedor que su fuente no declara
+FALLA línea 1 (p0/scaffold): outputs/p0-scaffold-unit.txt no declara el contenedor c29b895a8e8a
+FALLA p0/scaffold atribuido a c29b895a8e8a, que no es el de outputs/p0-scaffold-unit.txt
+2 violación(es) (alcance medido: 9 línea(s) de tmp.RWHoGz9TuE)
+exit=1
+## anulación 3 — una línea propia que atribuye otro contenedor sin fuente
+FALLA línea 2 (p0/template): atribuye 9b70780b2fc5 sin fuente de la ejecución original
+1 violación(es) (alcance medido: 9 línea(s) de tmp.TPN37cTflf)
+exit=1

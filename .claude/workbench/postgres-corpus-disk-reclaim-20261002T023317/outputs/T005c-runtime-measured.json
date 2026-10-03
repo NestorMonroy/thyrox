@@ -1,0 +1,18 @@
+{
+ "runtime": "onnxruntime + tokenizers + numpy (cp312, manylinux x86_64)",
+ "source": "PyPI wheels, sha256 verified against the index",
+ "wheels": {
+  "numpy-2.5.3-cp312-cp312-manylinux_2_27_x86_64.manylinux_2_28_x86_64.whl": {
+   "wheelBytes": 16717410,
+   "installedBytes": 56365091
+  },
+  "onnxruntime-1.30.0-cp312-cp312-manylinux_2_28_x86_64.whl": {
+   "wheelBytes": 23585654,
+   "installedBytes": 63773725
+  },
+  "tokenizers-0.23.2-cp310-abi3-manylinux_2_17_x86_64.manylinux2014_x86_64.whl": {
+   "wheelBytes": 3386843,
+   "installedBytes": 11701061
+  }
+ }
+}

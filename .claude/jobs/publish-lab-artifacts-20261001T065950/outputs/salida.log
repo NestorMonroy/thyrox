@@ -1,0 +1,6 @@
+usage: resource_admission disk-admit [-h] --need-bytes NEED_BYTES --owner
+                                     OWNER [--path PATH] [--timeout TIMEOUT]
+                                     [--interval INTERVAL]
+resource_admission disk-admit: error: argument --owner: invalid int value: 'artifact-publish-11467'
+publish-artifact: refused
+__BG_EXIT__=2

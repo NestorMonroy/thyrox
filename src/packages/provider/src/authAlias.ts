@@ -18,8 +18,8 @@
  *   status-manager singleton se re-implementa localmente con
  *   `createSignal` (mismo contrato observable: `getInstance`,
  *   `startAuthentication`, `addOutput`, `setError`, `endAuthentication`).
- * - `./betas.ts` (`clearBetasCaches`) y `@claude-code-how-works/tool-registry`
- *   (`clearToolSchemaCache`) → no-op en `internal/pendingCrossPackageDeps.ts`.
+ * - `./betas.ts` (`clearBetasCaches`) → no-op en `internal/pendingCrossPackageDeps.ts`;
+ *   `clearToolSchemaCache` se importa de `@thyrox/tool-registry/toolSchemaCache.js`.
  * - `execa` se sustituye por `node:child_process` (`execFile`/`exec`
  *   promisificados) en los tres sitios que lo usaban
  *   (`_executeApiKeyHelper`, `saveApiKey`, `maybeRemoveApiKeyFromMacOSKeychainThrows`)
@@ -31,7 +31,7 @@
  *   consumidor.
  *
  * Lo que SÍ resuelve y se importa estático: `@thyrox/config/env/utils`
- * (falta `isRunningOnHomespace`, sustituto en `pendingCrossPackageDeps.ts`),
+ * (`isRunningOnHomespace` incluido),
  * `@thyrox/storage/secureStorage.js` (`getSecureStorage`, real y completo),
  * `@thyrox/storage/lockfile.js` (`lock`, real), `@thyrox/storage/secureStorage/macOsKeychainHelpers.js`
  * (`getMacOsKeychainStorageServiceName`/`getUsername`/`clearKeychainCache`,
@@ -59,12 +59,15 @@ import {
 } from './internal/authFileDescriptor.ts'
 import { logForDebugging, logAntError } from '@thyrox/local-observability/debug.js'
 import { isEnvTruthy, readEnv } from '@thyrox/config/env/utils'
-import { isRunningOnHomespace } from './internal/pendingCrossPackageDeps.ts'
+import { isRunningOnHomespace } from '@thyrox/config/env/utils'
 import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
 import { execSyncWithDefaults } from '@thyrox/shell/execFileNoThrow.js'
 import * as lockfile from '@thyrox/storage/lockfile.js'
 import { logError } from '@thyrox/local-observability/log.js'
-import { memoizeWithTTLAsync, sleep, jsonParse, clearBetasCaches, clearToolSchemaCache, createSignal } from './internal/pendingCrossPackageDeps.ts'
+import { memoizeWithTTLAsync, jsonParse, clearBetasCaches } from './internal/pendingCrossPackageDeps.ts'
+import { sleep } from '@thyrox/config/sleep'
+import { createSignal } from '@thyrox/config/signal'
+import { clearToolSchemaCache } from '@thyrox/tool-registry/toolSchemaCache.js'
 import { getSecureStorage } from '@thyrox/storage/secureStorage.js'
 import { getMacOsKeychainStorageServiceName, getUsername, clearKeychainCache } from '@thyrox/storage/secureStorage/macOsKeychainHelpers.js'
 import type { AccountInfo, OAuthTokens, SubscriptionType } from './internal/oauthTypes.ts'
@@ -273,7 +276,7 @@ export function getAnthropicApiKeyWithSource(
     return { key: apiKeyEnv, source: 'ANTHROPIC_API_KEY' }
   }
 
-  if (isEnvTruthy(readEnv('CI')) || readEnv('NODE_ENV') === 'test') {
+  if (isEnvTruthy(readEnv('CI'))) {
     const apiKeyFromFd = getApiKeyFromFileDescriptor()
     if (apiKeyFromFd) return { key: apiKeyFromFd, source: 'ANTHROPIC_API_KEY' }
 

@@ -1,0 +1,5 @@
+   * - RAM pico del worker
+     - GNU Time da ``maxrss=392468KB``; desde fuera, sobre el cliente, 41 MB
+     - el **pico del cgroup** del contenedor es la autoridad (agrega todos sus
+       procesos); GNU Time dentro es observación secundaria del árbol que
+       ejecuta, no el pico agregado (corregido en 1.6.0)

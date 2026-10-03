@@ -1,0 +1,1137 @@
+diff --git a/bin/packaging-reachability b/bin/packaging-reachability
+new file mode 100755
+index 000000000..ba62a22eb
+--- /dev/null
++++ b/bin/packaging-reachability
+@@ -0,0 +1,15 @@
++#!/usr/bin/env bash
++# Generado por src/session/generate_bin.py — no editar a mano.
++WRAPPER_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++THYROX_ROOT="${THYROX_ROOT:-$WRAPPER_ROOT}"
++export THYROX_ROOT
++LIB="$WRAPPER_ROOT/src/lib/toolchain.sh"
++if [ ! -r "$LIB" ]; then
++  echo "bin/packaging-reachability: no alcanza $LIB — el arbol esta incompleto." >&2
++  exit 1
++fi
++# shellcheck source=/dev/null
++source "$LIB"
++THYROX_TOOLCHAIN_NODE_MODULES_HOME="${THYROX_TOOLCHAIN_NODE_MODULES_HOME:-$WRAPPER_ROOT/node_modules}" \
++  thyrox_toolchain_require_bun || exit 1
++exec "${THYROX_TOOLCHAIN_BUN_BIN:-bun}" "$WRAPPER_ROOT/src/packaging/bin/reachability.ts" "$@"
+diff --git a/src/packaging/__tests__/reachability.test.ts b/src/packaging/__tests__/reachability.test.ts
+new file mode 100644
+index 000000000..ef1fd4c20
+--- /dev/null
++++ b/src/packaging/__tests__/reachability.test.ts
+@@ -0,0 +1,264 @@
++/**
++ * Pruebas del grafo de alcance (ADR-010, P6).
++ *
++ * Tres niveles: un árbol sintético que fija cada rama del extractor y del
++ * resolvedor; el árbol real, donde se miden las ramas de `cli.tsx` contra los
++ * abridores; y la conducta con las dependencias opcionales ausentes, que es
++ * lo que la matriz afirma cuando escribe «no detectada».
++ */
++import { afterAll, beforeAll, describe, expect, setDefaultTimeout, test } from 'bun:test'
++import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { delimiter, dirname, join, resolve } from 'node:path'
++import {
++  cliBranches,
++  DEPENDENCY_OPENERS,
++  entrypointsOf,
++  extractImports,
++  importChain,
++  measure,
++  OPAQUE_SPECIFIER,
++  ReachabilityGraph,
++  WorkspaceResolver,
++  type Entrypoint,
++} from '../reachability.ts'
++
++const MEASUREMENT_TIMEOUT_MS = 120_000
++setDefaultTimeout(MEASUREMENT_TIMEOUT_MS)
++
++const ROOT = resolve(import.meta.dir, '..', '..', '..')
++const CLI_FILE = join(ROOT, 'src/packages/cli/src/entry/cli.tsx')
++const PODMAN_OPENER = join(ROOT, 'src/packages/daemon/src/podman/podmanWorkerManager.ts')
++
++function writeTree(base: string, files: Record<string, string>): void {
++  for (const [path, text] of Object.entries(files)) {
++    mkdirSync(dirname(join(base, path)), { recursive: true })
++    writeFileSync(join(base, path), text)
++  }
++}
++
++describe('extractor', () => {
++  test('ve imports estáticos, dinámicos, reexportes y require, y omite los de tipo', () => {
++    const text = [
++      "import { a } from './a.ts'",
++      "import type { T } from './types.ts'",
++      "import { type U } from './onlyType.ts'",
++      "export { b } from './b.ts'",
++      "export type { V } from './typeReexport.ts'",
++      "const c = await import('./c.ts')",
++      "const d = require('./d.ts')",
++      'const e = await import(name)',
++    ].join('\n')
++    expect(extractImports('x.ts', text)).toEqual([
++      { specifier: './a.ts', kind: 'static' },
++      { specifier: './b.ts', kind: 'reexport' },
++      { specifier: './c.ts', kind: 'dynamic' },
++      { specifier: './d.ts', kind: 'require' },
++      { specifier: OPAQUE_SPECIFIER, kind: 'dynamic' },
++    ])
++  })
++})
++
++describe('árbol sintético', () => {
++  let base = ''
++  let graph: ReachabilityGraph
++
++  beforeAll(() => {
++    base = mkdtempSync(join(tmpdir(), 'reachability-'))
++    writeTree(base, {
++      'src/packages/lib/package.json': JSON.stringify({
++        name: '@fixture/lib',
++        exports: {
++          '.': { '@thyrox/source': './index.ts', types: './dist/index.d.ts', default: './index.ts' },
++          './*.ts': { '@thyrox/source': './*.ts', default: './*.ts' },
++        },
++      }),
++      'src/packages/lib/index.ts': "export { deep } from './deep.ts'\n",
++      'src/packages/lib/deep.ts': "import './opener.ts'\nexport const deep = 1\n",
++      'src/packages/lib/opener.ts': 'export const opened = 1\n',
++      'src/packages/lib/lazy.ts': 'export const lazy = 1\n',
++      'src/app/main.ts': [
++        "import { deep } from '@fixture/lib'",
++        "import 'node:fs'",
++        "import 'some-npm-package'",
++        "import '@fixture/lib/missing.ts'",
++        "import './nowhere.js'",
++        "export const run = async () => (await import('@fixture/lib/lazy.ts')).lazy + deep",
++      ].join('\n'),
++    })
++    graph = new ReachabilityGraph(new WorkspaceResolver(base))
++  })
++
++  afterAll(() => rmSync(base, { recursive: true, force: true }))
++
++  test('el cierre cruza reexportes, el `exports` con comodín y el import dinámico', () => {
++    const closure = graph.closure(join(base, 'src/app/main.ts'))
++    const reached = [...closure.files].map(file => file.slice(base.length + 1)).sort()
++    expect(reached).toEqual([
++      'src/app/main.ts',
++      'src/packages/lib/deep.ts',
++      'src/packages/lib/index.ts',
++      'src/packages/lib/lazy.ts',
++      'src/packages/lib/opener.ts',
++    ])
++  })
++
++  test('el abridor alcanzado a través de otro módulo es transitivo, con su cadena', () => {
++    const closure = graph.closure(join(base, 'src/app/main.ts'))
++    const opener = join(base, 'src/packages/lib/opener.ts')
++    expect(closure.direct.has(opener)).toBe(false)
++    expect(importChain(closure, opener).map(file => file.slice(base.length + 1))).toEqual([
++      'src/app/main.ts',
++      'src/packages/lib/index.ts',
++      'src/packages/lib/deep.ts',
++      'src/packages/lib/opener.ts',
++    ])
++  })
++
++  test('lo que no resuelve se reporta; builtins y npm no son fallos', () => {
++    const closure = graph.closure(join(base, 'src/app/main.ts'))
++    expect(closure.unresolved.map(item => item.specifier).sort()).toEqual(['./nowhere.js', '@fixture/lib/missing.ts'])
++  })
++})
++
++describe('ramas de cli.tsx', () => {
++  const text = [
++    "import './top.ts'",
++    'async function main(): Promise<void> {',
++    "  await import('./always.ts')",
++    "  if (args[0] === '--fast') { return }",
++    "  if (args[0] === 'soft') { await import('./soft.ts') }",
++    "  if (args[0] === 'svc') { await import('./svc.ts'); return }",
++    "  if (flag) { await import('./flag.ts'); if (ok) { return } }",
++    "  await import('./main.ts')",
++    '}',
++  ].join('\n')
++  const branches = new Map(cliBranches('cli.tsx', text).map(branch => [branch.name, branch]))
++  const specifiers = (name: string): string[] => (branches.get(name)?.branchImports ?? []).map(item => item.specifier)
++
++  test('cada rama terminal es un entrypoint, nombrada por su literal o su identificador', () => {
++    expect([...branches.keys()]).toEqual(['cli --fast', 'cli svc', 'cli flag', 'cli'])
++    expect(branches.get('cli svc')?.condition).toBe("args[0] === 'svc'")
++  })
++
++  test('una rama carga lo que la precede y lo suyo, no lo de sus hermanas que terminan', () => {
++    expect(specifiers('cli --fast')).toEqual(['./top.ts', './always.ts'])
++    expect(specifiers('cli svc')).toEqual(['./top.ts', './always.ts', './soft.ts', './svc.ts'])
++  })
++
++  test('el camino por defecto acumula las ramas que pueden no terminar', () => {
++    expect(specifiers('cli')).toEqual(['./top.ts', './always.ts', './soft.ts', './flag.ts', './main.ts'])
++  })
++
++  test('un cli.tsx sin main() no se mide en silencio', () => {
++    expect(() => cliBranches('cli.tsx', "import './x.ts'\n")).toThrow('no declara function main()')
++  })
++})
++
++describe('árbol real', () => {
++  const branches = new Map(cliBranches(CLI_FILE, readFileSync(CLI_FILE, 'utf8')).map(branch => [branch.name, branch]))
++  const graph = new ReachabilityGraph(new WorkspaceResolver(ROOT))
++  const branchClosure = (name: string) => {
++    const branch = branches.get(name) as Entrypoint
++    return graph.closure(branch.file, branch.branchImports ?? undefined)
++  }
++  const reachedOpeners = (name: string): string[] => {
++    const closure = branchClosure(name)
++    return DEPENDENCY_OPENERS.filter(opener => closure.files.has(join(ROOT, opener.file))).map(opener => opener.file)
++  }
++
++  test('`--version` no alcanza ningún abridor de dependencia operacional', () => {
++    expect(reachedOpeners('cli --version')).toEqual([])
++  })
++
++  // Medido: el worker (`--daemon-worker`, workerRegistry) NO alcanza Podman;
++  // quien lo alcanza es la rama `daemon` (main -> bgDaemon -> supervisión).
++  test('la rama `daemon` alcanza Podman; la del worker no', () => {
++    expect(importChain(branchClosure('cli daemon'), PODMAN_OPENER).length).toBeGreaterThan(0)
++    expect(branchClosure('cli --daemon-worker').files.has(PODMAN_OPENER)).toBe(false)
++  })
++
++  test('cada abridor declarado existe en el árbol', () => {
++    const missing = DEPENDENCY_OPENERS.filter(opener => !Bun.file(join(ROOT, opener.file)).size)
++    expect(missing).toEqual([])
++  })
++
++  test('la matriz nunca escribe «no existe» y distingue directa de transitiva', () => {
++    const wrappers = new Map([['cli', 'src/packages/cli/src/entry/cli.tsx']])
++    const rows = measure(ROOT, entrypointsOf(ROOT, wrappers)).rows
++    expect(rows.some(row => /no existe/.test(Object.values(row).join(' ')))).toBe(false)
++    expect(new Set(rows.map(row => row.relation))).toEqual(new Set(['—', 'transitiva']))
++  })
++
++  test('`--check` sale 0 contra la matriz versionada', () => {
++    const run = Bun.spawnSync(['bash', join(ROOT, 'bin/packaging-reachability'), '--check'], { stdin: 'ignore' })
++    expect(run.exitCode).toBe(0)
++  })
++})
++
++describe('dependencias opcionales ausentes', () => {
++  let shadowPath = ''
++
++  /** Un PATH con todo ejecutable del PATH real salvo Podman. */
++  function pathWithoutPodman(): string {
++    const directory = mkdtempSync(join(tmpdir(), 'no-podman-'))
++    for (const source of (process.env.PATH ?? '').split(delimiter).filter(Boolean)) {
++      let names: string[] = []
++      try {
++        names = readdirSync(source)
++      } catch {
++        continue
++      }
++      for (const name of names.filter(entry => !entry.startsWith('podman'))) {
++        try {
++          symlinkSync(join(source, name), join(directory, name))
++        } catch {
++          // El primero del PATH gana, igual que en la resolución del shell.
++        }
++      }
++    }
++    return directory
++  }
++
++  function bareEnvironment(): Record<string, string> {
++    const environment: Record<string, string> = {}
++    for (const [key, value] of Object.entries(process.env)) {
++      const isOptionalDependency = /REDIS_URL|POSTGRES|DATABASE_URL|_DB_URL|STORE_URL/.test(key)
++      if (value !== undefined && !isOptionalDependency) environment[key] = value
++    }
++    environment.PATH = shadowPath
++    return environment
++  }
++
++  beforeAll(() => {
++    shadowPath = pathWithoutPodman()
++  })
++
++  afterAll(() => rmSync(shadowPath, { recursive: true, force: true }))
++
++  const commandsWithoutDependency: readonly (readonly string[])[] = [
++    ['cli', '--version'],
++    ['agent-recommend', 'analisis'],
++    ['storage', '--help'],
++  ]
++
++  test('la matriz declara estos comandos sin dependencia detectada', () => {
++    const matrix = readFileSync(join(ROOT, 'src/packaging/reachability-matrix.tsv'), 'utf8')
++    const undetected = new Set(
++      matrix.split('\n').filter(line => line.split('\t')[2] === 'no detectada').map(line => line.split('\t')[0]),
++    )
++    expect(undetected.has('cli --version')).toBe(true)
++    expect(undetected.has('agent-recommend')).toBe(true)
++    expect(undetected.has('storage')).toBe(true)
++  })
++
++  test('sin Podman en PATH ni URLs de Redis o base de datos, salen 0', () => {
++    const environment = bareEnvironment()
++    expect(Bun.spawnSync(['sh', '-c', 'command -v podman'], { env: environment }).exitCode).not.toBe(0)
++    for (const command of commandsWithoutDependency) {
++      const [name, ...args] = command
++      const run = Bun.spawnSync(['bash', join(ROOT, 'bin', name as string), ...args], { env: environment, stdin: 'ignore' })
++      expect({ command: command.join(' '), exitCode: run.exitCode }).toEqual({ command: command.join(' '), exitCode: 0 })
++    }
++  })
++})
+diff --git a/src/packaging/bin/reachability.ts b/src/packaging/bin/reachability.ts
+new file mode 100755
+index 000000000..150d0ed2e
+--- /dev/null
++++ b/src/packaging/bin/reachability.ts
+@@ -0,0 +1,76 @@
++#!/usr/bin/env bun
++/**
++ * CLI de la matriz de alcance por entrypoint (ADR-010, P6).
++ *
++ *   bun src/packaging/bin/reachability.ts           imprime la matriz medida
++ *   bun src/packaging/bin/reachability.ts --write   reescribe la matriz versionada
++ *   bun src/packaging/bin/reachability.ts --check   0 al día · 1 difiere · 2 no pudo medir
++ *
++ * Los wrappers TypeScript salen de `generate_bin.py --typescript-entrypoints`:
++ * esa es su única definición. Lo que no resuelve se publica por stderr; un
++ * fallo de medición sale 2 sin emitir la matriz ni ninguna cifra.
++ */
++import { readFileSync, writeFileSync, existsSync } from 'node:fs'
++import { join, resolve } from 'node:path'
++import { entrypointsOf, measure, renderMatrix, type Measurement } from '../reachability.ts'
++
++const EXIT_DIFFERS = 1
++const EXIT_UNMEASURED = 2
++const ROOT = resolve(import.meta.dir, '..', '..', '..')
++const MATRIX_FILE = join(ROOT, 'src', 'packaging', 'reachability-matrix.tsv')
++const GENERATOR = join(ROOT, 'bin', 'generate_bin')
++
++class MeasurementError extends Error {}
++
++function typescriptWrappers(): Map<string, string> {
++  const run = Bun.spawnSync(['bash', GENERATOR, '--typescript-entrypoints'], { cwd: ROOT, stdin: 'ignore' })
++  if (run.exitCode !== 0) {
++    throw new MeasurementError(`${GENERATOR} salió ${run.exitCode}: ${run.stderr.toString().trim()}`)
++  }
++  const lines = run.stdout.toString().split('\n').filter(line => line !== '')
++  if (lines.length === 0) throw new MeasurementError(`${GENERATOR} no listó ningún entrypoint TypeScript`)
++  return new Map(lines.map(line => line.split('\t', 2) as [string, string]))
++}
++
++function reportUnresolved(measurement: Measurement): void {
++  for (const item of measurement.unresolved) {
++    console.error(`sin resolver: ${item.from}: ${item.specifier} (${item.reason})`)
++  }
++}
++
++function measuredMatrix(): string {
++  const measurement = measure(ROOT, entrypointsOf(ROOT, typescriptWrappers()))
++  reportUnresolved(measurement)
++  return renderMatrix(measurement.rows)
++}
++
++function checkMatrix(matrix: string): number {
++  const versioned = existsSync(MATRIX_FILE) ? readFileSync(MATRIX_FILE, 'utf8') : ''
++  if (versioned === matrix) {
++    console.log(`matriz al día: ${MATRIX_FILE}`)
++    return 0
++  }
++  console.error(`matriz DESACTUALIZADA: ${MATRIX_FILE}`)
++  console.error('  corre: bash bin/packaging-reachability --write')
++  return EXIT_DIFFERS
++}
++
++function run(args: readonly string[]): number {
++  let matrix: string
++  try {
++    matrix = measuredMatrix()
++  } catch (error) {
++    console.error(`no se pudo medir el alcance: ${error instanceof Error ? error.message : String(error)}`)
++    return EXIT_UNMEASURED
++  }
++  if (args.includes('--check')) return checkMatrix(matrix)
++  if (args.includes('--write')) {
++    writeFileSync(MATRIX_FILE, matrix)
++    console.log(`escrita: ${MATRIX_FILE}`)
++    return 0
++  }
++  process.stdout.write(matrix)
++  return 0
++}
++
++process.exitCode = run(process.argv.slice(2))
+diff --git a/src/packaging/reachability-matrix.tsv b/src/packaging/reachability-matrix.tsv
+new file mode 100644
+index 000000000..01594f978
+--- /dev/null
++++ b/src/packaging/reachability-matrix.tsv
+@@ -0,0 +1,44 @@
++entrypoint	paquetes_alcanzables	dependencia	relacion	condicion	rol	requisito_distribucion
++agent-cross-model-read-gate	@thyrox/agent,@thyrox/paths,@thyrox/provider,@thyrox/tools	no detectada	—	siempre	CLI	ninguno detectado
++agent-emit	@thyrox/agent,@thyrox/paths,@thyrox/provider,@thyrox/tools	no detectada	—	siempre	CLI	ninguno detectado
++agent-pre-model-switch	@thyrox/agent,@thyrox/provider	no detectada	—	siempre	CLI	ninguno detectado
++agent-recommend	@thyrox/agent,@thyrox/provider	no detectada	—	siempre	CLI	ninguno detectado
++binary	@thyrox/binary	no detectada	—	siempre	CLI	ninguno detectado
++cli --version	@anthropic/ink,@thyrox/app-host,@thyrox/bridge,@thyrox/cli,@thyrox/config,@thyrox/local-observability,@thyrox/output	no detectada	—	args.length === 1 && (args[0] === '--version' || args[0] === '-v' || args[0] === '-V')	CLI	ninguno detectado
++cli lightExitCode	@ant/claude-for-chrome-mcp,@ant/computer-use-input,@ant/computer-use-mcp,@ant/computer-use-swift,@anthropic/ink,@thyrox/agent,@thyrox/app-host,@thyrox/bridge,@thyrox/cli,@thyrox/color-diff-napi,@thyrox/command-runtime,@thyrox/config,@thyrox/headless-sdk,@thyrox/ide,@thyrox/image-processor-napi,@thyrox/local-observability,@thyrox/mcp-runtime,@thyrox/memory,@thyrox/mitm,@thyrox/modifiers-napi,@thyrox/output,@thyrox/paths,@thyrox/permission,@thyrox/provider,@thyrox/repl,@thyrox/shell,@thyrox/storage,@thyrox/store,@thyrox/swarm,@thyrox/teleport,@thyrox/tool-registry,@thyrox/transparent-napi,@thyrox/updater,@thyrox/voice	base de datos	transitiva	lightExitCode !== undefined	CLI	alcanzable en la condición (no prueba apertura)
++cli --dump-system-prompt	@ant/claude-for-chrome-mcp,@ant/computer-use-input,@ant/computer-use-mcp,@ant/computer-use-swift,@anthropic/ink,@thyrox/agent,@thyrox/app-host,@thyrox/bridge,@thyrox/cli,@thyrox/color-diff-napi,@thyrox/command-runtime,@thyrox/config,@thyrox/headless-sdk,@thyrox/ide,@thyrox/image-processor-napi,@thyrox/local-observability,@thyrox/mcp-runtime,@thyrox/memory,@thyrox/mitm,@thyrox/modifiers-napi,@thyrox/output,@thyrox/paths,@thyrox/permission,@thyrox/provider,@thyrox/repl,@thyrox/shell,@thyrox/storage,@thyrox/store,@thyrox/swarm,@thyrox/teleport,@thyrox/tool-registry,@thyrox/transparent-napi,@thyrox/updater,@thyrox/voice	base de datos	transitiva	feature('DUMP_SYSTEM_PROMPT') && args[0] === '--dump-system-prompt'	CLI	alcanzable en la condición (no prueba apertura)
++cli --bg-pty-host	@ant/claude-for-chrome-mcp,@ant/computer-use-input,@ant/computer-use-mcp,@ant/computer-use-swift,@anthropic/ink,@thyrox/agent,@thyrox/app-host,@thyrox/bridge,@thyrox/cli,@thyrox/color-diff-napi,@thyrox/command-runtime,@thyrox/config,@thyrox/headless-sdk,@thyrox/ide,@thyrox/image-processor-napi,@thyrox/local-observability,@thyrox/mcp-runtime,@thyrox/memory,@thyrox/mitm,@thyrox/modifiers-napi,@thyrox/output,@thyrox/paths,@thyrox/permission,@thyrox/provider,@thyrox/repl,@thyrox/shell,@thyrox/storage,@thyrox/store,@thyrox/swarm,@thyrox/teleport,@thyrox/tool-registry,@thyrox/transparent-napi,@thyrox/updater,@thyrox/voice	base de datos	transitiva	feature('BG_SESSIONS') && args[0] === '--bg-pty-host'	CLI	alcanzable en la condición (no prueba apertura)
++cli --claude-in-chrome-mcp	@ant/claude-for-chrome-mcp,@ant/computer-use-input,@ant/computer-use-mcp,@ant/computer-use-swift,@anthropic/ink,@thyrox/agent,@thyrox/app-host,@thyrox/bridge,@thyrox/cli,@thyrox/color-diff-napi,@thyrox/command-runtime,@thyrox/config,@thyrox/headless-sdk,@thyrox/ide,@thyrox/image-processor-napi,@thyrox/local-observability,@thyrox/mcp-runtime,@thyrox/memory,@thyrox/mitm,@thyrox/modifiers-napi,@thyrox/output,@thyrox/paths,@thyrox/permission,@thyrox/provider,@thyrox/repl,@thyrox/shell,@thyrox/storage,@thyrox/store,@thyrox/swarm,@thyrox/teleport,@thyrox/tool-registry,@thyrox/transparent-napi,@thyrox/updater,@thyrox/voice	base de datos	transitiva	process.argv[2] === '--claude-in-chrome-mcp'	CLI	alcanzable en la condición (no prueba apertura)
++cli --chrome-native-host	@ant/claude-for-chrome-mcp,@ant/computer-use-input,@ant/computer-use-mcp,@ant/computer-use-swift,@anthropic/ink,@thyrox/agent,@thyrox/app-host,@thyrox/bridge,@thyrox/cli,@thyrox/color-diff-napi,@thyrox/command-runtime,@thyrox/config,@thyrox/headless-sdk,@thyrox/ide,@thyrox/image-processor-napi,@thyrox/local-observability,@thyrox/mcp-runtime,@thyrox/memory,@thyrox/mitm,@thyrox/modifiers-napi,@thyrox/output,@thyrox/paths,@thyrox/permission,@thyrox/provider,@thyrox/repl,@thyrox/shell,@thyrox/storage,@thyrox/store,@thyrox/swarm,@thyrox/teleport,@thyrox/tool-registry,@thyrox/transparent-napi,@thyrox/updater,@thyrox/voice	base de datos	transitiva	process.argv[2] === '--chrome-native-host'	CLI	alcanzable en la condición (no prueba apertura)
++cli --computer-use-mcp	@ant/claude-for-chrome-mcp,@ant/computer-use-input,@ant/computer-use-mcp,@ant/computer-use-swift,@anthropic/ink,@thyrox/agent,@thyrox/app-host,@thyrox/bridge,@thyrox/cli,@thyrox/color-diff-napi,@thyrox/command-runtime,@thyrox/config,@thyrox/headless-sdk,@thyrox/ide,@thyrox/image-processor-napi,@thyrox/local-observability,@thyrox/mcp-runtime,@thyrox/memory,@thyrox/mitm,@thyrox/modifiers-napi,@thyrox/output,@thyrox/paths,@thyrox/permission,@thyrox/provider,@thyrox/repl,@thyrox/shell,@thyrox/storage,@thyrox/store,@thyrox/swarm,@thyrox/teleport,@thyrox/tool-registry,@thyrox/transparent-napi,@thyrox/updater,@thyrox/voice	base de datos	transitiva	feature('CHICAGO_MCP') && process.argv[2] === '--computer-use-mcp'	CLI	alcanzable en la condición (no prueba apertura)
++cli --daemon-worker	@ant/claude-for-chrome-mcp,@ant/computer-use-input,@ant/computer-use-mcp,@ant/computer-use-swift,@anthropic/ink,@thyrox/agent,@thyrox/app-host,@thyrox/bridge,@thyrox/cli,@thyrox/color-diff-napi,@thyrox/command-runtime,@thyrox/config,@thyrox/daemon,@thyrox/headless-sdk,@thyrox/ide,@thyrox/image-processor-napi,@thyrox/local-observability,@thyrox/mcp-runtime,@thyrox/memory,@thyrox/mitm,@thyrox/modifiers-napi,@thyrox/output,@thyrox/paths,@thyrox/permission,@thyrox/provider,@thyrox/repl,@thyrox/shell,@thyrox/storage,@thyrox/store,@thyrox/swarm,@thyrox/teleport,@thyrox/tool-registry,@thyrox/transparent-napi,@thyrox/updater,@thyrox/voice	base de datos	transitiva	feature('DAEMON') && args[0] === '--daemon-worker'	worker especializado	alcanzable en la condición (no prueba apertura)
++cli remote-control	@ant/claude-for-chrome-mcp,@ant/computer-use-input,@ant/computer-use-mcp,@ant/computer-use-swift,@anthropic/ink,@thyrox/agent,@thyrox/app-host,@thyrox/bridge,@thyrox/cli,@thyrox/color-diff-napi,@thyrox/command-runtime,@thyrox/config,@thyrox/headless-sdk,@thyrox/ide,@thyrox/image-processor-napi,@thyrox/local-observability,@thyrox/mcp-runtime,@thyrox/memory,@thyrox/mitm,@thyrox/modifiers-napi,@thyrox/output,@thyrox/paths,@thyrox/permission,@thyrox/provider,@thyrox/repl,@thyrox/shell,@thyrox/storage,@thyrox/store,@thyrox/swarm,@thyrox/teleport,@thyrox/tool-registry,@thyrox/transparent-napi,@thyrox/updater,@thyrox/voice	base de datos	transitiva	feature('BRIDGE_MODE') && (args[0] === 'remote-control' || args[0] === 'rc' || args[0] === 'remote' || args[0] === 'sync' || args[0] === 'bridge')	CLI	alcanzable en la condición (no prueba apertura)
++cli daemon	@ant/claude-for-chrome-mcp,@ant/computer-use-input,@ant/computer-use-mcp,@ant/computer-use-swift,@anthropic/ink,@thyrox/agent,@thyrox/app-host,@thyrox/audio-capture-napi,@thyrox/bridge,@thyrox/cli,@thyrox/color-diff-napi,@thyrox/command-runtime,@thyrox/config,@thyrox/context-compression,@thyrox/coordination,@thyrox/daemon,@thyrox/headless-sdk,@thyrox/ide,@thyrox/image-processor-napi,@thyrox/local-observability,@thyrox/mcp-runtime,@thyrox/memory,@thyrox/mitm,@thyrox/modifiers-napi,@thyrox/observability,@thyrox/output,@thyrox/paths,@thyrox/permission,@thyrox/provider,@thyrox/repl,@thyrox/server,@thyrox/shell,@thyrox/skills,@thyrox/stdin-napi,@thyrox/storage,@thyrox/store,@thyrox/swarm,@thyrox/task,@thyrox/teleport,@thyrox/tool-registry,@thyrox/tools,@thyrox/transparent-napi,@thyrox/updater,@thyrox/url-handler-napi,@thyrox/voice,@thyrox/workbench	base de datos	transitiva	feature('DAEMON') && args[0] === 'daemon'	servicio	alcanzable en la condición (no prueba apertura)
++cli daemon	@ant/claude-for-chrome-mcp,@ant/computer-use-input,@ant/computer-use-mcp,@ant/computer-use-swift,@anthropic/ink,@thyrox/agent,@thyrox/app-host,@thyrox/audio-capture-napi,@thyrox/bridge,@thyrox/cli,@thyrox/color-diff-napi,@thyrox/command-runtime,@thyrox/config,@thyrox/context-compression,@thyrox/coordination,@thyrox/daemon,@thyrox/headless-sdk,@thyrox/ide,@thyrox/image-processor-napi,@thyrox/local-observability,@thyrox/mcp-runtime,@thyrox/memory,@thyrox/mitm,@thyrox/modifiers-napi,@thyrox/observability,@thyrox/output,@thyrox/paths,@thyrox/permission,@thyrox/provider,@thyrox/repl,@thyrox/server,@thyrox/shell,@thyrox/skills,@thyrox/stdin-napi,@thyrox/storage,@thyrox/store,@thyrox/swarm,@thyrox/task,@thyrox/teleport,@thyrox/tool-registry,@thyrox/tools,@thyrox/transparent-napi,@thyrox/updater,@thyrox/url-handler-napi,@thyrox/voice,@thyrox/workbench	runtime de ejecución	transitiva	feature('DAEMON') && args[0] === 'daemon'	servicio	alcanzable en la condición (no prueba apertura)
++cli ps	@ant/claude-for-chrome-mcp,@ant/computer-use-input,@ant/computer-use-mcp,@ant/computer-use-swift,@anthropic/ink,@thyrox/agent,@thyrox/app-host,@thyrox/audio-capture-napi,@thyrox/bridge,@thyrox/cli,@thyrox/color-diff-napi,@thyrox/command-runtime,@thyrox/config,@thyrox/context-compression,@thyrox/coordination,@thyrox/daemon,@thyrox/headless-sdk,@thyrox/ide,@thyrox/image-processor-napi,@thyrox/local-observability,@thyrox/mcp-runtime,@thyrox/memory,@thyrox/mitm,@thyrox/modifiers-napi,@thyrox/observability,@thyrox/output,@thyrox/paths,@thyrox/permission,@thyrox/provider,@thyrox/repl,@thyrox/server,@thyrox/shell,@thyrox/skills,@thyrox/stdin-napi,@thyrox/storage,@thyrox/store,@thyrox/swarm,@thyrox/task,@thyrox/teleport,@thyrox/tool-registry,@thyrox/tools,@thyrox/transparent-napi,@thyrox/updater,@thyrox/url-handler-napi,@thyrox/voice,@thyrox/workbench	base de datos	transitiva	feature('BG_SESSIONS') && (args[0] === 'ps' || args[0] === 'logs' || args[0] === 'attach' || args[0] === 'stop' || args[0] === 'kill' || args[0] === 'rm' || args[0] === 'respawn' || args.includes('--bg') || args.includes('--bg-pty') || args.includes('--bg-interactive') || args.includes('--bg-detached') || args.includes('--background'))	CLI	alcanzable en la condición (no prueba apertura)
++cli new	@ant/claude-for-chrome-mcp,@ant/computer-use-input,@ant/computer-use-mcp,@ant/computer-use-swift,@anthropic/ink,@thyrox/agent,@thyrox/app-host,@thyrox/bridge,@thyrox/cli,@thyrox/color-diff-napi,@thyrox/command-runtime,@thyrox/config,@thyrox/headless-sdk,@thyrox/ide,@thyrox/image-processor-napi,@thyrox/local-observability,@thyrox/mcp-runtime,@thyrox/memory,@thyrox/mitm,@thyrox/modifiers-napi,@thyrox/output,@thyrox/paths,@thyrox/permission,@thyrox/provider,@thyrox/repl,@thyrox/shell,@thyrox/storage,@thyrox/store,@thyrox/swarm,@thyrox/teleport,@thyrox/tool-registry,@thyrox/transparent-napi,@thyrox/updater,@thyrox/voice	base de datos	transitiva	feature('TEMPLATES') && (args[0] === 'new' || args[0] === 'list' || args[0] === 'reply')	CLI	alcanzable en la condición (no prueba apertura)
++cli environment-runner	@ant/claude-for-chrome-mcp,@ant/computer-use-input,@ant/computer-use-mcp,@ant/computer-use-swift,@anthropic/ink,@thyrox/agent,@thyrox/app-host,@thyrox/bridge,@thyrox/cli,@thyrox/color-diff-napi,@thyrox/command-runtime,@thyrox/config,@thyrox/headless-sdk,@thyrox/ide,@thyrox/image-processor-napi,@thyrox/local-observability,@thyrox/mcp-runtime,@thyrox/memory,@thyrox/mitm,@thyrox/modifiers-napi,@thyrox/output,@thyrox/paths,@thyrox/permission,@thyrox/provider,@thyrox/repl,@thyrox/shell,@thyrox/storage,@thyrox/store,@thyrox/swarm,@thyrox/teleport,@thyrox/tool-registry,@thyrox/transparent-napi,@thyrox/updater,@thyrox/voice	base de datos	transitiva	feature('BYOC_ENVIRONMENT_RUNNER') && args[0] === 'environment-runner'	CLI	alcanzable en la condición (no prueba apertura)
++cli self-hosted-runner	@ant/claude-for-chrome-mcp,@ant/computer-use-input,@ant/computer-use-mcp,@ant/computer-use-swift,@anthropic/ink,@thyrox/agent,@thyrox/app-host,@thyrox/bridge,@thyrox/cli,@thyrox/color-diff-napi,@thyrox/command-runtime,@thyrox/config,@thyrox/headless-sdk,@thyrox/ide,@thyrox/image-processor-napi,@thyrox/local-observability,@thyrox/mcp-runtime,@thyrox/memory,@thyrox/mitm,@thyrox/modifiers-napi,@thyrox/output,@thyrox/paths,@thyrox/permission,@thyrox/provider,@thyrox/repl,@thyrox/shell,@thyrox/storage,@thyrox/store,@thyrox/swarm,@thyrox/teleport,@thyrox/tool-registry,@thyrox/transparent-napi,@thyrox/updater,@thyrox/voice	base de datos	transitiva	feature('SELF_HOSTED_RUNNER') && args[0] === 'self-hosted-runner'	CLI	alcanzable en la condición (no prueba apertura)
++cli hasTmuxFlag	@ant/claude-for-chrome-mcp,@ant/computer-use-input,@ant/computer-use-mcp,@ant/computer-use-swift,@anthropic/ink,@thyrox/agent,@thyrox/app-host,@thyrox/bridge,@thyrox/cli,@thyrox/color-diff-napi,@thyrox/command-runtime,@thyrox/config,@thyrox/headless-sdk,@thyrox/ide,@thyrox/image-processor-napi,@thyrox/local-observability,@thyrox/mcp-runtime,@thyrox/memory,@thyrox/mitm,@thyrox/modifiers-napi,@thyrox/output,@thyrox/paths,@thyrox/permission,@thyrox/provider,@thyrox/repl,@thyrox/shell,@thyrox/storage,@thyrox/store,@thyrox/swarm,@thyrox/teleport,@thyrox/tool-registry,@thyrox/transparent-napi,@thyrox/updater,@thyrox/voice	base de datos	transitiva	hasTmuxFlag && (args.includes('-w') || args.includes('--worktree') || args.some(a => a.startsWith('--worktree=')))	CLI	alcanzable en la condición (no prueba apertura)
++cli	@ant/claude-for-chrome-mcp,@ant/computer-use-input,@ant/computer-use-mcp,@ant/computer-use-swift,@anthropic/ink,@thyrox/agent,@thyrox/app-host,@thyrox/audio-capture-napi,@thyrox/bridge,@thyrox/cli,@thyrox/color-diff-napi,@thyrox/command-runtime,@thyrox/config,@thyrox/context-compression,@thyrox/coordination,@thyrox/daemon,@thyrox/headless-sdk,@thyrox/ide,@thyrox/image-processor-napi,@thyrox/local-observability,@thyrox/mcp-runtime,@thyrox/memory,@thyrox/mitm,@thyrox/modifiers-napi,@thyrox/observability,@thyrox/output,@thyrox/paths,@thyrox/permission,@thyrox/provider,@thyrox/repl,@thyrox/server,@thyrox/shell,@thyrox/skills,@thyrox/stdin-napi,@thyrox/storage,@thyrox/store,@thyrox/swarm,@thyrox/task,@thyrox/teleport,@thyrox/tool-registry,@thyrox/tools,@thyrox/transparent-napi,@thyrox/updater,@thyrox/url-handler-napi,@thyrox/voice,@thyrox/workbench	base de datos	transitiva	ninguna rama anterior termina	CLI	alcanzable en la condición (no prueba apertura)
++command-runtime	@ant/claude-for-chrome-mcp,@ant/computer-use-input,@ant/computer-use-mcp,@ant/computer-use-swift,@anthropic/ink,@thyrox/agent,@thyrox/app-host,@thyrox/bridge,@thyrox/cli,@thyrox/color-diff-napi,@thyrox/command-runtime,@thyrox/config,@thyrox/headless-sdk,@thyrox/ide,@thyrox/image-processor-napi,@thyrox/local-observability,@thyrox/mcp-runtime,@thyrox/memory,@thyrox/modifiers-napi,@thyrox/output,@thyrox/permission,@thyrox/provider,@thyrox/repl,@thyrox/shell,@thyrox/storage,@thyrox/store,@thyrox/swarm,@thyrox/teleport,@thyrox/tool-registry,@thyrox/updater,@thyrox/voice	base de datos	transitiva	siempre	CLI	alcanzable en la condición (no prueba apertura)
++commands-emit	@thyrox/paths,src/commands	no detectada	—	siempre	CLI	ninguno detectado
++config-settings	@thyrox/config	no detectada	—	siempre	CLI	ninguno detectado
++finding	@thyrox/agent,@thyrox/config,@thyrox/context-compression,@thyrox/finding,@thyrox/observability,@thyrox/paths,@thyrox/store,@thyrox/task	no detectada	—	siempre	CLI	ninguno detectado
++headless-sdk-generate-core-types	@thyrox/headless-sdk	no detectada	—	siempre	CLI	ninguno detectado
++packaging-reachability	src/packaging	no detectada	—	siempre	CLI	ninguno detectado
++provider-anthropic-mock-server	@thyrox/provider	no detectada	—	siempre	servicio	ninguno detectado
++provider-credential-proxy	@thyrox/config,@thyrox/paths,@thyrox/provider,@thyrox/store	no detectada	—	siempre	servicio	ninguno detectado
++provider-generate-storage-key	@thyrox/config,@thyrox/paths,@thyrox/provider,@thyrox/store	no detectada	—	siempre	CLI	ninguno detectado
++provider-local-proxy	@ant/claude-for-chrome-mcp,@ant/computer-use-input,@ant/computer-use-mcp,@ant/computer-use-swift,@anthropic/ink,@thyrox/agent,@thyrox/app-host,@thyrox/bridge,@thyrox/cli,@thyrox/color-diff-napi,@thyrox/command-runtime,@thyrox/config,@thyrox/headless-sdk,@thyrox/ide,@thyrox/image-processor-napi,@thyrox/local-observability,@thyrox/mcp-runtime,@thyrox/memory,@thyrox/modifiers-napi,@thyrox/output,@thyrox/permission,@thyrox/provider,@thyrox/repl,@thyrox/shared-state,@thyrox/shell,@thyrox/storage,@thyrox/store,@thyrox/swarm,@thyrox/teleport,@thyrox/tool-registry,@thyrox/updater,@thyrox/voice	almacén efímero	transitiva	siempre	servicio	alcanzable en la condición (no prueba apertura)
++provider-local-proxy	@ant/claude-for-chrome-mcp,@ant/computer-use-input,@ant/computer-use-mcp,@ant/computer-use-swift,@anthropic/ink,@thyrox/agent,@thyrox/app-host,@thyrox/bridge,@thyrox/cli,@thyrox/color-diff-napi,@thyrox/command-runtime,@thyrox/config,@thyrox/headless-sdk,@thyrox/ide,@thyrox/image-processor-napi,@thyrox/local-observability,@thyrox/mcp-runtime,@thyrox/memory,@thyrox/modifiers-napi,@thyrox/output,@thyrox/permission,@thyrox/provider,@thyrox/repl,@thyrox/shared-state,@thyrox/shell,@thyrox/storage,@thyrox/store,@thyrox/swarm,@thyrox/teleport,@thyrox/tool-registry,@thyrox/updater,@thyrox/voice	base de datos	transitiva	siempre	servicio	alcanzable en la condición (no prueba apertura)
++provider-local-proxy	@ant/claude-for-chrome-mcp,@ant/computer-use-input,@ant/computer-use-mcp,@ant/computer-use-swift,@anthropic/ink,@thyrox/agent,@thyrox/app-host,@thyrox/bridge,@thyrox/cli,@thyrox/color-diff-napi,@thyrox/command-runtime,@thyrox/config,@thyrox/headless-sdk,@thyrox/ide,@thyrox/image-processor-napi,@thyrox/local-observability,@thyrox/mcp-runtime,@thyrox/memory,@thyrox/modifiers-napi,@thyrox/output,@thyrox/permission,@thyrox/provider,@thyrox/repl,@thyrox/shared-state,@thyrox/shell,@thyrox/storage,@thyrox/store,@thyrox/swarm,@thyrox/teleport,@thyrox/tool-registry,@thyrox/updater,@thyrox/voice	upstream de modelo	directa	siempre	servicio	requerido en la condición
++provider-store-credential-proxy	@ant/claude-for-chrome-mcp,@ant/computer-use-input,@ant/computer-use-mcp,@ant/computer-use-swift,@anthropic/ink,@thyrox/agent,@thyrox/app-host,@thyrox/bridge,@thyrox/cli,@thyrox/color-diff-napi,@thyrox/command-runtime,@thyrox/config,@thyrox/headless-sdk,@thyrox/ide,@thyrox/image-processor-napi,@thyrox/local-observability,@thyrox/mcp-runtime,@thyrox/memory,@thyrox/modifiers-napi,@thyrox/output,@thyrox/paths,@thyrox/permission,@thyrox/provider,@thyrox/repl,@thyrox/shared-state,@thyrox/shell,@thyrox/storage,@thyrox/store,@thyrox/swarm,@thyrox/teleport,@thyrox/tool-registry,@thyrox/updater,@thyrox/voice	almacén efímero	transitiva	siempre	servicio	alcanzable en la condición (no prueba apertura)
++provider-store-credential-proxy	@ant/claude-for-chrome-mcp,@ant/computer-use-input,@ant/computer-use-mcp,@ant/computer-use-swift,@anthropic/ink,@thyrox/agent,@thyrox/app-host,@thyrox/bridge,@thyrox/cli,@thyrox/color-diff-napi,@thyrox/command-runtime,@thyrox/config,@thyrox/headless-sdk,@thyrox/ide,@thyrox/image-processor-napi,@thyrox/local-observability,@thyrox/mcp-runtime,@thyrox/memory,@thyrox/modifiers-napi,@thyrox/output,@thyrox/paths,@thyrox/permission,@thyrox/provider,@thyrox/repl,@thyrox/shared-state,@thyrox/shell,@thyrox/storage,@thyrox/store,@thyrox/swarm,@thyrox/teleport,@thyrox/tool-registry,@thyrox/updater,@thyrox/voice	base de datos	transitiva	siempre	servicio	alcanzable en la condición (no prueba apertura)
++rules-emit	@thyrox/paths,@thyrox/workbench,src/rules	no detectada	—	siempre	CLI	ninguno detectado
++shell	@thyrox/agent,@thyrox/app-host,@thyrox/bridge,@thyrox/command-runtime,@thyrox/config,@thyrox/local-observability,@thyrox/memory,@thyrox/output,@thyrox/provider,@thyrox/repl,@thyrox/shell,@thyrox/storage,@thyrox/store,@thyrox/tool-registry	base de datos	transitiva	siempre	CLI	alcanzable en la condición (no prueba apertura)
++skills-emit	@thyrox/paths,@thyrox/workbench,src/skills	no detectada	—	siempre	CLI	ninguno detectado
++skills-import	@thyrox/paths,@thyrox/workbench,src/skills	no detectada	—	siempre	CLI	ninguno detectado
++storage	@thyrox/config,@thyrox/paths,@thyrox/storage	no detectada	—	siempre	CLI	ninguno detectado
++tool-registry-apply-edits	@thyrox/agent,@thyrox/app-host,@thyrox/bridge,@thyrox/config,@thyrox/local-observability,@thyrox/output,@thyrox/provider,@thyrox/repl,@thyrox/shell,@thyrox/storage,@thyrox/store,@thyrox/tool-registry	base de datos	transitiva	siempre	CLI	alcanzable en la condición (no prueba apertura)
++typescript-build-javascript	src/typescript	no detectada	—	siempre	CLI	ninguno detectado
+diff --git a/src/packaging/reachability.ts b/src/packaging/reachability.ts
+new file mode 100644
+index 000000000..3774a399a
+--- /dev/null
++++ b/src/packaging/reachability.ts
+@@ -0,0 +1,625 @@
++/**
++ * Grafo de alcance por entrypoint: qué módulos carga cada punto de entrada y
++ * qué dependencia operacional (base de datos, almacén efímero, runtime de
++ * ejecución, upstream de modelo) queda al alcance de cada uno.
++ *
++ * Gobierna ADR-010 v1.3.0 (contrato P6): los requisitos se derivan por
++ * subcomando, no del grafo entero del paquete `cli`. Por eso las ramas de
++ * `cli.tsx` son entrypoints propios: cada una importa dinámicamente lo suyo.
++ *
++ * QUÉ MIDE: el cierre transitivo de los especificadores con literal —imports
++ * estáticos, `import('…')`, `export … from` y `require('…')`— resueltos por
++ * archivo (relativos) y por el `exports` de cada `package.json` del workspace.
++ * Un especificador que no resuelve, o un `import()` sin literal, se REPORTA.
++ *
++ * CIEGO A: si el código alcanzado llega a EJECUTAR el abridor (alcance
++ * estático no es apertura); un import de valor usado sólo como tipo, que Bun
++ * elide y aquí cuenta (sobre-aproximación); las dependencias npm, que no se
++ * recorren; y las condiciones de fallthrough dentro de una rama, que se
++ * modelan sólo como «la rama no termina siempre». Lo no detectado se escribe
++ * «no detectada», nunca «no existe».
++ */
++import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs'
++import { builtinModules } from 'node:module'
++import { dirname, join, relative, resolve, sep } from 'node:path'
++import ts from 'typescript'
++
++export type ImportKind = 'static' | 'dynamic' | 'reexport' | 'require'
++
++export interface ImportReference {
++  specifier: string
++  kind: ImportKind
++}
++
++export interface Unresolved {
++  from: string
++  specifier: string
++  reason: string
++}
++
++export interface Closure {
++  files: Set<string>
++  direct: Set<string>
++  /** Archivo alcanzado -> el archivo que lo importó primero. */
++  parents: Map<string, string>
++  unresolved: Unresolved[]
++}
++
++export type DependencyType =
++  | 'base de datos'
++  | 'base de datos + pgvector'
++  | 'almacén efímero'
++  | 'upstream de modelo'
++  | 'runtime de ejecución'
++
++export interface DependencyOpener {
++  file: string
++  symbol: string
++  dependency: DependencyType
++}
++
++export interface Entrypoint {
++  name: string
++  file: string
++  condition: string
++  /** Especificadores propios de la rama; vacío = el archivo entero. */
++  branchImports: ImportReference[] | null
++}
++
++export interface MatrixRow {
++  entrypoint: string
++  reachablePackages: string
++  dependency: string
++  relation: string
++  condition: string
++  role: string
++  distributionRequirement: string
++}
++
++/** Abridores directos de dependencia operacional, relativos a la raíz. */
++export const DEPENDENCY_OPENERS: readonly DependencyOpener[] = [
++  { file: 'src/packages/store/sql.ts', symbol: 'openByUrl', dependency: 'base de datos' },
++  { file: 'src/packages/shared-state/redis.ts', symbol: 'redis', dependency: 'almacén efímero' },
++  { file: 'src/packages/shared-state/factory.ts', symbol: 'factory', dependency: 'almacén efímero' },
++  { file: 'src/packages/semantic-search/store.ts', symbol: 'store', dependency: 'base de datos + pgvector' },
++  {
++    file: 'src/packages/provider/src/proxy/openaiCompat/declaration.ts',
++    symbol: 'declaration',
++    dependency: 'upstream de modelo',
++  },
++  {
++    file: 'src/packages/daemon/src/podman/podmanWorkerManager.ts',
++    symbol: 'podmanWorkerManager',
++    dependency: 'runtime de ejecución',
++  },
++]
++
++/** Rol en ejecución declarado por entrypoint; el resto es `CLI`. */
++export const ROLE_BY_ENTRYPOINT: Readonly<Record<string, string>> = {
++  'cli --daemon-worker': 'worker especializado',
++  'cli daemon': 'servicio',
++  'provider-anthropic-mock-server': 'servicio',
++  'provider-credential-proxy': 'servicio',
++  'provider-local-proxy': 'servicio',
++  'provider-store-credential-proxy': 'servicio',
++}
++
++export const MATRIX_HEADER =
++  'entrypoint\tpaquetes_alcanzables\tdependencia\trelacion\tcondicion\trol\trequisito_distribucion'
++
++export const NOT_DETECTED = 'no detectada'
++export const ALWAYS = 'siempre'
++export const DEFAULT_BRANCH_CONDITION = 'ninguna rama anterior termina'
++const DEFAULT_ROLE = 'CLI'
++const NO_RELATION = '—'
++const CLI_ENTRY_FILE = 'src/packages/cli/src/entry/cli.tsx'
++const CLI_ENTRYPOINT = 'cli'
++const PACKAGES_DIR = 'src/packages'
++const EXPORT_CONDITIONS: readonly string[] = ['@thyrox/source', 'bun', 'import', 'default']
++const PARSED_EXTENSIONS: readonly string[] = ['.ts', '.tsx', '.mts', '.cts', '.js', '.jsx', '.mjs', '.cjs']
++const RESOLUTION_SUFFIXES: readonly string[] = [
++  '', '.ts', '.tsx', '.js', '.mjs', '.json', '/index.ts', '/index.tsx', '/index.js',
++]
++const JAVASCRIPT_TO_TYPESCRIPT: Readonly<Record<string, readonly string[]>> = {
++  '.js': ['.ts', '.tsx'],
++  '.jsx': ['.tsx'],
++  '.mjs': ['.mts'],
++  '.cjs': ['.cts'],
++}
++const NODE_BUILTINS = new Set(builtinModules)
++
++// ---------------------------------------------------------------- extracción
++
++function isTypeOnlyImport(node: ts.ImportDeclaration): boolean {
++  const clause = node.importClause
++  if (clause === undefined) return false
++  if (clause.isTypeOnly) return true
++  const bindings = clause.namedBindings
++  const hasOnlyTypeSpecifiers =
++    bindings !== undefined &&
++    ts.isNamedImports(bindings) &&
++    bindings.elements.length > 0 &&
++    bindings.elements.every(element => element.isTypeOnly)
++  return clause.name === undefined && hasOnlyTypeSpecifiers
++}
++
++function isTypeOnlyReexport(node: ts.ExportDeclaration): boolean {
++  if (node.isTypeOnly) return true
++  const clause = node.exportClause
++  return (
++    clause !== undefined &&
++    ts.isNamedExports(clause) &&
++    clause.elements.length > 0 &&
++    clause.elements.every(element => element.isTypeOnly)
++  )
++}
++
++function literalText(node: ts.Node | undefined): string | undefined {
++  if (node !== undefined && (ts.isStringLiteral(node) || ts.isNoSubstitutionTemplateLiteral(node))) {
++    return node.text
++  }
++  return undefined
++}
++
++function isDynamicImport(node: ts.Node): node is ts.CallExpression {
++  return ts.isCallExpression(node) && node.expression.kind === ts.SyntaxKind.ImportKeyword
++}
++
++function isRequireCall(node: ts.Node): node is ts.CallExpression {
++  return ts.isCallExpression(node) && ts.isIdentifier(node.expression) && node.expression.text === 'require'
++}
++
++/** Un `import()` o `require()` sin literal: no se puede seguir y se reporta. */
++export const OPAQUE_SPECIFIER = '<sin literal>'
++
++function callReference(node: ts.CallExpression, kind: ImportKind): ImportReference {
++  return { specifier: literalText(node.arguments[0]) ?? OPAQUE_SPECIFIER, kind }
++}
++
++function declarationReference(node: ts.Node): ImportReference | undefined {
++  if (ts.isImportDeclaration(node) && !isTypeOnlyImport(node)) {
++    const specifier = literalText(node.moduleSpecifier)
++    return specifier === undefined ? undefined : { specifier, kind: 'static' }
++  }
++  if (ts.isExportDeclaration(node) && !isTypeOnlyReexport(node)) {
++    const specifier = literalText(node.moduleSpecifier)
++    return specifier === undefined ? undefined : { specifier, kind: 'reexport' }
++  }
++  return undefined
++}
++
++function callExpressionReference(node: ts.Node): ImportReference | undefined {
++  if (isDynamicImport(node)) return callReference(node, 'dynamic')
++  if (isRequireCall(node)) return callReference(node, 'require')
++  return undefined
++}
++
++/** Los especificadores de un subárbol de sintaxis, en orden de aparición. */
++export function collectReferences(root: ts.Node): ImportReference[] {
++  const found: ImportReference[] = []
++  const visit = (node: ts.Node): void => {
++    const reference = declarationReference(node) ?? callExpressionReference(node)
++    if (reference !== undefined) found.push(reference)
++    ts.forEachChild(node, visit)
++  }
++  visit(root)
++  return found
++}
++
++export function parseSource(file: string, text: string): ts.SourceFile {
++  return ts.createSourceFile(file, text, ts.ScriptTarget.Latest, true, scriptKind(file))
++}
++
++function scriptKind(file: string): ts.ScriptKind {
++  if (file.endsWith('.tsx')) return ts.ScriptKind.TSX
++  if (file.endsWith('.jsx')) return ts.ScriptKind.JSX
++  if (/\.[mc]?js$/.test(file)) return ts.ScriptKind.JS
++  return ts.ScriptKind.TS
++}
++
++export function extractImports(file: string, text: string): ImportReference[] {
++  return collectReferences(parseSource(file, text))
++}
++
++// ---------------------------------------------------------------- resolución
++
++interface WorkspacePackage {
++  directory: string
++  exports: unknown
++}
++
++export type Resolution =
++  | { kind: 'file'; path: string }
++  | { kind: 'external' }
++  | { kind: 'unresolved'; reason: string }
++
++function isFile(path: string): boolean {
++  return existsSync(path) && statSync(path).isFile()
++}
++
++function packageName(specifier: string): string {
++  const segments = specifier.split('/')
++  const segmentCount = specifier.startsWith('@') ? 2 : 1
++  return segments.slice(0, segmentCount).join('/')
++}
++
++function isBuiltin(specifier: string): boolean {
++  return (
++    specifier === 'bun' ||
++    specifier.startsWith('bun:') ||
++    specifier.startsWith('node:') ||
++    NODE_BUILTINS.has(packageName(specifier))
++  )
++}
++
++function isRelative(specifier: string): boolean {
++  return specifier.startsWith('./') || specifier.startsWith('../') || specifier.startsWith('/')
++}
++
++function conditionalTarget(value: unknown): string | undefined {
++  if (typeof value === 'string') return value
++  if (value === null || typeof value !== 'object' || Array.isArray(value)) return undefined
++  for (const [condition, nested] of Object.entries(value)) {
++    if (!EXPORT_CONDITIONS.includes(condition)) continue
++    const target = conditionalTarget(nested)
++    if (target !== undefined) return target
++  }
++  return undefined
++}
++
++function patternMatch(key: string, subpath: string): string | undefined {
++  const star = key.indexOf('*')
++  const prefix = key.slice(0, star)
++  const suffix = key.slice(star + 1)
++  const fits = subpath.startsWith(prefix) && subpath.endsWith(suffix) && subpath.length >= key.length - 1
++  return fits ? subpath.slice(prefix.length, subpath.length - suffix.length) : undefined
++}
++
++function exportsEntry(exportsField: unknown, subpath: string): { value: unknown; wildcard: string } | undefined {
++  if (typeof exportsField === 'string' || exportsField === null || typeof exportsField !== 'object') {
++    return subpath === '.' ? { value: exportsField, wildcard: '' } : undefined
++  }
++  const table = exportsField as Record<string, unknown>
++  if (subpath in table) return { value: table[subpath], wildcard: '' }
++  const patterns = Object.keys(table)
++    .filter(key => key.includes('*'))
++    .sort((left, right) => right.indexOf('*') - left.indexOf('*'))
++  for (const key of patterns) {
++    const wildcard = patternMatch(key, subpath)
++    if (wildcard !== undefined) return { value: table[key], wildcard }
++  }
++  return undefined
++}
++
++/** Resuelve especificadores contra un árbol: relativos por archivo, workspace por `exports`. */
++export class WorkspaceResolver {
++  private readonly packages = new Map<string, WorkspacePackage>()
++
++  constructor(readonly root: string) {
++    const packagesDir = join(root, PACKAGES_DIR)
++    if (!existsSync(packagesDir)) return
++    for (const entry of readdirSync(packagesDir).sort()) {
++      const manifestPath = join(packagesDir, entry, 'package.json')
++      if (!isFile(manifestPath)) continue
++      const manifest = JSON.parse(readFileSync(manifestPath, 'utf8')) as { name?: string; exports?: unknown }
++      if (manifest.name !== undefined) {
++        this.packages.set(manifest.name, { directory: join(packagesDir, entry), exports: manifest.exports })
++      }
++    }
++  }
++
++  /** El nombre del paquete del workspace que contiene `file`, o su carpeta de `src/`. */
++  ownerOf(file: string): string {
++    for (const [name, workspace] of this.packages) {
++      if (file.startsWith(workspace.directory + sep)) return name
++    }
++    const parts = relative(this.root, file).split(sep)
++    return parts.slice(0, 2).join('/')
++  }
++
++  resolve(specifier: string, fromFile: string): Resolution {
++    if (specifier === OPAQUE_SPECIFIER) return { kind: 'unresolved', reason: 'especificador sin literal' }
++    if (isBuiltin(specifier)) return { kind: 'external' }
++    if (isRelative(specifier)) return this.resolveRelative(resolve(dirname(fromFile), specifier))
++    const workspace = this.packages.get(packageName(specifier))
++    if (workspace === undefined) return { kind: 'external' }
++    return this.resolveWorkspace(specifier, workspace)
++  }
++
++  private resolveRelative(base: string): Resolution {
++    for (const candidate of relativeCandidates(base)) {
++      if (isFile(candidate)) return { kind: 'file', path: candidate }
++    }
++    return { kind: 'unresolved', reason: 'ningún archivo en la ruta relativa' }
++  }
++
++  private resolveWorkspace(specifier: string, workspace: WorkspacePackage): Resolution {
++    const subpath = '.' + specifier.slice(packageName(specifier).length)
++    const entry = exportsEntry(workspace.exports, subpath)
++    if (entry === undefined) return { kind: 'unresolved', reason: `\`exports\` no declara ${subpath}` }
++    const target = conditionalTarget(entry.value)
++    if (target === undefined) return { kind: 'unresolved', reason: `\`exports\` sin condición ejecutable para ${subpath}` }
++    const path = join(workspace.directory, target.replaceAll('*', entry.wildcard))
++    return isFile(path) ? { kind: 'file', path } : { kind: 'unresolved', reason: `\`exports\` apunta a un archivo ausente` }
++  }
++}
++
++function relativeCandidates(base: string): string[] {
++  const candidates = RESOLUTION_SUFFIXES.map(suffix => base + suffix)
++  for (const [javascript, typescripts] of Object.entries(JAVASCRIPT_TO_TYPESCRIPT)) {
++    if (!base.endsWith(javascript)) continue
++    const stem = base.slice(0, -javascript.length)
++    candidates.push(...typescripts.map(extension => stem + extension))
++  }
++  return candidates
++}
++
++// ---------------------------------------------------------------- cierre
++
++function isParsed(file: string): boolean {
++  return PARSED_EXTENSIONS.some(extension => file.endsWith(extension))
++}
++
++/** Lee y extrae cada archivo una sola vez para todos los entrypoints. */
++export class ReachabilityGraph {
++  private readonly referencesByFile = new Map<string, ImportReference[]>()
++
++  constructor(readonly resolver: WorkspaceResolver) {}
++
++  referencesOf(file: string): ImportReference[] {
++    const cached = this.referencesByFile.get(file)
++    if (cached !== undefined) return cached
++    const references = isParsed(file) ? extractImports(file, readFileSync(file, 'utf8')) : []
++    this.referencesByFile.set(file, references)
++    return references
++  }
++
++  /** El cierre desde `file`; `seed` sustituye las referencias propias del archivo. */
++  closure(file: string, seed: ImportReference[] = this.referencesOf(file)): Closure {
++    const result: Closure = { files: new Set([file]), direct: new Set(), parents: new Map(), unresolved: [] }
++    const pending: string[] = []
++    const follow = (from: string, references: ImportReference[], isDirect: boolean): void => {
++      for (const reference of references) {
++        const resolution = this.resolver.resolve(reference.specifier, from)
++        if (resolution.kind === 'unresolved') {
++          result.unresolved.push({ from, specifier: reference.specifier, reason: resolution.reason })
++          continue
++        }
++        if (resolution.kind === 'external') continue
++        if (isDirect) result.direct.add(resolution.path)
++        if (result.files.has(resolution.path)) continue
++        result.files.add(resolution.path)
++        result.parents.set(resolution.path, from)
++        pending.push(resolution.path)
++      }
++    }
++    follow(file, seed, true)
++    for (let next = pending.pop(); next !== undefined; next = pending.pop()) {
++      follow(next, this.referencesOf(next), false)
++    }
++    return result
++  }
++}
++
++/** La cadena de imports desde el entrypoint hasta `target`, o vacía si no se alcanza. */
++export function importChain(closure: Closure, target: string): string[] {
++  if (!closure.files.has(target)) return []
++  const chain = [target]
++  for (let parent = closure.parents.get(target); parent !== undefined; parent = closure.parents.get(parent)) {
++    chain.unshift(parent)
++  }
++  return chain
++}
++
++// ---------------------------------------------------------------- ramas de cli.tsx
++
++function isProcessExit(node: ts.Node): boolean {
++  return (
++    ts.isCallExpression(node) &&
++    ts.isPropertyAccessExpression(node.expression) &&
++    node.expression.getText() === 'process.exit'
++  )
++}
++
++function isTerminalStatement(node: ts.Node): boolean {
++  return ts.isReturnStatement(node) || (ts.isExpressionStatement(node) && isProcessExit(node.expression))
++}
++
++function containsTerminal(node: ts.Node): boolean {
++  if (isTerminalStatement(node)) return true
++  let found = false
++  ts.forEachChild(node, child => {
++    found ||= !ts.isFunctionLike(child) && containsTerminal(child)
++  })
++  return found
++}
++
++function alwaysTerminates(node: ts.Statement): boolean {
++  if (!ts.isBlock(node)) return isTerminalStatement(node)
++  const last = node.statements.at(-1)
++  return last !== undefined && isTerminalStatement(last)
++}
++
++function normalizedText(node: ts.Node): string {
++  return node.getText().replace(/\s+/g, ' ').replace(/\( /g, '(').replace(/ \)/g, ')')
++}
++
++function firstComparedLiteral(condition: ts.Expression): string | undefined {
++  let found: string | undefined
++  const visit = (node: ts.Node): void => {
++    if (found !== undefined) return
++    const isComparison =
++      ts.isBinaryExpression(node) && node.operatorToken.kind === ts.SyntaxKind.EqualsEqualsEqualsToken
++    if (isComparison) found = literalText(node.right)
++    ts.forEachChild(node, visit)
++  }
++  visit(condition)
++  return found
++}
++
++interface RawBranch {
++  condition: ts.Expression
++  body: ts.Statement
++}
++
++function ifChain(statement: ts.IfStatement): RawBranch[] {
++  const branches: RawBranch[] = [{ condition: statement.expression, body: statement.thenStatement }]
++  const alternative = statement.elseStatement
++  if (alternative !== undefined && ts.isIfStatement(alternative)) branches.push(...ifChain(alternative))
++  return branches
++}
++
++function mainBody(source: ts.SourceFile): ts.NodeArray<ts.Statement> | undefined {
++  for (const statement of source.statements) {
++    if (ts.isFunctionDeclaration(statement) && statement.name?.text === 'main') return statement.body?.statements
++  }
++  return undefined
++}
++
++function firstIdentifier(condition: ts.Expression): string {
++  let found: string | undefined
++  const visit = (node: ts.Node): void => {
++    if (found === undefined && ts.isIdentifier(node)) found = node.text
++    if (found === undefined) ts.forEachChild(node, visit)
++  }
++  visit(condition)
++  return found ?? 'condition'
++}
++
++/**
++ * El nombre de la rama: el primer literal comparado (`cli daemon`) o, sin él,
++ * el primer identificador de la condición (`cli hasTmuxFlag`). Nunca la línea:
++ * la matriz versionada no puede cambiar porque `cli.tsx` gane un comentario.
++ */
++function branchName(condition: ts.Expression, taken: Set<string>): string {
++  const preferred = `${CLI_ENTRYPOINT} ${firstComparedLiteral(condition) ?? firstIdentifier(condition)}`
++  let name = preferred
++  for (let ordinal = 2; taken.has(name); ordinal += 1) name = `${preferred}#${ordinal}`
++  taken.add(name)
++  return name
++}
++
++/**
++ * Cada rama terminal del `main()` de `cli.tsx` como entrypoint propio.
++ *
++ * Una rama carga los imports estáticos del archivo, los imports de las
++ * sentencias incondicionales que la preceden, los de las ramas anteriores que
++ * pueden no terminar, y los suyos. La última entrada es el camino por defecto.
++ */
++export function cliBranches(file: string, text: string): Entrypoint[] {
++  const source = parseSource(file, text)
++  const body = mainBody(source)
++  if (body === undefined) throw new Error(`${file}: no declara function main()`)
++  const moduleImports = source.statements.filter(statement => !ts.isFunctionDeclaration(statement)).flatMap(collectReferences)
++  const preceding: ImportReference[] = [...moduleImports]
++  const taken = new Set<string>()
++  const branches: Entrypoint[] = []
++  for (const statement of body) {
++    if (!ts.isIfStatement(statement)) {
++      preceding.push(...collectReferences(statement))
++      continue
++    }
++    for (const raw of ifChain(statement)) {
++      const own = collectReferences(raw.body)
++      if (containsTerminal(raw.body)) {
++        branches.push({
++          name: branchName(raw.condition, taken),
++          file,
++          condition: normalizedText(raw.condition),
++          branchImports: [...preceding, ...own],
++        })
++      }
++      if (!alwaysTerminates(raw.body)) preceding.push(...own)
++    }
++  }
++  branches.push({ name: CLI_ENTRYPOINT, file, condition: DEFAULT_BRANCH_CONDITION, branchImports: [...preceding] })
++  return branches
++}
++
++/** Los entrypoints: las ramas de `cli.tsx` y cada wrapper TypeScript restante. */
++export function entrypointsOf(root: string, wrappers: ReadonlyMap<string, string>): Entrypoint[] {
++  const cliFile = join(root, CLI_ENTRY_FILE)
++  const entrypoints: Entrypoint[] = []
++  for (const [name, relativeFile] of [...wrappers].sort(([left], [right]) => left.localeCompare(right))) {
++    const file = join(root, relativeFile)
++    if (file === cliFile) {
++      entrypoints.push(...cliBranches(file, readFileSync(file, 'utf8')))
++    } else {
++      entrypoints.push({ name, file, condition: ALWAYS, branchImports: null })
++    }
++  }
++  return entrypoints
++}
++
++// ---------------------------------------------------------------- matriz
++
++function requirementFor(relation: string): string {
++  if (relation === 'directa') return 'requerido en la condición'
++  return 'alcanzable en la condición (no prueba apertura)'
++}
++
++function closureOf(graph: ReachabilityGraph, entrypoint: Entrypoint): Closure {
++  return entrypoint.branchImports === null
++    ? graph.closure(entrypoint.file)
++    : graph.closure(entrypoint.file, entrypoint.branchImports)
++}
++
++function reachedDependencies(root: string, closure: Closure): Map<DependencyType, string> {
++  const relations = new Map<DependencyType, string>()
++  for (const opener of DEPENDENCY_OPENERS) {
++    const path = join(root, opener.file)
++    if (!closure.files.has(path)) continue
++    const relation = closure.direct.has(path) ? 'directa' : 'transitiva'
++    if (relations.get(opener.dependency) !== 'directa') relations.set(opener.dependency, relation)
++  }
++  return relations
++}
++
++export interface Measurement {
++  rows: MatrixRow[]
++  unresolved: Unresolved[]
++}
++
++/** Mide cada entrypoint y devuelve las filas de la matriz y lo que no resolvió. */
++export function measure(root: string, entrypoints: readonly Entrypoint[]): Measurement {
++  const resolver = new WorkspaceResolver(root)
++  const graph = new ReachabilityGraph(resolver)
++  const rows: MatrixRow[] = []
++  const unresolved = new Map<string, Unresolved>()
++  for (const entrypoint of entrypoints) {
++    const closure = closureOf(graph, entrypoint)
++    for (const item of closure.unresolved) unresolved.set(`${item.from}\0${item.specifier}`, item)
++    const packages = [...new Set([...closure.files].map(file => resolver.ownerOf(file)))].sort().join(',')
++    const base = {
++      entrypoint: entrypoint.name,
++      reachablePackages: packages,
++      condition: entrypoint.condition,
++      role: ROLE_BY_ENTRYPOINT[entrypoint.name] ?? DEFAULT_ROLE,
++    }
++    const dependencies = reachedDependencies(root, closure)
++    if (dependencies.size === 0) {
++      rows.push({ ...base, dependency: NOT_DETECTED, relation: NO_RELATION, distributionRequirement: 'ninguno detectado' })
++    }
++    for (const [dependency, relation] of [...dependencies].sort(([left], [right]) => left.localeCompare(right))) {
++      rows.push({ ...base, dependency, relation, distributionRequirement: requirementFor(relation) })
++    }
++  }
++  const relativeUnresolved = [...unresolved.values()].map(item => ({ ...item, from: relative(root, item.from) }))
++  relativeUnresolved.sort((left, right) => `${left.from}${left.specifier}`.localeCompare(`${right.from}${right.specifier}`))
++  return { rows, unresolved: relativeUnresolved }
++}
++
++export function renderMatrix(rows: readonly MatrixRow[]): string {
++  const lines = rows.map(row =>
++    [
++      row.entrypoint,
++      row.reachablePackages,
++      row.dependency,
++      row.relation,
++      row.condition,
++      row.role,
++      row.distributionRequirement,
++    ].join('\t'),
++  )
++  return [MATRIX_HEADER, ...lines].join('\n') + '\n'
++}
+diff --git a/src/session/generate_bin.py b/src/session/generate_bin.py
+index bcf770553..83e193fa9 100644
+--- a/src/session/generate_bin.py
++++ b/src/session/generate_bin.py
+@@ -727,6 +727,16 @@ def discover_typescript_entrypoints(root: pathlib.Path) -> dict[str, pathlib.Pat
+     return found
+ 
+ 
++def print_typescript_entrypoints(root: pathlib.Path) -> None:
++    """Publica el mapa de ``discover_typescript_entrypoints`` como TSV ordenado.
++
++    Es la única definición de «qué wrappers TS existen»: el grafo de alcance
++    (``src/packaging/``) la consume por aquí en vez de recorrer ``src/`` otra vez.
++    """
++    for name, target in sorted(discover_typescript_entrypoints(root).items()):
++        print(f"{name}\t{target.relative_to(root)}")
++
++
+ def typescript_wrapper_body(target: pathlib.Path, root: pathlib.Path,
+                             bin_name: str) -> str:
+     """El envoltorio de un entrypoint ``.ts``: guarda de bun, luego ``exec``.
+@@ -929,6 +939,9 @@ def main(argv: list[str] | None = None) -> int:
+                         help="carga cada entrypoint .py por la puerta de su "
+                              "envoltorio y sale 1 si alguno no llega a cargar; "
+                              "ve lo que --check no puede ver (~5 s)")
++    parser.add_argument("--typescript-entrypoints", action="store_true",
++                        help="imprime nombre<TAB>ruta relativa de cada entrypoint "
++                             ".ts y no escribe; lo consume src/packaging/reachability.ts")
+     parser.add_argument("--install-user-bin", nargs="?", const=str(DEFAULT_USER_BIN_DIR),
+                         metavar="DIR", default=None,
+                         help="además, copia envoltorios de segundo salto a DIR "
+@@ -937,6 +950,9 @@ def main(argv: list[str] | None = None) -> int:
+     args = parser.parse_args(argv)
+ 
+     root = repository_root()
++    if args.typescript_entrypoints:
++        print_typescript_entrypoints(root)
++        return 0
+     plan = planned_files(root)
+     # Red de seguridad, no aviso esperado: resolve_bin_name() ya prefija todo
+     # stem que choque con un builtin, así que esto debería salir SIEMPRE
+diff --git a/tests/session/test_generate_bin.py b/tests/session/test_generate_bin.py
+index 09dc57f4e..b5bc3c775 100644
+--- a/tests/session/test_generate_bin.py
++++ b/tests/session/test_generate_bin.py
+@@ -1310,6 +1310,29 @@ def test_real_cli_plan_carries_the_delivery_features() -> None:
+           f"faltan: {missing}")
+ 
+ 
++def test_typescript_entrypoints_listing_is_the_discovered_map() -> None:
++    """``--typescript-entrypoints`` publica el mismo mapa que el descubrimiento.
++
++    Lo consume ``src/packaging/reachability.ts``: la lista de wrappers TS
++    tiene una sola definición, y la herramienta de alcance la pide aquí en
++    vez de volver a recorrer ``src/``.
++    """
++    r = subprocess.run(
++        [sys.executable, str(ROOT / "src/session/generate_bin.py"), "--typescript-entrypoints"],
++        capture_output=True, text=True, cwd=str(ROOT),
++        env={**os.environ, "PYTHONPATH": str(ROOT / "src")},
++    )
++    check("--typescript-entrypoints sale 0", r.returncode == 0, r.stderr)
++    pairs = [line.split("\t", 1) for line in r.stdout.splitlines() if "\t" in line]
++    listed = {name: path for name, path in pairs}
++    expected = {name: str(path.relative_to(ROOT))
++                for name, path in gb.discover_typescript_entrypoints(ROOT).items()}
++    check("el listado TSV coincide con discover_typescript_entrypoints",
++          listed == expected, f"listado={len(listed)} esperado={len(expected)}")
++    check("y la entrada de cli apunta a entry/cli.tsx",
++          listed.get("cli") == "src/packages/cli/src/entry/cli.tsx", listed.get("cli"))
++
++
+ def main() -> int:
+     with tempfile.TemporaryDirectory() as tmp:
+         base = pathlib.Path(tmp)
+@@ -1349,6 +1372,7 @@ def main() -> int:
+     test_exercise_on_real_tree_is_green()
+     test_typescript_entrypoints_reach_bin_on_real_tree()
+     test_real_cli_plan_carries_the_delivery_features()
++    test_typescript_entrypoints_listing_is_the_discovered_map()
+     test_no_wrapper_asks_to_block_on_the_real_tree()
+ 
+     print(f"\n{passed} aprobada(s) · {failed} fallida(s) "

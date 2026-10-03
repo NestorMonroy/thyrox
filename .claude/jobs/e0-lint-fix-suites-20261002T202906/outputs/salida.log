@@ -1,0 +1,18 @@
+test-headless-pool-credential-source.sh exit=0 aserciones: 15 de 42 · fallos: 27
+test-headless-pool-execution-unit.sh exit=0 14 ok · 0 falla(s) (alcance medido: headless-pool --execution unit)
+test-headless-pool-exit-live-items.sh exit=0 sin runtime del ítem en runA
+test-headless-pool-frozen-launcher.sh exit=0 result: 3 of 6 assertions green
+test-headless-pool-item-drain.sh exit=0 result: 9 of 17 assertions green
+test-headless-pool-lifecycle.sh exit=0 headless-pool: REHUSA — no se pudo derivar el modelo de --task-class analisis con /home/user/thyrox/bin/agent-recommend: runtime (sin respuesta), modelo (sin respuesta)
+test-headless-pool-local-model-e2e.sh exit=0 8 ok · 0 falla(s) (alcance medido: modelo local por el coordinador desde la unidad, con dobles)
+test-headless-pool-model-policy.sh exit=0 20 ok · 0 falla(s) (alcance medido: headless-pool --model-policy)
+test-headless-pool-runtime.sh exit=0 22/22 aserciones
+test-headless-pool-thyrox-p.sh exit=0 1 ok · 11 falla(s) (alcance medido: headless-pool con thyrox -p)
+test-headless-pool-worktree.sh exit=0 test-headless-pool-worktree: 46 aserciones — 22 ok, 24 falla(s)
+test-headless-pool.sh exit=0 aserciones: 144 de 148 · fallos: 4
+test_user_wiring.py exit=0 user_wiring.WiringRefused: no hay roster del que derivar el consumidor (no pude derivar las raíces de trabajo del árbol, y THYROX_REACH_ROOTS no está declarada. Decláralas separadas por coma: sin ellas no se puede saber qué directorios de trabajo existen, y fabricar un roster compondría rutas inexistentes.). Declaralo con THYROX_CONSUMER=<raiz del clon> o con --consumer <raiz>.
+test_detect_agent_dispatch.py exit=0 11 caso(s); 0 fallo(s)
+test_detect_client_background.py exit=0 12 ok, 0 fallos
+test_execution_policy_enforcement.py exit=0 execution_policy: 39 ok, 0 fallas
+execution thyrox-worker-test-murf1tzk-30088 kind=test task=TASK-THYROX-0773 exit=0
+__BG_EXIT__=0

@@ -1,0 +1,7 @@
+bin/cli
+src/packages/cli/__tests__/peerMessagingTools.test.ts
+src/packages/cli/src/entry/peerMessagingTools.ts
+src/packages/cli/src/entry/runLoop.ts
+src/session/generate_bin.py
+tests/session/test-send-message-two-cli.sh
+tests/session/test_generate_bin.py

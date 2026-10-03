@@ -1,0 +1,6 @@
+.typecheck-daemon.log
+src/packages/daemon/src/__tests__/workerExitBranches.test.ts
+src/packages/daemon/src/__tests__/workerExitOutcome.test.ts
+src/packages/daemon/src/workerVm.ts
+src/packages/permission/tsconfig.check.json
+src/packages/provider/tsconfig.check.json

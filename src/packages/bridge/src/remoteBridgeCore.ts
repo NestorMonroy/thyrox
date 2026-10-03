@@ -40,9 +40,9 @@
  *
  * `logForDebugging`, `logForDiagnosticsNoPII`, `isInProtectedNamespace`,
  * `errorMessage`, `sleep`, `logEvent`, `registerCleanup`,
- * `AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS`,
- * `PermissionMode`, `feature` son PUNTOS DE INYECCIÓN / REIMPLEMENTACIÓN
- * FIEL ya existentes en `./internal/pendingCrossPackageDeps.ts`.
+ * `AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS` y
+ * `PermissionMode` vienen de `@thyrox/agent` y `@thyrox/permission`;
+ * `feature` sigue en `./internal/pendingCrossPackageDeps.ts`.
  */
 
 import axios from 'axios'
@@ -68,17 +68,17 @@ import {
   BoundedUUIDSet,
 } from './bridgeMessaging.js'
 import { logBridgeSkip } from './debugUtils.js'
+import type { AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS } from '@thyrox/agent/eventMetadata'
+import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
+import { isInProtectedNamespace } from '@thyrox/config/env/utils'
+import { sleep } from '@thyrox/config/sleep'
+import { logEvent } from '@thyrox/local-observability'
+import { errorMessage } from '@thyrox/local-observability/errorHelpers.js'
+import type { PermissionMode } from '@thyrox/permission/permissionTypes'
 import {
-  errorMessage,
   feature,
-  isInProtectedNamespace,
-  logEvent,
   logForDebugging,
   logForDiagnosticsNoPII,
-  registerCleanup,
-  sleep,
-  type AnalyticsMetadata_I_VERIFIED_THIS_IS_NOT_CODE_OR_FILEPATHS,
-  type PermissionMode,
 } from './internal/pendingCrossPackageDeps.js'
 import type { ReplBridgeHandle, BridgeState } from './replBridge.js'
 import type { Message } from '@thyrox/agent/messageShapes.js'

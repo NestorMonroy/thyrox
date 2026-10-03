@@ -1,0 +1,24 @@
+{
+  "name": "@thyrox/image-registry",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Puerto de registro de imágenes OCI (TASK-THYROX-0725): resolver, publicar, consumir e inspeccionar por digest. Docker Hub y un registro OCI genérico son adapters seleccionados por una factory; las operaciones administrativas son capacidades opcionales del proveedor.",
+  "exports": {
+    "./*.ts": {
+      "@thyrox/source": "./*.ts",
+      "types": "./dist/*.d.ts",
+      "default": "./*.ts"
+    }
+  },
+  "dependencies": {
+    "@thyrox/artifact-registry": "0.1.0",
+    "@thyrox/podman-execution": "0.1.0"
+  },
+  "devDependencies": {
+    "@thyrox/registry-credentials": "0.1.0"
+  },
+  "scripts": {
+    "test": "bun test"
+  }
+}

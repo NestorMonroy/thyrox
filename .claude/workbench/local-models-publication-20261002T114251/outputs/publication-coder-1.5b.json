@@ -1,0 +1,22 @@
+{
+  "status": "unverified",
+  "publishedAt": "2026-10-02T11:43:03.072Z",
+  "outcome": {
+    "status": "unverified",
+    "pinned": {
+      "repository": "th3rox/thyrox-quantization-lab-artifacts",
+      "digest": "sha256:b6c1720d9f839979c4ce0003796b341c1eeaab8719feea15aad724d2c6d84caf"
+    },
+    "result": {
+      "status": "rate_limited",
+      "rateLimit": {
+        "kind": "pull-rate",
+        "limit": 100,
+        "remaining": 0,
+        "windowSeconds": 3600,
+        "source": "160.79.106.18"
+      },
+      "detail": "429 Too Many Requests"
+    }
+  }
+}

@@ -1,0 +1,145 @@
+parallel_map: memoria: sin ejecución previa de este historial: nada que derivar; no se reserva
+== src/packages/provider/src/accounts/connectionStore.ts
+-- exports
+37:export interface ConnectionFilter {
+43:export interface ListOptions {
+50:export interface DisplayMetadata {
+57:export interface ConnectionStore {
+76:export interface ConnectionStoreDeps {
+193:export function createConnectionStore(deps: ConnectionStoreDeps): ConnectionStore {
+-- pruebas que lo nombran
+src/packages/cli/__tests__/printDelegation.test.ts
+src/packages/cli/__tests__/providersAnthropicCredential.test.ts
+src/packages/provider/__tests__/accounts/connectionStore.test.ts
+src/packages/provider/__tests__/accounts/connectionStoreHome.test.ts
+src/packages/provider/__tests__/accounts/imports/agyAndCliProxyImport.test.ts
+-- consumidores fuera de pruebas y de imports/
+src/packages/cli/src/commands/providers-commands.ts
+src/packages/cli/src/entry/print.ts
+src/packages/cli/src/entry/printDelegation.ts
+src/packages/cli/src/entry/runLoop.ts
+src/packages/provider/bin/credentialProxy.ts
+== src/packages/provider/src/accounts/connectionStoreHome.ts
+-- exports
+25:export type { ConnectionStore }
+29:export const PROVIDERS_DATA_SUBDIR = 'providers'
+30:export const CONNECTIONS_DB_FILE = 'connections.sqlite3'
+33:export function resolveProvidersDataDir(env: Record<string, string | undefined> = process.env): string {
+37:export interface OpenedConnectionStore {
+48:export interface ConnectionStoreOptions {
+60:export function declaredStorageKey(env: Env = process.env, declared: DeclaredValue = (name) => envValue(name)): string | undefined {
+73:export function openConnectionStore(options: ConnectionStoreOptions = {}): OpenedConnectionStore {
+86:export function openExistingConnectionStore(options: ConnectionStoreOptions = {}): OpenedConnectionStore | undefined {
+-- pruebas que lo nombran
+src/packages/cli/__tests__/printDelegation.test.ts
+src/packages/cli/__tests__/providersAnthropicCredential.test.ts
+src/packages/provider/__tests__/accounts/connectionStoreHome.test.ts
+src/packages/provider/__tests__/credentials.test.ts
+src/packages/provider/__tests__/storeCredentialProxyProcess.test.ts
+-- consumidores fuera de pruebas y de imports/
+src/packages/cli/src/commands/providers-commands.ts
+src/packages/cli/src/entry/print.ts
+src/packages/cli/src/entry/printDelegation.ts
+src/packages/cli/src/entry/runLoop.ts
+src/packages/provider/bin/credentialProxy.ts
+== src/packages/provider/src/accounts/fieldCipher.ts
+-- exports
+28:export const STORAGE_KEY_VARIABLE = 'THYROX_STORAGE_ENCRYPTION_KEY'
+34:export type ConnectionFields = { [F in CredentialField]?: string | null } & {
+39:export interface FieldCipher {
+51:export function looksEncrypted(value: unknown): value is string {
+78:export function createFieldCipher(secret: string | undefined, report: (message: string) => void = defaultReport): FieldCipher {
+162:export function fieldCipherFromEnv(env: Record<string, string | undefined> = process.env, report?: (message: string) => void): FieldCiph
+-- pruebas que lo nombran
+src/packages/provider/__tests__/accounts/connectionSchema.test.ts
+src/packages/provider/__tests__/accounts/connectionStore.test.ts
+src/packages/provider/__tests__/accounts/connectionStoreHome.test.ts
+src/packages/provider/__tests__/accounts/fieldCipher.test.ts
+src/packages/provider/__tests__/accounts/imports/agyAndCliProxyImport.test.ts
+-- consumidores fuera de pruebas y de imports/
+src/packages/provider/bin/generateStorageKey.ts
+src/packages/provider/src/accounts/connectionStore.ts
+src/packages/provider/src/accounts/connectionStoreHome.ts
+src/packages/provider/src/accounts/lazyConnectionRow.ts
+src/packages/provider/src/accounts/storageKeyRotation.ts
+== src/packages/provider/src/accounts/proxyCredentials.ts
+-- exports
+23:export function isTerminalConnectionStatus(testStatus: unknown): boolean {
+35:export function connectionProxyCredential(row: JsonRecord, nowMs: number): ProxyCredential {
+54:export function connectionProxyCredentials(rows: readonly JsonRecord[], nowMs: number): Record<string, ProxyCredential[]> {
+-- pruebas que lo nombran
+src/packages/provider/__tests__/accounts/proxyCredentials.test.ts
+-- consumidores fuera de pruebas y de imports/
+src/packages/provider/src/proxy/startServer.ts
+== src/packages/provider/src/accounts/imports/anthropicAuthImport.ts
+-- exports
+21:export interface ParsedAnthropicAuth {
+31:export interface EnrichedAnthropicAuth extends ParsedAnthropicAuth {
+38:export interface CreateConnectionOptions {
+44:export function parseAndValidateAnthropicAuth(raw: unknown): ParsedAnthropicAuth {
+65:export async function enrichWithBootstrap(parsed: ParsedAnthropicAuth, deps: { fetch?: typeof globalThis.fetch; userAgent: string; timeou
+101:export function findExistingAnthropicConnection(store: ConnectionStore, accountUUID: string): JsonRecord | null {
+106:export interface ImportDeps {
+126:export function createConnectionFromAuthFile(store: ConnectionStore, enriched: EnrichedAnthropicAuth, options: CreateConnectionOptions, 
+-- pruebas que lo nombran
+src/packages/provider/__tests__/accounts/imports/anthropicAuthFile.test.ts
+-- consumidores fuera de pruebas y de imports/
+== src/packages/provider/src/accounts/imports/anthropicAuthFile.ts
+-- exports
+15:export const ANTHROPIC_PROVIDER_ID = 'claude'
+19:export interface AnthropicAuthFilePayload {
+31:export interface BuiltAnthropicAuthFile {
+40:export function anthropicConnectionLabel(connection: OAuthConnectionLike): string {
+44:export function extractAnthropicEmail(connection: OAuthConnectionLike): string | null {
+48:export function buildAnthropicAuthPayload(connection: OAuthConnectionLike): AnthropicAuthFilePayload {
+65:export async function buildAnthropicAuthFile(deps: ExportDeps, connectionId: string): Promise<BuiltAnthropicAuthFile> {
+80:export interface WrittenAnthropicAuthFile extends BuiltAnthropicAuthFile {
+88:export async function writeAnthropicAuthFile(built: BuiltAnthropicAuthFile, options: WriteAuthFileOptions): Promise<WrittenAnthropicAuthF
+-- pruebas que lo nombran
+src/packages/provider/__tests__/accounts/imports/anthropicAuthFile.test.ts
+src/packages/provider/__tests__/storeCredentialProxyProcess.test.ts
+-- consumidores fuera de pruebas y de imports/
+src/packages/cli/src/commands/providers/providerId.ts
+src/packages/provider/bin/storeCredentialProxy.ts
+src/packages/provider/src/credentials.ts
+== src/packages/provider/src/accounts/imports/pasteCredentials.ts
+-- exports
+11:export const PASTE_CREDENTIAL_PROVIDERS = new Set(['antigravity', 'agy'])
+13:export function parsePastedCredentials(routeProvider: string, blob: string): CredentialBlob {
+-- pruebas que lo nombran
+src/packages/provider/__tests__/accounts/imports/pasteImports.test.ts
+-- consumidores fuera de pruebas y de imports/
+== src/packages/provider/src/accounts/imports/credentialBlob.ts
+-- exports
+11:export const CREDENTIAL_BLOB_PREFIX = 'thyrox-cred-v1.'
+15:export interface CredentialBlobTokens {
+24:export interface CredentialBlob {
+29:export function encodeCredentialBlob(input: CredentialBlob): string {
+37:export function decodeCredentialBlob(blob: string): CredentialBlob {
+-- pruebas que lo nombran
+src/packages/provider/__tests__/accounts/imports/pasteImports.test.ts
+-- consumidores fuera de pruebas y de imports/
+== src/packages/provider/src/credentials.ts
+-- exports
+32:export const OAUTH_BETA = 'oauth-2025-04-20'
+34:export type CredentialSource =
+43:export type Credential = {
+54:export type ReadFd = (fd: number) => string
+57:export const readFdFromProc: ReadFd = (fd) => readFileSync(`/proc/self/fd/${fd}`, 'utf8')
+78:export const SSH_PLACEHOLDER = 'ssh-placeholder'
+86:export function tunnelSocket(env: Env = process.env): string | undefined {
+145:export function resolveCredential(env: Env = process.env, readFd: ReadFd = readFdFromProc, store?: ConnectionStore): Credential {
+166:export function authHeaders(c: Credential): Record<string, string> {
+197:export function scrubChildEnv(env: Env): Env {
+-- pruebas que lo nombran
+src/packages/cli/__tests__/printDelegation.test.ts
+src/packages/cli/__tests__/providersAnthropicCredential.test.ts
+src/packages/config/__tests__/policyParent.test.ts
+src/packages/local-observability/__tests__/udsPeerCredentials.test.ts
+src/packages/local-observability/src/__tests__/fileOperationAnalytics.test.ts
+-- consumidores fuera de pruebas y de imports/
+src/packages/agent/background/preconditions.ts
+src/packages/agent/cacheTtl.ts
+src/packages/agent/commands/commit-push-pr.ts
+src/packages/agent/commands/commit.ts
+src/packages/agent/commands/security-review.ts

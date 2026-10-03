@@ -1,0 +1,49 @@
+# HEAD 9429f0984
+concept                           lines  files
+ExecutionGrant                       73     23
+ExecutionAuthorization               20      5
+ExecutionUnit                        59     19
+MaterializedContainer                 4      2
+ModelExecutionPrimitive              12      6
+PodmanModelExecutionPrimitive        15      4
+PodmanExecutionPrimitive              4      4
+materializeExecution                  9      3
+runExecution                         10      4
+materializeContainer                  6      3
+podman-execution-execute              8      3
+
+## definiciones
+src/packages/model-artifacts/executionGrant.ts:37:export interface ExecutionGrant {
+src/packages/model-scheduling/executionPrimitive.ts:19:export interface ExecutionUnit {
+src/packages/model-scheduling/executionPrimitive.ts:64:export interface ModelExecutionPrimitive {
+src/packages/model-scheduling/podmanModelExecutionPrimitive.ts:285:export class PodmanModelExecutionPrimitive implements ModelExecutionPrimitive {
+src/packages/podman-execution/containerRun.ts:72:export type MaterializedContainer = {
+src/packages/podman-execution/containerRun.ts:83:export async function materializeContainer(podman: PodmanExecutor, spec: WorkerContainerSpec): Promise<MaterializedContainer> {
+src/packages/podman-execution/executionAuthorization.ts:77:export type ExecutionAuthorization = {
+src/packages/podman-execution/executionAuthorization.ts:246:export async function runExecution(podman: PodmanExecutor, authorization: ExecutionAuthorization, now = Date.now()): Promise<JobOutput> {
+src/packages/podman-execution/executionAuthorization.ts:251:export async function materializeExecution(
+
+## quién materializa (importadores de las funciones de la primitiva)
+src/packages/artifact-registry/podmanJobVerifier.ts
+src/packages/daemon/src/podman/podmanWorkerManager.ts
+src/packages/local-models/ollamaModelInstaller.ts
+src/packages/local-models/podmanArtifactFetcher.ts
+src/packages/local-models/quantizationLab.ts
+src/packages/model-scheduling/podmanModelExecutionPrimitive.ts
+src/packages/podman-execution/containerRun.ts
+src/packages/podman-execution/executionAuthorization.ts
+src/packages/podman-execution/executionCommand.ts
+
+## entradas públicas que alcanzan la primitiva
+check_model_execution_grant
+podman-execution-execute
+podman_capabilities
+podman_lock_recovery
+bin/podman-execution-execute:15:exec "${THYROX_TOOLCHAIN_BUN_BIN:-bun}" "$WRAPPER_ROOT/src/packages/podman-execution/bin/execute.ts" "$@"
+src/lib/managed_execution.sh:27:readonly _MANAGED_EXECUTION_RUNNER_SOURCE="src/packages/podman-execution/bin/execute.ts"
+
+## quién invoca el CLI
+bin/podman-execution-execute
+src/lib/managed_execution.sh
+src/packages/podman-execution/bin/execute.ts
+src/packages/podman-execution/executionCommand.ts

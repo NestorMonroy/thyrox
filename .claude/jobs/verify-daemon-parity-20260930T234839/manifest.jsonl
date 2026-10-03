@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/daemon && bun test 2>&1 | tail -6; cd /home/user/thyrox && python3 src/verify/check_package_typecheck.py daemon cli 2>&1 | tail -6", "started_at": "2026-09-30T23:48:39+00:00"}

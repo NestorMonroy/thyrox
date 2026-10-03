@@ -1,0 +1,4 @@
+==== WRn: 1 definicion(es) de nivel superior
+---- chunk-q505ceqg.js function WRn [24920,25361)
+function WRn(e){if(e.ruleValue.toolName===Be||e.ruleValue.toolName===vt)return"keychain";let n=e.ruleValue.ruleContent??"";if(_Wn(ie()).includes(n))return"personal_credential";if(/\/daemon\/dispatch\/\*\*$/.test(n))return"exec_ingest";if(/\/Library\/Keychains\/\*\*$/.test(n))return"keychain_files";if(/\/Microsoft\/(?:Credentials|Vault|Protect)\/\*\*$/.test(n))return"credential_store_files";return e.ruleValue.toolName===Ot?"write":"read"}
+symbol: 1 de 1 nombre(s) resueltos

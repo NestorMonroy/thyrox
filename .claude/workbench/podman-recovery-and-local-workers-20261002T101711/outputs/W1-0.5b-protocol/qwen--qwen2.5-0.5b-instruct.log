@@ -1,0 +1,8 @@
+ok   single_tool	{"content":"","toolCalls":[{"name":"get_weather","arguments":{"city":"Madrid"}}]}
+ok   integer_arguments	{"content":"","toolCalls":[{"name":"add","arguments":{"a":17,"b":25}}]}
+ok   choose_between_tools	{"content":"","toolCalls":[{"name":"read_file","arguments":{"path":"/etc/hostname"}}]}
+ok   enum_argument	{"content":"","toolCalls":[{"name":"set_mode","arguments":{"mode":"safe"}}]}
+ok   no_tool_needed	{"content":"hello","toolCalls":[]}
+ok   continuation_after_tool	{"content":"The sum of 17 and 25 is 42.","toolCalls":[]}
+aprobada: thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf protocolo tool-calling@1 6/6, 0.4 tokens/s (contended), ctx 8192 → .claude/workbench/podman-recovery-and-local-workers-20261002T101711/outputs/W1-0.5b-protocol/qualifications.json
+local-models-qualify: no hay coordinador de model scheduling en /root/.claude/model-scheduling/coordinator.sock: la conexión está cerrada

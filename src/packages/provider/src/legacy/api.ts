@@ -581,10 +581,6 @@ export function prependUserContext(
   messages: Message[],
   context: { [k: string]: string },
 ): Message[] {
-  if (readEnv('NODE_ENV') === 'test') {
-    return messages
-  }
-
   if (Object.entries(context).length === 0) {
     return messages
   }

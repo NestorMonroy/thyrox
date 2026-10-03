@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c cd src/packages/local-models && THYROX_E2E_MODEL_RESIDENCY=1 bun test __tests__/residencyLifecycle.real.test.ts 2>&1", "started_at": "2026-10-01T10:20:01+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-01T10:20:10+00:00", "duration_seconds": 9.328018}

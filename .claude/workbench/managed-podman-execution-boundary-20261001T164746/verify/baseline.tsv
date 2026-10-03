@@ -1,0 +1,6 @@
+# paquete	fallas admitidas (outputs/p1-baseline.log; artifact-registry medido en unidad sobre HEAD 594e0b8e9)
+podman-execution	0
+artifact-registry	0
+model-scheduling	1
+local-models	5
+daemon	0

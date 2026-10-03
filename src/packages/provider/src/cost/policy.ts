@@ -19,7 +19,12 @@
 import { CATALOG, MODELS, effortCostIndex, usageEquivalentTokens } from '@thyrox/agent/models'
 import type { EffortLevel, PricingTier } from '@thyrox/agent/models'
 import type { AgentDefinition, CacheTtl } from '@thyrox/agent/types'
+import type { ModelCatalogEntry } from '@thyrox/model-artifacts/catalogEntry.ts'
+import { qualifiedModels, type ModelQualification } from '@thyrox/model-artifacts/modelQualification.ts'
 import { promptCacheKey } from './cacheBreak.ts'
+import { allowsEntry, type ExecutionPolicy } from './executionPolicy.ts'
+
+export { ExecutionPolicyError, parseExecutionPolicy, type ExecutionPolicy } from './executionPolicy.ts'
 
 function pricingOf(modelId: string): PricingTier {
   const p = MODELS[modelId]?.pricing
@@ -334,6 +339,109 @@ export function recommend(kind: TaskKind, profile: TurnProfile): Recommendation 
     ranked,
     excluded,
   }
+}
+
+// ---------------------------------------------------------------------------
+// 3b. Dónde se ejecuta: un modelo local cualificado primero, claude-cli después
+// ---------------------------------------------------------------------------
+
+/** Lo que la instalación declara de sus modelos locales: catálogo y mediciones. */
+export type LocalModelInventory = {
+  entries: readonly ModelCatalogEntry[]
+  qualifications: readonly ModelQualification[]
+}
+
+/** Un modelo local servido por Ollama, elegido porque una suite lo aprobó para la clase. */
+export type LocalExecution = {
+  runtime: 'ollama'
+  /** Nombre contractual `thyrox-…` del catálogo. */
+  model: string
+  taskClass: TaskKind
+  /** Contexto que el perfil exige; la cualificación midió al menos esto. */
+  contextTokens: number
+  qualification: ModelQualification
+}
+
+/**
+ * El catálogo del proveedor ejecutado por `claude -p`. `fallbackReason` existe
+ * sólo cuando se llegó aquí porque ningún modelo local cumplió.
+ */
+export type ProviderExecution = Recommendation & {
+  runtime: 'claude-cli'
+  taskClass: TaskKind
+  fallbackReason?: string
+}
+
+/**
+ * Ningún modelo que la política permite cumple, y la política no permite el
+ * respaldo: no hay ejecución que recomendar. No lleva modelo a propósito.
+ */
+export type BlockedExecution = {
+  runtime: 'blocked'
+  taskClass: TaskKind
+  contextTokens: number
+  blockedReason: string
+}
+
+export type ExecutionRecommendation = LocalExecution | ProviderExecution | BlockedExecution
+
+/** El catálogo del proveedor, sin pasar por los modelos locales. */
+export function providerExecution(kind: TaskKind, profile: TurnProfile): ProviderExecution {
+  return { ...recommend(kind, profile), runtime: 'claude-cli', taskClass: kind }
+}
+
+/**
+ * Por qué ningún modelo local cumple: catálogo vacío, ninguna cualificación
+ * aprobada vigente de la clase, o aprobadas con menos contexto medido del que
+ * el perfil exige (se nombra la mayor medida).
+ */
+function localFallbackReason(kind: TaskKind, profile: TurnProfile, local: LocalModelInventory): string {
+  if (local.entries.length === 0) return 'catálogo local vacío: ningún modelo declarado'
+  const approvedAtAnyContext = qualifiedModels(local.entries, local.qualifications, kind, 0)
+  if (approvedAtAnyContext.length === 0) {
+    return `sin cualificación aprobada vigente de la clase ${kind} entre los ${local.entries.length} modelo(s) del catálogo local`
+  }
+  const widest = Math.max(...approvedAtAnyContext.map((candidate) => candidate.qualification.contextTokens))
+  return `contexto medido insuficiente: el mayor aprobado para ${kind} midió ${widest} tokens < ${profile.contextTokens} exigidos`
+}
+
+/** La política dejó fuera un catálogo que sí tiene entradas: la causa es la política, no el catálogo. */
+function excludesWholeCatalog(local: LocalModelInventory, permitted: LocalModelInventory): boolean {
+  return local.entries.length > 0 && permitted.entries.length === 0
+}
+
+/**
+ * Elige dónde se ejecuta una clase de tarea: el modelo local más rápido de los
+ * que una medición aprobó para la clase con contexto suficiente; si no hay
+ * ninguno, la recomendación del catálogo del proveedor por `claude-cli`, con
+ * la causa concreta en `fallbackReason`.
+ */
+export function recommendExecution(
+  kind: TaskKind,
+  profile: TurnProfile,
+  local: LocalModelInventory,
+  policy?: ExecutionPolicy,
+): ExecutionRecommendation {
+  // Con política, sólo compiten los modelos que permite; sin ella, todos (el comportamiento previo).
+  const permitted = policy === undefined ? local : { ...local, entries: local.entries.filter(entry => allowsEntry(policy, entry)) }
+  const [fastest] = qualifiedModels(permitted.entries, permitted.qualifications, kind, profile.contextTokens)
+  if (fastest) {
+    return {
+      runtime: 'ollama',
+      model: fastest.entry.name,
+      taskClass: kind,
+      contextTokens: profile.contextTokens,
+      qualification: fastest.qualification,
+    }
+  }
+  const reason = excludesWholeCatalog(local, permitted)
+    ? `la política no permite ninguna de las ${local.entries.length} entrada(s) del catálogo local`
+    : localFallbackReason(kind, profile, permitted)
+  if (policy !== undefined && !policy.fallback.enabled) {
+    return { runtime: 'blocked', taskClass: kind, contextTokens: profile.contextTokens,
+      blockedReason: `la política no permite respaldo y ningún modelo permitido cumple: ${reason}` }
+  }
+  return { ...providerExecution(kind, profile), fallbackReason: reason }
 }
 
 // ---------------------------------------------------------------------------

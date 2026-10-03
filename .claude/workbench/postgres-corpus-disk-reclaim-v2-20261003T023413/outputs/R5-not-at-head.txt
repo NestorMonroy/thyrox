@@ -1,0 +1,13 @@
+29a594c79 .claude/workbench/managed-podman-execution-boundary-20261001T164746/credential-rotation.tsv
+6bd918b6c .claude/workbench/managed-podman-execution-boundary-20261001T164746/outputs/continuation.jsonl
+6bd918b6c .claude/workbench/managed-podman-execution-boundary-20261001T164746/outputs/p2d-red-verified.log
+6bd918b6c .claude/workbench/managed-podman-execution-boundary-20261001T164746/probes/unit_identity.sh
+6bd918b6c .claude/workbench/managed-podman-execution-boundary-20261001T164746/tests/test_manifest_identity.py
+6bd918b6c .claude/workbench/managed-podman-execution-boundary-20261001T164746/verify/caller_migrated.sh
+6bd918b6c .claude/workbench/managed-podman-execution-boundary-20261001T164746/verify/p2d.sh
+6bd918b6c .claude/workbench/managed-podman-execution-boundary-20261001T164746/verify/p2e.sh
+6bd918b6c .claude/workbench/managed-podman-execution-boundary-20261001T164746/verify/p3.sh
+6bd918b6c .claude/workbench/managed-podman-execution-boundary-20261001T164746/verify/slice_evidence.sh
+6a7201165 .claude/workbench/postgres-corpus-disk-reclaim-20261002T023317/outputs/executions.jsonl
+6a7201165 .claude/workbench/postgres-corpus-disk-reclaim-20261002T023317/outputs/units.jsonl
+6a7201165 .claude/workbench/postgres-corpus-disk-reclaim-20261002T023317/plan.jsonl

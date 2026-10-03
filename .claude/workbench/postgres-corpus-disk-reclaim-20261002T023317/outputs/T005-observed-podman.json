@@ -1,0 +1,703 @@
+{
+  "utc": "2026-10-02T03:22:48Z",
+  "source": "podman-execution observe snapshot",
+  "graphRoot": "/var/lib/containers/storage",
+  "running": [
+    "thyrox-redis",
+    "thyrox-ollama",
+    "thyrox-postgres"
+  ],
+  "volumes": [
+    {
+      "name": "thyrox-ollama-probe-models",
+      "mountpoint": "/var/lib/containers/storage/volumes/thyrox-ollama-probe-models/_data",
+      "createdAt": "2026-09-30T19:03:01.825663018Z",
+      "labels": {},
+      "users": []
+    },
+    {
+      "name": "thyrox-quantization-lab-models",
+      "mountpoint": "/var/lib/containers/storage/volumes/thyrox-quantization-lab-models/_data",
+      "createdAt": "2026-09-30T22:49:35.421994474Z",
+      "labels": {},
+      "users": []
+    },
+    {
+      "name": "thyrox-quantization-lab-artifacts",
+      "mountpoint": "/var/lib/containers/storage/volumes/thyrox-quantization-lab-artifacts/_data",
+      "createdAt": "2026-09-30T22:59:46.009966088Z",
+      "labels": {},
+      "users": []
+    },
+    {
+      "name": "thyrox-ollama-bench-models",
+      "mountpoint": "/var/lib/containers/storage/volumes/thyrox-ollama-bench-models/_data",
+      "createdAt": "2026-09-30T23:14:53.324452403Z",
+      "labels": {},
+      "users": [
+        "thyrox-ollama"
+      ]
+    },
+    {
+      "name": "6cec042378060862a2531f5ec607d295e4ec4acabb69250e755ceffd7900b284",
+      "mountpoint": "/var/lib/containers/storage/volumes/6cec042378060862a2531f5ec607d295e4ec4acabb69250e755ceffd7900b284/_data",
+      "createdAt": "2026-10-01T02:10:49.319372719Z",
+      "labels": {},
+      "users": []
+    },
+    {
+      "name": "thyrox-ollama-models",
+      "mountpoint": "/var/lib/containers/storage/volumes/thyrox-ollama-models/_data",
+      "createdAt": "2026-10-01T06:29:14.962047708Z",
+      "labels": {},
+      "users": []
+    },
+    {
+      "name": "167c474564b3b6588aaa1110f12541fd3576ad4a35e4dd34328931428bb9ff54",
+      "mountpoint": "/var/lib/containers/storage/volumes/167c474564b3b6588aaa1110f12541fd3576ad4a35e4dd34328931428bb9ff54/_data",
+      "createdAt": "2026-10-01T06:29:35.601922952Z",
+      "labels": {},
+      "users": []
+    },
+    {
+      "name": "thyrox-postgres-data",
+      "mountpoint": "/var/lib/containers/storage/volumes/thyrox-postgres-data/_data",
+      "createdAt": "2026-10-02T01:42:47.809744242Z",
+      "labels": {},
+      "users": [
+        "thyrox-postgres"
+      ]
+    },
+    {
+      "name": "a3af5ac1864dc136daeb19d2531b1d8082a821e7d3c17dc5512dea05f4fb9a4d",
+      "mountpoint": "/var/lib/containers/storage/volumes/a3af5ac1864dc136daeb19d2531b1d8082a821e7d3c17dc5512dea05f4fb9a4d/_data",
+      "createdAt": "2026-10-02T01:57:17.271885732Z",
+      "labels": {},
+      "users": []
+    },
+    {
+      "name": "0365981757d0bb26035a1c2c9fc3808e91b9bb54e3156c7088cc49b9dc398d75",
+      "mountpoint": "/var/lib/containers/storage/volumes/0365981757d0bb26035a1c2c9fc3808e91b9bb54e3156c7088cc49b9dc398d75/_data",
+      "createdAt": "2026-10-02T02:49:22.770825462Z",
+      "labels": {},
+      "users": [
+        "thyrox-redis"
+      ]
+    },
+    {
+      "name": "76dcb8e6032a4d7b93cc4a51b5a98fc471d40ed6e9e3517d178205ed18167e54",
+      "mountpoint": "/var/lib/containers/storage/volumes/76dcb8e6032a4d7b93cc4a51b5a98fc471d40ed6e9e3517d178205ed18167e54/_data",
+      "createdAt": "2026-10-02T03:00:27.351104128Z",
+      "labels": {},
+      "users": []
+    },
+    {
+      "name": "97058b2e05e5058bfd9496da2b8f413cc9336f806ed98b95b7e45545a02fd347",
+      "mountpoint": "/var/lib/containers/storage/volumes/97058b2e05e5058bfd9496da2b8f413cc9336f806ed98b95b7e45545a02fd347/_data",
+      "createdAt": "2026-10-02T03:08:42.31415594Z",
+      "labels": {},
+      "users": []
+    },
+    {
+      "name": "36a11794a762acb39462f3eb8bf6ae66f1697f0f3bfb3b5f24c6daf5ba65575f",
+      "mountpoint": "/var/lib/containers/storage/volumes/36a11794a762acb39462f3eb8bf6ae66f1697f0f3bfb3b5f24c6daf5ba65575f/_data",
+      "createdAt": "2026-10-02T03:08:54.118335563Z",
+      "labels": {},
+      "users": []
+    },
+    {
+      "name": "bd0cde8174d938a18c6f575eef48db7f24b7475f818923b229298d308eff26a9",
+      "mountpoint": "/var/lib/containers/storage/volumes/bd0cde8174d938a18c6f575eef48db7f24b7475f818923b229298d308eff26a9/_data",
+      "createdAt": "2026-10-02T03:09:08.839857726Z",
+      "labels": {},
+      "users": []
+    },
+    {
+      "name": "050d75c5cb46135dad7fa82e8d27c0f23e60cab7e37036d7d0e5016339802bc3",
+      "mountpoint": "/var/lib/containers/storage/volumes/050d75c5cb46135dad7fa82e8d27c0f23e60cab7e37036d7d0e5016339802bc3/_data",
+      "createdAt": "2026-10-02T03:12:21.095253825Z",
+      "labels": {},
+      "users": []
+    }
+  ],
+  "images": [
+    {
+      "id": "2bb9f235830eb30689864b5447eeea083ae1e3607a18fdca353b5c91de5e5e5a",
+      "tags": [
+        "docker.io/th3rox/thyrox-task-runner:ubuntu24.04-bun1.3.11-uv0.8.17",
+        "localhost/thyrox-task-runner:candidate"
+      ],
+      "digests": [
+        "docker.io/th3rox/thyrox-task-runner@sha256:1cced65c16b40c7ac5fc73a6908ce0353ec450618251cac1893ef8c82ad25ba5",
+        "docker.io/th3rox/thyrox-task-runner@sha256:e6981bdf4149d3e5a4e03f14ec76dccc3a0fdc8560d9e1c381f359a8c6c37da2",
+        "localhost/thyrox-task-runner@sha256:1cced65c16b40c7ac5fc73a6908ce0353ec450618251cac1893ef8c82ad25ba5",
+        "localhost/thyrox-task-runner@sha256:e6981bdf4149d3e5a4e03f14ec76dccc3a0fdc8560d9e1c381f359a8c6c37da2"
+      ],
+      "bytes": 386467718,
+      "uniqueBytes": 1390,
+      "created": "2026-10-02T02:21:31.177761464Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "io.thyrox.image.lifecycle": "permanent",
+        "org.opencontainers.image.version": "24.04",
+        "thyrox.task": "TASK-THYROX-0724"
+      },
+      "users": []
+    },
+    {
+      "id": "1e02a895407958a517a0b82851aa76befb8f65f405e7ea8422d434691f415c26",
+      "tags": [],
+      "digests": [],
+      "bytes": 386466328,
+      "uniqueBytes": 0,
+      "created": "2026-10-02T02:21:30.60277041Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "05ae188ca037bcab1e61af8387e96c37029e0f09c82f15dfe0306053353deee8",
+      "tags": [],
+      "digests": [],
+      "bytes": 334286445,
+      "uniqueBytes": 0,
+      "created": "2026-10-02T02:21:28.567893697Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "264da9d03eb3003c3cfa8af7cd57707e6e6e1bd283f4f5452fbf3c1ddff259bf",
+      "tags": [],
+      "digests": [],
+      "bytes": 234985179,
+      "uniqueBytes": 0,
+      "created": "2026-10-02T02:21:25.279553429Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "95d7e60fc00bfc1baf54e911f389232d0bc604555258272ec0b57b1bd7abf006",
+      "tags": [],
+      "digests": [],
+      "bytes": 80694184,
+      "uniqueBytes": 0,
+      "created": "2026-10-02T02:21:09.87896413Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "24c9da34a856faa8b02a35daeecf7ab4b279c1242dede9de07f28d2296793059",
+      "tags": [],
+      "digests": [],
+      "bytes": 80694023,
+      "uniqueBytes": 0,
+      "created": "2026-10-02T02:21:09.865480178Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "8ee2ef2046c4dc392dae9da8988301e9322e1b96fcf28b574c4b72e1bd2a1bc7",
+      "tags": [],
+      "digests": [],
+      "bytes": 80693871,
+      "uniqueBytes": 0,
+      "created": "2026-10-02T02:21:09.851837364Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "78f62cf986107cbf34d06d5d967889b80a938e2c9d410ba084a54d29212116dd",
+      "tags": [],
+      "digests": [],
+      "bytes": 80693731,
+      "uniqueBytes": 0,
+      "created": "2026-10-02T02:21:09.838622124Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "82d1a3f1a1cbb2e2fc43bfcc6d576f68bcf50510d8b798bd6f1c260b16052903",
+      "tags": [],
+      "digests": [],
+      "bytes": 80693600,
+      "uniqueBytes": 0,
+      "created": "2026-10-02T02:21:09.822787596Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "26af4d189984948a92ebc88a2c8b69e1fda2b089ea52a87818b3b1c094177d64",
+      "tags": [
+        "localhost/thyrox-task-runner:dev"
+      ],
+      "digests": [
+        "localhost/thyrox-task-runner@sha256:a6648bee8d929b9975163b9bc6366613ce18e9ecc4a666f5dce3bcdaade37165"
+      ],
+      "bytes": 386466937,
+      "uniqueBytes": 279,
+      "created": "2026-10-01T15:43:14.875298303Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "io.thyrox.image.lifecycle": "cache",
+        "org.opencontainers.image.version": "24.04",
+        "thyrox.task": "TASK-THYROX-0742"
+      },
+      "users": []
+    },
+    {
+      "id": "0d469d62f999f18272430918a9d655d1c352e9f56337a9da35f372fc7a7c4e48",
+      "tags": [],
+      "digests": [],
+      "bytes": 386466658,
+      "uniqueBytes": 0,
+      "created": "2026-10-01T15:43:14.492585117Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "4f65c7dfee65d4173b6de744c7f335c7e1f2ea88f3527a02808addf7b376c457",
+      "tags": [],
+      "digests": [],
+      "bytes": 334286704,
+      "uniqueBytes": 0,
+      "created": "2026-10-01T15:43:12.070794332Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "61b9d21cee35de6b2849d6d92e224511e6feb167d9d2c24a5708d7c2778ef834",
+      "tags": [],
+      "digests": [],
+      "bytes": 234985368,
+      "uniqueBytes": 0,
+      "created": "2026-10-01T15:43:06.873848991Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "f3e7b383fcafd936c4b78eaf181c94265d2ce0964551201edb01f34ebc60c538",
+      "tags": [],
+      "digests": [],
+      "bytes": 80693942,
+      "uniqueBytes": 0,
+      "created": "2026-10-01T15:42:36.442752389Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "28c023aeef75d983fe44ae713f3992b88ab5818e1e5d7730c65fd3c97e416d07",
+      "tags": [],
+      "digests": [],
+      "bytes": 80694118,
+      "uniqueBytes": 0,
+      "created": "2026-10-01T15:42:36.465058839Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "5c810f8d34a2e2f647a604735480e63a15293242044e273fb84f7c622e237465",
+      "tags": [],
+      "digests": [],
+      "bytes": 80694305,
+      "uniqueBytes": 0,
+      "created": "2026-10-01T15:42:36.482641732Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "6a743396463c3b6ef7307fa7a2fc8e710559125fc82b3592d6e1b6c8bba13229",
+      "tags": [],
+      "digests": [],
+      "bytes": 1279513276,
+      "uniqueBytes": 0,
+      "created": "2026-10-01T02:13:10.357004698Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "ddf16d444d8bd2ac8cb4cfd94b7dd966b7da1de15e5a0ab9137a97d16fcf9156",
+      "tags": [
+        "localhost/thyrox-model-quantizer:dev"
+      ],
+      "digests": [
+        "localhost/thyrox-model-quantizer@sha256:7bbe1b609ecf553fffa28443c41c1ba27ec02a8b45f856dc231166da0eac40ad"
+      ],
+      "bytes": 1279513437,
+      "uniqueBytes": 161,
+      "created": "2026-10-01T02:13:10.408909603Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "6f01f65a16880f9946e7069f4df734b868b01d91594d7c7c0b7a297ebfef31cb",
+      "tags": [],
+      "digests": [],
+      "bytes": 1279513048,
+      "uniqueBytes": 0,
+      "created": "2026-10-01T02:13:10.299474902Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "e9287f72638197384e1cb45890d9191ab701ada8bdec41da2625dcbf372f09ed",
+      "tags": [],
+      "digests": [],
+      "bytes": 1279482783,
+      "uniqueBytes": 0,
+      "created": "2026-10-01T02:08:57.121087679Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "bcffef11e5b4a20d4a9a243109d5a14b9dd3d2dd8a02adfac283f09dfe414c01",
+      "tags": [],
+      "digests": [],
+      "bytes": 166174944,
+      "uniqueBytes": 0,
+      "created": "2026-10-01T02:07:58.212140354Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "c836eff6528cf6dae3ee58c5d2c4ab4a88152412cea50e31573bec5e31bb4dc3",
+      "tags": [],
+      "digests": [],
+      "bytes": 168081255,
+      "uniqueBytes": 0,
+      "created": "2026-10-01T02:07:58.668183248Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "16917d594fb0d756554a65fa3e9d0689850ef7d5d9bb0ef8095d4df611f0436a",
+      "tags": [],
+      "digests": [],
+      "bytes": 167277350,
+      "uniqueBytes": 0,
+      "created": "2026-10-01T02:07:58.446762825Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "eef293cd6643c01453f93b5b6e0f969e6a9533d3b3f960616c32e0bddb541fc3",
+      "tags": [],
+      "digests": [],
+      "bytes": 145035878,
+      "uniqueBytes": 0,
+      "created": "2026-10-01T02:07:57.12123376Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "a7e93b19c8c3f444ca1067e98159e6ea412b98ed2bc22d05b6cc2b65e92a9afe",
+      "tags": [],
+      "digests": [],
+      "bytes": 166159015,
+      "uniqueBytes": 0,
+      "created": "2026-10-01T02:07:57.857374156Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "0a829950cd5181a68f290ebf3a1157314e93b14d6590da25683bd33373bb6467",
+      "tags": [],
+      "digests": [],
+      "bytes": 132865575,
+      "uniqueBytes": 0,
+      "created": "2026-10-01T02:07:56.795102904Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "8f7f65176514da66f27a79fbba5f689e0f215f9ec2748ce78707b62fe4921d63",
+      "tags": [],
+      "digests": [],
+      "bytes": 132601324,
+      "uniqueBytes": 0,
+      "created": "2026-10-01T02:07:56.552569628Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "8f8efcfd9bcfc2cadf4979b43441a473716902bd591436f73b1df4c012cf17d1",
+      "tags": [],
+      "digests": [],
+      "bytes": 132563890,
+      "uniqueBytes": 0,
+      "created": "2026-10-01T02:07:55.662222146Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "2af5de6d521fde3902ac4396992c529ddcf5e07296ce6794b8895bdb151a55d5",
+      "tags": [],
+      "digests": [],
+      "bytes": 80693942,
+      "uniqueBytes": 0,
+      "created": "2026-10-01T02:07:38.992871994Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "efc2db794f6d3d2d903ff8e5dc1f7d68714a63b5ca879d70bfb5cc91798d7bbb",
+      "tags": [],
+      "digests": [],
+      "bytes": 80693778,
+      "uniqueBytes": 0,
+      "created": "2026-10-01T02:07:38.978185626Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "b78504eefd22adbeb9b87013f5740fbe103e83030b1d5a1242f7d9cc929f0732",
+      "tags": [],
+      "digests": [],
+      "bytes": 80693623,
+      "uniqueBytes": 0,
+      "created": "2026-10-01T02:07:38.962599464Z",
+      "labels": {
+        "io.buildah.version": "1.33.7",
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "9ace0117e8ff59e3d54beeea8069d919b9a882168385a1dfc5a1d8b9503df50c",
+      "tags": [],
+      "digests": [
+        "ghcr.io/ggml-org/llama.cpp@sha256:88ef2d9c2a221e80d5eb96f707a719524e9fc522d34b272bf2852dde4898d2dc",
+        "ghcr.io/ggml-org/llama.cpp@sha256:f3f04c295b2906b706754b9b2ed239fc636751e4c92687dab823336fc026f076"
+      ],
+      "bytes": 2957557436,
+      "uniqueBytes": 2958000000,
+      "created": "2026-09-30T04:49:29.236058659Z",
+      "labels": {
+        "org.opencontainers.image.created": "2026-09-30T04:38:22Z",
+        "org.opencontainers.image.description": "LLM inference in C/C++",
+        "org.opencontainers.image.revision": "eae11d2217fe9225d1aaba48773b6cca45ae4de9",
+        "org.opencontainers.image.source": "https://github.com/ggml-org/llama.cpp",
+        "org.opencontainers.image.title": "llama.cpp",
+        "org.opencontainers.image.url": "https://github.com/ggml-org/llama.cpp",
+        "org.opencontainers.image.version": "b11277"
+      },
+      "users": []
+    },
+    {
+      "id": "c178b43788bbd8f33ac3a6aa17dc561bc15dcbdba08ceac19f9388cf2415cc48",
+      "tags": [
+        "docker.io/ollama/ollama:0.35.0"
+      ],
+      "digests": [
+        "docker.io/ollama/ollama@sha256:2a6e883b917fc543389599dae79918f5cac9e1438890506982f44aa4f5625d01",
+        "docker.io/ollama/ollama@sha256:9c1dc45ea758396139ec0adfa52947714c61f8d1e4537a6e2daef8138e7a64a9"
+      ],
+      "bytes": 5513676936,
+      "uniqueBytes": 5514000000,
+      "created": "2026-09-29T01:43:16.242329418Z",
+      "labels": {
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": [
+        "thyrox-ollama"
+      ]
+    },
+    {
+      "id": "64035c2c9726d90bea2a217d43da49d7a3f13dde8647c1f409059e02e0e61287",
+      "tags": [
+        "docker.io/library/redis:7.4"
+      ],
+      "digests": [
+        "docker.io/library/redis@sha256:95acc00495ddacfec75111ba47021f903121a890311d49264c723b4423ac9601",
+        "docker.io/library/redis@sha256:c6eabf748fc7a61dbb5a705c78bcf3d6377b1127a97d0ce965c11c44ba46896f"
+      ],
+      "bytes": 116068690,
+      "uniqueBytes": 116100000,
+      "created": "2026-09-19T00:38:19.910809608Z",
+      "labels": {},
+      "users": [
+        "thyrox-redis"
+      ]
+    },
+    {
+      "id": "6232b38791000e3818b58d8847b5a8f5612d606929e01156dd8febc423e0f2ef",
+      "tags": [
+        "docker.io/library/ubuntu:24.04"
+      ],
+      "digests": [
+        "docker.io/library/ubuntu@sha256:008173c23f95b170204355c12626cb5a965d779a7e1283b09e9cffbb1bf33ca3",
+        "docker.io/library/ubuntu@sha256:496754492fb28b4d3049432f2ca787449331e23fb14f0dd3fffea86bf5a93eb4"
+      ],
+      "bytes": 80700787,
+      "uniqueBytes": 0,
+      "created": "2026-09-11T11:44:06.579973371Z",
+      "labels": {
+        "org.opencontainers.image.version": "24.04"
+      },
+      "users": []
+    },
+    {
+      "id": "56a5b20c7a157dbb94149ba3cce70da76f02e1645dec234379709ddaebe607ea",
+      "tags": [
+        "docker.io/pgvector/pgvector:0.8.0-pg16"
+      ],
+      "digests": [
+        "docker.io/pgvector/pgvector@sha256:a132765ec351c65111b5b675928a3a0515a466a40f97277329db8b8209ad8bc9",
+        "docker.io/pgvector/pgvector@sha256:c72df104202409108a1660ecccd2b7ffac6b17e44c31b2636d10e983f410f8eb"
+      ],
+      "bytes": 446874579,
+      "uniqueBytes": 446900000,
+      "created": "2025-08-15T18:23:37.090125259Z",
+      "labels": {},
+      "users": [
+        "thyrox-postgres"
+      ]
+    }
+  ],
+  "containers": [
+    {
+      "name": "thyrox-redis",
+      "id": "58350c4dd68018b796907c067f1b96ac5e43f4d2aeff7c7b2671ed0330b3d69e",
+      "state": "running",
+      "image": "docker.io/library/redis:7.4",
+      "imageId": "64035c2c9726d90bea2a217d43da49d7a3f13dde8647c1f409059e02e0e61287",
+      "labels": {
+        "io.thyrox.role": "infrastructure",
+        "io.thyrox.service": "redis",
+        "thyrox.owner-id": "infrastructure-bootstrap",
+        "thyrox.owner-kind": "infrastructure",
+        "thyrox.owner-pid": "6009",
+        "thyrox.resource-config-digest": "0155d5d5c1b286b4553a29c41f38aba6eb9c932b4b7fca22e43940e233660ee8",
+        "thyrox.resource-kind": "infrastructure",
+        "thyrox.resource-secrets-digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "mounts": [
+        "/data"
+      ]
+    },
+    {
+      "name": "thyrox-ollama",
+      "id": "7a3b0f6d25f8e79ce9e402503d0d0a8f2dcda116dc4c8106339320b6c489e733",
+      "state": "running",
+      "image": "docker.io/ollama/ollama:0.35.0",
+      "imageId": "c178b43788bbd8f33ac3a6aa17dc561bc15dcbdba08ceac19f9388cf2415cc48",
+      "labels": {
+        "io.thyrox.role": "infrastructure",
+        "io.thyrox.service": "ollama",
+        "org.opencontainers.image.version": "24.04",
+        "thyrox.owner-id": "infrastructure-bootstrap",
+        "thyrox.owner-kind": "infrastructure",
+        "thyrox.owner-pid": "7631",
+        "thyrox.resource-config-digest": "b232ab67195e38f9826577a1b68f85f45b537c3ce57993479ecaf13899ac865b",
+        "thyrox.resource-kind": "infrastructure",
+        "thyrox.resource-secrets-digest": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+      },
+      "mounts": [
+        "/root/.ollama",
+        "/etc/ssl/certs/proxy-ca.crt"
+      ]
+    },
+    {
+      "name": "thyrox-postgres",
+      "id": "587a193241fd41435609a7ebb250eb50012c19e00362368058b4e4c2f56674be",
+      "state": "running",
+      "image": "docker.io/pgvector/pgvector:0.8.0-pg16",
+      "imageId": "56a5b20c7a157dbb94149ba3cce70da76f02e1645dec234379709ddaebe607ea",
+      "labels": {
+        "io.thyrox.role": "infrastructure",
+        "io.thyrox.service": "postgres",
+        "thyrox.owner-id": "infrastructure-bootstrap",
+        "thyrox.owner-kind": "infrastructure",
+        "thyrox.owner-pid": "24743",
+        "thyrox.resource-config-digest": "e31da267f277789f4b066bcaf2be4fbfd24df0d1ca40cac9b395a6b759d44cf6",
+        "thyrox.resource-kind": "infrastructure",
+        "thyrox.resource-secrets-digest": "42acf4ac2bb8d04a168bf0a1921d0c3b75a6ec548c30d060bb5a7adfbcf594a8"
+      },
+      "mounts": [
+        "/var/lib/postgresql/data"
+      ]
+    }
+  ]
+}

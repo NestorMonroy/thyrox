@@ -1,0 +1,9 @@
+.env.example
+src/packages/local-models/__tests__/commands.test.ts
+src/packages/local-models/__tests__/ensureModel.test.ts
+src/packages/local-models/__tests__/ensureModelHomes.test.ts
+src/packages/local-models/catalogCommand.ts
+src/packages/local-models/ensureModel.ts
+src/packages/model-artifacts/localModelHome.ts
+src/paths/declarations.py
+tests/paths/test_ensure_homes.py

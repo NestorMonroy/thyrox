@@ -1,0 +1,4 @@
+test_task_continuation: 70 OK, 0 FALLA
+task_continuation: sin tarea TASK-<CAPA>-NNNN (taskId o --task): x
+execution thyrox-worker-test-muqg6m5b-26008 kind=test task=TASK-THYROX-0743 exit=0
+__BG_EXIT__=0

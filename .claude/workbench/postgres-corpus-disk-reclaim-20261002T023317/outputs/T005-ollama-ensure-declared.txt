@@ -1,0 +1,2 @@
+thyrox-ollama action=kept drift=- created=no started=no health=healthy provision=not-declared volumes=thyrox-ollama-bench-models:preserved
+exit=0

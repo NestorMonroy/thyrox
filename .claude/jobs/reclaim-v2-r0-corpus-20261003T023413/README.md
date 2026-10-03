@@ -1,0 +1,16 @@
+# reclaim-v2-r0-corpus
+
+## Qué se lanzó
+
+```
+bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts run --task TASK-THYROX-0758 --kind probe --network host --env THYROX_EXECUTION_ENTRY --secret-from-env THYROX_SEMANTIC_SEARCH_DATABASE_URL -- bash -c export THYROX_SEMANTIC_SEARCH_DATABASE_URL="$(cat /run/secrets/THYROX_SEMANTIC_SEARCH_DATABASE_URL)"; bun /home/user/thyrox/.claude/workbench/postgres-corpus-disk-reclaim-20261002T023317/probes/corpus_state.ts > /home/user/thyrox/.claude/workbench/postgres-corpus-disk-reclaim-v2-20261003T023413/outputs/R0-corpus-state.json 2> /home/user/thyrox/.claude/workbench/postgres-corpus-disk-reclaim-v2-20261003T023413/outputs/R0-corpus-state.err; bun /home/user/thyrox/.claude/workbench/postgres-corpus-disk-reclaim-20261002T023317/probes/vector_available.ts > /home/user/thyrox/.claude/workbench/postgres-corpus-disk-reclaim-v2-20261003T023413/outputs/R0-vector.json 2>> /home/user/thyrox/.claude/workbench/postgres-corpus-disk-reclaim-v2-20261003T023413/outputs/R0-corpus-state.err; echo exit=$?
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*

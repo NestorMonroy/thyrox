@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash .claude/workbench/model-residency-implementation-20261001T092412/launch-retry.sh", "started_at": "2026-10-01T09:35:34+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-01T09:40:37+00:00", "duration_seconds": 303.329861}

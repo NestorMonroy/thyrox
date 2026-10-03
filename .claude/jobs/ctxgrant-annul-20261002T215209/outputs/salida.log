@@ -1,0 +1,6 @@
+base typecheck model-scheduling: 1 errores
+base typecheck local-models: 7 errores
+annul residency-key: (fail) residencyKeyOf > deriva de la identidad entera, la colocación y el contexto, nunca de la cuantización sola [0.26ms]
+annul grant-environment: (fail) PodmanModelUnitMaterializer: entorno derivado del grant > el contexto concedido llega al runtime como entorno del contenedor [0.63ms]
+execution thyrox-worker-test-muri0mt9-18668 kind=test task=TASK-THYROX-0706 exit=0
+__BG_EXIT__=0

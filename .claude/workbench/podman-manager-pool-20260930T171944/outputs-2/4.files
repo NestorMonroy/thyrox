@@ -1,0 +1,2 @@
+src/packages/cli/__tests__/providersWriteVerbs.test.ts
+src/packages/cli/src/commands/providers-commands.ts

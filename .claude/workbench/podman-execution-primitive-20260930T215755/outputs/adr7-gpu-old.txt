@@ -1,0 +1,3 @@
+   * - RAM pico del ítem
+     - GNU Time da ``maxrss=392468KB``; desde fuera, sobre el cliente, 41 MB
+     - **dentro**, con GNU Time; el pico del cgroup desde fuera es su contraste

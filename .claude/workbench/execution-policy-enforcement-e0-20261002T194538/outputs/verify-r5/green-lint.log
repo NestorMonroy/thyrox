@@ -1,0 +1,4 @@
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/verify/check_lint_zero.py", line 33, in <module>
+    from paths import reach
+ModuleNotFoundError: No module named 'paths'

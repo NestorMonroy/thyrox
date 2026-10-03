@@ -1,0 +1,3 @@
+{"total_bytes_scanned": 2932090930, "semantic_bytes": 42334997, "durable_evidence_bytes": 599801830, "reconstructible_bytes": 7546107, "excluded_secret_bytes": 13311621, "excluded_binary_bytes": 14874390, "duplicate_bytes": 2252112053, "estimated_documents": 30181, "estimated_chunks": 342174, "rows_by_class": {"binary_non_indexable": 120, "duplicate": 9084, "durable_evidence": 22576, "execution_state": 2683, "reconstructible_cache": 317, "secret_sensitive": 146, "semantic_content": 7604}}
+execution thyrox-worker-probe-muqqa1ow-4635 kind=probe task=TASK-THYROX-0758 exit=0
+__BG_EXIT__=0

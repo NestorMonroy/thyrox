@@ -1,0 +1,23 @@
+== dag (sandbox /home/user/thyrox/.thyrox/runtime/continuation-frontier-e2e/20261002T003615-16518/dag)
+ok   dag: el controlador acepta todo
+ok   dag: cuatro unidades de trabajo
+FALLA dag: max_active >= 2: esperado «true», obtenido «false»
+FALLA dag: T1 y T2 a la vez: esperado «True», obtenido «False»
+FALLA dag: T1 y T4 a la vez: esperado «True», obtenido «False»
+FALLA dag: T2 y T4 a la vez: esperado «True», obtenido «False»
+ok   dag: T3 despachado tras aceptar T1
+ok   dag: T3 arranca tras aceptar T1
+FALLA dag: T3 corre mientras T2 sigue: esperado «True», obtenido «False»
+FALLA dag: T3 corre mientras T4 sigue: esperado «True», obtenido «False»
+ok   dag: cuatro contenedores distintos
+ok   dag: cuatro cgroups distintos
+ok   dag: cuatro dueños distintos
+ok   dag: todo payload dentro de una unidad
+ok   dag: cada trabajador en su worktree
+ok   dag: GNU Parallel despachó los cuatro
+ok   dag: el despacho es parallel_map
+ok   dag: los cuatro integrados
+ok   dag: un commit por ítem
+ok   dag: remoto == local
+ok   dag: worktrees retirados
+continuation-frontier-e2e (anulación cursor): 15 OK, 6 FALLAN — resultados en /home/user/thyrox/.thyrox/runtime/continuation-frontier-e2e/20261002T003615-16518/results

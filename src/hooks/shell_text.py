@@ -32,6 +32,23 @@ def strip_heredoc_bodies(command: str) -> str:
     return "\n".join(kept)
 
 
+#: Un heredoc cuyo cuerpo lee una shell como programa: `bash <<M`, `sh -s <<M`,
+#: `zsh <<M`. Su texto SÍ se ejecuta.
+_SHELL_FED_HEREDOC = re.compile(r"(?:^|[\s;&|(])(?:bash|sh|zsh)(?:\s+-s)?\s*<<")
+
+
+def strip_data_heredoc_bodies(command: str) -> str:
+    """El comando sin los cuerpos de los heredocs que son DATOS.
+
+    Como ``strip_heredoc_bodies``, salvo que conserva el comando entero cuando
+    algún heredoc alimenta a una shell (``bash <<MARCA``): ese cuerpo es código
+    que va a correr, y un detector que decide negar no puede perderlo de vista.
+    """
+    if any(_SHELL_FED_HEREDOC.search(line) for line in command.split("\n")):
+        return command
+    return strip_heredoc_bodies(command)
+
+
 _REDIRECT_TARGET = re.compile(r"(?:>>?|\btee\s+(?:-a\s+)?)\s*(['\"]?)([^\s'\";&|<>]+)\1")
 
 

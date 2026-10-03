@@ -1,0 +1,3 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+2	:	1790850063.050	  2198.608	0	0	0	0	_headless_item 2 'Fuente: .claude/workbench/model-host-coordinator-20261001T101644/p2-coordinator-transport.md. Archivos: src/packages/model-scheduling/coordinatorServer.ts, coordinatorClient.ts, coordinatorProtocol.ts.'
+1	:	1790850063.047	  2260.115	0	0	0	0	_headless_item 1 'Fuente: .claude/workbench/model-host-coordinator-20261001T101644/p1-coordinator-core.md. Archivos: src/packages/model-scheduling/residencyController.ts, hostCoordinator.ts. Orden: controlador, coordinador.'

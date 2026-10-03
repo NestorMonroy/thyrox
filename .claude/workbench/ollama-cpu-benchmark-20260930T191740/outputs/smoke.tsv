@@ -1,0 +1,2 @@
+model	tools_capability	size_bytes	pull_seconds	load_seconds	ram_idle_bytes	ram_loaded_bytes	ram_peak_bytes	ttft_seconds	tokens_per_second	tool_cases_passed	tool_cases_total	concurrency_seconds
+qwen2.5:0.5b	True	397821319	0.7	0.0	17383424	836464640	865083392	0.12	36.0	6	6	{'1': 2.16, '2': 0.55, '4': 1.02}

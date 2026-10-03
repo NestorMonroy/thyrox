@@ -1,0 +1,7 @@
+test-pre-commit-identifier-language:
+  FALLA con el gate en verde, el hook sale 0 — esperado [0], obtenido [1]
+tests/githooks/test-pre-commit-identifier-language.sh: line 39: recibidos.txt: No such file or directory
+  FALLA recibe los .py staged de src/ y tests/ — esperado [src/modulo.py tests/prueba.py], obtenido []
+  ok    su rechazo detiene el commit
+  ok    sin .py de src/ ni tests/ staged, no se invoca
+test-pre-commit-identifier-language: 4 aserciones — 2 ok, 2 falla(s)

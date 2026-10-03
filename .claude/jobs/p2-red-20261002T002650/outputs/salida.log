@@ -1,0 +1,14 @@
+  FALLA caso 1: resumen — esperado [items=2 ok=2 fallidos=0] obtenido []
+tests/session/test-headless-pool-execution-unit.sh: line 53: /tmp/tmp.TQEglFCPw6/execute.log: No such file or directory
+  FALLA caso 1: cada ítem pide su ejecución a la primitiva — esperado [2] obtenido []
+  FALLA caso 1: con la referencia de trabajo del consumidor y dueño pool — esperado [--work ai-course-notes:cs224r/1 --owner pool:cs224r-1;|--work ai-course-notes:cs224r/2 --owner pool:cs224r-2;|] obtenido []
+  FALLA caso 1: el ejecutor corre dentro de la ejecución con el modelo local — esperado [thyrox-qwen--qwen2.5-7b-instruct-gguf:q4_k_m-hf-bb5d59e06d95] obtenido []
+  FALLA caso 1: cada ítem recibe su texto — esperado [alfa beta ] obtenido []
+  ok   caso 1: ningún ítem ve la credencial del anfitrión
+  FALLA caso 1: la autorización no pide secretos — esperado [0] obtenido []
+  ok   caso 2: si la primitiva no ejecuta, nada corre en el anfitrión
+  ok   caso 3: --execution unit sin referencia de trabajo se rehúsa con 2
+
+3 ok · 7 falla(s) (alcance medido: headless-pool --execution unit)
+execution thyrox-worker-test-muq83pr8-18524 kind=test task=TASK-THYROX-0757 exit=0
+__BG_EXIT__=0

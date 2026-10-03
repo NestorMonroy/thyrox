@@ -1,0 +1,5 @@
+**D5, repartida.** Unidad durable, metadata de identidad y versión, detección
+por hash y reindexado por espacio quedan decididos arriba. Siguen abiertas, y
+son del ejecutor: **qué fuentes se ingieren** y **qué retención aplica al
+contenido privado o temporal**. Hasta decidirlas, nada se ingiere sin una
+declaración explícita de la fuente, y nada se borra por caducidad.

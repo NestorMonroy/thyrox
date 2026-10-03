@@ -1,0 +1,93 @@
+$ cd src/packages/provider && bun test __tests__/anthropicHttpRetry.test.ts   (base: HEAD 691ef3126)
+bun test v1.3.11 (af24e281)
+
+__tests__/anthropicHttpRetry.test.ts:
+46 |   test('sin maxRetries declarado, THYROX_CODE_MAX_RETRIES=6 hace exactamente 7 peticiones ante un 502 persistente', async () => {
+47 |     process.env[ENV_VAR] = '6'
+48 |     const server = scripted(502, Number.POSITIVE_INFINITY)
+49 |     const { http } = provider(server.fetchImpl)
+50 |     await expect(http.send(REQUEST)).rejects.toThrow(/502/)
+51 |     expect(server.calls()).toBe(7)
+                                ^
+error: expect(received).toBe(expected)
+
+Expected: 7
+Received: 4
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/anthropicHttpRetry.test.ts:51:28)
+(fail) AnthropicHttpProvider con la autoridad de reintentos > sin maxRetries declarado, THYROX_CODE_MAX_RETRIES=6 hace exactamente 7 peticiones ante un 502 persistente [7010.82ms]
+  ^ this test timed out after 5000ms.
+54 |   test('sin maxRetries ni la variable se usan los 10 reintentos de la autoridad: 11 peticiones', async () => {
+55 |     delete process.env[ENV_VAR]
+56 |     const server = scripted(502, Number.POSITIVE_INFINITY)
+57 |     const { http } = provider(server.fetchImpl)
+58 |     await expect(http.send(REQUEST)).rejects.toThrow(/502/)
+59 |     expect(server.calls()).toBe(11)
+                                ^
+error: expect(received).toBe(expected)
+
+Expected: 11
+Received: 4
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/anthropicHttpRetry.test.ts:59:28)
+(fail) AnthropicHttpProvider con la autoridad de reintentos > sin maxRetries ni la variable se usan los 10 reintentos de la autoridad: 11 peticiones [7004.11ms]
+  ^ this test timed out after 5000ms.
+(fail) AnthropicHttpProvider con la autoridad de reintentos > un 502 que dura más que los ~7 s del presupuesto anterior se recupera: 5 fallos y luego 200 [5000.46ms]
+  ^ this test timed out after 5000ms.
+
+# Unhandled error between tests
+-------------------------------
+162 |         this.lastFallbackUsed = true
+163 |         return respaldo.res
+164 |       }
+165 |       throw new Error(`${respaldo.ultimo} (tras ${this.maxRetries + 1} intentos en ${request.model} y otros tantos en el respaldo ${this.fallbackModel})`)
+166 |     }
+167 |     throw new Error(`${primero.ultimo} (tras ${this.maxRetries + 1} intentos)`)
+                    ^
+error: 502 upstream request failed (tras 4 intentos)
+      at responder (/home/user/thyrox/src/packages/provider/src/anthropicHttp.ts:167:15)
+      at async send (/home/user/thyrox/src/packages/provider/src/anthropicHttp.ts:193:67)
+      at async <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/anthropicHttpRetry.test.ts:66:29)
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/anthropicHttpRetry.test.ts:76:46)
+-------------------------------
+
+72 |   test('la espera crece en exponencial y nunca pasa del tope de la autoridad (32 s más 25 % de jitter)', async () => {
+73 |     delete process.env[ENV_VAR]
+74 |     const server = scripted(503, Number.POSITIVE_INFINITY)
+75 |     const { http, waits } = provider(server.fetchImpl)
+76 |     await expect(http.send(REQUEST)).rejects.toThrow(/503/)
+77 |     expect(waits.length).toBe(10)
+                              ^
+error: expect(received).toBe(expected)
+
+Expected: 10
+Received: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/anthropicHttpRetry.test.ts:77:26)
+(fail) AnthropicHttpProvider con la autoridad de reintentos > la espera crece en exponencial y nunca pasa del tope de la autoridad (32 s más 25 % de jitter) [7006.14ms]
+  ^ this test timed out after 5000ms.
+91 |   test('retry-after: 2 pide una espera de 2000 ms', async () => {
+92 |     delete process.env[ENV_VAR]
+93 |     const server = scripted(429, 1, { 'retry-after': '2' })
+94 |     const { http, waits } = provider(server.fetchImpl)
+95 |     await http.send(REQUEST)
+96 |     expect(waits).toEqual([2000])
+                       ^
+error: expect(received).toEqual(expected)
+
+- [
+-   2000,
+- ]
++ []
+
+- Expected  - 3
++ Received  + 1
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/anthropicHttpRetry.test.ts:96:19)
+(fail) AnthropicHttpProvider con la autoridad de reintentos > retry-after: 2 pide una espera de 2000 ms [1005.35ms]
+
+ 2 pass
+ 5 fail
+ 1 error
+ 12 expect() calls
+Ran 7 tests across 1 file. [30.33s]

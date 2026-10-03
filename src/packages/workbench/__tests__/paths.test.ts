@@ -18,12 +18,14 @@
  * no estaría midiendo la precedencia.
  */
 import { describe, expect, test } from 'bun:test'
-import { mkdtempSync, writeFileSync } from 'node:fs'
+import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { thyroxRoot } from '@thyrox/paths/reach.ts'
-import { WORKBENCH_DIR_VAR, evidenceDir, stateDir, workbenchDir } from '../paths.ts'
+import { cloneShortName, thyroxRoot } from '@thyrox/paths/reach.ts'
+import {
+  WORKBENCH_DIR_VAR, evidenceDir, stateDir, workbenchDir, workbenchHomeName,
+} from '../paths.ts'
 
 /** Corre `fn` con el entorno alterado y lo restaura pase lo que pase. */
 function withEnv(vars: Record<string, string | undefined>, fn: () => void): void {
@@ -136,6 +138,81 @@ describe('el hogar del banco se declara, no se cablea', () => {
   test('6. NO verifica que exista: un hogar declarado y ausente es un hecho del consumidor', () => {
     withEnv({ THYROX_WORKBENCH_DIR: '/no/existe/en/disco', THYROX_ENV_FILE: undefined }, () => {
       expect(workbenchDir()).toBe('/no/existe/en/disco')
+    })
+  })
+})
+
+/**
+ * Construye dos clones sintéticos —cada uno con `.git` y `.claude`— y los
+ * limpia al salir. Sin guion en el nombre: así ningún prefijo de multi-repo
+ * derivado le recorta nada, y `cloneShortName` devuelve el nombre íntegro.
+ */
+function withClones(names: string[], fn: (dirs: Record<string, string>) => void): void {
+  const base = mkdtempSync(join(tmpdir(), 'wb-clones-'))
+  const dirs: Record<string, string> = {}
+  for (const name of names) {
+    const dir = join(base, name)
+    mkdirSync(join(dir, '.git'), { recursive: true })
+    mkdirSync(join(dir, '.claude'), { recursive: true })
+    dirs[name] = dir
+  }
+  try { fn(dirs) } finally { rmSync(base, { recursive: true, force: true }) }
+}
+
+/** El nombre corto de un clon sintético — nunca `null` bajo `withClones`. */
+function repoNameOf(dir: string): string {
+  const name = cloneShortName(dir)
+  if (!name) throw new Error(`sin nombre corto de clon para ${dir}`)
+  return name
+}
+
+describe('la familia POR CLON — precedencia sobre la global (TASK-THYROX-0634)', () => {
+  test('7. la clave por clon gana sobre la global', () => {
+    withClones(['clonealpha', 'clonebeta'], (dirs) => {
+      const repo = repoNameOf(dirs.clonealpha)
+      withEnv({
+        [workbenchHomeName(repo)]: 'hogar-del-clon',
+        THYROX_WORKBENCH_DIR: '/hogar/global',
+        THYROX_ENV_FILE: undefined,
+      }, () => {
+        expect(workbenchDir(dirs.clonealpha)).toBe(join(dirs.clonealpha, 'hogar-del-clon'))
+      })
+    })
+  })
+
+  test('8. sin clave por clon, manda la global', () => {
+    withClones(['clonealpha', 'clonebeta'], (dirs) => {
+      withEnv({ THYROX_WORKBENCH_DIR: '/hogar/global', THYROX_ENV_FILE: undefined }, () => {
+        expect(workbenchDir(dirs.clonealpha)).toBe('/hogar/global')
+      })
+    })
+  })
+
+  test('9. sin ninguna de las dos, cae al default de la cadena declarada', () => {
+    withClones(['clonealpha', 'clonebeta'], (dirs) => {
+      withEnv({ THYROX_WORKBENCH_DIR: undefined, THYROX_ENV_FILE: undefined }, () => {
+        const home = workbenchDir(dirs.clonealpha)
+        expect(home).toBe(
+          join(dirs.clonealpha, stateDir(dirs.clonealpha), evidenceDir(dirs.clonealpha)),
+        )
+      })
+    })
+  })
+
+  test('10. la clave por clon de OTRO clon no se usa', () => {
+    withClones(['clonealpha', 'clonebeta'], (dirs) => {
+      const repoBeta = repoNameOf(dirs.clonebeta)
+      withEnv({
+        [workbenchHomeName(repoBeta)]: '/hogar/de/beta',
+        THYROX_WORKBENCH_DIR: undefined,
+        THYROX_ENV_FILE: undefined,
+      }, () => {
+        const home = workbenchDir(dirs.clonealpha)
+        expect(home).not.toBe('/hogar/de/beta')
+        expect(home).toBe(
+          join(dirs.clonealpha, stateDir(dirs.clonealpha), evidenceDir(dirs.clonealpha)),
+        )
+      })
     })
   })
 })

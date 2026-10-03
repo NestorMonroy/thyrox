@@ -110,7 +110,7 @@ export function createHttpForwarder(config: HttpForwarderConfig): (request: Forw
   return async request => {
     const endpoint = config.upstreams[request.upstream.name]
     if (!endpoint) throw new Error(`el upstream "${request.upstream.name}" no declara baseUrl`)
-    if (!isSafeUpstreamUrl(endpoint.baseUrl, config.env)) {
+    if (!isSafeUpstreamUrl(endpoint.baseUrl)) {
       throw new Error(`baseUrl insegura para el upstream "${request.upstream.name}"`)
     }
     const url = `${endpoint.baseUrl.replace(/\/$/, '')}${request.path}${request.search}`

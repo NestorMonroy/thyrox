@@ -1,0 +1,1 @@
+tsc (árbol principal, tras regenerar dist ignorado de model-scheduling): 0 errores en archivos tocados del daemon; el error de orphan() en hostCoordinatorService.test.ts:22 es previo (línea no tocada)

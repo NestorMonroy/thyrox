@@ -68,6 +68,18 @@ def roster(provider):
     return [(pathlib.Path(provider).name, pathlib.Path(provider))] + clones
 
 
+def remedy_for(raiz):
+    """La orden que activa los hooks de ``raiz``, ejecutable desde cualquier sitio.
+
+    ``scripts/install-hooks.sh`` sólo existe en el proveedor: para un clon
+    consumidor se nombra el instalador del proveedor con el clon como destino,
+    que es la vía que sí existe en los dos."""
+    provider = pathlib.Path(reach.thyrox_root())
+    if pathlib.Path(raiz).resolve() == provider.resolve():
+        return 'bash scripts/install-hooks.sh'
+    return f'THYROX_TARGET_REPO={raiz} bash {provider}/bin/install-hooks --solo-mostrar'
+
+
 def estado(raiz):
     """(veredicto, detalle) para un clon. Nunca inventa un verde."""
     raiz = pathlib.Path(raiz)
@@ -78,8 +90,7 @@ def estado(raiz):
                        capture_output=True, text=True)
     valor = r.stdout.strip()
     if not valor:
-        return 'SIN-FIJAR', ('core.hooksPath sin fijar — sus hooks no corren; '
-                             'arreglo: bash scripts/install-hooks.sh')
+        return 'SIN-FIJAR', f'core.hooksPath sin fijar — sus hooks no corren; arreglo: {remedy_for(raiz)}'
 
     d = raiz / valor if not os.path.isabs(valor) else pathlib.Path(valor)
     if not d.is_dir():

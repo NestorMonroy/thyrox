@@ -1,0 +1,40 @@
+{
+  "mediaType": "application/vnd.thyrox.publication-record.v1+json",
+  "status": "verified",
+  "publishedAt": "2026-10-01T07:06:10.958Z",
+  "reference": "docker.io/th3rox/thyrox-artifact-probe@sha256:3ca7b560d632838ac9168b8c0b19fe5b517c929a63e3f9d1e99d230e7f2a10ff",
+  "tag": "publish-small-probe",
+  "files": [
+    {
+      "path": ".claude/workbench/publish-quantization-lab-artifacts-20261001T065928/probes/small-source/model.gguf",
+      "title": "model.gguf",
+      "mediaType": "application/vnd.thyrox.gguf.v1",
+      "size": 11,
+      "sha256": "638cfb65d5deb7673dfe9ab39d05d5c950d2a1a838c3ac4c4d435e634a577521"
+    },
+    {
+      "path": ".claude/workbench/publish-quantization-lab-artifacts-20261001T065928/probes/small-source/run.log",
+      "title": "run.log",
+      "mediaType": "text/plain",
+      "size": 10,
+      "sha256": "f0af601c3afb2b8ee899d8697d907a48a696c4191835213d83bf756804014b6d"
+    }
+  ],
+  "verification": {
+    "resolvedDigest": "sha256:3ca7b560d632838ac9168b8c0b19fe5b517c929a63e3f9d1e99d230e7f2a10ff",
+    "blobsVerified": [
+      {
+        "title": "model.gguf",
+        "digest": "sha256:638cfb65d5deb7673dfe9ab39d05d5c950d2a1a838c3ac4c4d435e634a577521",
+        "size": 11
+      },
+      {
+        "title": "run.log",
+        "digest": "sha256:f0af601c3afb2b8ee899d8697d907a48a696c4191835213d83bf756804014b6d",
+        "size": 10
+      }
+    ],
+    "measuredPeakBytes": 12288
+  },
+  "localCopy": "cache"
+}

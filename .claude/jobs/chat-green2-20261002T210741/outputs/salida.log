@@ -1,0 +1,6 @@
+green rc=0 Ran 4 tests across 1 file. [113.00ms]
+e0b tsc errors=7
+base tsc errors=7
+same-error-sites
+execution thyrox-worker-test-murgfg0u-24494 kind=test task=TASK-THYROX-0710 exit=0
+__BG_EXIT__=0

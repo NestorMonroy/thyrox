@@ -1,0 +1,71 @@
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 26 archivo(s) pedido(s))
+check-cli-typecheck: OK (proyectos medidos: 2 de 2)
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 26 archivo(s) pedido(s))
+OK: identificadores en inglés (2 archivos medidos, 5272 en deuda heredada).
+check-package-boundary: 0 cruce(s) de paquete por ruta relativa (alcance medido: 28320 especificador(es) en 5211 archivo(s) de 60 paquete(s); 0 salida(s) de la raíz, otra clase)
+check_bench_untracked: .claude/jobs/cont-p2a-1-1790882682632390-20261001T192442 deja fuera 2 archivo(s) nuevo(s):
+  .claude/jobs/cont-p2a-1-1790882682632390-20261001T192442/outputs/salida.log
+  .claude/jobs/cont-p2a-1-1790882682632390-20261001T192442/outputs/salida.log.time
+check_bench_untracked: .claude/jobs/cont-p2a-1-verify-1790882682632390-20261001T193844 deja fuera 5 archivo(s) nuevo(s):
+  .claude/jobs/cont-p2a-1-verify-1790882682632390-20261001T193844/README.md
+  .claude/jobs/cont-p2a-1-verify-1790882682632390-20261001T193844/manifest.jsonl
+  .claude/jobs/cont-p2a-1-verify-1790882682632390-20261001T193844/outputs/pid
+  .claude/jobs/cont-p2a-1-verify-1790882682632390-20261001T193844/outputs/salida.log
+  .claude/jobs/cont-p2a-1-verify-1790882682632390-20261001T193844/outputs/salida.log.time
+check_bench_untracked: .claude/jobs/cont-p2a-2-1790883528448713-20261001T193848 deja fuera 5 archivo(s) nuevo(s):
+  .claude/jobs/cont-p2a-2-1790883528448713-20261001T193848/README.md
+  .claude/jobs/cont-p2a-2-1790883528448713-20261001T193848/manifest.jsonl
+  .claude/jobs/cont-p2a-2-1790883528448713-20261001T193848/outputs/pid
+  .claude/jobs/cont-p2a-2-1790883528448713-20261001T193848/outputs/salida.log
+  .claude/jobs/cont-p2a-2-1790883528448713-20261001T193848/outputs/salida.log.time
+check_bench_untracked: .claude/jobs/cont-p2a-2-verify-1790883528448713-20261001T195821 deja fuera 5 archivo(s) nuevo(s):
+  .claude/jobs/cont-p2a-2-verify-1790883528448713-20261001T195821/README.md
+  .claude/jobs/cont-p2a-2-verify-1790883528448713-20261001T195821/manifest.jsonl
+  .claude/jobs/cont-p2a-2-verify-1790883528448713-20261001T195821/outputs/pid
+  .claude/jobs/cont-p2a-2-verify-1790883528448713-20261001T195821/outputs/salida.log
+  .claude/jobs/cont-p2a-2-verify-1790883528448713-20261001T195821/outputs/salida.log.time
+check_bench_untracked: .claude/jobs/cont-p2a-3-1790884704143458-20261001T195824 deja fuera 5 archivo(s) nuevo(s):
+  .claude/jobs/cont-p2a-3-1790884704143458-20261001T195824/README.md
+  .claude/jobs/cont-p2a-3-1790884704143458-20261001T195824/manifest.jsonl
+  .claude/jobs/cont-p2a-3-1790884704143458-20261001T195824/outputs/pid
+  .claude/jobs/cont-p2a-3-1790884704143458-20261001T195824/outputs/salida.log
+  .claude/jobs/cont-p2a-3-1790884704143458-20261001T195824/outputs/salida.log.time
+check_bench_untracked: .claude/jobs/cont-p2a-3-verify-1790884704143458-20261001T200528 deja fuera 5 archivo(s) nuevo(s):
+  .claude/jobs/cont-p2a-3-verify-1790884704143458-20261001T200528/README.md
+  .claude/jobs/cont-p2a-3-verify-1790884704143458-20261001T200528/manifest.jsonl
+  .claude/jobs/cont-p2a-3-verify-1790884704143458-20261001T200528/outputs/pid
+  .claude/jobs/cont-p2a-3-verify-1790884704143458-20261001T200528/outputs/salida.log
+  .claude/jobs/cont-p2a-3-verify-1790884704143458-20261001T200528/outputs/salida.log.time
+check_bench_untracked: .claude/jobs/cont-p2a-4-1790885131308678-20261001T200531 deja fuera 5 archivo(s) nuevo(s):
+  .claude/jobs/cont-p2a-4-1790885131308678-20261001T200531/README.md
+  .claude/jobs/cont-p2a-4-1790885131308678-20261001T200531/manifest.jsonl
+  .claude/jobs/cont-p2a-4-1790885131308678-20261001T200531/outputs/pid
+  .claude/jobs/cont-p2a-4-1790885131308678-20261001T200531/outputs/salida.log
+  .claude/jobs/cont-p2a-4-1790885131308678-20261001T200531/outputs/salida.log.time
+check_bench_untracked: .claude/jobs/continuation2-20261001T192438 deja fuera 3 archivo(s) nuevo(s):
+  .claude/jobs/continuation2-20261001T192438/README.md
+  .claude/jobs/continuation2-20261001T192438/manifest.jsonl
+  .claude/jobs/continuation2-20261001T192438/outputs/pid
+check_bench_untracked: .claude/jobs/windowprobe-20261001T193935 deja fuera 5 archivo(s) nuevo(s):
+  .claude/jobs/windowprobe-20261001T193935/README.md
+  .claude/jobs/windowprobe-20261001T193935/manifest.jsonl
+  .claude/jobs/windowprobe-20261001T193935/outputs/pid
+  .claude/jobs/windowprobe-20261001T193935/outputs/salida.log
+  .claude/jobs/windowprobe-20261001T193935/outputs/salida.log.time
+  remedio: git add -N <archivo> antes del commit por pathspec
+check_bench_untracked: 40 archivo(s) fuera (alcance medido: 26 banco(s) tocado(s))
+check_staged_live_writers: 0 escritor(es) vivo(s) (alcance medido: 26 ruta(s) preparada(s))
+check_test_home_isolation: 0 suite(s) sin aislar (alcance medido: 0 archivo(s) de prueba)
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 323 versionado(s) bajo /home/user/thyrox/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 79145 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 1550 aparición(es) del producto en 337 archivo(s) (alcance medido: src)
+check_podman_materialization: 0 materialización(es) fuera de src/packages/podman-execution/, 0 pendiente(s) vencido(s), 2 pendiente(s) vigente(s) (alcance medido: 4153 archivo(s) productivos)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 417 enlace(s) relativo(s) en 289 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 1877 lectura(s) en 4189 archivo(s) de producción — propias 867, proveedor 99, cliente ajeno 18, sin prefijo 893)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 124 congelada(s), 0 obsoleta(s) (alcance medido: 364 variable(s) propia(s), 2311 archivo(s) de prueba)
+claves leidas del entorno: 0 | declaradas: 548 | sin declarar: 0
+check_env_example_coverage: 0 clave(s) sin declarar (alcance medido: 25 clave(s) en 1 archivo(s) ignorado(s), 559 declarada(s) en .env.example)
+execution thyrox-worker-maintenance-mupzmpbi-16091 kind=maintenance task=TASK-THYROX-0743 exit=1
+__BG_EXIT__=1

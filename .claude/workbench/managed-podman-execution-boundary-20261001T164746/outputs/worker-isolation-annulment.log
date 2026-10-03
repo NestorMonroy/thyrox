@@ -1,0 +1,43 @@
+# 2026-10-01T22:01:45Z tests/session/test-delegated-worker-isolation.sh
+== anulación: ninguna
+test-delegated-worker-isolation: 3 OK, 0 FALLA
+exit=0
+== anulación: mask
+FALLA el secreto del .env del árbol no llega al trabajador (esperado repo=false)
+test-delegated-worker-isolation: 2 OK, 1 FALLA (anulado: mask)
+exit=1
+== anulación: host
+FALLA el secreto del .env del árbol no llega al trabajador (esperado repo=false)
+FALLA el secreto del entorno del anfitrión no llega al trabajador (esperado host=false)
+FALLA el ExecutionSecret autorizado sí llega (esperado authorized=true)
+test-delegated-worker-isolation: 0 OK, 3 FALLA (anulado: host)
+exit=1
+== anulación: secret
+FALLA el ExecutionSecret autorizado sí llega (esperado authorized=true)
+test-delegated-worker-isolation: 2 OK, 1 FALLA (anulado: secret)
+exit=1
+# 2026-10-01T22:02:05Z tests/session/test-delegated-worker-isolation.sh (host con nombre opaco)
+== anulación: ninguna
+test-delegated-worker-isolation: 4 OK, 0 FALLA
+exit=0
+== anulación: mask
+FALLA el secreto del .env del árbol no llega al trabajador (esperado repo=false)
+test-delegated-worker-isolation: 3 OK, 1 FALLA (anulado: mask)
+exit=1
+== anulación: host
+FALLA el secreto del entorno del anfitrión no llega al trabajador (esperado host=false)
+test-delegated-worker-isolation: 3 OK, 1 FALLA (anulado: host)
+exit=1
+== anulación: secret
+FALLA el ExecutionSecret autorizado sí llega (esperado authorized=true)
+test-delegated-worker-isolation: 3 OK, 1 FALLA (anulado: secret)
+exit=1
+process_env	3
+shell_startup	0
+mounted_credential_files	0
+provider_config	0
+git_credential_helper	0
+registry_auth	0
+runtime_env	0
+inventory	43	authorized	1
+execution thyrox-worker-test-muq2yecg-5187 kind=test task=TASK-THYROX-0743 exit=1

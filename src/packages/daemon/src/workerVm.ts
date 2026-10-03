@@ -16,11 +16,9 @@
 import { spawn } from 'node:child_process'
 import { EventEmitter } from 'node:events'
 import { existsSync } from 'node:fs'
-
-import {
-  createPtyAdopter,
-  logEvent,
-} from './internal/pendingCrossPackageDeps.js'
+import { stripVTControlCharacters } from 'node:util'
+import { logEvent } from '@thyrox/local-observability'
+import { createPtyAdopter } from './internal/pendingCrossPackageDeps.js'
 import {
   type WorkerPhase,
   type WorkerRecord,
@@ -40,10 +38,111 @@ import { formatPhaseLabel, isLegalPhaseTransition } from './workerPhase.js'
 
 const RING_BUFFER_BYTES = 1024 * 1024
 
+/**
+ * Uptime a partir del cual un worker listo se considera sano y su
+ * contador de intentos vuelve a cero antes del respawn. `ant
+ * chunk-ygx717jg.js` variable `At` = 300000 (`u` en `g7#onExit`).
+ */
+export const READY_UPTIME_RESET_MS = 300_000
+
+/**
+ * Hueco entre dos polls de pid que delata un anfitrión dormido (el
+ * intervalo no pudo correr). `ant chunk-ygx717jg.js` variable `Ke` =
+ * `ve*3`, con `ve` el intervalo de poll.
+ */
+export const HOST_SLEEP_GAP_MS = HEARTBEAT_POLL_MS * 3
+
+/**
+ * Gracia tras detectar que el anfitrión despertó: una salida dentro de
+ * ella no cuenta como fast-crash. `ant chunk-ygx717jg.js` variable `yt` =
+ * 60000.
+ */
+export const HOST_WAKE_GRACE_MS = 60_000
+
+/**
+ * Tope de caracteres de la cola de error de preinicio. `ant
+ * chunk-ygx717jg.js` variable `he` = 200 (`preInitErrorTail`).
+ */
+export const PRE_INIT_ERROR_TAIL_CHARS = 200
+
+const ELLIPSIS = '…'
+const SUCCESS_EXIT_CODE = 0
+
 /** Interfaz mínima de sumidero; los suscriptores pueden ser sockets o stubs de test. */
 export interface AttacherSink {
   write(chunk: Buffer | string): boolean | undefined
   end?(): void
+}
+
+/**
+ * Modos de lanzamiento de un despacho bg (`dispatch.launch.mode` en `ant
+ * chunk-ygx717jg.js`): los cuatro literales que la referencia compara.
+ */
+export type WorkerLaunchMode = 'prompt' | 'resume' | 'fresh' | 'exec'
+
+const LAUNCH_MODES: ReadonlySet<string> = new Set<WorkerLaunchMode>(['prompt', 'resume', 'fresh', 'exec'])
+
+function isLaunchMode(value: unknown): value is WorkerLaunchMode {
+  return typeof value === 'string' && LAUNCH_MODES.has(value)
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+/**
+ * Lee `dispatch.launch.mode` del envoltorio de despacho que el supervisor
+ * ya entrega a `WorkerSpawnConfig.dispatch`. Un modo que la referencia no
+ * conoce se descarta en vez de propagarse.
+ */
+export function readDispatchLaunchMode(dispatch: unknown): WorkerLaunchMode | undefined {
+  if (!isRecord(dispatch) || !isRecord(dispatch.launch)) return undefined
+  const { mode } = dispatch.launch
+  return isLaunchMode(mode) ? mode : undefined
+}
+
+/** Lee `dispatch.source` (p. ej. `spare`, `shell`) si es texto. */
+export function readDispatchSource(dispatch: unknown): string | undefined {
+  if (!isRecord(dispatch)) return undefined
+  const { source } = dispatch
+  return typeof source === 'string' ? source : undefined
+}
+
+/**
+ * Fast-crash de `g7#onExit` (`p`): salida no cero antes de
+ * `FAST_CRASH_WINDOW_MS` desde el spawn, salvo que el anfitrión acabe de
+ * despertar (el reloj de pared saltó y el uptime no es fiable).
+ */
+export function isFastCrash(input: {
+  procUptimeMs: number | undefined
+  exitCode: number
+  hostWokeRecently: boolean
+}): boolean {
+  const { procUptimeMs, exitCode, hostWokeRecently } = input
+  if (hostWokeRecently || procUptimeMs === undefined) return false
+  return procUptimeMs < FAST_CRASH_WINDOW_MS && exitCode !== SUCCESS_EXIT_CODE
+}
+
+/** True si el tiempo desde el último poll de pid delata un anfitrión dormido. */
+export function isHostSleepGap(sinceLastCheckMs: number): boolean {
+  return sinceLastCheckMs > HOST_SLEEP_GAP_MS
+}
+
+/** True mientras dure la gracia posterior a un despertar del anfitrión. */
+export function isWithinHostWakeGrace(now: number, hostWokeAt: number | undefined): boolean {
+  return hostWokeAt !== undefined && now - hostWokeAt < HOST_WAKE_GRACE_MS
+}
+
+/**
+ * Cola legible de lo que el worker escribió antes de llegar a listo —
+ * `g7#preInitErrorTail`: sin secuencias ANSI, espacios colapsados, y si
+ * excede `PRE_INIT_ERROR_TAIL_CHARS`, elipsis más la cola.
+ */
+export function formatPreInitErrorTail(text: string): string | undefined {
+  const flat = stripVTControlCharacters(text).replace(/\s+/g, ' ').trim()
+  if (!flat) return undefined
+  if (flat.length <= PRE_INIT_ERROR_TAIL_CHARS) return flat
+  return `${ELLIPSIS}${flat.slice(-PRE_INIT_ERROR_TAIL_CHARS)}`
 }
 
 /** Payload de tiempo-de-spawn para el hijo ccb interno. */
@@ -62,7 +161,9 @@ export interface WorkerSpawnConfig {
   /** Binario ccb + args, p. ej. `[bun, /cli.js, --bg-pty-host, <sock>, ...]`. */
   cmd: readonly string[]
   cliVersion: string
-  /** Envoltorio de despacho original (preservado para respawn). */
+  /** Envoltorio de despacho original (preservado para respawn). Es la
+   *  fuente de `launch.mode` y `source`, igual que `g7#dispatch` en la
+   *  referencia: se leen con `readDispatchLaunchMode`/`readDispatchSource`. */
   dispatch?: Record<string, unknown>
 }
 
@@ -72,67 +173,101 @@ export type SettleOutcome = 'done' | 'crashed' | 'killed'
  * Entrada pura de `classifyExitOutcome` — el subconjunto de estado del
  * `WorkerVm` que `g7#onExit` consulta para decidir `K` (ant
  * `chunk-ygx717jg.js`, clase `g7`, método `onExit`, tengu_bg_worker_exit).
+ * Las señales opcionales ausentes equivalen a «no ocurrió».
  */
 export interface ExitClassificationInput {
   /** Fase del VM al momento de la salida (`g7#phase.kind`). */
   phase: WorkerPhase['kind']
+  /** Motivo del retiro cuando `phase` es `retiring` (`g7#phase.reason`). */
+  retireReason?: 'grace' | 'reap' | 'stop'
   exitCode: number
   signal?: NodeJS.Signals
   /** Cuántos intentos de spawn lleva el worker (`g7#attempt`). */
   attempt: number
-  /** True una vez el worker señalizó que arrancó (`g7#workerReady`).
-   *  `WorkerVm` no tiene ese canal de señal todavía; el llamador aproxima
-   *  con `phase.kind === 'running'` — ver comentario en `onChildExit`. */
+  /** True una vez el worker señalizó que arrancó (`g7#workerReady`). */
   workerReady: boolean
-  /** Modo de lanzamiento (`g7#dispatch.launch.mode`). `WorkerVm` no
-   *  distingue hoy un modo `exec`; el llamador pasa `undefined` — ver
-   *  comentario en `onChildExit`. */
-  launchMode?: 'exec' | 'pty' | 'detached'
+  /** Modo de lanzamiento (`g7#dispatch.launch.mode`). */
+  launchMode?: WorkerLaunchMode
+  /** `_`: el lanzador salió con éxito antes de que el worker llegara a listo. */
+  launcherForkAndExit?: boolean
+  /** `C`: el cwd del worker ya no es un directorio. */
+  cwdGone?: boolean
+  /** `H`: otro worker ya tomó el id de sesión. */
+  sessionIdTaken?: boolean
+  /** `g||k`: hay cola de error de preinicio o del comando lanzador. */
+  preInitError?: boolean
+  /** `g7#fastCrashStreak`, ya actualizado con esta salida. */
+  fastCrashStreak?: number
+  /** `M`: fast-crash con la misma causa de salida que la anterior. */
+  repeatedExitCause?: boolean
+  /** Uptime del proceso en esta salida (`h`). */
+  procUptimeMs?: number
+}
+
+/**
+ * `u` de `g7#onExit`: el worker llegó a listo y vivió al menos
+ * `READY_UPTIME_RESET_MS`. Con esa salida su presupuesto de intentos se
+ * reinicia antes del respawn y no cuenta como agotado.
+ */
+export function hasHealthyUptime(workerReady: boolean, procUptimeMs: number | undefined): boolean {
+  return workerReady && procUptimeMs !== undefined && procUptimeMs >= READY_UPTIME_RESET_MS
+}
+
+function isReadyLongEnough(input: ExitClassificationInput): boolean {
+  return hasHealthyUptime(input.workerReady, input.procUptimeMs)
+}
+
+function isCrashLoopExit(input: ExitClassificationInput): boolean {
+  const notReadyAfterRetryOrError = !input.workerReady && (input.attempt >= 2 || input.preInitError === true)
+  const streakReached = (input.fastCrashStreak ?? 0) >= FAST_CRASH_LIMIT
+  const budgetExhausted = !isReadyLongEnough(input) && input.attempt >= MAX_RESPAWN_ATTEMPTS
+  return (
+    input.cwdGone === true ||
+    input.sessionIdTaken === true ||
+    notReadyAfterRetryOrError ||
+    streakReached ||
+    input.repeatedExitCause === true ||
+    budgetExhausted
+  )
+}
+
+function classifyRetiringExit(retireReason: ExitClassificationInput['retireReason']): SettleOutcome | undefined {
+  if (retireReason === 'reap') return 'killed'
+  if (retireReason === 'grace') return 'done'
+  return undefined
 }
 
 /**
  * Puerto de la clasificación `K` de `g7#onExit` (ant `chunk-ygx717jg.js`,
- * clase `g7`). Decide el desenlace ANTES de emitir `tengu_bg_worker_exit`,
- * no después — al revés de como `onChildExit` lo hacía antes de este puerto.
+ * clase `g7`). Decide el desenlace ANTES de emitir `tengu_bg_worker_exit`.
+ * Función pura: sólo lee `input`.
  *
- * Función pura: no lee ni muta el estado del `WorkerVm`, sólo el `input`.
+ * Ramas, en el orden de la referencia:
+ *   1. `retiring`                   -> reap: 'killed'; grace: 'done'
+ *                                      (stop: la referencia ni entra, está
+ *                                      desatendido)
+ *   2. `upgrading`                  -> sin desenlace (se re-lanza)
+ *   3. lanzador fork-and-exit       -> 'crashed'
+ *   4. `exitCode === 0`             -> 'done'
+ *   5. `launchMode === 'exec'`      -> 'killed' ante SIGINT/SIGQUIT, si no
+ *                                      'crashed'
+ *   6. cwd desaparecido, sesión tomada, no listo tras dos intentos o con
+ *      error de preinicio, racha de fast-crash, misma causa repetida, o
+ *      presupuesto de intentos agotado sin uptime largo -> 'crashed'
  *
- * Ramas portadas, en el mismo orden que la referencia:
- *   1. fase `upgrading`             -> sin desenlace (se re-lanza desde cero)
- *   2. `exitCode === 0`             -> 'done'
- *   3. `launchMode === 'exec'`      -> 'killed' si la señal es de kill
- *                                      (SIGINT/SIGQUIT), si no 'crashed'
- *   4. `!workerReady && attempt>=2` -> 'crashed'
- *
- * Sin desenlace en cualquier otro caso: la referencia cae a `scheduleRespawn`
- * y no fija `K`.
- *
- * Pendiente, no invocado: la referencia evalúa una segunda rama entre (1) y
- * (2) — `_` en la fuente — que clasifica como 'crashed' cuando el lanzador
- * ya salió (fork-and-exit en vez de exec) con éxito y sin que el worker
- * llegara a listo, en menos de un umbral de tiempo. Depende de detectar el
- * comando del lanzador y su cola de error de preinicio
- * (`this.preInitErrorTail()`); `WorkerVm` no rastrea ninguno de los dos.
- * La rama final de la referencia también evalúa cwd desaparecido, id de
- * sesión ya tomado por otro worker, una racha repetida de la misma causa de
- * salida y "listo pero agotó el presupuesto de intentos" — ninguna de esas
- * señales existe hoy en `WorkerVm`; sólo se porta "no listo tras dos
- * intentos", que sí puede evaluarse con `attempt` y `workerReady`.
+ * En cualquier otro caso no hay desenlace: la referencia cae a
+ * `scheduleRespawn`.
  */
 export function classifyExitOutcome(input: ExitClassificationInput): SettleOutcome | undefined {
-  const { phase, exitCode, signal, attempt, workerReady, launchMode } = input
-
-  if (phase === 'upgrading') return undefined
-
-  if (exitCode === 0) return 'done'
-
-  if (launchMode === 'exec') {
-    const killedByStopSignal = signal === 'SIGINT' || signal === 'SIGQUIT'
+  if (input.phase === 'retiring') return classifyRetiringExit(input.retireReason)
+  if (input.phase === 'upgrading') return undefined
+  if (input.launcherForkAndExit === true) return 'crashed'
+  if (input.exitCode === 0) return 'done'
+  if (input.launchMode === 'exec') {
+    const killedByStopSignal = input.signal === 'SIGINT' || input.signal === 'SIGQUIT'
     return killedByStopSignal ? 'killed' : 'crashed'
   }
-
-  if (!workerReady && attempt >= 2) return 'crashed'
-
+  if (isCrashLoopExit(input)) return 'crashed'
   return undefined
 }
 
@@ -156,6 +291,12 @@ export class WorkerVm extends EventEmitter {
   /** Última vez que el worker emitió datos al ring; lo usa el watchdog de estancamiento. */
   private lastActivityAt: number = Date.now()
   private stalledFiredAt: number = 0
+  /** Último poll de pid (`g7#lastCheckPidAt`); un hueco largo delata un anfitrión dormido. */
+  private lastCheckPidAt: number = Date.now()
+  /** Momento en que se detectó que el anfitrión despertó (`g7#hostWokeAt`). */
+  private hostWokeAt: number | undefined = undefined
+  /** Índice del ring al lanzar el intento actual (`g7#ringSpawnMark`). */
+  private ringSpawnMark = 0
   /** Cliente de rendezvous (control) — ant 5017.js `this.rv`. Canal fuera
    *  de banda al REPL interno: recibe state/done/heartbeat, manda
    *  shutdown/repaint/reply. Undefined cuando el worker no tiene socket rv
@@ -318,6 +459,7 @@ export class WorkerVm extends EventEmitter {
       procStart: readProcStart(child.pid) || undefined,
     }
     writeWorkerRecord(this.record)
+    this.ringSpawnMark = this.ring.length
     this.transitionTo({ kind: 'running' })
     this.startHeartbeatPoll()
     this.startHeartbeatStream()
@@ -475,6 +617,7 @@ export class WorkerVm extends EventEmitter {
     if (this.heartbeatTimer) clearInterval(this.heartbeatTimer)
     this.lastActivityAt = Date.now()
     this.heartbeatTimer = setInterval(() => {
+      this.notePidCheck()
       if (!this.isRunning()) return
       if (!isPidAlive(this.record.pid)) {
         logEvent('tengu_bg_worker_vanished', { short: this.config.short, pid: String(this.record.pid) })
@@ -498,6 +641,21 @@ export class WorkerVm extends EventEmitter {
       }
     }, HEARTBEAT_POLL_MS)
     this.heartbeatTimer.unref()
+  }
+
+  /**
+   * Registra un poll de pid; si el hueco desde el anterior delata un
+   * anfitrión dormido, anota el despertar (`g7#checkPid`).
+   */
+  private notePidCheck(): void {
+    const now = Date.now()
+    if (isHostSleepGap(now - this.lastCheckPidAt)) this.hostWokeAt = now
+    this.lastCheckPidAt = now
+  }
+
+  /** Cola de error escrita desde el spawn actual (`g7#preInitErrorTail`). */
+  private preInitErrorTail(): string | undefined {
+    return formatPreInitErrorTail(Buffer.concat(this.ring.slice(this.ringSpawnMark)).toString('utf8'))
   }
 
   /**
@@ -557,17 +715,40 @@ export class WorkerVm extends EventEmitter {
       this.heartbeatTimer = null
     }
     const uptime = Date.now() - this.record.startedAt
-    // ant g7#onExit clasifica K ANTES de emitir; workerReady no tiene canal
-    // propio en este puerto, así que se aproxima con la fase: `running`
-    // significa que el worker llegó a correr en este intento. launchMode
-    // queda pendiente: WorkerSpawnConfig no distingue un modo `exec`.
+    this.notePidCheck()
+    const fastCrash = isFastCrash({
+      procUptimeMs: uptime,
+      exitCode,
+      hostWokeRecently: isWithinHostWakeGrace(Date.now(), this.hostWokeAt),
+    })
+    this.fastCrashStreak = fastCrash ? this.fastCrashStreak + 1 : 0
+    const launchMode = readDispatchLaunchMode(this.config.dispatch)
+    // workerReady no tiene canal propio en este puerto: `running` significa
+    // que el worker llegó a correr en este intento.
+    // Divergencias declaradas de lo que se alimenta al clasificador:
+    // - `cwdGone`: la referencia sólo lo evalúa si la causa de salida es
+    //   `setcwd` y comprueba `isDirectory()` de `effectiveCwd`; sin causa de
+    //   salida (ver `exitCause` abajo) se aproxima con salida no cero y cwd
+    //   inexistente.
+    // - `launcherForkAndExit` no se alimenta: depende del lanzador
+    //   configurado (`lu()`, CLAUDE_CODE_PROCESS_WRAPPER), que este paquete
+    //   no conoce. La rama está portada y probada en la función pura.
+    // - `attempt` va desplazado en uno respecto de la referencia (allí
+    //   `doSpawn` incrementa al lanzar; aquí al programar el respawn), así
+    //   que `attempt >= 2` equivale al tercer lanzamiento de la referencia.
+    const workerReady = this.phase.kind === 'running'
     const outcome = classifyExitOutcome({
       phase: this.phase.kind,
+      retireReason: this.phase.kind === 'retiring' ? this.phase.reason : undefined,
       exitCode,
       signal,
       attempt: this.attempt,
-      workerReady: this.phase.kind === 'running',
-      launchMode: undefined,
+      workerReady,
+      launchMode,
+      cwdGone: exitCode !== SUCCESS_EXIT_CODE && !existsSync(this.config.cwd),
+      preInitError: !workerReady && this.preInitErrorTail() !== undefined,
+      fastCrashStreak: this.fastCrashStreak,
+      procUptimeMs: uptime,
     })
     logEvent('tengu_bg_worker_exit', {
       short: this.config.short,
@@ -575,16 +756,13 @@ export class WorkerVm extends EventEmitter {
       signal,
       attempt: this.attempt,
       procUptimeMs: uptime,
-      // pendiente: WorkerSpawnConfig no rastrea el origen del despacho
-      // (`dispatch.source` en la referencia) — no se inventa.
-      source: undefined,
-      // pendiente: WorkerSpawnConfig no distingue un modo de lanzamiento
-      // `exec` de uno `pty` — no se inventa.
-      launch_mode: undefined,
+      source: readDispatchSource(this.config.dispatch),
+      launch_mode: launchMode,
       outcome,
       // pendiente: la causa de salida (`w` en la referencia, p. ej.
       // "setcwd") sale de inspeccionar el log del pty-host; este puerto no
-      // lo hace todavía — no se inventa.
+      // lo hace todavía — no se inventa. Sin ella tampoco se evalúan
+      // `sessionIdTaken` ni `repeatedExitCause`, que derivan de esa causa.
       exitCause: undefined,
       // pendiente, declarado explícitamente fuera de este porte: aunque
       // `WorkerRecord.cliVersion` existe, no está confirmado contra la
@@ -605,17 +783,20 @@ export class WorkerVm extends EventEmitter {
       this.settle('done')
       return
     }
-    // Salida distinta de cero. Chequeo de fast-crash.
-    if (uptime < FAST_CRASH_WINDOW_MS) {
-      this.fastCrashStreak++
-      if (this.fastCrashStreak >= FAST_CRASH_LIMIT) {
-        logEvent('tengu_bg_respawn_exhausted', { short: this.config.short, reason: 'fast_crash', streak: String(this.fastCrashStreak) })
-        this.settle('crashed')
-        return
-      }
-    } else {
-      this.fastCrashStreak = 0
+    // Un worker `exec` nunca se re-lanza: su salida es terminal (`g7#onExit`).
+    if (launchMode === 'exec') {
+      this.settle(outcome ?? 'crashed')
+      return
     }
+    if (this.fastCrashStreak >= FAST_CRASH_LIMIT) {
+      logEvent('tengu_bg_respawn_exhausted', { short: this.config.short, reason: 'fast_crash', streak: String(this.fastCrashStreak) })
+      this.settle('crashed')
+      return
+    }
+    // `if(u)this.attempt=1` de la referencia: allí `doSpawn` incrementa el
+    // contador al lanzar, aquí se incrementa al programar el respawn, así
+    // que el equivalente es volver a cero.
+    if (hasHealthyUptime(workerReady, uptime)) this.attempt = 0
     if (this.attempt >= MAX_RESPAWN_ATTEMPTS) {
       logEvent('tengu_bg_respawn_exhausted', { short: this.config.short, reason: 'max_attempts', attempts: String(this.attempt) })
       this.settle('crashed')

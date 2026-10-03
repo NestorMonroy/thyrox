@@ -23,12 +23,20 @@
  *   este puerto lo fija en producción todavía (su fijador real vive fuera
  *   de alcance), así que sólo hace falta para que las pruebas puedan
  *   activarlo y desactivarlo.
- * - `Ci` (candado de archivo entre procesos, `proper-lock`, de
- *   `chunk-n9sxb5zy.js`, fuera de alcance) — NO se porta: `withWriteLock`
- *   serializa sólo dentro de este proceso (`AsyncLocalStorage` + cola de
- *   promesas, igual que `Rn`/`vs`/`fWr`). Un candado entre procesos
- *   exigiría la dependencia externa; sin ella, la serialización
- *   intra-proceso es la mejor aproximación fiel disponible.
+ * - `Ci` (candado de archivo entre procesos, proper-lockfile, de
+ *   `chunk-n9sxb5zy.js`) — portado sobre `../lockfile.js`, el envoltorio
+ *   perezoso que este paquete ya tenía: `withWriteLock` toma
+ *   `<configHome>/.storage-write` con las opciones de `fWr` además de
+ *   serializar dentro del proceso (`Rn`/`vs`).
+ * - `Fw` (raíz del almacén, de `chunk-vpxas6dq.js`) — lee
+ *   `CLAUDE_SECURESTORAGE_CONFIG_DIR` antes de caer en la raíz de
+ *   configuración. No se porta: su clave propia tendría que declararse en
+ *   `.env.example` (`check_env_contract_keys.py`), fuera de los archivos de
+ *   este tramo; la raíz es `getConfigHomeDir()` directo.
+ * - `E` (lectura del backend de archivo real, `chunk-twjdyk4f.js`) — se
+ *   portan sus dos clasificadores de errno y el JSON `null` como ausencia;
+ *   la apertura con `O_NOFOLLOW` (`refused-symlink`) y el tope de tamaño no,
+ *   por vivir fuera del chunk enumerado. `Wi`/`Ps` ya mapean ese estado.
  * - `p(...)` (telemetría, fuera de alcance) — `mutateCredentials` no
  *   emite ningún evento al saltarse la escritura por lectura fallida; la
  *   fuente sí lo hace (`"secure_storage_credentials_write"`).
@@ -59,6 +67,8 @@ import { AsyncLocalStorage } from 'async_hooks'
 import { join } from 'path'
 import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
 import { getErrnoCode, getFsImplementation } from '../fsOperations.js'
+import { lock } from '../lockfile.js'
+import { logError } from '../logging.js'
 import { READ_FAILED } from './types.js'
 import type {
   CredentialBackend,
@@ -99,10 +109,43 @@ export function isLibsecretAvailable(): Promise<boolean> {
 const writeLockContext = new AsyncLocalStorage<boolean>()
 let writeQueueTail: Promise<void> = Promise.resolve()
 
-/** Puerto de `fWr`, sin el candado de archivo entre procesos (`Ci`, ver
- * docstring del módulo). Serializa `task` respecto de otras llamadas a
- * `withWriteLock`, y es reentrante: si ya se está dentro de un candado, se
- * ejecuta directo. */
+/** Nombre del archivo que `fWr` bloquea bajo el directorio de
+ * configuración; proper-lockfile crea `<nombre>.lock` a su lado. */
+export const WRITE_LOCK_FILE_NAME = '.storage-write'
+
+/** Opciones con que `fWr` toma el candado (`Ci`): sin resolver symlinks
+ * —el archivo no tiene por qué existir—, diez reintentos con espera
+ * exponencial y un candado abandonado se considera caduco a los 15 s. */
+const WRITE_LOCK_OPTIONS = {
+  realpath: false,
+  retries: { retries: 10, minTimeout: 100, maxTimeout: 1000 },
+  stale: 15000,
+} as const
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+
+async function acquireWriteLock(): Promise<() => Promise<void>> {
+  const storageDir = getConfigHomeDir()
+  await getFsImplementation().mkdir(storageDir)
+  return lock(join(storageDir, WRITE_LOCK_FILE_NAME), {
+    ...WRITE_LOCK_OPTIONS,
+    onCompromised: error => logError(`[secureStorage] write lock compromised: ${errorMessage(error)}`),
+  })
+}
+
+async function releaseWriteLock(release: () => Promise<void>): Promise<void> {
+  try {
+    await release()
+  } catch (error) {
+    logError(`[secureStorage] write lock release failed: ${errorMessage(error)}`)
+  }
+}
+
+/** Puerto de `fWr`. Serializa `task` en dos capas: la cola de promesas de
+ * este proceso y el candado de archivo entre procesos (`Ci`). Es
+ * reentrante: si ya se está dentro de un candado, se ejecuta directo. */
 export async function withWriteLock<T>(task: () => Promise<T>): Promise<T> {
   if (writeLockContext.getStore() === true) {
     return task()
@@ -114,7 +157,12 @@ export async function withWriteLock<T>(task: () => Promise<T>): Promise<T> {
   })
   try {
     await previousTail
-    return await writeLockContext.run(true, task)
+    const release = await acquireWriteLock()
+    try {
+      return await writeLockContext.run(true, task)
+    } finally {
+      await releaseWriteLock(release)
+    }
   } finally {
     releaseNext()
   }
@@ -280,18 +328,69 @@ export async function runTracked<T>(promise: Promise<T>, state: HostGenerationSt
 type StoragePathResolver = () => { storagePath: string }
 type StorageDirResolver = () => { storageDir: string; storagePath: string }
 
-async function classifyFileRead(getStoragePath: StoragePathResolver): Promise<CredentialCopyState> {
+type ErrnoClassifier = (code: string | undefined) => 'absent' | 'read-failed'
+
+/** Mapeador estricto de `readCredentials` (`w` en `chunk-twjdyk4f.js`):
+ * sólo ENOENT es ausencia. */
+function classifyErrnoStrict(code: string | undefined): 'absent' | 'read-failed' {
+  return mapErrnoStrictToNullOrReadFailed(code) === null ? 'absent' : 'read-failed'
+}
+
+/** Mapeador laxo de `readCredentialsStrict` (`I(e, "linux")` en
+ * `chunk-twjdyk4f.js`): también EISDIR, ENOTDIR, EACCES y EPERM son
+ * ausencia. */
+function classifyErrnoLenient(code: string | undefined): 'absent' | 'read-failed' {
+  return mapErrnoToNullOrReadFailed(code, 'linux') === null ? 'absent' : 'read-failed'
+}
+
+function parseCredentialText(raw: string): CredentialCopyState {
+  let parsed: SecureStorageData | null
+  try {
+    parsed = jsonParse<SecureStorageData | null>(raw)
+  } catch {
+    return { state: 'corrupt' }
+  }
+  return parsed === null ? { state: 'absent' } : { state: 'present', data: parsed }
+}
+
+/** Puerto de `E` (`chunk-twjdyk4f.js`) reducido a lo que un `readFile`
+ * puede ver: el errno pasa por el clasificador dado, y un JSON `null` es
+ * ausencia. Divergencia declarada: la fuente abre con `O_NOFOLLOW` y
+ * devuelve `refused-symlink` ante un enlace, y `corrupt` sobre un tamaño
+ * excesivo; ese tramo vive fuera de `chunk-mmqkf96q.js`. */
+async function classifyFileRead(
+  getStoragePath: StoragePathResolver,
+  classifyErrno: ErrnoClassifier,
+): Promise<CredentialCopyState> {
   const { storagePath } = getStoragePath()
   let raw: string
   try {
     raw = await getFsImplementation().readFile(storagePath, { encoding: 'utf8' })
   } catch (e) {
-    return getErrnoCode(e) === 'ENOENT' ? { state: 'absent' } : { state: 'read-failed' }
+    return { state: classifyErrno(getErrnoCode(e)) }
   }
+  return parseCredentialText(raw)
+}
+
+/** Modo del archivo de credenciales: sólo su dueño lo lee y escribe. */
+const CREDENTIALS_FILE_MODE = 0o600
+
+function stagingPathFor(storagePath: string): string {
+  return `${storagePath}.tmp.${process.pid}.${Date.now()}`
+}
+
+/** Puerto de `An(n, b(e), 384)` (`Jne`): se escribe un temporal con el
+ * modo final y se publica con `rename`, así el destino nunca queda a
+ * medias ni con otro modo. Si la publicación falla, el temporal se
+ * retira y el error original se propaga. */
+async function publishCredentialsFile(storagePath: string, text: string): Promise<void> {
+  const stagingPath = stagingPathFor(storagePath)
   try {
-    return { state: 'present', data: jsonParse(raw) }
-  } catch {
-    return { state: 'corrupt' }
+    await writeFile(stagingPath, text, { encoding: 'utf8', mode: CREDENTIALS_FILE_MODE })
+    await getFsImplementation().rename(stagingPath, storagePath)
+  } catch (e) {
+    await getFsImplementation().unlink(stagingPath).catch(() => undefined)
+    throw e
   }
 }
 
@@ -334,18 +433,14 @@ export function createRawFileReadBackend(getStoragePath: StoragePathResolver): {
  * que `ji`/`withGenerationTracking` espera. */
 export function createFileCredentialBackend(getStoragePath: StorageDirResolver): CredentialBackend {
   return {
-    readCredentials: () => classifyFileRead(getStoragePath),
-    readCredentialsStrict: () => classifyFileRead(getStoragePath),
+    readCredentials: () => classifyFileRead(getStoragePath, classifyErrnoStrict),
+    readCredentialsStrict: () => classifyFileRead(getStoragePath, classifyErrnoLenient),
     async writeCredentials(data) {
       try {
         const { storageDir, storagePath } = getStoragePath()
-        try {
-          await getFsImplementation().mkdir(storageDir)
-        } catch (e) {
-          if (getErrnoCode(e) !== 'EEXIST') throw e
-        }
-        await writeFile(storagePath, jsonStringify(data), { encoding: 'utf8' })
-        await chmod(storagePath, 0o600)
+        await getFsImplementation().mkdir(storageDir)
+        await publishCredentialsFile(storagePath, jsonStringify(data))
+        await chmod(storagePath, CREDENTIALS_FILE_MODE)
         return { state: 'written' }
       } catch {
         return { state: 'failed' }
@@ -389,7 +484,7 @@ export function withGenerationTracking(
       const state = getHostGenerationState(host)
       const expectedGeneration = state.generation
       const result = await runTracked(
-        strict ? backend.readCredentialsStrict() : backend.readCredentials(),
+        strict ? backend.readCredentials() : backend.readCredentialsStrict(),
         state,
       )
       reconcileCopy(state, result, storagePath, expectedGeneration)
@@ -450,19 +545,20 @@ export function selectBackend(
 export async function mutateCredentials(
   storage: SecureStorage,
   mutator: (data: SecureStorageData) => SecureStorageData,
+  backend?: CredentialBackend,
 ): Promise<SecureStorageUpdateResult & { transient?: boolean }> {
   return withWriteLock(async () => {
     storage.invalidateCache?.()
     const current = storage.readAsyncStrict
-      ? await storage.readAsyncStrict(undefined, { unreadableFileAs: 'failure' })
-      : await storage.readAsync()
+      ? await storage.readAsyncStrict(backend, { inaccessibleAs: 'failureIfTransient' })
+      : await storage.readAsync(backend)
     if (current === READ_FAILED) {
       return { success: false, transient: true }
     }
     const before = current ?? {}
     const next = mutator(before)
     if (next === before) return { success: true }
-    return storage.update(next)
+    return storage.update(next, backend)
   })
 }
 

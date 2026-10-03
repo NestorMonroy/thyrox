@@ -1,0 +1,58 @@
+  ok   «mecanica» sale 0
+  ok   «mecanica» nombra un modelo del catálogo
+  ok   «mecanica» declara su esfuerzo
+  ok   «mecanica» publica su denominador
+  ok   «mecanica» declara el runtime y el respaldo
+  ok   «analisis» sale 0
+  ok   «analisis» nombra un modelo del catálogo
+  ok   «analisis» declara su esfuerzo
+  ok   «analisis» publica su denominador
+  ok   «analisis» declara el runtime y el respaldo
+  ok   «adversarial» sale 0
+  ok   «adversarial» nombra un modelo del catálogo
+  ok   «adversarial» declara su esfuerzo
+  ok   «adversarial» publica su denominador
+  ok   «adversarial» declara el runtime y el respaldo
+  ok   «frontera» sale 0
+  ok   «frontera» nombra un modelo del catálogo
+  ok   «frontera» declara su esfuerzo
+  ok   «frontera» publica su denominador
+  ok   «frontera» declara el runtime y el respaldo
+  ok   el contexto entra en la cifra
+  ok   una clase desconocida rehúsa con 2
+  ok   y NO nombra ningún modelo (no hay default)
+  ok   y dice por qué
+  ok   --context 0 rehúsa con 2
+  ok   --context 0 no recomienda nada
+  ok   --context -5 rehúsa con 2
+  ok   --context -5 no recomienda nada
+  ok   --context no-es-un-numero rehúsa con 2
+  ok   --context no-es-un-numero no recomienda nada
+  ok   --runtime sólo declara claude-cli: ollama rehúsa con 2
+  ok   y no recomienda nada
+  ok   --json sale 0
+  ok   --json es JSON válido con su modelo y sus excluidos
+  ok   --json declara runtime claude-cli y su clase
+  ok   --json nombra la causa: catálogo local vacío
+  ok   cualificado: runtime ollama
+  ok   cualificado: model es el nombre contractual
+  ok   cualificado: sin fallbackReason
+  ok   cualificado: publica su cualificación
+  ok   cualificado: la salida humana muestra runtime ollama y el modelo
+  ok   otra clase sin cualificación cae a claude-cli
+  ok   contexto mayor que el medido cae a claude-cli
+  ok   --runtime claude-cli fuerza el proveedor aun con local cualificado
+  ok   y queda declarado, no como respaldo
+  ok   la salida humana dice que el runtime se declaró
+  ok   catálogo ilegible rehúsa con 2
+  ok   y nombra la ruta del catálogo
+  ok   y no recomienda nada
+  ok   cualificaciones inválidas rehúsan con 2
+  ok   y nombran la ruta de las cualificaciones
+  ok   sin candidato permitido sale 3
+  ok   y el JSON dice bloqueada, sin modelo
+  ok   y NO nombra ningún claude-
+  ok   --runtime claude-cli contra una política sin respaldo rehúsa con 2
+  ok   y no nombra ningún claude- como recomendación
+
+56 aprobada(s) · 0 fallida(s) (alcance medido: recommend.ts)

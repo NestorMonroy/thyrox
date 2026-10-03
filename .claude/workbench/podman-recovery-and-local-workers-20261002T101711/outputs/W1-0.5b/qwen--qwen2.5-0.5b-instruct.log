@@ -1,0 +1,12 @@
+ok   extend-capability-union	export type ModelCapability = 'completion' | 'tools' | 'embeddings'
+ok   rename-identifier	```typescript
+function exists(path: string): boolean {
+    return path.length > 0;
+}
+```
+ok   guard-clause	```typescript
+export function requirePositive(n: number): number {
+    if (n <= 0) {
+        throw new RangeError('n mus
+ok   json-field-extraction	embedding@1
+aprobada: thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf tarea mecanica batch-worker-mecanica@1 4/4, 16.7 tokens/s (contended), ctx 8192 → /home/user/thyrox/.claude/workbench/podman-recovery-and-local-workers-20261002T101711/outputs/W1-0.5b/qualifications.json

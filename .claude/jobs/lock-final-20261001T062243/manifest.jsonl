@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash -c bash tests/session/test-infrastructure-ensure.sh | tail -1; bash tests/lib/test-infrastructure.sh | tail -1; (cd src/packages/podman-execution && bun test 2>&1 | tail -2)", "started_at": "2026-10-01T06:22:43+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-01T06:22:59+00:00", "duration_seconds": 16.311068}

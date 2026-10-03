@@ -9,20 +9,30 @@
  * `bin/gpu_monitor`, igual que `headless-pool.sh`, y traduce su código de
  * salida:
  *
- *   0 -> 'admitted' (reservó)   3 -> 'timeout' (venció el plazo sin sitio)
+ *   0 -> 'admitted' (reservó, o el requisito `none` no mira la VRAM)
+ *   3 -> 'timeout' (venció el plazo sin sitio)
+ *   4 -> 'cpu-fallback' (un `optional` sin telemetría o sin sitio: la ruta
+ *        CPU que el trabajo declaró, decidida antes de ejecutarlo)
  *   cualquier otro -> excepción con el stderr: no pudo medir, y eso no es
- *   un «no admitido».
+ *   un «no admitido». El 2 es un `required` sin telemetría: `admit` rehúsa
+ *   al instante, sin esperar el plazo y sin publicar cifra.
+ *
+ * El requisito es propiedad declarada del trabajo; sin declararlo es
+ * `required`, el contrato anterior a que existiera.
  */
 import { spawn } from 'node:child_process'
 import { join } from 'node:path'
 
-export type VramAdmission = 'admitted' | 'timeout'
+export type VramAdmission = 'admitted' | 'timeout' | 'cpu-fallback'
+
+export type GpuRequirement = 'none' | 'optional' | 'required'
 
 export type AdmitVramOptions = {
   needMib: number
   ledger: string
   ownerPid: number
   nvidiaSmi?: string
+  requirement?: GpuRequirement
   timeoutS?: number
   intervalS?: number
   thyroxRoot?: string
@@ -32,6 +42,7 @@ export type ReleaseVramOptions = { ledger: string; ownerPid: number; thyroxRoot?
 
 const EXIT_ADMITTED = 0
 const EXIT_TIMEOUT = 3
+const EXIT_CPU_FALLBACK = 4
 
 /** La raíz de thyrox: la declarada, o la del árbol donde vive este módulo. */
 function gpuMonitorBin(thyroxRoot?: string): string {
@@ -58,11 +69,13 @@ export async function admitVram(options: AdmitVramOptions): Promise<VramAdmissio
   const bin = gpuMonitorBin(options.thyroxRoot)
   const args = ['admit', String(options.needMib), '--ledger', options.ledger,
     '--owner', String(options.ownerPid), '--nvidia-smi', options.nvidiaSmi ?? 'nvidia-smi']
+  if (options.requirement !== undefined) args.push('--requirement', options.requirement)
   if (options.timeoutS !== undefined) args.push('--timeout', String(options.timeoutS))
   if (options.intervalS !== undefined) args.push('--interval', String(options.intervalS))
   const { code, stderr } = await runGpuMonitor(bin, args)
   if (code === EXIT_ADMITTED) return 'admitted'
   if (code === EXIT_TIMEOUT) return 'timeout'
+  if (code === EXIT_CPU_FALLBACK) return 'cpu-fallback'
   throw failure(bin, 'admit', code, stderr)
 }
 

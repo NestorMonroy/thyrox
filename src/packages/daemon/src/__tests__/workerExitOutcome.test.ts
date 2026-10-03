@@ -1,16 +1,14 @@
 /**
  * `classifyExitOutcome` — puerto de la clasificación de desenlace K de
- * `g7#onExit` (ant `chunk-ygx717jg.js`, tengu_bg_worker_exit). Cubre sólo
- * las ramas que `WorkerVm` puede evaluar con el estado que ya rastrea; las
- * ramas que dependen de campos que no rastrea (el lanzador fork-and-exit,
- * cwd desaparecido, id de sesión tomado, racha de misma causa) se declaran
- * pendientes en `workerVm.ts` y no tienen aserción aquí.
+ * `g7#onExit` (ant `chunk-ygx717jg.js`, tengu_bg_worker_exit). Aquí viven
+ * las ramas base; las de retiro, crash y modo exec están en
+ * `workerExitBranches.test.ts`.
  */
 
 import { describe, expect, test } from 'bun:test'
 
 import { classifyExitOutcome, WorkerVm } from '../workerVm.js'
-import { setLogEventFn } from '../internal/pendingCrossPackageDeps.js'
+import { getLocalObservability, installLocalObservability } from '@thyrox/local-observability'
 
 describe('classifyExitOutcome', () => {
   test('fase upgrading -> sin desenlace (incluso con exitCode 0, que de otro modo sería "done")', () => {
@@ -110,8 +108,14 @@ describe('classifyExitOutcome', () => {
 describe('WorkerVm#onChildExit payload de tengu_bg_worker_exit', () => {
   test('emite el payload portado con outcome ya clasificado', () => {
     const events: Array<{ name: string; metadata?: Record<string, unknown> }> = []
-    setLogEventFn((name, metadata) => {
-      events.push({ name, metadata })
+    const originalObservability = getLocalObservability()
+    installLocalObservability({
+      logger: {
+        ...originalObservability.logger,
+        event: (name, metadata) => {
+          events.push({ name, metadata })
+        },
+      },
     })
     try {
       const vm = new WorkerVm({
@@ -137,7 +141,7 @@ describe('WorkerVm#onChildExit payload de tengu_bg_worker_exit', () => {
       expect(payload.exitCause).toBeUndefined()
       expect(payload.worker_cli_version).toBeUndefined()
     } finally {
-      setLogEventFn(() => {})
+      installLocalObservability(originalObservability)
     }
   })
 })

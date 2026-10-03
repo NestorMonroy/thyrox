@@ -1,0 +1,657 @@
+diff --git a/.claude/workbench/task-thyrox-0496-store-credential-proxy-20260930T085227/README.md b/.claude/workbench/task-thyrox-0496-store-credential-proxy-20260930T085227/README.md
+new file mode 100644
+index 000000000..cbf6aff0f
+--- /dev/null
++++ b/.claude/workbench/task-thyrox-0496-store-credential-proxy-20260930T085227/README.md
+@@ -0,0 +1,91 @@
++# TASK-THYROX-0496 — proxy con credenciales del store y su cableado en headless-pool
++
++Ítem del pool `task-census-20260930T064202`, worktree 2. Corpus de referencia:
++`/home/user/thyrox/_references/claude-code-bin/2.1.283/bunfs-root/` (sólo lectura,
++`bin/binary symbol|literal … --root <bunfs-root>` y `rg`).
++
++## Qué se entrega
++
++- `src/packages/provider/bin/storeCredentialProxy.ts` (+ `bin/provider-store-credential-proxy`,
++  generado con `generate_bin.py`): levanta `startProxyServer` con el store de conexiones como
++  fuente de credenciales, anuncia `url=http://127.0.0.1:<puerto>`, exige
++  `THYROX_STORE_PROXY_ACCESS_KEY` y `--model`.
++- `src/session/headless-pool.sh --store-credential-proxy`: lanza ese bin con una clave de acceso
++  por ejecución, espera `url=`, y entrega a cada ítem `ANTHROPIC_BASE_URL` + `ANTHROPIC_API_KEY`
++  (la clave de acceso) con toda credencial y `THYROX_STORAGE_ENCRYPTION_KEY` retiradas.
++  Rehúsa junto con `--credential-proxy`.
++
++## Cómo lo hace la referencia (2.1.283)
++
++| Símbolo / literal | Dónde | Qué hace | Decisión |
++|---|---|---|---|
++| `f3n` | `chunk-vmq4raye.js` [21151,21750) | Lista de variables que un hijo hereda; conserva `CLAUDE_CODE_OAUTH_TOKEN`/`ANTHROPIC_API_KEY` sólo cuando valen `nRe` (`ssh-placeholder`) y hay `ANTHROPIC_UNIX_SOCKET`. | El marcador es la convención del túnel por socket, ya portada en `--credential-proxy`. Con el proxy del store por HTTP el ítem lleva una clave de acceso REAL del proxy local, no un marcador: `startProxyServer` rehúsa arrancar abierto. Divergencia declarada. |
++| `DBr` | `chunk-4h0c4z04.js` [26349,26515) | El host de `ANTHROPIC_BASE_URL` se reporta como pasarela sólo si es firstParty, no hay socket Unix y no es `api.anthropic.com`. | Confirma que `ANTHROPIC_BASE_URL` es la vía del cliente para apuntar a un proxy; thyrox la lee en `provider/src/internal/anthropicClient.ts:40`. Portado: el pool la fija por ítem. |
++| `j$` | `chunk-wg7ts4cy.js` [1034364,1034931) | La pasarela entrega al cliente `inferenceProvider:"gateway"`, `inferenceGatewayBaseUrl` y `inferenceCredentialKind:"interactive"`: una URL y una credencial DE LA PASARELA, nunca la del upstream. | Misma forma: el pool entrega URL + clave de acceso del proxy local. Divergencia: por variables de entorno, no por un payload de settings gestionado. |
++| `V$`, `Kre` | `chunk-wg7ts4cy.js` [1058088,1060004), [1061613,1062492) | `listen.public_url` sólo gobierna políticas gestionadas y el reenvío OTLP. | No aplica a un proxy de loopback para un pool; la misma divergencia que `startServer.ts` ya declara. |
++| `$_`/`K$` | `chunk-wg7ts4cy.js` [1037042) (citado en `netGuards.ts`) | Escucha sólo en loopback salvo `public_url`. | Ya portado (`isLoopbackListenHost`); el bin fija `127.0.0.1`. |
++| `c_e` (puente socat) | `chunk-gpsyc3w1.js` línea 72 | `UNIX-LISTEN:claude-http-<hex>.sock` → `TCP:localhost:<puerto>`: la referencia tiende un socket Unix a un puerto local con `socat` para hijos aislados. | `startProxyServer` escucha con `Bun.serve` (TCP) y no tiene socket Unix; un puente socat añadiría dependencia. El ítem recibe la URL, no un socket. Divergencia declarada; si C6 exige socket, es cambio en `startServer.ts` (ajeno a este ítem). |
++| literal `public_url` | 7 declaraciones en 2 de 2138 chunks (`bin/binary literal`) | — | Medido para acotar: la pasarela vive en `chunk-wg7ts4cy.js`. |
++| literal `ANTHROPIC_UNIX_SOCKET` | 18 chunks de `bunfs-root` + 32 líneas en `claude_strings.txt` (`rg -c`) | — | Sólo `chunk-vmq4raye.js` y `chunk-csayct82.js` deciden credencial con ella; el resto es telemetría/UX. |
++
++*Métrica:* offsets `[inicio,fin)` que imprime `bin/binary symbol`; conteos de `rg -c -F` por archivo.
++*Ciega a:* código que llegue al mismo efecto sin nombrar el literal (una pasarela configurada por
++objeto ya parseado no aparece en `rg -F 'public_url'`).
++
++## Lo que la medición corrigió en el diseño
++
++1. **El proveedor del store no es el del enrutamiento.** `ANTHROPIC_PROVIDER_ID = 'claude'`
++   (`accounts/imports/anthropicAuthFile.ts:15`); `resolveUpstreamModel` sirve el catálogo
++   (`family.firstParty`) sólo si `upstream.provider === 'anthropic'`. El primer diseño usó un
++   adaptador que traducía el FILTRO (`anthropic` → `claude`), y `storeCredentialsOf` agrupa por el
++   `provider` de cada FILA: el pool de `anthropic` quedó vacío y el proxy respondió 502
++   `all upstreams failed (1 attempted)`. Con `fetch` instrumentado en proceso: 0 llamadas al
++   upstream. Decisión: el upstream se llama y es `claude` —`rateLimitManager.ts:134`,
++   `errorClassifier.ts:208`, `affinitySelector.ts:324` y `refresh/providerCredentials.ts:24` ya lo
++   tratan como Anthropic— y los modelos se declaran con `--model` como passthrough.
++   *Métrica:* código HTTP y cuerpo de la respuesta del proxy; conteo de llamadas al `fetch` global.
++   *Ciega a:* un fallo posterior a la selección de credencial (no llegó a haberla).
++2. **El catálogo no cubría el modelo del pool de todas formas.** `model/configs.ts` declara 18
++   `firstParty`; `claude-sonnet-5` (el modelo de la suite del pool) no está. `--model` obligatorio
++   es lo que hace explícito lo que se sirve.
++3. **La clave de acceso va por entorno.** La línea de comando se lee en `/proc/<pid>/cmdline`
++   desde cualquier usuario; el entorno sólo desde el mismo. Por eso el bin lee
++   `THYROX_STORE_PROXY_ACCESS_KEY` y el pool la genera por ejecución (`/proc/sys/kernel/random/uuid`).
++
++## Estado de partida y controles
++
++| Suite | Partida | Rojo | Verde |
++|---|---|---|---|
++| `tests/session/test-headless-pool.sh` | 123 de 130 (7 fallos ajenos: `THYROX_CODE_PROMPT_CACHE_TTL` y `ANTHROPIC_BASE_URL` fijadas en el shell de la sesión; el entorno gana a la opción) | 133 de 139 con esas dos variables retiradas: caen exactamente las 6 nuevas | 139 de 139 |
++| `__tests__/storeCredentialProxyProcess.test.ts` | — (nuevo) | 0 de 4 (el bin no existía) | 5 de 5 |
++| `__tests__/credentialProxyProcess.test.ts` + `proxyStartServer.test.ts` | 27 de 27 | — | sin cambios |
++
++Anulaciones (se copia el archivo con `mktemp`, se retira la rama, se mide, se restaura y `cmp` da igual):
++
++| Rama retirada | Cae | De |
++|---|---|---|
++| bin: guarda de `THYROX_STORE_PROXY_ACCESS_KEY` | caso 4 | 1 de 5 |
++| bin: guarda de `--model` | caso 5 | 1 de 5 |
++| bin: `storeRefusal` (conexión ilegible) | caso 3 | 1 de 5 |
++| pool: exclusión mutua de los dos proxies | «los dos proxies a la vez» | 1 de 139 |
++| pool: `unset THYROX_STORAGE_ENCRYPTION_KEY` en el ítem | «sin credencial ni clave de cifrado» (`skey=clave-secreta`) | 1 de 139 |
++| pool: línea `credencial: proxy con credenciales del store` | «declara la fuente» | 1 de 139 |
++| pool: `--model "$MODEL"` al lanzar el proxy | «recibe el modelo del pool» (`sin`) | 1 de 139 |
++
++Duración de la suite del pool: 197 s, 186 s y 148 s en tres corridas; la primera anulación con
++`timeout 280` se cortó a 113 de 139 aserciones y se repitió con tope holgado.
++
++*Métrica:* líneas `FALLA` y el resumen `aserciones: N de M` de cada corrida; `(fail)` de bun.
++*Ciega a:* la ruta OAuth del store (bearer + refresco, `ensureFreshOAuthConnections`) —el proceso
++de prueba sólo siembra una conexión `apikey`—; el `.env` del árbol, que `declaredStorageKey` lee
++del disco: retirar la variable del entorno del ítem no le impide leer el archivo; y a `pool`
++real contra el bin real: la suite del pool usa un proxy falso y el bin se prueba aparte.
++
++## Verificación de cierre
++
++- `bash bin/check_package_typecheck --strict provider`: 0 errores propios.
++- `bash bin/check_lint_zero src/session/headless-pool.sh tests/session/test-headless-pool.sh`:
++  shellcheck 0 hallazgos en 2 archivos (hizo falta `uv sync --group lint` en el worktree).
++- `python3 src/session/generate_bin.py --check`: `bin/` al día, 291 entrypoints (1 escrito).
++- `bash bin/provider-store-credential-proxy --model claude-sonnet-5` sin store: exit 2 nombrando
++  `provider_connections`.
+diff --git a/bin/provider-store-credential-proxy b/bin/provider-store-credential-proxy
+new file mode 100755
+index 000000000..991830ac2
+--- /dev/null
++++ b/bin/provider-store-credential-proxy
+@@ -0,0 +1,15 @@
++#!/usr/bin/env bash
++# Generado por src/session/generate_bin.py — no editar a mano.
++WRAPPER_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++THYROX_ROOT="${THYROX_ROOT:-$WRAPPER_ROOT}"
++export THYROX_ROOT
++LIB="$WRAPPER_ROOT/src/lib/toolchain.sh"
++if [ ! -r "$LIB" ]; then
++  echo "bin/provider-store-credential-proxy: no alcanza $LIB — el arbol esta incompleto." >&2
++  exit 1
++fi
++# shellcheck source=/dev/null
++source "$LIB"
++THYROX_TOOLCHAIN_NODE_MODULES_HOME="${THYROX_TOOLCHAIN_NODE_MODULES_HOME:-$WRAPPER_ROOT/node_modules}" \
++  thyrox_toolchain_require_bun || exit 1
++exec "${THYROX_TOOLCHAIN_BUN_BIN:-bun}" "$WRAPPER_ROOT/src/packages/provider/bin/storeCredentialProxy.ts" "$@"
+diff --git a/src/packages/provider/__tests__/storeCredentialProxyProcess.test.ts b/src/packages/provider/__tests__/storeCredentialProxyProcess.test.ts
+new file mode 100644
+index 000000000..36db3bacc
+--- /dev/null
++++ b/src/packages/provider/__tests__/storeCredentialProxyProcess.test.ts
+@@ -0,0 +1,161 @@
++/**
++ * El proxy de credenciales del store como proceso
++ * (`bin/provider-store-credential-proxy`, C3 de credenciales).
++ *
++ * Lo lanza un pool que no tiene credencial en su entorno: el proxy abre el
++ * store de conexiones (`openExistingConnectionStore`), levanta
++ * `startProxyServer` con ellas y reparte a los ítems sólo su URL y una clave
++ * de acceso local. Contrato del proceso:
++ * - anuncia `url=http://127.0.0.1:<puerto>` en su primera línea cuando ya
++ *   escucha;
++ * - exige la clave de acceso en THYROX_STORE_PROXY_ACCESS_KEY: una petición
++ *   con otra clave no llega al upstream;
++ * - sirve sólo los modelos declarados con `--model`; uno no declarado se
++ *   rehúsa sin tocar el upstream;
++ * - sin store, sin conexión legible, sin clave de acceso o sin modelo rehúsa
++ *   con exit 2 nombrando la causa, sin escuchar;
++ * - con SIGTERM cierra y sale 0.
++ *
++ * Qué haría fallar a este control: anunciar antes de instalar los manejadores
++ * de señal, arrancar sin store o sin clave de acceso, o dejar pasar una
++ * petición cuya clave no es la del pool.
++ */
++import { afterEach, describe, expect, test } from 'bun:test'
++import { mkdtempSync, rmSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++import { ANTHROPIC_PROVIDER_ID } from '../src/accounts/imports/anthropicAuthFile.ts'
++import { openConnectionStore } from '../src/accounts/connectionStoreHome.ts'
++import { STORAGE_KEY_VARIABLE } from '../src/accounts/fieldCipher.ts'
++import { startAnthropicMockServer, type AnthropicMockServer } from '../src/anthropicMockServer.ts'
++import { ALLOW_LOOPBACK_ENV } from '../src/proxy/netGuards.ts'
++
++const ENTRY = join(import.meta.dir, '../bin/storeCredentialProxy.ts')
++const STORAGE_KEY = 'clave-de-prueba'
++const ACCESS_KEY = 'pool-key'
++let upstream: AnthropicMockServer | undefined
++let dir: string | undefined
++let child: ReturnType<typeof Bun.spawn> | undefined
++
++afterEach(async () => {
++  child?.kill('SIGKILL')
++  await upstream?.close()
++  if (dir) rmSync(dir, { recursive: true, force: true })
++  upstream = dir = child = undefined
++})
++
++async function firstLine(stream: ReadableStream<Uint8Array>): Promise<string> {
++  const reader = stream.getReader()
++  let text = ''
++  while (!text.includes('\n')) {
++    const { value, done } = await reader.read()
++    if (done) break
++    text += new TextDecoder().decode(value)
++  }
++  reader.releaseLock()
++  return text.split('\n')[0]!
++}
++
++/** Un store en `dir`, cifrado con `key`, con una conexión Anthropic de clave de API. */
++function seedStore(storeDir: string, key: string): void {
++  const opened = openConnectionStore({ env: { THYROX_PROVIDERS_DATA_DIR: storeDir, [STORAGE_KEY_VARIABLE]: key } })
++  opened.store.create({ provider: ANTHROPIC_PROVIDER_ID, authType: 'apikey', name: 'pool', apiKey: 'sk-store' })
++  opened.close()
++}
++
++function processEnv(storeDir: string, overrides: Record<string, string | undefined> = {}): Record<string, string> {
++  const env: Record<string, string | undefined> = {
++    PATH: process.env.PATH ?? '',
++    HOME: storeDir,
++    THYROX_PROVIDERS_DATA_DIR: storeDir,
++    [STORAGE_KEY_VARIABLE]: STORAGE_KEY,
++    [ALLOW_LOOPBACK_ENV]: '1',
++    THYROX_STORE_PROXY_ACCESS_KEY: ACCESS_KEY,
++    ...overrides,
++  }
++  return Object.fromEntries(Object.entries(env).filter((entry): entry is [string, string] => entry[1] !== undefined))
++}
++
++/** El proxy con un modelo declarado; `--model` se omite sólo en el caso que mide su falta. */
++function spawnProxy(args: string[], env: Record<string, string>): ReturnType<typeof Bun.spawn> {
++  child = Bun.spawn(['bun', ENTRY, '--model', 'pool-model', ...args], { env, stdout: 'pipe', stderr: 'pipe' })
++  return child
++}
++
++function spawnProxyWithoutModel(env: Record<string, string>): ReturnType<typeof Bun.spawn> {
++  child = Bun.spawn(['bun', ENTRY, '--upstream', 'http://127.0.0.1:9'], { env, stdout: 'pipe', stderr: 'pipe' })
++  return child
++}
++
++function messages(url: string, accessKey: string, model: string): Promise<Response> {
++  return fetch(`${url}/v1/messages`, {
++    method: 'POST',
++    headers: { 'content-type': 'application/json', 'x-api-key': accessKey },
++    body: JSON.stringify({ model, max_tokens: 8, messages: [{ role: 'user', content: 'hi' }] }),
++  })
++}
++
++describe('provider-store-credential-proxy', () => {
++  test('1. anuncia su URL, sirve el modelo declarado con la credencial del store y al SIGTERM sale 0', async () => {
++    const seen: string[] = []
++    upstream = await startAnthropicMockServer({
++      host: '127.0.0.1',
++      respond: (_body, request) => { seen.push(String(request.headers['x-api-key'])); return {} },
++    })
++    dir = mkdtempSync(join(tmpdir(), 'store-credential-proxy-'))
++    seedStore(dir, STORAGE_KEY)
++    const proxy = spawnProxy(['--upstream', upstream.url], processEnv(dir))
++    const announced = await firstLine(proxy.stdout as ReadableStream<Uint8Array>)
++    expect(announced).toMatch(/^url=http:\/\/127\.0\.0\.1:\d+$/)
++    const url = announced.slice('url='.length)
++
++    const served = await messages(url, ACCESS_KEY, 'pool-model')
++    expect(served.status).toBe(200)
++    expect(seen).toEqual(['sk-store'])
++    expect((upstream.requests[0]!.body as { model: string }).model).toBe('pool-model')
++
++    const wrongKey = await messages(url, 'otra-clave', 'pool-model')
++    expect(wrongKey.status).toBe(401)
++    const undeclaredModel = await messages(url, ACCESS_KEY, 'modelo-no-declarado')
++    expect(undeclaredModel.status).not.toBe(200)
++    expect(seen).toEqual(['sk-store'])
++
++    proxy.kill('SIGTERM')
++    expect(await proxy.exited).toBe(0)
++  })
++
++  test('2. sin store rehúsa con exit 2 nombrándolo, sin escuchar', async () => {
++    dir = mkdtempSync(join(tmpdir(), 'store-credential-proxy-'))
++    const proxy = spawnProxy(['--upstream', 'http://127.0.0.1:9'], processEnv(dir))
++    expect(await proxy.exited).toBe(2)
++    expect(await new Response(proxy.stderr as ReadableStream<Uint8Array>).text()).toContain('provider_connections')
++    expect(await new Response(proxy.stdout as ReadableStream<Uint8Array>).text()).toBe('')
++  })
++
++  test('3. con una conexión que la clave declarada no descifra rehúsa con exit 2 nombrando la clave', async () => {
++    dir = mkdtempSync(join(tmpdir(), 'store-credential-proxy-'))
++    seedStore(dir, 'otra-clave-de-cifrado')
++    const proxy = spawnProxy(['--upstream', 'http://127.0.0.1:9'], processEnv(dir))
++    expect(await proxy.exited).toBe(2)
++    expect(await new Response(proxy.stderr as ReadableStream<Uint8Array>).text()).toContain(STORAGE_KEY_VARIABLE)
++    expect(await new Response(proxy.stdout as ReadableStream<Uint8Array>).text()).toBe('')
++  })
++
++  test('4. sin clave de acceso rehúsa con exit 2 nombrando la variable, sin escuchar', async () => {
++    dir = mkdtempSync(join(tmpdir(), 'store-credential-proxy-'))
++    seedStore(dir, STORAGE_KEY)
++    const proxy = spawnProxy(['--upstream', 'http://127.0.0.1:9'], processEnv(dir, { THYROX_STORE_PROXY_ACCESS_KEY: undefined }))
++    expect(await proxy.exited).toBe(2)
++    expect(await new Response(proxy.stderr as ReadableStream<Uint8Array>).text()).toContain('THYROX_STORE_PROXY_ACCESS_KEY')
++    expect(await new Response(proxy.stdout as ReadableStream<Uint8Array>).text()).toBe('')
++  })
++
++  test('5. sin --model rehúsa con exit 2 nombrando la opción, sin escuchar', async () => {
++    dir = mkdtempSync(join(tmpdir(), 'store-credential-proxy-'))
++    seedStore(dir, STORAGE_KEY)
++    const proxy = spawnProxyWithoutModel(processEnv(dir))
++    expect(await proxy.exited).toBe(2)
++    expect(await new Response(proxy.stderr as ReadableStream<Uint8Array>).text()).toContain('--model')
++    expect(await new Response(proxy.stdout as ReadableStream<Uint8Array>).text()).toBe('')
++  })
++})
+diff --git a/src/packages/provider/bin/storeCredentialProxy.ts b/src/packages/provider/bin/storeCredentialProxy.ts
+new file mode 100755
+index 000000000..4d3b19901
+--- /dev/null
++++ b/src/packages/provider/bin/storeCredentialProxy.ts
+@@ -0,0 +1,149 @@
++#!/usr/bin/env bun
++/**
++ * El proxy de credenciales del store como proceso
++ * (`bin/provider-store-credential-proxy`, C3 de credenciales).
++ *
++ *   storeCredentialProxy --model <id> [--model <id>]... [--port N] [--upstream <url>]
++ *
++ * Abre el store de conexiones sólo si existe (`openExistingConnectionStore`),
++ * comprueba que tiene una conexión Anthropic legible y levanta
++ * `startProxyServer` (`../src/proxy/startServer.ts`) con el store como
++ * fuente de credenciales de su único upstream, cuyo endpoint es `--upstream`
++ * (por defecto `ANTHROPIC_BASE_URL` o `https://api.anthropic.com`). Escucha en
++ * loopback en `--port` (0, efímero, por defecto) e imprime `url=<url>` cuando
++ * ya escucha; atiende hasta SIGTERM o SIGINT, cuando cierra y sale 0.
++ *
++ * El upstream lleva el proveedor con que el store guarda las conexiones de
++ * Anthropic (`ANTHROPIC_PROVIDER_ID`, `claude`): `startProxyServer` agrupa las
++ * credenciales del store por el proveedor de cada fila, y el clasificador de
++ * errores, el rate limit y el refresco de OAuth ya tratan ese nombre como
++ * Anthropic. Con él, el enrutamiento no resuelve el catálogo (`firstParty` es
++ * sólo del proveedor `anthropic`), así que cada modelo servido se declara con
++ * `--model` y llega tal cual al upstream: el proxy sirve lo que el pool
++ * declaró, no cualquier identificador, y uno no declarado se rehúsa sin tocar
++ * el upstream.
++ *
++ * La clave de acceso local va en `THYROX_STORE_PROXY_ACCESS_KEY`: es lo único
++ * que quien lo lanza reparte a sus hijos, junto con la URL. No es la
++ * credencial del upstream, que sólo existe en el store y en este proceso. Va
++ * por entorno y no por argumento porque la línea de comando se lee en `/proc`
++ * desde cualquier usuario y el entorno sólo desde el mismo.
++ *
++ * Complementa `credentialProxy.ts` (`--credential-proxy` del pool): aquél
++ * reenvía la credencial del ENTORNO por un socket Unix; éste sirve las del
++ * store por HTTP en loopback, porque `startProxyServer` escucha con
++ * `Bun.serve` y no tiene socket Unix.
++ *
++ * Sin store, sin conexión legible, sin clave de acceso o sin modelo rehúsa
++ * con exit 2 y no escucha: un proxy sin credencial aceptaría peticiones que
++ * el servicio rechazaría una a una.
++ */
++import packageJson from '../package.json'
++import { openExistingConnectionStore, type ConnectionStore } from '../src/accounts/connectionStoreHome.ts'
++import { ANTHROPIC_PROVIDER_ID } from '../src/accounts/imports/anthropicAuthFile.ts'
++import { resolveCredential } from '../src/credentials.ts'
++import { startProxyServer } from '../src/proxy/startServer.ts'
++import type { GatewayModelEntry } from '../src/proxy/upstreamRouting.ts'
++
++export const ACCESS_KEY_VARIABLE = 'THYROX_STORE_PROXY_ACCESS_KEY'
++const UPSTREAM_NAME = ANTHROPIC_PROVIDER_ID
++const LOOPBACK_HOST = '127.0.0.1'
++const EPHEMERAL_PORT = 0
++const MAX_PORT = 65535
++const DEFAULT_UPSTREAM = 'https://api.anthropic.com'
++const INVALID_INVOCATION_EXIT = 2
++
++function refuse(reason: string): never {
++  process.stderr.write(`storeCredentialProxy: ${reason}. NO se escucha.\n`)
++  process.exit(INVALID_INVOCATION_EXIT)
++}
++
++function argument(name: string): string | undefined {
++  const index = process.argv.indexOf(name)
++  return index >= 0 ? process.argv[index + 1] : undefined
++}
++
++/** Cada valor de una opción repetible, en el orden de la línea de comando. */
++function argumentValues(name: string): string[] {
++  const values: string[] = []
++  process.argv.forEach((word, index) => {
++    const value = process.argv[index + 1]
++    if (word === name && value !== undefined) values.push(value)
++  })
++  return values
++}
++
++function listenPort(): number {
++  const declared = argument('--port')
++  if (declared === undefined) return EPHEMERAL_PORT
++  const port = Number(declared)
++  const isTcpPort = Number.isInteger(port) && port >= EPHEMERAL_PORT && port <= MAX_PORT
++  if (!isTcpPort) refuse(`--port va entre ${EPHEMERAL_PORT} y ${MAX_PORT}, no: ${declared}`)
++  return port
++}
++
++/** El modelo declarado se sirve tal cual: el upstream recibe el mismo identificador. */
++function passthroughModel(id: string): GatewayModelEntry {
++  return { id, upstream_model: { [UPSTREAM_NAME]: id } }
++}
++
++/**
++ * Por qué el store no sirve, o `undefined` si sirve. Es la cadena de
++ * `credentials.ts` sin ninguna variable del entorno: sólo la conexión del
++ * store, con sus mismas causas (cifrada sin clave, clave que no descifra).
++ */
++function storeRefusal(store: ConnectionStore): string | undefined {
++  const credential = resolveCredential({}, undefined, store)
++  if (credential.source === 'PROVIDER_CONNECTION') return undefined
++  return credential.error ?? `provider_connections no tiene una conexión activa de ${ANTHROPIC_PROVIDER_ID}`
++}
++
++const accessKey = process.env[ACCESS_KEY_VARIABLE]?.trim()
++if (!accessKey) refuse(`falta ${ACCESS_KEY_VARIABLE}: la clave de acceso local que quien lo lanza reparte a sus hijos`)
++const models = argumentValues('--model')
++if (models.length === 0) refuse('falta --model <id>: el proxy sirve sólo los modelos declarados')
++const port = listenPort()
++const upstream = argument('--upstream') ?? process.env.ANTHROPIC_BASE_URL ?? DEFAULT_UPSTREAM
++const opened = openExistingConnectionStore()
++if (!opened) refuse('provider_connections no existe: no hay store de conexiones que servir')
++const refusal = storeRefusal(opened.store)
++if (refusal) {
++  opened.close()
++  refuse(refusal)
++}
++
++let proxy
++try {
++  proxy = startProxyServer({
++    host: LOOPBACK_HOST,
++    port,
++    accessKeys: [accessKey],
++    routing: {
++      upstreams: [{ name: UPSTREAM_NAME, provider: UPSTREAM_NAME }],
++      models: models.map(passthroughModel),
++      auto_include_builtin_models: false,
++    },
++    endpoints: { [UPSTREAM_NAME]: { baseUrl: upstream } },
++    credentials: {},
++    // Una cuenta sirve hasta que falla: cada `thyrox -p` del pool comparte así
++    // la caché de prompt de una misma credencial.
++    selector: 'fill-first',
++    connections: opened.store,
++    version: packageJson.version,
++    env: process.env,
++  })
++} catch (error) {
++  opened.close()
++  refuse((error as Error).message)
++}
++// Los manejadores van ANTES de anunciar: el anuncio es la señal de «listo»,
++// y quien lo lee puede mandar SIGTERM en seguida.
++const stop = (): void => {
++  void proxy.stop().then(() => {
++    opened.close()
++    process.exit(0)
++  })
++}
++process.on('SIGTERM', stop)
++process.on('SIGINT', stop)
++process.stdout.write(`url=${proxy.url}\n`)
+diff --git a/src/session/headless-pool.sh b/src/session/headless-pool.sh
+index a226175ed..8f7b94d7e 100755
+--- a/src/session/headless-pool.sh
++++ b/src/session/headless-pool.sh
+@@ -26,7 +26,8 @@
+ #   headless-pool.sh --prompt <plantilla> --out <dir> --model <claude-…>
+ #                    [--width N] [--timeout S] [--tools LISTA] [--max-turns N]
+ #                    [--cwd DIR] [--memfree TAM] [--cache-ttl 5m|1h]
+-#                    [--credential-proxy] [--isolation worktree [--verify CMD]]
++#                    [--credential-proxy | --store-credential-proxy]
++#                    [--isolation worktree [--verify CMD]]
+ #                    < items (uno por linea)
+ #
+ # Sin `--max-turns` el ítem no tiene tope de turnos, igual que `claude -p`:
+@@ -50,6 +51,18 @@
+ # ejecutable (`i1` de 2.1.283). Si el proxy no arranca, el pool rehúsa con
+ # exit 2 sin lanzar items; al terminar, el pool lo detiene.
+ #
++# `--store-credential-proxy` lanza el proxy con las credenciales del store de
++# conexiones (`bin/provider-store-credential-proxy`, o
++# HEADLESS_POOL_STORE_CREDENTIAL_PROXY) para un pool SIN credencial en su
++# entorno: el proxy sirve el `--model` del pool por HTTP en loopback, y cada
++# item recibe ANTHROPIC_BASE_URL con su URL y, como ANTHROPIC_API_KEY, una
++# clave de acceso propia de esta ejecución; la clave de cifrado del store y
++# toda credencial se retiran de su entorno. El pool declara la fuente con
++# `credencial: proxy con credenciales del store (url=…)`. No va junto con
++# `--credential-proxy`: son dos fuentes para el mismo item, y el pool rehúsa
++# con exit 2 en vez de elegir en silencio. Si el proxy no arranca, rehúsa con
++# exit 2 sin lanzar items; al terminar, el pool lo detiene.
++#
+ # Con GNU Time (/usr/bin/time, o HEADLESS_POOL_TIME) cada item deja <n>.time
+ # con "memoria-pico-KB pared-s usuario-s sistema-s". La memoria pico incluye
+ # al nieto que corre bajo `timeout`: medido, un proceso que reserva 200 MB bajo
+@@ -156,7 +169,7 @@ PARALLEL_BIN="${HEADLESS_POOL_PARALLEL:-parallel}"
+ RUNNER_KIND=thyrox
+ PROMPT=""; OUT=""; MODEL=""
+ WIDTH="$(nproc 2>/dev/null || echo 4)"
+-TIMEOUT=600; TOOLS="Read"; TOOLS_SET=""; ISOLATION=""; VERIFY=""; MAX_TURNS=""; WORKDIR="$PWD"; MEMFREE_SPEC=""; CACHE_TTL=""; CREDENTIAL_PROXY=""
++TIMEOUT=600; TOOLS="Read"; TOOLS_SET=""; ISOLATION=""; VERIFY=""; MAX_TURNS=""; WORKDIR="$PWD"; MEMFREE_SPEC=""; CACHE_TTL=""; CREDENTIAL_PROXY=""; STORE_CREDENTIAL_PROXY=""
+ 
+ rehusa() { echo "headless-pool: REHUSA — $*" >&2; exit 2; }
+ 
+@@ -175,6 +188,7 @@ while [[ $# -gt 0 ]]; do
+         --memfree) MEMFREE_SPEC="${2:-}"; shift 2 ;;
+         --cache-ttl) CACHE_TTL="${2:-}"; shift 2 ;;
+         --credential-proxy) CREDENTIAL_PROXY=1; shift ;;
++        --store-credential-proxy) STORE_CREDENTIAL_PROXY=1; shift ;;
+         --runner) RUNNER_KIND="${2:-}"; shift 2 ;;
+         -h|--help) sed -n '2,62p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+         *) rehusa "opcion desconocida: $1" ;;
+@@ -197,6 +211,8 @@ case "$MODEL" in
+     *) rehusa "--model va por identificador completo (claude-…), no alias: ${MODEL:-(vacio)}" ;;
+ esac
+ [[ -d "$WORKDIR" ]] || rehusa "--cwd no existe: $WORKDIR"
++[[ -z "$CREDENTIAL_PROXY" || -z "$STORE_CREDENTIAL_PROXY" ]] \
++    || rehusa "--credential-proxy y --store-credential-proxy no van juntos: son dos fuentes de credencial para el mismo item"
+ # Con --isolation worktree cada ítem implementa en su propio worktree, y el
+ # árbol principal no cambia hasta que `pool_integrate` aplique lo verificado.
+ # Por defecto recibe sólo Bash: lee, busca y escribe con cat, rg, gawk y
+@@ -353,28 +369,57 @@ export HP_VRAM_NEED
+ 
+ mkdir -p "$OUT"
+ 
++# Los proxies que el pool lanza mueren con él. Cada uno anuncia en su log
++# cuando ya escucha, y se espera ese anuncio antes de lanzar ningún item; si
++# el proceso sale antes de anunciarlo, no hay proxy y no se lanza nada.
++launched_proxies=()
++stop_launched_proxies() {
++    local pid
++    for pid in "${launched_proxies[@]}"; do kill "$pid" 2>/dev/null; wait "$pid" 2>/dev/null; done
++}
++trap 'stop_launched_proxies' EXIT
++# Espera el anuncio `<patrón>` en `<log>` mientras `<pid>` viva; 0 si llegó.
++wait_for_announcement() {
++    local log="$1" pattern="$2" pid="$3"
++    for _ in $(seq 1 100); do
++        grep -q "$pattern" "$log" 2>/dev/null && return 0
++        kill -0 "$pid" 2>/dev/null || break
++        sleep 0.1
++    done
++    grep -q "$pattern" "$log" 2>/dev/null
++}
+ # El proxy de credencial: lo lanza el pool con SU entorno, y los items sólo
+-# reciben la ruta del socket. Se espera su anuncio (`socket=<ruta>`) antes de
+-# lanzar ningún item; si sale antes de anunciarlo, no hay proxy y no se lanza
+-# nada.
++# reciben la ruta del socket.
+ HP_PROXY_SOCKET=""
+ if [[ -n "$CREDENTIAL_PROXY" ]]; then
+     proxy_bin="${HEADLESS_POOL_CREDENTIAL_PROXY:-$THYROX_ROOT/bin/provider-credential-proxy}"
+     proxy_socket="$OUT/.credential-proxy.sock"
+     proxy_log="$OUT/.credential-proxy.log"
+     "$proxy_bin" --socket "$proxy_socket" > "$proxy_log" 2>&1 &
+-    proxy_pid=$!
+-    trap 'kill "$proxy_pid" 2>/dev/null; wait "$proxy_pid" 2>/dev/null' EXIT
+-    for _ in $(seq 1 100); do
+-        grep -q '^socket=' "$proxy_log" 2>/dev/null && break
+-        kill -0 "$proxy_pid" 2>/dev/null || break
+-        sleep 0.1
+-    done
+-    grep -q '^socket=' "$proxy_log" 2>/dev/null \
++    launched_proxies+=($!)
++    wait_for_announcement "$proxy_log" '^socket=' "${launched_proxies[-1]}" \
+         || rehusa "el proxy de credencial no arrancó ($proxy_bin): $(tr '\n' ' ' < "$proxy_log")"
+     HP_PROXY_SOCKET="$proxy_socket"
+ fi
+ export HP_PROXY_SOCKET
++# El proxy con credenciales del store: el pool no tiene credencial en su
++# entorno; el proxy lee la del store (`openExistingConnectionStore`) y los
++# items reciben su URL y una clave de acceso propia de esta ejecución. La
++# clave va al proxy por entorno, no por argumento: la línea de comando se lee
++# en /proc desde cualquier usuario, el entorno sólo desde el mismo.
++HP_STORE_PROXY_URL=""; HP_STORE_PROXY_ACCESS_KEY=""
++if [[ -n "$STORE_CREDENTIAL_PROXY" ]]; then
++    store_proxy_bin="${HEADLESS_POOL_STORE_CREDENTIAL_PROXY:-$THYROX_ROOT/bin/provider-store-credential-proxy}"
++    store_proxy_log="$OUT/.store-credential-proxy.log"
++    HP_STORE_PROXY_ACCESS_KEY="$(cat /proc/sys/kernel/random/uuid)"
++    THYROX_STORE_PROXY_ACCESS_KEY="$HP_STORE_PROXY_ACCESS_KEY" "$store_proxy_bin" --model "$MODEL" > "$store_proxy_log" 2>&1 &
++    launched_proxies+=($!)
++    wait_for_announcement "$store_proxy_log" '^url=' "${launched_proxies[-1]}" \
++        || rehusa "el proxy con credenciales del store no arrancó ($store_proxy_bin): $(tr '\n' ' ' < "$store_proxy_log")"
++    HP_STORE_PROXY_URL="$(gawk -F= '/^url=/{print $2; exit}' "$store_proxy_log")"
++    echo "credencial: proxy con credenciales del store (url=$HP_STORE_PROXY_URL)"
++fi
++export HP_STORE_PROXY_URL HP_STORE_PROXY_ACCESS_KEY
+ # La ejecución vive en su runtime hasta cerrarse: el índice, el joblog y los
+ # artefactos de cada ítem se escriben ahí, y a la salida sólo llega lo publicado
+ # (`pool_lifecycle`). Un pool que muere deja su runtime para `reconcile`.
+@@ -420,6 +465,13 @@ _headless_item() {
+ }
+ export -f _headless_item
+ 
++# Las vías por las que un item heredaría la credencial del pool.
++_headless_item_drop_credentials() {
++    unset ANTHROPIC_AUTH_TOKEN THYROX_CODE_OAUTH_TOKEN THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR \
++          CLAUDE_CODE_OAUTH_TOKEN CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR
++}
++export -f _headless_item_drop_credentials
++
+ _headless_item_run() {
+     local n="$1" item="$2"
+     # Admisión por VRAM, la mitad de `--memfree` que Parallel no tiene para la
+@@ -499,12 +551,17 @@ _headless_item_run() {
+          else
+              [[ -z "$HP_CACHE_TTL" ]] || export THYROX_CODE_PROMPT_CACHE_TTL="$HP_CACHE_TTL"
+          fi
+-         # Con proxy, el item recibe el socket y el marcador; la credencial
+-         # real se retira de su entorno por todas sus vías.
++         # Con un proxy, la credencial real se retira del entorno del item por
++         # todas sus vías, y el item recibe sólo lo que el proxy le da: el
++         # socket y el marcador, o la URL y la clave de acceso de esta
++         # ejecución, con la clave de cifrado del store también retirada.
+          if [[ -n "$HP_PROXY_SOCKET" ]]; then
+-             unset ANTHROPIC_AUTH_TOKEN THYROX_CODE_OAUTH_TOKEN THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR \
+-                   CLAUDE_CODE_OAUTH_TOKEN CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR
++             _headless_item_drop_credentials
+              export ANTHROPIC_UNIX_SOCKET="$HP_PROXY_SOCKET" ANTHROPIC_API_KEY=ssh-placeholder
++         elif [[ -n "$HP_STORE_PROXY_URL" ]]; then
++             _headless_item_drop_credentials
++             unset ANTHROPIC_UNIX_SOCKET THYROX_STORAGE_ENCRYPTION_KEY
++             export ANTHROPIC_BASE_URL="$HP_STORE_PROXY_URL" ANTHROPIC_API_KEY="$HP_STORE_PROXY_ACCESS_KEY"
+          fi
+          # Con GNU Time, la memoria pico, la pared y la CPU del item quedan en
+          # <n>.time; el codigo de salida es el del item, que time conserva.
+diff --git a/tests/session/test-headless-pool.sh b/tests/session/test-headless-pool.sh
+index 2c3147956..adf11b074 100644
+--- a/tests/session/test-headless-pool.sh
++++ b/tests/session/test-headless-pool.sh
+@@ -53,7 +53,7 @@ case "$entrada" in *RAMPA*)
+   echo "end $(date +%s.%N)" >> "$RAMPA_LOG" ;;
+ esac
+ ultima="$(printf '%s\n' "$entrada" | tail -1)"
+-r="$ultima|modelo=$modelo|persist=$persist|formato=$formato|ttl=${CLAUDE_CODE_PROMPT_CACHE_TTL:-sin}|thx=${THYROX_CODE_PROMPT_CACHE_TTL:-sin}|sock=${ANTHROPIC_UNIX_SOCKET:-sin}|key=${ANTHROPIC_API_KEY:-sin}|auth=${ANTHROPIC_AUTH_TOKEN:-sin}|turns=$turns|sid=$sid"
++r="$ultima|modelo=$modelo|persist=$persist|formato=$formato|ttl=${CLAUDE_CODE_PROMPT_CACHE_TTL:-sin}|thx=${THYROX_CODE_PROMPT_CACHE_TTL:-sin}|sock=${ANTHROPIC_UNIX_SOCKET:-sin}|key=${ANTHROPIC_API_KEY:-sin}|auth=${ANTHROPIC_AUTH_TOKEN:-sin}|turns=$turns|base=${ANTHROPIC_BASE_URL:-sin}|skey=${THYROX_STORAGE_ENCRYPTION_KEY:-sin}|sid=$sid"
+ if [[ "$formato" == stream-json ]]; then
+   # Como el ejecutable: stream-json en -p exige --verbose.
+   [[ "$verbose" == si ]] || { echo "stream-json requires --verbose" >&2; exit 1; }
+@@ -222,6 +222,39 @@ check "proxy que no arranca: exit 2, sin resumen, y lo nombra" "$CODE $(printf '
+ rm -rf "$F/out"; EXTRA="" ANTHROPIC_API_KEY=sk-user corre alfa
+ check "sin --credential-proxy el item conserva su entorno" "$(cred_de)" "sock=sin|key=sk-user|auth=sin"
+ 
++# --- el proxy con credenciales del store: los ítems ven una URL y una clave de acceso local, nunca la del store ---
++# El proxy falso anuncia una URL, anota la clave de acceso y el modelo que
++# recibió y su pid, y espera a que lo maten. Los ítems ven ANTHROPIC_BASE_URL
++# apuntando a esa URL, la clave de acceso como ANTHROPIC_API_KEY y ninguna
++# clave de cifrado del store.
++cat > "$F/store-proxy" <<'SH'
++#!/usr/bin/env bash
++model=sin
++while [[ $# -gt 0 ]]; do case "$1" in --model) model="$2"; shift 2 ;; *) shift ;; esac; done
++printf '%s|%s|%s\n' "${THYROX_STORE_PROXY_ACCESS_KEY:-sin}" "$$" "$model" > "$STORE_PROXY_SAW"
++echo "url=http://127.0.0.1:4242"
++exec sleep 300
++SH
++chmod +x "$F/store-proxy"
++export STORE_PROXY_SAW="$F/store-proxy-saw"
++store_de() { cat "$F/out"/*.json | jq -r .result | gawk -F"|" '{print $8"|"$9"|"$11"|"$12}' | sort -u | paste -sd,; }
++rm -rf "$F/out" "$STORE_PROXY_SAW"
++EXTRA="--store-credential-proxy" ANTHROPIC_API_KEY=sk-user THYROX_STORAGE_ENCRYPTION_KEY=clave-secreta ANTHROPIC_BASE_URL=http://heredada.invalid HEADLESS_POOL_STORE_CREDENTIAL_PROXY="$F/store-proxy" corre alfa beta
++check "proxy del store: exit 0" "$CODE" "0"
++saw_key="$(cut -d'|' -f1 "$STORE_PROXY_SAW" 2>/dev/null)"
++check "proxy del store: el ítem ve la URL del proxy y la clave de acceso, sin credencial ni clave de cifrado" "$(store_de)" "key=$saw_key|auth=sin|base=http://127.0.0.1:4242|skey=sin"
++check "proxy del store: la clave de acceso es propia de la ejecución, no la credencial del entorno" "$([[ -n "$saw_key" && "$saw_key" != sk-user && "$saw_key" != sin ]] && echo propia || echo "no:$saw_key")" "propia"
++check "proxy del store: recibe el modelo del pool" "$(cut -d'|' -f3 "$STORE_PROXY_SAW" 2>/dev/null)" "claude-sonnet-5"
++check "proxy del store: el pool declara la fuente de credencial" "$(printf '%s' "$SALIDA" | gawk '/^credencial: proxy con credenciales del store \(url=http:\/\/127\.0\.0\.1:4242\)$/{n++} END{print n+0}')" "1"
++check "proxy del store: al terminar el pool el proxy ya no vive" "$(kill -0 "$(cut -d'|' -f2 "$STORE_PROXY_SAW" 2>/dev/null)" 2>/dev/null && echo vive || echo muerto)" "muerto"
++rm -rf "$F/out"; EXTRA="--store-credential-proxy" HEADLESS_POOL_STORE_CREDENTIAL_PROXY="$F/credential-proxy-refuses" corre alfa
++check "proxy del store que no arranca: exit 2, sin resumen, y lo nombra" "$CODE $(printf '%s' "$SALIDA" | gawk '/^items=/{n++} /proxy con credenciales del store/{p++} END{print n+0, (p>0)}')" "2 0 1"
++rm -rf "$F/out" "$STORE_PROXY_SAW" "$F/proxy-saw"
++EXTRA="--store-credential-proxy --credential-proxy" ANTHROPIC_API_KEY=sk-user HEADLESS_POOL_STORE_CREDENTIAL_PROXY="$F/store-proxy" HEADLESS_POOL_CREDENTIAL_PROXY="$F/credential-proxy" corre alfa
++check "los dos proxies a la vez: exit 2 sin lanzar ninguno" "$CODE $(ls "$STORE_PROXY_SAW" "$F/proxy-saw" 2>/dev/null | wc -l)" "2 0"
++rm -rf "$F/out"; EXTRA="" ANTHROPIC_API_KEY=sk-user THYROX_STORAGE_ENCRYPTION_KEY=clave-secreta ANTHROPIC_BASE_URL=http://heredada.invalid corre alfa
++check "sin --store-credential-proxy el ítem conserva su URL y su clave de cifrado" "$(store_de)" "key=sk-user|auth=sin|base=http://heredada.invalid|skey=clave-secreta"
++
+ # --- la memoria de cada item, con GNU Time --------------------------------------
+ # Un GNU time falso: consume `-f FMT -o ARCHIVO`, escribe una medida fija y
+ # corre el comando conservando su codigo, como el real.

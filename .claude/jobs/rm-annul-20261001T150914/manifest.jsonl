@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash /home/user/thyrox/.claude/workbench/podman-resource-materialization-20261001T145908/probes/annul_resource_materialization.sh", "started_at": "2026-10-01T15:09:14+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-01T15:09:18+00:00", "duration_seconds": 4.510173}

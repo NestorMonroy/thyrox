@@ -1,0 +1,5 @@
+src/packages/agent/bin/extract_model_registry.py
+src/packages/computer-use-mcp/src/legacy/win32/bridge.py
+src/skills/gates/check-skill-artifacts.sh
+src/transcript/cache_probe.py
+src/workbench/manifest.py

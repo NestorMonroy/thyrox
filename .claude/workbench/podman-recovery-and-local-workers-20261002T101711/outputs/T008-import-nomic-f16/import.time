@@ -1,0 +1,23 @@
+	Command being timed: "bash bin/local-models-import run --repository nomic-ai/nomic-embed-text-v1.5-GGUF --revision 0188c9bf409793f810680a5a431e7b899c46104c --file nomic-embed-text-v1.5.f16.gguf --sha256 f7af6f66802f4df86eda10fe9bbcfc75c39562bed48ef6ace719a251cf1c2fdb --quantization F16 --scratch-dir /home/user/.thyrox-lab/import-scratch-nomic --run-dir /home/user/thyrox/.claude/workbench/podman-recovery-and-local-workers-20261002T101711/outputs/T008-import-nomic-f16/run --memory-limit-bytes 2147483648"
+	User time (seconds): 2.48
+	System time (seconds): 1.47
+	Percent of CPU this job got: 89%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 0:04.39
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 93400
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 202284
+	Voluntary context switches: 42036
+	Involuntary context switches: 18379
+	Swaps: 0
+	File system inputs: 0
+	File system outputs: 3688
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

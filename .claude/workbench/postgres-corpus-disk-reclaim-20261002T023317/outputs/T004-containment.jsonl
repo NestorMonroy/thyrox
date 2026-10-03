@@ -1,0 +1,6 @@
+{"gate": "ManagedExecutionContainmentGate", "step": "T004-counts-before", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T004-ingest", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T004-counts-after", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T004-reingest", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T004-counts-after-reingest", "passed": true, "executions": 1, "reasons": []}
+{"gate": "ManagedExecutionContainmentGate", "step": "T004-verify", "passed": true, "executions": 1, "reasons": []}

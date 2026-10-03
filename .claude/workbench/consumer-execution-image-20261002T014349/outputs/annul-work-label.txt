@@ -1,0 +1,49 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/executionCommand.test.ts:
+(pass) parseMount > sin destino ni modo: la misma ruta, sólo lectura [0.14ms]
+(pass) parseMount > con modo y sin destino [0.04ms]
+(pass) parseMount > con destino y modo [0.02ms]
+(pass) thyrox-exec run > el payload corre en la unidad, con el repositorio montado de escritura en su propia ruta [3.06ms]
+(pass) thyrox-exec run > THYROX_EXEC_IMAGE elige la imagen [0.27ms]
+(pass) thyrox-exec run > --script-stdin entrega el guion a bash dentro de la unidad [0.22ms]
+(pass) thyrox-exec run > la red host lleva el proxy y monta su CA de sólo lectura [0.44ms]
+(pass) thyrox-exec run > sin red, el proxy no viaja [0.35ms]
+(pass) thyrox-exec run > sin payload rehúsa con 2 y no invoca Podman [0.33ms]
+(pass) thyrox-exec run > una cita de tarea inválida rehúsa con 2 nombrando el campo [0.21ms]
+(pass) thyrox-exec run > el veredicto de la unidad es el de la orden [0.37ms]
+(pass) --secret-from-env: la credencial llega a la unidad como secreto montado > materializa el secreto por stdin y lo monta; el valor no aparece en ningún argv ni salida [1.51ms]
+(pass) --secret-from-env: la credencial llega a la unidad como secreto montado > un secreto con el mismo valor no se recrea [0.45ms]
+(pass) --secret-from-env: la credencial llega a la unidad como secreto montado > credencial ausente: sale 2, lo nombra y no toca Podman [0.15ms]
+(pass) reconcile-orphans: un contenedor cuyo dueño de tarea murió se retira sin intervención > retira sólo el de dueño de tarea con PID muerto; deja vivos y ajenos [1.13ms]
+(pass) reconcile-orphans: un contenedor cuyo dueño de tarea murió se retira sin intervención > sin huérfanos, sale 0 y lo dice [0.14ms]
+(pass) run con la referencia de trabajo de un consumidor > --work autoriza con la identidad del consumidor y --owner declara el dueño del pool [0.43ms]
+(pass) run con la referencia de trabajo de un consumidor > --task y --work juntos no son una autorización [0.16ms]
+(pass) run con la referencia de trabajo de un consumidor > un dueño que no es de pool no se declara por línea de orden [0.12ms]
+247 |     const h = harness()
+248 |     const code = await runExecutionCommand(['build-image', '--work', 'ai-course-notes:es-mx/execution-image',
+249 |       '--context', '/srv/ctx', '--tag', 'localhost/ai-course-notes-runner:dev'], h.deps)
+250 |     const build = h.calls.find(call => call[0] === 'build') ?? []
+251 |     expect(code).toBe(0)
+252 |     expect(build).toContain('thyrox.execution-reference=work:ai-course-notes:es-mx/execution-image')
+                        ^
+error: expect(received).toContain(expected)
+
+Expected to contain: "thyrox.execution-reference=work:ai-course-notes:es-mx/execution-image"
+Received: [ "build", "--label",
+  "thyrox.task=undefined", "--label", "io.thyrox.image.lifecycle=cache", "-t", "localhost/ai-course-notes-runner:dev",
+  "/srv/ctx"
+]
+
+      at <anonymous> (/home/user/thyrox/src/packages/podman-execution/__tests__/executionCommand.test.ts:252:19)
+(fail) build-image con la referencia de trabajo de un consumidor (TASK-THYROX-0760) > --work construye bajo la identidad del consumidor, sin citar una TASK de thyrox [1.70ms]
+(pass) build-image con la referencia de trabajo de un consumidor (TASK-THYROX-0760) > una tarea de thyrox conserva su etiqueta de hoy [0.27ms]
+(pass) build-image con la referencia de trabajo de un consumidor (TASK-THYROX-0760) > --task y --work juntos no construyen nada [0.13ms]
+
+1 tests failed:
+(fail) build-image con la referencia de trabajo de un consumidor (TASK-THYROX-0760) > --work construye bajo la identidad del consumidor, sin citar una TASK de thyrox [1.70ms]
+
+ 21 pass
+ 1 fail
+ 55 expect() calls
+Ran 22 tests across 1 file. [211.00ms]

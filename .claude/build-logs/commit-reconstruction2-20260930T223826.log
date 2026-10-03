@@ -1,0 +1,40 @@
+check-provider-evidence: 0 banco(s) emitido(s) dentro del proveedor (alcance medido: /home/user/thyrox/.claude/eventos)
+  hogar del banco: /home/user/thyrox/.claude/workbench
+check-agent-artifacts: sin cambios en la superficie del paquete (alcance medido: 24 archivo(s) pedido(s))
+check-cli-typecheck: sin cambios en el paquete (alcance medido: 24 archivo(s) pedido(s))
+check-cross-model-read: sin cambios en la superficie del paquete (alcance medido: 24 archivo(s) pedido(s))
+check_bench_untracked: 0 archivo(s) fuera (alcance medido: 1 banco(s) tocado(s))
+check_staged_live_writers: 0 escritor(es) vivo(s) (alcance medido: 24 ruta(s) preparada(s))
+check_test_home_isolation: 0 suite(s) sin aislar (alcance medido: 0 archivo(s) de prueba)
+check_cache_layout: 0 unidad(es) sin carpeta o sin README (alcance medido: 0 unidad(es) tocada(s) por el commit, de 308 versionado(s) bajo /home/user/thyrox/.claude/cache)
+check-single-workspace-root: 0 segunda(s) raiz(ces) (alcance medido: 74601 ruta(s) versionada(s), 0 admitida(s))
+check_product_word: 0 archivo(s) con deuda nueva; 1550 aparición(es) del producto en 337 archivo(s) (alcance medido: src)
+check_md_relative_links: 0 enlace(s) roto(s) (alcance medido: 417 enlace(s) relativo(s) en 289 archivo(s))
+checkEnvPrefix: 0 lectura(s) CLAUDE_* nueva(s), 0 congelada(s), 0 obsoleta(s) (alcance medido: 1860 lectura(s) en 4045 archivo(s) de producción — propias 851, proveedor 99, cliente ajeno 18, sin prefijo 892)
+checkEnvPrefix: 0 variable(s) THYROX_* sin prueba nueva(s), 124 congelada(s), 0 obsoleta(s) (alcance medido: 360 variable(s) propia(s), 2188 archivo(s) de prueba)
+claves leidas del entorno: 0 | declaradas: 520 | sin declarar: 0
+check_env_example_coverage: 0 clave(s) sin declarar (alcance medido: 16 clave(s) en 1 archivo(s) ignorado(s), 531 declarada(s) en .env.example)
+[feature/complete-orm-root e73058627] Prove the preserved partial diffs rebuild their trees
+ Author: Nestor Monroy <46802445+NestorMonroy@users.noreply.github.com>
+ 24 files changed, 3991 insertions(+), 755 deletions(-)
+ create mode 100644 .claude/workbench/podman-execution-primitive-20260930T215755/outputs/interrupted-reconstruction.txt
+ create mode 100644 .claude/workbench/podman-execution-primitive-20260930T215755/outputs/pool-measure-resume/1.closed
+ create mode 100644 .claude/workbench/podman-execution-primitive-20260930T215755/outputs/pool-measure-resume/1.err
+ create mode 100644 .claude/workbench/podman-execution-primitive-20260930T215755/outputs/pool-measure-resume/1.files
+ create mode 100644 .claude/workbench/podman-execution-primitive-20260930T215755/outputs/pool-measure-resume/1.json
+ create mode 100644 .claude/workbench/podman-execution-primitive-20260930T215755/outputs/pool-measure-resume/1.lifecycle.err
+ create mode 100644 .claude/workbench/podman-execution-primitive-20260930T215755/outputs/pool-measure-resume/1.patch
+ create mode 100644 .claude/workbench/podman-execution-primitive-20260930T215755/outputs/pool-measure-resume/1.prepare.err
+ create mode 100644 .claude/workbench/podman-execution-primitive-20260930T215755/outputs/pool-measure-resume/1.session
+ create mode 100644 .claude/workbench/podman-execution-primitive-20260930T215755/outputs/pool-measure-resume/1.snapshot.json
+ create mode 100644 .claude/workbench/podman-execution-primitive-20260930T215755/outputs/pool-measure-resume/1.stash-baseline
+ create mode 100644 .claude/workbench/podman-execution-primitive-20260930T215755/outputs/pool-measure-resume/1.stash-started
+ create mode 100644 .claude/workbench/podman-execution-primitive-20260930T215755/outputs/pool-measure-resume/1.stream.jsonl
+ create mode 100644 .claude/workbench/podman-execution-primitive-20260930T215755/outputs/pool-measure-resume/1.time
+ create mode 100644 .claude/workbench/podman-execution-primitive-20260930T215755/outputs/pool-measure-resume/1.verdict
+ create mode 100644 .claude/workbench/podman-execution-primitive-20260930T215755/outputs/pool-measure-resume/1.verify.log
+ create mode 100644 .claude/workbench/podman-execution-primitive-20260930T215755/outputs/pool-measure-resume/credential-source
+ create mode 100644 .claude/workbench/podman-execution-primitive-20260930T215755/outputs/pool-measure-resume/index.tsv
+ create mode 100644 .claude/workbench/podman-execution-primitive-20260930T215755/outputs/pool-measure-resume/joblog.tsv
+ create mode 100644 .claude/workbench/podman-execution-primitive-20260930T215755/outputs/pool-measure-resume/run.closed
+ create mode 100755 .claude/workbench/podman-execution-primitive-20260930T215755/probes/reconstruct_partial.sh

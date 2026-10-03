@@ -132,12 +132,10 @@ export function setCwd(path: string, relativeTo?: string): void {
   }
 
   setCwdState(physicalPath)
-  if (process.env.NODE_ENV !== 'test') {
-    try {
-      logEvent('tengu_shell_set_cwd', { success: true })
-    } catch {
-      // Telemetry failure must not block setCwd; log sink might be uninstalled
-    }
+  try {
+    logEvent('tengu_shell_set_cwd', { success: true })
+  } catch {
+    // Telemetry failure must not block setCwd; log sink might be uninstalled
   }
 }
 

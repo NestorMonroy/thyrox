@@ -1,0 +1,4 @@
+deepseek-v4.1-flash	non-stream max_tokens 200	status 200	output_tokens 200	4274ms	
+deepseek-v4.1-flash	non-stream max_tokens 4000	status 502	output_tokens -	30116ms	upstream request failed
+qwen3.8-flash	non-stream max_tokens 4000	status 502	output_tokens -	30918ms	upstream request failed
+EXIT=0

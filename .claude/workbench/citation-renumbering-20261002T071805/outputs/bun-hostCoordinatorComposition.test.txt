@@ -1,0 +1,14 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/hostCoordinatorComposition.test.ts:
+(pass) composeHostCoordinatorService > con la topología por defecto compone una coordinación local y el socket del hogar de runtime [1.32ms]
+(pass) composeHostCoordinatorService > el dueño compuesto pasa la validación de dueño de Podman (sin «@») [0.24ms]
+(pass) composeHostCoordinatorService > shared sin Redis rehúsa al componer [0.20ms]
+(pass) cpuPlacementOf > en CPU no reserva VRAM y usa el runtime de Ollama [0.47ms]
+(pass) cpuPlacementOf por formato del artefacto (TASK-THYROX-0776) > un GGUF va a Ollama [0.04ms]
+(pass) cpuPlacementOf por formato del artefacto (TASK-THYROX-0776) > un snapshot de safetensors va a Transformers [0.04ms]
+
+ 6 pass
+ 0 fail
+ 8 expect() calls
+Ran 6 tests across 1 file. [220.00ms]

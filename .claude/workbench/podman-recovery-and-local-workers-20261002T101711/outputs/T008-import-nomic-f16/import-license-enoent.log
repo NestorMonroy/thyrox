@@ -1,0 +1,10 @@
+local-models-import: ENOENT: no such file or directory, open '/home/user/.thyrox-lab/import-scratch-nomic/LICENSE'
+ENOENT: no such file or directory, open '/home/user/.thyrox-lab/import-scratch-nomic/LICENSE'
+    path: "/home/user/.thyrox-lab/import-scratch-nomic/LICENSE",
+ syscall: "open",
+   errno: -2,
+    code: "ENOENT"
+
+
+Bun v1.3.11 (Linux x64)
+EXIT=1

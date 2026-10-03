@@ -1,0 +1,5 @@
+/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/verify/e0-red.log:9
+/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/verify/e0-green.log:9
+/home/user/thyrox/.claude/workbench/execution-policy-enforcement-e0-20261002T194538/outputs/verify/e0-annulments.log:66
+execution thyrox-worker-test-murer82j-18575 kind=test task=TASK-THYROX-0773 exit=0
+__BG_EXIT__=0

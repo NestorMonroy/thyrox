@@ -1,0 +1,53 @@
+{
+  "qualifications": [
+    {
+      "model": "thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf",
+      "kind": "protocol",
+      "suite": "tool-calling@1",
+      "casesPassed": 6,
+      "casesTotal": 6,
+      "passed": true,
+      "contextTokens": 8192,
+      "tokensPerSecond": 0.31623193301451047,
+      "measurementCondition": "contended",
+      "measuredAt": "2026-10-01T01:07:04.849Z"
+    },
+    {
+      "model": "thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf",
+      "kind": "protocol",
+      "suite": "tool-calling@1",
+      "casesPassed": 6,
+      "casesTotal": 6,
+      "passed": true,
+      "contextTokens": 8192,
+      "tokensPerSecond": 0.37366276605294946,
+      "measurementCondition": "contended",
+      "measuredAt": "2026-10-02T10:28:41.331Z"
+    },
+    {
+      "model": "thyrox-qwen--qwen2.5-0.5b-instruct:q4_k_m-hf-7ae557604adf",
+      "kind": "task",
+      "taskClass": "mecanica",
+      "suite": "batch-worker-mecanica@1",
+      "casesPassed": 4,
+      "casesTotal": 4,
+      "passed": true,
+      "contextTokens": 8192,
+      "tokensPerSecond": 16.68764912160872,
+      "measurementCondition": "contended",
+      "measuredAt": "2026-10-02T10:20:41.989Z"
+    },
+    {
+      "model": "thyrox-qwen--qwen2.5-coder-1.5b-instruct:q4_k_m-hf-2e1fd397ee46",
+      "kind": "protocol",
+      "suite": "tool-calling@1",
+      "casesPassed": 1,
+      "casesTotal": 6,
+      "passed": false,
+      "contextTokens": 8192,
+      "tokensPerSecond": 8.822675125450733,
+      "measurementCondition": "isolated",
+      "measuredAt": "2026-10-02T18:07:43.953Z"
+    }
+  ]
+}

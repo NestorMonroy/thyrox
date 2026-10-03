@@ -1,0 +1,13 @@
+$ (cd src/packages/provider && bun test <suites que importan anthropicHttp, withRetry o retryPolicy>) ; (cd src/packages/cli && bun test <idem>)
+bun test v1.3.11 (af24e281)
+
+ 103 pass
+ 0 fail
+ 194 expect() calls
+Ran 103 tests across 8 files. [1293.00ms]
+bun test v1.3.11 (af24e281)
+
+ 25 pass
+ 0 fail
+ 50 expect() calls
+Ran 25 tests across 2 files. [1478.00ms]

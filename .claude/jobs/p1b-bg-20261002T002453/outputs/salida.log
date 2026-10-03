@@ -1,0 +1,7 @@
+0
+ok
+  ok    caso 8: --task y --work juntos se rehúsan con 2
+
+16 casos: 16 ok, 0 fallos
+execution thyrox-worker-test-muq817aj-16311 kind=test task=TASK-THYROX-0756 exit=0
+__BG_EXIT__=0

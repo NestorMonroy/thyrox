@@ -49,6 +49,15 @@ describe('thyrox providers test', () => {
     expect(updates).toEqual([['k1', { testStatus: 'active', lastError: null, lastErrorAt: null, lastErrorType: null, lastErrorSource: null, errorCode: null, lastTested: 'NOW' }]])
   })
 
+  test('a claude API-key row is probed under the name of its recipe, anthropic', async () => {
+    const seen: string[] = []
+    const { d, out } = deps([{ id: 'a1', provider: 'claude', name: 'ant', authType: 'apikey', isActive: true, apiKey: 'sk-good', testStatus: null, lastTested: null, lastError: null, defaultModel: null }])
+    d.testDeps = { probe: async input => (seen.push(input.provider), { valid: true, error: null, statusCode: 200 }) }
+    expect(await providersCommand(['providers', 'test', 'anthropic'], d)).toBe(0)
+    expect(seen).toEqual(['anthropic'])
+    expect(out.join('')).toBe('OK ant: provider test passed\n')
+  })
+
   test('a failing connection prints FAIL with the reason, persists the error and exits 1', async () => {
     const { d, out, updates } = deps()
     expect(await providersCommand(['providers', 'test', 'bad'], d)).toBe(1)

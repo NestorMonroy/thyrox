@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "/home/user/thyrox/bin/model_coordinator run", "started_at": "2026-10-02T19:41:15+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-02T20:03:17+00:00", "duration_seconds": 1322.950502}

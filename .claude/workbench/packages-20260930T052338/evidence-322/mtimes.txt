@@ -1,0 +1,4 @@
+05:37:23 src/packages/app-host/tsconfig.check.json
+05:37:27 src/packages/audio-capture-napi/tsconfig.build.json
+05:37:50 src/packages/bridge/tsconfig.build.json
+05:37:34 src/packages/claude-for-chrome-mcp/tsconfig.build.json

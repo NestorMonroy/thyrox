@@ -31,6 +31,12 @@ CLEARED = (
     "server",
     "headless-sdk",
     "storage",
+    "memory",
+    "daemon",
+    "ide",
+    "provider",
+    "local-observability",
+    "bridge",
 )
 
 

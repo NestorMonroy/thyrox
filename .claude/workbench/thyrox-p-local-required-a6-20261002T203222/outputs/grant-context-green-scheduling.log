@@ -1,0 +1,37 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/podmanModelUnitMaterializer.test.ts:
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un grant caducado [0.37ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un grant de una generación que ya no es la vigente [0.11ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > con la coordinación no disponible [0.11ms]
+(pass) PodmanModelUnitMaterializer: rechazar sin tocar Podman > un runtime sin perfil de contenedor [0.08ms]
+(pass) PodmanModelUnitMaterializer: materializar > crea, arranca e inspecciona; la unidad lleva su identidad completa [2.62ms]
+(pass) PodmanModelUnitMaterializer: materializar > el contenedor va en loopback, con el dispositivo concedido y las etiquetas de la unidad [2.27ms]
+(pass) PodmanModelUnitMaterializer: materializar > en CPU no pide dispositivos [0.29ms]
+(pass) PodmanModelUnitMaterializer: materializar > si create falla no quedó nada: partial false [0.97ms]
+(pass) PodmanModelUnitMaterializer: materializar > si start falla quedó un contenedor: partial true con su unitId [0.28ms]
+(pass) PodmanModelUnitMaterializer: entorno derivado del grant > el contexto concedido llega al runtime como entorno del contenedor [0.42ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > destroy distingue destruido, ausente y fallido [0.22ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > destroy retira sólo el contenedor de la unidad [0.06ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > units reconstruye cada unidad de sus etiquetas e ignora contenedores ajenos [0.80ms]
+(pass) PodmanModelUnitMaterializer: destruir y listar > nunca borra imágenes ni volúmenes [0.23ms]
+(pass) PodmanModelUnitMaterializer: identidad completa > una unidad cuya identidad etiquetada está incompleta no es una unidad de esta primitiva [0.15ms]
+(pass) una unidad de Transformers con el artefacto del grant montado (TASK-THYROX-0776) > expone el artefacto concedido de sólo lectura en la unidad [0.57ms]
+(pass) una unidad de Transformers con el artefacto del grant montado (TASK-THYROX-0776) > un perfil sin montaje declarado no monta nada, como el de Ollama [0.20ms]
+(pass) una unidad de Transformers con el artefacto del grant montado (TASK-THYROX-0776) > una unidad de Transformers se reconstruye desde sus etiquetas [0.78ms]
+
+__tests__/hostCoordinator.test.ts:
+(pass) ModelSchedulingCoordinator: admitir > el ticket lleva el grant y la unidad de la identidad exacta resuelta [3.29ms]
+(pass) ModelSchedulingCoordinator: admitir > varios clientes del mismo modelo comparten una residencia y una unidad [0.69ms]
+(pass) ModelSchedulingCoordinator: admitir > dos modelos con la misma cuantización no comparten residencia [0.29ms]
+(pass) ModelSchedulingCoordinator: admitir > dos cuantizaciones del mismo modelo no comparten residencia [0.17ms]
+(pass) ModelSchedulingCoordinator: admitir > un modelo que el catálogo no declara se rehúsa sin tomar ningún lease [0.29ms]
+(pass) ModelSchedulingCoordinator: admitir > una identidad que no cabe en ninguna colocación se rehúsa sin tomar ningún lease [0.11ms]
+(pass) ModelSchedulingCoordinator: terminar > finish suelta el ticket una vez; los tickets vigentes se listan [0.66ms]
+(pass) ModelSchedulingCoordinator: terminar > desalojar con un ticket vigente drena; sin tickets, destruye la unidad [2.72ms]
+(pass) residencyKeyOf > deriva de la identidad entera, la colocación y el contexto, nunca de la cuantización sola [0.18ms]
+
+ 27 pass
+ 0 fail
+ 80 expect() calls
+Ran 27 tests across 2 files. [74.00ms]

@@ -50,7 +50,30 @@ while [[ $i -lt ${#args[@]} ]]; do
     esac
 done
 
-if [[ "$subcommand" == stash ]]; then
+# `list` y `show` sólo leen la pila: no la mutan y no sacan nada del working
+# tree. `item_worktree.sh` usa `git stash list` para su línea base, así que
+# rehusarlos marcaba con-stash a todo ítem que ejecutara las pruebas del pool.
+# Cualquier otra forma —incluido `git stash` a secas, que es `push`— escribe
+# refs/stash o el working tree desde ella, y se rehúsa.
+stash_action="${args[$((i + 1))]:-}"
+is_read_only_stash() {
+    [[ "$stash_action" == list || "$stash_action" == show ]]
+}
+
+# Sólo cuenta el stash que cae en el `refs/stash` del repositorio del ítem:
+# el que comparte su directorio común. El pool lo declara en
+# THYROX_POOL_GUARDED_GIT_COMMON_DIR; un stash en otro repositorio —una suite
+# que stashea en su propio repositorio temporal— no toca esa pila y pasa
+# (TASK-THYROX-0647). Sin declararlo, o si el destino no se puede resolver,
+# todo stash cuenta: es el lado seguro.
+targets_guarded_repository() {
+    local guarded="${THYROX_POOL_GUARDED_GIT_COMMON_DIR:-}" common
+    [[ -n "$guarded" ]] || return 0
+    common="$("$real_git" "${args[@]:0:i}" rev-parse --path-format=absolute --git-common-dir 2>/dev/null)" || return 0
+    [[ "$(realpath -m "$common")" == "$(realpath -m "$guarded")" ]]
+}
+
+if [[ "$subcommand" == stash ]] && ! is_read_only_stash && targets_guarded_repository; then
     printf 'item_git_guard: REHÚSA — el pool exige dejar los cambios en el working tree, no en refs/stash: git %s\n' \
         "${args[*]}" >&2
     if [[ -n "${THYROX_POOL_STASH_ATTEMPTS_FILE:-}" ]]; then

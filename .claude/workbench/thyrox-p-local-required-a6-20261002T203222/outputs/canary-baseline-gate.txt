@@ -1,0 +1,6 @@
+Traceback (most recent call last):
+  File "/home/user/thyrox/src/verify/check_identifier_language.py", line 114, in <module>
+    from paths.reach import ENV_FILE_VAR, env_value  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+ModuleNotFoundError: No module named 'paths'
+exit=1

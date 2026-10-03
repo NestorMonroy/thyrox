@@ -97,6 +97,7 @@ echo "== 4. sin el bit 24 la reserva es inalcanzable =="
 OUT=$(DISK_HEADROOM_STATFS="1000 500 200 4096" \
       DISK_HEADROOM_MOUNTS="$FIXTURES/mounts-con-reserva" \
       DISK_HEADROOM_STATUS="$FIXTURES/status-sin-24" \
+      DISK_HEADROOM_UID=0 DISK_HEADROOM_GROUPS="0" \
       bash "$SCRIPT" --path . 2>&1); CODE=$?
 assert_equals "exit 3 sin CAP_SYS_RESOURCE" 3 "$CODE"
 assert_contains "nombra la capacidad ausente" "CAP_SYS_RESOURCE" "$OUT"
@@ -160,6 +161,91 @@ assert_equals "el fixture discrimina: sin acotar al dispositivo" "15.30" "$SIN_D
 for CIFRA in "$SIN_NADA" "$SIN_BORRADO" "$SIN_DEDUPE" "$SIN_DEV"; do
     assert_not_contains "no publica la cifra de $CIFRA MiB" "borrado y abierto $CIFRA MiB" "$OUT"
 done
+
+echo "== 11. TASK-THYROX-0671: el uid efectivo ES resuid, sin resv_strict -> alcanzable sin el bit ==="
+printf '/dev/x / ext4 rw,relatime,resuid=1000,resgid=2000 0 0\n' > "$FIXTURES/mounts-resuid-resgid"
+OUT=$(DISK_HEADROOM_STATFS="1000 500 200 4096" \
+      DISK_HEADROOM_MOUNTS="$FIXTURES/mounts-resuid-resgid" \
+      DISK_HEADROOM_STATUS="$FIXTURES/status-sin-24" \
+      DISK_HEADROOM_UID=1000 DISK_HEADROOM_GROUPS="1000" \
+      bash "$SCRIPT" --path . 2>&1); CODE=$?
+assert_equals "resuid = uid del proceso -> exit 1" 1 "$CODE"
+assert_contains "nombra resuid como la via" "el uid efectivo 1000 es resuid" "$OUT"
+
+echo "== 12. uno de sus grupos ES resgid, sin resv_strict -> alcanzable sin el bit ==="
+OUT=$(DISK_HEADROOM_STATFS="1000 500 200 4096" \
+      DISK_HEADROOM_MOUNTS="$FIXTURES/mounts-resuid-resgid" \
+      DISK_HEADROOM_STATUS="$FIXTURES/status-sin-24" \
+      DISK_HEADROOM_UID=0 DISK_HEADROOM_GROUPS="0 2000" \
+      bash "$SCRIPT" --path . 2>&1); CODE=$?
+assert_equals "resgid en sus grupos -> exit 1" 1 "$CODE"
+assert_contains "nombra resgid como la via" "el grupo 2000 es resgid" "$OUT"
+
+echo "== 13. ni uid ni grupos coinciden, sin el bit -> inalcanzable ==="
+OUT=$(DISK_HEADROOM_STATFS="1000 500 200 4096" \
+      DISK_HEADROOM_MOUNTS="$FIXTURES/mounts-resuid-resgid" \
+      DISK_HEADROOM_STATUS="$FIXTURES/status-sin-24" \
+      DISK_HEADROOM_UID=0 DISK_HEADROOM_GROUPS="0 20" \
+      bash "$SCRIPT" --path . 2>&1); CODE=$?
+assert_equals "uid y grupos ajenos a la reserva -> exit 3" 3 "$CODE"
+
+echo "== 14. resv_strict cierra la reserva aunque uid y grupo coincidan ==="
+printf '/dev/x / ext4 rw,resv_strict,resuid=1000,resgid=2000 0 0\n' > "$FIXTURES/mounts-estricto-propio"
+OUT=$(DISK_HEADROOM_STATFS="1000 500 200 4096" \
+      DISK_HEADROOM_MOUNTS="$FIXTURES/mounts-estricto-propio" \
+      DISK_HEADROOM_STATUS="$FIXTURES/status-con-24" \
+      DISK_HEADROOM_UID=1000 DISK_HEADROOM_GROUPS="2000" \
+      bash "$SCRIPT" --path . 2>&1); CODE=$?
+assert_equals "resv_strict con resuid y resgid propios -> exit 3" 3 "$CODE"
+assert_contains "resv_strict sigue siendo la causa" "resv_strict" "$OUT"
+
+echo "== 15. rehusa SIN cifra si el uid inyectado no es un entero ==="
+OUT=$(DISK_HEADROOM_STATFS="1000 500 200 4096" \
+      DISK_HEADROOM_MOUNTS="$FIXTURES/mounts-resuid-resgid" \
+      DISK_HEADROOM_STATUS="$FIXTURES/status-sin-24" \
+      DISK_HEADROOM_UID=nadie DISK_HEADROOM_GROUPS="0" \
+      bash "$SCRIPT" --path . 2>&1); CODE=$?
+assert_equals "uid ilegible -> exit 2" 2 "$CODE"
+assert_not_contains "no emite ninguna cifra en MiB" "MiB" "$OUT"
+
+echo "== 16. --ceiling-bytes: reserva inalcanzable -> f_bavail, un solo entero ==="
+OUT=$(DISK_HEADROOM_STATFS="1000 500 200 4096" \
+      DISK_HEADROOM_MOUNTS="$FIXTURES/mounts-con-reserva" \
+      DISK_HEADROOM_STATUS="$FIXTURES/status-sin-24" \
+      DISK_HEADROOM_UID=0 DISK_HEADROOM_GROUPS="0" \
+      bash "$SCRIPT" --path . --ceiling-bytes 2>/dev/null); CODE=$?
+assert_equals "techo = 200 * 4096" "819200" "$OUT"
+assert_equals "conserva el exit del veredicto" 3 "$CODE"
+
+echo "== 17. --ceiling-bytes: reserva alcanzable -> f_bfree ==="
+OUT=$(DISK_HEADROOM_STATFS="1000 500 200 4096" \
+      DISK_HEADROOM_MOUNTS="$FIXTURES/mounts-con-reserva" \
+      DISK_HEADROOM_STATUS="$FIXTURES/status-con-24" \
+      DISK_HEADROOM_UID=0 DISK_HEADROOM_GROUPS="0" \
+      bash "$SCRIPT" --path . --ceiling-bytes 2>/dev/null); CODE=$?
+assert_equals "techo = 500 * 4096" "2048000" "$OUT"
+assert_equals "exit 1" 1 "$CODE"
+
+echo "== 18. --ceiling-bytes: sin reserva -> f_bavail ==="
+OUT=$(DISK_HEADROOM_STATFS="1000 200 200 4096" \
+      DISK_HEADROOM_MOUNTS="$FIXTURES/mounts-sin-reserva" \
+      DISK_HEADROOM_STATUS="$FIXTURES/status-con-24" \
+      bash "$SCRIPT" --path . --ceiling-bytes 2>/dev/null); CODE=$?
+assert_equals "techo = 200 * 4096" "819200" "$OUT"
+assert_equals "exit 0" 0 "$CODE"
+
+echo "== 19. --ceiling-bytes: al rehusar no imprime cifra ==="
+OUT=$(DISK_HEADROOM_STATFS="1000 500 200 4096" \
+      DISK_HEADROOM_MOUNTS="$FIXTURES/mounts-con-reserva" \
+      DISK_HEADROOM_STATUS="$FIXTURES/no-existe" \
+      bash "$SCRIPT" --path . --ceiling-bytes 2>/dev/null); CODE=$?
+assert_equals "exit 2" 2 "$CODE"
+assert_equals "stdout vacio" "" "$OUT"
+
+echo "== 20. --help imprime la cabecera completa, con la regla de resgid ==="
+OUT=$(bash "$SCRIPT" --help 2>&1)
+assert_contains "la ayuda documenta resgid" "resgid" "$OUT"
+assert_contains "la ayuda documenta --ceiling-bytes" "--ceiling-bytes" "$OUT"
 
 printf '\nok=%d fallo=%d\n' "$PASSED" "$FAILED"
 [[ $FAILED -eq 0 ]]

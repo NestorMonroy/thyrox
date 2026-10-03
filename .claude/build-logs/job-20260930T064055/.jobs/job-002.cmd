@@ -1,0 +1,1 @@
+bash tests/session/test-headless-pool-exit-live-items.sh

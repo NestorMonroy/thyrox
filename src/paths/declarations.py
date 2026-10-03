@@ -29,10 +29,135 @@ y sin registro nadie puede distinguirlas — el sub-patron D de
 """
 from __future__ import annotations
 
+import re
 import sys
 from dataclasses import dataclass
 from pathlib import Path
 
+from paths import reach
+from rules import paths as rules
+from workbench import paths as workbench
+
+#: El contrato de entorno del proveedor: de él se DERIVAN las claves de hogar.
+CONTRACT_FILE_NAME = ".env.example"
+
+#: Una clave de hogar del contrato, por su forma: prefijo ``THYROX_`` y sufijo
+#: de ubicación. Es la misma expresión que el censo del banco
+#: ``clone-homes-20260930T200800`` usó para contar las 46.
+HOME_KEY_PATTERN = re.compile(r"^(THYROX_[A-Z_]*(?:_DIR|_HOME|_LEDGER|_ROOT))=", re.MULTILINE)
+
+#: El modo de un hogar creado: no depende del umask de quien instala, porque
+#: el hogar lo comparten los procesos que el clon lance después.
+HOME_MODE = 0o755
+
+#: El marcador del segmento de estado dentro de un default (``.claude`` salvo
+#: declaración de ``THYROX_STATE_DIR``).
+STATE_PLACEHOLDER = "{state}"
+
+
+@dataclass(frozen=True)
+class Home:
+    """Un hogar que el árbol resuelve por defecto dentro del clon.
+
+    ``default`` es relativo a la raíz y puede llevar ``{state}``; ``owner`` es
+    el módulo que lo resuelve, relativo a ``src/``; ``is_file`` distingue un
+    registro o una base —de los que sólo se asegura el directorio padre— de un
+    directorio.
+    """
+
+    key: str
+    default: str
+    owner: str
+    is_file: bool = False
+
+    def default_under(self, root: Path, state: str) -> Path:
+        """La ruta por defecto de este hogar en el clon ``root``."""
+        return root / self.default.replace(STATE_PLACEHOLDER, state)
+
+
+#: Los hogares que un clon necesita y que ningún ``git clone`` trae completos.
+HOMES: tuple[Home, ...] = (
+    Home("THYROX_WORKBENCH_DIR", "{state}/workbench", "workbench/paths.py"),
+    Home("THYROX_JOBS_DIR", "{state}/jobs", "session/job_runs.py"),
+    Home("THYROX_JOBS_LEDGER_DIR", "{state}/jobs-ledger", "session/job_ledger.py"),
+    Home("THYROX_JOBS_ARCHIVE_DIR", "{state}/jobs", "session/wait-jobs.sh"),
+    Home("THYROX_CACHE_DIR", "{state}/cache", "cache/paths.py"),
+    Home("THYROX_PARALLEL_MAP_HISTORY_DIR", "{state}/cache/parallel-map",
+         "session/parallel_map_history.py"),
+    Home("THYROX_RAM_ADMISSION_LEDGER", "{state}/cache/ram-admission.json",
+         "session/resource_admission.py", is_file=True),
+    Home("THYROX_DISK_ADMISSION_LEDGER", "{state}/cache/disk-admission.json",
+         "session/resource_admission.py", is_file=True),
+    Home("THYROX_RUNTIME_DIR", ".thyrox/runtime", "session/pool_lifecycle.py"),
+    Home("THYROX_POOL_WORKTREES_DIR", ".thyrox/pool-worktrees", "session/item_worktree.sh"),
+    Home("THYROX_MODEL_ARTIFACT_CACHE_DIR", ".thyrox/models/artifacts",
+         "packages/model-artifacts/localModelHome.ts"),
+)
+
+_OUTSIDE_CLONE = "vive fuera del clon (hogar del usuario o del cliente)"
+_REFUSES = "rehúsa sin declarar: su ubicación es decisión del consumidor"
+_NOT_A_HOME = "no nombra un hogar de estado"
+
+#: Las claves de hogar del contrato que NO se registran, cada una con su razón.
+EXCLUDED: dict[str, str] = {
+    "THYROX_REACH_ROOT": f"{_NOT_A_HOME}: es el padre de los clones",
+    "THYROX_STATE_DIR": f"{_NOT_A_HOME}: es un segmento de nombre",
+    "THYROX_EVIDENCE_DIR": f"{_NOT_A_HOME}: es un segmento de nombre",
+    "THYROX_AGENTS_DIR": "su default es producto versionado (src/agents/definitions)",
+    "THYROX_SKILLS_DIR": "su default es producto versionado",
+    "THYROX_RULES_DIR": "hogar del consumidor; en el proveedor, las reglas se versionan",
+    "THYROX_COMMANDS_DIR": "destino de lo emitido: hogar del consumidor",
+    "THYROX_BACKGROUND_LOG_DIR": _REFUSES,
+    "THYROX_BACKGROUND_OUTPUT_ROOT": f"{_REFUSES} (adopción de una flota ajena)",
+    "THYROX_CENSUS_REFERENCE_ROOT": _REFUSES,
+    "THYROX_CENSUS_ROOT": _REFUSES,
+    "THYROX_MAILBOX_DIR": _REFUSES,
+    "THYROX_RESULTS_DIR": _REFUSES,
+    "THYROX_MIGRATION_ROOT": f"{_NOT_A_HOME}: es la raíz del clon que se mide",
+    "THYROX_WATCHED_DIR": f"{_NOT_A_HOME}: es lo que el hook de tests vigila",
+    "THYROX_CODE_TEST_FIXTURES_ROOT": "fixtures versionadas de prueba",
+    "THYROX_BASH_MAINTAIN_PROJECT_WORKING_DIR": f"{_NOT_A_HOME}: es una bandera",
+    "THYROX_TOOLCHAIN_NODE_MODULES_HOME": "es una dependencia, no un hogar",
+    "THYROX_LINT_BIN_DIR": "es una dependencia (.venv/bin), no un hogar",
+    "THYROX_JOB_DIR": "la fija el lanzador por trabajo, no se resuelve por defecto",
+    "THYROX_POOL_GUARDED_GIT_COMMON_DIR": "la exporta headless-pool a cada ítem",
+    "THYROX_SESSION_LEDGER_DIR": "cuelga de THYROX_JOBS_LEDGER_DIR por sesión",
+    "THYROX_BG_MEMFREE_DIR": "su default vive en TMPDIR, fuera del clon",
+    "THYROX_BOARD_ROOT": _OUTSIDE_CLONE,
+    "THYROX_USER_CLAUDE_DIR": _OUTSIDE_CLONE,
+    "THYROX_EXPOSURE_EVIDENCE_DIR": f"{_OUTSIDE_CLONE}: toda unidad monta la raíz del clon",
+    "THYROX_TRANSCRIPTS_DIR": _OUTSIDE_CLONE,
+    "THYROX_CONFIG_DIR": _OUTSIDE_CLONE,
+    "THYROX_CODE_DEBUG_LOGS_DIR": _OUTSIDE_CLONE,
+    "THYROX_CODE_LOCAL_TELEMETRY_DIR": _OUTSIDE_CLONE,
+    "THYROX_CODE_PLUGIN_CACHE_DIR": _OUTSIDE_CLONE,
+    "THYROX_CODE_PLUGIN_SEED_DIR": _OUTSIDE_CLONE,
+    "THYROX_CODE_REMOTE_MEMORY_DIR": _OUTSIDE_CLONE,
+    "THYROX_MITM_DATA_DIR": _OUTSIDE_CLONE,
+    "THYROX_OBSERVABILITY_DATA_DIR": _OUTSIDE_CLONE,
+    "THYROX_PROVIDERS_DATA_DIR": _OUTSIDE_CLONE,
+    "THYROX_CLIPROXYAPI_CONFIG_DIR": _OUTSIDE_CLONE,
+}
+
+
+def contract_home_keys(contract: Path) -> frozenset[str]:
+    """Las claves de hogar que el contrato publica, derivadas de su texto."""
+    return frozenset(HOME_KEY_PATTERN.findall(contract.read_text(encoding="utf-8")))
+
+
+def decided_keys() -> frozenset[str]:
+    """Las claves con decisión tomada: registradas o excluidas."""
+    return frozenset(home.key for home in HOMES) | frozenset(EXCLUDED)
+
+
+def undecided_keys(contract: Path) -> tuple[str, ...]:
+    """Las claves de hogar del contrato que nadie decidió, en orden."""
+    return tuple(sorted(contract_home_keys(contract) - decided_keys()))
+
+
+def stale_decisions(contract: Path) -> tuple[str, ...]:
+    """Las decisiones sobre claves que el contrato ya no publica, en orden."""
+    return tuple(sorted(decided_keys() - contract_home_keys(contract)))
 
 
 @dataclass(frozen=True)
@@ -80,10 +205,6 @@ def resolve_all(start: Path | None = None) -> list[tuple[str, str, str, str]]:
     registro solo tendria lo que el proceso haya tocado por casualidad, y un
     vacio ahi no distingue «todo declarado» de «nadie pregunto».
     """
-    from paths import reach  # noqa: PLC0415 — evita el ciclo en tiempo de import
-    from rules import paths as rules  # noqa: PLC0415 — idem
-    from workbench import paths as workbench
-
     clear()
     rows: list[tuple[str, str, str, str]] = []
     for repo in reach.REACH_ROOTS:

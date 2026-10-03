@@ -1,0 +1,1163 @@
+diff --git a/.claude/workbench/task-thyrox-0500-local-proxy-route-20260930T091944/README.md b/.claude/workbench/task-thyrox-0500-local-proxy-route-20260930T091944/README.md
+new file mode 100644
+index 000000000..35b81a0a1
+--- /dev/null
++++ b/.claude/workbench/task-thyrox-0500-local-proxy-route-20260930T091944/README.md
+@@ -0,0 +1,102 @@
++# TASK-THYROX-0500 — la máscara de `thyrox -p` pasa por el proxy local, no por `claude -p` directo
++
++Pregunta: sin credencial propia, ¿cómo atiende 2.1.283 una petición, y cómo se
++porta eso a `thyrox -p` para que el proxy local con el upstream `claude-cli`
++(C5) sustituya la delegación directa en `claude -p`?
++
++Corpus: `/home/user/thyrox/_references/claude-code-bin/2.1.283/bunfs-root`,
++sólo lectura, con `bash bin/binary literal|symbol|references --root <corpus>`.
++Banco previo que este análisis extiende:
++`c7-proxy-route-analysis-20260930T074430/`.
++
++## Lo consultado
++
++| Consulta | Chunk y rango | Qué hace | Decisión |
++|---|---|---|---|
++| literal `ssh-placeholder` → `nRe` | `chunk-vmq4raye.js` [11052,11078) | el marcador que ocupa el lugar de la credencial | ya portado: `SSH_PLACEHOLDER` (`provider/src/credentials.ts`) |
++| `i1` | `chunk-7y2gzc5g.js` [25187,25430) | el socket del túnel: `ANTHROPIC_UNIX_SOCKET` sin `ANTHROPIC_AUTH_TOKEN` y exactamente una credencial igual al marcador | ya portado: `tunnelSocket`; `tunnelEnv` compone ese entorno |
++| `NB` | `chunk-bfkwjer3.js` [1597,1703) | con túnel cuenta como autenticado; con socket sin marcador, no | portado en `decidePrintRoute`: un túnel ya declarado es «credencial propia» (`resolveCredential` da `proxy`) |
++| `Ty`, `Gn` | `chunk-4h0c4z04.js` [26270,26349), [25563,25604) | las otras mitades de `NB`: proveedor first-party y `ANTHROPIC_BASE_URL` sin sospecha | no se portan: thyrox decide por `--provider`, no por proveedor de nube |
++| `references NB` | 10 usos en 5 chunks; leído `Gvo` `chunk-5t3x93y6.js` [619244,619536) | la cadena de derecho a una función lo consulta como «base URL de primera parte» | sólo confirma el papel de `NB`; nada que portar |
++| `at` | `chunk-2r9e48vs.js` [4624,4869) | con túnel, la fuente de credencial es `"proxy"` | ya portado: `source: 'proxy'` |
++| `dt` | `chunk-2r9e48vs.js` [5538,8929) | con túnel salta la autenticación propia y pasa `socketPath` al `fetch` | portado: en túnel el bucle no busca credencial |
++| `ke` | `chunk-2r9e48vs.js` [2614,3118) | el helper de `fetch` con `socketPath` | ya portado: `unix` en `AnthropicHttpProvider` |
++| `Ae` | `chunk-2r9e48vs.js` [3886,3953) | `i1() ? "http://localhost" : BASE_API_URL` — con túnel la URL base es `http://localhost` | **portado: `TUNNEL_BASE_URL`** (`printDelegation.ts`); ver medición de abajo |
++| literal `selfInvocation` → `ie` | `chunk-n94xvwy3.js` [14291,15650) | cómo la referencia lanza su propio hijo: `cmd` + `prefixArgs`, stdin por tubería, cola de stderr como causa, `stop` con SIGTERM y SIGKILL tras la gracia | portado en parte: lanzamiento por ruta, stderr como causa, `kill` al cerrar. Divergencia: sin escalado a SIGKILL |
++| literal `Please run /login`, `Not logged in`, `Invalid API key` | 0 declaraciones por `bin/binary literal` (las cadenas están partidas); `rg` sobre `claude_strings.txt`: líneas 599529-599530 y 599533 | `-p` sin credencial rehúsa nombrando la causa y el remedio | portado como exit 2 con causa; divergencia: el remedio aquí es el proxy local, no `/login` |
++
++## Lo medido fuera del corpus
++
++**`fetch` por el socket Unix decide TLS por el esquema, no por el host.**
++Contra el lanzador real con el doble de `claude -p` (`scratchpad/debug-fetch.ts`):
++
++| URL | con `HTTPS_PROXY` del entorno | sin ella |
++|---|---|---|
++| `http://localhost/v1/messages` + `unix` | 200 | 200 |
++| `https://api.anthropic.com/v1/messages` + `unix` | «Unable to connect» | «Unable to connect» |
++
++Es la razón de `Ae` en la referencia, y la razón de `TUNNEL_BASE_URL`. Antes de
++medirlo, el primer e2e salía con exit 1 y ese mensaje.
++
++*Métrica:* estado HTTP o error del `fetch` de Bun 1.3.11 con `unix` fijado, dos
++esquemas × dos entornos, mismo socket.
++*Ciega a:* un socket servido con TLS (el proxy local no lo hace) y a otros
++runtimes que no sean Bun.
++
++**El catálogo conoce `claude-sonnet-5`** (`provider/src/model/configs.ts:131`,
++`firstParty`): el e2e lo usa y resuelve por familia; `real-model` no está y
++sólo pasa si el lanzador lo recibe con `--model` (prueba 1 del lanzador).
++
++**Resolución de `@thyrox/*` desde este worktree:** `import.meta.resolve` da
++`/home/user/thyrox/src/packages/provider/...` (el árbol principal: el worktree no
++tiene `node_modules`). El árbol principal está 1 commit por delante de `HEAD`
++y `git diff --stat` sobre `src/packages/{provider,cli,agent}` entre los dos da
++vacío, así que las suites miden el mismo código. El lanzador se localiza por
++ruta de hermano (`../../../provider/bin/localProxy.ts`), no por paquete, por
++esta misma razón.
++
++## Qué se construyó
++
++1. `src/packages/provider/bin/localProxy.ts` (`bin/provider-local-proxy`):
++   `startProxyServer` en loopback con el upstream `claude-cli` y una clave de
++   acceso aleatoria, detrás de `startCredentialProxy` por socket Unix que la
++   antepone. Anuncia `socket=<ruta>`; sin `claude` (ni `--cli`) exit 2.
++2. `printDelegation.ts`: `decidePrintRoute` (propia / proxy declarado en
++   `THYROX_LOCAL_PROXY_SOCKET` / levantar), `tunnelEnv`,
++   `credentialEnvironmentFor` con el lanzamiento y sus tres desenlaces.
++3. `print.ts`: la ruta en lugar de la delegación; sin proxy, exit 2 con causa.
++   `runLoop.ts`: `loopSetup` recibe el entorno del que el proveedor http
++   resuelve su credencial.
++4. Retirados `decidePrintDelegation`, `delegatedArgv` y `runDelegatedPrint`:
++   ya no existe camino a `claude -p` directo.
++
++## Controles de anulación (suite de cada archivo, aserciones que caen)
++
++| Rama retirada | Caen | Total suite |
++|---|---|---|
++| cli b: credencial propia → `own` | 3 (propia, túnel declarado, conexión del store) | 13/16 |
++| cli c: proxy declarado → `declared-proxy` | 2 (la decisión; `runPrint` declarado ausente) | 14/16 |
++| cli d: existencia del socket declarado | 2 (`credentialEnvironmentFor`; `runPrint`) | 14/16 |
++| cli e: plazo de anuncio | 1 (nunca anuncia: agota los 5000 ms de bun) | 15/16 |
++| cli f: código y stderr en la causa | 1 | 15/16 |
++| cli i: retirar credenciales propias del túnel | 1 | 15/16 |
++| cli j: `ANTHROPIC_BASE_URL` llana del túnel | 5 (3 de entorno, 2 e2e) | 11/16 |
++| lanzador g1: rehusar sin `claude` | 1 | 3/4 |
++| lanzador g2: paso tal cual de `--model` | 1 | 3/4 |
++| lanzador g3: rehusar sin `--socket` | 1 | 3/4 |
++
++*Métrica:* `(fail)` que imprime `bun test` con la rama sustituida por su forma
++inerte y el archivo restaurado desde una copia `mktemp` (`cmp` en 0).
++*Ciega a:* ramas que caen juntas por compartir el mismo caso (c y d comparten
++el e2e del proxy declarado ausente).
++
++## Lo que queda fuera de este ítem, y por qué
++
++- `provider/src/anthropicHttp.ts` toma `env.ANTHROPIC_BASE_URL ??
++  'https://api.anthropic.com'` aunque haya `unixSocket`: un túnel declarado
++  por el pool sin `ANTHROPIC_BASE_URL` intentaría TLS por el socket. Las
++  pruebas del pool no lo ven porque fijan la URL del mock (http). El porte
++  de `Ae` ahí es de otro ítem; aquí `tunnelEnv` lo cubre para `thyrox -p`.
++- `src/session/headless-pool.sh:171` y `tests/session/test-headless-pool.sh`
++  siguen diciendo «si `thyrox -p` delega en `claude -p`»: prosa que ya no
++  describe el código; no son archivos de este ítem.
+diff --git a/bin/provider-local-proxy b/bin/provider-local-proxy
+new file mode 100755
+index 000000000..60e3c3f81
+--- /dev/null
++++ b/bin/provider-local-proxy
+@@ -0,0 +1,15 @@
++#!/usr/bin/env bash
++# Generado por src/session/generate_bin.py — no editar a mano.
++WRAPPER_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++THYROX_ROOT="${THYROX_ROOT:-$WRAPPER_ROOT}"
++export THYROX_ROOT
++LIB="$WRAPPER_ROOT/src/lib/toolchain.sh"
++if [ ! -r "$LIB" ]; then
++  echo "bin/provider-local-proxy: no alcanza $LIB — el arbol esta incompleto." >&2
++  exit 1
++fi
++# shellcheck source=/dev/null
++source "$LIB"
++THYROX_TOOLCHAIN_NODE_MODULES_HOME="${THYROX_TOOLCHAIN_NODE_MODULES_HOME:-$WRAPPER_ROOT/node_modules}" \
++  thyrox_toolchain_require_bun || exit 1
++exec "${THYROX_TOOLCHAIN_BUN_BIN:-bun}" "$WRAPPER_ROOT/src/packages/provider/bin/localProxy.ts" "$@"
+diff --git a/src/packages/cli/__tests__/fixtures/fakeCliForLocalProxy.ts b/src/packages/cli/__tests__/fixtures/fakeCliForLocalProxy.ts
+new file mode 100644
+index 000000000..effda7e50
+--- /dev/null
++++ b/src/packages/cli/__tests__/fixtures/fakeCliForLocalProxy.ts
+@@ -0,0 +1,96 @@
++/**
++ * Un doble de `claude -p` para las pruebas de `thyrox -p` por el proxy
++ * local: habla el contrato que el upstream `claude-cli` compone —el mensaje
++ * de usuario por stdin en `stream-json`, la salida en `stream-json`, las
++ * tools como el servidor MCP puente de `--mcp-config`— y decide su guion por
++ * el texto del mensaje. Es la forma del doble del proveedor
++ * (`provider/src/proxy/__tests__/fakeCliUpstream.ts`) con un guion distinto:
++ * `HERRAMIENTA` invoca `Bash` por el puente, para medir que la herramienta
++ * la ejecuta el bucle de thyrox y no este proceso. Registra cada invocación
++ * en `$FAKE_CLI_LOG/invocations.jsonl`.
++ */
++import { appendFileSync } from 'node:fs'
++import { join } from 'node:path'
++
++const BRIDGE_SERVER = 'thyrox_bridge'
++const TOOL_SCENARIO = 'HERRAMIENTA'
++const BRIDGE_COMMAND = 'printf hola-desde-el-bucle'
++
++function optionValue(argv: string[], name: string): string | undefined {
++  const index = argv.indexOf(name)
++  return index >= 0 ? argv[index + 1] : undefined
++}
++
++function log(entry: Record<string, unknown>): void {
++  const dir = process.env.FAKE_CLI_LOG
++  if (dir) appendFileSync(join(dir, 'invocations.jsonl'), `${JSON.stringify(entry)}\n`)
++}
++
++function emit(event: Record<string, unknown>): void {
++  process.stdout.write(`${JSON.stringify(event)}\n`)
++}
++
++async function readStdin(): Promise<string> {
++  const chunks: string[] = []
++  const decoder = new TextDecoder()
++  for await (const chunk of Bun.stdin.stream()) chunks.push(decoder.decode(chunk as Uint8Array, { stream: true }))
++  return chunks.join('')
++}
++
++function userText(stdin: string): string {
++  const line = stdin.split('\n').find(l => l.trim() !== '')
++  if (!line) return ''
++  const message = JSON.parse(line) as { message: { content: { type: string; text?: string }[] } }
++  return message.message.content.filter(b => b.type === 'text').map(b => b.text ?? '').join('\n')
++}
++
++async function rpc(url: string, method: string, params: unknown, id?: number): Promise<unknown> {
++  const body = id === undefined ? { jsonrpc: '2.0', method, params } : { jsonrpc: '2.0', id, method, params }
++  const response = await fetch(url, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
++  if (response.status === 202) return undefined
++  return response.json()
++}
++
++function assistant(sessionId: string, content: unknown[], stopReason: string): void {
++  emit({
++    type: 'assistant', session_id: sessionId, parent_tool_use_id: null,
++    message: { id: 'msg_fake', type: 'message', role: 'assistant', model: 'real-model', content, stop_reason: stopReason, usage: { input_tokens: 11, output_tokens: 7 } },
++  })
++}
++
++function finish(sessionId: string, text: string): void {
++  assistant(sessionId, [{ type: 'text', text }], 'end_turn')
++  emit({ type: 'result', subtype: 'success', is_error: false, result: text, session_id: sessionId, num_turns: 1 })
++}
++
++async function runToolScenario(sessionId: string, bridgeUrl: string): Promise<void> {
++  await rpc(bridgeUrl, 'initialize', { protocolVersion: '2025-06-18', capabilities: {}, clientInfo: { name: 'fake', version: '0' } }, 1)
++  await rpc(bridgeUrl, 'notifications/initialized', {})
++  assistant(sessionId, [{ type: 'tool_use', id: 'toolu_fake_1', name: `mcp__${BRIDGE_SERVER}__Bash`, input: { command: BRIDGE_COMMAND } }], 'tool_use')
++  const called = await rpc(bridgeUrl, 'tools/call', { name: 'Bash', arguments: { command: BRIDGE_COMMAND } }, 2) as { result?: { content: { text?: string }[] }; error?: unknown }
++  if (!called.result) {
++    process.stderr.write(`fake cli: tools/call falló: ${JSON.stringify(called.error)}\n`)
++    process.exit(1)
++  }
++  const received = called.result.content.map(c => c.text ?? '').join('')
++  emit({ type: 'user', session_id: sessionId, message: { role: 'user', content: [{ type: 'tool_result', tool_use_id: 'toolu_fake_1', content: received }] } })
++  finish(sessionId, `resultado: ${received}`)
++}
++
++async function main(): Promise<void> {
++  const argv = process.argv.slice(2)
++  const stdin = await readStdin()
++  const sessionId = optionValue(argv, '--session-id') ?? optionValue(argv, '--resume') ?? 'sin-sesion'
++  log({ argv, stdin })
++  emit({ type: 'system', subtype: 'init', session_id: sessionId, model: optionValue(argv, '--model') })
++  const text = userText(stdin)
++  const mcp = optionValue(argv, '--mcp-config')
++  if (text.includes(TOOL_SCENARIO) && mcp) {
++    const url = (JSON.parse(mcp) as { mcpServers: Record<string, { url: string }> }).mcpServers[BRIDGE_SERVER]!.url
++    await runToolScenario(sessionId, url)
++    return
++  }
++  finish(sessionId, `eco: ${text}`)
++}
++
++await main()
+diff --git a/src/packages/cli/__tests__/printDelegation.test.ts b/src/packages/cli/__tests__/printDelegation.test.ts
+index 94eda6e04..b15fb8717 100644
+--- a/src/packages/cli/__tests__/printDelegation.test.ts
++++ b/src/packages/cli/__tests__/printDelegation.test.ts
+@@ -1,101 +1,194 @@
+ /**
+- * `thyrox -p` como máscara de `claude -p`: sin credencial propia, y con un
+- * `claude` en el PATH, la misma invocación la atiende el cliente, que
+- * autentica solo. thyrox no lee ni reenvía ninguna credencial. Medido en
+- * `.claude/workbench/claude-p-from-shell-20260928T234121/`.
++ * `thyrox -p` sin credencial propia: la máscara pasa por el proxy local
++ * (upstream `claude-cli`, C5) y nunca por `claude -p` directo (decisión del
++ * ejecutor 2026-09-29: todo pasa por el proxy). Sin credencial, thyrox
++ * localiza el proxy declarado en `THYROX_LOCAL_PROXY_SOCKET` o levanta
++ * `bin/provider-local-proxy`, entra al túnel (`ANTHROPIC_UNIX_SOCKET` más el
++ * marcador, `i1` de 2.1.283) y su propio bucle ejecuta las herramientas.
++ * Sin proxy disponible rehúsa con causa.
+  */
+ import { describe, expect, test } from 'bun:test'
+-import { chmodSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
++import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+ import { tmpdir } from 'node:os'
+ import { join } from 'node:path'
+ import { openConnectionStore } from '@thyrox/provider/accounts/connectionStoreHome'
+-import { decidePrintDelegation, delegatedArgv } from '../src/entry/printDelegation.ts'
++import { SSH_PLACEHOLDER } from '@thyrox/provider/credentials'
++import {
++  credentialEnvironmentFor, decidePrintRoute, LOCAL_PROXY_SOCKET_ENV, type LocalProxyChild, type PrintRoute, TUNNEL_BASE_URL, tunnelEnv,
++} from '../src/entry/printDelegation.ts'
+ import { runPrint } from '../src/entry/print.ts'
+ 
+-const found = (name: string) => (name === 'claude' ? '/usr/local/bin/claude' : null)
+-const absent = () => null
+ const noFd = () => ''
++const FAKE_CLI = join(import.meta.dir, 'fixtures/fakeCliForLocalProxy.ts')
+ 
+-describe('decidePrintDelegation — cuándo thyrox -p delega en claude -p', () => {
+-  test('sin credencial propia y con claude en el PATH, delega', () => {
+-    expect(decidePrintDelegation(['-p', 'hola'], {}, found, noFd)).toEqual({ delegate: true, claudePath: '/usr/local/bin/claude' })
++function scratch(): string {
++  return mkdtempSync(join(tmpdir(), 'print-local-proxy-'))
++}
++
++/** Un `claude` en un directorio propio que corre el doble de `claude -p`. */
++function fakeCliDirectory(base: string): string {
++  const binDir = join(base, 'path-claude')
++  mkdirSync(binDir)
++  writeFileSync(join(binDir, 'claude'), `#!/usr/bin/env bash\nexec "${process.execPath}" "${FAKE_CLI}" "$@"\n`)
++  chmodSync(join(binDir, 'claude'), 0o755)
++  return binDir
++}
++
++/** Un lanzador falso: un guion de shell con la forma de proceso que el lanzamiento lee. */
++function shellChild(script: string): LocalProxyChild {
++  return Bun.spawn(['bash', '-c', script], { stdout: 'pipe', stderr: 'pipe' })
++}
++
++async function capture(fn: () => Promise<number>): Promise<{ code: number; out: string; err: string }> {
++  let out = ''
++  let err = ''
++  const w = process.stdout.write.bind(process.stdout)
++  const e = process.stderr.write.bind(process.stderr)
++  process.stdout.write = ((s: string) => { out += s; return true }) as typeof process.stdout.write
++  process.stderr.write = ((s: string) => { err += s; return true }) as typeof process.stderr.write
++  try {
++    const code = await fn()
++    return { code, out, err }
++  } finally {
++    process.stdout.write = w
++    process.stderr.write = e
++  }
++}
++
++describe('decidePrintRoute — por dónde pasa thyrox -p', () => {
++  test('sin credencial propia y sin proxy declarado, hay que levantar el proxy local', () => {
++    expect(decidePrintRoute(['-p', 'hola'], {}, noFd)).toEqual({ kind: 'launch-proxy' })
++  })
++  test('sin credencial propia y con proxy declarado, se usa ese socket', () => {
++    expect(decidePrintRoute(['-p', 'hola'], { [LOCAL_PROXY_SOCKET_ENV]: '/run/p.sock' }, noFd)).toEqual({ kind: 'declared-proxy', socketPath: '/run/p.sock' })
+   })
+-  test('con credencial propia, thyrox atiende la invocación', () => {
+-    const decision = decidePrintDelegation(['-p', 'hola'], { ANTHROPIC_API_KEY: 'sk-propia' }, found, noFd)
+-    expect(decision.delegate).toBe(false)
++  test('con credencial propia, thyrox habla directo', () => {
++    expect(decidePrintRoute(['-p', 'hola'], { ANTHROPIC_API_KEY: 'sk-propia', [LOCAL_PROXY_SOCKET_ENV]: '/run/p.sock' }, noFd)).toEqual({ kind: 'own', reason: 'thyrox tiene credencial propia' })
+   })
+-  test('con una conexión del store, thyrox atiende la invocación', () => {
+-    const home = mkdtempSync(join(tmpdir(), 'thyrox-delegation-store-'))
++  test('con un túnel ya declarado, thyrox habla por él', () => {
++    const env = { ANTHROPIC_UNIX_SOCKET: '/run/t.sock', ANTHROPIC_API_KEY: SSH_PLACEHOLDER }
++    expect(decidePrintRoute(['-p', 'hola'], env, noFd).kind).toBe('own')
++  })
++  test('con una conexión del store, thyrox habla directo', () => {
++    const home = scratch()
+     const opened = openConnectionStore({ env: { THYROX_PROVIDERS_DATA_DIR: home }, declared: () => 'k' })
+     opened.store.create({ provider: 'claude', authType: 'apikey', name: 'propia', isActive: true, apiKey: 'sk-propia' })
+-    const decision = decidePrintDelegation(['-p', 'hola'], {}, found, noFd, opened.store)
++    const route = decidePrintRoute(['-p', 'hola'], {}, noFd, opened.store)
+     opened.close()
+     rmSync(home, { recursive: true, force: true })
+-    expect(decision).toEqual({ delegate: false, reason: 'thyrox tiene credencial propia' })
+-  })
+-  test('sin claude en el PATH, no delega y lo dice', () => {
+-    const decision = decidePrintDelegation(['-p', 'hola'], {}, absent, noFd)
+-    expect(decision).toEqual({ delegate: false, reason: expect.stringContaining('claude') })
++    expect(route).toEqual({ kind: 'own', reason: 'thyrox tiene credencial propia' })
+   })
+-  test('un proveedor que no es http es de thyrox: no delega', () => {
+-    expect(decidePrintDelegation(['-p', 'hola', '--provider', 'recorded'], {}, found, noFd).delegate).toBe(false)
++  test('un proveedor que no es http no necesita credencial', () => {
++    expect(decidePrintRoute(['-p', 'hola', '--provider', 'recorded'], {}, noFd)).toEqual({ kind: 'own', reason: 'el proveedor recorded no usa credencial' })
+   })
+-  test('una bandera propia de thyrox no se delega', () => {
+-    for (const flag of ['--grabacion', '--connection', '--store', '--system']) {
+-      expect(decidePrintDelegation(['-p', 'hola', flag, 'x'], {}, found, noFd).delegate).toBe(false)
+-    }
++})
++
++describe('tunnelEnv — el entorno con el que el bucle entra al túnel', () => {
++  test('lleva el socket, el marcador y la URL llana, y retira toda credencial propia', () => {
++    const env = tunnelEnv({ PATH: '/bin', ANTHROPIC_AUTH_TOKEN: ' ', THYROX_CODE_OAUTH_TOKEN: '', THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR: '9' }, '/run/p.sock')
++    expect(env).toEqual({ PATH: '/bin', ANTHROPIC_UNIX_SOCKET: '/run/p.sock', ANTHROPIC_API_KEY: SSH_PLACEHOLDER, ANTHROPIC_BASE_URL: TUNNEL_BASE_URL })
+   })
+ })
+ 
+-describe('delegatedArgv — la línea que recibe claude -p', () => {
+-  test('conserva la invocación y le da su propia sesión', () => {
+-    const argv = ['-p', '--model', 'claude-sonnet-5', '--no-session-persistence', '--output-format', 'stream-json', '--verbose']
+-    expect(delegatedArgv(argv, () => 'uuid-1')).toEqual([...argv, '--session-id', 'uuid-1'])
++describe('credentialEnvironmentFor — localizar o levantar el proxy', () => {
++  const launch: PrintRoute = { kind: 'launch-proxy' }
++
++  test('la ruta propia devuelve el entorno tal cual', async () => {
++    const env = { ANTHROPIC_API_KEY: 'sk-propia' }
++    const credential = await credentialEnvironmentFor({ kind: 'own', reason: 'x' }, { env, cwd: '/', models: ['m'] })
++    expect(credential.env).toBe(env)
++    await credential.close()
+   })
+-  test('una sesión ya declarada no se duplica', () => {
+-    const argv = ['-p', 'hola', '--session-id', 'propia']
+-    expect(delegatedArgv(argv, () => 'uuid-1')).toEqual(argv)
++
++  test('un proxy declarado que existe entra al túnel sin lanzar nada', async () => {
++    const dir = scratch()
++    const socket = join(dir, 'p.sock')
++    writeFileSync(socket, '')
++    let spawned = 0
++    const credential = await credentialEnvironmentFor({ kind: 'declared-proxy', socketPath: socket }, {
++      env: { PATH: '/bin' }, cwd: dir, models: ['m'], spawn: () => { spawned += 1; return shellChild('sleep 30') },
++    })
++    await credential.close()
++    rmSync(dir, { recursive: true, force: true })
++    expect(spawned).toBe(0)
++    expect(credential.env).toEqual({ PATH: '/bin', ANTHROPIC_UNIX_SOCKET: socket, ANTHROPIC_API_KEY: SSH_PLACEHOLDER, ANTHROPIC_BASE_URL: TUNNEL_BASE_URL })
+   })
+-})
+ 
+-describe('runPrint — valida antes de delegar', () => {
+-  test('una bandera que thyrox -p rehúsa no llega a claude', async () => {
+-    let called = false
+-    const code = await runPrint(['-p', 'x', '--bogus'], process.cwd(), process.cwd(), null, {
+-      env: {}, findExecutable: () => { called = true; return '/no/debe/correr' }, readFd: noFd,
++  test('un proxy declarado que no existe se rehúsa nombrándolo, sin lanzar nada', async () => {
++    let spawned = 0
++    const pending = credentialEnvironmentFor({ kind: 'declared-proxy', socketPath: '/no/existe.sock' }, {
++      env: {}, cwd: '/', models: ['m'], spawn: () => { spawned += 1; return shellChild('sleep 30') },
+     })
+-    expect(code).toBe(2)
+-    expect(called).toBe(false)
++    await expect(pending).rejects.toThrow(/THYROX_LOCAL_PROXY_SOCKET.*\/no\/existe\.sock/)
++    expect(spawned).toBe(0)
++  })
++
++  test('el lanzador que anuncia el socket da el túnel; cerrar lo termina', async () => {
++    let child: LocalProxyChild | undefined
++    let argv: string[] = []
++    const credential = await credentialEnvironmentFor(launch, {
++      env: { PATH: '/bin' }, cwd: '/', models: ['claude-sonnet-5'],
++      spawn: (args) => { argv = args; child = shellChild('echo socket=/run/anunciado.sock; sleep 30'); return child },
++    })
++    expect(credential.env).toEqual({ PATH: '/bin', ANTHROPIC_UNIX_SOCKET: '/run/anunciado.sock', ANTHROPIC_API_KEY: SSH_PLACEHOLDER, ANTHROPIC_BASE_URL: TUNNEL_BASE_URL })
++    expect(argv).toEqual(expect.arrayContaining(['--socket', '--model', 'claude-sonnet-5']))
++    await credential.close()
++    expect(await child!.exited).not.toBe(0)
++  })
++
++  test('el lanzador que sale antes de anunciar es una causa: su código y su stderr', async () => {
++    const pending = credentialEnvironmentFor(launch, {
++      env: {}, cwd: '/', models: ['m'], spawn: () => shellChild('echo "sin claude en el PATH" >&2; exit 2'),
++    })
++    await expect(pending).rejects.toThrow(/código 2.*sin claude en el PATH/)
++  })
++
++  test('el lanzador que nunca anuncia se corta al plazo y se termina', async () => {
++    let child: LocalProxyChild | undefined
++    const pending = credentialEnvironmentFor(launch, {
++      env: {}, cwd: '/', models: ['m'], announceTimeoutMs: 200, spawn: () => { child = shellChild('sleep 30'); return child },
++    })
++    await expect(pending).rejects.toThrow(/no anunció.*200 ms/)
++    expect(await child!.exited).not.toBe(0)
+   })
+ })
+ 
+-describe('runPrint — delega de punta a punta', () => {
+-  function fakeClient(): { dir: string; log: string } {
+-    const dir = mkdtempSync(join(tmpdir(), 'print-delegation-'))
+-    const log = join(dir, 'invocacion.txt')
+-    const bin = join(dir, 'claude')
+-    writeFileSync(bin, `#!/usr/bin/env bash\nentrada="$(cat)"\nprintf '%s\\n' "$*" > "${log}"\nprintf '%s\\n' "$entrada" >> "${log}"\necho '{"type":"result","result":"desde claude"}'\nexit 3\n`)
+-    chmodSync(bin, 0o755)
+-    return { dir, log }
++describe('runPrint — sin credencial pasa por el proxy local, nunca por claude -p directo', () => {
++  function invocations(dir: string): { argv: string[]; stdin: string }[] {
++    const path = join(dir, 'invocations.jsonl')
++    if (!existsSync(path)) return []
++    return readFileSync(path, 'utf8').split('\n').filter(Boolean).map(line => JSON.parse(line) as { argv: string[]; stdin: string })
+   }
+ 
+-  test('pasa argumentos y stdin, devuelve su salida y su código', async () => {
+-    const { dir, log } = fakeClient()
+-    let out = ''
+-    const write = process.stdout.write.bind(process.stdout)
+-    process.stdout.write = ((s: string | Uint8Array) => { out += typeof s === 'string' ? s : new TextDecoder().decode(s); return true }) as typeof process.stdout.write
+-    let code: number
+-    try {
+-      code = await runPrint(['-p', '--model', 'claude-sonnet-5'], dir, dir, 'Item: alfa', {
+-        env: {}, findExecutable: (name) => (name === 'claude' ? join(dir, 'claude') : null), readFd: noFd, newSessionId: () => 'uuid-x',
+-      })
+-    } finally {
+-      process.stdout.write = write
+-    }
+-    expect(code).toBe(3)
+-    expect(out).toContain('desde claude')
+-    const [line, input] = readFileSync(log, 'utf8').split('\n')
+-    expect(line).toBe('-p --model claude-sonnet-5 --session-id uuid-x')
+-    expect(input).toBe('Item: alfa')
++  test('un proxy declarado que no existe rehúsa con causa y no invoca a claude', async () => {
++    const dir = scratch()
++    const env = { PATH: `${fakeCliDirectory(dir)}:${process.env.PATH ?? ''}`, HOME: dir, FAKE_CLI_LOG: dir, [LOCAL_PROXY_SOCKET_ENV]: join(dir, 'no-existe.sock') }
++    const { code, err } = await capture(() => runPrint(['-p', 'hola', '--no-session-persistence'], dir, dir, null, { env, readFd: noFd, openStore: () => undefined }))
++    expect(code).toBe(2)
++    expect(err).toContain('no-existe.sock')
++    expect(invocations(dir)).toEqual([])
++    rmSync(dir, { recursive: true, force: true })
++  })
++
++  test('levanta el proxy local, el turno vuelve por él y el proxy se apaga al terminar', async () => {
++    const dir = scratch()
++    const env = { PATH: `${fakeCliDirectory(dir)}:${process.env.PATH ?? ''}`, HOME: dir, FAKE_CLI_LOG: dir }
++    const { code, out } = await capture(() => runPrint(['-p', 'hola', '--model', 'claude-sonnet-5', '--no-session-persistence'], dir, dir, null, { env, readFd: noFd, openStore: () => undefined }))
++    expect(code).toBe(0)
++    expect(out).toBe('eco: hola\n')
++    const [invocation] = invocations(dir)
++    expect(invocation?.argv).toEqual(expect.arrayContaining(['-p', '--input-format', 'stream-json', '--model', 'claude-sonnet-5']))
++    expect(invocation?.argv).not.toContain('hola')
++    expect(readFileSync('/proc/net/unix', 'utf8')).not.toContain(dir)
++    rmSync(dir, { recursive: true, force: true })
++  })
++
++  test('una herramienta que claude pide por el puente la ejecuta el bucle de thyrox', async () => {
++    const dir = scratch()
++    const env = { PATH: `${fakeCliDirectory(dir)}:${process.env.PATH ?? ''}`, HOME: dir, FAKE_CLI_LOG: dir }
++    const { code, out } = await capture(() => runPrint(['-p', 'HERRAMIENTA', '--model', 'claude-sonnet-5', '--tools', 'Bash', '--no-session-persistence', '--output-format', 'json'], dir, dir, null, { env, readFd: noFd, openStore: () => undefined }))
++    expect(code).toBe(0)
++    expect(JSON.parse(out.trim())).toMatchObject({ type: 'result', subtype: 'success', result: 'resultado: hola-desde-el-bucle' })
++    rmSync(dir, { recursive: true, force: true })
+   })
+ })
+diff --git a/src/packages/cli/src/entry/print.ts b/src/packages/cli/src/entry/print.ts
+index 6eb6f4ebb..88f651738 100644
+--- a/src/packages/cli/src/entry/print.ts
++++ b/src/packages/cli/src/entry/print.ts
+@@ -8,6 +8,10 @@
+  * pool usa y rehúsa las demás nombrándolas: aceptar en silencio una bandera
+  * que no se cumple es peor que no aceptarla.
+  *
++ * Sin credencial propia no delega en `claude -p`: entra al túnel del proxy
++ * local con el upstream `claude-cli` (`./printDelegation.ts`), y el bucle
++ * sigue siendo el propio, herramientas incluidas.
++ *
+  * Las formas de salida salen del binario 2.1.282 (extractos en
+  * `.claude/workbench/print-mode-20260926T225709/`):
+  * - `system/init` del constructor de `chunk-q6234ftd.js` (cwd, session_id,
+@@ -30,18 +34,20 @@ import type { LoopResult } from '@thyrox/agent/loop/types'
+ import { loopSetup } from './runLoop.ts'
+ import { resolveMaxTurnsFromEnv } from './maxTurnsEnv.ts'
+ import { openExistingConnectionStore, type OpenedConnectionStore } from '@thyrox/provider/accounts/connectionStoreHome'
+-import { decidePrintDelegation, delegatedArgv, runDelegatedPrint } from './printDelegation.ts'
++import { credentialEnvironmentFor, decidePrintRoute, type CredentialEnvironment, type SpawnLocalProxy } from './printDelegation.ts'
+ import { adoptLoopSessionId, registerSessionAtLaunch } from '@thyrox/app-host/runtime/sessionRegistryAtLaunch.js'
+ import { startMessagingInboxAtLaunch, type MessagingInboxStop } from '@thyrox/app-host/runtime/messagingInboxAtLaunch.js'
+ 
+ /** Lo que `runPrint` lee del proceso; las pruebas lo sustituyen. */
+ export type PrintDeps = {
+   env?: Record<string, string | undefined>
+-  findExecutable?: (name: string) => string | null
+   readFd?: (fd: number) => string
+-  newSessionId?: () => string
+-  /** El store de conexiones, si existe; la decisión de delegar lo consulta. */
++  /** El store de conexiones, si existe; la decisión de ruta lo consulta. */
+   openStore?: () => OpenedConnectionStore | undefined
++  /** Cómo se lanza el proxy local cuando hace falta; las pruebas lo sustituyen. */
++  spawnLocalProxy?: SpawnLocalProxy
++  /** Cuánto se espera el anuncio del socket del proxy local. */
++  announceTimeoutMs?: number
+ }
+ 
+ export type OutputFormat = 'text' | 'json' | 'stream-json'
+@@ -210,14 +216,21 @@ export async function runPrint(argv: string[], cwd: string, transcriptDir: strin
+     process.stderr.write(`${(e as Error).message}\n`)
+     return 2
+   }
+-  // La línea se valida con el contrato de thyrox antes de delegar: lo que
+-  // thyrox -p rehúsa no pasa a claude -p.
++  // La línea se valida con el contrato de thyrox antes de buscar credencial:
++  // lo que thyrox -p rehúsa no levanta ningún proxy.
+   const env = deps.env ?? process.env
+   const opened = (deps.openStore ?? (() => openExistingConnectionStore({ env })))()
+-  const delegation = decidePrintDelegation(argv, env, deps.findExecutable ?? ((name) => Bun.which(name)), deps.readFd, opened?.store)
++  const route = decidePrintRoute(argv, env, deps.readFd, opened?.store)
+   opened?.close()
+-  if (delegation.delegate) {
+-    return runDelegatedPrint(delegation.claudePath, delegatedArgv(argv, deps.newSessionId), stdin, env)
++  let credential: CredentialEnvironment
++  try {
++    credential = await credentialEnvironmentFor(route, {
++      env, cwd, models: [args.model], spawn: deps.spawnLocalProxy, announceTimeoutMs: deps.announceTimeoutMs,
++    })
++  } catch (e) {
++    // Nunca se cae a `claude -p` directo: sin proxy, la causa y exit 2.
++    process.stderr.write(`thyrox -p: sin credencial propia y sin proxy local: ${(e as Error).message}\n`)
++    return 2
+   }
+   const dir = args.persist ? transcriptDir : mkdtempSync(join(tmpdir(), 'thyrox-print-'))
+   const startedAt = performance.now()
+@@ -229,7 +242,7 @@ export async function runPrint(argv: string[], cwd: string, transcriptDir: strin
+     stopMessaging = await startMessagingInboxAtLaunch(args.messagingSocketPath)
+     // Publica sessions/<pid>.json ANTES del turno, igual que el modo bucle.
+     await registerSessionAtLaunch(process.env.THYROX_CODE_SESSION_NAME)
+-    const { shared } = loopSetup(args.loopArgv, cwd, dir, args.tools)
++    const { shared } = loopSetup(args.loopArgv, cwd, dir, { toolAllow: args.tools, env: credential.env })
+     const gen = streamLoop({ ...shared, prompt: args.prompt })
+     let step = await gen.next()
+     while (!step.done) {
+@@ -252,5 +265,6 @@ export async function runPrint(argv: string[], cwd: string, transcriptDir: strin
+   } finally {
+     if (!args.persist) rmSync(dir, { recursive: true, force: true })
+     await stopMessaging?.()
++    await credential.close()
+   }
+ }
+diff --git a/src/packages/cli/src/entry/printDelegation.ts b/src/packages/cli/src/entry/printDelegation.ts
+index 4e7569a6c..89ebfd0fb 100644
+--- a/src/packages/cli/src/entry/printDelegation.ts
++++ b/src/packages/cli/src/entry/printDelegation.ts
+@@ -1,28 +1,49 @@
+ /**
+- * `thyrox -p` como máscara de `claude -p`.
++ * `thyrox -p` sin credencial propia: la máscara pasa por el proxy local.
+  *
+- * Cuando thyrox no tiene credencial propia y hay un `claude` en el PATH, la
+- * misma invocación la atiende el cliente, que resuelve su autenticación solo:
+- * thyrox no lee ni reenvía ninguna credencial. Medido en
+- * `.claude/workbench/claude-p-from-shell-20260928T234121/`.
++ * La referencia no delega: sin credencial, el cliente habla con un socket
++ * local que la pone —`ANTHROPIC_UNIX_SOCKET` más el marcador
++ * `ssh-placeholder` (`i1` y `nRe` de 2.1.283)— y con ese túnel cuenta como
++ * autenticado (`NB`). Aquí el socket lo sirve el proxy local con el upstream
++ * `claude-cli` (`bin/provider-local-proxy`): `claude -p` autentica solo y
++ * las herramientas las ejecuta el bucle de thyrox por el puente. Decisión
++ * del ejecutor 2026-09-29: todo pasa por el proxy, nunca por `claude -p`
++ * directo. Sin proxy —declarado y ausente, o que no arranca— se rehúsa con
++ * causa. Análisis: `.claude/workbench/task-thyrox-0500-local-proxy-route-*`.
+  *
+- * No delega lo que es propio de thyrox: un proveedor distinto de `http`, una
+- * grabación, una conexión del store, un store o un prompt de sistema propios.
+- * El hijo recibe su propia sesión: un `claude -p` hijo hereda la de quien lo
+- * lanza si no se le da otra.
++ * thyrox no lee ni reenvía ninguna credencial: el proxy es otro proceso, y
++ * el `claude` que lanza resuelve la suya.
+  */
+-import { randomUUID } from 'node:crypto'
++import { existsSync, mkdtempSync, rmSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++import { fileURLToPath } from 'node:url'
+ import type { ConnectionStore } from '@thyrox/provider/accounts/connectionStoreHome'
+-import { resolveCredential, type ReadFd } from '@thyrox/provider/credentials'
++import { resolveCredential, SSH_PLACEHOLDER, type ReadFd } from '@thyrox/provider/credentials'
+ 
+ type Env = Record<string, string | undefined>
+ 
+-export type PrintDelegationDecision =
+-  | { delegate: true; claudePath: string }
+-  | { delegate: false; reason: string }
++/** El socket de un proxy local que alguien ya levantó (un pool, una sesión). */
++export const LOCAL_PROXY_SOCKET_ENV = 'THYROX_LOCAL_PROXY_SOCKET'
++/** El lanzador del proxy local por su ruta en el árbol; `bin/provider-local-proxy` es su envoltorio. */
++const LOCAL_PROXY_LAUNCHER = fileURLToPath(new URL('../../../provider/bin/localProxy.ts', import.meta.url))
++const ANNOUNCEMENT_PREFIX = 'socket='
++const DEFAULT_ANNOUNCE_TIMEOUT_MS = 15_000
++const DEFAULT_PROVIDER = 'http'
++/**
++ * La URL base dentro del túnel, porte de `Ae` (chunk-2r9e48vs.js de 2.1.283):
++ * con túnel, `http://localhost`; si no, la del servicio. Con `unix`, `fetch`
++ * ignora el host pero el esquema sigue decidiendo TLS: medido, `https://`
++ * sobre el socket no conecta y `http://` responde.
++ */
++export const TUNNEL_BASE_URL = 'http://localhost'
++/** Las credenciales propias que el túnel sustituye; ninguna viaja por el socket. */
++const OWN_CREDENTIAL_VARS = ['ANTHROPIC_AUTH_TOKEN', 'THYROX_CODE_OAUTH_TOKEN', 'THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR']
+ 
+-/** Las banderas que sólo tienen sentido en el bucle propio de thyrox. */
+-const THYROX_ONLY_FLAGS = ['--grabacion', '--connection', '--store', '--system']
++export type PrintRoute =
++  | { kind: 'own'; reason: string }
++  | { kind: 'declared-proxy'; socketPath: string }
++  | { kind: 'launch-proxy' }
+ 
+ function flagValue(argv: string[], name: string): string | undefined {
+   for (let i = 0; i < argv.length; i += 1) {
+@@ -33,46 +54,132 @@ function flagValue(argv: string[], name: string): string | undefined {
+   return undefined
+ }
+ 
+-function hasFlag(argv: string[], name: string): boolean {
+-  return argv.some((a) => a === name || a.startsWith(`${name}=`))
++/** Por dónde habla `thyrox -p` con el modelo: directo, por un proxy declarado, o por uno que hay que levantar. */
++export function decidePrintRoute(argv: string[], env: Env, readFd?: ReadFd, store?: ConnectionStore): PrintRoute {
++  const provider = flagValue(argv, '--provider') ?? DEFAULT_PROVIDER
++  if (provider !== DEFAULT_PROVIDER) return { kind: 'own', reason: `el proveedor ${provider} no usa credencial` }
++  if (resolveCredential(env, readFd, store).source !== 'none') return { kind: 'own', reason: 'thyrox tiene credencial propia' }
++  const declared = env[LOCAL_PROXY_SOCKET_ENV]?.trim()
++  return declared ? { kind: 'declared-proxy', socketPath: declared } : { kind: 'launch-proxy' }
+ }
+ 
+-export function decidePrintDelegation(
+-  argv: string[],
+-  env: Env,
+-  findExecutable: (name: string) => string | null,
+-  readFd?: ReadFd,
+-  store?: ConnectionStore,
+-): PrintDelegationDecision {
+-  const provider = flagValue(argv, '--provider') ?? 'http'
+-  if (provider !== 'http') return { delegate: false, reason: `el proveedor ${provider} es de thyrox` }
+-  const own = THYROX_ONLY_FLAGS.find((flag) => hasFlag(argv, flag))
+-  if (own) return { delegate: false, reason: `${own} es una bandera de thyrox` }
+-  if (resolveCredential(env, readFd, store).source !== 'none') return { delegate: false, reason: 'thyrox tiene credencial propia' }
+-  const claudePath = findExecutable('claude')
+-  if (!claudePath) return { delegate: false, reason: 'sin credencial propia y sin un claude en el PATH al que delegar' }
+-  return { delegate: true, claudePath }
++/** El entorno con el que el bucle entra al túnel: el socket, el marcador y la URL llana, sin ninguna credencial propia. */
++export function tunnelEnv(env: Env, socketPath: string): Env {
++  const tunnel: Env = { ...env }
++  for (const name of OWN_CREDENTIAL_VARS) delete tunnel[name]
++  return { ...tunnel, ANTHROPIC_UNIX_SOCKET: socketPath, ANTHROPIC_API_KEY: SSH_PLACEHOLDER, ANTHROPIC_BASE_URL: TUNNEL_BASE_URL }
+ }
+ 
+-export function delegatedArgv(argv: string[], newSessionId: () => string = randomUUID): string[] {
+-  return hasFlag(argv, '--session-id') ? [...argv] : [...argv, '--session-id', newSessionId()]
++/** Lo que el lanzamiento lee de un proxy local en marcha: la forma de un `Bun.spawn` con tuberías. */
++export type LocalProxyChild = {
++  stdout: ReadableStream<Uint8Array>
++  stderr: ReadableStream<Uint8Array>
++  exited: Promise<number>
++  kill: () => void
+ }
+ 
+-/** Corre `claude` con la línea dada; su salida pasa a la de thyrox y su código se devuelve. */
+-export async function runDelegatedPrint(claudePath: string, argv: string[], stdin: string | null, env: Env): Promise<number> {
+-  const child = Bun.spawn([claudePath, ...argv], {
+-    stdin: stdin === null ? 'inherit' : new TextEncoder().encode(stdin),
++export type SpawnLocalProxy = (argv: string[], options: { env: Env; cwd: string }) => LocalProxyChild
++
++/** Lanza el lanzador real; el stdin no se hereda, porque el proxy no lo lee. */
++export const spawnLocalProxy: SpawnLocalProxy = (argv, options) =>
++  Bun.spawn([process.execPath, LOCAL_PROXY_LAUNCHER, ...argv], {
++    env: options.env as Record<string, string>,
++    cwd: options.cwd,
++    stdin: 'ignore',
+     stdout: 'pipe',
+     stderr: 'pipe',
+-    env: env as Record<string, string>,
+   })
+-  const relay = async (stream: ReadableStream<Uint8Array>, write: (s: string) => unknown) => {
+-    const decoder = new TextDecoder()
+-    for await (const chunk of stream) write(decoder.decode(chunk, { stream: true }))
++
++export type CredentialEnvironmentOptions = {
++  env: Env
++  cwd: string
++  /** Los modelos que el proxy tiene que pasar tal cual (`--model` del lanzador). */
++  models: readonly string[]
++  spawn?: SpawnLocalProxy
++  announceTimeoutMs?: number
++}
++
++/** El entorno del que el proveedor resuelve su credencial, y cómo soltar lo que se levantó para tenerlo. */
++export type CredentialEnvironment = { env: Env; close: () => Promise<void> }
++
++type LaunchOutcome =
++  | { kind: 'announced'; socketPath: string | undefined }
++  | { kind: 'exited'; code: number }
++  | { kind: 'timeout' }
++
++/** La ruta anunciada en la primera línea `socket=<ruta>`, o nada si el flujo se cierra antes. */
++async function readAnnouncement(stdout: ReadableStream<Uint8Array>): Promise<string | undefined> {
++  const reader = stdout.getReader()
++  const decoder = new TextDecoder()
++  let buffer = ''
++  try {
++    while (true) {
++      const { value, done } = await reader.read()
++      if (done) return undefined
++      buffer += decoder.decode(value, { stream: true })
++      const line = buffer.split('\n').find(l => l.startsWith(ANNOUNCEMENT_PREFIX))
++      if (line) return line.slice(ANNOUNCEMENT_PREFIX.length)
++    }
++  } finally {
++    reader.releaseLock()
+   }
+-  await Promise.all([
+-    relay(child.stdout, (s) => process.stdout.write(s)),
+-    relay(child.stderr, (s) => process.stderr.write(s)),
+-  ])
+-  return await child.exited
++}
++
++function announcedSocket(outcome: LaunchOutcome): string | undefined {
++  return outcome.kind === 'announced' ? outcome.socketPath : undefined
++}
++
++async function launchLocalProxy(options: CredentialEnvironmentOptions): Promise<{ socketPath: string; stop: () => Promise<void> }> {
++  const dir = mkdtempSync(join(tmpdir(), 'thyrox-local-proxy-'))
++  const requestedSocket = join(dir, 'proxy.sock')
++  const spawn = options.spawn ?? spawnLocalProxy
++  const argv = ['--socket', requestedSocket, ...options.models.flatMap(model => ['--model', model])]
++  const child = spawn(argv, { env: options.env, cwd: options.cwd })
++  const stop = async (): Promise<void> => {
++    child.kill()
++    await child.exited
++    rmSync(dir, { recursive: true, force: true })
++  }
++  const timeoutMs = options.announceTimeoutMs ?? DEFAULT_ANNOUNCE_TIMEOUT_MS
++  let timer: ReturnType<typeof setTimeout> | undefined
++  const deadline = new Promise<LaunchOutcome>(resolve => { timer = setTimeout(() => resolve({ kind: 'timeout' }), timeoutMs) })
++  let outcome: LaunchOutcome
++  try {
++    outcome = await Promise.race([
++      readAnnouncement(child.stdout).then(socketPath => ({ kind: 'announced', socketPath }) as LaunchOutcome),
++      child.exited.then(code => ({ kind: 'exited', code }) as LaunchOutcome),
++      deadline,
++    ])
++  } finally {
++    clearTimeout(timer)
++  }
++  const socketPath = announcedSocket(outcome)
++  if (socketPath !== undefined) return { socketPath, stop }
++  if (outcome.kind === 'timeout') {
++    await stop()
++    throw new Error(`el proxy local no anunció el socket en ${timeoutMs} ms`)
++  }
++  // Salió, o cerró su salida, sin anunciar: el código y el stderr son la causa.
++  child.kill()
++  const code = await child.exited
++  const cause = (await new Response(child.stderr).text()).trim()
++  rmSync(dir, { recursive: true, force: true })
++  throw new Error(`el proxy local salió con código ${code} antes de anunciar el socket${cause ? `: ${cause}` : ''}`)
++}
++
++const NOTHING_TO_CLOSE = async (): Promise<void> => {}
++
++function declaredProxyEnvironment(socketPath: string, env: Env): CredentialEnvironment {
++  if (!existsSync(socketPath)) {
++    throw new Error(`el proxy local declarado en ${LOCAL_PROXY_SOCKET_ENV} no existe: ${socketPath}`)
++  }
++  return { env: tunnelEnv(env, socketPath), close: NOTHING_TO_CLOSE }
++}
++
++/** Localiza o levanta el proxy local según la ruta; con la propia, el entorno queda como está. */
++export async function credentialEnvironmentFor(route: PrintRoute, options: CredentialEnvironmentOptions): Promise<CredentialEnvironment> {
++  if (route.kind === 'own') return { env: options.env, close: NOTHING_TO_CLOSE }
++  if (route.kind === 'declared-proxy') return declaredProxyEnvironment(route.socketPath, options.env)
++  const proxy = await launchLocalProxy(options)
++  return { env: tunnelEnv(options.env, proxy.socketPath), close: proxy.stop }
+ }
+diff --git a/src/packages/cli/src/entry/runLoop.ts b/src/packages/cli/src/entry/runLoop.ts
+index a03d14845..4afa33951 100644
+--- a/src/packages/cli/src/entry/runLoop.ts
++++ b/src/packages/cli/src/entry/runLoop.ts
+@@ -7,8 +7,9 @@
+  *
+  * `--provider recorded` corre contra turnos grabados en un JSON: es la unica
+  * via ejecutable en este contenedor, que no tiene credencial de modelo.
+- * `--provider http` exige `ANTHROPIC_API_KEY` y falla diciendo por que si no
+- * esta — nunca en silencio.
++ * `--provider http` exige una credencial de la cadena de `credentials.ts` —o
++ * el túnel de un proxy local— y falla diciendo por qué si no hay: nunca en
++ * silencio.
+  *
+  * Extraido de `bin/harness.ts` en #205. Es el UNICO modo que no vive en
+  * `commands/`, y por una razon medida: los siete comandos son autocontenidos
+@@ -42,6 +43,8 @@ import { getConnection, getConnectionContextOptions, type ConnectionRecord } fro
+ import { adoptLoopSessionId, registerSessionAtLaunch, renameCurrentSession } from '@thyrox/app-host/runtime/sessionRegistryAtLaunch.js'
+ import { startMessagingInboxAtLaunch } from '@thyrox/app-host/runtime/messagingInboxAtLaunch.js'
+ 
++type Env = Record<string, string | undefined>
++
+ /**
+  * `connection` es la misma que `runLoop` resuelve para `compressToolResults`
+  * (T-9), reusada aqui (T-10): antes esta funcion sólo miraba `--provider`, y
+@@ -56,15 +59,15 @@ import { startMessagingInboxAtLaunch } from '@thyrox/app-host/runtime/messagingI
+  * THYROX_CODE_OAUTH_TOKEN, su descriptor, ANTHROPIC_API_KEY y el transporte
+  * ANTHROPIC_UNIX_SOCKET).
+  */
+-function providerFor(argv: string[], connection: ConnectionRecord | undefined): Provider {
++function providerFor(argv: string[], connection: ConnectionRecord | undefined, env: Env): Provider {
+   const cual = flag(argv, 'provider') ?? 'recorded'
+   if (cual === 'http') {
+     const apiKey = connection?.auth.type === 'api_key' ? connection.auth.key : undefined
+     // El proveedor resuelve su credencial al construirse: el store se abre sólo
+     // para esa resolución, y sólo si existe.
+-    const opened = openExistingConnectionStore()
++    const opened = openExistingConnectionStore({ env })
+     try {
+-      return new AnthropicHttpProvider({ baseUrl: connection?.endpoint, apiKey, store: opened?.store })
++      return new AnthropicHttpProvider({ baseUrl: connection?.endpoint, apiKey, store: opened?.store, env })
+     } finally {
+       opened?.close()
+     }
+@@ -131,19 +134,6 @@ async function* stdinLines(): AsyncGenerator<string> {
+   if (rest) yield rest
+ }
+ 
+-/**
+- * Corre el modo bucle. `transcriptDir` llega resuelto desde el arranque: quien
+- * lo resuelve es `runCli`, y hacerlo dos veces daria dos respuestas el dia que
+- * la regla cambie.
+- */
+-/**
+- * Lo que el bucle necesita para correr, resuelto de `argv`: proveedor,
+- * herramientas, hooks, permisos y transcript. Lo comparten el modo bucle y el
+- * modo print (`print.ts`), que sólo difiere en cómo dibuja el resultado.
+- *
+- * `toolAllow` acota las herramientas por nombre (el `--tools` de `thyrox -p`);
+- * `null` deja todas.
+- */
+ /**
+  * Tope de turnos del bucle: la bandera, luego THYROX_CODE_MAX_TURNS, y si no
+  * hay ninguna, ninguno. Un ítem del pool lo acota su plazo, no un conteo.
+@@ -153,8 +143,21 @@ export function loopMaxTurns(argv: string[], env: Record<string, string | undefi
+   return resolveMaxTurnsFromEnv(declared === undefined ? undefined : Number(declared), env) ?? Infinity
+ }
+ 
+-export function loopSetup(argv: string[], cwd: string, transcriptDir: string,
+-                          toolAllow: readonly string[] | null = null) {
++export type LoopSetupOptions = {
++  /** Las herramientas permitidas por nombre (el `--tools` de `thyrox -p`); sin declarar o `null`, todas. */
++  toolAllow?: readonly string[] | null
++  /** El entorno del que el proveedor http resuelve su credencial; por defecto, el del proceso. */
++  env?: Env
++}
++
++/**
++ * Lo que el bucle necesita para correr, resuelto de `argv`: proveedor,
++ * herramientas, hooks, permisos y transcript. Lo comparten el modo bucle y el
++ * modo print (`print.ts`), que sólo difiere en cómo dibuja el resultado y en
++ * el entorno del que sale la credencial: el del túnel, cuando pasa por el
++ * proxy local.
++ */
++export function loopSetup(argv: string[], cwd: string, transcriptDir: string, options: LoopSetupOptions = {}) {
+   const conf = settingsFor(argv, cwd)
+   // `--connection <id>` es opcional: sin él, ningún ajuste por conexión
+   // aplica y el comportamiento es idéntico al de antes de este cambio. Se
+@@ -162,7 +165,7 @@ export function loopSetup(argv: string[], cwd: string, transcriptDir: string,
+   // transporte http depende de ella.
+   const connectionId = flag(argv, 'connection')
+   const connection = connectionId ? getConnection(connectionId) : undefined
+-  const provider = providerFor(argv, connection)
++  const provider = providerFor(argv, connection, options.env ?? process.env)
+   const connectionContext = connection ? getConnectionContextOptions(connection) : {}
+   const modelo = flag(argv, 'model') ?? 'claude-opus-5'
+   // La herramienta `Agent` se cablea AQUÍ, no en `CORE_TOOLS`: necesita datos de
+@@ -194,6 +197,7 @@ export function loopSetup(argv: string[], cwd: string, transcriptDir: string,
+     }),
+     skillTool(buildSkillRegistry()),
+   ]
++  const toolAllow = options.toolAllow
+   const tools = toolAllow ? allTools.filter((t) => toolAllow.includes(t.name)) : allTools
+   const shared = {
+     provider,
+@@ -224,6 +228,11 @@ export function loopSetup(argv: string[], cwd: string, transcriptDir: string,
+   return { shared, modelo }
+ }
+ 
++/**
++ * Corre el modo bucle. `transcriptDir` llega resuelto desde el arranque: quien
++ * lo resuelve es `runCli`, y hacerlo dos veces daria dos respuestas el dia que
++ * la regla cambie.
++ */
+ export async function runLoop(argv: string[], cwd: string, transcriptDir: string): Promise<number> {
+   const chat = hasFlag(argv, 'chat')
+   const prompt = flag(argv, 'prompt')
+diff --git a/src/packages/provider/__tests__/localProxyProcess.test.ts b/src/packages/provider/__tests__/localProxyProcess.test.ts
+new file mode 100644
+index 000000000..ca3492c45
+--- /dev/null
++++ b/src/packages/provider/__tests__/localProxyProcess.test.ts
+@@ -0,0 +1,129 @@
++/**
++ * El proxy local con el upstream `claude-cli` como proceso
++ * (`bin/provider-local-proxy`). Lo lanza `thyrox -p` cuando no tiene
++ * credencial propia, o un pool que lo declara a sus ítems. Contrato:
++ * - anuncia `socket=<ruta>` en su primera línea cuando ya escucha, y no
++ *   escribe nada más por stdout: la clave de acceso interna no se publica;
++ * - quien habla por el socket lleva el marcador `ssh-placeholder`; el
++ *   proxy lanza `claude -p` (el del PATH o `--cli`), que autentica solo;
++ * - un modelo pasa tal cual sólo si se declaró con `--model`;
++ * - sin `claude` rehúsa con exit 2 nombrando `--cli`, sin escuchar;
++ * - con SIGTERM cierra, borra el socket y sale 0.
++ */
++import { afterEach, describe, expect, test } from 'bun:test'
++import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++
++const ENTRY = join(import.meta.dir, '../bin/localProxy.ts')
++const FAKE_CLI = join(import.meta.dir, '../src/proxy/__tests__/fakeCliUpstream.ts')
++const MARKER = 'ssh-placeholder'
++
++let dir: string | undefined
++let child: ReturnType<typeof Bun.spawn> | undefined
++
++afterEach(async () => {
++  if (child && child.exitCode === null) {
++    child.kill('SIGKILL')
++    await child.exited
++  }
++  if (dir) rmSync(dir, { recursive: true, force: true })
++  child = dir = undefined
++})
++
++/** Un `claude` en un directorio propio que corre el doble de `claude -p`. */
++function fakeCliDirectory(base: string): string {
++  const binDir = join(base, 'path-claude')
++  mkdirSync(binDir)
++  writeFileSync(join(binDir, 'claude'), `#!/usr/bin/env bash\nexec "${process.execPath}" "${FAKE_CLI}" "$@"\n`)
++  chmodSync(join(binDir, 'claude'), 0o755)
++  return binDir
++}
++
++/** El texto del flujo hasta que se cierra; el lector se toma por llamada, para leerlo en dos veces. */
++async function drain(stream: ReadableStream<Uint8Array>, until: (text: string) => boolean): Promise<string> {
++  const reader = stream.getReader()
++  let text = ''
++  try {
++    while (!until(text)) {
++      const { value, done } = await reader.read()
++      if (done) break
++      text += new TextDecoder().decode(value)
++    }
++  } finally {
++    reader.releaseLock()
++  }
++  return text
++}
++
++const firstLine = async (stream: ReadableStream<Uint8Array>): Promise<string> => (await drain(stream, text => text.includes('\n'))).split('\n')[0]!
++const restOf = (stream: ReadableStream<Uint8Array>): Promise<string> => drain(stream, () => false)
++
++function launch(args: string[], env: Record<string, string>): ReturnType<typeof Bun.spawn> {
++  child = Bun.spawn([process.execPath, ENTRY, ...args], { env, stdout: 'pipe', stderr: 'pipe' })
++  return child
++}
++
++function messagesVia(socket: string, body: unknown): Promise<Response> {
++  return fetch('http://localhost/v1/messages', {
++    method: 'POST', unix: socket, headers: { 'content-type': 'application/json', 'x-api-key': MARKER },
++    body: JSON.stringify(body),
++  } as RequestInit)
++}
++
++describe('provider-local-proxy', () => {
++  test('1. anuncia el socket, sirve /v1/messages con el claude del PATH y al SIGTERM sale 0 sin dejar el socket', async () => {
++    dir = mkdtempSync(join(tmpdir(), 'local-proxy-process-'))
++    const socket = join(dir, 'proxy.sock')
++    const proxy = launch(['--socket', socket, '--model', 'real-model'], {
++      PATH: `${fakeCliDirectory(dir)}:${process.env.PATH ?? ''}`, HOME: dir, FAKE_CLAUDE_LOG: dir,
++    })
++    expect(await firstLine(proxy.stdout as ReadableStream<Uint8Array>)).toBe(`socket=${socket}`)
++
++    const response = await messagesVia(socket, { model: 'real-model', max_tokens: 8, messages: [{ role: 'user', content: 'hola' }] })
++    expect(response.status).toBe(200)
++    expect(((await response.json()) as { content: unknown }).content).toEqual([{ type: 'text', text: 'eco: hola' }])
++    const invocation = JSON.parse(readFileSync(join(dir, 'invocations.jsonl'), 'utf8').split('\n')[0]!) as { argv: string[] }
++    expect(invocation.argv).toEqual(expect.arrayContaining(['-p', '--input-format', 'stream-json']))
++
++    const undeclared = await messagesVia(socket, { model: 'otro-modelo', max_tokens: 8, messages: [{ role: 'user', content: 'hola' }] })
++    expect(undeclared.status).toBeGreaterThanOrEqual(400)
++
++    proxy.kill('SIGTERM')
++    expect(await proxy.exited).toBe(0)
++    expect(existsSync(socket)).toBe(false)
++    expect(await restOf(proxy.stdout as ReadableStream<Uint8Array>)).toBe('')
++  })
++
++  test('2. sin claude en el PATH y sin --cli rehúsa con exit 2 y no escucha', async () => {
++    dir = mkdtempSync(join(tmpdir(), 'local-proxy-process-'))
++    const socket = join(dir, 'proxy.sock')
++    const empty = join(dir, 'vacio')
++    mkdirSync(empty)
++    const proxy = launch(['--socket', socket], { PATH: empty, HOME: dir })
++    expect(await proxy.exited).toBe(2)
++    const stderr = await new Response(proxy.stderr as ReadableStream<Uint8Array>).text()
++    expect(stderr).toContain('claude')
++    expect(stderr).toContain('--cli')
++    expect(existsSync(socket)).toBe(false)
++  })
++
++  test('3. --cli nombra el ejecutable sin depender del PATH', async () => {
++    dir = mkdtempSync(join(tmpdir(), 'local-proxy-process-'))
++    const socket = join(dir, 'proxy.sock')
++    const cli = join(fakeCliDirectory(dir), 'claude')
++    const empty = join(dir, 'vacio')
++    mkdirSync(empty)
++    const proxy = launch(['--socket', socket, '--cli', cli], { PATH: empty, HOME: dir })
++    expect(await firstLine(proxy.stdout as ReadableStream<Uint8Array>)).toBe(`socket=${socket}`)
++    proxy.kill('SIGTERM')
++    expect(await proxy.exited).toBe(0)
++  })
++
++  test('4. sin --socket rehúsa con exit 2', async () => {
++    dir = mkdtempSync(join(tmpdir(), 'local-proxy-process-'))
++    const proxy = launch([], { PATH: process.env.PATH ?? '', HOME: dir })
++    expect(await proxy.exited).toBe(2)
++    expect(await new Response(proxy.stderr as ReadableStream<Uint8Array>).text()).toContain('--socket')
++  })
++})
+diff --git a/src/packages/provider/bin/localProxy.ts b/src/packages/provider/bin/localProxy.ts
+new file mode 100755
+index 000000000..482c8bc7d
+--- /dev/null
++++ b/src/packages/provider/bin/localProxy.ts
+@@ -0,0 +1,88 @@
++#!/usr/bin/env bun
++/**
++ * El proxy local con el upstream `claude-cli` como proceso
++ * (`bin/provider-local-proxy`).
++ *
++ *   localProxy --socket <ruta> [--model <id>]... [--cli <ejecutable>]
++ *
++ * Es la otra mitad del túnel para quien no tiene credencial propia: escucha
++ * en `<ruta>` y atiende cada petición lanzando `claude -p` —el del PATH, o el
++ * de `--cli`—, que autentica solo con su propia configuración. Quien habla
++ * por el socket lleva `ANTHROPIC_UNIX_SOCKET=<ruta>` y el marcador
++ * `ssh-placeholder` como credencial (`i1` de 2.1.283); las tools de la
++ * petición vuelven al cliente como `tool_use` por el puente MCP
++ * (`proxy/claudeCli/forwarder.ts`), así que las ejecuta el bucle del cliente.
++ *
++ * Compone dos piezas ya existentes: `startProxyServer` (HTTP en loopback, con
++ * clave de acceso) y `startCredentialProxy` (el socket Unix), que pone la
++ * clave de acceso —aleatoria, de este proceso, nunca publicada— delante de
++ * cada petición. Un modelo pasa tal cual sólo si se declaró con `--model`;
++ * los del catálogo resuelven por familia.
++ *
++ * Imprime `socket=<ruta>` cuando ya escucha y atiende hasta SIGTERM o SIGINT,
++ * cuando cierra, borra el socket y sale 0. Sin `claude` rehúsa con exit 2 y
++ * no escucha: un proxy sin ejecutable aceptaría peticiones que no puede
++ * atender.
++ */
++import { randomUUID } from 'node:crypto'
++import { startCredentialProxy } from '../src/credentialProxy.ts'
++import { startProxyServer } from '../src/proxy/startServer.ts'
++
++const UPSTREAM_NAME = 'claude-cli'
++const LOOPBACK_HOST = '127.0.0.1'
++const ANY_FREE_PORT = 0
++const REFUSAL_EXIT_CODE = 2
++
++function argument(name: string): string | undefined {
++  const index = process.argv.indexOf(name)
++  return index >= 0 ? process.argv[index + 1] : undefined
++}
++
++function repeatedArgument(name: string): string[] {
++  return process.argv.flatMap((token, index) => (token === name && process.argv[index + 1] !== undefined ? [process.argv[index + 1] as string] : []))
++}
++
++function refuse(message: string): never {
++  process.stderr.write(`localProxy: ${message}. NO se escucha.\n`)
++  process.exit(REFUSAL_EXIT_CODE)
++}
++
++const socketPath = argument('--socket') ?? refuse('falta --socket <ruta>')
++const executable = argument('--cli') ?? Bun.which('claude') ?? refuse('sin ejecutable de claude: declara --cli <ruta> o ponlo en el PATH')
++const passthroughModels = repeatedArgument('--model')
++const { version } = (await Bun.file(new URL('../package.json', import.meta.url)).json()) as { version: string }
++// La clave de acceso vive sólo en este proceso: el socket la pone por el
++// cliente, y el cliente sólo conoce el marcador.
++const accessKey = randomUUID()
++
++const proxy = startProxyServer({
++  host: LOOPBACK_HOST,
++  port: ANY_FREE_PORT,
++  accessKeys: [accessKey],
++  routing: {
++    upstreams: [{ name: UPSTREAM_NAME, provider: 'anthropic' }],
++    models: passthroughModels.map(id => ({ id, upstream_model: { [UPSTREAM_NAME]: id } })),
++    auto_include_builtin_models: true,
++  },
++  endpoints: {},
++  credentials: {},
++  selector: 'fill-first',
++  version,
++  env: process.env,
++  claudeCli: { upstreams: [{ name: UPSTREAM_NAME, command: { executable }, cwd: process.cwd() }] },
++})
++// Para el socket, la clave de acceso es «la credencial» que antepone: viaja
++// como `x-api-key`, que es lo que `createConfigApiKeyProvider` lee.
++const tunnel = await startCredentialProxy({
++  socketPath,
++  upstream: proxy.url,
++  credential: { source: 'ANTHROPIC_API_KEY', kind: 'api_key', secret: accessKey },
++})
++// Los manejadores van ANTES de anunciar: el anuncio es la señal de «listo»,
++// y quien lo lee puede mandar SIGTERM en seguida.
++const stop = (): void => {
++  void tunnel.close().then(() => proxy.stop()).then(() => process.exit(0))
++}
++process.on('SIGTERM', stop)
++process.on('SIGINT', stop)
++process.stdout.write(`socket=${tunnel.socketPath}\n`)

@@ -1,0 +1,61 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/taskSuite.test.ts:
+(pass) loadTaskSuite > lee el id, la clase y los casos con sus comprobaciones [5.19ms]
+(pass) loadTaskSuite > una clase que no es de thyrox se rehúsa [1.77ms]
+(pass) loadTaskSuite > una comprobación desconocida se rehúsa nombrando su campo [1.39ms]
+(pass) loadTaskSuite > un patrón que no compila se rehúsa al leer, no al puntuar [1.17ms]
+58 |     await expect(loadTaskSuite(suiteWith({ cases }))).rejects.toThrow(InvalidTaskSuiteError)
+59 |   })
+60 | 
+61 |   test('un caso sin comprobaciones se rehúsa: aprobaría cualquier respuesta', async () => {
+62 |     const cases = [{ ...CASE, checks: [] }]
+63 |     await expect(loadTaskSuite(suiteWith({ cases }))).rejects.toThrow(InvalidTaskSuiteError)
+                                                                   ^
+error: 
+
+Expected promise that rejects
+Received promise that resolved: Promise { <resolved> }
+
+      at <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/taskSuite.test.ts:63:63)
+(fail) loadTaskSuite > un caso sin comprobaciones se rehúsa: aprobaría cualquier respuesta [1.26ms]
+(pass) scoreTaskReply > aprueba sólo si se cumplen todas las comprobaciones [2.20ms]
+(pass) scoreTaskReply > nombra cada comprobación que falla [1.23ms]
+
+ 6 pass
+ 1 fail
+ 10 expect() calls
+Ran 7 tests across 1 file. [190.00ms]
+bun test v1.3.11 (af24e281)
+
+__tests__/qualifyModel.test.ts:
+(pass) runQualification — tool-calling@1 contra /api/chat > seis aciertos aprueban, con la suite, el contexto servido y el instante [9.46ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > cinco de seis no aprueban, y el caso fallado dice lo que se observó [3.39ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > tokens/s es la suma de eval_count entre la suma de eval_duration [2.81ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > cada petición lleva el modelo, sus herramientas, stream falso y num_ctx [2.81ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > un error HTTP no es un caso fallado: se rehúsa sin cualificación [1.96ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > pedir más contexto que el concedido se rehúsa sin tocar el runtime [1.70ms]
+(pass) runQualification — tool-calling@1 contra /api/chat > una respuesta sin eval_duration no mide velocidad y se rehúsa [3.07ms]
+(pass) runTaskQualification — la suite de tarea de un consumidor (TASK-THYROX-0780) > todos los casos cumplen: una cualificación de tarea de la clase de la suite [5.22ms]
+(pass) runTaskQualification — la suite de tarea de un consumidor (TASK-THYROX-0780) > un caso que falla suspende, y su resultado nombra la comprobación [3.34ms]
+(pass) runTaskQualification — la suite de tarea de un consumidor (TASK-THYROX-0780) > cada petición lleva los mensajes del caso, sin herramientas, stream falso y num_ctx [3.71ms]
+(pass) runTaskQualification — la suite de tarea de un consumidor (TASK-THYROX-0780) > pedir más contexto que el concedido se rehúsa sin tocar el runtime [2.59ms]
+
+ 11 pass
+ 0 fail
+ 26 expect() calls
+Ran 11 tests across 1 file. [220.00ms]
+bun test v1.3.11 (af24e281)
+
+__tests__/qualifyCommand.test.ts:
+(pass) runQualifyCommand por admisión > cualifica contra la unidad del ticket, suelta la admisión y no asegura thyrox-ollama [28.12ms]
+(pass) runQualifyCommand por admisión > --context viaja en la petición de admisión [9.05ms]
+(pass) runQualifyCommand por admisión > una admisión rehusada rehúsa con su etapa y causa, sin tocar el runtime [6.48ms]
+(pass) runQualifyCommand por admisión > sin coordinador rehúsa nombrando su socket [6.75ms]
+(pass) runQualifyCommand --suite: la cualificación de tarea de un consumidor (TASK-THYROX-0780) > corre los casos de la suite y escribe una cualificación de tarea de su clase [10.80ms]
+(pass) runQualifyCommand --suite: la cualificación de tarea de un consumidor (TASK-THYROX-0780) > una suite ilegible se rehúsa antes de pedir admisión [5.70ms]
+
+ 6 pass
+ 0 fail
+ 26 expect() calls
+Ran 6 tests across 1 file. [276.00ms]

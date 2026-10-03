@@ -1,0 +1,14 @@
+11:import { runJobWithOutput, type JobOutput } from '@thyrox/podman-execution/containerRun.ts'
+13:import { workerContainerName, type WorkerContainerSpec } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
+51: * (`runJobWithOutput`): crear, arrancar, esperar, leer salidas y retirar,
+71:      const output = await runJobWithOutput(this.podman, this.specOf(step))
+78:  private specOf(step: LabStep): WorkerContainerSpec {
+FALLA src/packages/local-models/quantizationLab.ts aún usa una función por spec
+FALLA src/packages/local-models/quantizationLab.ts no compone ExecutionAuthorization
+FALLA falta outputs/p2c-red
+FALLA falta outputs/p2c-green
+FALLA falta outputs/p2c-annulment
+FALLA falta outputs/p2c-typecheck
+suite local-models: 5 fallas (admitidas 5)
+execution thyrox-worker-maintenance-muqc7n03-2070 kind=maintenance task=TASK-THYROX-0743 exit=1
+__BG_EXIT__=1

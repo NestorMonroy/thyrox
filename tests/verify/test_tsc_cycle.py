@@ -224,7 +224,7 @@ with tempfile.TemporaryDirectory() as directory:
     assert_equal("sin ningún módulo que portar, plan rehúsa en vez de escribir un lote vacío", (2, False),
                  (empty, (base / "none/items.txt").exists()))
 
-    commands = tc.launch_commands(base / "step", model="claude-sonnet-5", worktree=Path("/wt"),
+    commands = tc.launch_commands(base / "step", task_class="analisis", worktree=Path("/wt"),
                                   ledger=Path("/run/ledger.jsonl"), seed=7, width=8)
     pool, pipeline = commands
     assert_equal("launch corre dos trabajos con thyrox-bg", (["bin/thyrox-bg", "start"], ["bin/thyrox-bg", "start"]),
@@ -283,22 +283,22 @@ src/packages/h/src/use.ts(4,1): error TS2305: Module '"x"' has no exported membe
                         "--root", str(root)])
     assert_equal("sin causas compartidas, rehúsa", (2, False), (none, (root / "none/items.txt").exists()))
 
-    pool, pipeline = tc.launch_commands(root / "step", model="claude-sonnet-5", worktree=Path("/wt"),
+    pool, pipeline = tc.launch_commands(root / "step", task_class="analisis", worktree=Path("/wt"),
                                         ledger=Path("/run/ledger.jsonl"), seed=7, route="shared")
     pool_text, pipeline_text = " ".join(pool), " ".join(pipeline)
     assert_equal("la ruta 2 usa su plantilla y mide de a una con la política neta", (True, True, True),
                  ("src/verify/prompts/shared-type.md" in pool_text, "--batch 1" in pipeline_text,
                   "--net" in pipeline_text))
-    module_pool, module_pipeline = tc.launch_commands(root / "step", model="claude-sonnet-5",
+    module_pool, module_pipeline = tc.launch_commands(root / "step", task_class="analisis",
                                                       worktree=Path("/wt"), ledger=Path("/run/l.jsonl"), seed=7)
     assert_equal("la ruta de módulos no hereda la política neta", False, "--net" in " ".join(module_pipeline))
     # N=2 worktrees en la ruta 2: dos tsc a la vez rinden 1.77x
     # (tsc-two-concurrent-*), y el lote toma N unidades para medirlas en prefijos.
-    _, two = tc.launch_commands(root / "step", model="claude-sonnet-5", worktree=[Path("/wt1"), Path("/wt2")],
+    _, two = tc.launch_commands(root / "step", task_class="analisis", worktree=[Path("/wt1"), Path("/wt2")],
                                 ledger=Path("/run/l.jsonl"), seed=7, route="shared")
     assert_equal("la ruta 2 pasa los dos worktrees y un lote de su tamaño", (2, True),
                  (two.count("--worktree"), "--batch 2" in " ".join(two)))
-    _, module_two = tc.launch_commands(root / "step", model="claude-sonnet-5",
+    _, module_two = tc.launch_commands(root / "step", task_class="analisis",
                                        worktree=[Path("/wt1"), Path("/wt2")], ledger=Path("/run/l.jsonl"), seed=7)
     assert_equal("la de módulos no especula: sólo el primero", 1, module_two.count("--worktree"))
 
@@ -409,7 +409,7 @@ with tempfile.TemporaryDirectory() as tmp:
                         "--root", str(root), "--run", str(root / "run")]) if (root / "none.log").write_text("") is not None else None
     assert_equal("sin diagnósticos locales, rehúsa sin items.txt", (2, False),
                  (none, (root / "none/items.txt").exists()))
-    pool, pipeline = tc.launch_commands(root / "step", model="claude-sonnet-5", worktree=Path("/wt"),
+    pool, pipeline = tc.launch_commands(root / "step", task_class="analisis", worktree=Path("/wt"),
                                         ledger=Path("/run/l.jsonl"), seed=7, route="local")
     pool_text, pipeline_text = " ".join(pool), " ".join(pipeline)
     assert_equal("la ruta 3 usa su plantilla versionada, mide por archivo y sin política neta",
@@ -465,7 +465,7 @@ with tempfile.TemporaryDirectory() as tmp:
                  ("TS9001: bad" in item, "sustituir BADn por n" in item, "src/a.ts" in item, "    5> line 5" in item))
     assert_equal("sweep plan deja gate4.json con los patrones revisados", ["bad-literal"],
                  json.loads((root / "sweep/gate4.json").read_text())["reviewed"])
-    pool, pipeline = tc.launch_commands(root / "sweep", model="claude-sonnet-5", worktree=Path("/wt"),
+    pool, pipeline = tc.launch_commands(root / "sweep", task_class="analisis", worktree=Path("/wt"),
                                         ledger=run_dir / "ledger.jsonl", seed=7, route="sweep")
     assert_equal("la ruta sweep usa su plantilla y la unidad de varios archivos", (True, True),
                  ("src/verify/prompts/pattern-sweep.md" in " ".join(pool), "--unit module" in " ".join(pipeline)))
@@ -607,8 +607,11 @@ with tempfile.TemporaryDirectory() as tmp:
     code, out, _ = cli(["local", "launch", "--bench", str(root / "step-201"), "--worktree", "/wt",
                         "--ledger", str(root / "run/ledger.jsonl"), "--seed", "1", "--dry-run"])
     pipeline_line = next(line for line in out.splitlines() if "pool_pipeline.py" in line)
-    expected = tc.step_setup_of(root / "step-201", "claude-sonnet-5", Path("/wt"), "local",
-                                cache_ttl=tc.pool_cache_ttl(root / "step-201", "claude-sonnet-5")[0])
+    # El modelo del paso lo deriva el selector de la clase por defecto; el
+    # registro esperado se construye con el mismo, no con uno escrito aquí.
+    derived = tc.derive_model("analisis")
+    expected = tc.step_setup_of(root / "step-201", derived, Path("/wt"), "local",
+                                cache_ttl=tc.pool_cache_ttl(root / "step-201", derived)[0])
     assert_equal("launch pasa al pipeline el setup_id de su configuración (L02)", True,
                  "--setup-id " + expected["setup_id"] in pipeline_line)
     assert_equal("con --dry-run no se registra nada en la corrida", False,
@@ -669,10 +672,10 @@ with tempfile.TemporaryDirectory() as tmp:
     alone.mkdir(parents=True)
     assert_equal("sin paso anterior medido no se decide: lo decide el cliente", None,
                  tc.pool_cache_ttl(alone, "claude-sonnet-5")[0])
-    pool, _ = tc.launch_commands(current, model="claude-sonnet-5", worktree=Path("/wt"),
+    pool, _ = tc.launch_commands(current, task_class="analisis", worktree=Path("/wt"),
                                  ledger=run_dir / "ledger.jsonl", seed=1, cache_ttl="5m")
     assert_equal("el TTL decidido llega al pool", True, "--cache-ttl 5m" in " ".join(pool))
-    pool, _ = tc.launch_commands(current, model="claude-sonnet-5", worktree=Path("/wt"),
+    pool, _ = tc.launch_commands(current, task_class="analisis", worktree=Path("/wt"),
                                  ledger=run_dir / "ledger.jsonl", seed=1)
     assert_equal("sin TTL decidido el pool no lo fija", False, "--cache-ttl" in " ".join(pool))
     assert_equal("el TTL es parte de la configuración del paso (setup_id)", "5m",

@@ -1,0 +1,923 @@
+diff --git a/.env.example b/.env.example
+index 77beca5a8..f0a178d4b 100644
+--- a/.env.example
++++ b/.env.example
+@@ -283,6 +283,22 @@ THYROX_RAM_ADMISSION_LEDGER=
+ # `/proc/meminfo`; se declara para ejercitar la admisión sin memoria real.
+ THYROX_RAM_ADMISSION_MEMINFO=
+ 
++# El registro de disco comprometido (`resource_admission disk-admit/disk-release`):
++# medir el techo y reservar son un paso bajo su lock, para que dos pulls de
++# infraestructura no vean el mismo espacio libre; una reserva caduca con su
++# dueño. Default: `<caché del repo>/disk-admission.json`.
++THYROX_DISK_ADMISSION_LEDGER=
++
++# El piso de seguridad de disco (MiB enteros) que ninguna admisión reparte:
++# worktrees, cachés, logs y capas temporales de Podman comparten el sistema de
++# archivos sin reservar. Default: 2048.
++THYROX_DISK_ADMISSION_FLOOR_MB=
++
++# El medidor del techo de disco: un ejecutable con el contrato de
++# `disk-headroom --ceiling-bytes`. Default: `src/repo/disk-headroom.sh`; se
++# declara para ejercitar la admisión sin disco real.
++THYROX_DISK_ADMISSION_HEADROOM=
++
+ # La memoria de un vecino que corre junto al pool (p. ej. el `tsc` completo
+ # del pipeline, 2.0 GB medidos): se SUMA a la memoria pico medida del ítem al
+ # derivar `--memfree`. Formato de `lib/memory.sh` (2G, 512M). Default: vacía.
+@@ -944,6 +960,10 @@ THYROX_INFRA_POSTGRES_PASSWORD=
+ THYROX_INFRA_HEALTH_TIMEOUT=
+ THYROX_INFRA_HEALTH_INTERVAL=
+ THYROX_INFRA_ENSURE_SLEEP_BIN=
++# src/session/infrastructure_ensure.sh: la admision de disco que reserva el pull
++# de una imagen ausente antes de `podman create` (contrato disk-admit/disk-release
++# de resource_admission). Vacia: bin/resource_admission. Se sustituye en pruebas.
++THYROX_INFRA_DISK_ADMISSION_BIN=
+ # src/packages/shared-state/factory.ts: URL de Redis del estado compartido entre
+ # proxies (redis://, rediss:// o redis+unix://). Vacía: adaptador en memoria.
+ THYROX_REDIS_URL=
+diff --git a/src/lib/infrastructure.sh b/src/lib/infrastructure.sh
+index c5b2de7d4..697f81335 100644
+--- a/src/lib/infrastructure.sh
++++ b/src/lib/infrastructure.sh
+@@ -168,6 +168,58 @@ thyrox_infrastructure_health_check_argv() {
+ }
+ export -f thyrox_infrastructure_health_check_argv
+ 
++# --- disco que exige bajar cada imagen (TASK-THYROX-0671) ---
++#
++# Bytes comprimidos de las capas del manifiesto linux/amd64 de cada imagen por
++# defecto, sumados de `podman manifest inspect <imagen>@<digest>` el
++# 2026-09-30 (banco `disk-reserve-reach-20260930T191002`).
++readonly _INFRASTRUCTURE_POSTGRES_COMPRESSED_BYTES=156322638
++readonly _INFRASTRUCTURE_REDIS_COMPRESSED_BYTES=43594077
++# Cuanto disco ocupa un pull por byte comprimido: el blob comprimido se
++# conserva mientras se desempaqueta, y gzip reduce estas capas unas 2-3 veces.
++# 4 es una COTA SUPERIOR declarada, no una medida: ninguna de las dos imagenes
++# estaba bajada para leer su tamaño desempaquetado. Ciega a una imagen
++# sobreescrita por variable, que hereda la necesidad de la imagen por defecto.
++readonly _INFRASTRUCTURE_PULL_EXPANSION_FACTOR=4
++
++# @description Imprime la imagen declarada de un contenedor conocido.
++# @arg $1 string `thyrox-postgres` o `thyrox-redis`.
++# @stdout la referencia de la imagen.
++# @exitcode 0 imagen publicada.
++# @exitcode 2 nombre desconocido.
++thyrox_infrastructure_image() {
++  local name="${1:-}"
++  case "$name" in
++    "$_INFRASTRUCTURE_POSTGRES_NAME") printf '%s\n' "$THYROX_INFRA_POSTGRES_IMAGE" ;;
++    "$_INFRASTRUCTURE_REDIS_NAME") printf '%s\n' "$THYROX_INFRA_REDIS_IMAGE" ;;
++    *)
++      printf 'thyrox_infrastructure: contenedor desconocido: %s\n' "$name" >&2
++      return 2
++      ;;
++  esac
++}
++export -f thyrox_infrastructure_image
++
++# @description Imprime los bytes de disco que exige bajar la imagen de un
++# contenedor conocido: lo que el ensure reserva antes de `podman create`.
++# @arg $1 string `thyrox-postgres` o `thyrox-redis`.
++# @stdout un entero, en bytes.
++# @exitcode 0 necesidad publicada.
++# @exitcode 2 nombre desconocido.
++thyrox_infrastructure_disk_need_bytes() {
++  local name="${1:-}" compressed
++  case "$name" in
++    "$_INFRASTRUCTURE_POSTGRES_NAME") compressed="$_INFRASTRUCTURE_POSTGRES_COMPRESSED_BYTES" ;;
++    "$_INFRASTRUCTURE_REDIS_NAME") compressed="$_INFRASTRUCTURE_REDIS_COMPRESSED_BYTES" ;;
++    *)
++      printf 'thyrox_infrastructure: contenedor desconocido: %s\n' "$name" >&2
++      return 2
++      ;;
++  esac
++  printf '%s\n' "$(( compressed * _INFRASTRUCTURE_PULL_EXPANSION_FACTOR ))"
++}
++export -f thyrox_infrastructure_disk_need_bytes
++
+ # @description Inspecciona un contenedor y publica su estado reportado y su
+ # PID, separados por tab. Usa THYROX_TOOLCHAIN_PODMAN_BIN si esta resuelto
+ # (via `thyrox_toolchain_require_podman`), o el `podman` del PATH.
+diff --git a/src/repo/disk-headroom.sh b/src/repo/disk-headroom.sh
+index cdb172bec..db87534f0 100755
+--- a/src/repo/disk-headroom.sh
++++ b/src/repo/disk-headroom.sh
+@@ -14,12 +14,20 @@
+ # este contenedor, 214.9 GiB de 252 GiB. Quien lea `Used 37G` sobre un disco
+ # de 252G y concluya «queda sitio de sobra» esta leyendo el numero equivocado.
+ #
+-# Y la reserva **no siempre es inalcanzable**: historicamente `root` escribe
+-# dentro de ella. Tres cosas deciden si se alcanza, y las tres se miden aqui:
++# Y la reserva **no siempre es inalcanzable**. La regla completa, la del ext4:
+ #
+-#   1. que exista  — `f_bfree` contra `f_bavail` de `statvfs`;
+-#   2. `CAP_SYS_RESOURCE` en el `CapEff` de quien llama — el bit 24;
+-#   3. que el montaje NO declare `resv_strict`, que la cierra incluso a root.
++#   1. tiene que existir — `f_bfree` contra `f_bavail` de `statvfs`;
++#   2. si el montaje declara `resv_strict`, nadie la alcanza, ni root;
++#   3. sin `resv_strict`, la alcanza quien cumpla UNA de tres:
++#        a. su uid efectivo es el `resuid` del montaje,
++#        b. alguno de sus grupos es el `resgid` del montaje,
++#        c. tiene `CAP_SYS_RESOURCE` en su `CapEff` — el bit 24.
++#
++# `resuid`/`resgid` se leen de las options del montaje; si no figuran no se
++# cuentan como via, aunque el ext4 tenga uno por defecto en el superbloque.
++# Es la lectura conservadora: el techo publicado puede quedar corto, nunca
++# largo. El uid y los grupos salen de `id`, o de `DISK_HEADROOM_UID` y
++# `DISK_HEADROOM_GROUPS` (separados por espacios) para el control.
+ #
+ # Las salidas son cuatro, y por que
+ # ----------------------------------
+@@ -29,6 +37,10 @@
+ # ``3`` RESERVA_INALCANZABLE   `Avail` es techo duro; esos bytes no vuelven.
+ # ``2`` rehusa                 no se pudo medir; **no se emite cifra**.
+ #
++# Con `--ceiling-bytes` la salida es UN entero: el techo real segun el
++# veredicto — `f_bfree` si la reserva es alcanzable, `f_bavail` si no la hay o
++# no se alcanza — con el mismo codigo de salida. Con exit 2 no imprime nada.
++#
+ # Un guion de dos salidas —«hay reserva / no hay»— no separa la 1 de la 3, que
+ # es justo la decision que hacia falta tomar. Un verdict que no discrimina es
+ # el sub-patron D de `metrica-decide-la-conclusion.md`.
+@@ -52,12 +64,13 @@ THYROX_TEST_BIT_RESOURCE=1
+ CAP_SYS_RESOURCE_BIT=24
+ 
+ target="."
+-format="texto"
++format="text"
+ while [[ $# -gt 0 ]]; do
+     case "$1" in
+         --path)   target="$2"; shift 2 ;;
+-        --brief)  format="breve"; shift ;;
+-        -h|--help) sed -n '2,45p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
++        --brief)  format="brief"; shift ;;
++        --ceiling-bytes) format="ceiling"; shift ;;
++        -h|--help) awk 'NR > 1 && !/^#/ {exit} NR > 1' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+         *) printf 'ERROR — opcion desconocida: %s\n' "$1" >&2; exit "$REFUSAL" ;;
+     esac
+ done
+@@ -88,6 +101,11 @@ mounts_file="${DISK_HEADROOM_MOUNTS:-/proc/self/mounts}"
+ status_file="${DISK_HEADROOM_STATUS:-/proc/self/status}"
+ [[ -r "$status_file" ]] || refuse "no se puede leer «$status_file»"
+ 
++effective_uid="${DISK_HEADROOM_UID:-$(id -u)}"
++[[ "$effective_uid" =~ ^[0-9]+$ ]] || refuse "el uid efectivo «$effective_uid» no es un entero"
++group_ids="${DISK_HEADROOM_GROUPS:-$(id -G)}"
++[[ "$group_ids" =~ ^[0-9]+( [0-9]+)*$ ]] || refuse "los grupos «$group_ids» no son enteros"
++
+ # --- mount_point de montaje, y sus options ---
+ 
+ mount_point="$(stat -c '%m' "$target" 2>/dev/null)"
+@@ -115,6 +133,23 @@ available=$(( avail_blocks * block_size ))
+ strict=0
+ grep -qE '(^|,)resv_strict(,|$)' <<<"$options" && strict=1
+ 
++# El valor numerico de una option `clave=N` del montaje; vacio si no figura.
++mount_option_value() {
++    grep -oE "(^|,)$1=[0-9]+" <<<"$options" | tail -1 | sed 's/.*=//'
++}
++reserve_uid="$(mount_option_value resuid)"
++reserve_gid="$(mount_option_value resgid)"
++
++# Via a: el uid efectivo es el dueno declarado de la reserva.
++uid_owns_reserve() {
++    [[ -n "$reserve_uid" && "$effective_uid" == "$reserve_uid" ]]
++}
++
++# Via b: alguno de los grupos es el grupo declarado de la reserva.
++group_owns_reserve() {
++    [[ -n "$reserve_gid" ]] && grep -qw -- "$reserve_gid" <<<"${group_ids// /$'\n'}"
++}
++
+ has_bit=1
+ if [[ "$THYROX_TEST_BIT_RESOURCE" == "1" ]]; then
+     has_bit="$(awk -v bit="$CAP_SYS_RESOURCE_BIT" '
+@@ -178,7 +213,10 @@ _sum_deleted_open() {
+ }
+ 
+ held_by_open_fd="(no medido)"
+-if [[ -n "${DISK_HEADROOM_LSOF:-}" ]]; then
++if [[ "$format" != "text" ]]; then
++    # Las salidas breves no publican esta columna: no se paga el `lsof`.
++    :
++elif [[ -n "${DISK_HEADROOM_LSOF:-}" ]]; then
+     # Punto de inyeccion: sin el, esta rama solo se alcanza midiendo el disco
+     # real, y por eso sus tres defectos vivieron sin una sola asercion encima.
+     held_by_open_fd="$(_sum_deleted_open "$mount_dev" < "${DISK_HEADROOM_LSOF}")"
+@@ -197,6 +235,12 @@ if (( reserved <= 0 )); then
+ elif (( strict == 1 )); then
+     verdict="RESERVA_INALCANZABLE"; code=3
+     reason="el montaje declara resv_strict, que cierra la reserva incluso a root."
++elif uid_owns_reserve; then
++    verdict="RESERVA_ALCANZABLE"; code=1
++    reason="el uid efectivo $effective_uid es resuid y no hay resv_strict: el techo real supera «Avail»."
++elif group_owns_reserve; then
++    verdict="RESERVA_ALCANZABLE"; code=1
++    reason="el grupo $reserve_gid es resgid del montaje y del proceso, y no hay resv_strict: el techo real supera «Avail»."
+ elif [[ "$has_bit" == "0" ]]; then
+     verdict="RESERVA_INALCANZABLE"; code=3
+     reason="a CapEff le falta CAP_SYS_RESOURCE (bit $CAP_SYS_RESOURCE_BIT)."
+@@ -208,11 +252,18 @@ fi
+ as_mib() { awk -v b="$1" 'BEGIN{printf "%.2f MiB", b/1048576}'; }
+ as_gib() { awk -v b="$1" 'BEGIN{printf "%.2f GiB", b/1073741824}'; }
+ 
+-if [[ "$format" == "breve" ]]; then
++if [[ "$format" == "brief" ]]; then
+     printf '%s\n' "$verdict"
+     exit "$code"
+ fi
+ 
++if [[ "$format" == "ceiling" ]]; then
++    ceiling="$available"
++    (( code == 1 )) && ceiling=$(( free_blocks * block_size ))
++    printf '%s\n' "$ceiling"
++    exit "$code"
++fi
++
+ printf 'target              %s   (montaje %s, %s)\n' "$target" "$mount_point" "$device"
+ printf 'capacidad         %s\n' "$(as_gib "$capacity")"
+ printf 'disponible        %s   ← lo que «df» llama Avail\n' "$(as_mib "$available")"
+diff --git a/src/session/infrastructure_ensure.sh b/src/session/infrastructure_ensure.sh
+index 76d2b2607..ba5f76fd2 100755
+--- a/src/session/infrastructure_ensure.sh
++++ b/src/session/infrastructure_ensure.sh
+@@ -26,7 +26,9 @@
+ #
+ # Exit 0  todos los contenedores quedaron sanos.
+ # Exit 1  alguno no llego a sano dentro del plazo (nombrado en stderr).
+-# Exit 2  falta podman o la credencial de PostgreSQL — no se toca nada.
++# Exit 2  falta podman o la credencial de PostgreSQL — no se toca nada —, o la
++#         imagen de un contenedor falta y su pull no cabe en disco (se rehusa
++#         antes de `podman create`, TASK-THYROX-0671).
+ # =============================================================================
+ set -uo pipefail
+ 
+@@ -43,6 +45,13 @@ source "$_INFRA_ENSURE_HERE/../lib/infrastructure.sh"
+ HEALTH_TIMEOUT="${THYROX_INFRA_HEALTH_TIMEOUT:-60}"
+ HEALTH_INTERVAL="${THYROX_INFRA_HEALTH_INTERVAL:-2}"
+ SLEEP_BIN="${THYROX_INFRA_ENSURE_SLEEP_BIN:-sleep}"
++# La admision de disco antes de un pull (TASK-THYROX-0671): el envoltorio de
++# `resource_admission`, con su contrato `disk-admit`/`disk-release`. Se declara
++# para que la suite ejercite el orden sin tocar el disco real.
++DISK_ADMISSION_BIN="${THYROX_INFRA_DISK_ADMISSION_BIN:-$_INFRA_ENSURE_HERE/../../bin/resource_admission}"
++# El banco que mide por que el techo es `Avail` y no el tamaño del dispositivo.
++readonly DISK_ADMISSION_BENCH="disk-reserve-reach-20260930T191002"
++readonly EXIT_REFUSED=2
+ 
+ # --- precondiciones: NADA se toca hasta que las dos esten satisfechas ---
+ if [[ -z "${THYROX_INFRA_POSTGRES_PASSWORD:-}" ]]; then
+@@ -104,6 +113,58 @@ _infra_run_health_check() {
+   return 1
+ }
+ 
++# @description ¿Falta la imagen del contenedor en el almacen local? Solo
++# entonces `podman create` la baja y hay que reservar disco.
++# @arg $1 string nombre del contenedor.
++# @exitcode 0 la imagen falta.
++_infra_image_missing() {
++  local image
++  image="$(thyrox_infrastructure_image "$1")" || return 0
++  ! "$PODMAN" image exists "$image" >/dev/null 2>&1
++}
++
++# @description Reserva el disco que exige bajar la imagen, a nombre de este
++# proceso. Si no se admite, rehusa el ensure entero con exit 2 nombrando
++# contenedor, necesidad, techo y el banco, sin llegar a `podman create`.
++# @arg $1 string nombre del contenedor.
++_infra_admit_disk_or_refuse() {
++  local name="$1" need verdict
++  need="$(thyrox_infrastructure_disk_need_bytes "$name")"
++  if verdict="$("$DISK_ADMISSION_BIN" disk-admit --need-bytes "$need" --owner "$$" 2>&1)"; then
++    return 0
++  fi
++  echo "infrastructure_ensure: $name no cabe en disco: necesidad $need bytes; $verdict" >&2
++  echo "                       El techo es el que el sistema de archivos declara accesible" >&2
++  echo "                       (banco $DISK_ADMISSION_BENCH). No se invoca podman create." >&2
++  exit "$EXIT_REFUSED"
++}
++
++# @description Suelta la reserva de disco de este proceso, haya ido bien o
++# no el `podman create`.
++_infra_release_disk() {
++  "$DISK_ADMISSION_BIN" disk-release --owner "$$" >/dev/null 2>&1
++}
++
++# @description Compone y corre `podman create`, reservando disco antes solo
++# si la imagen falta localmente.
++# @arg $1 string nombre del contenedor.
++# @exitcode 0 argv compuesto (el resultado del create se mide por la salud).
++# @exitcode 1 no se pudo componer el argv.
++_infra_create_container() {
++  local name="$1"
++  local -a create_argv
++  mapfile -t create_argv < <(thyrox_infrastructure_create_argv "$name")
++  [[ "${#create_argv[@]}" -gt 0 ]] || return 1
++  if _infra_image_missing "$name"; then
++    _infra_admit_disk_or_refuse "$name"
++    "$PODMAN" "${create_argv[@]}" >/dev/null 2>&1
++    _infra_release_disk
++  else
++    "$PODMAN" "${create_argv[@]}" >/dev/null 2>&1
++  fi
++  return 0
++}
++
+ # @description Asegura un contenedor: inspecciona, decide kept/created/
+ # recreated/started, ejecuta el health check y publica su linea de estado.
+ # Acumula en FAILED_CONTAINERS cualquier contenedor que no llego a sano.
+@@ -140,16 +201,11 @@ _infra_ensure_container() {
+       action="started"
+     fi
+ 
+-    if [[ "$action" == "created" || "$action" == "recreated" ]]; then
+-      local -a create_argv
+-      mapfile -t create_argv < <(thyrox_infrastructure_create_argv "$name")
+-      if [[ "${#create_argv[@]}" -eq 0 ]]; then
+-        printf '%s status=%s pid_alive=%s action=error health=no-intentado\n' \
+-          "$name" "$status" "$pid_alive"
+-        FAILED_CONTAINERS+=("$name: no se pudo componer el argv de creacion")
+-        return
+-      fi
+-      "$PODMAN" "${create_argv[@]}" >/dev/null 2>&1
++    if [[ "$action" == "created" || "$action" == "recreated" ]] && ! _infra_create_container "$name"; then
++      printf '%s status=%s pid_alive=%s action=error health=no-intentado\n' \
++        "$name" "$status" "$pid_alive"
++      FAILED_CONTAINERS+=("$name: no se pudo componer el argv de creacion")
++      return
+     fi
+     "$PODMAN" start "$name" >/dev/null 2>&1
+   fi
+diff --git a/src/session/resource_admission.py b/src/session/resource_admission.py
+index 7d6b0c209..c9749bf6e 100644
+--- a/src/session/resource_admission.py
++++ b/src/session/resource_admission.py
+@@ -13,11 +13,17 @@ contador que se repone en un `trap` pierde el hueco con SIGKILL.
+ 
+ El registro y el bucle no saben de qué recurso se trata. Cada recurso aporta
+ su medida: la VRAM, `gpu_monitor` con `nvidia-smi`; la RAM, este módulo con
+-`MemAvailable` y el RSS de cada árbol en `/proc`.
++`MemAvailable` y el RSS de cada árbol en `/proc`; el disco, este módulo con el
++techo que publica `disk-headroom --ceiling-bytes` menos un piso de seguridad.
++
++El disco no tiene uso por proceso que leer: lo que un pull ya escribió no se
++puede atribuir a su dueño, así que su reserva cuenta entera hasta que la
++suelta. Es la lectura conservadora —durante el pull esos bytes se descuentan
++dos veces— y el ensure suelta en cuanto el `podman create` termina.
+ 
+ Métrica: lo libre que el sistema declara, menos lo reservado y aún no usado.
+-Ciega a: la memoria que un proceso ajeno al registro va a pedir y todavía no
+-pidió —ése no reserva—, y al pico de un ítem por encima de lo que reservó.
++Ciega a: lo que un proceso ajeno al registro va a pedir y todavía no pidió
++—ése no reserva—, y al pico de un ítem por encima de lo que reservó.
+ """
+ from __future__ import annotations
+ 
+@@ -25,6 +31,7 @@ import argparse
+ import json
+ import os
+ import re
++import subprocess
+ import sys
+ import time
+ from collections.abc import Callable
+@@ -39,6 +46,25 @@ _MEM_AVAILABLE = re.compile(r"^MemAvailable:\s+(\d+)\s+kB$", re.M)
+ _VM_RSS = re.compile(r"^VmRSS:\s+(\d+)\s+kB$", re.M)
+ RAM_LEDGER_VAR = "THYROX_RAM_ADMISSION_LEDGER"
+ MEMINFO_VAR = "THYROX_RAM_ADMISSION_MEMINFO"
++DISK_LEDGER_VAR = "THYROX_DISK_ADMISSION_LEDGER"
++DISK_FLOOR_VAR = "THYROX_DISK_ADMISSION_FLOOR_MB"
++DISK_HEADROOM_VAR = "THYROX_DISK_ADMISSION_HEADROOM"
++BYTES_PER_MIB = 1024 * 1024
++#: El piso de disco que ninguna admisión reparte. Worktrees, cachés, logs y las
++#: capas temporales que Podman desempaqueta durante un pull escriben en el mismo
++#: sistema de archivos sin reservar; 2 GiB es del orden de una capa grande más
++#: los worktrees de un pool, y deja margen para que el propio registro y el
++#: `git` de la sesión no mueran con `no space left on device`.
++DEFAULT_DISK_FLOOR_MB = 2048
++#: El `disk-headroom` del árbol, hermano de este módulo en `src/repo/`.
++DEFAULT_DISK_HEADROOM = Path(__file__).resolve().parent.parent / "repo" / "disk-headroom.sh"
++#: Dónde vive el almacén de Podman: el `graphroot` medido está en el sistema de
++#: archivos raíz (banco `disk-reserve-reach-20260930T191002`).
++DEFAULT_DISK_PATH = "/"
++DISK_HEADROOM_TIMEOUT_S = 60
++EXIT_ADMITTED = 0
++EXIT_UNMEASURED = 2
++EXIT_TIMEOUT = 3
+ 
+ 
+ def ram_ledger_path() -> Path:
+@@ -202,7 +228,89 @@ def ram_headroom(live: dict[str, int], meminfo: Path = Path("/proc/meminfo"),
+     return free - pending(live, usage, {pid: {pid} for pid in trees})
+ 
+ 
+-def main(argv: list[str]) -> int:
++def disk_ledger_path() -> Path:
++    """El registro de disco comprometido; uno por máquina, como el de RAM."""
++    declared = os.environ.get(DISK_LEDGER_VAR)
++    return Path(declared) if declared else cache_dir() / "disk-admission.json"
++
++
++def disk_floor_bytes() -> int:
++    """El piso de seguridad en bytes, declarado en MiB."""
++    return int(os.environ.get(DISK_FLOOR_VAR) or DEFAULT_DISK_FLOOR_MB) * BYTES_PER_MIB
++
++
++def disk_headroom_command() -> Path:
++    """El medidor del techo: el `disk-headroom` del árbol, salvo declaración."""
++    declared = os.environ.get(DISK_HEADROOM_VAR)
++    return Path(declared) if declared else DEFAULT_DISK_HEADROOM
++
++
++def ceiling_bytes(headroom_command: Path, target: str) -> int | None:
++    """El techo real de ``target`` según ``disk-headroom --ceiling-bytes``.
++    ``None`` si rehúsa, no responde o no publica un entero: sin medida."""
++    try:
++        result = subprocess.run([str(headroom_command), "--path", target, "--ceiling-bytes"],
++                                capture_output=True, text=True, timeout=DISK_HEADROOM_TIMEOUT_S)
++    except (OSError, subprocess.TimeoutExpired):
++        return None
++    published = result.stdout.strip()
++    if result.returncode == EXIT_UNMEASURED or not published.isdigit():
++        return None
++    return int(published)
++
++
++def disk_headroom(live: dict[str, int], ceiling: int | None, floor: int) -> int | None:
++    """Lo admisible de disco: el techo menos el piso y lo que los dueños vivos
++    reservaron. Sin uso por proceso que leer, cada reserva cuenta entera."""
++    if ceiling is None:
++        return None
++    return ceiling - floor - pending(live, {}, {})
++
++
++def admit_disk(args: argparse.Namespace) -> int:
++    """``disk-admit`` como código de salida: 0 reservó, 3 venció el plazo sin
++    sitio, 2 ``disk-headroom`` no midió — y entonces no se toca el registro."""
++    command, floor = disk_headroom_command(), disk_floor_bytes()
++    if ceiling_bytes(command, args.path) is None:
++        print(f"resource_admission disk-admit: disk-headroom no midió el techo de {args.path} "
++              f"({command}); sin medida no se espera", file=sys.stderr)
++        return EXIT_UNMEASURED
++    admitted = admit_with(disk_ledger_path(), args.need_bytes, args.owner,
++                          lambda live: disk_headroom(live, ceiling_bytes(command, args.path), floor),
++                          "disk-admission", args.timeout, args.interval)
++    if admitted:
++        return EXIT_ADMITTED
++    report_disk_refusal(args.need_bytes, ceiling_bytes(command, args.path), floor)
++    return EXIT_TIMEOUT
++
++
++def report_disk_refusal(need: int, ceiling: int | None, floor: int) -> None:
++    """Publica por stderr las cifras con que se decidió: quien rehúsa un pull
++    tiene que poder nombrar la necesidad y el techo sin volver a medir."""
++    reserved = pending(ReservationLedger(disk_ledger_path()).live(), {}, {})
++    print(f"resource_admission disk-admit: no cabe la necesidad {need} bytes; techo {ceiling} bytes, "
++          f"piso {floor} bytes, reservado por otros {reserved} bytes", file=sys.stderr)
++
++
++def release_disk(args: argparse.Namespace) -> int:
++    release_from(disk_ledger_path(), args.owner, "disk-admission")
++    return EXIT_ADMITTED
++
++
++def admit_ram(args: argparse.Namespace) -> int:
++    meminfo = args.meminfo or meminfo_path()
++    admitted = admit_with(args.ledger or ram_ledger_path(), args.need, args.owner,
++                          lambda live: ram_headroom(live, meminfo), "ram-admission",
++                          args.timeout, args.interval)
++    return EXIT_ADMITTED if admitted else EXIT_TIMEOUT
++
++
++def release_ram(args: argparse.Namespace) -> int:
++    release_from(args.ledger or ram_ledger_path(), args.owner, "ram-admission")
++    return EXIT_ADMITTED
++
++
++def build_parser() -> argparse.ArgumentParser:
+     parser = argparse.ArgumentParser(prog="resource_admission", description=(__doc__ or "").splitlines()[0])
+     sub = parser.add_subparsers(dest="order", required=True)
+     p_admit = sub.add_parser("admit-ram", help="reserva NEED kB de RAM; sale 0, o 3 al vencer el plazo")
+@@ -212,19 +320,28 @@ def main(argv: list[str]) -> int:
+     p_admit.add_argument("--meminfo", type=Path, default=None)
+     p_admit.add_argument("--timeout", type=float, default=600.0)
+     p_admit.add_argument("--interval", type=float, default=DEFAULT_INTERVAL_S)
+-    p_release = sub.add_parser("release", help="suelta la reserva de OWNER")
++    p_admit.set_defaults(handler=admit_ram)
++    p_release = sub.add_parser("release", help="suelta la reserva de RAM de OWNER")
+     p_release.add_argument("--ledger", type=Path, default=None)
+     p_release.add_argument("--owner", type=int, required=True)
+-    args = parser.parse_args(argv)
+-    ledger = args.ledger or ram_ledger_path()
+-    if args.order == "release":
+-        release_from(ledger, args.owner, "ram-admission")
+-        return 0
+-    meminfo = args.meminfo or meminfo_path()
+-    admitted = admit_with(ledger, args.need, args.owner,
+-                          lambda live: ram_headroom(live, meminfo), "ram-admission",
+-                          args.timeout, args.interval)
+-    return 0 if admitted else 3
++    p_release.set_defaults(handler=release_ram)
++    p_disk = sub.add_parser("disk-admit", help="reserva NEED bytes de disco; sale 0, 3 al vencer el plazo, "
++                                               "o 2 si disk-headroom no mide")
++    p_disk.add_argument("--need-bytes", type=int, required=True)
++    p_disk.add_argument("--owner", type=int, required=True)
++    p_disk.add_argument("--path", default=DEFAULT_DISK_PATH)
++    p_disk.add_argument("--timeout", type=float, default=600.0)
++    p_disk.add_argument("--interval", type=float, default=DEFAULT_INTERVAL_S)
++    p_disk.set_defaults(handler=admit_disk)
++    p_disk_release = sub.add_parser("disk-release", help="suelta la reserva de disco de OWNER")
++    p_disk_release.add_argument("--owner", type=int, required=True)
++    p_disk_release.set_defaults(handler=release_disk)
++    return parser
++
++
++def main(argv: list[str]) -> int:
++    args = build_parser().parse_args(argv)
++    return args.handler(args)
+ 
+ 
+ if __name__ == "__main__":
+diff --git a/tests/lib/test-infrastructure.sh b/tests/lib/test-infrastructure.sh
+index b3571605d..03498f395 100755
+--- a/tests/lib/test-infrastructure.sh
++++ b/tests/lib/test-infrastructure.sh
+@@ -176,6 +176,26 @@ else
+   bad "falta la etiqueta en alguno de los dos"
+ fi
+ 
++# --- TASK-THYROX-0671: necesidad de disco e imagen, por contenedor ---
++need_pg="$(bash -c "source '$SUBJECT'; thyrox_infrastructure_disk_need_bytes thyrox-postgres")"; rc=$?
++thyrox_check "disk_need_bytes(postgres) sale 0" "0" "$rc"
++thyrox_check "disk_need_bytes(postgres): capas comprimidas medidas x factor de pull" \
++  "$(( 156322638 * 4 ))" "$need_pg"
++need_redis="$(bash -c "source '$SUBJECT'; thyrox_infrastructure_disk_need_bytes thyrox-redis")"
++thyrox_check "disk_need_bytes(redis): capas comprimidas medidas x factor de pull" \
++  "$(( 43594077 * 4 ))" "$need_redis"
++out_unknown_need="$(bash -c "source '$SUBJECT'; thyrox_infrastructure_disk_need_bytes thyrox-mongo" 2>/dev/null)"; rc=$?
++thyrox_check "disk_need_bytes de un nombre desconocido sale 2" "2" "$rc"
++thyrox_check "disk_need_bytes de un nombre desconocido no imprime nada" "" "$out_unknown_need"
++
++image_pg="$(bash -c "source '$SUBJECT'; thyrox_infrastructure_image thyrox-postgres")"
++thyrox_check "image(postgres) es la imagen declarada" "docker.io/pgvector/pgvector:0.8.0-pg16" "$image_pg"
++image_redis="$(THYROX_INFRA_REDIS_IMAGE='docker.io/library/redis:7.5' bash -c \
++  "source '$SUBJECT'; thyrox_infrastructure_image thyrox-redis")"
++thyrox_check "image(redis) respeta la variable" "docker.io/library/redis:7.5" "$image_redis"
++bash -c "source '$SUBJECT'; thyrox_infrastructure_image thyrox-mongo" >/dev/null 2>&1
++thyrox_check "image de un nombre desconocido sale 2" "2" "$?"
++
+ # --- inspeccion contra un podman falso ---
+ WORK="$(mktemp -d)"; trap 'rm -rf "$WORK"' EXIT
+ cat > "$WORK/podman-fake" <<'STUB'
+diff --git a/tests/repo/test-disk-headroom.sh b/tests/repo/test-disk-headroom.sh
+index a0ec56050..80a2a29c1 100755
+--- a/tests/repo/test-disk-headroom.sh
++++ b/tests/repo/test-disk-headroom.sh
+@@ -97,6 +97,7 @@ echo "== 4. sin el bit 24 la reserva es inalcanzable =="
+ OUT=$(DISK_HEADROOM_STATFS="1000 500 200 4096" \
+       DISK_HEADROOM_MOUNTS="$FIXTURES/mounts-con-reserva" \
+       DISK_HEADROOM_STATUS="$FIXTURES/status-sin-24" \
++      DISK_HEADROOM_UID=0 DISK_HEADROOM_GROUPS="0" \
+       bash "$SCRIPT" --path . 2>&1); CODE=$?
+ assert_equals "exit 3 sin CAP_SYS_RESOURCE" 3 "$CODE"
+ assert_contains "nombra la capacidad ausente" "CAP_SYS_RESOURCE" "$OUT"
+@@ -161,5 +162,90 @@ for CIFRA in "$SIN_NADA" "$SIN_BORRADO" "$SIN_DEDUPE" "$SIN_DEV"; do
+     assert_not_contains "no publica la cifra de $CIFRA MiB" "borrado y abierto $CIFRA MiB" "$OUT"
+ done
+ 
++echo "== 11. TASK-THYROX-0671: el uid efectivo ES resuid, sin resv_strict -> alcanzable sin el bit ==="
++printf '/dev/x / ext4 rw,relatime,resuid=1000,resgid=2000 0 0\n' > "$FIXTURES/mounts-resuid-resgid"
++OUT=$(DISK_HEADROOM_STATFS="1000 500 200 4096" \
++      DISK_HEADROOM_MOUNTS="$FIXTURES/mounts-resuid-resgid" \
++      DISK_HEADROOM_STATUS="$FIXTURES/status-sin-24" \
++      DISK_HEADROOM_UID=1000 DISK_HEADROOM_GROUPS="1000" \
++      bash "$SCRIPT" --path . 2>&1); CODE=$?
++assert_equals "resuid = uid del proceso -> exit 1" 1 "$CODE"
++assert_contains "nombra resuid como la via" "el uid efectivo 1000 es resuid" "$OUT"
++
++echo "== 12. uno de sus grupos ES resgid, sin resv_strict -> alcanzable sin el bit ==="
++OUT=$(DISK_HEADROOM_STATFS="1000 500 200 4096" \
++      DISK_HEADROOM_MOUNTS="$FIXTURES/mounts-resuid-resgid" \
++      DISK_HEADROOM_STATUS="$FIXTURES/status-sin-24" \
++      DISK_HEADROOM_UID=0 DISK_HEADROOM_GROUPS="0 2000" \
++      bash "$SCRIPT" --path . 2>&1); CODE=$?
++assert_equals "resgid en sus grupos -> exit 1" 1 "$CODE"
++assert_contains "nombra resgid como la via" "el grupo 2000 es resgid" "$OUT"
++
++echo "== 13. ni uid ni grupos coinciden, sin el bit -> inalcanzable ==="
++OUT=$(DISK_HEADROOM_STATFS="1000 500 200 4096" \
++      DISK_HEADROOM_MOUNTS="$FIXTURES/mounts-resuid-resgid" \
++      DISK_HEADROOM_STATUS="$FIXTURES/status-sin-24" \
++      DISK_HEADROOM_UID=0 DISK_HEADROOM_GROUPS="0 20" \
++      bash "$SCRIPT" --path . 2>&1); CODE=$?
++assert_equals "uid y grupos ajenos a la reserva -> exit 3" 3 "$CODE"
++
++echo "== 14. resv_strict cierra la reserva aunque uid y grupo coincidan ==="
++printf '/dev/x / ext4 rw,resv_strict,resuid=1000,resgid=2000 0 0\n' > "$FIXTURES/mounts-estricto-propio"
++OUT=$(DISK_HEADROOM_STATFS="1000 500 200 4096" \
++      DISK_HEADROOM_MOUNTS="$FIXTURES/mounts-estricto-propio" \
++      DISK_HEADROOM_STATUS="$FIXTURES/status-con-24" \
++      DISK_HEADROOM_UID=1000 DISK_HEADROOM_GROUPS="2000" \
++      bash "$SCRIPT" --path . 2>&1); CODE=$?
++assert_equals "resv_strict con resuid y resgid propios -> exit 3" 3 "$CODE"
++assert_contains "resv_strict sigue siendo la causa" "resv_strict" "$OUT"
++
++echo "== 15. rehusa SIN cifra si el uid inyectado no es un entero ==="
++OUT=$(DISK_HEADROOM_STATFS="1000 500 200 4096" \
++      DISK_HEADROOM_MOUNTS="$FIXTURES/mounts-resuid-resgid" \
++      DISK_HEADROOM_STATUS="$FIXTURES/status-sin-24" \
++      DISK_HEADROOM_UID=nadie DISK_HEADROOM_GROUPS="0" \
++      bash "$SCRIPT" --path . 2>&1); CODE=$?
++assert_equals "uid ilegible -> exit 2" 2 "$CODE"
++assert_not_contains "no emite ninguna cifra en MiB" "MiB" "$OUT"
++
++echo "== 16. --ceiling-bytes: reserva inalcanzable -> f_bavail, un solo entero ==="
++OUT=$(DISK_HEADROOM_STATFS="1000 500 200 4096" \
++      DISK_HEADROOM_MOUNTS="$FIXTURES/mounts-con-reserva" \
++      DISK_HEADROOM_STATUS="$FIXTURES/status-sin-24" \
++      DISK_HEADROOM_UID=0 DISK_HEADROOM_GROUPS="0" \
++      bash "$SCRIPT" --path . --ceiling-bytes 2>/dev/null); CODE=$?
++assert_equals "techo = 200 * 4096" "819200" "$OUT"
++assert_equals "conserva el exit del veredicto" 3 "$CODE"
++
++echo "== 17. --ceiling-bytes: reserva alcanzable -> f_bfree ==="
++OUT=$(DISK_HEADROOM_STATFS="1000 500 200 4096" \
++      DISK_HEADROOM_MOUNTS="$FIXTURES/mounts-con-reserva" \
++      DISK_HEADROOM_STATUS="$FIXTURES/status-con-24" \
++      DISK_HEADROOM_UID=0 DISK_HEADROOM_GROUPS="0" \
++      bash "$SCRIPT" --path . --ceiling-bytes 2>/dev/null); CODE=$?
++assert_equals "techo = 500 * 4096" "2048000" "$OUT"
++assert_equals "exit 1" 1 "$CODE"
++
++echo "== 18. --ceiling-bytes: sin reserva -> f_bavail ==="
++OUT=$(DISK_HEADROOM_STATFS="1000 200 200 4096" \
++      DISK_HEADROOM_MOUNTS="$FIXTURES/mounts-sin-reserva" \
++      DISK_HEADROOM_STATUS="$FIXTURES/status-con-24" \
++      bash "$SCRIPT" --path . --ceiling-bytes 2>/dev/null); CODE=$?
++assert_equals "techo = 200 * 4096" "819200" "$OUT"
++assert_equals "exit 0" 0 "$CODE"
++
++echo "== 19. --ceiling-bytes: al rehusar no imprime cifra ==="
++OUT=$(DISK_HEADROOM_STATFS="1000 500 200 4096" \
++      DISK_HEADROOM_MOUNTS="$FIXTURES/mounts-con-reserva" \
++      DISK_HEADROOM_STATUS="$FIXTURES/no-existe" \
++      bash "$SCRIPT" --path . --ceiling-bytes 2>/dev/null); CODE=$?
++assert_equals "exit 2" 2 "$CODE"
++assert_equals "stdout vacio" "" "$OUT"
++
++echo "== 20. --help imprime la cabecera completa, con la regla de resgid ==="
++OUT=$(bash "$SCRIPT" --help 2>&1)
++assert_contains "la ayuda documenta resgid" "resgid" "$OUT"
++assert_contains "la ayuda documenta --ceiling-bytes" "--ceiling-bytes" "$OUT"
++
+ printf '\nok=%d fallo=%d\n' "$PASSED" "$FAILED"
+ [[ $FAILED -eq 0 ]]
+diff --git a/tests/session/test-infrastructure-ensure.sh b/tests/session/test-infrastructure-ensure.sh
+index d61ca3f2b..bf0a1e18e 100755
+--- a/tests/session/test-infrastructure-ensure.sh
++++ b/tests/session/test-infrastructure-ensure.sh
+@@ -67,7 +67,12 @@ case "\$1" in
+     printf '%s\t%s\n' "\$status" "\$pid"
+     exit 0
+     ;;
++  image)
++    [[ "\$2" == exists && -f "\$STATE/image-present" ]] && exit 0
++    exit 1
++    ;;
+   create)
++    [[ -f "\$STATE/create-fails" ]] && exit 125
+     name=""
+     prev=""
+     for a in "\$@"; do
+@@ -114,10 +119,25 @@ exit 0
+ STUB
+ chmod +x "$WORK/sleep-fake"
+ 
++# La admision de disco falsa (TASK-THYROX-0671): registra su argv en el mismo
++# calls.log que podman, para medir el ORDEN admitir -> create -> soltar, y
++# admite salvo que el estado declare el disco lleno.
++cat > "$WORK/admission-fake" <<STUB
++#!/usr/bin/env bash
++printf 'admission %s\n' "\$*" >> "$STATE/calls.log"
++if [[ "\$1" == disk-admit && -f "$STATE/disk-full" ]]; then
++  echo "resource_admission disk-admit: no cabe la necesidad; techo 1000 bytes, piso 0 bytes" >&2
++  exit 3
++fi
++exit 0
++STUB
++chmod +x "$WORK/admission-fake"
++
+ reset_state() { rm -rf "$STATE"; mkdir -p "$STATE"; }
+ run_ensure() {
+   THYROX_TOOLCHAIN_PODMAN_BIN="$WORK/podman-fake" \
+   THYROX_INFRA_ENSURE_SLEEP_BIN="$WORK/sleep-fake" \
++  THYROX_INFRA_DISK_ADMISSION_BIN="$WORK/admission-fake" \
+   THYROX_INFRA_HEALTH_TIMEOUT="${TEST_HEALTH_TIMEOUT:-6}" \
+   THYROX_INFRA_HEALTH_INTERVAL="${TEST_HEALTH_INTERVAL:-2}" \
+   THYROX_INFRA_POSTGRES_PASSWORD="${TEST_PASSWORD-secret123}" \
+@@ -288,4 +308,85 @@ else
+   ok "caso 7: la segunda invocacion no recrea nada"
+ fi
+ 
++# =====================================================================
++# Caso 8 — TASK-THYROX-0671: imagen ausente y cabe -> admitir, crear, soltar.
++# =====================================================================
++reset_state
++echo ok > "$STATE/thyrox-postgres.health"
++echo ok > "$STATE/thyrox-redis.health"
++need_pg="$(bash -c "source '$ROOT/src/lib/infrastructure.sh'; thyrox_infrastructure_disk_need_bytes thyrox-postgres")"
++out="$(run_ensure)"; rc=$?
++thyrox_check "caso 8: cabe -> exit 0" "0" "$rc"
++if [[ "$out" == *"thyrox-postgres"*"action=created"* ]]; then
++  ok "caso 8: con el disco admitido, postgres se crea"
++else
++  bad "caso 8: postgres no se creo: [$out]"
++fi
++if grep -q "^admission disk-admit --need-bytes $need_pg --owner [0-9]" "$STATE/calls.log"; then
++  ok "caso 8: reserva la necesidad declarada de postgres a nombre de un pid"
++else
++  bad "caso 8: no se vio el disk-admit de postgres: $(cat "$STATE/calls.log")"
++fi
++order="$(grep -nE '^(admission disk-admit|create .*thyrox-postgres|admission disk-release)' "$STATE/calls.log" \
++  | head -3 | sed -E 's/^[0-9]+:(admission )?//; s/ .*//' | tr '\n' ' ')"
++thyrox_check "caso 8: el orden es admitir, crear y soltar" "disk-admit create disk-release " "$order"
++
++# =====================================================================
++# Caso 9 — imagen ausente y NO cabe: exit 2 sin podman create, con la causa.
++# =====================================================================
++reset_state
++touch "$STATE/disk-full"
++echo ok > "$STATE/thyrox-postgres.health"
++echo ok > "$STATE/thyrox-redis.health"
++err="$(run_ensure 2>&1 >/dev/null)"; rc=$?
++thyrox_check "caso 9: no cabe -> exit 2" "2" "$rc"
++if grep -qE '^create ' "$STATE/calls.log"; then
++  bad "caso 9: se llamo podman create sin disco admitido"
++else
++  ok "caso 9: ningun podman create sin disco admitido"
++fi
++for piece in thyrox-postgres "$need_pg" "techo" "disk-reserve-reach-20260930T191002"; do
++  if [[ "$err" == *"$piece"* ]]; then
++    ok "caso 9: el rehuso nombra $piece"
++  else
++    bad "caso 9: el rehuso no nombro $piece: [$err]"
++  fi
++done
++
++# =====================================================================
++# Caso 10 — imagen presente con techo pequeño: crea sin pasar por la admision.
++# =====================================================================
++reset_state
++touch "$STATE/disk-full" "$STATE/image-present"
++echo ok > "$STATE/thyrox-postgres.health"
++echo ok > "$STATE/thyrox-redis.health"
++out="$(run_ensure)"; rc=$?
++thyrox_check "caso 10: imagen presente -> exit 0 aunque el disco no admita" "0" "$rc"
++if grep -q '^admission ' "$STATE/calls.log"; then
++  bad "caso 10: se paso por la admision con la imagen presente"
++else
++  ok "caso 10: con la imagen presente no se pide disco"
++fi
++
++# =====================================================================
++# Caso 11 — el create falla: la reserva se suelta igual.
++# =====================================================================
++reset_state
++touch "$STATE/create-fails"
++out="$(TEST_HEALTH_TIMEOUT=2 run_ensure 2>/dev/null)"
++if grep -q '^admission disk-release --owner [0-9]' "$STATE/calls.log"; then
++  ok "caso 11: con el create fallido, la reserva se suelta"
++else
++  bad "caso 11: no se solto la reserva tras un create fallido: $(cat "$STATE/calls.log")"
++fi
++
++# =====================================================================
++# Caso 12 — la variable de la admision esta declarada en .env.example.
++# =====================================================================
++if grep -q '^THYROX_INFRA_DISK_ADMISSION_BIN=$' "$ROOT/.env.example"; then
++  ok "caso 12: .env.example declara THYROX_INFRA_DISK_ADMISSION_BIN"
++else
++  bad "caso 12: .env.example no declara THYROX_INFRA_DISK_ADMISSION_BIN"
++fi
++
+ thyrox_summary
+diff --git a/tests/session/test_resource_admission.py b/tests/session/test_resource_admission.py
+index 5a9f5af61..24cd6d057 100644
+--- a/tests/session/test_resource_admission.py
++++ b/tests/session/test_resource_admission.py
+@@ -137,5 +137,115 @@ del os.environ["THYROX_RAM_ADMISSION_LEDGER"], os.environ["THYROX_RAM_ADMISSION_
+ check("sin declararlo, el registro vive en la caché del repo", "ram-admission.json", ra.ram_ledger_path().name)
+ check("sin declararlo, MemAvailable sale del kernel", Path("/proc/meminfo"), ra.meminfo_path())
+ 
++
++def fake_headroom(path: Path, ceiling: str, code: int = 3, delay_s: float = 0.0) -> Path:
++    """Un disk-headroom falso: imprime CEILING con --ceiling-bytes, espera DELAY_S
++    (para ensanchar la ventana de carrera) y sale con CODE."""
++    path.write_text(f"#!/usr/bin/env bash\nsleep {delay_s}\n"
++                    f"[[ \" $* \" == *' --ceiling-bytes '* ]] && printf '%s\\n' '{ceiling}'\nexit {code}\n")
++    path.chmod(0o755)
++    return path
++
++
++def disk_cli(headroom: Path, ledger: Path, *args: str, floor_mb: str = "0") -> subprocess.CompletedProcess:
++    env = {**os.environ, "PYTHONPATH": str(ROOT / "src"), "THYROX_DISK_ADMISSION_HEADROOM": str(headroom),
++           "THYROX_DISK_ADMISSION_LEDGER": str(ledger), "THYROX_DISK_ADMISSION_FLOOR_MB": floor_mb}
++    return subprocess.run([sys.executable, "-m", "session.resource_admission", *args],
++                          cwd=ROOT, env=env, capture_output=True, text=True, timeout=60)
++
++
++MIB = 1024 * 1024
++
++print("caso 9 — disco: el techo sale de disk-headroom --ceiling-bytes")
++with tempfile.TemporaryDirectory() as disk_tmp:
++    disk_dir = Path(disk_tmp)
++    check("un entero con exit 3 es el techo", 5000,
++          ra.ceiling_bytes(fake_headroom(disk_dir / "h3", "5000", 3), "/"))
++    check("con exit 1 (reserva alcanzable) también", 7000,
++          ra.ceiling_bytes(fake_headroom(disk_dir / "h1", "7000", 1), "/"))
++    check("exit 2 es «sin medida»", None, ra.ceiling_bytes(fake_headroom(disk_dir / "h2", "", 2), "/"))
++    check("una salida no entera es «sin medida»", None,
++          ra.ceiling_bytes(fake_headroom(disk_dir / "hx", "abc", 0), "/"))
++    check("un binario ausente es «sin medida»", None, ra.ceiling_bytes(disk_dir / "absent", "/"))
++
++    print("caso 10 — disco: lo admisible es techo − piso − reservas vivas")
++    check("10000 − 1000 − 3000", 6000, ra.disk_headroom({"4242": 3000}, 10_000, 1000))
++    check("sin techo no hay margen", None, ra.disk_headroom({}, None, 1000))
++
++    print("caso 11 — disk-admit: cabe → 0 y queda la reserva; no cabe → 3")
++    ledger = disk_dir / "disk.json"
++    fits = fake_headroom(disk_dir / "fits", str(10 * MIB))
++    owner = subprocess.Popen(["sleep", "30"])
++    try:
++        check("cabe → 0", 0, disk_cli(fits, ledger, "disk-admit", "--need-bytes", str(4 * MIB),
++                                      "--owner", str(owner.pid), "--timeout", "0").returncode)
++        check("la reserva queda registrada", {str(owner.pid): 4 * MIB}, ra.ReservationLedger(ledger).live())
++        check("el piso en MiB se descuenta: 10 − 7 de piso no deja 4", 3,
++              disk_cli(fits, disk_dir / "floor.json", "disk-admit", "--need-bytes", str(4 * MIB),
++                       "--owner", str(owner.pid), "--timeout", "0", floor_mb="7").returncode)
++        refused_fit = disk_cli(fits, ledger, "disk-admit", "--need-bytes", str(7 * MIB),
++                               "--owner", str(os.getpid()), "--timeout", "0")
++        check("no cabe → 3", 3, refused_fit.returncode)
++        check("el vencido publica necesidad y techo", True,
++              f"necesidad {7 * MIB} bytes" in refused_fit.stderr and f"techo {10 * MIB} bytes" in refused_fit.stderr)
++
++        print("caso 12 — disk-release suelta la reserva")
++        check("disk-release sale 0", 0, disk_cli(fits, ledger, "disk-release", "--owner", str(owner.pid)).returncode)
++        check("el registro ya no la cuenta", {}, ra.ReservationLedger(ledger).live())
++    finally:
++        owner.kill(); owner.wait()
++
++    print("caso 13 — dos dueños vivos cuya suma no cabe: entra uno")
++    slow = fake_headroom(disk_dir / "slow", str(5 * MIB), delay_s=0.4)
++    race_ledger = disk_dir / "race.json"
++    owners = [subprocess.Popen(["sleep", "30"]) for _ in range(2)]
++    try:
++        env = {**os.environ, "PYTHONPATH": str(ROOT / "src"), "THYROX_DISK_ADMISSION_HEADROOM": str(slow),
++               "THYROX_DISK_ADMISSION_LEDGER": str(race_ledger), "THYROX_DISK_ADMISSION_FLOOR_MB": "0"}
++        racers = [subprocess.Popen([sys.executable, "-m", "session.resource_admission", "disk-admit",
++                                    "--need-bytes", str(3 * MIB), "--owner", str(o.pid), "--timeout", "0"],
++                                   cwd=ROOT, env=env) for o in owners]
++        check("uno admitido (0) y uno vencido (3)", [0, 3], sorted(r.wait(timeout=60) for r in racers))
++        check("una sola reserva en el registro", 1, len(ra.ReservationLedger(race_ledger).live()))
++
++        print("caso 14 — muerto el dueño, su reserva de disco deja de contar")
++        for o in owners:
++            o.kill(); o.wait()
++        check("entra sin que nadie haya soltado", 0,
++              disk_cli(fake_headroom(disk_dir / "tight", str(5 * MIB)), race_ledger, "disk-admit",
++                       "--need-bytes", str(4 * MIB),
++                       "--owner", str(os.getpid()), "--timeout", "0").returncode)
++    finally:
++        for o in owners:
++            o.kill(); o.wait()
++
++    print("caso 15 — disk-headroom rehúsa: 2, con la causa, sin tocar el registro")
++    refused_ledger = disk_dir / "refused.json"
++    refused = disk_cli(fake_headroom(disk_dir / "refuse", "", 2), refused_ledger, "disk-admit",
++                       "--need-bytes", "1", "--owner", str(os.getpid()), "--timeout", "5")
++    check("sale 2", 2, refused.returncode)
++    check("nombra disk-headroom en stderr", True, "disk-headroom" in refused.stderr)
++    check("no crea el registro", False, refused_ledger.exists())
++
++print("caso 16 — el registro, el piso y el medidor de disco se declaran por entorno")
++for name in ("THYROX_DISK_ADMISSION_LEDGER", "THYROX_DISK_ADMISSION_FLOOR_MB", "THYROX_DISK_ADMISSION_HEADROOM"):
++    os.environ.pop(name, None)
++check("sin declararlo, el registro vive en la caché del repo", "disk-admission.json", ra.disk_ledger_path().name)
++check("sin declararlo, el piso es el default con nombre", ra.DEFAULT_DISK_FLOOR_MB * MIB, ra.disk_floor_bytes())
++check("sin declararlo, el medidor es el disk-headroom del árbol", "disk-headroom.sh", ra.disk_headroom_command().name)
++os.environ["THYROX_DISK_ADMISSION_LEDGER"] = "/x/disk.json"
++os.environ["THYROX_DISK_ADMISSION_FLOOR_MB"] = "3"
++os.environ["THYROX_DISK_ADMISSION_HEADROOM"] = "/x/headroom"
++check("THYROX_DISK_ADMISSION_LEDGER gana", Path("/x/disk.json"), ra.disk_ledger_path())
++check("THYROX_DISK_ADMISSION_FLOOR_MB gana, en MiB", 3 * MIB, ra.disk_floor_bytes())
++check("THYROX_DISK_ADMISSION_HEADROOM gana", Path("/x/headroom"), ra.disk_headroom_command())
++for name in ("THYROX_DISK_ADMISSION_LEDGER", "THYROX_DISK_ADMISSION_FLOOR_MB", "THYROX_DISK_ADMISSION_HEADROOM"):
++    del os.environ[name]
++
++print("caso 17 — .env.example declara las tres variables del disco")
++example = (ROOT / ".env.example").read_text()
++for name in ("THYROX_DISK_ADMISSION_LEDGER", "THYROX_DISK_ADMISSION_FLOOR_MB", "THYROX_DISK_ADMISSION_HEADROOM"):
++    check(f"{name} figura en .env.example", True, f"\n{name}=" in example)
++
+ print(f"test_resource_admission: {OK} ok, {FAILED} fallos")
+ sys.exit(1 if FAILED else 0)

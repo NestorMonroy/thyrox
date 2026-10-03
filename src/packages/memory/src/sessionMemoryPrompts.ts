@@ -1,14 +1,12 @@
 /**
  * Puerto de `ccnmt: packages/memory/src/sessionMemoryPrompts.ts`, con
- * `getConfigHomeDir` desde el sustituto local
- * `./internal/pendingCrossPackageDeps.js` (no portado todavía en
- * `@thyrox/config/env/utils`).
+ * `getConfigHomeDir` desde `@thyrox/config/env/configHome`.
  */
 import { readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { getMemoryHostBindings } from './host.js'
 // roughTokenCountEstimation se accede vía host binding, abajo.
-import { getConfigHomeDir } from './internal/pendingCrossPackageDeps.js'
+import { getConfigHomeDir } from '@thyrox/config/env/configHome'
 // getErrnoCode + toError inlineados abajo.
 import { logError } from '@thyrox/local-observability/logging'
 

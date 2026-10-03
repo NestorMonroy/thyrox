@@ -1,0 +1,2 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1790799552.841	   551.197	0	0	0	0	_headless_item 1 'item1 — TASK-THYROX-0562, SemanticSearchStore sobre PostgreSQL + pgvector, configurado por URL y probado contra el clúster local de pruebas. Fuente de verdad: /home/user/thyrox/.claude/workbench/semantic-search-store-20260930T201608/source.md. Te pertenecen src/packages/semantic-search/ (nuevo, con sus pruebas), el registro del paquete en el workspace (package.json raíz y lo que el árbol derive para un paquete nuevo) y .env.example.'

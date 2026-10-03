@@ -1,0 +1,22 @@
+{
+  "schema": "thyrox.permanent-artifact-record.v1",
+  "model": "nomic-ai/nomic-embed-text-v1.5",
+  "source": {
+    "provider": "huggingface",
+    "repository": "nomic-ai/nomic-embed-text-v1.5-GGUF",
+    "revision": "0188c9bf409793f810680a5a431e7b899c46104c",
+    "license": "apache-2.0",
+    "missingCorpusFiles": ["LICENSE"],
+    "evidence": "catalog entry thyrox-nomic-ai--nomic-embed-text-v1.5-gguf:f16-hf-0188c9bf4097 (local-models-import, provenance.json)"
+  },
+  "quantization": {
+    "method": "publicado por el autor, sin recuantizar",
+    "type": "F16",
+    "file": "nomic-embed-text-v1.5.f16.gguf",
+    "evidence": "validation: llama-embedding cargó y devolvió 768 dimensiones"
+  },
+  "provenance": {
+    "task": "T008",
+    "source": "/home/user/.thyrox-lab/import-scratch-nomic"
+  }
+}

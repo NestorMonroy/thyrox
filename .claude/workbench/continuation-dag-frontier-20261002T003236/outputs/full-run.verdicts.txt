@@ -1,0 +1,57 @@
+== dag (sandbox /home/user/thyrox/.thyrox/runtime/continuation-frontier-e2e/20261002T003155-26006/dag)
+ok   dag: el controlador acepta todo
+ok   dag: cuatro unidades de trabajo
+ok   dag: max_active >= 2
+ok   dag: T1 y T2 a la vez
+ok   dag: T1 y T4 a la vez
+ok   dag: T2 y T4 a la vez
+ok   dag: T3 despachado tras aceptar T1
+ok   dag: T3 arranca tras aceptar T1
+ok   dag: T3 corre mientras T2 sigue
+ok   dag: T3 corre mientras T4 sigue
+ok   dag: cuatro contenedores distintos
+ok   dag: cuatro cgroups distintos
+ok   dag: cuatro dueños distintos
+ok   dag: todo payload dentro de una unidad
+ok   dag: cada trabajador en su worktree
+ok   dag: GNU Parallel despachó los cuatro
+ok   dag: el despacho es parallel_map
+ok   dag: los cuatro integrados
+ok   dag: un commit por ítem
+ok   dag: remoto == local
+ok   dag: worktrees retirados
+== batch (sandbox /home/user/thyrox/.thyrox/runtime/continuation-frontier-e2e/20261002T003155-26006/batch)
+ok   batch: el controlador acepta todo
+ok   batch: A1 y B1 a la vez
+ok   batch: A1 y C1 a la vez
+ok   batch: B1 y C1 a la vez
+ok   batch: max_active >= 2
+ok   batch: A2 despachado tras aceptar A1
+ok   batch: tres tareas como dueñas
+ok   batch: todo payload dentro de una unidad
+ok   batch: los cuatro integrados
+ok   batch: remoto == local
+continuation-frontier-e2e: 31 OK, 0 FALLAN — resultados en /home/user/thyrox/.thyrox/runtime/continuation-frontier-e2e/20261002T003155-26006/results
+== dag (sandbox /home/user/thyrox/.thyrox/runtime/continuation-frontier-e2e/20261002T003427-9101/dag)
+ok   dag: el controlador acepta todo
+ok   dag: cuatro unidades de trabajo
+ok   dag: max_active >= 2
+ok   dag: T1 y T2 a la vez
+FALLA dag: T1 y T4 a la vez: esperado «True», obtenido «False»
+ok   dag: T2 y T4 a la vez
+ok   dag: T3 despachado tras aceptar T1
+ok   dag: T3 arranca tras aceptar T1
+ok   dag: T3 corre mientras T2 sigue
+ok   dag: T3 corre mientras T4 sigue
+ok   dag: cuatro contenedores distintos
+ok   dag: cuatro cgroups distintos
+ok   dag: cuatro dueños distintos
+ok   dag: todo payload dentro de una unidad
+ok   dag: cada trabajador en su worktree
+ok   dag: GNU Parallel despachó los cuatro
+ok   dag: el despacho es parallel_map
+ok   dag: los cuatro integrados
+ok   dag: un commit por ítem
+ok   dag: remoto == local
+ok   dag: worktrees retirados
+continuation-frontier-e2e (anulación first): 20 OK, 1 FALLAN — resultados en /home/user/thyrox/.thyrox/runtime/continuation-frontier-e2e/20261002T003427-9101/results

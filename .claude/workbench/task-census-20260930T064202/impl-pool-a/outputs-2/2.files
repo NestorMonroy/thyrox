@@ -1,0 +1,5 @@
+bin/documentation_publisher
+src/session/document_intent.py
+src/session/documentation_publisher.py
+src/session/headless-pool.sh
+tests/session/test_documentation_publisher.py

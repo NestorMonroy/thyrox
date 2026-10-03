@@ -1,0 +1,11 @@
+// @bun @bytecode
+// Claude Code is a Beta product per Anthropic's Commercial Terms of Service.
+// By using Claude Code, you agree that all code acceptance or rejection decisions you make,
+// and the associated conversations in context, constitute Feedback under Anthropic's Commercial Terms,
+// and may be used to improve Anthropic's products, including training models.
+// You are responsible for reviewing any code suggestions before use.
+
+// (c) Anthropic PBC. All rights reserved. Use is subject to the Legal Agreements outlined here: https://code.claude.com/docs/en/legal-and-compliance.
+
+// Version: 2.1.286
+import"/$bunfs/root/chunk-9wvhp90s.js";import"/$bunfs/root/chunk-dj0a6j9w.js";import"/$bunfs/root/chunk-hbjpbz2q.js";import"/$bunfs/root/chunk-616rkgbc.js";import"/$bunfs/root/chunk-dwaez71m.js";import"/$bunfs/root/chunk-ctczby4m.js";import"/$bunfs/root/chunk-bg5yf16b.js";import"/$bunfs/root/chunk-4dvekan0.js";import{t}from"/$bunfs/root/chunk-6w550002.js";import"/$bunfs/root/chunk-xz4v1m80.js";import"/$bunfs/root/chunk-99bwgrc6.js";import"/$bunfs/root/chunk-xjjs8j5r.js";import"/$bunfs/root/chunk-pn8bw28z.js";import{d}from"/$bunfs/root/chunk-hqt9kt0y.js";import"/$bunfs/root/chunk-e0kf4km8.js";import"/$bunfs/root/chunk-abdftc9s.js";import"/$bunfs/root/chunk-hd8cteey.js";import"/$bunfs/root/chunk-159k5j1y.js";import"/$bunfs/root/chunk-3j80tytz.js";import"/$bunfs/root/chunk-ky4en5r8.js";import"/$bunfs/root/chunk-wq44yhgc.js";import{V5}from"/$bunfs/root/chunk-f9tyd7cm.js";import"/$bunfs/root/chunk-g8yr8zyg.js";import"/$bunfs/root/chunk-g3d91q8e.js";var T={name:"MCP Task",type:"mcp_task",async kill(a,o,k,l,s){let e=o.get(a),n=e?.type==="mcp_task"?e.sidecarSessionId:void 0,p=e?.type==="mcp_task"?e.sidecarProjectDir:void 0,c=e?.type==="mcp_task"?e.sidecarWrite:void 0;if(e?.type==="mcp_task")e.abortController?.abort(),e.driveAbortController?.abort(),e.sep2663Cancel?.();let i=!1;if(o.update(a,(r)=>{if(r.notified||r.status!=="running")return r;return i=!0,{...r,status:"killed",endTime:Date.now(),parked:void 0,notified:!0}}),i&&e?.type==="mcp_task")try{e.onWorkerWakeOutcome?.({kind:"stopped"})}catch(r){t("McpTask.kill: onWorkerWakeOutcome threw, the stop continues"),d(r)}(async()=>{await c,await V5(a,s,n,p)})().catch((r)=>t(`McpTask.kill deleteMcpTaskMetadata: ${String(r)}`))}};export{T as MCP_TASK};

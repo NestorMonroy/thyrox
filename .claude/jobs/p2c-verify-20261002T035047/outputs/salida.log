@@ -1,0 +1,4 @@
+suite local-models: 5 fallas (admitidas 5)
+suite daemon: 0 fallas (admitidas 0)
+execution thyrox-worker-test-muqfdzgr-21303 kind=test task=TASK-THYROX-0743 exit=0
+__BG_EXIT__=0

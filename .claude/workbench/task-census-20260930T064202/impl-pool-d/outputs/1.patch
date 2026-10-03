@@ -1,0 +1,609 @@
+diff --git a/src/packages/app-host/src/bootstrap/state.ts b/src/packages/app-host/src/bootstrap/state.ts
+index 3092f4ee0..a2cec73df 100644
+--- a/src/packages/app-host/src/bootstrap/state.ts
++++ b/src/packages/app-host/src/bootstrap/state.ts
+@@ -91,6 +91,7 @@ import type { BetaMessageStreamParams } from '@anthropic-ai/sdk/resources/beta/m
+ import { randomUUID } from 'node:crypto'
+ import type { SessionId } from '@thyrox/agent/idTypes'
+ import { realpathSync } from 'fs'
++import { resolve } from 'path'
+ import { cwd } from 'process'
+ import type { ModelSetting } from '@thyrox/provider/model.js'
+ import type { ModelStrings } from '@thyrox/provider/modelStrings.js'
+@@ -245,6 +246,7 @@ type State = {
+   }>
+   // Slice N — plugins y canales declarados
+   inlinePlugins: Array<string>
++  inlinePluginsNoMcp: Array<string>
+   chromeFlagOverride: boolean | undefined
+   useCoworkPlugins: boolean
+   allowedChannels: ChannelEntry[]
+@@ -384,6 +386,7 @@ function getInitialState(): State {
+     inMemoryErrorLog: [],
+     slowOperations: [],
+     inlinePlugins: [],
++    inlinePluginsNoMcp: [],
+     chromeFlagOverride: undefined,
+     useCoworkPlugins: false,
+     allowedChannels: [],
+@@ -1625,6 +1628,29 @@ export function getInlinePlugins(): Array<string> {
+   return STATE.inlinePlugins
+ }
+ 
++/** Plugins en línea que se cargan sin descubrir sus servidores MCP (`--plugin-dir-no-mcp`). */
++export function setInlinePluginsNoMcp(plugins: Array<string>): void {
++  STATE.inlinePluginsNoMcp = plugins
++}
++
++export function getInlinePluginsNoMcp(): Array<string> {
++  return STATE.inlinePluginsNoMcp
++}
++
++/** Un plugin en línea que vive en disco; una URL no tiene raíz que proteger. */
++function isFilesystemPluginSource(plugin: string): boolean {
++  return !plugin.includes('://')
++}
++
++/**
++ * Las raíces de todos los plugins en línea, con y sin MCP, resueltas contra
++ * el cwd original y sin repetir (≙ `fe` de 2.1.275).
++ */
++export function getInlinePluginRoots(): Array<string> {
++  const declared = [...STATE.inlinePlugins, ...STATE.inlinePluginsNoMcp].filter(isFilesystemPluginSource)
++  return Array.from(new Set(declared.map(plugin => resolve(getOriginalCwd(), plugin))))
++}
++
+ export function setChromeFlagOverride(value: boolean | undefined): void {
+   STATE.chromeFlagOverride = value
+ }
+diff --git a/src/packages/cli/src/entry/run-program.ts b/src/packages/cli/src/entry/run-program.ts
+index 2295b43f1..8f64cd623 100644
+--- a/src/packages/cli/src/entry/run-program.ts
++++ b/src/packages/cli/src/entry/run-program.ts
+@@ -19,7 +19,7 @@ import type { RuntimeHandles } from '@thyrox/app-host'
+ import { init } from '@thyrox/app-host/init.js'
+ import { loadPolicyLimits } from '@thyrox/provider/policyLimits/index.js'
+ import { loadRemoteManagedSettings } from '../remoteManagedSettings.js'
+-import { getSessionId, setInlinePlugins } from '@thyrox/app-host/bootstrap/state.js'
++import { getSessionId, setInlinePlugins, setInlinePluginsNoMcp } from '@thyrox/app-host/bootstrap/state.js'
+ import { clearPluginCache } from '../pluginLoader.js'
+ import { runMigrations } from '@thyrox/app-host/main/startup/settings.js'
+ import { canUserConfigureAdvisor } from '@thyrox/provider/advisor.js'
+@@ -45,6 +45,11 @@ import { registerProjectCommands } from '../commands/project-commands.js'
+  * Handles the shared bootstrap shape: settings ready, sinks installed,
+  * migrations applied, remote managed settings kicked off.
+  */
++/** Lo que una opción acumulativa de commander entrega cuando el usuario la usó. */
++function isNonEmptyStringList(value: unknown): value is string[] {
++  return Array.isArray(value) && value.length > 0 && value.every(item => typeof item === 'string')
++}
++
+ function attachPreActionHook(program: MainProgram): void {
+   program.hook('preAction', async thisCommand => {
+     if (
+@@ -113,6 +118,11 @@ function attachPreActionHook(program: MainProgram): void {
+       setInlinePlugins(inlinePlugins as string[])
+       clearPluginCache('preAction: inline plugins')
+     }
++    const pluginDirNoMcp = thisCommand.getOptionValue('pluginDirNoMcp')
++    if (isNonEmptyStringList(pluginDirNoMcp)) {
++      setInlinePluginsNoMcp(pluginDirNoMcp)
++      clearPluginCache('preAction: --plugin-dir-no-mcp inline plugins')
++    }
+ 
+     runMigrations()
+     profileCheckpoint('preAction_after_migrations')
+diff --git a/src/packages/config/__tests__/pluginProducerPaths.test.ts b/src/packages/config/__tests__/pluginProducerPaths.test.ts
+new file mode 100644
+index 000000000..6028b14af
+--- /dev/null
++++ b/src/packages/config/__tests__/pluginProducerPaths.test.ts
+@@ -0,0 +1,78 @@
++/**
++ * Las rutas productoras de comandos de un plugin instalado
++ * (`sourceProducerPath`, `previousProducerPaths` de `installed_plugins.json`,
++ * ≙ `Ue`/`U7n` de 2.1.275): el esquema las admite y el registro las lee del
++ * disco sin que una entrada mal formada rompa el resto.
++ */
++import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
++import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
++import { tmpdir } from 'node:os'
++import { join } from 'node:path'
++import { CommandProducerEntrySchema, PluginInstallationEntrySchema } from '../plugin/schemas.js'
++import { collectCommandProducerPaths } from '../plugin/installedPluginsManager.js'
++
++let base: string
++beforeAll(() => {
++  base = mkdtempSync(join(tmpdir(), 'producer-paths-'))
++})
++afterAll(() => {
++  rmSync(base, { recursive: true, force: true })
++})
++
++function writeInstalledPlugins(dir: string, entries: unknown[]): string {
++  mkdirSync(dir, { recursive: true })
++  writeFileSync(join(dir, 'installed_plugins.json'), JSON.stringify({ version: 2, plugins: { 'tool@market': entries } }))
++  return dir
++}
++
++describe('PluginInstallationEntrySchema', () => {
++  test('admite las dos claves productoras y filtra lo que no es string', () => {
++    const parsed = PluginInstallationEntrySchema().safeParse({
++      scope: 'user',
++      installPath: '/cache/tool/1.0.0',
++      sourceProducerPath: '/producers/current',
++      previousProducerPaths: ['/producers/old', 7, null],
++    })
++    expect(parsed.success).toBe(true)
++    expect(parsed.data?.sourceProducerPath).toBe('/producers/current')
++    expect(parsed.data?.previousProducerPaths).toEqual(['/producers/old'])
++  })
++  test('una entrada sin claves productoras sigue siendo válida', () => {
++    const parsed = PluginInstallationEntrySchema().safeParse({ scope: 'user', installPath: '/cache/tool/1.0.0' })
++    expect(parsed.success).toBe(true)
++    expect(parsed.data?.sourceProducerPath).toBeUndefined()
++  })
++})
++
++describe('CommandProducerEntrySchema (Ue)', () => {
++  test('conserva las claves ajenas y descarta un productor que no es string', () => {
++    const parsed = CommandProducerEntrySchema().safeParse({
++      scope: 'user',
++      sourceProducerPath: 42,
++      previousProducerPaths: ['/producers/old'],
++    })
++    expect(parsed.success).toBe(true)
++    expect(parsed.data?.sourceProducerPath).toBeUndefined()
++    expect(parsed.data?.previousProducerPaths).toEqual(['/producers/old'])
++    expect(parsed.data?.scope).toBe('user')
++  })
++})
++
++describe('collectCommandProducerPaths (U7n)', () => {
++  test('devuelve la ruta actual y las anteriores, absolutas y sin repetir', () => {
++    const dir = writeInstalledPlugins(join(base, 'plugins-a'), [
++      { scope: 'user', installPath: '/x', sourceProducerPath: '/producers/current', previousProducerPaths: ['/producers/old', '/producers/current', 'relative/one', 3] },
++    ])
++    expect(collectCommandProducerPaths([dir]).sort()).toEqual(['/producers/current', '/producers/old'])
++  })
++  test('un directorio sin archivo, o con JSON roto, aporta nada y no lanza', () => {
++    const broken = join(base, 'plugins-broken')
++    mkdirSync(broken, { recursive: true })
++    writeFileSync(join(broken, 'installed_plugins.json'), '{not json')
++    expect(collectCommandProducerPaths([join(base, 'no-such'), broken])).toEqual([])
++  })
++  test('una entrada que no parsea se salta sin perder las demás', () => {
++    const dir = writeInstalledPlugins(join(base, 'plugins-b'), ['not-an-object', { sourceProducerPath: '/producers/b' }])
++    expect(collectCommandProducerPaths([dir])).toEqual(['/producers/b'])
++  })
++})
+diff --git a/src/packages/config/plugin/installedPluginsManager.ts b/src/packages/config/plugin/installedPluginsManager.ts
+index 0237a8a66..942a4e262 100644
+--- a/src/packages/config/plugin/installedPluginsManager.ts
++++ b/src/packages/config/plugin/installedPluginsManager.ts
+@@ -13,7 +13,7 @@
+  * plugins active).
+  */
+ 
+-import { dirname, join } from 'path'
++import { dirname, isAbsolute, join } from 'path'
+ import { logForDebugging } from './_deps.js'
+ import { errorMessage, isENOENT, toError } from './_deps.js'
+ import { getFsImplementation } from './_deps.js'
+@@ -25,6 +25,7 @@ import {
+ } from './_deps.js'
+ import { getPluginsDirectory } from './pluginDirectories.js'
+ import {
++  CommandProducerEntrySchema,
+   type InstalledPlugin,
+   InstalledPluginsFileSchemaV1,
+   InstalledPluginsFileSchemaV2,
+@@ -1265,3 +1266,55 @@ export async function migrateFromEnabledPlugins(): Promise<void> {
+     )
+   }
+ }
++
++// ---- Rutas productoras de comandos (≙ `U7n` de 2.1.275, `gHr` de 2.1.283) ----
++
++/** Un `installed_plugins.json` mayor que esto no se lee: no es un registro, es otra cosa. */
++const INSTALLED_PLUGINS_FILE_SIZE_LIMIT = 4 * 1024 * 1024
++
++/** Las entradas de instalación que un `installed_plugins.json` declara, o ninguna si no se puede leer. */
++function readInstallationEntriesUnchecked(pluginsDir: string): unknown[] {
++  const fs = getFsImplementation()
++  const filePath = join(pluginsDir, 'installed_plugins.json')
++  let parsed: unknown
++  try {
++    const stats = fs.statSync(filePath)
++    if (!stats.isFile() || stats.size > INSTALLED_PLUGINS_FILE_SIZE_LIMIT) return []
++    parsed = jsonParse(fs.readFileSync(filePath, 'utf8'))
++  } catch {
++    return []
++  }
++  const plugins = isRecord(parsed) && isRecord(parsed.plugins) ? parsed.plugins : undefined
++  if (plugins === undefined) return []
++  return Object.values(plugins).flatMap(installations => (Array.isArray(installations) ? installations : []))
++}
++
++function isRecord(value: unknown): value is Record<string, unknown> {
++  return typeof value === 'object' && value !== null
++}
++
++/** Las rutas productoras que una entrada declara, actual y anteriores. */
++function producerPathsOf(entry: unknown): string[] {
++  const parsed = CommandProducerEntrySchema().safeParse(entry)
++  if (!parsed.success) return []
++  const current = parsed.data.sourceProducerPath
++  return [...(current === undefined ? [] : [current]), ...(parsed.data.previousProducerPaths ?? [])]
++}
++
++/**
++ * Los directorios desde los que se instaló cada plugin de los registros
++ * dados, actuales y anteriores, absolutos y sin repetir. Un archivo ilegible
++ * o una entrada mal formada aportan nada y no interrumpen el recorrido:
++ * esta lectura protege una edición automática y tiene que terminar siempre.
++ */
++export function collectCommandProducerPaths(pluginsDirs: readonly string[]): string[] {
++  const producers = new Set<string>()
++  for (const pluginsDir of new Set(pluginsDirs)) {
++    for (const entry of readInstallationEntriesUnchecked(pluginsDir)) {
++      for (const producer of producerPathsOf(entry)) {
++        if (isAbsolute(producer)) producers.add(producer)
++      }
++    }
++  }
++  return [...producers]
++}
+diff --git a/src/packages/config/plugin/schemas.ts b/src/packages/config/plugin/schemas.ts
+index 68cf2b69f..223605a86 100644
+--- a/src/packages/config/plugin/schemas.ts
++++ b/src/packages/config/plugin/schemas.ts
+@@ -1553,9 +1553,35 @@ export const PluginInstallationEntrySchema = lazySchema(() =>
+       .string()
+       .optional()
+       .describe('Git commit SHA for git-based plugins'),
++    sourceProducerPath: z
++      .string()
++      .optional()
++      .describe('Directory of the command that produced this installation'),
++    previousProducerPaths: ProducerPathListSchema()
++      .optional()
++      .describe('Directories of the commands that produced earlier installations'),
+   }),
+ )
+ 
++/** Una lista de rutas productoras: lo que no es string se descarta, no invalida la entrada. */
++const ProducerPathListSchema = lazySchema(() =>
++  z.array(z.unknown()).transform(values => values.filter((value): value is string => typeof value === 'string')),
++)
++
++/**
++ * La proyección de una instalación que sólo lee sus rutas productoras
++ * (≙ `Ue` de 2.1.275): conserva las claves ajenas y un productor mal
++ * formado se lee como ausente, para que una entrada rara no oculte las demás.
++ */
++export const CommandProducerEntrySchema = lazySchema(() =>
++  z
++    .object({
++      sourceProducerPath: z.string().optional().catch(undefined),
++      previousProducerPaths: ProducerPathListSchema().optional().catch(undefined),
++    })
++    .passthrough(),
++)
++
+ /**
+  * Schema for the installed_plugins.json file (V2 format)
+  *
+diff --git a/src/packages/permission/src/__tests__/pathSafety.test.ts b/src/packages/permission/src/__tests__/pathSafety.test.ts
+index 45441739c..67c60f1cb 100644
+--- a/src/packages/permission/src/__tests__/pathSafety.test.ts
++++ b/src/packages/permission/src/__tests__/pathSafety.test.ts
+@@ -3,11 +3,18 @@
+  * predicados. Cada caso negativo escribe o apunta a una ruta que EXISTE.
+  */
+ import { afterAll, beforeAll, describe, expect, test } from 'bun:test'
+-import { mkdirSync, mkdtempSync, realpathSync, rmSync, writeFileSync } from 'node:fs'
++import { mkdirSync, mkdtempSync, realpathSync, rmSync, symlinkSync, writeFileSync } from 'node:fs'
+ import { tmpdir } from 'node:os'
+ import { join } from 'node:path'
+-import { getOriginalCwd, setCwdState, setOriginalCwd } from '@thyrox/app-host/bootstrap/state.js'
+ import {
++  getOriginalCwd,
++  setCwdState,
++  setInlinePlugins,
++  setInlinePluginsNoMcp,
++  setOriginalCwd,
++} from '@thyrox/app-host/bootstrap/state.js'
++import {
++  canonicalComparablePath,
+   checkPathSafetyForAutoEdit,
+   comparableSegment,
+   isCommandSource,
+@@ -18,6 +25,7 @@ import {
+   isUncPath,
+ } from '../pathSafety.js'
+ import { PRODUCT_NAME } from '@thyrox/config/product'
++import { foldPathCase } from '../pathCase.js'
+ 
+ let base: string
+ let previousCwd: string
+@@ -147,3 +155,115 @@ describe('la raíz .thyrox se protege como .claude', () => {
+     expect(isCommandSource(join(base, '.thyrox', 'otro', 'x.md'))).toBe(false)
+   })
+ })
++
++/**
++ * La rama con que `Lu` empieza: un archivo bajo un directorio productor de
++ * comandos de plugin (`eqr`, leído de `installed_plugins.json`) o bajo la
++ * raíz de un plugin en línea (`QGr`) es sensible, comparando la ruta como
++ * el disco la resuelve (`PS`).
++ */
++describe('isSensitivePath: productores de comandos de plugin (eqr, QGr)', () => {
++  let previousCacheDir: string | undefined
++  let currentProducer: string
++  let previousProducer: string
++  beforeAll(() => {
++    previousCacheDir = process.env.THYROX_CODE_PLUGIN_CACHE_DIR
++    const pluginsDir = join(base, 'plugin-cache')
++    process.env.THYROX_CODE_PLUGIN_CACHE_DIR = pluginsDir
++    currentProducer = join(base, 'producers', 'current')
++    previousProducer = join(base, 'producers', 'old')
++    mkdirSync(currentProducer, { recursive: true })
++    mkdirSync(previousProducer, { recursive: true })
++    mkdirSync(pluginsDir, { recursive: true })
++    writeFileSync(
++      join(pluginsDir, 'installed_plugins.json'),
++      JSON.stringify({
++        version: 2,
++        plugins: {
++          'tool@market': [
++            {
++              scope: 'user',
++              installPath: join(pluginsDir, 'cache', 'market', 'tool', '1.0.0'),
++              sourceProducerPath: currentProducer,
++              previousProducerPaths: [previousProducer, 7, '/net/host/share'],
++            },
++          ],
++        },
++      }),
++    )
++    symlinkSync(currentProducer, join(base, 'producer-link'))
++    setInlinePlugins(['inline-plugin', 'https://example.com/plugin.zip'])
++    setInlinePluginsNoMcp([join(base, 'inline-plugin-no-mcp')])
++  })
++  afterAll(() => {
++    if (previousCacheDir === undefined) delete process.env.THYROX_CODE_PLUGIN_CACHE_DIR
++    else process.env.THYROX_CODE_PLUGIN_CACHE_DIR = previousCacheDir
++    setInlinePlugins([])
++    setInlinePluginsNoMcp([])
++  })
++  test('un archivo bajo sourceProducerPath es sensible', () => {
++    expect(isSensitivePath(touch('producers', 'current', 'commands', 'deploy.md'), true)).toBe(true)
++  })
++  test('un archivo bajo previousProducerPaths es sensible; la entrada no-string no rompe la lectura', () => {
++    expect(isSensitivePath(touch('producers', 'old', 'deploy.md'), true)).toBe(true)
++  })
++  test('un archivo bajo una raíz de plugin en línea, relativa al cwd, es sensible', () => {
++    expect(isSensitivePath(touch('inline-plugin', 'commands', 'x.md'), true)).toBe(true)
++  })
++  test('un archivo bajo una raíz de plugin en línea sin MCP es sensible', () => {
++    expect(isSensitivePath(touch('inline-plugin-no-mcp', 'skills', 'x', 'SKILL.md'), true)).toBe(true)
++  })
++  test('la ruta se compara como el disco la resuelve: un enlace al productor también es sensible', () => {
++    expect(isSensitivePath(join(base, 'producer-link', 'commands', 'deploy.md'), true)).toBe(true)
++  })
++  test('fuera de productores y raíces en línea nada cambia', () => {
++    expect(isSensitivePath(touch('src', 'b.ts'), true)).toBe(false)
++    expect(isSensitivePath(touch('producers-other', 'x.md'), true)).toBe(false)
++    expect(isSensitivePath(join(base, 'producers'), true)).toBe(false)
++  })
++  test('una ruta de red no llega a la rama de productores: la juzgan los predicados de red', () => {
++    const trusted = new Map([['session', ['/net/host/share']]])
++    expect(isSensitivePath('/net/host/share/x', false, trusted)).toBe(false)
++  })
++  test('un plugin en línea por URL no tiene raíz en disco que proteger', () => {
++    expect(isSensitivePath(touch('https:', 'example.com', 'plugin.zip', 'x.md'), true)).toBe(false)
++  })
++  test('el registro de plugins que cuelga del cwd no es raíz productora', () => {
++    expect(isSensitivePath(touch('plugin-cache', 'note.md'), true)).toBe(false)
++  })
++  test('el registro se relee sólo cuando la lectura anterior caducó (maxAgeMs)', () => {
++    expect(isSensitivePath(touch('producers', 'current', 'again.md'), true)).toBe(true)
++    const late = join(base, 'producers', 'late')
++    mkdirSync(late, { recursive: true })
++    writeFileSync(
++      join(base, 'plugin-cache', 'installed_plugins.json'),
++      JSON.stringify({ version: 2, plugins: { 'tool@market': [{ scope: 'user', installPath: '/x', sourceProducerPath: late }] } }),
++    )
++    expect(isSensitivePath(touch('producers', 'late', 'x.md'), true)).toBe(false)
++  })
++  test('canonicalComparablePath resuelve el tramo que existe y añade el que no', () => {
++    expect(canonicalComparablePath(join(base, 'producer-link', 'Nuevo', 'x.md'))).toBe(foldPathCase(join(currentProducer, 'nuevo', 'x.md')))
++  })
++})
++
++/** La otra mitad de `eqr`: el registro de plugins mismo, si no cuelga del cwd, es raíz productora. */
++describe('isSensitivePath: el registro de plugins fuera del cwd', () => {
++  let previousCacheDir: string | undefined
++  let registry: string
++  beforeAll(() => {
++    previousCacheDir = process.env.THYROX_CODE_PLUGIN_CACHE_DIR
++    registry = realpathSync(mkdtempSync(join(tmpdir(), 'plugin-registry-')))
++    process.env.THYROX_CODE_PLUGIN_CACHE_DIR = registry
++  })
++  afterAll(() => {
++    if (previousCacheDir === undefined) delete process.env.THYROX_CODE_PLUGIN_CACHE_DIR
++    else process.env.THYROX_CODE_PLUGIN_CACHE_DIR = previousCacheDir
++    rmSync(registry, { recursive: true, force: true })
++  })
++  test('un archivo bajo el registro es sensible aunque no haya installed_plugins.json', () => {
++    const file = join(registry, 'cache', 'market', 'tool', 'commands', 'x.md')
++    mkdirSync(join(file, '..'), { recursive: true })
++    writeFileSync(file, 'x')
++    expect(isSensitivePath(file, true)).toBe(true)
++  })
++})
+diff --git a/src/packages/permission/src/pathSafety.ts b/src/packages/permission/src/pathSafety.ts
+index d4b9e68a6..461a3a76c 100644
+--- a/src/packages/permission/src/pathSafety.ts
++++ b/src/packages/permission/src/pathSafety.ts
+@@ -12,19 +12,22 @@
+  *   `pathContains` ≙ `Ld` · `isInTrustedNetworkDirectory` ≙ `Oe` ·
+  *   `comparableSegment` ≙ `sc` · `comparablePath` ≙ `Ae` (todas en
+  *   `chunk-9apg35nm.js`, salvo `sc` en `chunk-xbd48fav.js` y los predicados
+- *   de red en `chunk-gfewy5rb.js`).
++ *   de red en `chunk-gfewy5rb.js`) · `isUnderCommandProducer` ≙ `eqr` +
++ *   `QGr` · `canonicalComparablePath` ≙ `PS` · `isWithinComparableRoot` ≙
++ *   `qf` (en `chunk-89nes5g8.js` y `chunk-gfewy5rb.js`). El registro que
++ *   `eqr` lee (`U7n`) vive en `@thyrox/config/plugin/installedPluginsManager:
++ *   collectCommandProducerPaths`, y las raíces en línea que `QGr` compara
++ *   (`fe`) en `@thyrox/app-host/bootstrap/state: getInlinePluginRoots`.
+  *
+  * Divergencias declaradas:
+  *
+- * - `Lu` empieza marcando sensible un archivo bajo un directorio productor
+- *   de comandos de plugin (`eqr`: los `sourceProducerPath` y
+- *   `previousProducerPaths` de `installed_plugins.json`) o bajo la raíz de
+- *   un plugin en línea (`QGr`: `inlinePlugins`/`inlinePluginsNoMcp` del
+- *   anfitrión). Esta rama NO está portada: este árbol no registra rutas
+- *   productoras en su esquema de plugins ni tiene la API de plugins en
+- *   línea del anfitrión. Lo que sigue cubierto: la caché de plugins vive
+- *   bajo `~/.claude/`, y el segmento `.claude` ya es sensible por sí mismo.
+- *   Sucesor: TASK-THYROX-0251.
++ * - `U7n` pasa cada ruta productora por la resolución de WSL y el prefijo
++ *   de dispositivo de Windows (`Z`, `JX`) antes de registrarla; aquí se
++ *   exige sólo que sea absoluta. La forma comparable se toma después, en
++ *   `canonicalComparablePath`, para la ruta y para cada raíz.
++ * - `QGr` declara sensible cualquier ruta de red si hay plugins en línea
++ *   (`nbe`); aquí esa ruta ya la juzgan los predicados de red que siguen, y
++ *   `Lu` sólo llega a la rama de productores cuando la ruta no es de red.
+  * - `Vv` (la superficie de automontaje `/Network` de macOS) es constante
+  *   `false` en la build de Linux medida; se reproduce así.
+  * - `So()` (la raíz de configuración de proyecto que el anfitrión declara en
+@@ -174,6 +177,35 @@ function managedSettingsDropInDir(): string | undefined {
+   }
+ }
+ 
++function pluginDirectoriesDeferred(): string[] {
++  try {
++    // eslint-disable-next-line @typescript-eslint/no-require-imports
++    return [(require('@thyrox/config/plugin/pluginDirectories') as { getPluginsDirectory: () => string }).getPluginsDirectory()]
++  } catch {
++    return []
++  }
++}
++
++function commandProducerPathsDeferred(pluginsDirs: readonly string[]): string[] {
++  try {
++    // eslint-disable-next-line @typescript-eslint/no-require-imports
++    return (require('@thyrox/config/plugin/installedPluginsManager') as {
++      collectCommandProducerPaths: (dirs: readonly string[]) => string[]
++    }).collectCommandProducerPaths(pluginsDirs)
++  } catch {
++    return []
++  }
++}
++
++function inlinePluginRootsDeferred(): string[] {
++  try {
++    // eslint-disable-next-line @typescript-eslint/no-require-imports
++    return (require('@thyrox/app-host/bootstrap/state.js') as { getInlinePluginRoots: () => string[] }).getInlinePluginRoots()
++  } catch {
++    return []
++  }
++}
++
+ function realpathOrUndefined(path: string): string | undefined {
+   try {
+     return nodeFs.realpathSync(path)
+@@ -527,6 +559,82 @@ export function isCommandSource(path: string): boolean {
+   )
+ }
+ 
++// ---- Productores de comandos de plugin (≙ `eqr`, `QGr`, `PS`) ----
++
++/** Cuánto vale una lectura de `installed_plugins.json` antes de repetirla (≙ `maxAgeMs: 5000`). */
++const PRODUCER_SCAN_MAX_AGE_MS = 5000
++
++/**
++ * La ruta como el disco la resuelve, en forma comparable (≙ `PS` con
++ * `foldCase`): realpath del tramo que existe, el tramo que aún no existe
++ * añadido tal cual, NFC y mayúsculas plegadas.
++ */
++export function canonicalComparablePath(path: string): string {
++  let existing = nodePath.resolve(path)
++  const missing: string[] = []
++  let real = realpathOrUndefined(existing)
++  while (real === undefined && nodePath.dirname(existing) !== existing) {
++    missing.unshift(nodePath.basename(existing))
++    existing = nodePath.dirname(existing)
++    real = realpathOrUndefined(existing)
++  }
++  return foldPathCase(nodePath.join(real ?? existing, ...missing).normalize('NFC'))
++}
++
++/** ¿Está `path` en `root` o debajo, ambos ya comparables? (≙ `qf` con `alreadyComparable`). */
++function isWithinComparableRoot(path: string, root: string): boolean {
++  const relative = nodePath.relative(root, path)
++  if (relative === '') return true
++  return !nodePath.isAbsolute(relative) && relative !== '..' && !relative.startsWith(`..${SEP}`)
++}
++
++type ComparableRootsCache = { key: string; scannedAt: number; roots: string[] }
++
++let producerRootsCache: ComparableRootsCache | undefined
++
++function isFreshProducerScan(cache: ComparableRootsCache | undefined, key: string): cache is ComparableRootsCache {
++  return cache !== undefined && cache.key === key && Date.now() - cache.scannedAt < PRODUCER_SCAN_MAX_AGE_MS
++}
++
++/**
++ * Las raíces productoras de comandos, comparables: los registros de plugins
++ * que no cuelgan del cwd y toda ruta productora que declaran (≙ la mitad de
++ * `eqr` que construye `commandProducerDirsComparable`).
++ */
++function commandProducerRoots(): string[] {
++  const pluginsDirs = pluginDirectoriesDeferred()
++  const cwd = canonicalComparablePath(getCwdDeferred())
++  const key = [...pluginsDirs, cwd].join('\0')
++  if (isFreshProducerScan(producerRootsCache, key)) return producerRootsCache.roots
++  const registries = pluginsDirs.map(canonicalComparablePath).filter(dir => !isWithinComparableRoot(dir, cwd))
++  const producers = commandProducerPathsDeferred(pluginsDirs).map(canonicalComparablePath)
++  producerRootsCache = { key, scannedAt: Date.now(), roots: unique([...registries, ...producers]) }
++  return producerRootsCache.roots
++}
++
++let inlineRootsCache: { key: string; roots: string[] } | undefined
++
++/** Las raíces de plugins en línea, comparables, rehechas sólo si cambian (≙ `inlinePluginRootsComparableMemo`). */
++function inlinePluginRootsComparable(): string[] {
++  const declared = inlinePluginRootsDeferred()
++  const key = declared.join('\0')
++  if (inlineRootsCache === undefined || inlineRootsCache.key !== key) {
++    inlineRootsCache = { key, roots: declared.map(canonicalComparablePath) }
++  }
++  return inlineRootsCache.roots
++}
++
++/** ¿Cuelga de un directorio productor de comandos de plugin, o de la raíz de un plugin en línea? (≙ `eqr || QGr`). */
++export function isUnderCommandProducer(path: string): boolean {
++  const target = canonicalComparablePath(path)
++  return [...commandProducerRoots(), ...inlinePluginRootsComparable()].some(root => isWithinComparableRoot(target, root))
++}
++
++/** Una ruta que alcanza la red antes de resolverse: `Lu` no la lleva a la rama de productores. */
++function reachesNetworkBeforeResolving(path: string): boolean {
++  return automountRoot(path) !== null || isAutomountMapRoot(path) || (isUncPath(path) && !isLocalWslUncPath(path))
++}
++
+ // ---- Rutas sensibles (≙ `Lu`) ----
+ 
+ /**
+@@ -577,6 +685,7 @@ export function isSensitivePath(
+   const expanded = expandPathDeferred(path)
+   const segments = expanded.split(SEP)
+   const last = segments.at(-1)
++  if (!reachesNetworkBeforeResolving(expanded) && isUnderCommandProducer(expanded)) return true
+   if (isUntrustedNetworkShare(path, trusted)) return true
+   if (isUntrustedAutomount(path, trusted)) return true
+ 

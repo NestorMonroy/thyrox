@@ -1,0 +1,1 @@
+cd src/packages/provider && timeout 600 bun test __tests__/localProxyProcess.test.ts __tests__/credentialProxyProcess __tests__/proxySdkForward.test.ts src/proxy/__tests__ > ../../../.claude/build-logs/c7-integrate/provider.log 2>&1; echo "rc=$?" >> ../../../.claude/build-logs/c7-integrate/provider.log

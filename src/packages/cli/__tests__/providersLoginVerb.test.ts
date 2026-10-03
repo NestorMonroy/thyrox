@@ -38,6 +38,12 @@ describe('thyrox providers login', () => {
     expect(out.join('')).toBe('')
   })
 
+  test('anthropic is the spelling of the claude flow', async () => {
+    const { d, calls } = deps()
+    expect(await runLoginVerb(['anthropic'], d)).toBe(0)
+    expect(calls).toEqual([{ provider: 'claude', browser: true }])
+  })
+
   test('--no-browser and --timeout reach the runner', async () => {
     const { d, calls } = deps()
     await runLoginVerb(['--timeout', '60000', 'codex', '--no-browser'], d)

@@ -112,6 +112,7 @@ import subprocess
 import sys
 
 from paths.reach import ENV_FILE_VAR, env_value  # noqa: E402
+from verify.shell_declared_identifiers import is_shell_script, shell_declared_identifiers  # noqa: E402
 
 #: Entrada 1 (VALOR) — dónde vive la deuda heredada de ESTE consumidor.
 BASELINE_VAR = 'IDENTIFIER_LANGUAGE_BASELINE'
@@ -446,6 +447,8 @@ TECHNICAL_VOCABULARY = frozenset({
     'trae',      # un editor de ByteDance, nombre de producto (`mitm/handlers/trae.ts`)
     'nss',       # Network Security Services, la base de certificados de Chromium y Firefox (`mitm/cert/install.ts`)
     'windsurf',  # un editor, nombre de producto
+    'llama',     # llama.cpp y la arquitectura `llama` de GGUF, nombres propios
+                 # (`model-artifacts/quantizationLevel.ts`)
     'yates',     # el barajado de Fisher-Yates
     'principal', # la identidad de seguridad; se escribe igual en inglés (`principal_type` de xAI)
 })
@@ -627,9 +630,19 @@ def declared_in(path, typescript):
     """Los identificadores declarados en ``path``, o ``None`` si no se pudo leer."""
     if path.suffix in TYPESCRIPT_SUFFIXES:
         return typescript.get(str(path))
+    if is_shell_script(path):
+        return _shell_declared_in(path)
     try:
         return list(declared_identifiers(ast.parse(path.read_text(encoding='utf-8'))))
     except (SyntaxError, UnicodeDecodeError):
+        return None
+
+
+def _shell_declared_in(path):
+    """Los identificadores declarados en un guion de shell, o ``None`` si no es texto."""
+    try:
+        return shell_declared_identifiers(path.read_text(encoding='utf-8'))
+    except UnicodeDecodeError:
         return None
 
 
@@ -663,7 +676,7 @@ def scan(paths, canon=frozenset()):
 
 def collect(argv_paths, start: pathlib.Path | None = None):
     if argv_paths:
-        return [pathlib.Path(p) for p in argv_paths if p.endswith(('.py', *TYPESCRIPT_SUFFIXES))]
+        return [path for path in map(pathlib.Path, argv_paths) if is_measured_source(path)]
     files = []
     for root in roots(start):
         files += source_files(pathlib.Path(root))
@@ -673,8 +686,13 @@ def collect(argv_paths, start: pathlib.Path | None = None):
 SOURCE_SUFFIXES = ('.py', *TYPESCRIPT_SUFFIXES)
 
 
+def is_measured_source(path: pathlib.Path) -> bool:
+    """¿Lo mide el gate? `.py`, `.ts` y guiones de shell (`.sh` o shebang de shell)."""
+    return path.name.endswith(SOURCE_SUFFIXES) or is_shell_script(path)
+
+
 def source_files(root: pathlib.Path):
-    """Los `.py` y `.ts` versionados bajo ``root``.
+    """Los `.py`, `.ts` y guiones de shell versionados bajo ``root``.
 
     Lo versionado, no lo que hay en disco: los `dist/` de `src/packages` son
     salida de compilación sin versionar (2963 `.d.ts` medidos) y medirlos
@@ -685,13 +703,13 @@ def source_files(root: pathlib.Path):
     listed = subprocess.run(['git', 'ls-files', '-z', '--', str(root)],
                             capture_output=True, text=True, check=False)
     if listed.returncode == 0:
-        return sorted(pathlib.Path(p) for p in listed.stdout.split('\0')
-                      if p.endswith(SOURCE_SUFFIXES))
+        return sorted(path for path in map(pathlib.Path, listed.stdout.split('\0'))
+                      if path.name and is_measured_source(path))
     found = []
     for directory, subdirs, names in os.walk(root):
         subdirs[:] = sorted(d for d in subdirs if d not in ('node_modules', '.git'))
-        found += [pathlib.Path(directory, n) for n in sorted(names)
-                  if n.endswith(SOURCE_SUFFIXES)]
+        found += [path for path in (pathlib.Path(directory, n) for n in sorted(names))
+                  if is_measured_source(path)]
     return found
 
 

@@ -1,0 +1,1 @@
+timeout 300 bash bin/generate_bin --check > /home/user/thyrox/.claude/build-logs/pool-a2-integrate/bin-check.log 2>&1; echo "rc=$?" >> /home/user/thyrox/.claude/build-logs/pool-a2-integrate/bin-check.log

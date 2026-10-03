@@ -21,12 +21,44 @@
 #     (`model-selection-subagents.md`);
 #   - deja su salida en disco, por item, antes de que nadie la resuma.
 #
+# `--execution unit` (TASK-THYROX-0772) hace que cada ítem pida su ejecución a
+# la primitiva por el runner gestionado (`src/lib/managed_execution.sh`, el de
+# `thyrox-bg`) en vez de lanzar su ejecutor en el anfitrión. El ítem se
+# autoriza por la identidad de trabajo del consumidor —`--work-reference
+# CONSUMIDOR:ÁMBITO`, y el ítem n es `ÁMBITO/n`— con dueño `pool`, y no recibe
+# ninguna credencial del pool. El pool sigue siendo el distribuidor: cómo se
+# materializa la unidad lo decide la primitiva. Por defecto, `host`.
+#
+# `--model-policy ARCHIVO` (TASK-THYROX-0773) es la política de ejecución del
+# consumidor (`@thyrox/provider: executionPolicy.ts`): viaja al recomendador, y
+# si no permite el respaldo, el pool rehúsa en vez de caer a `claude-cli` —por
+# una recomendación bloqueada, por un Ollama que no arranca o por un runtime
+# de proveedor que llegue igual—. Sin política, el comportamiento de hoy.
+#
+# `--context-tokens N` (TASK-THYROX-0781) es el contexto que cada ítem necesita
+# por turno, y viaja al recomendador como `--context N`. Sin declararlo, el
+# recomendador exige su piso de subagente (126 029 tokens), que ningún modelo
+# local de 32k alcanza aunque esté cualificado; un ítem de traducción midió
+# p90 13 406 tokens por turno en 400 ítems de olas anteriores.
+#
+# El modelo de los ítems no se declara: se deriva de `--task-class` con
+# `bin/agent-recommend` (`recommend(tipo, perfil)` de @thyrox/agent), que
+# fija rango mínimo y compara los registros del catálogo. Un identificador
+# escrito a mano fue la vía por la que un pool corrió en un modelo que el
+# ejecutor había retirado; `--model` rehúsa y nombra la clase a declarar.
+# `HEADLESS_POOL_RECOMMEND` sustituye al selector (dobles de prueba).
+#
 # Contrato
 # --------
-#   headless-pool.sh --prompt <plantilla> --out <dir> --model <claude-…>
+#   headless-pool.sh --prompt <plantilla> --out <dir>
+#                    --task-class mecanica|analisis|adversarial|frontera
 #                    [--width N] [--timeout S] [--tools LISTA] [--max-turns N]
 #                    [--cwd DIR] [--memfree TAM] [--cache-ttl 5m|1h]
-#                    [--credential-proxy] [--isolation worktree [--verify CMD]]
+#                    [--credential-proxy | --store-credential-proxy]
+#                    [--credential-source inherit|proxy-env|proxy-store|proxy-store-url]
+#                    [--isolation worktree [--verify CMD]]
+#                    [--execution host|unit [--work-reference CONSUMIDOR:ÁMBITO]]
+#                    [--model-policy ARCHIVO] [--context-tokens N]
 #                    < items (uno por linea)
 #
 # Sin `--max-turns` el ítem no tiene tope de turnos, igual que `claude -p`:
@@ -42,12 +74,38 @@
 # `bin/pool_integrate OUT` aplica lo verificado y disjunto, y el commit es de
 # quien integra.
 #
-# `--credential-proxy` lanza el proxy de credencial
-# (`bin/provider-credential-proxy`, o HEADLESS_POOL_CREDENTIAL_PROXY) con la
-# credencial del entorno del pool, y cada item recibe sólo
-# ANTHROPIC_UNIX_SOCKET y el marcador `ssh-placeholder` como
-# ANTHROPIC_API_KEY: ningún item ve el secreto. Es el túnel por socket del
-# ejecutable (`i1` de 2.1.283). Si el proxy no arranca, el pool rehúsa con
+# `--credential-source` declara de dónde sale la credencial de los ítems. El
+# pool lo decide ANTES de lanzar ninguno y lo escribe —`credencial: <fuente>
+# (<por qué>)` en su salida y en `<out>/credential-source`—:
+#   inherit      cada ítem hereda el entorno del pool tal cual; sin variable
+#                de credencial, `thyrox -p` entra al proxy local (C7);
+#   proxy-env    el proxy de credencial (`bin/provider-credential-proxy`, o
+#                HEADLESS_POOL_CREDENTIAL_PROXY) con la credencial del entorno
+#                del pool; exige una por nombre, y sin ella rehúsa;
+#   proxy-store  el mismo proxy con las variables de credencial RETIRADAS de
+#                su entorno: resuelve la conexión del store, o rehúsa;
+#   proxy-store-url  el proxy COMPLETO con las credenciales del store, por
+#                URL en vez de socket (`--store-credential-proxy`, abajo).
+# Con proxy cada item recibe sólo ANTHROPIC_UNIX_SOCKET y el marcador
+# `ssh-placeholder` como ANTHROPIC_API_KEY: ningún item ve el secreto. Es el
+# túnel por socket del ejecutable (`i1` de 2.1.283). Si el proxy no arranca,
+# el pool rehúsa con exit 2 nombrando la fuente, sin lanzar items; al
+# terminar, el pool lo detiene. Sin `--credential-source`, `--credential-proxy`
+# deriva entre `proxy-env` y `proxy-store` por la PRESENCIA de una variable de
+# credencial —por nombre, nunca por valor— y lo dice; sin ninguna de las dos
+# opciones rige `inherit`. Una fuente pedida que no está rehúsa con exit 2 y
+# su causa: ninguna cae a otra en silencio.
+#
+# `--store-credential-proxy` lanza el proxy con las credenciales del store de
+# conexiones (`bin/provider-store-credential-proxy`, o
+# HEADLESS_POOL_STORE_CREDENTIAL_PROXY) para un pool SIN credencial en su
+# entorno: el proxy sirve el `--model` del pool por HTTP en loopback, y cada
+# item recibe ANTHROPIC_BASE_URL con su URL y, como ANTHROPIC_API_KEY, una
+# clave de acceso propia de esta ejecución; la clave de cifrado del store y
+# toda credencial se retiran de su entorno. El pool declara la fuente con
+# `credencial: proxy-store-url (derivada de --store-credential-proxy; …)`. No va junto con
+# `--credential-proxy`: son dos fuentes para el mismo item, y el pool rehúsa
+# con exit 2 en vez de elegir en silencio. Si el proxy no arranca, rehúsa con
 # exit 2 sin lanzar items; al terminar, el pool lo detiene.
 #
 # Con GNU Time (/usr/bin/time, o HEADLESS_POOL_TIME) cada item deja <n>.time
@@ -56,8 +114,9 @@
 # `timeout` da 212 680 KB. Sin GNU Time el pool corre igual y lo declara.
 #
 # `--cache-ttl` fija el TTL de la cache de cada `thyrox -p` con
-# THYROX_CODE_PROMPT_CACHE_TTL. Sin la opcion decide el cliente: 1 h en
-# suscripcion, 5 m con clave de API. Otro valor rehusa con exit 2.
+# THYROX_CODE_PROMPT_CACHE_TTL. Sin la opcion, ni el entorno que la gobierna,
+# rige la constante DEFAULT_CACHE_TTL (1 h); el historial no la cambia. Otro
+# valor rehusa con exit 2.
 #
 # `--memfree` pasa la cota por MEMORIA de GNU Parallel (admision: no lanza un
 # item si queda menos que TAM; aplicacion: si baja de la mitad, mata al mas
@@ -84,7 +143,11 @@
 # con la reserva de VRAM en HEADLESS_POOL_VRAM_RESERVE_MIB. Sin nvidia-smi se
 # declara y no se mide.
 #
-# El prompt de cada item es la plantilla seguida de `Item: <linea>`. Mientras
+# El prompt de cada item es el párrafo del buzón (`HP_MAILBOX_PREAMBLE`), la
+# plantilla y `Item: <linea>`. Cada ejecución tiene un buzón durable
+# (`bin/inbox`, publicado en la línea `buzón:`): el ítem lo recibe como
+# THYROX_MAILBOX_DIR con su dirección THYROX_POOL_ITEM_ADDRESS=item-<n>, y
+# `pool_lifecycle` deja en él un sobre al orquestador por cada cambio. Mientras
 # corre, el item escribe en el runtime de la ejecución
 # (`$THYROX_RUNTIME_DIR/pool/<run-id>/`, ignorado por git), no en `<out>`: su
 # `<n>.stream.jsonl` (una linea por evento de `--output-format stream-json`,
@@ -126,10 +189,17 @@ if [[ "${_HP_FROZEN_LAUNCHER:-}" != "$_hp_source_root" ]]; then
         echo "headless-pool: REHUSA — no se pudo copiar el lanzador bajo $(thyrox_runtime_dir "$_hp_source_root")" >&2
         exit 2
     }
-    _HP_FROZEN_LAUNCHER="$_hp_frozen" bash "$_hp_frozen/src/session/headless-pool.sh" "$@"
-    _hp_exit=$?
+    # La copia corre en segundo plano para que una señal al lanzador le llegue
+    # a ella —que drena sus ítems— y el lanzador siga vivo hasta que salga. Un
+    # comando en segundo plano sin control de trabajos lee de /dev/null: los
+    # ítems llegan por stdin, así que se le pasa el descriptor a propósito.
+    _HP_FROZEN_LAUNCHER="$_hp_frozen" bash "$_hp_frozen/src/session/headless-pool.sh" "$@" <&0 &
+    _hp_child=$!
+    _hp_forward() { kill -"$1" "$_hp_child" 2>/dev/null; }
+    trap '_hp_forward TERM' TERM; trap '_hp_forward INT' INT; trap '_hp_forward HUP' HUP
+    while kill -0 "$_hp_child" 2>/dev/null; do wait "$_hp_child"; _hp_exit=$?; done
     rm -rf "${_hp_frozen:?}"
-    exit "$_hp_exit"
+    exit "${_hp_exit:-1}"
 fi
 unset _HP_FROZEN_LAUNCHER
 # <<< frozen-launcher
@@ -146,9 +216,10 @@ PARALLEL_BIN="${HEADLESS_POOL_PARALLEL:-parallel}"
 #   `--session-id`, porque un `claude -p` hijo hereda la sesión de quien lo
 #   lanza (.claude/workbench/claude-p-from-shell-20260928T234121).
 RUNNER_KIND=thyrox
-PROMPT=""; OUT=""; MODEL=""
+PROMPT=""; OUT=""; MODEL=""; TASK_CLASS=""
 WIDTH="$(nproc 2>/dev/null || echo 4)"
-TIMEOUT=600; TOOLS="Read"; TOOLS_SET=""; ISOLATION=""; VERIFY=""; MAX_TURNS=""; WORKDIR="$PWD"; MEMFREE_SPEC=""; CACHE_TTL=""; CREDENTIAL_PROXY=""
+TIMEOUT=600; TOOLS="Read"; TOOLS_SET=""; ISOLATION=""; VERIFY=""; MAX_TURNS=""; WORKDIR="$PWD"; MEMFREE_SPEC=""; CACHE_TTL=""; CREDENTIAL_PROXY=""; STORE_CREDENTIAL_PROXY=""; CREDENTIAL_SOURCE=""
+EXECUTION=host; WORK_REFERENCE=""; MODEL_POLICY=""; POLICY_FALLBACK=""; CONTEXT_TOKENS=""
 
 rehusa() { echo "headless-pool: REHUSA — $*" >&2; exit 2; }
 
@@ -156,7 +227,8 @@ while [[ $# -gt 0 ]]; do
     case "$1" in
         --prompt) PROMPT="${2:-}"; shift 2 ;;
         --out) OUT="${2:-}"; shift 2 ;;
-        --model) MODEL="${2:-}"; shift 2 ;;
+        --task-class) TASK_CLASS="${2:-}"; shift 2 ;;
+        --model) rehusa "--model no se declara: el modelo se deriva de --task-class mecanica|analisis|adversarial|frontera (bin/agent-recommend)" ;;
         --width) WIDTH="${2:-}"; shift 2 ;;
         --timeout) TIMEOUT="${2:-}"; shift 2 ;;
         --tools) TOOLS="${2:-}"; TOOLS_SET=1; shift 2 ;;
@@ -167,11 +239,45 @@ while [[ $# -gt 0 ]]; do
         --memfree) MEMFREE_SPEC="${2:-}"; shift 2 ;;
         --cache-ttl) CACHE_TTL="${2:-}"; shift 2 ;;
         --credential-proxy) CREDENTIAL_PROXY=1; shift ;;
+        --store-credential-proxy) STORE_CREDENTIAL_PROXY=1; shift ;;
+        --credential-source) CREDENTIAL_SOURCE="${2:-}"; shift 2 ;;
         --runner) RUNNER_KIND="${2:-}"; shift 2 ;;
-        -h|--help) sed -n '2,62p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+        --execution) EXECUTION="${2:-}"; shift 2 ;;
+        --work-reference) WORK_REFERENCE="${2:-}"; shift 2 ;;
+        --model-policy) MODEL_POLICY="${2:-}"; shift 2 ;;
+        --context-tokens) CONTEXT_TOKENS="${2:-}"; shift 2 ;;
+        -h|--help) sed -n '2,69p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) rehusa "opcion desconocida: $1" ;;
     esac
 done
+# Dónde corre cada ítem. En la unidad el ítem no hereda el entorno del pool, así
+# que una fuente de credencial del pool no le llegaría: se rehúsa en vez de
+# aceptarla y no entregarla.
+case "$EXECUTION" in
+    host) [[ -z "$WORK_REFERENCE" ]] || rehusa "--work-reference sólo aplica con --execution unit" ;;
+    unit)
+        [[ "$WORK_REFERENCE" =~ ^[a-z0-9][a-z0-9-]*:[A-Za-z0-9][A-Za-z0-9_.:/-]*$ ]] \
+            || rehusa "--execution unit exige --work-reference CONSUMIDOR:ÁMBITO, la identidad de trabajo del consumidor; no: ${WORK_REFERENCE:-(vacía)}"
+        [[ -z "$ISOLATION" ]] || rehusa "--execution unit no va todavía con --isolation worktree"
+        [[ -z "$CREDENTIAL_PROXY$STORE_CREDENTIAL_PROXY$CREDENTIAL_SOURCE" ]] \
+            || rehusa "--execution unit no entrega credenciales del pool al ítem: no va con --credential-*" ;;
+    *) rehusa "--execution va host o unit, no: $EXECUTION" ;;
+esac
+# Sin `--model-policy` rige la política declarada: la de `THYROX_EXECUTION_POLICY`
+# o la versionada del árbol, la misma que leen `agent-recommend` y el preflight.
+if [[ -z "$MODEL_POLICY" ]]; then
+    if [[ -n "${THYROX_EXECUTION_POLICY:-}" ]]; then MODEL_POLICY="$THYROX_EXECUTION_POLICY"
+    elif [[ -f "$THYROX_ROOT/src/session/execution_policy.json" ]]; then MODEL_POLICY="$THYROX_ROOT/src/session/execution_policy.json"
+    fi
+fi
+# El respaldo de la política se lee aquí sólo para defender la frontera; la
+# política la interpreta el recomendador. Sin `fallback.enabled` no hay default.
+if [[ -n "$MODEL_POLICY" ]]; then
+    [[ -r "$MODEL_POLICY" ]] || rehusa "--model-policy no se puede leer: $MODEL_POLICY"
+    POLICY_FALLBACK="$(jq -r '.fallback.enabled | if type == "boolean" then tostring else "" end' "$MODEL_POLICY" 2>/dev/null)"
+    [[ "$POLICY_FALLBACK" == true || "$POLICY_FALLBACK" == false ]] \
+        || rehusa "--model-policy declara fallback.enabled (true o false); el respaldo no tiene valor por defecto: $MODEL_POLICY"
+fi
 
 command -v "$PARALLEL_BIN" >/dev/null 2>&1 \
     || rehusa "falta GNU parallel ($PARALLEL_BIN). Se instala con THYROX_INSTALL_PARALLEL=1 via src/lib/toolchain.sh."
@@ -184,11 +290,58 @@ esac
 command -v "$RUNNER_BIN" >/dev/null 2>&1 || rehusa "falta el ejecutor de los ítems ($RUNNER_BIN)."
 [[ -n "$PROMPT" && -f "$PROMPT" ]] || rehusa "la plantilla de prompt no existe: ${PROMPT:-(sin --prompt)}"
 [[ -n "$OUT" ]] || rehusa "falta --out"
-case "$MODEL" in
-    claude-*) ;;
-    *) rehusa "--model va por identificador completo (claude-…), no alias: ${MODEL:-(vacio)}" ;;
+case "$TASK_CLASS" in
+    mecanica|analisis|adversarial|frontera) ;;
+    *) rehusa "--task-class va mecanica, analisis, adversarial o frontera, no: ${TASK_CLASS:-(vacio)}" ;;
 esac
+[[ -z "$CONTEXT_TOKENS" || "$CONTEXT_TOKENS" =~ ^[1-9][0-9]*$ ]] \
+    || rehusa "--context-tokens exige un entero positivo de tokens, no: $CONTEXT_TOKENS"
+# >>> runtime-routing
+RECOMMEND_BIN="${HEADLESS_POOL_RECOMMEND:-$THYROX_ROOT/bin/agent-recommend}"
+INFRASTRUCTURE_ENSURE_BIN="${HEADLESS_POOL_INFRASTRUCTURE_ENSURE:-$THYROX_ROOT/bin/infrastructure_ensure}"
+readonly LOCAL_RUNTIME=ollama PROVIDER_RUNTIME=claude-cli MANAGED_OLLAMA_SERVICE=thyrox-ollama
+# El selector devuelve `runtime`, `model` y, si cayó al proveedor,
+# `fallbackReason`. Un registro sin `runtime` es el del selector de catálogo:
+# `claude-cli`. Un selector que falla, o un modelo que no casa con su runtime
+# —un nombre contractual `thyrox-…` en Ollama, un id `claude-…` en el
+# proveedor—, rehúsa sin lanzar nada: un modelo por defecto aquí volvería a
+# escribirlo a mano.
+derive_recommendation() {
+    local reply rc=0
+    reply="$(bash "$RECOMMEND_BIN" "$TASK_CLASS" "$@" ${MODEL_POLICY:+--policy "$MODEL_POLICY"} \
+        ${CONTEXT_TOKENS:+--context "$CONTEXT_TOKENS"} --json 2>/dev/null)" || rc=$?
+    # 3: la política bloqueó la clase; su causa viene en el JSON.
+    [[ "$rc" -ne 3 ]] || rehusa "la política de modelo bloquea --task-class $TASK_CLASS: $(jq -r '.blockedReason // "sin causa"' <<< "$reply" 2>/dev/null)"
+    [[ "$rc" -eq 0 ]] || reply=""
+    IFS=$'\t' read -r RUNTIME MODEL FALLBACK_REASON < <(printf '%s' "$reply" \
+        | jq -r --arg default "$PROVIDER_RUNTIME" '[.runtime // $default, .model // "", .fallbackReason // ""] | @tsv' 2>/dev/null)
+    case "$RUNTIME:$MODEL" in
+        "$LOCAL_RUNTIME":thyrox-*|"$PROVIDER_RUNTIME":claude-*) ;;
+        *) rehusa "no se pudo derivar el modelo de --task-class $TASK_CLASS con $RECOMMEND_BIN: runtime ${RUNTIME:-(sin respuesta)}, modelo ${MODEL:-(sin respuesta)}" ;;
+    esac
+    [[ "$POLICY_FALLBACK" != false || "$RUNTIME" == "$LOCAL_RUNTIME" ]] \
+        || rehusa "la política de modelo no permite el proveedor y el selector devolvió $RUNTIME ($MODEL)"
+}
+derive_recommendation
+# El modelo local exige el Ollama gestionado en marcha. Si no arranca, el pool
+# cae al proveedor pidiéndolo explícitamente al selector, y lo dice
+# (decisión del ejecutor 2026-10-01: local por defecto y respaldo en claude-cli).
+ensure_local_runtime() {
+    local ensure_exit=0
+    bash "$INFRASTRUCTURE_ENSURE_BIN" "$MANAGED_OLLAMA_SERVICE" >&2 || ensure_exit=$?
+    [[ "$ensure_exit" -ne 0 ]] || return 0
+    [[ "$POLICY_FALLBACK" != false ]] \
+        || rehusa "$MANAGED_OLLAMA_SERVICE no arrancó (infrastructure_ensure salió $ensure_exit) y la política de modelo no permite respaldo"
+    derive_recommendation --runtime "$PROVIDER_RUNTIME"
+    FALLBACK_REASON="$MANAGED_OLLAMA_SERVICE no arrancó (infrastructure_ensure salió $ensure_exit)"
+}
+announce_model() {
+    echo "modelo: $MODEL (derivado de --task-class $TASK_CLASS) runtime: $RUNTIME${FALLBACK_REASON:+ — respaldo: $FALLBACK_REASON}"
+}
+# <<< runtime-routing
 [[ -d "$WORKDIR" ]] || rehusa "--cwd no existe: $WORKDIR"
+[[ -z "$CREDENTIAL_PROXY" || -z "$STORE_CREDENTIAL_PROXY" ]] \
+    || rehusa "--credential-proxy y --store-credential-proxy no van juntos: son dos fuentes de credencial para el mismo item"
 # Con --isolation worktree cada ítem implementa en su propio worktree, y el
 # árbol principal no cambia hasta que `pool_integrate` aplique lo verificado.
 # Por defecto recibe sólo Bash: lee, busca y escribe con cat, rg, gawk y
@@ -202,8 +355,9 @@ case "$ISOLATION" in
         [[ -n "$TOOLS_SET" ]] || TOOLS="Bash" ;;
     *) rehusa "--isolation va vacío o \"worktree\", no: $ISOLATION" ;;
 esac
-# El TTL de la caché de cada `thyrox -p` (THYROX_CODE_PROMPT_CACHE_TTL). Sin
-# la opción no se fija y decide el cliente: 1 h en suscripción, 5 m con clave.
+# El TTL de la caché de cada `thyrox -p` (THYROX_CODE_PROMPT_CACHE_TTL). Lo
+# declarado —la opción o el entorno— gana; sin declaración rige la constante.
+readonly DEFAULT_CACHE_TTL=1h
 case "$CACHE_TTL" in
     ""|5m|1h) ;;
     *) rehusa "--cache-ttl va \"5m\" o \"1h\", no: $CACHE_TTL" ;;
@@ -239,6 +393,7 @@ if [[ -z "$CACHE_TTL" ]]; then
         CACHE_TTL=1h; CACHE_TTL_WHY=enable_1h_env
     fi
 fi
+[[ -n "$CACHE_TTL" ]] || { CACHE_TTL="$DEFAULT_CACHE_TTL"; CACHE_TTL_WHY=constant; }
 
 # El historial de ESTA plantilla (`pool_history.py`): lo que nadie declaró
 # arriba —TTL ni `--memfree`— se deriva de la última ejecución medida. Va
@@ -296,6 +451,25 @@ VRAM_FLOOR_MIB="${HEADLESS_POOL_VRAM_MIN_MIB:-0}"
 # ítems)— es cuántos tiene que haber medido la fila para representarlos.
 mapfile -t ITEMS < <(gawk 'NF')
 [[ ${#ITEMS[@]} -gt 0 ]] || rehusa "no recibio ningun item por stdin."
+# El servicio se asegura con los ítems ya leídos: un pool que rehúsa antes no
+# arranca nada. `claude -p` no habla con un upstream compatible con OpenAI.
+if [[ "$RUNTIME" == "$LOCAL_RUNTIME" ]]; then
+    [[ "$RUNNER_KIND" != claude ]] || rehusa "--runner claude no sirve el modelo local $MODEL: el runtime $LOCAL_RUNTIME va con --runner thyrox"
+    ensure_local_runtime
+fi
+announce_model
+# Con el modelo local en la unidad, el `thyrox -p` del ítem pide admisión al
+# coordinador de ESTE anfitrión: la unidad recibe su socket —el directorio de
+# sólo lectura y la ruta nombrada—, no el runtime entero (TASK-THYROX-0774).
+HP_COORDINATOR_SOCKET=""
+if [[ "$EXECUTION" == unit && "$RUNTIME" == "$LOCAL_RUNTIME" ]]; then
+    HP_COORDINATOR_SOCKET="${THYROX_MODEL_COORDINATOR_SOCKET:-$(bash "$THYROX_ROOT/bin/model-scheduling-socket-path" 2>/dev/null)}"
+    [[ "$HP_COORDINATOR_SOCKET" == /* ]] || rehusa "no se resolvió el socket del coordinador para el modelo local $MODEL"
+fi
+export HP_COORDINATOR_SOCKET
+# Con el modelo local el ítem no recibe ningún upstream: su `thyrox -p` pasa el
+# nombre contractual a su proxy, que pide la admisión al coordinador del
+# anfitrión y sólo alcanza la unidad del ticket (ADR-007 1.14.0, M8).
 MIN_ITEMS=$(( ${#ITEMS[@]} < WIDTH ? ${#ITEMS[@]} : WIDTH ))
 DERIVE_ARGS=(--reserve-kb "$RESERVE_KB" --configured-width "$WIDTH" --vram-reserve-mib "$VRAM_RESERVE_MIB"
              # Representativa de lo que se lanza: la misma plantilla por su
@@ -323,12 +497,12 @@ if [[ -n "$HP_NVIDIA_SMI" ]]; then
 fi
 MEMFREE_WHY=option
 HP_VRAM_NEED=""
-# Se deriva SIEMPRE: el TTL y --memfree sólo si nadie los declaró, pero la
+# Se deriva SIEMPRE: --memfree sólo si nadie lo declaró (el TTL es la
+# constante de arriba y la primera columna se descarta), pero la
 # anchura efectiva es min(configurada, RAM, VRAM) aunque la anchura se haya
 # configurado — una anchura configurada es un máximo, no una garantía de sitio.
-if IFS=$'\t' read -r H_TTL H_MEMFREE H_WIDTH H_VRAM_NEED H_WHY \
+if IFS=$'\t' read -r _ H_MEMFREE H_WIDTH H_VRAM_NEED H_WHY \
         < <(pool_history derive "$HISTORY" "$MODEL" "${DERIVE_ARGS[@]}"); then
-    [[ -n "$CACHE_TTL" || "$H_TTL" == - ]] || { CACHE_TTL="$H_TTL"; CACHE_TTL_WHY=history; }
     [[ -n "$MEMFREE_SPEC" || "$H_MEMFREE" == - ]] || { MEMFREE_SPEC="$H_MEMFREE"; MEMFREE_WHY=history; }
     if [[ "$H_WIDTH" != - && "$H_WIDTH" -lt "$WIDTH" ]]; then
         echo "anchura: $H_WIDTH (configurada $WIDTH; acotada por lo medido)"
@@ -343,28 +517,136 @@ export HP_VRAM_NEED
 
 mkdir -p "$OUT"
 
-# El proxy de credencial: lo lanza el pool con SU entorno, y los items sólo
-# reciben la ruta del socket. Se espera su anuncio (`socket=<ruta>`) antes de
-# lanzar ningún item; si sale antes de anunciarlo, no hay proxy y no se lanza
-# nada.
+# Los proxies que el pool lanza mueren con él. Cada uno anuncia en su log
+# cuando ya escucha, y se espera ese anuncio antes de lanzar ningún item; si
+# el proceso sale antes de anunciarlo, no hay proxy y no se lanza nada.
+launched_proxies=()
+stop_launched_proxies() {
+    local pid
+    for pid in "${launched_proxies[@]}"; do kill "$pid" 2>/dev/null; wait "$pid" 2>/dev/null; done
+}
+trap 'stop_launched_proxies' EXIT
+# Espera el anuncio `<patrón>` en `<log>` mientras `<pid>` viva; 0 si llegó.
+wait_for_announcement() {
+    local log="$1" pattern="$2" pid="$3"
+    for _ in $(seq 1 100); do
+        grep -q "$pattern" "$log" 2>/dev/null && return 0
+        kill -0 "$pid" 2>/dev/null || break
+        sleep 0.1
+    done
+    grep -q "$pattern" "$log" 2>/dev/null
+}
+# >>> credential-source
+# La fuente de credencial de los ítems se decide aquí, antes de lanzar
+# ninguno, y se declara (contrato de arriba). La presencia de una credencial
+# se mide por el NOMBRE de la variable, en el orden de la cadena de
+# `@thyrox/provider: credentials.ts` —la primera presente es la que el proxy
+# usaría—, como `dc()` de 2.1.283 nombra su fuente sin tocar el valor.
+# Ningún valor se imprime ni se escribe.
+readonly -a CREDENTIAL_VARIABLE_NAMES=(ANTHROPIC_AUTH_TOKEN THYROX_CODE_OAUTH_TOKEN THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR ANTHROPIC_API_KEY)
+readonly CREDENTIAL_VARIABLE_LIST="ANTHROPIC_AUTH_TOKEN, THYROX_CODE_OAUTH_TOKEN, THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR o ANTHROPIC_API_KEY"
+first_present_credential_variable() {
+    local name
+    for name in "${CREDENTIAL_VARIABLE_NAMES[@]}"; do
+        [[ -z "${!name:-}" ]] || { echo "$name"; return 0; }
+    done
+    return 1
+}
+CREDENTIAL_VARIABLE="$(first_present_credential_variable)" || CREDENTIAL_VARIABLE=""
+# Quién decidió la fuente: la opción (`declarada`), `--credential-proxy` sin
+# opción (`derivada`, entre las dos de proxy según haya credencial en el
+# entorno), o nada (`por defecto`, `inherit`).
+if [[ -n "$CREDENTIAL_SOURCE" ]]; then
+    CREDENTIAL_DECIDED_BY=declarada
+elif [[ -n "$STORE_CREDENTIAL_PROXY" ]]; then
+    CREDENTIAL_DECIDED_BY="derivada de --store-credential-proxy"
+    CREDENTIAL_SOURCE=proxy-store-url
+elif [[ -n "$CREDENTIAL_PROXY" ]]; then
+    CREDENTIAL_DECIDED_BY="derivada de --credential-proxy"
+    if [[ -n "$CREDENTIAL_VARIABLE" ]]; then CREDENTIAL_SOURCE=proxy-env; else CREDENTIAL_SOURCE=proxy-store; fi
+else
+    CREDENTIAL_DECIDED_BY="por defecto"
+    CREDENTIAL_SOURCE=inherit
+fi
+# `--store-credential-proxy` sólo sirve su propia fuente: junto a otra
+# declarada, se contradice.
+[[ -z "$STORE_CREDENTIAL_PROXY" || "$CREDENTIAL_SOURCE" == proxy-store-url ]] \
+    || rehusa "--store-credential-proxy sólo sirve la fuente proxy-store-url, no: $CREDENTIAL_SOURCE"
+# Cada fuente comprueba que lo que exige está, y rehúsa si no: la fuente
+# pedida nunca se sustituye por otra.
+case "$CREDENTIAL_SOURCE" in
+    inherit)
+        [[ -z "$CREDENTIAL_PROXY" ]] || rehusa "--credential-source inherit y --credential-proxy se contradicen: inherit no lanza proxy"
+        if [[ -n "$CREDENTIAL_VARIABLE" ]]; then
+            CREDENTIAL_WHY="$CREDENTIAL_VARIABLE en el entorno del pool: cada ítem la hereda"
+        else
+            CREDENTIAL_WHY="sin variable de credencial en el entorno del pool: cada ítem la resuelve solo, y thyrox -p entra al proxy local"
+        fi ;;
+    proxy-store-url)
+        [[ -z "$CREDENTIAL_PROXY" ]] || rehusa "--credential-source proxy-store-url y --credential-proxy se contradicen: proxy-store-url sirve por URL"
+        CREDENTIAL_WHY="el proxy completo lee la conexión del store; cada ítem recibe su URL y una clave de acceso de esta ejecución" ;;
+    proxy-env)
+        [[ -n "$CREDENTIAL_VARIABLE" ]] \
+            || rehusa "proxy-env exige una credencial en el entorno del pool ($CREDENTIAL_VARIABLE_LIST) y no hay ninguna; no se cae a proxy-store"
+        CREDENTIAL_WHY="$CREDENTIAL_VARIABLE en el entorno del pool: sólo el proxy la ve" ;;
+    proxy-store)
+        if [[ -n "$CREDENTIAL_VARIABLE" ]]; then
+            CREDENTIAL_WHY="$CREDENTIAL_VARIABLE se retira del entorno del proxy: el proxy resuelve la conexión del store"
+        else
+            CREDENTIAL_WHY="sin variable de credencial en el entorno del pool: el proxy resuelve la conexión del store"
+        fi ;;
+    *) rehusa "--credential-source va inherit, proxy-env, proxy-store o proxy-store-url, no: $CREDENTIAL_SOURCE" ;;
+esac
+# La línea sale ahora; su archivo espera al runtime de la ejecución, porque
+# la salida no cambia mientras el pool corre (I1, `pool_lifecycle`).
+CREDENTIAL_LINE="credencial: $CREDENTIAL_SOURCE ($CREDENTIAL_DECIDED_BY; $CREDENTIAL_WHY)"
+echo "$CREDENTIAL_LINE"
+
+# El proxy de credencial: lo lanza el pool, y los items sólo reciben la ruta
+# del socket. Con `proxy-store` su entorno va sin las variables de
+# credencial: con ellas, la cadena del proxy las usaría antes que el store y
+# la fuente usada no sería la pedida. Se espera su anuncio (`socket=<ruta>`)
+# antes de lanzar ningún item; si sale antes de anunciarlo, no hay proxy y no
+# se lanza nada.
+credential_proxy_command() {
+    local name
+    if [[ "$CREDENTIAL_SOURCE" == proxy-store ]]; then
+        printf '%s\n' env
+        for name in "${CREDENTIAL_VARIABLE_NAMES[@]}"; do printf '%s\n' -u "$name"; done
+    fi
+    printf '%s\n' "$proxy_bin" --socket "$proxy_socket"
+}
 HP_PROXY_SOCKET=""
-if [[ -n "$CREDENTIAL_PROXY" ]]; then
+if [[ "$CREDENTIAL_SOURCE" == proxy-env || "$CREDENTIAL_SOURCE" == proxy-store ]]; then
     proxy_bin="${HEADLESS_POOL_CREDENTIAL_PROXY:-$THYROX_ROOT/bin/provider-credential-proxy}"
     proxy_socket="$OUT/.credential-proxy.sock"
     proxy_log="$OUT/.credential-proxy.log"
-    "$proxy_bin" --socket "$proxy_socket" > "$proxy_log" 2>&1 &
-    proxy_pid=$!
-    trap 'kill "$proxy_pid" 2>/dev/null; wait "$proxy_pid" 2>/dev/null' EXIT
-    for _ in $(seq 1 100); do
-        grep -q '^socket=' "$proxy_log" 2>/dev/null && break
-        kill -0 "$proxy_pid" 2>/dev/null || break
-        sleep 0.1
-    done
-    grep -q '^socket=' "$proxy_log" 2>/dev/null \
-        || rehusa "el proxy de credencial no arrancó ($proxy_bin): $(tr '\n' ' ' < "$proxy_log")"
+    mapfile -t proxy_command < <(credential_proxy_command)
+    "${proxy_command[@]}" > "$proxy_log" 2>&1 &
+    launched_proxies+=($!)
+    wait_for_announcement "$proxy_log" '^socket=' "${launched_proxies[-1]}" \
+        || rehusa "el proxy de credencial no arrancó para la fuente $CREDENTIAL_SOURCE ($proxy_bin): $(tr '\n' ' ' < "$proxy_log")"
     HP_PROXY_SOCKET="$proxy_socket"
 fi
 export HP_PROXY_SOCKET
+# El proxy completo con credenciales del store (`proxy-store-url`): el proxy
+# lee la del store (`openExistingConnectionStore`) y los items reciben su URL
+# y una clave de acceso propia de esta ejecución. La clave va al proxy por
+# entorno, no por argumento: la línea de comando se lee en /proc desde
+# cualquier usuario, el entorno sólo desde el mismo.
+HP_STORE_PROXY_URL=""; HP_STORE_PROXY_ACCESS_KEY=""
+if [[ "$CREDENTIAL_SOURCE" == proxy-store-url ]]; then
+    store_proxy_bin="${HEADLESS_POOL_STORE_CREDENTIAL_PROXY:-$THYROX_ROOT/bin/provider-store-credential-proxy}"
+    store_proxy_log="$OUT/.store-credential-proxy.log"
+    HP_STORE_PROXY_ACCESS_KEY="$(cat /proc/sys/kernel/random/uuid)"
+    THYROX_STORE_PROXY_ACCESS_KEY="$HP_STORE_PROXY_ACCESS_KEY" "$store_proxy_bin" --model "$MODEL" > "$store_proxy_log" 2>&1 &
+    launched_proxies+=($!)
+    wait_for_announcement "$store_proxy_log" '^url=' "${launched_proxies[-1]}" \
+        || rehusa "el proxy con credenciales del store no arrancó ($store_proxy_bin): $(tr '\n' ' ' < "$store_proxy_log")"
+    HP_STORE_PROXY_URL="$(gawk -F= '/^url=/{print $2; exit}' "$store_proxy_log")"
+fi
+export HP_STORE_PROXY_URL HP_STORE_PROXY_ACCESS_KEY
+# <<< credential-source
 # La ejecución vive en su runtime hasta cerrarse: el índice, el joblog y los
 # artefactos de cada ítem se escriben ahí, y a la salida sólo llega lo publicado
 # (`pool_lifecycle`). Un pool que muere deja su runtime para `reconcile`.
@@ -372,10 +654,20 @@ export HP_LIFECYCLE="$HP_BIN/pool_lifecycle"
 HP_LIVE="$(bash "$HP_LIFECYCLE" open-run "$OUT" --owner $$)" \
     || rehusa "no se pudo abrir el runtime de la ejecución para $OUT"
 export HP_LIVE
+# El buzón durable de la ejecución (`bin/inbox`): el ciclo de vida deja en él
+# un sobre al orquestador por cada cambio, y el orquestador escribe a un ítem
+# vivo por su dirección `item-<n>`. Se publica en la cabecera para que quien
+# lanzó el pool lo encuentre sin conocer el runtime.
+HP_MAILBOX="$(bash "$HP_LIFECYCLE" mailbox-dir "$HP_LIVE")" \
+    || rehusa "no se pudo resolver el buzón de la ejecución en $HP_LIVE"
+export HP_MAILBOX
+echo "buzón: $HP_MAILBOX"
 : > "$HP_LIVE/index.tsv"
 for i in "${!ITEMS[@]}"; do
     printf '%d\t%s\n' "$((i + 1))" "${ITEMS[$i]}" >> "$HP_LIVE/index.tsv"
 done
+# La decisión de credencial vive junto al índice y llega a la salida con él.
+printf '%s\n' "$CREDENTIAL_LINE" > "$HP_LIVE/credential-source"
 
 # Un item por trabajo. El cuerpo va en una funcion exportada para que GNU
 # Parallel no tenga que citar el prompt: recibe numero e item como argumentos.
@@ -401,6 +693,7 @@ _headless_item() {
     _headless_item_run "$@" || rc=$?
     bash "$HP_LIFECYCLE" publish "$HP_LIVE" "$HP_OUT" "$n" --exit "$rc" --generation "$HP_ITEM_GENERATION" \
         2>> "$HP_LIVE/$n.lifecycle.err" || publish_rc=$?
+    rm -f "${HP_LIVE:?}/${n:?}.session"
     [[ "$publish_rc" -eq 0 ]] || return "$publish_failed_exit"
     # La ref de la foto del worktree se conserva también cuando el ítem se
     # publica con éxito: la foto es la garantía de no perder código, no un
@@ -408,6 +701,13 @@ _headless_item() {
     return "$rc"
 }
 export -f _headless_item
+
+# Las vías por las que un item heredaría la credencial del pool.
+_headless_item_drop_credentials() {
+    unset ANTHROPIC_AUTH_TOKEN THYROX_CODE_OAUTH_TOKEN THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR \
+          CLAUDE_CODE_OAUTH_TOKEN CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR
+}
+export -f _headless_item_drop_credentials
 
 _headless_item_run() {
     local n="$1" item="$2"
@@ -448,13 +748,33 @@ _headless_item_run() {
             { echo "no se pudo preparar el worktree del item:"; cat "$HP_LIVE/$n.prepare.err"; } > "$HP_LIVE/$n.err"
             : > "$HP_LIVE/$n.json"; return 4; }
     fi
-    { cat "$HP_PROMPT"; printf '\nItem: %s\n' "$item"; } \
+    { printf '%s\n\n' "$HP_MAILBOX_PREAMBLE"; cat "$HP_PROMPT"; printf '\nItem: %s\n' "$item"; } \
       | (cd "$workdir" || exit 1
-         # Un item aislado hereda THYROX_ROOT del arbol principal (lo exporta
-         # bin/cli y el runner lo necesita para su node_modules), y con el
-         # los trabajos que lance, su ledger y su archivo caerian en el arbol
-         # principal. Van a la salida del item: ni al arbol ni al parche.
+         # Los trabajos que lance un item aislado, su ledger y su archivo van a
+         # la salida del item: ni al arbol ni al parche.
+         # La intención documental (`document_intent.py`): el ítem la escribe
+         # donde el pool le dice, con la procedencia que el pool le da, y
+         # `pool_lifecycle` la publica con el resto de sus artefactos. Quien
+         # la consume es `documentation_publisher`, fuera del pool.
+         export THYROX_POOL_DOCUMENT_INTENT="$HP_LIVE/$n.intent.json" \
+                THYROX_POOL_RUN_ID="${HP_LIVE##*/}" THYROX_POOL_ITEM="$n" \
+                THYROX_POOL_ITEM_GENERATION="$HP_ITEM_GENERATION"
+         # El buzón de la ejecución y la dirección del ítem en él: el
+         # párrafo que antecede al prompt le dice cómo usarlos.
+         export THYROX_MAILBOX_DIR="$HP_MAILBOX" THYROX_POOL_ITEM_ADDRESS="item-$n"
          if [[ "$HP_ISOLATION" == worktree ]]; then
+             # >>> item-root
+             # El item actua sobre su worktree: THYROX_ROOT lo heredan sus
+             # herramientas, y con la raiz principal un `bin/*` lanzado desde
+             # el worktree escribiria en el arbol principal. El runner no la
+             # necesita —`bin/cli` ejecuta el codigo que tiene al lado—, pero
+             # si su `node_modules`, que el worktree no tiene. Los hogares
+             # globales heredados apuntarian al arbol principal: se retiran y
+             # cada herramienta los resuelve contra el worktree.
+             export THYROX_TOOLCHAIN_NODE_MODULES_HOME="${THYROX_TOOLCHAIN_NODE_MODULES_HOME:-$THYROX_ROOT/node_modules}"
+             export THYROX_ROOT="$workdir"
+             unset THYROX_CACHE_DIR THYROX_WORKBENCH_DIR THYROX_BACKGROUND_LOG_DIR
+             # <<< item-root
              export THYROX_JOBS_DIR="$HP_LIVE/$n.jobs" \
                     THYROX_SESSION_LEDGER_DIR="$HP_LIVE/$n.ledger" \
                     THYROX_JOBS_ARCHIVE_DIR="$HP_LIVE/$n.jobs"
@@ -464,6 +784,10 @@ _headless_item_run() {
              # rehusado es el que `item_worktree.sh finalize` lee para dar el
              # veredicto `con-stash`.
              export THYROX_POOL_STASH_ATTEMPTS_FILE="$HP_LIVE/$n.stash-attempts"
+             # El repositorio cuyo `refs/stash` se guarda: el del ítem. Un stash
+             # en otro repositorio pasa (`item_git_guard/git`).
+             THYROX_POOL_GUARDED_GIT_COMMON_DIR="$(git -C "$workdir" rev-parse --path-format=absolute --git-common-dir)"
+             export THYROX_POOL_GUARDED_GIT_COMMON_DIR
              export PATH="$HP_ITEM_GIT_GUARD_DIR:$PATH"
          fi
          # Cada cliente lee el TTL con su propio nombre: `thyrox -p`
@@ -478,12 +802,17 @@ _headless_item_run() {
          else
              [[ -z "$HP_CACHE_TTL" ]] || export THYROX_CODE_PROMPT_CACHE_TTL="$HP_CACHE_TTL"
          fi
-         # Con proxy, el item recibe el socket y el marcador; la credencial
-         # real se retira de su entorno por todas sus vías.
+         # Con un proxy, la credencial real se retira del entorno del item por
+         # todas sus vías, y el item recibe sólo lo que el proxy le da: el
+         # socket y el marcador, o la URL y la clave de acceso de esta
+         # ejecución, con la clave de cifrado del store también retirada.
          if [[ -n "$HP_PROXY_SOCKET" ]]; then
-             unset ANTHROPIC_AUTH_TOKEN THYROX_CODE_OAUTH_TOKEN THYROX_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR \
-                   CLAUDE_CODE_OAUTH_TOKEN CLAUDE_CODE_OAUTH_TOKEN_FILE_DESCRIPTOR
+             _headless_item_drop_credentials
              export ANTHROPIC_UNIX_SOCKET="$HP_PROXY_SOCKET" ANTHROPIC_API_KEY=ssh-placeholder
+         elif [[ -n "$HP_STORE_PROXY_URL" ]]; then
+             _headless_item_drop_credentials
+             unset ANTHROPIC_UNIX_SOCKET THYROX_STORAGE_ENCRYPTION_KEY
+             export ANTHROPIC_BASE_URL="$HP_STORE_PROXY_URL" ANTHROPIC_API_KEY="$HP_STORE_PROXY_ACCESS_KEY"
          fi
          # Con GNU Time, la memoria pico, la pared y la CPU del item quedan en
          # <n>.time; el codigo de salida es el del item, que time conserva.
@@ -493,14 +822,43 @@ _headless_item_run() {
          # `setsid` hace del ítem el líder de una sesión propia: su pid es el id
          # de la sesión, y todo lo que lance —también lo que `timeout` pone en
          # otro grupo de procesos— queda dentro, donde el drenaje lo encuentra.
-         exec setsid ${HP_TIME:+"$HP_TIME" -q -f "%M %e %U %S" -o "$HP_LIVE/$n.time"} \
-         timeout "$HP_TIMEOUT" "$HP_RUNNER" -p \
+         item_argv=("$HP_RUNNER" -p \
             --model "$HP_MODEL" --setting-sources project \
             --tools "$HP_TOOLS" --allowedTools "$HP_TOOLS" \
             ${HP_MAX_TURNS:+--max-turns "$HP_MAX_TURNS"} --no-session-persistence "${session_args[@]}" \
-            --output-format stream-json --verbose) \
+            --output-format stream-json --verbose)
+         if [[ "$HP_EXECUTION" == unit ]]; then
+             # La unidad no recibe la entrada estándar del pool: el texto del
+             # ítem va a un archivo de su salida, que la unidad monta. Recibe
+             # sólo las variables que el pool le nombra, ninguna credencial.
+             cat > "$HP_LIVE/$n.prompt"
+             mapfile -t execute_argv <<< "$HP_EXECUTE_RUNNER_ARGV"
+             unit_args=(--work "$HP_WORK_CONSUMER:$HP_WORK_SCOPE/$n" --owner "pool:${HP_WORK_SCOPE//[^A-Za-z0-9_.-]/-}-$n"
+                        --kind maintenance --network host --workdir "$workdir")
+             mounted=("$HP_THYROX_ROOT")
+             for path in "$workdir" "$HP_LIVE"; do
+                 covered=""
+                 for parent in "${mounted[@]}"; do [[ "$path/" == "$parent/"* ]] && covered=1; done
+                 [[ -n "$covered" ]] || { unit_args+=(--mount "$path:$path:rw"); mounted+=("$path"); }
+             done
+             if [[ -n "$HP_COORDINATOR_SOCKET" ]]; then
+                 export THYROX_MODEL_COORDINATOR_SOCKET="$HP_COORDINATOR_SOCKET"
+                 unit_args+=(--mount "${HP_COORDINATOR_SOCKET%/*}:${HP_COORDINATOR_SOCKET%/*}:ro" --env THYROX_MODEL_COORDINATOR_SOCKET)
+             fi
+             for name in THYROX_CODE_PROMPT_CACHE_TTL THYROX_POOL_DOCUMENT_INTENT THYROX_POOL_RUN_ID THYROX_POOL_ITEM \
+                         THYROX_POOL_ITEM_GENERATION THYROX_MAILBOX_DIR THYROX_POOL_ITEM_ADDRESS; do
+                 [[ -z "${!name:-}" ]] || unit_args+=(--env "$name")
+             done
+             exec setsid timeout "$HP_TIMEOUT" "${execute_argv[@]}" run "${unit_args[@]}" \
+                -- bash -c 'prompt="$1"; shift; exec "$@" < "$prompt"' item "$HP_LIVE/$n.prompt" "${item_argv[@]}"
+         fi
+         exec setsid ${HP_TIME:+"$HP_TIME" -q -f "%M %e %U %S" -o "$HP_LIVE/$n.time"} \
+         timeout "$HP_TIMEOUT" "${item_argv[@]}") \
       > "$HP_LIVE/$n.stream.jsonl" 2> "$HP_LIVE/$n.err" &
     local pid=$! monitor=""
+    # La sesión del ítem y el shell que la publica, para que el pool los drene
+    # y los espere al salir: el ítem no puede sobrevivir a su pool.
+    printf '%s\t%s\n' "$pid" "$BASHPID" > "$HP_LIVE/$n.session"
     # La VRAM del item: GNU Time mide su RAM y no ve la GPU. El monitor
     # muestrea el ARBOL de `pid` (el item y el ejecutor) mientras vive y deja
     # <n>.gpu; sin nvidia-smi no se lanza y el pool ya lo declaro.
@@ -604,6 +962,19 @@ _headless_item_periodic_snapshots() {
     done
 }
 export -f _headless_item_periodic_snapshots
+# El párrafo fijo que antecede a la plantilla de cada ítem: entre paso y paso
+# lee su buzón, aplica y acusa lo que llegue, y escribe al orquestador una
+# pregunta o un bloqueo en vez de dejarlo sólo en su salida final. Las
+# variables las resuelve el shell del ítem, no este guion.
+# shellcheck disable=SC2016,SC2089
+HP_MAILBOX_PREAMBLE='Buzón de esta ejecución: el orquestador puede escribirte mientras trabajas. Entre paso y paso, lee tus mensajes con
+`bash "$THYROX_ROOT/bin/inbox" --dir "$THYROX_MAILBOX_DIR" pending --as "$THYROX_POOL_ITEM_ADDRESS"`.
+Aplica lo que llegue y acúsalo con
+`bash "$THYROX_ROOT/bin/inbox" --dir "$THYROX_MAILBOX_DIR" ack --as "$THYROX_POOL_ITEM_ADDRESS" --id <id>`.
+Para una pregunta o un bloqueo, escribe al orquestador con
+`bash "$THYROX_ROOT/bin/inbox" --dir "$THYROX_MAILBOX_DIR" post --from "$THYROX_POOL_ITEM_ADDRESS" --to orchestrator --body "<texto>"`.'
+# shellcheck disable=SC2090  # texto para el prompt, no palabras de un comando
+export HP_MAILBOX_PREAMBLE
 HP_PROMPT="$(cd "$(dirname "$PROMPT")" && pwd)/$(basename "$PROMPT")"
 HP_OUT="$(cd "$OUT" && pwd)"
 HP_RUNNER="$(command -v "$RUNNER_BIN")"
@@ -611,6 +982,13 @@ export HP_PROMPT HP_OUT HP_RUNNER
 export HP_WORKDIR="$WORKDIR" HP_TIMEOUT="$TIMEOUT" HP_MODEL="$MODEL"
 export HP_TOOLS="$TOOLS" HP_MAX_TURNS="$MAX_TURNS" HP_CACHE_TTL="$CACHE_TTL"
 export HP_ISOLATION="$ISOLATION" HP_VERIFY="$VERIFY" HP_RUNNER_KIND="$RUNNER_KIND"
+# El runner gestionado, el mismo que usa `thyrox-bg --task`: el pool sólo pide la
+# ejecución; qué la materializa no vive en este guion.
+# shellcheck source=../lib/managed_execution.sh
+source "$THYROX_ROOT/src/lib/managed_execution.sh"
+export HP_EXECUTION="$EXECUTION" HP_WORK_CONSUMER="${WORK_REFERENCE%%:*}" HP_WORK_SCOPE="${WORK_REFERENCE#*:}"
+HP_EXECUTE_RUNNER_ARGV="$(thyrox_managed_execution_runner_argv)"
+export HP_THYROX_ROOT="$THYROX_ROOT" HP_EXECUTE_RUNNER_ARGV
 export HP_ITEM_WORKTREE="${HEADLESS_POOL_ITEM_WORKTREE:-$HP_HERE/item_worktree.sh}"
 # Cuánto se espera a que un hijo del ítem salga solo después de que salió el
 # principal, antes de terminarlo (`process_ownership drain`).
@@ -649,6 +1027,12 @@ fi
 HP_TIME="$(THYROX_TOOLCHAIN_TIME_BIN="${HEADLESS_POOL_TIME:-${THYROX_TOOLCHAIN_TIME_BIN:-}}"
            source "$HP_HERE/../lib/toolchain.sh"
            thyrox_toolchain_require_gnu_time 2>/dev/null && thyrox_toolchain_gnu_time_bin)" || HP_TIME=""
+# En la unidad, GNU Time mediría al cliente que espera la ejecución, no al ítem:
+# sus filas contaminarían el historial de memoria. La unidad acota memoria y CPU.
+if [[ "$EXECUTION" == unit && -n "$HP_TIME" ]]; then
+    HP_TIME=""
+    echo "medida: --execution unit no mide el ítem con GNU Time; lo acota la unidad"
+fi
 export HP_TIME
 
 MEMFREE_ARGS=()
@@ -658,8 +1042,60 @@ if [[ -n "$MEMFREE_SPEC" ]]; then
     echo "memfree: $MEMFREE_SPEC ($MEMFREE_WHY)"
 fi
 
+# >>> exit-drain
+# Ningún ítem sobrevive al pool. Cada ítem en curso deja `<n>.session` con la
+# sesión de su runner y el pid del shell que lo publica; el pool, al recibir
+# una señal o al volver Parallel con ítems aún vivos —porque murió solo—,
+# drena esas sesiones y espera a que sus shells publiquen. El
+# shell que murió con Parallel no publica: su ítem queda para `reconcile`, y
+# el barrido de abajo conserva su worktree.
+HP_EXIT_SETTLE_SECONDS="${HEADLESS_POOL_EXIT_SETTLE_SECONDS:-60}"
+[[ "$HP_EXIT_SETTLE_SECONDS" =~ ^[0-9]+$ ]] \
+    || rehusa "HEADLESS_POOL_EXIT_SETTLE_SECONDS va en segundos enteros, no: $HP_EXIT_SETTLE_SECONDS"
+drain_live_items() {
+    local record session_id
+    for record in "$HP_LIVE"/*.session; do
+        [[ -e "$record" ]] || continue
+        session_id="$(cut -f1 "$record")"
+        [[ -n "$session_id" ]] || continue
+        bash "$HP_PROCESS_OWNERSHIP" drain "$session_id" --grace "$HP_DRAIN_SECONDS" >> "$HP_LIVE/exit-drain.log" 2>&1 || true
+    done
+}
+item_shells_alive() {
+    local record shell_pid
+    for record in "$HP_LIVE"/*.session; do
+        [[ -e "$record" ]] || continue
+        shell_pid="$(cut -f2 "$record")"
+        [[ -n "$shell_pid" ]] && kill -0 "$shell_pid" 2>/dev/null && return 0
+    done
+    return 1
+}
+settle_item_shells() {
+    local deadline=$(( SECONDS + HP_EXIT_SETTLE_SECONDS ))
+    while item_shells_alive && (( SECONDS < deadline )); do sleep 0.2; done
+}
+on_exit_signal() {
+    echo "headless-pool: señal recibida; se drenan los ítems vivos antes de salir"
+    kill -HUP "$PARALLEL_PID" 2>/dev/null
+    drain_live_items
+}
+trap 'on_exit_signal' TERM INT HUP
+# <<< exit-drain
+# Parallel corre en segundo plano para que una señal interrumpa el `wait` y
+# la trampa corra; el bucle vuelve a esperar hasta que Parallel sale.
 "$PARALLEL_BIN" -j "$WIDTH" "${MEMFREE_ARGS[@]}" --colsep '\t' --joblog "$HP_LIVE/joblog.tsv" \
-    _headless_item '{1}' '{2}' :::: "$HP_LIVE/index.tsv" >/dev/null 2>&1
+    _headless_item '{1}' '{2}' :::: "$HP_LIVE/index.tsv" >/dev/null 2>&1 &
+PARALLEL_PID=$!
+PARALLEL_RC=0
+while kill -0 "$PARALLEL_PID" 2>/dev/null; do wait "$PARALLEL_PID"; PARALLEL_RC=$?; done
+# Un Parallel que muere por señal sale con 128+N. El joblog no lo registra, así
+# que el código de salida se escribe aquí: es lo único que nombra la señal.
+[[ "$PARALLEL_RC" -lt 128 ]] || echo "headless-pool: GNU Parallel salió por señal (exit $PARALLEL_RC); los ítems vivos se drenan"
+# >>> exit-drain
+trap - TERM INT HUP
+drain_live_items
+settle_item_shells
+# <<< exit-drain
 
 # El veredicto sale del joblog (columna Exitval), emparejado con el indice por
 # numero: no depende del orden en que terminaron. El total sale del índice: un
@@ -685,8 +1121,11 @@ if [[ "$ISOLATION" == worktree ]]; then
         if (c["sin-verificar"]) printf " sin-verificar=%d", c["sin-verificar"]
         if (c["con-stash"]) printf " con-stash=%d", c["con-stash"]
         print "" }'
-    bash "$HP_ITEM_WORKTREE" sweep "$WORKDIR" "$HP_OUT"
+    bash "$HP_ITEM_WORKTREE" sweep "$WORKDIR" "$HP_OUT" "$HP_LIVE"
 fi
+# La decisión de credencial se publica con el cierre: `close-run` publica sólo
+# sus artefactos (`pool_lifecycle.RUN_ARTIFACTS`) y retira el runtime.
+cp "$HP_LIVE/credential-source" "$OUT/credential-source"
 # El cierre de la ejecución publica el índice y el joblog y deja `run.closed` al
 # final. Si algún ítem no llegó a cerrarse, su runtime se conserva y el pool
 # sale con fallo aunque el joblog diga lo contrario.

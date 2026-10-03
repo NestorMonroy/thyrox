@@ -70,16 +70,6 @@ export function AutoUpdater({
       return
     }
 
-    if (
-      process.env.NODE_ENV === 'test' ||
-      process.env.NODE_ENV === 'development'
-    ) {
-      logForDebugging(
-        'AutoUpdater: Skipping update check in test/dev environment',
-      )
-      return
-    }
-
     const currentVersion = MACRO.VERSION
     // `rc` («slow» en la interfaz) no es un canal de descarga: 2.1.275 lo
     // instala como `stable`.

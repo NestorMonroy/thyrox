@@ -1,0 +1,60 @@
+paquete	dependencia	tipo	relacion	alcance	evidencia
+daemon	Podman	runtime-de-ejecucion	directa	produccion	src/packages/daemon/src/podman/podmanWorkerManager.ts src/packages/daemon/src/podmanWorkerSupervision.ts 
+local-observability	PostgreSQL	base-de-datos	directa	produccion	src/packages/local-observability/src/errorStore/errorStoreHome.ts 
+provider	OpenAI-compatible	upstream-de-modelo	directa	produccion	src/packages/provider/src/proxy/openaiCompat/declaration.ts 
+semantic-search	PostgreSQL	base-de-datos	directa	produccion	src/packages/semantic-search/config.ts src/packages/semantic-search/store.ts 
+shared-state	Redis	almacen-efimero	directa	produccion	src/packages/shared-state/factory.ts src/packages/shared-state/redis.ts 
+store	PostgreSQL	base-de-datos	directa	produccion	src/packages/store/sql.ts 
+store	PostgreSQL	base-de-datos	directa	arnes-de-prueba	src/packages/store//testing/postgresTestSchema.ts 
+agent	Podman	runtime-de-ejecucion	primer-grado	produccion	package.json -> @thyrox/daemon
+agent	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/local-observability
+agent	OpenAI-compatible	upstream-de-modelo	primer-grado	produccion	package.json -> @thyrox/provider
+agent	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/store
+app-host	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/local-observability
+app-host	OpenAI-compatible	upstream-de-modelo	primer-grado	produccion	package.json -> @thyrox/provider
+bridge	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/local-observability
+cli	Podman	runtime-de-ejecucion	primer-grado	produccion	package.json -> @thyrox/daemon
+cli	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/local-observability
+cli	OpenAI-compatible	upstream-de-modelo	primer-grado	produccion	package.json -> @thyrox/provider
+command-runtime	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/local-observability
+command-runtime	OpenAI-compatible	upstream-de-modelo	primer-grado	produccion	package.json -> @thyrox/provider
+computer-use-mcp	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/local-observability
+computer-use-mcp	OpenAI-compatible	upstream-de-modelo	primer-grado	produccion	package.json -> @thyrox/provider
+config	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/local-observability
+config	OpenAI-compatible	upstream-de-modelo	primer-grado	produccion	package.json -> @thyrox/provider
+finding	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/store
+headless-sdk	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/local-observability
+ide	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/local-observability
+ink	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/local-observability
+mcp-runtime	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/local-observability
+mcp-runtime	OpenAI-compatible	upstream-de-modelo	primer-grado	produccion	package.json -> @thyrox/provider
+memory	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/local-observability
+mitm	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/local-observability
+mitm	OpenAI-compatible	upstream-de-modelo	primer-grado	produccion	package.json -> @thyrox/provider
+mitm	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/store
+observability	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/store
+output	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/local-observability
+permission	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/local-observability
+permission	OpenAI-compatible	upstream-de-modelo	primer-grado	produccion	package.json -> @thyrox/provider
+provider	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/local-observability
+provider	Redis	almacen-efimero	primer-grado	produccion	package.json -> @thyrox/shared-state
+provider	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/store
+repl	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/local-observability
+repl	OpenAI-compatible	upstream-de-modelo	primer-grado	produccion	package.json -> @thyrox/provider
+server	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/local-observability
+server	OpenAI-compatible	upstream-de-modelo	primer-grado	produccion	package.json -> @thyrox/provider
+shell	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/local-observability
+shell	OpenAI-compatible	upstream-de-modelo	primer-grado	produccion	package.json -> @thyrox/provider
+storage	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/local-observability
+storage	OpenAI-compatible	upstream-de-modelo	primer-grado	produccion	package.json -> @thyrox/provider
+swarm	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/local-observability
+swarm	OpenAI-compatible	upstream-de-modelo	primer-grado	produccion	package.json -> @thyrox/provider
+task	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/store
+teleport	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/local-observability
+teleport	OpenAI-compatible	upstream-de-modelo	primer-grado	produccion	package.json -> @thyrox/provider
+tool-registry	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/local-observability
+tool-registry	OpenAI-compatible	upstream-de-modelo	primer-grado	produccion	package.json -> @thyrox/provider
+tools	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/store
+updater	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/local-observability
+voice	PostgreSQL	base-de-datos	primer-grado	produccion	package.json -> @thyrox/local-observability
+voice	OpenAI-compatible	upstream-de-modelo	primer-grado	produccion	package.json -> @thyrox/provider

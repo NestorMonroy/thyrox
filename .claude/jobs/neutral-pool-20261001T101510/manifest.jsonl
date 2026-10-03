@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash .claude/workbench/model-residency-e2e-20261001T100517/launch-2.sh", "started_at": "2026-10-01T10:15:10+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-01T10:19:07+00:00", "duration_seconds": 237.460047}

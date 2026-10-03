@@ -1,0 +1,1 @@
+timeout 900 bash tests/session/test-headless-pool.sh > .claude/build-logs/pool-b-integrate/headless-pool.log 2>&1; echo "rc=$?" >> .claude/build-logs/pool-b-integrate/headless-pool.log

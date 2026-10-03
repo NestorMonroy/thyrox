@@ -17,21 +17,37 @@
  * El backend de storage que `mn` reparte a `publishInboxKey`/`closeInbox`
  * (la `n` de la referencia) también es dependencia: es otra fase.
  *
- * `deliverUserMessage`, la entrega de un `user` (`ze` de `inboxDelivery.ts`),
- * y las tres piezas de `InboxControlActionDeps` (`isSelfSent`,
- * `findLiveSession`, `isDefinitelyUndelivered`) no tienen aún con qué
- * cablearse a la cola real de la sesión ni al registro de sesiones vivas —
- * eso es F6 y una fase de registro que este alcance no cubre —, así que
- * `processMessagingStartDeps` los deja en un respaldo declarado: ningún
- * mensaje de un par se pierde en silencio, pero tampoco llega a ningún sitio
- * todavía.
+ * La entrega de un `user` (`ze` de `inboxDelivery.ts`) se compone aquí desde
+ * las dependencias resueltas del arranque, como en la referencia, donde `be`
+ * llama a `ze` y ésta lee del módulo: la cola es `enqueue` de
+ * `@thyrox/agent/messageQueueManager.ts` (`gE`), la compuerta es
+ * `gatePeerMessage` (`fbt`), el rechazo `currentRefuseCause`/`reportRefused`
+ * (`C7e`/`nSe`), el recibo `sendPeerReceipt` del estado (`kJr`), el id de
+ * sesión `getSessionId` (`Y`) y el correspondiente `noteCorrespondent`
+ * (`Wkr`). `deliverUserMessage` sólo se inyecta para anularla. Dos piezas de
+ * esa entrega siguen sin runtime en este árbol y llegan inyectadas: el
+ * runtime de módulos que ejecuta `session.receive` (`hookSite`; sin él nadie
+ * escucha y el texto pasa) y las dependencias de adjuntos (`peerFileDeps`;
+ * su predicado de ruta vive en `@thyrox/permission`, que depende de este
+ * paquete). Las tres piezas de `InboxControlActionDeps` (`isSelfSent`,
+ * `findLiveSession`, `isDefinitelyUndelivered`) siguen en respaldo
+ * declarado: son de la fase de registro de sesiones vivas.
+ *
+ * Frontera medida: el lector del modo de permisos (`wireCurrentModeGetter`)
+ * no tiene llamador de producción en este árbol, y sin él la compuerta
+ * retiene todo mensaje de un par con causa `mode-unknown`. La entrega está
+ * cableada; que llegue al turno depende de que el consumidor cablee ese
+ * lector.
  */
+import { randomUUID } from 'node:crypto'
 import { chmod, unlink } from 'node:fs/promises'
 import { createServer, type Server } from 'node:net'
 import { dirname, isAbsolute, resolve } from 'node:path'
 
+import { enqueue as enqueueSessionCommand } from '@thyrox/agent/messageQueueManager.js'
 import { getPlatform } from '@thyrox/config/platform'
 import { registerCleanup } from '@thyrox/app-host/bootstrap/cleanupRegistry.js'
+import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
 
 import { getErrnoCode, errorMessage } from '../errorHelpers.ts'
 import { logForDebugging } from '../debug.ts'
@@ -52,8 +68,17 @@ import { inboxControlActions } from './controlActions.ts'
 import { type ArtifactReplyControlDeps, type ArtifactReplySender, setArtifactReplySender } from './artifactReplyYield.ts'
 import { authRequiredByDefault, createInboxTokens } from './inboxAuth.ts'
 import { handleInboxConnection, processConnectionDeps, type PeerIdentity } from './inboxConnection.ts'
-import { type PeerOrigin, replyableTarget } from './inboxDelivery.ts'
-import { currentModeClassForTelemetry, type InboundGateDeps, type PeerReceiptStatus, wireRecordCorrespondent, wireSendPeerReceipt } from './inboundGate.ts'
+import { deliverPeerUserMessage, type FileAttachmentHandler, type PeerDeliveryDeps, type PeerOrigin, replyableTarget, toQueuedCommand } from './inboxDelivery.ts'
+import {
+  currentModeClassForTelemetry,
+  currentRefuseCause,
+  gatePeerMessage,
+  type InboundGateDeps,
+  type PeerReceiptStatus,
+  reportRefused,
+  wireRecordCorrespondent,
+  wireSendPeerReceipt,
+} from './inboundGate.ts'
 import { publishInboxKey, type InboxKeyDeps, type SessionKeyStorage } from './inboxKeys.ts'
 import { removeActiveKeyFileSync, recordDegraded, type InboxState } from './inboxState.ts'
 import { routeInboxMessage, type InboxRoutingDeps } from './inboxRouting.ts'
@@ -63,8 +88,10 @@ import type { HeldPeerMessage } from './messagingState.ts'
 import { messagingState } from './messagingState.ts'
 import { udsAddress } from './peerAddress.ts'
 import type { EnvelopeMode } from './peerEnvelope.ts'
+import { emitPeerFileReceiveTelemetry, injectPeerFilePrefix, isPeerFileTransferEnabled, materializeLocalPeerFiles, type PeerFileDeps } from './peerFiles.ts'
 import { isRegistrySweepPermitted } from './registrySweep.ts'
-import { sessionNameState } from './sessionNameState.ts'
+import { type HookSite, runSessionReceive } from './sessionReceive.ts'
+import { noteCorrespondent, sessionNameState } from './sessionNameState.ts'
 import { canFallBackToPerUid, prepareSocketsDirectory, refusedComponentDetail, socketsDirHint, type SocketsDirDeps } from './socketsDir.ts'
 import { hostUidForPeerDirs } from './uidNamespace.ts'
 import { isUsableLocalSocketAddress, perUidFallbackSocketPath } from './socketPath.ts'
@@ -99,8 +126,14 @@ type InboxMessage = Record<string, unknown> & { type: string }
 export type MessagingStartDeps = {
   state: InboxState
   storage?: SessionKeyStorage
+  /** `Y`. */
   sessionId: () => string
-  deliverUserMessage: (message: InboxMessage, peer: PeerIdentity) => Promise<void>
+  /** Anula `ze`; por defecto, la entrega real a la cola de la sesión (`peerDeliveryDeps`). */
+  deliverUserMessage?: (message: InboxMessage, peer: PeerIdentity) => Promise<void>
+  /** `Ml`/`Vp`/`Xot`: el runtime de módulos que ejecuta `session.receive`; sin él, nadie escucha. */
+  hookSite?: HookSite
+  /** `nlt` y `chunk-yrfq0b3e.js`: sin ellas, los adjuntos se ignoran. */
+  peerFileDeps?: PeerFileDeps
   isSelfSent: (peer: PeerIdentity) => Promise<boolean>
   findLiveSession: ArtifactReplyControlDeps['findLiveSession']
   isDefinitelyUndelivered: ArtifactReplyControlDeps['isDefinitelyUndelivered']
@@ -127,10 +160,7 @@ export type MessagingStartDeps = {
 export function processMessagingStartDeps(state: InboxState): MessagingStartDeps {
   return {
     state,
-    sessionId: () => '',
-    deliverUserMessage: async (_message, _peer) => {
-      logForDebugging('[uds-messaging] deliverUserMessage no está cableado todavía (F6); mensaje descartado')
-    },
+    sessionId: () => getSessionId(),
     isSelfSent: async () => false,
     findLiveSession: async () => undefined,
     isDefinitelyUndelivered: () => false,
@@ -142,6 +172,49 @@ export function processMessagingStartDeps(state: InboxState): MessagingStartDeps
     childEnv: processChildEnv,
     trustsAncestry: () => false,
   }
+}
+
+/** Sin runtime de módulos nadie escucha `session.receive`: la señal llega al núcleo tal cual. */
+const NO_MODULE_RUNTIME: HookSite = {
+  hasHandlers: () => false,
+  call: (_name, core) => event => core.run(event),
+  hookedBy: () => [],
+}
+
+/** `nlt` + `chunk-yrfq0b3e.js`: el manejador de adjuntos, sólo con la transferencia habilitada y sus dependencias presentes. */
+function peerFileAttachmentHandler(peerFileDeps: PeerFileDeps | undefined): FileAttachmentHandler | undefined {
+  if (peerFileDeps === undefined || !isPeerFileTransferEnabled()) return undefined
+  return {
+    materialize: attachments => materializeLocalPeerFiles(attachments, peerFileDeps),
+    injectPrefix: injectPeerFilePrefix,
+    emitTelemetry: emitPeerFileReceiveTelemetry,
+  }
+}
+
+/** Lo que `ze` lee del módulo en la referencia, resuelto desde las dependencias de ESTE arranque. */
+function peerDeliveryDeps(deps: MessagingStartDeps): PeerDeliveryDeps {
+  const gate = deps.inboundGateDeps
+  return {
+    state: deps.state,
+    sessionId: deps.sessionId,
+    log: (message, level) => (level === 'warn' ? logForDebugging(message, { level }) : logForDebugging(message)),
+    refuseCause: () => currentRefuseCause(gate),
+    reportRefused: (reason, cause) => reportRefused(reason, cause, gate),
+    sendReceipt: (receipt, status) => void gate.state.sendPeerReceipt?.(receipt, status),
+    receive: input => runSessionReceive(input, deps.hookSite ?? NO_MODULE_RUNTIME, message => logForDebugging(message)),
+    fileAttachments: peerFileAttachmentHandler(deps.peerFileDeps),
+    isSelfSent: deps.isSelfSent,
+    agentId: gate.agentId,
+    accept: prompt => gatePeerMessage(prompt, gate),
+    enqueue: prompt => enqueueSessionCommand(toQueuedCommand(prompt)),
+    noteCorrespondent,
+    randomUUID,
+  }
+}
+
+/** `ze`, salvo que el arranque la anule. */
+function userMessageDelivery(deps: MessagingStartDeps): NonNullable<MessagingStartDeps['deliverUserMessage']> {
+  return deps.deliverUserMessage ?? ((message, peer) => deliverPeerUserMessage(message, peer, peerDeliveryDeps(deps)))
 }
 
 /** `hn`/`m9r`: borra la clave publicada al salir, registrado una sola vez por estado. */
@@ -362,7 +435,7 @@ export async function startMessagingInbox(socketPathInput: string, options: Mess
     state,
     sessionId: deps.sessionId,
     warn: message => logForDebugging(message, { level: 'warn' }),
-    deliverUserMessage: deps.deliverUserMessage,
+    deliverUserMessage: userMessageDelivery(deps),
     onRename: name => state.onRename?.(name),
     controlActions,
   }

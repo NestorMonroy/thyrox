@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts run --task TASK-THYROX-0754 --kind test --cpus 1 --memory-mib 256 -- sleep 8", "started_at": "2026-10-02T00:32:26+00:00"}

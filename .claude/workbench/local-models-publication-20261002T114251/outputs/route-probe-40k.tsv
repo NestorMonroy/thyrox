@@ -1,0 +1,4 @@
+anthropic deepseek-v4.1-flash	200	7452ms
+openai deepseek-v4.1-flash	200	9920ms
+anthropic qwen3.8-flash	200	10067ms
+openai qwen3.8-flash	200	4021ms

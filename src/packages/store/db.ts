@@ -48,6 +48,12 @@ export type OpenLocalOptions = {
   readonly?: boolean
   /** Crea el archivo si no existe. */
   create?: boolean
+  /**
+   * Abre con permiso de escritura. `bun:sqlite` exige declararlo junto a
+   * `create: false`: sin él, abrir un archivo existente sin crearlo falla con
+   * «bad parameter or other API misuse».
+   */
+  readwrite?: boolean
 }
 
 /**

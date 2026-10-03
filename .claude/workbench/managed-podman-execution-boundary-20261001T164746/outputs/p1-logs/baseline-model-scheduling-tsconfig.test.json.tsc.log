@@ -1,0 +1,1 @@
+__tests__/hostCoordinatorService.test.ts(22,3): error TS2739: Type '{ unitId: string; grantId: string; artifact: ResolvedModelArtifact; residencyKey: string; generation: number; runtime: "ollama"; endpoint: string; containerId: string; devices: never[]; }' is missing the following properties from type 'ExecutionUnit': hostPids, createdAt

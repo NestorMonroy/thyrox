@@ -1,0 +1,196 @@
+FALLA tres items: exit 0 — esperado '0', obtenido '2'
+FALLA tres items: resumen — esperado 'items=3 ok=3 fallidos=0', obtenido ''
+FALLA una salida json por item — esperado '3', obtenido '0'
+cat: '/tmp/tmp.lkQh01FWyq/out/*.json': No such file or directory
+FALLA el item llega al final del prompt — esperado 'Item: alfa,Item: beta,Item: gamma', obtenido ''
+cat: '/tmp/tmp.lkQh01FWyq/out/*.json': No such file or directory
+FALLA sin sesion persistida y en stream-json — esperado 'persist=no|formato=stream-json', obtenido ''
+cat: '/tmp/tmp.lkQh01FWyq/out/*.json': No such file or directory
+FALLA el .json es la linea result del stream, sola — esperado 'result', obtenido ''
+FALLA un stream por item, una linea por peticion — esperado '3x111,3x500', obtenido ''
+gawk: fatal: cannot open file `/tmp/tmp.lkQh01FWyq/out/index.tsv' for reading: No such file or directory
+FALLA el indice empareja numero e item — esperado 'alfa,beta,gamma', obtenido ''
+FALLA sin mensajes: una sola línea buzón, con un directorio real — esperado 'si', obtenido 'no'
+FALLA un fallo: exit 1 — esperado '1', obtenido '2'
+FALLA un fallo: lo nombra — esperado '1', obtenido '0'
+FALLA un fallo: resumen — esperado 'items=3 ok=2 fallidos=1', obtenido ''
+FALLA timeout: exit 1 — esperado '1', obtenido '2'
+FALLA timeout: nombra al lento — esperado '1', obtenido '0'
+OK   --model: exit 2
+OK   --model: sin resumen
+OK   --model: nombra --task-class
+OK   clase desconocida: exit 2
+OK   selector roto: exit 2
+OK   selector roto: sin resumen
+recommend: bloqueada — la política no permite respaldo y ningún modelo permitido cumple: catálogo local vacío: ningún modelo declarado
+FALLA selector real: exit 0 — esperado '0', obtenido '2'
+FALLA selector real: declara el modelo derivado — esperado '1', obtenido '0'
+FALLA selector real: el ítem recibe ese modelo — esperado '1', obtenido '0'
+OK   sin items: exit 2
+OK   sin parallel: exit 2
+OK   sin parallel: lo nombra
+OK   sin ejecutor: exit 2
+OK   HEADLESS_POOL_CLAUDE retirada: exit 2
+OK   HEADLESS_POOL_CLAUDE retirada: nombra --runner claude
+OK   HEADLESS_POOL_CLAUDE retirada: sin resumen
+OK   sin plantilla: exit 2
+FALLA sin ejecutor declarado: thyrox -p (bin/cli) — esperado '/home/user/thyrox/.thyrox/runtime/worktrees/e0/bin/cli', obtenido ''
+FALLA memfree: exit 0 — esperado '0', obtenido '2'
+grep: /tmp/tmp.lkQh01FWyq/parallel.args: No such file or directory
+FALLA memfree: la cota llega a parallel — esperado '1', obtenido ''
+OK   memfree ilegible: exit 2
+OK   memfree ilegible: sin resumen
+FALLA cache-ttl 5m: exit 0 — esperado '0', obtenido '2'
+cat: '/tmp/tmp.lkQh01FWyq/out/*.json': No such file or directory
+FALLA cache-ttl 5m: llega a cada item — esperado 'thx=5m', obtenido ''
+cat: '/tmp/tmp.lkQh01FWyq/out/*.json': No such file or directory
+FALLA sin cache-ttl: rige la constante de 1h — esperado 'thx=1h', obtenido ''
+FALLA sin cache-ttl: el pool nombra la constante — esperado '1', obtenido '0'
+OK   cache-ttl ilegible: exit 2
+OK   cache-ttl ilegible: sin resumen
+cat: '/tmp/tmp.lkQh01FWyq/out/*.json': No such file or directory
+FALLA variable sin --cache-ttl: llega sólo como THYROX_* — esperado 'ttl=sin|thx=1h', obtenido ''
+FALLA variable: el pool nombra la razón — esperado '1', obtenido '0'
+cat: '/tmp/tmp.lkQh01FWyq/out/*.json': No such file or directory
+FALLA la variable gana a --cache-ttl — esperado 'ttl=sin|thx=1h', obtenido ''
+cat: '/tmp/tmp.lkQh01FWyq/out/*.json': No such file or directory
+FALLA forzar 5m gana a la variable y a la opción — esperado 'ttl=sin|thx=5m', obtenido ''
+FALLA sólo --cache-ttl: su razón es la opción — esperado '1', obtenido '0'
+cat: '/tmp/tmp.lkQh01FWyq/out/*.json': No such file or directory
+FALLA activar 1h sin opción ni variable: 1h — esperado 'ttl=sin|thx=1h', obtenido ''
+FALLA activar 1h: el pool nombra la razón — esperado '1', obtenido '0'
+cat: '/tmp/tmp.lkQh01FWyq/out/*.json': No such file or directory
+FALLA la opción gana a activar 1h — esperado 'ttl=sin|thx=5m', obtenido ''
+cat: '/tmp/tmp.lkQh01FWyq/out/*.json': No such file or directory
+FALLA forzar 5m gana a activar 1h — esperado 'ttl=sin|thx=5m', obtenido ''
+cat: '/tmp/tmp.lkQh01FWyq/out/*.json': No such file or directory
+FALLA activar 1h en Bedrock, con Bedrock: 1h — esperado 'ttl=sin|thx=1h', obtenido ''
+FALLA activar 1h en Bedrock: la razón es la misma regla — esperado '1', obtenido '0'
+FALLA activar 1h en Bedrock sin Bedrock: no decide, rige la constante — esperado '1', obtenido '0'
+OK   variable ilegible: exit 2
+FALLA variable ilegible: la nombra, sin resumen — esperado '1 0', obtenido '0 0'
+cat: '/tmp/tmp.lkQh01FWyq/out/*.json': No such file or directory
+FALLA con proxy: el item ve el socket y el marcador, sin credencial — esperado 'sock=/tmp/tmp.lkQh01FWyq/out/.credential-proxy.sock|key=ssh-placeholder|auth=sin', obtenido ''
+FALLA con proxy: la credencial la recibe el proxy — esperado 'sk-user', obtenido ''
+OK   con proxy: al terminar el pool el proxy ya no vive
+FALLA proxy que no arranca: exit 2, sin resumen, y lo nombra — esperado '2 0 1', obtenido '2 0 0'
+cat: '/tmp/tmp.lkQh01FWyq/out/*.json': No such file or directory
+FALLA sin --credential-proxy el item conserva su entorno — esperado 'sock=sin|key=sk-user|auth=sin', obtenido ''
+FALLA proxy del store: exit 0 — esperado '0', obtenido '2'
+cat: '/tmp/tmp.lkQh01FWyq/out/*.json': No such file or directory
+FALLA proxy del store: el ítem ve la URL del proxy y la clave de acceso, sin credencial ni clave de cifrado — esperado 'key=|auth=sin|base=http://127.0.0.1:4242|skey=sin', obtenido ''
+FALLA proxy del store: la clave de acceso es propia de la ejecución, no la credencial del entorno — esperado 'propia', obtenido 'no:'
+FALLA proxy del store: recibe el modelo del pool — esperado 'claude-sonnet-5', obtenido ''
+FALLA proxy del store: el pool declara la fuente de credencial — esperado '1', obtenido '0'
+OK   proxy del store: al terminar el pool el proxy ya no vive
+FALLA proxy del store que no arranca: exit 2, sin resumen, y lo nombra — esperado '2 0 1', obtenido '2 0 0'
+OK   los dos proxies a la vez: exit 2 sin lanzar ninguno
+cat: '/tmp/tmp.lkQh01FWyq/out/*.json': No such file or directory
+FALLA sin --store-credential-proxy el ítem conserva su URL y su clave de cifrado — esperado 'key=sk-user|auth=sin|base=http://heredada.invalid|skey=clave-secreta', obtenido ''
+FALLA con GNU time: un .time por item — esperado '2', obtenido '0'
+cat: /tmp/tmp.lkQh01FWyq/out/1.time: No such file or directory
+FALLA con GNU time: memoria pico, pared, usuario y sistema — esperado '12345 1.50 0.40 0.10', obtenido ''
+cat: /tmp/tmp.lkQh01FWyq/out/2.time: No such file or directory
+FALLA con GNU time: el .time del item fallido es solo la medida — esperado '12345 1.50 0.40 0.10', obtenido ''
+FALLA con GNU time: el fallo del item sigue siendo fallo — esperado 'items=2 ok=1 fallidos=1', obtenido ''
+FALLA GNU time real: el .time trae cuatro cifras — esperado '1', obtenido ''
+OK   GNU time real: no declara que falte
+OK   sin GNU time: ningun .time
+FALLA sin GNU time: lo declara en vez de callar — esperado '1', obtenido '0'
+FALLA con nvidia-smi: el item deja su .gpu — esperado '1', obtenido '0'
+FALLA con nvidia-smi: VRAM pico y uso pico del item — esperado '400 77', obtenido ''
+FALLA con nvidia-smi: lo declara — esperado '1', obtenido '0'
+OK   sin nvidia-smi: ningun .gpu
+FALLA sin nvidia-smi: lo declara en vez de callar — esperado '1', obtenido '0'
+FALLA admision: sin VRAM para su pico el item no arranca — esperado 'items=1 ok=0 fallidos=1', obtenido ''
+gawk: fatal: cannot open file `/tmp/tmp.lkQh01FWyq/out/1.err' for reading: No such file or directory
+FALLA admision: la causa queda en su .err — esperado '1', obtenido ''
+tests/session/test-headless-pool.sh: line 361: /tmp/tmp.lkQh01FWyq/historial-gpu/vram-reservations.json: No such file or directory
+FALLA admision: lo reservado por otro pool vivo no se vuelve a dar — esperado 'items=1 ok=0 fallidos=1', obtenido ''
+FALLA admision: la reserva ajena sigue en el registro — esperado '900', obtenido ''
+FALLA admisión con error: el ítem falla — esperado 'items=1 ok=0 fallidos=1', obtenido ''
+gawk: fatal: cannot open file `/tmp/tmp.lkQh01FWyq/out/1.err' for reading: No such file or directory
+FALLA admisión con error: el .err dice que falló, no que venció — esperado '1 0', obtenido ''
+FALLA VRAM: 1000 libres / 800 por item -> anchura 1 aunque se configuraron 4 — esperado '1', obtenido '0'
+gawk: fatal: cannot open file `/tmp/tmp.lkQh01FWyq/parallel.args' for reading: No such file or directory
+FALLA VRAM: Parallel se lanza con -j 1 — esperado '1', obtenido ''
+FALLA reserva: los items admitidos arrancan — esperado 'items=2 ok=2 fallidos=0', obtenido ''
+OK   reserva: el registro queda vacio al terminar
+tests/session/test-headless-pool.sh: line 390: /tmp/tmp.lkQh01FWyq/historial-gpu/vram-reservations.json: No such file or directory
+FALLA reserva: registro ilegible no cuenta como vacio — esperado 'ilegible', obtenido '0'
+FALLA calibrado exige tantos ítems medidos como van a la vez — esperado '1', obtenido '0'
+FALLA la edad máxima declarada deja fuera la fila — esperado '1', obtenido '0'
+OK   edad máxima ilegible: exit 2
+FALLA dos pools: la ejecución de medida deja el pico del ítem — esperado '400', obtenido ''
+FALLA dos pools: los dos items terminan — esperado 'items=1 ok=1 fallidos=0', obtenido ''
+FALLA dos pools: nunca corren juntos (máximo simultáneo 1) — esperado '1', obtenido '0'
+OK   dos pools: el registro queda vacío
+FALLA dos pools: la ejecución concurrente también se mide (una fila por pool) — esperado '3', obtenido ''
+bin/pool_history: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/runtime/worktrees/e0" && uv sync
+FALLA pico 0 sin calibrar: los dos terminan — esperado 'items=1 ok=1 fallidos=0', obtenido ''
+FALLA pico 0 sin calibrar: nunca corren juntos — esperado '1', obtenido '0'
+FALLA pico 0 sin calibrar: lo dice — esperado '1', obtenido '0'
+FALLA RAM: 30000 KB disponibles / (12345 x 2) -> anchura 1 — esperado '1', obtenido '0'
+gawk: fatal: cannot open file `/tmp/tmp.lkQh01FWyq/parallel.args' for reading: No such file or directory
+FALLA RAM: Parallel se lanza con -j 1 — esperado '1', obtenido ''
+FALLA historial vacío: lo declara — esperado '1', obtenido '0'
+cat: '/tmp/tmp.lkQh01FWyq/out/*.json': No such file or directory
+FALLA historial vacío: rige la constante de 1h — esperado 'ttl=sin|thx=1h', obtenido ''
+FALLA la ejecución deja una fila — esperado '1', obtenido '0'
+FALLA la fila nombra el binario que corrió los ítems — esperado '/tmp/tmp.lkQh01FWyq/claude', obtenido ''
+FALLA la fila nombra el modelo que corrió los ítems — esperado 'claude-sonnet-5', obtenido ''
+FALLA la fila lleva la huella del CONTENIDO de la plantilla — esperado 'fe4725f385197bcdd9c86aa2450e1eb0d8435f93a7b9a4be4afdbcf1056bfa5d', obtenido ''
+cat: '/tmp/tmp.lkQh01FWyq/out/*.json': No such file or directory
+FALLA con historial: el TTL sigue siendo la constante — esperado 'ttl=sin|thx=1h', obtenido ''
+OK   con historial: el TTL no sale del historial
+FALLA con historial: --memfree sale de la memoria medida — esperado '1', obtenido '0'
+cat: '/tmp/tmp.lkQh01FWyq/out/*.json': No such file or directory
+FALLA lo declarado gana al historial: TTL — esperado 'ttl=sin|thx=1h', obtenido ''
+FALLA lo declarado gana al historial: memfree — esperado '1', obtenido '0'
+cat: '/tmp/tmp.lkQh01FWyq/out/*.json': No such file or directory
+FALLA el entorno gana al historial — esperado 'ttl=sin|thx=1h', obtenido ''
+FALLA la reserva del vecino se suma a lo medido — esperado '1', obtenido '0'
+find: '/tmp/tmp.lkQh01FWyq/historial-compartido': No such file or directory
+FALLA una plantilla, un solo historial — esperado '1', obtenido '0'
+bin/pool_history: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/runtime/worktrees/e0" && uv sync
+OK   otro binario: no deriva memfree de su fila
+FALLA otro binario: lo dice — esperado '1', obtenido '0'
+bin/pool_history: sin entorno del proveedor; corre con /usr/bin/python3.
+              Generalo con: cd "/home/user/thyrox/.thyrox/runtime/worktrees/e0" && uv sync
+OK   otro modelo: no deriva memfree de su fila
+FALLA otro modelo: lo dice — esperado '1', obtenido '0'
+FALLA sin historial, la reserva sola es la cota — esperado '1', obtenido '0'
+OK   reserva ilegible: exit 2
+FALLA runner claude: exit 0 — esperado '0', obtenido '2'
+FALLA runner claude: resumen — esperado 'items=2 ok=2 fallidos=0', obtenido ''
+cat: '/tmp/tmp.lkQh01FWyq/out/*.json': No such file or directory
+FALLA runner claude: sin sesión persistida y en stream-json — esperado 'persist=no|formato=stream-json', obtenido ''
+cat: '/tmp/tmp.lkQh01FWyq/out/*.json': No such file or directory
+FALLA runner claude: cada ítem trae un --session-id con forma de uuid — esperado '2', obtenido '0'
+FALLA runner claude: los --session-id son distintos — esperado '2', obtenido '1'
+jq: error: Could not open file /tmp/tmp.lkQh01FWyq/out/1.json: No such file or directory
+FALLA runner thyrox por defecto: sin --session-id — esperado 'sin', obtenido ''
+jq: error: Could not open file /tmp/tmp.lkQh01FWyq/out/1.json: No such file or directory
+FALLA sin --max-turns: el ítem corre sin tope de turnos — esperado 'sin', obtenido ''
+jq: error: Could not open file /tmp/tmp.lkQh01FWyq/out/1.json: No such file or directory
+FALLA --max-turns declarado llega al ítem — esperado '7', obtenido ''
+jq: error: Could not open file /tmp/tmp.lkQh01FWyq/out/1.json: No such file or directory
+FALLA runner claude sin --max-turns: sin tope — esperado 'sin', obtenido ''
+OK   runner claude sin claude en el PATH: exit 2
+OK   runner claude sin claude en el PATH: lo nombra
+OK   runner desconocido: exit 2
+FALLA runner claude con --cache-ttl: exit 0 — esperado '0', obtenido '2'
+jq: error: Could not open file /tmp/tmp.lkQh01FWyq/out/1.json: No such file or directory
+FALLA runner claude con --cache-ttl: la variable de claude, no la de thyrox — esperado 'ttl=5m|thx=sin', obtenido ''
+FALLA runner claude con proxy: exit 0 — esperado '0', obtenido '2'
+cat: '/tmp/tmp.lkQh01FWyq/out/*.json': No such file or directory
+FALLA runner claude con proxy: el ítem ve el socket y el marcador, sin credencial — esperado 'sock=/tmp/tmp.lkQh01FWyq/out/.credential-proxy.sock|key=ssh-placeholder|auth=sin', obtenido ''
+FALLA runner claude con proxy: la credencial la recibe el proxy — esperado 'sk-user', obtenido ''
+OK   sin filas en el joblog: no sale 0
+FALLA sin filas en el joblog: el total es el del índice — esperado 'items=3 ok=0 fallidos=0 sin-veredicto=3', obtenido ''
+OK   el runtime real se resuelve
+OK   el runtime real no recibe ejecuciones de la suite
+
+aserciones: 38 de 148 · fallos: 110

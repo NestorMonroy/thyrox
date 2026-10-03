@@ -1,0 +1,6 @@
+src/packages/cli/__tests__/fixtures/startupActivation/eagerExtraModule.ts
+src/packages/cli/__tests__/fixtures/startupActivation/eagerPodmanCall.ts
+src/packages/cli/__tests__/fixtures/startupActivation/eagerRedisConnection.ts
+src/packages/cli/__tests__/fixtures/startupActivation/listLoadedModules.ts
+src/packages/cli/__tests__/fixtures/startupActivation/profilerClosure.ts
+src/packages/cli/__tests__/startupActivation.test.ts

@@ -67,9 +67,12 @@ export type SecureStorageReadOptions = {
 
 /** Opciones de `In.readAsyncStrict` — con `unreadableFileAs: 'failure'`,
  * un archivo presente pero ilegible resuelve a `READ_FAILED` en vez de
- * `null`. */
+ * `null`. `inaccessibleAs` es lo que `Et` pasa; el almacén de texto plano
+ * no lo lee (sólo mira `unreadableFileAs`), así que bajo `Et` su lectura
+ * es la laxa: un EACCES es ausencia, un EIO es `READ_FAILED`. */
 export type SecureStorageReadStrictOptions = {
   unreadableFileAs?: 'failure' | 'null'
+  inaccessibleAs?: 'failureIfTransient'
 }
 
 /**
@@ -112,6 +115,7 @@ export type SecureStorage = {
   /** Puerto de `In.mutate`, sobre `Et` (`mutateCredentials`). */
   mutate?(
     mutator: (data: SecureStorageData) => SecureStorageData,
+    backend?: CredentialBackend,
   ): Promise<SecureStorageUpdateResult & { transient?: boolean }>
   /** Puerto de `In.invalidateCache`, sobre `c_e`. */
   invalidateCache?(): void

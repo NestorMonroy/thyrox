@@ -1,0 +1,3 @@
+podman 4.9.3 · backend sqlite · locks asignados 0, referenciados 14 · marcador /run/libpod/alive
+tras refrescar: locks asignados 14, referenciados 14
+exit=0

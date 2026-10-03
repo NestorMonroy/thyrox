@@ -1,0 +1,77 @@
+STEP 1/6: FROM docker.io/library/python:3.11-slim
+STEP 2/6: ARG HTTPS_PROXY
+--> Using cache 1fdeb9ef2d39537bd6d124ed40008a2329610f71f4be2a08008110bc9c664a59
+--> 1fdeb9ef2d39
+STEP 3/6: ARG https_proxy
+--> Using cache 5c4fb533cd9837193e0096a182a0965efe2db5e13f78d24c6ab4a459c3f3d88d
+--> 5c4fb533cd98
+STEP 4/6: ARG PIP_CERT
+--> Using cache 040264152ca4d3a686de67b550c931db6f33b051e9f93286c1081be5d065c7f7
+--> 040264152ca4
+STEP 5/6: RUN pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.5.1  && pip install --no-cache-dir transformers==4.46.3 trl==0.14.0 peft==0.13.2 datasets==3.1.0 accelerate==1.1.1
+--> Using cache 2442e5984266b612de82ea3b8f75579475164925307178d3f147a016a3e50c2a
+--> 2442e5984266
+STEP 6/6: WORKDIR /work
+--> Using cache ed13a77ab633c7a5eabe8a06ba84d705d769251558a66202bcb178681f24e73d
+COMMIT localhost/thyrox-rlvr-lab:cpu
+--> ed13a77ab633
+Successfully tagged localhost/thyrox-rlvr-lab:cpu
+ed13a77ab633c7a5eabe8a06ba84d705d769251558a66202bcb178681f24e73d
+/usr/local/lib/python3.11/site-packages/transformers/generation/configuration_utils.py:590: UserWarning: `do_sample` is set to `False`. However, `temperature` is set to `0.7` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `temperature`.
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/transformers/generation/configuration_utils.py:595: UserWarning: `do_sample` is set to `False`. However, `top_p` is set to `0.8` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_p`.
+  warnings.warn(
+/usr/local/lib/python3.11/site-packages/transformers/generation/configuration_utils.py:612: UserWarning: `do_sample` is set to `False`. However, `top_k` is set to `20` -- this flag is only used in sample-based generation modes. You should set `do_sample=True` or unset `top_k`.
+  warnings.warn(
+max_steps is given, it will override any value given in num_train_epochs
+  0%|          | 0/2 [00:00<?, ?it/s]`use_cache=True` is incompatible with gradient checkpointing. Setting `use_cache=False`...
+ 50%|█████     | 1/2 [07:09<07:09, 429.47s/it]                                               50%|█████     | 1/2 [07:09<07:09, 429.47s/it]100%|██████████| 2/2 [07:57<00:00, 205.10s/it]                                              100%|██████████| 2/2 [07:57<00:00, 205.10s/it]                                              100%|██████████| 2/2 [07:57<00:00, 205.10s/it]100%|██████████| 2/2 [07:57<00:00, 238.76s/it]
+{'loss': 0.0, 'grad_norm': 0.0, 'learning_rate': 5e-06, 'completion_length': 10.333333333333334, 'rewards/tool_call_reward': 0.5, 'reward': 0.5, 'reward_std': 0.0, 'kl': 0.0, 'epoch': 1.0}
+{'loss': 0.0, 'grad_norm': 0.0, 'learning_rate': 0.0, 'completion_length': 8.583333333333334, 'rewards/tool_call_reward': 0.5, 'reward': 0.5, 'reward_std': 0.0, 'kl': 0.0, 'epoch': 2.0}
+{'train_runtime': 477.5234, 'train_samples_per_second': 0.067, 'train_steps_per_second': 0.004, 'train_loss': 0.0, 'epoch': 2.0}
+{
+  "threads": 4,
+  "steps": 2,
+  "group_size": 2,
+  "seconds_per_step": 238.9,
+  "baseline_eval_seconds": 21.4,
+  "reward_before": 1.0,
+  "reward_after": 1.0,
+  "peak_rss_mib": 3242,
+  "log": [
+    {
+      "loss": 0.0,
+      "grad_norm": 0.0,
+      "learning_rate": 5e-06,
+      "completion_length": 10.333333333333334,
+      "rewards/tool_call_reward": 0.5,
+      "reward": 0.5,
+      "reward_std": 0.0,
+      "kl": 0.0,
+      "epoch": 1.0,
+      "step": 1
+    },
+    {
+      "loss": 0.0,
+      "grad_norm": 0.0,
+      "learning_rate": 0.0,
+      "completion_length": 8.583333333333334,
+      "rewards/tool_call_reward": 0.5,
+      "reward": 0.5,
+      "reward_std": 0.0,
+      "kl": 0.0,
+      "epoch": 2.0,
+      "step": 2
+    },
+    {
+      "train_runtime": 477.5234,
+      "train_samples_per_second": 0.067,
+      "train_steps_per_second": 0.004,
+      "total_flos": 0.0,
+      "train_loss": 0.0,
+      "epoch": 2.0,
+      "step": 2
+    }
+  ]
+}
+__BG_EXIT__=0

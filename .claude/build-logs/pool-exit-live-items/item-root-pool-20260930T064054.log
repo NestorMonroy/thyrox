@@ -1,0 +1,103 @@
+run-task-pool: 7 trabajo(s), anchura 3, logs en /home/user/thyrox/.claude/build-logs/job-20260930T064055
+  job-20260930T064055/job-001 bash tests/session/test-headless-pool-worktree.sh
+  job-20260930T064055/job-002 bash tests/session/test-headless-pool-exit-live-items.sh
+  job-20260930T064055/job-003 bash tests/session/test-headless-pool-lifecycle.sh
+  job-20260930T064055/job-004 bash tests/session/test-headless-pool-thyrox-p.sh
+  job-20260930T064055/job-005 bash tests/session/test-headless-pool.sh
+  job-20260930T064055/job-006 bash tests/session/test-headless-pool-frozen-launcher.sh
+  job-20260930T064055/job-007 PYTHONPATH=src uv run python tests/session/test_generate_bin.py
+run-task-pool: lanzados 7 de 7; esperando en PRIMER PLANO (timeout 1072s)
+asentado: job-20260930T064055_job-001 -> OK (2 de 8)
+asentado: job-20260930T064055_job-002 -> OK (3 de 8)
+asentado: job-20260930T064055_job-003 -> OK (4 de 8)
+asentado: job-20260930T064055_job-004 -> OK (5 de 8)
+asentado: job-20260930T064055_job-005 -> OK (6 de 8)
+asentado: job-20260930T064055_job-006 -> OK (7 de 8)
+asentado: job-20260930T064055_job-007 -> OK (8 de 8)
+== 8 trabajos asentados ==
+OLVIDADO job-20260930T064055
+       | (vacío — no emitió nada)
+OK     job-20260930T064055_job-001 exit=0
+       |   ok    no escribe en workbench del árbol principal
+       |   ok    no escribe en logs del árbol principal
+       | caso 13 — las herramientas del ítem actúan sobre su worktree, no sobre el árbol principal
+       |   ok    THYROX_ROOT del ítem es su worktree
+       |   ok    su node_modules sigue siendo el del runner
+       | caso 13c — control: sin el bloque, el ítem hereda la raíz del árbol principal
+       |   ok    control: el bloque se retiró
+       |   ok    control: sin el bloque, THYROX_ROOT es el árbol principal
+       | test-headless-pool-worktree: 46 aserciones — 46 ok, 0 falla(s)
+       | EXIT=0
+       memoria pico: 26852 KB (26 MB) · pared 18.58s
+OK     job-20260930T064055_job-002 exit=0
+       | OK   B: el veredicto es fallido (el runner murió)
+       | OK   B: la foto conserva el trabajo a mitad
+       | OK   B: el worktree se barrió sólo después de cerrar
+       | OK   B: el pool nombra el ítem sin veredicto de Parallel
+       | OK   control Ac: el bloque se retiró
+       | OK   control Ac: sin drenaje, el runner sobrevive al pool
+       | OK   control Bc: la guarda se retiró
+       | OK   control Bc: sin la guarda, el worktree del ítem no cerrado se barrió
+       | 24/24 aserciones
+       | EXIT=0
+       memoria pico: 27296 KB (27 MB) · pared 9.34s
+OK     job-20260930T064055_job-003 exit=0
+       | OK   la foto en curso trae el trabajo a mitad
+       | OK   la foto final existe
+       | OK   la foto final conserva el trabajo
+       | OK   el manifiesto de la foto describe la final
+       | OK   sin disco declarado, el ítem se rehúsa sin esperar
+       | OK   el rechazo nombra la admisión por disco
+       | OK   el ítem rehusado quedó publicado
+       | OK   control: con espera de 6 s, el rechazo tarda al menos 6 s
+       | result: 40 of 40 assertions green
+       | EXIT=0
+       memoria pico: 27540 KB (27 MB) · pared 31.67s
+OK     job-20260930T064055_job-004 exit=0
+       |   ok   el stream abre con system/init
+       |   ok   las herramientas del pool llegan acotadas
+       |   ok   una línea assistant por petición, con su uso
+       |   ok   por el túnel: el pool sale 0
+       |   ok   por el túnel: el ítem termina bien
+       |   ok   por el túnel: el servicio recibe la llave que puso el proxy
+       |   ok   por el túnel: el socket no queda al terminar
+       | 
+       | 12 ok · 0 falla(s) (alcance medido: headless-pool con thyrox -p)
+       | EXIT=0
+       memoria pico: 222696 KB (217 MB) · pared 8.38s
+OK     job-20260930T064055_job-005 exit=0
+       | OK   runner claude con --cache-ttl: la variable de claude, no la de thyrox
+       | OK   runner claude con proxy: exit 0
+       | OK   runner claude con proxy: el ítem ve el socket y el marcador, sin credencial
+       | OK   runner claude con proxy: la credencial la recibe el proxy
+       | OK   sin filas en el joblog: no sale 0
+       | OK   sin filas en el joblog: el total es el del índice
+       | OK   el runtime real no recibe ejecuciones de la suite
+       | 
+       | aserciones: 129 de 129 · fallos: 0
+       | EXIT=0
+       memoria pico: 22288 KB (22 MB) · pared 110.15s
+OK     job-20260930T064055_job-006 exit=0
+       |   | items=1 ok=1 fallidos=0
+       |   | memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)
+       | OK   the live pool keeps the summary of the copy it started with
+       | OK   the rewritten source does not reach the live pool
+       | OK   a frozen copy of the launcher exists while the item runs
+       | OK   the frozen copy is removed when the pool exits
+       | OK   control: the freeze block was removed from the unfrozen copy
+       | OK   control: without the freeze, the rewrite reaches the live pool
+       | result: 6 of 6 assertions green
+       | EXIT=0
+       memoria pico: 22028 KB (22 MB) · pared 2.57s
+OK     job-20260930T064055_job-007 exit=0
+       |   ok   y el ejercicio USA el interprete que se le pasa
+       |   ok   el arbol real declara al menos 14 entrypoints .ts
+       |   ok   todos los .ts del arbol llegan al plan de bin/
+       |   ok   ningun entrypoint TS sale de un node_modules
+       |   ok   los cuatro emit.ts del arbol real estan los cuatro
+       |   ok   ningun envoltorio del arbol real lleva 'exit 2'
+       |   ok   y el plan medido no esta vacio
+       | 
+       | 125 aprobada(s) · 0 fallida(s) (alcance medido: generate_bin.py)
+       | EXIT=0
+       memoria pico: 33580 KB (33 MB) · pared 27.91s

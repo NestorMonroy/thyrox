@@ -11,11 +11,21 @@
  * `readFilePolicy`: que un campo roto no tira el documento, que una puerta
  * sustituida se ve en `documentHasPolicyContent`, y que el suelo (`pd`)
  * protege un valor real ya escrito por un fragmento anterior.
+ *
+ * La lista `removed` de `readPolicyDocument` (la porción de `Ty` en
+ * `./policyRescue.ts`) también se prueba aquí, por la misma razón: lo que
+ * importa es su efecto en `readPolicyDocument`, no la función pura, que
+ * `policyRescue.test.ts` ya cubre.
  */
 import { afterEach, describe, expect, test } from 'bun:test'
 import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { installConfigHostBindings } from '../host.js'
+import { replaceRemoteSessionCache, setEvalPolicySnapshotOnly, setRemoteLoadStatus } from '../remote/loadState.js'
+import { setEligibility } from '../remote/syncCacheState.js'
+import type { SettingsJson } from '../settings/types.js'
+import { InMemoryConfig } from '../testing/index.js'
 // Ruta sustituible para los controles de anulación en paralelo (`src/verify/annul_parallel.sh`).
 const S = (await import(
   process.env.POLICY_SOURCES_MODULE ?? '../settings/policySources.ts'
@@ -83,14 +93,32 @@ describe('un documento de política (HRe)', () => {
       removed: true,
     }])
   })
+  test('una clave puesta a null ya queda explicada por su propio aviso de rescate: no se duplica en removed', () => {
+    // `model` no es `.nullable()`: `null` falla su esquema y `os` ya emite un
+    // aviso en la ruta `model` (`rescueField`). `Ty` sólo añade `removed`
+    // cuando NINGÚN aviso previo explica la ausencia — ver
+    // `policyRescue.test.ts` para el caso en que sí falta esa explicación.
+    const read = S.readPolicyDocument({ model: null }, 'f')
+    expect(read.errors.some(error => error.path === 'model')).toBe(true)
+    expect(read.removed).toEqual([])
+  })
+  test('una retirada ya explicada por un aviso de sustitución no se duplica en removed', () => {
+    const read = S.readPolicyDocument({ disableAutoMode: false }, 'f')
+    expect(read.removed).toEqual([])
+  })
+  test('un documento sin claves retiradas deja removed vacío', () => {
+    expect(S.readPolicyDocument({ model: 'claude-sonnet-5' }, 'f').removed).toEqual([])
+  })
   test('cada lectura recibe su copia de la caché', () => {
     const document = { permissions: { allow: ['Read'] } }
     const first = S.readPolicyDocument(document, 'f')
     ;(first.settings!.permissions as { allow: string[] }).allow.push('Edit')
     first.errors.push({ file: 'f', path: 'x', message: 'm' })
+    first.removed.push('bogus')
     const second = S.readPolicyDocument(document, 'f')
     expect(second.settings).toEqual({ permissions: { allow: ['Read'] } })
     expect(second.errors).toEqual([])
+    expect(second.removed).toEqual([])
   })
   test('el resultado es una copia: mutarlo no toca el documento', () => {
     const document = { permissions: { allow: ['Read'] } }
@@ -230,5 +258,77 @@ describe('el archivo administrado (njr)', () => {
     const read = S.readFilePolicy(dir)
     expect(read.settings).toEqual({ allowManagedHooksOnly: true })
     expect(read.errors.filter(error => error.message.startsWith('That substitute is not applied'))).toEqual([])
+  })
+})
+
+describe('la capa remota lee el estado de la sesión remota (Qq: agn, jx, S$o)', () => {
+  const servers = { managedMcpServers: { corp: { command: 'x' } } }
+  const withheld = {
+    file: 'remote managed settings',
+    path: 'managedMcpServers',
+    message: "The organization's MCP servers in the cached remote settings are withheld until the server confirms them this session; they connect as soon as it does.",
+    severity: 'warning' as const,
+    statusOnly: true,
+  }
+  function freshSession(): void {
+    const home = mkdtempSync(join(tmpdir(), 'policy-sources-remote-'))
+    dirs.push(home)
+    installConfigHostBindings(new InMemoryConfig({ configHomeDir: home }).bindings)
+    setEligibility(true)
+  }
+
+  test('un crudo sin verificar con servidores MCP los retiene y lo avisa (agn)', () => {
+    freshSession()
+    replaceRemoteSessionCache({ model: 'claude-sonnet-5', ...servers })
+    const read = S.readRemotePolicy({ platform: 'linux' })
+    expect(read.settings).toEqual({ model: 'claude-sonnet-5' })
+    expect(read.errors).toEqual([withheld])
+    expect(read.servedSnapshot).toBe(false)
+  })
+
+  test('el aviso no sale con el crudo verificado, ni cuando el anfitrión aporta los servidores (MRe), ni con la remota inyectada', () => {
+    freshSession()
+    replaceRemoteSessionCache({ model: 'claude-sonnet-5', ...servers })
+    expect(S.readRemotePolicy({ platform: 'linux', honorsHostMcpServers: () => true }).errors).toEqual([])
+    expect(S.readRemotePolicy({ platform: 'linux', remote: () => ({ model: 'claude-sonnet-5', ...servers }) }).errors).toEqual([])
+    replaceRemoteSessionCache({ model: 'claude-sonnet-5', ...servers }, { verified: true })
+    expect(S.readRemotePolicy({ platform: 'linux' }).errors).toEqual([])
+  })
+
+  test('un fallo ruled_empty del último intento aporta sus fallos normalizados, incluso sin caché (jx)', () => {
+    freshSession()
+    const rulings = [{ file: 'remote managed settings', path: 'permissions', message: '  not   applied  ', extra: 'dropped' }]
+    setRemoteLoadStatus({ state: 'failed', failure: { errorKind: 'ruled_empty', message: 'm', rulings } })
+    const read = S.readRemotePolicy({ platform: 'linux' })
+    expect(read.settings).toBeNull()
+    expect(read.errors).toEqual([{ file: 'remote managed settings', path: 'permissions', message: ' not applied ' }])
+  })
+
+  test('con caché obsoleta y ruled_empty, los fallos preceden a los del documento servido', () => {
+    freshSession()
+    replaceRemoteSessionCache({ model: 'claude-sonnet-5', permissions: 'nope' } as unknown as SettingsJson)
+    const failure = { errorKind: 'ruled_empty', message: 'm', rulings: [{ file: 'remote managed settings', path: 'x', message: 'ruling' }] }
+    setRemoteLoadStatus({ state: 'stale_cache', failure, transportEnvWithheld: true })
+    const read = S.readRemotePolicy({ platform: 'linux' })
+    expect(read.settings).toEqual({ model: 'claude-sonnet-5' })
+    expect(read.errors[0]).toEqual({ file: 'remote managed settings', path: 'x', message: 'ruling' })
+    expect(read.errors.length).toBeGreaterThan(1)
+  })
+
+  test('otro errorKind no aporta fallos, y la remota inyectada no lee el estado', () => {
+    freshSession()
+    const rulings = [{ file: 'remote managed settings', path: 'x', message: 'ruling' }]
+    setRemoteLoadStatus({ state: 'failed', failure: { errorKind: 'network_error', message: 'm', rulings } })
+    expect(S.readRemotePolicy({ platform: 'linux' }).errors).toEqual([])
+    setRemoteLoadStatus({ state: 'failed', failure: { errorKind: 'ruled_empty', message: 'm', rulings } })
+    expect(S.readRemotePolicy({ platform: 'linux', remote: () => null }).errors).toEqual([])
+  })
+
+  test('servedSnapshot es verdadero sólo cuando se sirve la vista proyectada (S$o)', () => {
+    freshSession()
+    replaceRemoteSessionCache({ model: 'a' }, { verified: true })
+    expect(S.readRemotePolicy({ platform: 'linux' }).servedSnapshot).toBe(false)
+    setEvalPolicySnapshotOnly(true)
+    expect(S.readRemotePolicy({ platform: 'linux' }).servedSnapshot).toBe(true)
   })
 })

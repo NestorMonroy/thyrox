@@ -1,0 +1,53 @@
+{
+  "measuredAt": "2026-10-02T08:49:54Z",
+  "passed": false,
+  "gates": {
+    "durable_corpus_accepted": {
+      "passed": false,
+      "notAccepted": [
+        "T002",
+        "T004",
+        "T004a",
+        "T004b",
+        "T004c",
+        "T004d",
+        "T004e",
+        "T008",
+        "T009"
+      ],
+      "verifyNoLongerPasses": [],
+      "deletionProofRows": 0,
+      "safeWithoutFullProof": []
+    },
+    "local_reclaim_completed": {
+      "passed": false,
+      "notAccepted": [
+        "T006",
+        "T007"
+      ],
+      "verifyNoLongerPasses": [],
+      "reason": "falta T006-reclaim.json o T007-verify.json"
+    },
+    "disk_admission": {
+      "passed": false,
+      "availableBytes": 580104192,
+      "requiredBytes": 17079912498,
+      "safetyMarginBytes": 2147483648,
+      "components": {
+        "worktrees": 12545124762,
+        "worktreeDependencies": 4482548802,
+        "attemptEvidence": 51935562,
+        "qualificationOutputs": 303372,
+        "batchWorkbenchOutputs": 0,
+        "catalogAndStoreWrites": 0
+      },
+      "refusals": [
+        "sin declaración de propiedad no se puede comprobar que el artefacto ya está presente"
+      ]
+    },
+    "ownership_available": {
+      "passed": false,
+      "reason": "falta p0/ownership.json: la sesión propietaria no ha declarado"
+    }
+  }
+}

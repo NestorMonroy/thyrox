@@ -1,0 +1,3 @@
+local-models-qualify: el coordinador falló la admisión en prepare: EPIPE fetching "http://127.0.0.1:39843/api/blobs/sha256:3e4cb14174460404e7a233e531675303b2fbf7749c02f91864fe311ab6344e4f". For more information, pass `verbose: true` in the second argument to fetch()
+execution thyrox-worker-probe-murdg01d-8803 kind=probe task=TASK-THYROX-0707 exit=2
+__BG_EXIT__=2

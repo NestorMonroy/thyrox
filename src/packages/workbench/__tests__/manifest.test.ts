@@ -35,6 +35,7 @@ import {
   REQUIRED_KEYS,
   WORKBENCH_FORMS,
   checkWorkbench,
+  declareWorkbench,
   latestRun,
   manifestLine,
   readManifestFile,
@@ -228,6 +229,22 @@ describe('el andamiaje omite lo que no puede saber', () => {
   test('rehusa un slug que ya trae sufijo: acuñaria dos', () => {
     const base = mkdtempSync(join(tmpdir(), 'wb-'))
     expect(() => scaffoldWorkbench(base, ID)).toThrow()
+  })
+})
+
+describe('declarar: el valor real, nunca un placeholder', () => {
+  const declared = { question: '¿mide?', instrument: 'un guion', metric: 'casos', blind_to: 'lo no medido' }
+
+  test('las cuatro claves y el destino por defecto se leen de vuelta', () => {
+    const dir = scaffoldWorkbench(mkdtempSync(join(tmpdir(), 'wb-')), 'declarado', new Date(Date.UTC(2026, 8, 5, 12, 0, 0)))
+    declareWorkbench(dir, declared)
+    const manifest = readManifestFile(join(dir, MANIFEST_FILE_NAME))
+    expect(manifest).toMatchObject({ ...declared, destination: join(dir, 'outputs') })
+  })
+
+  test('un valor vacío se rehúsa nombrando la clave', () => {
+    const dir = scaffoldWorkbench(mkdtempSync(join(tmpdir(), 'wb-')), 'vacio', new Date(Date.UTC(2026, 8, 5, 12, 0, 0)))
+    expect(() => declareWorkbench(dir, { ...declared, metric: ' ' })).toThrow('metric')
   })
 })
 

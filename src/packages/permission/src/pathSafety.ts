@@ -12,19 +12,22 @@
  *   `pathContains` ≙ `Ld` · `isInTrustedNetworkDirectory` ≙ `Oe` ·
  *   `comparableSegment` ≙ `sc` · `comparablePath` ≙ `Ae` (todas en
  *   `chunk-9apg35nm.js`, salvo `sc` en `chunk-xbd48fav.js` y los predicados
- *   de red en `chunk-gfewy5rb.js`).
+ *   de red en `chunk-gfewy5rb.js`) · `isUnderCommandProducer` ≙ `eqr` +
+ *   `QGr` · `canonicalComparablePath` ≙ `PS` · `isWithinComparableRoot` ≙
+ *   `qf` (en `chunk-89nes5g8.js` y `chunk-gfewy5rb.js`). El registro que
+ *   `eqr` lee (`U7n`) vive en `@thyrox/config/plugin/installedPluginsManager:
+ *   collectCommandProducerPaths`, y las raíces en línea que `QGr` compara
+ *   (`fe`) en `@thyrox/app-host/bootstrap/state: getInlinePluginRoots`.
  *
  * Divergencias declaradas:
  *
- * - `Lu` empieza marcando sensible un archivo bajo un directorio productor
- *   de comandos de plugin (`eqr`: los `sourceProducerPath` y
- *   `previousProducerPaths` de `installed_plugins.json`) o bajo la raíz de
- *   un plugin en línea (`QGr`: `inlinePlugins`/`inlinePluginsNoMcp` del
- *   anfitrión). Esta rama NO está portada: este árbol no registra rutas
- *   productoras en su esquema de plugins ni tiene la API de plugins en
- *   línea del anfitrión. Lo que sigue cubierto: la caché de plugins vive
- *   bajo `~/.claude/`, y el segmento `.claude` ya es sensible por sí mismo.
- *   Sucesor: TASK-THYROX-0251.
+ * - `U7n` pasa cada ruta productora por la resolución de WSL y el prefijo
+ *   de dispositivo de Windows (`Z`, `JX`) antes de registrarla; aquí se
+ *   exige sólo que sea absoluta. La forma comparable se toma después, en
+ *   `canonicalComparablePath`, para la ruta y para cada raíz.
+ * - `QGr` declara sensible cualquier ruta de red si hay plugins en línea
+ *   (`nbe`); aquí esa ruta ya la juzgan los predicados de red que siguen, y
+ *   `Lu` sólo llega a la rama de productores cuando la ruta no es de red.
  * - `Vv` (la superficie de automontaje `/Network` de macOS) es constante
  *   `false` en la build de Linux medida; se reproduce así.
  * - `So()` (la raíz de configuración de proyecto que el anfitrión declara en
@@ -171,6 +174,35 @@ function managedSettingsDropInDir(): string | undefined {
     return (require('@thyrox/config/managedPath') as { getManagedSettingsDropInDir: () => string }).getManagedSettingsDropInDir()
   } catch {
     return undefined
+  }
+}
+
+function pluginDirectoriesDeferred(): string[] {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return [(require('@thyrox/config/plugin/pluginDirectories') as { getPluginsDirectory: () => string }).getPluginsDirectory()]
+  } catch {
+    return []
+  }
+}
+
+function commandProducerPathsDeferred(pluginsDirs: readonly string[]): string[] {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return (require('@thyrox/config/plugin/installedPluginsManager') as {
+      collectCommandProducerPaths: (dirs: readonly string[]) => string[]
+    }).collectCommandProducerPaths(pluginsDirs)
+  } catch {
+    return []
+  }
+}
+
+function inlinePluginRootsDeferred(): string[] {
+  try {
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    return (require('@thyrox/app-host/bootstrap/state.js') as { getInlinePluginRoots: () => string[] }).getInlinePluginRoots()
+  } catch {
+    return []
   }
 }
 
@@ -527,6 +559,82 @@ export function isCommandSource(path: string): boolean {
   )
 }
 
+// ---- Productores de comandos de plugin (≙ `eqr`, `QGr`, `PS`) ----
+
+/** Cuánto vale una lectura de `installed_plugins.json` antes de repetirla (≙ `maxAgeMs: 5000`). */
+const PRODUCER_SCAN_MAX_AGE_MS = 5000
+
+/**
+ * La ruta como el disco la resuelve, en forma comparable (≙ `PS` con
+ * `foldCase`): realpath del tramo que existe, el tramo que aún no existe
+ * añadido tal cual, NFC y mayúsculas plegadas.
+ */
+export function canonicalComparablePath(path: string): string {
+  let existing = nodePath.resolve(path)
+  const missing: string[] = []
+  let real = realpathOrUndefined(existing)
+  while (real === undefined && nodePath.dirname(existing) !== existing) {
+    missing.unshift(nodePath.basename(existing))
+    existing = nodePath.dirname(existing)
+    real = realpathOrUndefined(existing)
+  }
+  return foldPathCase(nodePath.join(real ?? existing, ...missing).normalize('NFC'))
+}
+
+/** ¿Está `path` en `root` o debajo, ambos ya comparables? (≙ `qf` con `alreadyComparable`). */
+function isWithinComparableRoot(path: string, root: string): boolean {
+  const relative = nodePath.relative(root, path)
+  if (relative === '') return true
+  return !nodePath.isAbsolute(relative) && relative !== '..' && !relative.startsWith(`..${SEP}`)
+}
+
+type ComparableRootsCache = { key: string; scannedAt: number; roots: string[] }
+
+let producerRootsCache: ComparableRootsCache | undefined
+
+function isFreshProducerScan(cache: ComparableRootsCache | undefined, key: string): cache is ComparableRootsCache {
+  return cache !== undefined && cache.key === key && Date.now() - cache.scannedAt < PRODUCER_SCAN_MAX_AGE_MS
+}
+
+/**
+ * Las raíces productoras de comandos, comparables: los registros de plugins
+ * que no cuelgan del cwd y toda ruta productora que declaran (≙ la mitad de
+ * `eqr` que construye `commandProducerDirsComparable`).
+ */
+function commandProducerRoots(): string[] {
+  const pluginsDirs = pluginDirectoriesDeferred()
+  const cwd = canonicalComparablePath(getCwdDeferred())
+  const key = [...pluginsDirs, cwd].join('\0')
+  if (isFreshProducerScan(producerRootsCache, key)) return producerRootsCache.roots
+  const registries = pluginsDirs.map(canonicalComparablePath).filter(dir => !isWithinComparableRoot(dir, cwd))
+  const producers = commandProducerPathsDeferred(pluginsDirs).map(canonicalComparablePath)
+  producerRootsCache = { key, scannedAt: Date.now(), roots: unique([...registries, ...producers]) }
+  return producerRootsCache.roots
+}
+
+let inlineRootsCache: { key: string; roots: string[] } | undefined
+
+/** Las raíces de plugins en línea, comparables, rehechas sólo si cambian (≙ `inlinePluginRootsComparableMemo`). */
+function inlinePluginRootsComparable(): string[] {
+  const declared = inlinePluginRootsDeferred()
+  const key = declared.join('\0')
+  if (inlineRootsCache === undefined || inlineRootsCache.key !== key) {
+    inlineRootsCache = { key, roots: declared.map(canonicalComparablePath) }
+  }
+  return inlineRootsCache.roots
+}
+
+/** ¿Cuelga de un directorio productor de comandos de plugin, o de la raíz de un plugin en línea? (≙ `eqr || QGr`). */
+export function isUnderCommandProducer(path: string): boolean {
+  const target = canonicalComparablePath(path)
+  return [...commandProducerRoots(), ...inlinePluginRootsComparable()].some(root => isWithinComparableRoot(target, root))
+}
+
+/** Una ruta que alcanza la red antes de resolverse: `Lu` no la lleva a la rama de productores. */
+function reachesNetworkBeforeResolving(path: string): boolean {
+  return automountRoot(path) !== null || isAutomountMapRoot(path) || (isUncPath(path) && !isLocalWslUncPath(path))
+}
+
 // ---- Rutas sensibles (≙ `Lu`) ----
 
 /**
@@ -577,6 +685,7 @@ export function isSensitivePath(
   const expanded = expandPathDeferred(path)
   const segments = expanded.split(SEP)
   const last = segments.at(-1)
+  if (!reachesNetworkBeforeResolving(expanded) && isUnderCommandProducer(expanded)) return true
   if (isUntrustedNetworkShare(path, trusted)) return true
   if (isUntrustedAutomount(path, trusted)) return true
 

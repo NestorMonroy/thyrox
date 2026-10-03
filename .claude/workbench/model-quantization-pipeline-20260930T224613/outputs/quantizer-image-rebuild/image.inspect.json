@@ -1,0 +1,178 @@
+[
+     {
+          "Id": "ddf16d444d8bd2ac8cb4cfd94b7dd966b7da1de15e5a0ab9137a97d16fcf9156",
+          "Digest": "sha256:7bbe1b609ecf553fffa28443c41c1ba27ec02a8b45f856dc231166da0eac40ad",
+          "RepoTags": [
+               "localhost/thyrox-model-quantizer:dev"
+          ],
+          "RepoDigests": [
+               "localhost/thyrox-model-quantizer@sha256:7bbe1b609ecf553fffa28443c41c1ba27ec02a8b45f856dc231166da0eac40ad"
+          ],
+          "Parent": "6a743396463c3b6ef7307fa7a2fc8e710559125fc82b3592d6e1b6c8bba13229",
+          "Comment": "",
+          "Created": "2026-10-01T02:13:10.408909603Z",
+          "Config": {
+               "Env": [
+                    "PATH=/opt/venv/bin:/app:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
+                    "LD_LIBRARY_PATH=/app"
+               ],
+               "Cmd": [
+                    "/bin/bash"
+               ],
+               "WorkingDir": "/work",
+               "Labels": {
+                    "io.buildah.version": "1.33.7",
+                    "org.opencontainers.image.version": "24.04"
+               }
+          },
+          "Version": "",
+          "Author": "",
+          "Architecture": "amd64",
+          "Os": "linux",
+          "Size": 1279513437,
+          "VirtualSize": 1279513437,
+          "GraphDriver": {
+               "Name": "overlay",
+               "Data": {
+                    "LowerDir": "/var/lib/containers/storage/overlay/d02e010119daad9690c84d2a173bf05f5da13706965e12685d858fa9ccc58497/diff:/var/lib/containers/storage/overlay/07e6c7eddb9ac486667324119493459bde1ebca2c090eb7cf86e1c6cf8c408d6/diff:/var/lib/containers/storage/overlay/4bcb490db6caf4678030899960263801099b887fd9fda9880ab34fa726faf534/diff:/var/lib/containers/storage/overlay/7fa4cf67d0439301ee90be79402814ff1afed119bfbb2518ec68a02daccd3755/diff:/var/lib/containers/storage/overlay/256d2f2c3c7eadc7cd56d0cd15a5d09c8a39efe99967f68a08c38662f23a5b79/diff:/var/lib/containers/storage/overlay/b486eb530ac11908303e65b647f9ff47d7f9126bc030f2b28d83aa144a675c9f/diff:/var/lib/containers/storage/overlay/8f520ad466f965f5224b9acb97f4d5ea60ee2b1cf2cb8c97922d795de731747a/diff:/var/lib/containers/storage/overlay/7be2b4376bc8de4dcc20558379044a4fe94526c98eacdec486ad30745928f2ed/diff:/var/lib/containers/storage/overlay/7dea42f9e40e577fe8616b896407feafb0dff4bf368b254fd7d80d9a3f6b169c/diff:/var/lib/containers/storage/overlay/65e5d715ea720349e6475f91651a0956279fc295a45fd73aa04f1cec046281a1/diff",
+                    "UpperDir": "/var/lib/containers/storage/overlay/81f16e99b57dbf297e6225a08385392ceeadfc0776685e24113fce471e691599/diff",
+                    "WorkDir": "/var/lib/containers/storage/overlay/81f16e99b57dbf297e6225a08385392ceeadfc0776685e24113fce471e691599/work"
+               }
+          },
+          "RootFS": {
+               "Type": "layers",
+               "Layers": [
+                    "sha256:65e5d715ea720349e6475f91651a0956279fc295a45fd73aa04f1cec046281a1",
+                    "sha256:a68adf3db6d5ec12155b806f1440922f60c56400347393ee2a4dd94a7d2efb53",
+                    "sha256:12da191165d4eb1bc048e7bb7e15b9bec0730909fc8a94bfc1706e94b5e5c0fb",
+                    "sha256:94f4522bbc061528ef854411a2fc7adf0cbc9d674e9006862a2e7ad91a641f49",
+                    "sha256:d7ccb96d385d2d7add99a009844fe660f493e4dbd0d976846230a80be436ed14",
+                    "sha256:8f94906580cf74ac408f7e46017dd1665a053cf86dcf57a7a16af030de63884c",
+                    "sha256:70f134eb11419973aac80d5215eba36544ae042da042735497deb7b4d777e417",
+                    "sha256:83d801cca8f3fa409313dab41055f5b0c70be6e07d5f0de866c0a23eeadb9c9f",
+                    "sha256:71a965eb2e4d073e3e9f30ecaa38a68dd41267afc4ddeb361b50e1b6bc10155f",
+                    "sha256:541e62dfa02d7d1e825b3070fa606366dba1f0d81a2d93644b31cf7bcff35937",
+                    "sha256:0e39e9089b945a297c3970b17dff2f216c16369ce458145bf7924544c5dc5866"
+               ]
+          },
+          "Labels": {
+               "io.buildah.version": "1.33.7",
+               "org.opencontainers.image.version": "24.04"
+          },
+          "Annotations": {
+               "org.opencontainers.image.base.digest": "sha256:496754492fb28b4d3049432f2ca787449331e23fb14f0dd3fffea86bf5a93eb4",
+               "org.opencontainers.image.base.name": "docker.io/library/ubuntu:24.04"
+          },
+          "ManifestType": "application/vnd.oci.image.manifest.v1+json",
+          "User": "",
+          "History": [
+               {
+                    "created": "2026-09-11T11:44:03.605540158Z",
+                    "created_by": "/bin/sh -c #(nop)  ARG RELEASE",
+                    "empty_layer": true
+               },
+               {
+                    "created": "2026-09-11T11:44:03.646010328Z",
+                    "created_by": "/bin/sh -c #(nop)  ARG LAUNCHPAD_BUILD_ARCH",
+                    "empty_layer": true
+               },
+               {
+                    "created": "2026-09-11T11:44:03.67741558Z",
+                    "created_by": "/bin/sh -c #(nop)  LABEL org.opencontainers.image.version=24.04",
+                    "empty_layer": true
+               },
+               {
+                    "created": "2026-09-11T11:44:06.020434349Z",
+                    "created_by": "/bin/sh -c #(nop) ADD file:43d479b270bbaf47965cfc86b37f4c517bda83ddefda6f708f98c3b2b7d15396 in / "
+               },
+               {
+                    "created": "2026-09-11T11:44:06.579973371Z",
+                    "created_by": "/bin/sh -c #(nop)  CMD [\"/bin/bash\"]",
+                    "empty_layer": true
+               },
+               {
+                    "created": "2026-10-01T02:07:38.962751815Z",
+                    "created_by": "/bin/sh -c #(nop) ARG HTTPS_PROXY https_proxy",
+                    "comment": "FROM docker.io/library/ubuntu:24.04",
+                    "empty_layer": true
+               },
+               {
+                    "created": "2026-10-01T02:07:38.978290801Z",
+                    "created_by": "/bin/sh -c #(nop) ARG HTTPS_PROXY https_proxy",
+                    "comment": "FROM b78504eefd22",
+                    "empty_layer": true
+               },
+               {
+                    "created": "2026-10-01T02:07:38.992973561Z",
+                    "created_by": "/bin/sh -c #(nop) ARG HTTPS_PROXY PIP_CERT https_proxy",
+                    "comment": "FROM efc2db794f6d",
+                    "empty_layer": true
+               },
+               {
+                    "created": "2026-10-01T02:07:55.877029407Z",
+                    "created_by": "|3 HTTPS_PROXY=http://127.0.0.1:44429 PIP_CERT=/etc/ssl/certs/proxy-ca.crt https_proxy=http://127.0.0.1:44429 /bin/sh -c apt-get update  && apt-get install -y --no-install-recommends python3 python3-venv libgomp1 libssl3t64 ca-certificates  && rm -rf /var/lib/apt/lists/*",
+                    "comment": "FROM 2af5de6d521f"
+               },
+               {
+                    "created": "2026-10-01T02:07:56.553516793Z",
+                    "created_by": "/bin/sh -c #(nop) COPY multi:cf55f17013757c5dd9275d1e8c5832f401b5b1cbb24fb16c3aef0e08b354deef in /app/ ",
+                    "comment": "FROM 8f8efcfd9bcf"
+               },
+               {
+                    "created": "2026-10-01T02:07:56.79645454Z",
+                    "created_by": "/bin/sh -c #(nop) COPY multi:7f027eca2eb54ee18a77d009a7856c61827cfe9b7fb5693a11d0a00ca6f4baa6 in /app/ ",
+                    "comment": "FROM 8f7f65176514"
+               },
+               {
+                    "created": "2026-10-01T02:07:57.145888541Z",
+                    "created_by": "/bin/sh -c #(nop) COPY multi:8e745ffb87b65fa2558c3862e64b8bfdefb90f49abdc9ddff464d9964dcf0592 in /app/ ",
+                    "comment": "FROM 0a829950cd51"
+               },
+               {
+                    "created": "2026-10-01T02:07:57.901724289Z",
+                    "created_by": "/bin/sh -c #(nop) COPY multi:0de4e50d1e25beff6dd7069e34bc2687c0b2f695cd704253498839d124603fcb in /app/ ",
+                    "comment": "FROM eef293cd6643"
+               },
+               {
+                    "created": "2026-10-01T02:07:58.213290761Z",
+                    "created_by": "/bin/sh -c #(nop) COPY file:99b527a4ee8c0c711d929729992d3586987a1316bfb2c08ce1dcbe4349d21948 in /app/ ",
+                    "comment": "FROM a7e93b19c8c3"
+               },
+               {
+                    "created": "2026-10-01T02:07:58.454341872Z",
+                    "created_by": "/bin/sh -c #(nop) COPY dir:b4fe55d149ede9b04e53a22e02680caac433bdf1eece8e784708610a8c4781fa in /app/conversion ",
+                    "comment": "FROM bcffef11e5b4"
+               },
+               {
+                    "created": "2026-10-01T02:07:58.672417099Z",
+                    "created_by": "/bin/sh -c #(nop) COPY dir:167afba5ed8be2ba784932de8b35cf77bb732789bca390e272a29d97b0b8f655 in /app/gguf-py ",
+                    "comment": "FROM 16917d594fb0"
+               },
+               {
+                    "created": "2026-10-01T02:09:06.09573065Z",
+                    "created_by": "|3 HTTPS_PROXY=http://127.0.0.1:44429 PIP_CERT=/etc/ssl/certs/proxy-ca.crt https_proxy=http://127.0.0.1:44429 /bin/sh -c python3 -m venv /opt/venv  && /opt/venv/bin/pip install --no-cache-dir --index-url https://download.pytorch.org/whl/cpu torch==2.11.0  && /opt/venv/bin/pip install --no-cache-dir numpy==2.2.6 sentencepiece==0.2.2 transformers==4.57.6       protobuf==4.25.9 safetensors==0.8.0 tokenizers==0.22.2 huggingface_hub==0.36.2 regex==2026.9.29       pyyaml==6.0.3 tqdm==4.70.1 requests==2.32.5  && /opt/venv/bin/pip install --no-cache-dir --no-deps /app/gguf-py",
+                    "comment": "FROM c836eff6528c"
+               },
+               {
+                    "created": "2026-10-01T02:13:10.300850377Z",
+                    "created_by": "/bin/sh -c #(nop) COPY file:1884e814e6fad2bfeba5ea8b55a54bdaf2cc0cdc30d5edc7209cb0a7a3eb2209 in /app/ ",
+                    "comment": "FROM e9287f726381"
+               },
+               {
+                    "created": "2026-10-01T02:13:10.357320569Z",
+                    "created_by": "/bin/sh -c #(nop) ENV PATH=/opt/venv/bin:/app:$PATH     LD_LIBRARY_PATH=/app",
+                    "comment": "FROM 6f01f65a1688",
+                    "empty_layer": true
+               },
+               {
+                    "created": "2026-10-01T02:13:10.40926424Z",
+                    "created_by": "/bin/sh -c #(nop) WORKDIR /work",
+                    "comment": "FROM 6a743396463c",
+                    "empty_layer": true
+               }
+          ],
+          "NamesHistory": [
+               "localhost/thyrox-model-quantizer:dev"
+          ]
+     }
+]

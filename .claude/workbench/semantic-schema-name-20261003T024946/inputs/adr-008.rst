@@ -1,0 +1,201 @@
+.. meta::
+   :artefacto: ADR-THYROX-008
+   :tipo: ADR
+   :dominio: thyrox
+   :estado: Aceptado
+   :version: 1.0.0
+   :fecha: 2026-09-29T11:58:40
+
+.. _adr-thyrox-008:
+
+===================================================================================
+ADR-008: SemanticSearchStore, un store de dominio sobre PostgreSQL + pgvector
+===================================================================================
+
+Estado
+------
+
+**ACEPTADO**: decisión del ejecutor, 2026-09-29. Precisa :ref:`adr-thyrox-007`
+en un punto: el ``semantic_search_worker`` no habla con el store genérico como
+API de dominio, sino con un store propio de la búsqueda semántica. Tarea de
+implementación: **TASK-THYROX-0562** (este store) y **TASK-THYROX-0558** (worker, API y consumidor RAG). La
+decisión de modelo de embeddings y dimensiones sigue en D5 y la versión de
+pgvector en D2b; este registro no las toma.
+
+----
+
+Contexto
+--------
+
+ADR-007 dibujaba al worker conectándose a «PostgreSQL + pgvector» y listaba
+pgvector como una rama de ``@thyrox/store``:
+
+.. code-block:: text
+
+   @thyrox/store
+   ├── SQLite (por defecto)
+   └── PostgreSQL
+         └── pgvector, sólo donde hay búsqueda vectorial
+
+Esa forma deja abierta la puerta a que ``@thyrox/store`` acumule operadores,
+índices y funciones que sólo tienen sentido para la búsqueda vectorial:
+``binary_quantize()``, ``bit_hamming_ops``, ``vector_cosine_ops``,
+``halfvec_cosine_ops``, ``hnsw.ef_search``, ``ivfflat.probes``. Son decisiones
+del dominio vectorial, no de la persistencia común.
+
+Decisión
+--------
+
+**Regla 1: el worker depende de un store de dominio, no del store genérico.**
+
+.. code-block:: text
+
+   semantic_search_worker
+           │
+           ▼
+   SemanticSearchStore
+           │
+           ├── semántica propia de búsqueda vectorial
+           │   ├── embeddings
+           │   ├── búsqueda de vecinos más cercanos (ANN)
+           │   ├── cuantización binaria
+           │   ├── HNSW / IVFFlat
+           │   └── soporte de reranking matemático
+           │
+           └── reutiliza infraestructura
+                   │
+                   ▼
+               @thyrox/store (infraestructura PostgreSQL)
+                   │
+                   ▼
+               PostgreSQL
+
+.. list-table:: Responsabilidades
+   :header-rows: 1
+
+   * - Pieza
+     - Qué le pertenece
+   * - ``@thyrox/store``
+     - conexiones, migraciones base, configuración, ciclo de vida y
+       transacciones comunes, convenciones de persistencia
+   * - ``SemanticSearchStore``
+     - esquema de embeddings, operadores de pgvector, índices vectoriales,
+       consultas ANN, cuantización, métricas y distancias
+   * - ``semantic_search_worker``
+     - cálculo de embeddings, recuperación, reranking por modelo y la
+       orquestación del trabajo semántico
+
+**Regla 2: pgvector es una extensión dentro de PostgreSQL, no un segundo
+backend.**
+
+.. code-block:: text
+
+                    SemanticSearchStore
+                            │
+              ┌─────────────┴─────────────┐
+              │                           │
+              ▼                           ▼
+   @thyrox/store infraestructura    persistencia vectorial
+   PostgreSQL                       semántica y migraciones
+              │                           │
+              └─────────────┬─────────────┘
+                            ▼
+                       PostgreSQL
+                            │
+                         pgvector
+
+La forma incorrecta, que esta regla descarta, es tratar PostgreSQL y pgvector
+como dos destinos paralelos de un mismo store.
+
+**Regla 3: el contrato del motor es explícito y no se generaliza.**
+
+.. code-block:: text
+
+   SemanticSearchStore  →  PostgreSQL + pgvector (OBLIGATORIO)
+
+   AgentStore           →  @thyrox/store  →  SQLite
+   SharedDomainStore    →  @thyrox/store  →  PostgreSQL
+
+Que ``@thyrox/store`` admita SQLite y PostgreSQL **no** implica que
+``SemanticSearchStore`` los admita. Sin PostgreSQL con la extensión instalada
+en la versión que la migración exige, ``SemanticSearchStore`` rehúsa con un
+error que nombra lo que falta; no degrada a SQLite ni a búsqueda lineal en
+silencio. Se descarta una interfaz común del tipo «store que funciona con
+cualquier motor»: oculta capacidades que no son intercambiables.
+
+**Regla 4: una capacidad propia de un motor no sube a la abstracción común
+salvo que varios dominios necesiten ese mismo contrato.** Así
+``@thyrox/store`` no acumula pgvector, Redis, FTS ni embeddings. Hoy el único
+dominio vectorial es la búsqueda semántica; si aparece un segundo con el mismo
+contrato, la extracción a una pieza común se decide entonces, con los dos
+consumidores medidos.
+
+Superficie de ``SemanticSearchStore``
+-------------------------------------
+
+Forma orientativa, no firmada todavía (la fija TASK-THYROX-0558 en TDD):
+
+.. code-block:: text
+
+   SemanticSearchStore
+   ├── upsertEmbedding(...)
+   ├── searchNearest(...)
+   ├── searchBinaryCandidates(...)
+   ├── getEmbedding(...)
+   └── migrateVectorSchema(...)
+
+El worker no necesita saber cómo se construyó un índice. Un ejemplo de lo que
+el store puede declarar por dentro:
+
+.. code-block:: sql
+
+   CREATE INDEX ... USING hnsw (
+       (binary_quantize(embedding)::bit(3072)) bit_hamming_ops
+   );
+
+Flujo de una búsqueda
+---------------------
+
+.. code-block:: text
+
+   semantic_search_worker
+           │ search(query_embedding)
+           ▼
+   SemanticSearchStore
+           ├── binary_quantize
+           ├── ANN por distancia de Hamming
+           ▼
+   PostgreSQL + pgvector
+           │
+           ▼
+   N candidatos
+           │
+   SemanticSearchStore: distancia exacta (coseno / L2) sobre el embedding original
+           ▼
+   K candidatos
+           │
+           ▼
+   semantic_search_worker: reranking por modelo (cross-encoder)
+
+**Reranking tiene dos significados y se nombran por separado.** El reranking
+**matemático** —recalcular la distancia exacta con el embedding original sobre
+los candidatos de un índice aproximado— es del store. El reranking **por
+modelo** —un cross-encoder u otro modelo que reordena— es del worker, porque
+exige el runtime de inferencia que el store no tiene.
+
+Qué cambia de ADR-007
+---------------------
+
+- El diagrama de capacidades pasa por ``SemanticSearchStore`` entre el worker
+  y PostgreSQL.
+- El bloque «Verdad persistente» deja de listar pgvector como rama de
+  ``@thyrox/store``: pgvector pertenece a ``SemanticSearchStore``.
+- Nada de Redis, Podman ni ``PodmanWorkerManager`` cambia.
+
+Qué no decide
+-------------
+
+- El modelo de embeddings, sus dimensiones y la versión de pgvector (D5, D2b).
+- Si la cuantización binaria entra desde la primera versión o tras medir la
+  recuperación sin ella.
+- La firma exacta de la superficie de arriba.

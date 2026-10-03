@@ -1,0 +1,11 @@
+FALLA src/__tests__/candidateSources.test.ts
+FALLA faltan las tres fuentes exportadas
+FALLA falta outputs/T001-red.log
+FALLA falta outputs/T001-green.log
+FALLA falta outputs/T001-annulment.log
+scope: T001-0750 dentro de su alcance (alcance medido: 0 ruta(s) cambiada(s))
+FALLA T001 no añadió ninguna prueba
+grep: src/packages/provider/src/selection/candidateSources.ts: No such file or directory
+grep: src/packages/provider/src/selection/candidateSources.ts: No such file or directory
+execution thyrox-worker-maintenance-muqurxix-9877 kind=maintenance task=TASK-THYROX-0750 exit=1
+__BG_EXIT__=1

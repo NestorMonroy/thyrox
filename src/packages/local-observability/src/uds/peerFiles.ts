@@ -8,7 +8,8 @@
  *
  * Porte de `chunk-xqnw10c4.js` (con los nombres que exporta
  * `chunk-yrfq0b3e.js`), `ZOe` y `Dur` de `chunk-d6ekr2rh.js`, `met` de
- * `chunk-k1ds5bv1.js`, `G3` de `chunk-c98zkdh2.js` y `nlt`/`Ws` de 2.1.283.
+ * `chunk-k1ds5bv1.js`, `G3` de `chunk-c98zkdh2.js`, `nlt` y la compuerta
+ * `Ws`/`Vee`/`$Mt` de `chunk-fhcnpt13.js`, todos de 2.1.283.
  * El predicado de ruta insegura (`Mur`) vive en `@thyrox/permission`, que
  * depende de este paquete, así que entra como dependencia.
  */
@@ -21,7 +22,7 @@ import { basename, dirname, extname, isAbsolute, join, resolve } from 'node:path
 import { getSessionId } from '@thyrox/app-host/bootstrap/state.js'
 import { getConfigHomeDir } from '@thyrox/config/env/configHome'
 import { isEnvTruthy } from '@thyrox/config/env/utils'
-import { getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
+import { getAllGrowthBookFeatures, getFeatureValue_CACHED_MAY_BE_STALE } from '@thyrox/config/feature-flags'
 import { getPlatform } from '@thyrox/config/platform'
 
 import { logForDebugging } from '../debug.ts'
@@ -398,3 +399,71 @@ export function isSessionMessagingEnabled(readers: MessagingFlagReaders = proces
 export function isPeerFileTransferEnabled(readers: MessagingFlagReaders = processMessagingFlagReaders()): boolean {
   return isSessionMessagingEnabled(readers) && readers.flag('tengu_send_file', false)
 }
+
+/** `$Mt`: lo que se contesta cuando la mensajería entre sesiones no está disponible. */
+export const CROSS_SESSION_MESSAGING_UNAVAILABLE_MESSAGE = 'Cross-session messaging is not available in this session.'
+
+/** La bandera que `Vee` lee. */
+const PROJECTS_HUMAN_ORIGIN_FLAG = 'tengu_cuddly_willow'
+
+/**
+ * Lo que `Vee` necesita: la bandera y si está DECLARADA (entorno, config u
+ * override local) — el `source !== 'fallback'` de `aa` en la referencia.
+ */
+export interface SettledFlagReaders {
+  flag: MessagingFlagReaders['flag']
+  flagDeclared: (name: string) => boolean
+}
+
+const processSettledFlagReaders = (): SettledFlagReaders => ({
+  flag: processMessagingFlagReaders().flag,
+  flagDeclared: name => name in getAllGrowthBookFeatures(),
+})
+
+/**
+ * `Vee`: si el origen humano de Projects cuenta como tal. Mientras las
+ * banderas no se han asentado (`flagsSettled === false`) sólo vale si la
+ * bandera está declarada; después, la bandera manda y por omisión es sí.
+ */
+export function isProjectsHumanOriginEnabled(state: { flagsSettled?: boolean } = {}, readers: SettledFlagReaders = processSettledFlagReaders()): boolean {
+  const unsettledWithoutDeclaration = state.flagsSettled === false && !readers.flagDeclared(PROJECTS_HUMAN_ORIGIN_FLAG)
+  if (unsettledWithoutDeclaration) return false
+  return readers.flag(PROJECTS_HUMAN_ORIGIN_FLAG, true)
+}
+
+// ---------------------------------------------------------------------------
+// La cara exportada del núcleo de ListAgents — el papel de `chunk-1csd5fav.js`
+// ---------------------------------------------------------------------------
+
+/**
+ * `chunk-1csd5fav.js` es, en la referencia, el barrel por el que la
+ * herramienta `ListAgents` llega a `listAllPeers`, `buildSubagentExtras` y
+ * `formatForModel`. Aquí ese papel lo hace este módulo porque es el único
+ * subpath de `./uds/` que `package.json` exporta y que TASK-THYROX-0600
+ * posee: `listAllPeers.js` y `listAgentsFormat.js` no están en `exports`, y
+ * ese archivo queda fuera del ítem. Cuando entren, la herramienta importa
+ * `./uds/listAllPeers.js` y este bloque se retira. El ciclo
+ * `listAllPeers.ts` → `peerFiles.ts` (por `Ws`) → `listAllPeers.ts` es
+ * inerte: ninguno usa al otro al evaluarse, sólo dentro de funciones.
+ */
+export {
+  buildSubagentExtras,
+  listAgentsForModel,
+  listAllPeers,
+  ownSessionInfo,
+  processListAgentsDeps,
+  processOwnSessionDeps,
+  processPeerSources,
+  unportedRemotePeerSources,
+  type BridgeSessionWalk,
+  type CloudSessionListing,
+  type ListAgentsDeps,
+  type ListAllPeersResult,
+  type LocalPeerSources,
+  type OwnSessionDeps,
+  type PeerSources,
+  type RemotePeerSources,
+  type SubagentExtrasDeps,
+  type TeamDeps,
+} from './listAllPeers.ts'
+export type { CloudSession, ListAgentsAppState } from './listAgentsFormat.ts'

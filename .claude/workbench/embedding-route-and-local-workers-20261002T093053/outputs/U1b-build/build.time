@@ -1,0 +1,24 @@
+Command exited with non-zero status 1
+	Command being timed: "bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts build-image --task TASK-THYROX-0904 --context /home/user/thyrox/src/packages/model-artifacts/quantizer-image --tag localhost/thyrox-model-quantizer:dev --network host"
+	User time (seconds): 60.99
+	System time (seconds): 40.31
+	Percent of CPU this job got: 92%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 1:49.89
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 164292
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 324
+	Minor (reclaiming a frame) page faults: 1570222
+	Voluntary context switches: 561055
+	Involuntary context switches: 14973
+	Swaps: 0
+	File system inputs: 136040
+	File system outputs: 9659600
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 1

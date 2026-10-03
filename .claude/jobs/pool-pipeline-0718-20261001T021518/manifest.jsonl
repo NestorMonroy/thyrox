@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash .claude/workbench/model-quantization-pipeline-20260930T224613/launch-pipeline.sh", "started_at": "2026-10-01T02:15:18+00:00"}
+{"kind": "settle", "exit_code": 1, "finished_at": "2026-10-01T02:19:28+00:00", "duration_seconds": 250.010205}

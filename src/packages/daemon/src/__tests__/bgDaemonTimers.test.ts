@@ -37,6 +37,14 @@ describe('makeIdleActivityCount', () => {
     state.workers = { size: 5 }
     expect(count()).toBe(5)
   })
+
+  test("counts the model coordinator admissions, so a live residency keeps the daemon", () => {
+    let admissions = 1
+    const count = makeIdleActivityCount({ leases: { size: 0 }, workers: { size: 0 }, detached: { size: 0 } }, () => admissions)
+    expect(count()).toBe(1)
+    admissions = 0
+    expect(count()).toBe(0)
+  })
 })
 
 describe('setupIdleExitWatchdog', () => {
@@ -56,7 +64,8 @@ describe('setupIdleExitWatchdog', () => {
     const wd = setupIdleExitWatchdog({
       origin: 'service',
       abort,
-      graceMs: 10,
+      idleGraceMs: 10,
+      startupIdleGraceMs: 10,
       countActivity: () => activity,
     })
     wd.probe()
@@ -70,7 +79,8 @@ describe('setupIdleExitWatchdog', () => {
     const wd = setupIdleExitWatchdog({
       origin: 'transient',
       abort,
-      graceMs: 10,
+      idleGraceMs: 10,
+      startupIdleGraceMs: 10,
       countActivity: () => activity,
     })
     wd.probe()
@@ -83,7 +93,8 @@ describe('setupIdleExitWatchdog', () => {
     const wd = setupIdleExitWatchdog({
       origin: 'transient',
       abort,
-      graceMs: 10,
+      idleGraceMs: 10,
+      startupIdleGraceMs: 10,
       countActivity: () => activity,
     })
     wd.probe()
@@ -96,7 +107,8 @@ describe('setupIdleExitWatchdog', () => {
     const wd = setupIdleExitWatchdog({
       origin: 'transient',
       abort,
-      graceMs: 30,
+      idleGraceMs: 30,
+      startupIdleGraceMs: 30,
       countActivity: () => activity,
     })
     wd.probe()
@@ -112,7 +124,8 @@ describe('setupIdleExitWatchdog', () => {
     const wd = setupIdleExitWatchdog({
       origin: 'transient',
       abort,
-      graceMs: 10,
+      idleGraceMs: 10,
+      startupIdleGraceMs: 10,
       countActivity: () => activity,
     })
     wd.probe()
@@ -127,7 +140,8 @@ describe('setupIdleExitWatchdog', () => {
     const wd = setupIdleExitWatchdog({
       origin: 'transient',
       abort,
-      graceMs: 30,
+      idleGraceMs: 30,
+      startupIdleGraceMs: 30,
       countActivity: () => activity,
     })
     wd.probe()

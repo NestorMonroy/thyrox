@@ -11,8 +11,13 @@
  * `runProviderImportCommand` en `omniroute: bin/cli/commands/provider-crud.mjs` (MIT).
  */
 import { describe, expect, test } from 'bun:test'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 
-import { providersCommand, type ProvidersCommandDeps } from '../src/commands/providers-commands.ts'
+import { CONNECTIONS_DB_FILE } from '@thyrox/provider/accounts/connectionStoreHome'
+
+import { providersCommand, realProvidersCommandDeps, type ProvidersCommandDeps } from '../src/commands/providers-commands.ts'
 import { buildConnectionPayload } from '../src/commands/providers/connectionPayload.ts'
 
 type Row = Record<string, unknown>
@@ -23,8 +28,9 @@ function deps(overrides: Partial<ProvidersCommandDeps> = {}, rows: Row[] = []) {
   const updates: Array<[string, Row]> = []
   const prompts: string[] = []
   let serial = 0
+  let opened = 0
   const d: ProvidersCommandDeps = {
-    openStore: () => ({
+    openStore: () => (opened++, {
       store: {
         list: () => rows,
         delete: () => true,
@@ -50,7 +56,25 @@ function deps(overrides: Partial<ProvidersCommandDeps> = {}, rows: Row[] = []) {
     login: async () => ({ ok: false, error: 'not under test' }),
     ...overrides,
   }
-  return { d, out, created, updates, prompts }
+  return { d, out, created, updates, prompts, opened: () => opened }
+}
+
+const PROVIDERS_DATA_DIR_VARIABLE = 'THYROX_PROVIDERS_DATA_DIR'
+
+/** Corre `providers add` con las dependencias reales sobre un hogar vacío y devuelve lo que quedó en él. */
+async function addOverEmptyHome(extraArgs: string[]): Promise<{ code: number; entries: string[] }> {
+  const home = fs.mkdtempSync(path.join(os.tmpdir(), 'providers-add-'))
+  const previous = process.env[PROVIDERS_DATA_DIR_VARIABLE]
+  process.env[PROVIDERS_DATA_DIR_VARIABLE] = home
+  try {
+    const run = { ...realProvidersCommandDeps, write: () => {}, env: { SECRET_VAR: 'sk-from-env' } }
+    const code = await providersCommand(['providers', 'add', 'anthropic', '--credential-env', 'SECRET_VAR', ...extraArgs], run)
+    return { code, entries: fs.readdirSync(home) }
+  } finally {
+    if (previous === undefined) delete process.env[PROVIDERS_DATA_DIR_VARIABLE]
+    else process.env[PROVIDERS_DATA_DIR_VARIABLE] = previous
+    fs.rmSync(home, { recursive: true, force: true })
+  }
 }
 
 describe('building a connection payload', () => {
@@ -123,6 +147,16 @@ describe('thyrox providers add', () => {
     expect(prompts).toEqual([])
   })
 
+  test('anthropic and claude are stored under the one id the credential chain reads', async () => {
+    for (const spelling of ['anthropic', 'claude']) {
+      const { d, out, created } = deps()
+      expect(await providersCommand(['providers', 'add', spelling, '--credential-env', 'SECRET_VAR', '--dry-run'], d)).toBe(0)
+      expect(out.join('')).toBe('dry-run: would add claude/claude\n')
+      expect(await providersCommand(['providers', 'add', spelling, '--credential-env', 'SECRET_VAR'], d)).toBe(0)
+      expect(created[0]).toMatchObject({ provider: 'claude', name: 'claude', apiKey: 'sk-from-env' })
+    }
+  })
+
   test('--dry-run previews the shape of the credential, never its value, and writes nothing', async () => {
     const { d, out, created } = deps()
     expect(await providersCommand(['providers', 'add', 'openai', '--credential-env', 'SECRET_VAR', '--provider-specific-data', '{"baseUrl":"u","clientSecret":"s"}', '--dry-run', '--json'], d)).toBe(0)
@@ -131,6 +165,22 @@ describe('thyrox providers add', () => {
     const text = deps()
     await providersCommand(['providers', 'add', 'openai', '--credential-env', 'SECRET_VAR', '--dry-run'], text.d)
     expect(text.out.join('')).toBe('dry-run: would add openai/openai\n')
+  })
+
+  test('--dry-run never opens the store, in text or --json', async () => {
+    for (const extra of [[], ['--json']]) {
+      const { d, opened } = deps()
+      expect(await providersCommand(['providers', 'add', 'openai', '--credential-env', 'SECRET_VAR', '--dry-run', ...extra], d)).toBe(0)
+      expect(opened()).toBe(0)
+    }
+  })
+
+  test('--dry-run over an empty providers home leaves it empty', async () => {
+    expect(await addOverEmptyHome(['--dry-run'])).toEqual({ code: 0, entries: [] })
+  })
+
+  test('a real add over an empty providers home creates the store file', async () => {
+    expect(await addOverEmptyHome([])).toEqual({ code: 0, entries: [CONNECTIONS_DB_FILE] })
   })
 
   test('without a provider it is a usage error; a flag value is never taken for the provider', async () => {
@@ -197,6 +247,14 @@ describe('thyrox providers import', () => {
       { provider: 'openai', name: 'main', ok: true, status: 'skipped_existing', connectionId: 'c1' },
       { provider: 'groq', name: 'groq', ok: true, status: 'created', connectionId: 'new-1' },
     ] })
+  })
+
+  test('an anthropic entry is the claude row: it skips an existing one and is created under that id', async () => {
+    const rows: Row[] = [{ id: 'c1', provider: 'claude', name: 'claude', authType: 'apikey' }]
+    const { d, out, created } = deps(file([{ provider: 'anthropic', apiKey: 'k1' }, { provider: 'Anthropic', name: 'second', apiKey: 'k2' }]), rows)
+    expect(await providersCommand(['providers', 'import', 'f.json', '--json'], d)).toBe(0)
+    expect(created.map(row => [row.provider, row.name])).toEqual([['claude', 'second']])
+    expect(JSON.parse(out.join('')).results.map((result: Row) => [result.provider, result.status])).toEqual([['claude', 'skipped_existing'], ['claude', 'created']])
   })
 
   test('an entry cannot bring anything but provider data', async () => {

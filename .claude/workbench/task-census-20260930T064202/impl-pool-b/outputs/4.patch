@@ -1,0 +1,889 @@
+diff --git a/.claude/workbench/task-thyrox-0508-credential-store-20260930T080136/README.md b/.claude/workbench/task-thyrox-0508-credential-store-20260930T080136/README.md
+new file mode 100644
+index 000000000..295d1ebd7
+--- /dev/null
++++ b/.claude/workbench/task-thyrox-0508-credential-store-20260930T080136/README.md
+@@ -0,0 +1,98 @@
++# TASK-THYROX-0508 — el almacén de credenciales de 2.1.283 sobre `storage/secureStorage`
++
++Banco del ítem. Fuente de verdad del análisis: `chunk-mmqkf96q.js` del corpus
++`_references/claude-code-bin/2.1.283/bunfs-root/` (sólo lectura, `bin/binary symbol`),
++más `chunk-twjdyk4f.js` para el backend de archivo real que `ji` envuelve.
++El volcado íntegro de los 34 símbolos consultados está en `symbols-2.1.283.txt`.
++
++## Estado de partida
++
++El commit e98224086 ya había portado el tramo. Esta sesión midió cada símbolo
++enumerado contra el ejecutable y corrigió lo que el porte previo tenía distinto
++o había declarado como no portable sin medirlo.
++
++| Eje | Valor |
++|---|---|
++| Pruebas de `secureStorage` antes de tocar nada | 31 en verde, 0 en rojo (4 archivos) |
++| Símbolos enumerados por la tarea | 34, todos resueltos por `bin/binary symbol` |
++| Pruebas al cerrar | 45 en verde, 0 en rojo (5 archivos) |
++
++*Métrica:* salida de `bun test src/secureStorage src/__tests__/secureStorage.test.ts`
++en `src/packages/storage`.
++*Ciega a:* consumidores fuera del paquete (`bridge/trustedDevice.ts`) que llaman
++`update()` síncrono; no se corrieron, porque su contrato no cambia.
++
++## Símbolo por símbolo (`chunk-mmqkf96q.js`, rangos en bytes)
++
++| Símbolo | Rango | Qué hace | Decisión |
++|---|---|---|---|
++| `fc` | [13645,13683) | `Symbol("secureStorage.READ_FAILED")` | ya portado: `READ_FAILED` (`types.ts`) |
++| `Rn` | [13766,13775) | `new AsyncLocalStorage` del candado | ya portado: `writeLockContext` |
++| `vs` | [13776,13796) | cola de promesas del candado | ya portado: `writeQueueTail` |
++| `fWr` | [13797,14295) | candado: cola + `mkdir(Fw())` + `Ci(<dir>/.storage-write, {realpath:false, retries 10/100/1000, stale 15000, onCompromised→warn})` | **portado en esta sesión**: el porte previo declaraba `Ci` como no portable «por exigir la dependencia externa»; medido, `proper-lockfile` está en `storage/package.json` y `src/packages/storage/src/lockfile.ts` ya lo envuelve. `withWriteLock` toma ahora el candado de archivo con las mismas opciones |
++| `aFo` | [14295,14337) | `Rn.run(true, e)` | ya portado: `runWithinWriteLock` |
++| `Et` | [14337,14662) | `mutate`: invalida caché, lee con `readAsyncStrict?.(n,{inaccessibleAs:"failureIfTransient"}) ?? readAsync(n)`, salta la escritura si `fc`, `update(i, n)` | **corregido**: el porte pasaba `{unreadableFileAs:'failure'}` y no pasaba el backend `n`. Ahora pasa la opción de la fuente y el backend a las tres llamadas. Divergencia que se mantiene: el evento `p("secure_storage_credentials_write", "read_failed_skip_write")` (telemetría, fuera de alcance) |
++| `nl` | [14666,14705) | `Symbol("secureStorage.fallbackLegs")` | ya portado, sin consumidor (declarado) |
++| `Fi` | [14710,14717) | `2000` | ya portado, sin consumidor (declarado) |
++| `mWr` | [14725,14798) | libsecret: memoiza `Promise.resolve(false)` | ya portado: `isLibsecretAvailable` |
++| `we` | [14864,14970) | `{storageDir: Fw(), storagePath: join(Fw(), ".credentials.json")}` | ya portado: `getStoragePath`. **Divergencia declarada**: `Fw` lee `CLAUDE_SECURESTORAGE_CONFIG_DIR` (cadena vacía → `~/.claude`) antes de caer en `Se()`. Portarlo exige una clave `THYROX_SECURESTORAGE_CONFIG_DIR` y `check_env_contract_keys.py` obliga a declararla en `.env.example`, archivo fuera de los que este ítem posee. Se usa `getConfigHomeDir()` directo |
++| `v6n` | [14974,15022) | aviso de texto plano | ya portado: `PLAINTEXT_WARNING` |
++| `$i` | [15023,15163) | errno → `null`/`fc`, laxo (EACCES/EPERM fuera de win32 → null) | ya portado: `mapErrnoToNullOrReadFailed` |
++| `Ui` | [15163,15208) | errno → `null`/`fc`, estricto (sólo ENOENT → null) | ya portado: `mapErrnoStrictToNullOrReadFailed` |
++| `Bi` | [15212,15855) | backend crudo: `read`, `readStrict(e)` con `(e?Ui:$i)(code,"linux")`, `write` (`mkdir`, `An(n,b(e),384)`, `Li(n,384)`), `remove` | lecturas ya portadas: `createRawFileReadBackend`. `write`/`remove` siguen en `plainTextStorage.update/delete` síncronos (divergencia ya declarada, y ahora medida: `bridge/trustedDevice.ts:217,357` los llama sin `await`). **Corregido**: el archivo se crea con modo 0600 (`openSync(…, 'w', 0o600)`) en vez de crearse con umask y corregirse después |
++| `Wi` | [15856,16033) | estado de copia → valor | ya portado: `mapCopyStateToValue` |
++| `ji` | [16033,16839) | envoltorio con generación; `readStrict(r)` llama `r ? e.readCredentials() : e.readCredentialsStrict()` | **corregido**: el porte tenía las dos llamadas invertidas. En el backend real (`chunk-twjdyk4f.js` `y`), `readCredentials = E(w)` usa el mapeador estricto y `readCredentialsStrict = E(I(e,"linux"))` el laxo, así que la fuente es coherente con `Bi.readStrict`: bandera verdadera → estricto |
++| `vr` | [16839,16905) | invalida si la promesa rechaza | ya portado: `runTracked` |
++| `qi` | [16943,16963) | `new q(() => new Ts)` | ya portado: `generationStates` |
++| `Xe` | [16964,17001) | `qi.of(j().host)` | ya portado: `getHostGenerationState` |
++| `Tr` | [17001,17065) | fija copia y avanza generación | ya portado: `setCopy` |
++| `Ps` | [17065,17300) | reconcilia lectura con la generación | ya portado: `reconcileCopy` |
++| `He` | [17300,17344) | invalida y avanza generación | ya portado: `invalidate` |
++| `c_e` | [17344,17368) | `He(Xe())` | ya portado: `invalidateHostCache` |
++| `Pr` | [17368,17415) | `N() && e !== undefined ? ji(e) : Bi` | ya portado: `selectBackend` |
++| `In` | [17419,17942) | el almacén `plaintext`, `osGuarded:false`; `read(e)` consulta la copia sólo con `N()` y `fromStoreCopy`, todo dentro del `try` | **corregido**: el `JSON.parse` de la copia estaba fuera del `try`; una copia corrupta lanzaba en vez de resolver `null`. `mutate(e, r)` pasa ahora el backend `r` |
++| `Gi` | [18320,18340) | `new q(() => new Ms)` | ya portado: `windowsCredManMemos` |
++| `Ns` | [18341,18378) | `Gi.of(j().host)` | ya portado: `getWindowsCredManMemo` |
++| `Ds` | [18378,18508) | rutas del flag: `Se()/.config.json` y `(CLAUDE_CONFIG_DIR ǀǀ homedir())/.claude${uK()}.json` | ya portado con divergencia declarada: las dos bajo `getConfigHomeDir()`, donde `@thyrox/config` guarda `.claude.json` |
++| `gWr` | [18508,18614) | `CLAUDE_CODE_FORCE_WINDOWS_CREDMAN==="1"` o `Ns().resolve(Ds, zi)` | ya portado: `shouldUseWindowsCredMan`, con `THYROX_CODE_FORCE_WINDOWS_CREDMAN` |
++| `zi` | [18614,18756) | lee `cachedGrowthBookFeatures.tengu_windows_credman` | ya portado: `readWindowsCredManFlagFromConfig` |
++| `hWr` | [18756,18789) | `Ns().prime(e, Ds)` | ya portado: `primeWindowsCredManDecision` |
++| `Un` | [18796,18836) | `Os ?? In` | ya portado: `getSecureStorage`, con `registerSystemSecureStorage` en lugar de la asignación a `Os` (que ningún texto del chunk asigna: `grep 'Os=[^=]'` da 0) y el chequeo de `darwin` como valor por defecto (divergencia declarada) |
++| `gr`, `Ne` | [18836,19188), [19188,19480) | `__classPrivateFieldSet/Get` de esbuild | no se portan: artefacto del bundler para `#campo`, sin lógica de aplicación |
++
++*Métrica:* rangos y cuerpos que `bin/binary symbol chunk-mmqkf96q.js <nombres> --root …` imprime (34 de 34 resueltos).
++*Ciega a:* símbolos de otros chunks que el tramo importa (`q`, `j`, `N`, `Se`, `Fw`, `Ci`, `An`, `Jne`, `ce`) — se leyeron por separado y se citan arriba donde deciden algo, pero no se portan íntegros.
++
++## El backend de archivo real (`chunk-twjdyk4f.js`, `y` / `E` / `w` / `I`)
++
++`E(clasificador)` abre con `O_NOFOLLOW` (`ELOOP` → `refused-symlink`), rechaza por
++tamaño (`corrupt`), y un JSON `null` es `absent`. `w`: ENOENT → absent, resto →
++read-failed. `I(e,"linux")`: ENOENT/EISDIR/ENOTDIR/EACCES/EPERM → absent, resto →
++read-failed. `writeCredentials`: `mkdir` + `Jne(n, b(e), {mode:384, exactMode:384})`
++(temporal con el modo final y `rename`).
++
++Portado en `createFileCredentialBackend`: los dos clasificadores, el `null` →
++`absent`, y la publicación por staging + `rename` con modo 0600 (un `rename` que
++falla deja el archivo anterior intacto y retira el temporal). **Declarado, no
++portado:** `O_NOFOLLOW`/`refused-symlink` y el tope de tamaño — están fuera del
++chunk enumerado; `Wi`/`Ps` ya mapean el estado `refused-symlink` cuando un backend
++lo emita.
++
++## Controles de anulación
++
++Cada rama nueva se retiró sobre una copia (`mktemp`), se midió la suite y se
++restauró. Los números están en la respuesta del ítem y en `annulment.log` de este
++banco.
++
++| Anulación | Qué se retiró | Caen | Sobreviven como control |
++|---|---|---|---|
++| A | el candado de archivo en `withWriteLock` | 3 (existe durante la tarea; espera al poseedor ajeno; crea el directorio) | la reentrancia |
++| B | el orden de llamadas de `ji.readStrict` | 2 (bandera falsa → null; verdadera → READ_FAILED) | — |
++| C | `inaccessibleAs` y el backend en `Et` | 2 (opciones/backend observados; EACCES escrito bajo plaintext) | EIO sigue siendo transitorio |
++| D | el clasificador laxo de `readCredentialsStrict` | 1 (EACCES → absent) | `readCredentials` con EACCES → read-failed |
++| E | JSON `null` → `absent` | 1 | — |
++| F | staging + `rename` en `writeCredentials` | 1 (rename fallido deja el anterior intacto) | la publicación sin fallo |
++| G | el `try` alrededor de la copia en `In.read` | 1 (copia corrupta → null) | — |
++
++*Métrica:* líneas `(fail)` de `bun test src/secureStorage` con la rama retirada, contra 45/0 restaurada; el log íntegro es `annulment.log`.
++*Ciega a:* un fallo que la anulación produjera en otro paquete (`bridge`), que no corre en esta suite.
+diff --git a/.claude/workbench/task-thyrox-0508-credential-store-20260930T080136/annulment.log b/.claude/workbench/task-thyrox-0508-credential-store-20260930T080136/annulment.log
+new file mode 100644
+index 000000000..c77ab287b
+--- /dev/null
++++ b/.claude/workbench/task-thyrox-0508-credential-store-20260930T080136/annulment.log
+@@ -0,0 +1,39 @@
++## A. sin candado de archivo (fWr/Ci)
++(fail) withWriteLock (fWr): candado de archivo entre procesos > el candado existe mientras corre la tarea y desaparece al terminar
++(fail) withWriteLock (fWr): candado de archivo entre procesos > espera a un poseedor ajeno del mismo candado en vez de correr a la vez
++(fail) withWriteLock (fWr): candado de archivo entre procesos > crea el directorio de configuración si no existe antes de tomar el candado
++ 41 pass
++ 3 fail
++
++## B. ji.readStrict con las llamadas invertidas
++(fail) ji.readStrict: qué lectura del backend llama cada bandera > con la bandera en falso llama a readCredentialsStrict (mapeo laxo) y resuelve null
++(fail) ji.readStrict: qué lectura del backend llama cada bandera > con la bandera en verdadero llama a readCredentials (mapeo estricto) y resuelve READ_FAILED
++ 42 pass
++ 2 fail
++
++## C. Et con unreadableFileAs y sin backend
++(fail) Et: mutateCredentials pasa las opciones y el backend de la fuente > readAsyncStrict recibe { inaccessibleAs: "failureIfTransient" } y update recibe el backend
++(fail) Et: mutateCredentials pasa las opciones y el backend de la fuente > sobre plaintext, un archivo con EACCES se lee como ausente ($i) y la mutación se escribe
++ 42 pass
++ 2 fail
++
++## D. readCredentialsStrict con el clasificador estricto
++(fail) backend de archivo: los dos mapeadores de errno y el JSON null > readCredentialsStrict con EACCES es absent; readCredentials con EACCES es read-failed
++ 43 pass
++ 1 fail
++
++## E. JSON null como present
++(fail) backend de archivo: los dos mapeadores de errno y el JSON null > un archivo cuyo JSON es null se lee como absent, no como present
++ 43 pass
++ 1 fail
++
++## F. escritura directa sin staging+rename
++(fail) backend de archivo: los dos mapeadores de errno y el JSON null > si el rename falla, el archivo anterior queda intacto, no hay temporal y el estado es failed
++ 43 pass
++ 1 fail
++
++## G. copia parseada fuera del try
++(fail) In.read({ fromStoreCopy: true }) con una copia corrupta > una copia cuyo texto no es JSON resuelve null en vez de lanzar
++ 43 pass
++ 1 fail
++
+diff --git a/.claude/workbench/task-thyrox-0508-credential-store-20260930T080136/symbols-2.1.283.txt b/.claude/workbench/task-thyrox-0508-credential-store-20260930T080136/symbols-2.1.283.txt
+new file mode 100644
+index 000000000..94a2a9a12
+--- /dev/null
++++ b/.claude/workbench/task-thyrox-0508-credential-store-20260930T080136/symbols-2.1.283.txt
+@@ -0,0 +1,102 @@
++==== fc: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js variable fc [13645,13683)
++fc=Symbol("secureStorage.READ_FAILED")
++==== Rn: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js variable Rn [13766,13775)
++Rn=new Ii
++==== vs: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js variable vs [13776,13796)
++vs=Promise.resolve()
++==== fWr: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js function fWr [13797,14295)
++async function fWr(e){if(Rn.getStore())return e();let r=vs,n=Promise.withResolvers();vs=n.promise;try{await r;let s=Fw();await ce().mkdir(s);let o=await Ci(vi(s,".storage-write"),{realpath:!1,retries:{retries:10,minTimeout:100,maxTimeout:1000},stale:15000,onCompromised:(i)=>t(`[secureStorage] write lock compromised: ${l(i)}`,{level:"warn"})});try{return await Rn.run(!0,e)}finally{await o().catch((i)=>t(`[secureStorage] write lock release failed: ${l(i)}`,{level:"warn"}))}}finally{n.resolve()}}
++==== aFo: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js function aFo [14295,14337)
++async function aFo(e){return Rn.run(!0,e)}
++==== Et: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js function Et [14337,14662)
++function Et(e,r,n){return fWr(async()=>{e.invalidateCache?.();let s=await(e.readAsyncStrict?.(n,{inaccessibleAs:"failureIfTransient"})??e.readAsync(n));if(s===fc)return p("secure_storage_credentials_write","read_failed_skip_write"),{success:!1,transient:!0};let o=s??{},i=r(o);return i===o?{success:!0}:await e.update(i,n)})}
++==== nl: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js variable nl [14666,14705)
++nl=Symbol("secureStorage.fallbackLegs")
++==== Fi: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js variable Fi [14710,14717)
++Fi=2000
++==== mWr: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js function mWr [14725,14798)
++function mWr(){if(Ye!==void 0)return Ye;return Ye=Promise.resolve(!1),Ye}
++==== we: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js function we [14864,14970)
++function we(){let e=Fw(),r=".credentials.json";return{storageDir:e,storagePath:Hi(e,".credentials.json")}}
++==== v6n: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js variable v6n [14974,15022)
++v6n="Warning: Storing credentials in plaintext."
++==== $i: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js function $i [15023,15163)
++function $i(e,r){if(e==="ENOENT"||e==="EISDIR"||e==="ENOTDIR")return null;if((e==="EACCES"||e==="EPERM")&&r!=="win32")return null;return fc}
++==== Ui: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js function Ui [15163,15208)
++function Ui(e,r){return e==="ENOENT"?null:fc}
++==== Bi: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js variable Bi [15212,15855)
++Bi={async read(){let{storagePath:e}=we();try{let r=await ce().readFile(e,{encoding:"utf8"});return J(r)}catch{return null}},async readStrict(e){let{storagePath:r}=we(),n;try{n=await ce().readFile(r,{encoding:"utf8"})}catch(s){return(e?Ui:$i)(v(s),"linux")}try{return J(n)}catch{if(e)return fc;return null}},async write(e){try{let{storageDir:r,storagePath:n}=we();return await ce().mkdir(r),await An(n,b(e),384),await Li(n,384),{success:!0,warning:v6n}}catch{return{success:!1}}finally{if(N())c_e()}},async remove(){let{storagePath:e}=we();try{return await ce().unlink(e),!0}catch(r){if(v(r)==="ENOENT")return!0;return!1}finally{if(N())c_e()}}}
++==== Wi: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js function Wi [15856,16033)
++function Wi(e){switch(e.state){case"present":return e.data;case"absent":case"corrupt":return null;case"refused-symlink":case"read-failed":return fc;default:{let r=e;return fc}}}
++==== ji: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js function ji [16033,16839)
++function ji(e){return{async read(){let{storagePath:r}=we(),n=Xe(),s=n.generation,o=await vr(e.readCredentials(),n);return Ps(n,o,r,s),o.state==="present"?o.data:null},async readStrict(r){let{storagePath:n}=we(),s=Xe(),o=s.generation,i=await vr(r?e.readCredentials():e.readCredentialsStrict(),s);if(Ps(s,i,n,o),r)return i.state==="present"?i.data:i.state==="absent"?null:fc;return Wi(i)},async write(r){let{storagePath:n}=we(),s=Xe(),o=s.generation,i=await vr(e.writeCredentials(r),s);if(i.state==="written"&&o===s.generation)Tr(s,n,b(r));else He(s);return i.state==="written"?{success:!0,warning:v6n}:{success:!1}},async remove(){let{storagePath:r}=we(),n=Xe(),s=n.generation,o=await vr(e.deleteCredentials(),n);if(o.state==="deleted"&&s===n.generation)Tr(n,r,null);else He(n);return o.state==="deleted"}}}
++==== vr: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js function vr [16839,16905)
++async function vr(e,r){try{return await e}catch(n){throw He(r),n}}
++==== qi: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js variable qi [16943,16963)
++qi=new q(()=>new Ts)
++==== Xe: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js function Xe [16964,17001)
++function Xe(){return qi.of(j().host)}
++==== Tr: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js function Tr [17001,17065)
++function Tr(e,r,n){e.copy={storagePath:r,text:n},e.generation++}
++==== Ps: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js function Ps [17065,17300)
++function Ps(e,r,n,s){if(s!==e.generation){He(e);return}switch(r.state){case"present":Tr(e,n,b(r.data));return;case"absent":case"corrupt":case"refused-symlink":Tr(e,n,null);return;case"read-failed":He(e);return;default:{let o=r;He(e)}}}
++==== He: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js function He [17300,17344)
++function He(e){e.copy=void 0,e.generation++}
++==== c_e: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js function c_e [17344,17368)
++function c_e(){He(Xe())}
++==== Pr: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js function Pr [17368,17415)
++function Pr(e){return N()&&e!==void 0?ji(e):Bi}
++==== In: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js variable In [17419,17942)
++In={name:"plaintext",osGuarded:!1,read(e){let{storagePath:r}=we();try{let n=N()&&e?.fromStoreCopy===!0?Xe().copy:void 0;if(n!==void 0&&n.storagePath===r){if(n.text===null)return null;return JSON.parse(n.text)}let s=ce().readFileSync(r,{encoding:"utf8"});return J(s)}catch{return null}},invalidateCache(){c_e()},readAsync(e){return Pr(e).read()},readAsyncStrict(e,r){return Pr(e).readStrict(r?.unreadableFileAs==="failure")},mutate(e,r){return Et(In,e,r)},update(e,r){return Pr(r).write(e)},delete(e){return Pr(e).remove()}}
++==== Gi: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js variable Gi [18320,18340)
++Gi=new q(()=>new Ms)
++==== Ns: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js function Ns [18341,18378)
++function Ns(){return Gi.of(j().host)}
++==== Ds: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js function Ds [18378,18508)
++function Ds(){return{legacyPath:Cs(Se(),".config.json"),configPath:Cs(process.env.CLAUDE_CONFIG_DIR||Ji(),`.claude${uK()}.json`)}}
++==== gWr: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js function gWr [18508,18614)
++function gWr(){if(process.env.CLAUDE_CODE_FORCE_WINDOWS_CREDMAN==="1")return!0;return Ns().resolve(Ds,zi)}
++==== zi: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js function zi [18614,18756)
++function zi({legacyPath:e,configPath:r}){let n=Ki(e)?e:r;return JSON.parse(Vi(n,"utf8")).cachedGrowthBookFeatures?.tengu_windows_credman===!0}
++==== hWr: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js function hWr [18756,18789)
++function hWr(e){Ns().prime(e,Ds)}
++==== Un: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js function Un [18796,18836)
++function Un(){if(Os)return Os;return In}
++==== gr: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js function gr [18836,19188)
++function gr(e,r,n,s,o){if(s==="m")throw TypeError("Private method is not writable");if(s==="a"&&!o)throw TypeError("Private accessor was defined without a setter");if(typeof r==="function"?e!==r||!o:!r.has(e))throw TypeError("Cannot write private member to an object whose class did not declare it");return s==="a"?o.call(e,n):o?o.value=n:r.set(e,n),n}
++==== Ne: 1 definicion(es) de nivel superior
++---- chunk-mmqkf96q.js function Ne [19188,19480)
++function Ne(e,r,n,s){if(n==="a"&&!s)throw TypeError("Private accessor was defined without a getter");if(typeof r==="function"?e!==r||!s:!r.has(e))throw TypeError("Cannot read private member from an object whose class did not declare it");return n==="m"?s:n==="a"?s.call(e):s?s.value:r.get(e)}
+diff --git a/src/packages/storage/src/secureStorage/__tests__/credentialStore283.test.ts b/src/packages/storage/src/secureStorage/__tests__/credentialStore283.test.ts
+index 7a7e89767..e18610140 100644
+--- a/src/packages/storage/src/secureStorage/__tests__/credentialStore283.test.ts
++++ b/src/packages/storage/src/secureStorage/__tests__/credentialStore283.test.ts
+@@ -6,7 +6,7 @@
+  * backend del sistema (`Un`).
+  */
+ import { afterEach, describe, expect, test } from 'bun:test'
+-import { mkdtempSync, rmSync, statSync, writeFileSync } from 'fs'
++import { mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'fs'
+ import { tmpdir } from 'os'
+ import { join } from 'path'
+ import { NodeFsOperations, setFsImplementation, setOriginalFsImplementation } from '../../fsOperations.js'
+@@ -118,6 +118,8 @@ describe('gWr: forzado de Windows CredMan por THYROX_CODE_FORCE_WINDOWS_CREDMAN'
+ 
+ describe('mutateCredentials (Et): una lectura fallida no se escribe encima', () => {
+   test('con READ_FAILED no llama a update() y devuelve un fallo transitorio', async () => {
++    originalConfigDir = process.env.THYROX_CONFIG_DIR
++    useTmpConfigDir()
+     const updates: SecureStorageData[] = []
+     const storage = {
+       ...plainTextStorage,
+@@ -313,3 +315,167 @@ describe('Un: selector de backend del sistema', () => {
+     expect(getSecureStorage()).toBe(fakeSystemBackend)
+   })
+ })
++
++function errnoError(code: string): NodeJS.ErrnoException {
++  const err = new Error(code) as NodeJS.ErrnoException
++  err.code = code
++  return err
++}
++
++describe('Et: mutateCredentials pasa las opciones y el backend de la fuente', () => {
++  test('readAsyncStrict recibe { inaccessibleAs: "failureIfTransient" } y update recibe el backend', async () => {
++    originalConfigDir = process.env.THYROX_CONFIG_DIR
++    useTmpConfigDir()
++    const backend: CredentialBackend = {
++      readCredentials: async () => ({ state: 'absent' }),
++      readCredentialsStrict: async () => ({ state: 'absent' }),
++      writeCredentials: async () => ({ state: 'written' }),
++      deleteCredentials: async () => ({ state: 'deleted' }),
++    }
++    const seen: { readOptions?: unknown; readBackend?: unknown; updateBackend?: unknown } = {}
++    const storage = {
++      ...plainTextStorage,
++      readAsyncStrict: async (givenBackend?: CredentialBackend, options?: unknown) => {
++        seen.readBackend = givenBackend
++        seen.readOptions = options
++        return null
++      },
++      update: (_data: SecureStorageData, givenBackend?: CredentialBackend) => {
++        seen.updateBackend = givenBackend
++        return { success: true }
++      },
++    } as SecureStorage
++
++    await mutateCredentials(storage, data => ({ ...data, token: 'nuevo' }), backend)
++
++    expect(seen.readOptions).toEqual({ inaccessibleAs: 'failureIfTransient' })
++    expect(seen.readBackend).toBe(backend)
++    expect(seen.updateBackend).toBe(backend)
++  })
++
++  test('sobre plaintext, un archivo con EACCES se lee como ausente ($i) y la mutación se escribe', async () => {
++    originalConfigDir = process.env.THYROX_CONFIG_DIR
++    useTmpConfigDir()
++    setFsImplementation({
++      ...NodeFsOperations,
++      async readFile(): Promise<string> {
++        throw errnoError('EACCES')
++      },
++    })
++
++    const result = await plainTextStorage.mutate(data => ({ ...data, token: 'escrito' }))
++
++    expect(result).toEqual({ success: true, warning: 'Warning: Storing credentials in plaintext.' })
++    expect(JSON.parse(readFileSync(join(dir, '.credentials.json'), 'utf8'))).toEqual({ token: 'escrito' })
++  })
++
++  test('sobre plaintext, un archivo con EIO es READ_FAILED y la mutación no se escribe', async () => {
++    originalConfigDir = process.env.THYROX_CONFIG_DIR
++    useTmpConfigDir()
++    setFsImplementation({
++      ...NodeFsOperations,
++      async readFile(): Promise<string> {
++        throw errnoError('EIO')
++      },
++    })
++
++    const result = await plainTextStorage.mutate(data => ({ ...data, token: 'escrito' }))
++
++    expect(result).toEqual({ success: false, transient: true })
++    expect(readdirSync(dir)).not.toContain('.credentials.json')
++  })
++})
++
++describe('ji.readStrict: qué lectura del backend llama cada bandera', () => {
++  function distinguishingBackend(): CredentialBackend {
++    return {
++      readCredentials: async () => ({ state: 'read-failed' }),
++      readCredentialsStrict: async () => ({ state: 'absent' }),
++      writeCredentials: async () => ({ state: 'written' }),
++      deleteCredentials: async () => ({ state: 'deleted' }),
++    }
++  }
++
++  test('con la bandera en falso llama a readCredentialsStrict (mapeo laxo) y resuelve null', async () => {
++    const host = {}
++    const tracked = withGenerationTracking(distinguishingBackend(), () => ({ storagePath: '/fake/.credentials.json' }), host)
++
++    expect(await tracked.readStrict(false)).toBeNull()
++  })
++
++  test('con la bandera en verdadero llama a readCredentials (mapeo estricto) y resuelve READ_FAILED', async () => {
++    const host = {}
++    const tracked = withGenerationTracking(distinguishingBackend(), () => ({ storagePath: '/fake/.credentials.json' }), host)
++
++    expect(await tracked.readStrict(true)).toBe(READ_FAILED)
++  })
++})
++
++describe('backend de archivo: los dos mapeadores de errno y el JSON null', () => {
++  function backendOver(configDir: string): CredentialBackend {
++    return createFileCredentialBackend(() => ({ storageDir: configDir, storagePath: join(configDir, '.credentials.json') }))
++  }
++
++  test('readCredentialsStrict con EACCES es absent; readCredentials con EACCES es read-failed', async () => {
++    originalConfigDir = process.env.THYROX_CONFIG_DIR
++    useTmpConfigDir()
++    setFsImplementation({
++      ...NodeFsOperations,
++      async readFile(): Promise<string> {
++        throw errnoError('EACCES')
++      },
++    })
++    const backend = backendOver(dir)
++
++    expect(await backend.readCredentialsStrict()).toEqual({ state: 'absent' })
++    expect(await backend.readCredentials()).toEqual({ state: 'read-failed' })
++  })
++
++  test('un archivo cuyo JSON es null se lee como absent, no como present', async () => {
++    originalConfigDir = process.env.THYROX_CONFIG_DIR
++    useTmpConfigDir()
++    writeFileSync(join(dir, '.credentials.json'), 'null')
++
++    expect(await backendOver(dir).readCredentials()).toEqual({ state: 'absent' })
++  })
++
++  test('writeCredentials publica por staging y rename: no deja temporal y el contenido es el escrito', async () => {
++    originalConfigDir = process.env.THYROX_CONFIG_DIR
++    useTmpConfigDir()
++
++    await backendOver(dir).writeCredentials({ token: 'publicado' })
++
++    expect(readdirSync(dir)).toEqual(['.credentials.json'])
++    expect(JSON.parse(readFileSync(join(dir, '.credentials.json'), 'utf8'))).toEqual({ token: 'publicado' })
++  })
++
++  test('si el rename falla, el archivo anterior queda intacto, no hay temporal y el estado es failed', async () => {
++    originalConfigDir = process.env.THYROX_CONFIG_DIR
++    useTmpConfigDir()
++    writeFileSync(join(dir, '.credentials.json'), JSON.stringify({ token: 'anterior' }))
++    setFsImplementation({
++      ...NodeFsOperations,
++      async rename(): Promise<void> {
++        throw errnoError('EIO')
++      },
++    })
++
++    const result = await backendOver(dir).writeCredentials({ token: 'nuevo' })
++
++    expect(result).toEqual({ state: 'failed' })
++    expect(readdirSync(dir)).toEqual(['.credentials.json'])
++    expect(JSON.parse(readFileSync(join(dir, '.credentials.json'), 'utf8'))).toEqual({ token: 'anterior' })
++  })
++})
++
++describe('In.read({ fromStoreCopy: true }) con una copia corrupta', () => {
++  test('una copia cuyo texto no es JSON resuelve null en vez de lanzar', () => {
++    originalConfigDir = process.env.THYROX_CONFIG_DIR
++    useTmpConfigDir()
++    const storagePath = join(dir, '.credentials.json')
++    __setMultiHostAwareForTests(true)
++    setCopy(getHostGenerationState(), storagePath, '{no es json')
++
++    expect(plainTextStorage.read({ fromStoreCopy: true })).toBeNull()
++  })
++})
+diff --git a/src/packages/storage/src/secureStorage/__tests__/writeLock.test.ts b/src/packages/storage/src/secureStorage/__tests__/writeLock.test.ts
+new file mode 100644
+index 000000000..951fb2d3d
+--- /dev/null
++++ b/src/packages/storage/src/secureStorage/__tests__/writeLock.test.ts
+@@ -0,0 +1,83 @@
++/**
++ * Puerto de `fWr` (`chunk-mmqkf96q.js`, 2.1.283): el candado de escritura
++ * del almacén de credenciales toma un candado de archivo entre procesos
++ * (`Ci`, proper-lockfile) sobre `<configHome>/.storage-write`, además de
++ * serializar dentro del proceso. Aquí se mide el candado de archivo: que
++ * exista mientras corre la tarea, que espere a otro poseedor, que cree el
++ * directorio y que sea reentrante.
++ */
++import { afterEach, describe, expect, test } from 'bun:test'
++import { existsSync, mkdtempSync, rmSync } from 'fs'
++import { tmpdir } from 'os'
++import { join } from 'path'
++import { lock } from '../../lockfile.js'
++import { withWriteLock, WRITE_LOCK_FILE_NAME } from '../credentialStoreInternals.js'
++
++let dir: string
++let originalConfigDir: string | undefined
++
++function useTmpConfigDir(): string {
++  originalConfigDir = process.env.THYROX_CONFIG_DIR
++  dir = mkdtempSync(join(tmpdir(), 'writelock-test-'))
++  process.env.THYROX_CONFIG_DIR = dir
++  return dir
++}
++
++function lockPathOf(configDir: string): string {
++  return `${join(configDir, WRITE_LOCK_FILE_NAME)}.lock`
++}
++
++function sleep(ms: number): Promise<void> {
++  return new Promise(resolve => setTimeout(resolve, ms))
++}
++
++afterEach(() => {
++  if (originalConfigDir === undefined) delete process.env.THYROX_CONFIG_DIR
++  else process.env.THYROX_CONFIG_DIR = originalConfigDir
++  if (dir) rmSync(dir, { recursive: true, force: true })
++})
++
++describe('withWriteLock (fWr): candado de archivo entre procesos', () => {
++  test('el candado existe mientras corre la tarea y desaparece al terminar', async () => {
++    const configDir = useTmpConfigDir()
++
++    const heldDuringTask = await withWriteLock(async () => existsSync(lockPathOf(configDir)))
++
++    expect(heldDuringTask).toBe(true)
++    expect(existsSync(lockPathOf(configDir))).toBe(false)
++  })
++
++  test('espera a un poseedor ajeno del mismo candado en vez de correr a la vez', async () => {
++    const configDir = useTmpConfigDir()
++    const release = await lock(join(configDir, WRITE_LOCK_FILE_NAME), { realpath: false })
++    let ran = false
++
++    const pending = withWriteLock(async () => {
++      ran = true
++    })
++    await sleep(150)
++    const ranWhileHeld = ran
++    await release()
++    await pending
++
++    expect(ranWhileHeld).toBe(false)
++    expect(ran).toBe(true)
++  })
++
++  test('crea el directorio de configuración si no existe antes de tomar el candado', async () => {
++    const configDir = join(useTmpConfigDir(), 'nested', 'home')
++    process.env.THYROX_CONFIG_DIR = configDir
++
++    await withWriteLock(async () => undefined)
++
++    expect(existsSync(configDir)).toBe(true)
++  })
++
++  test('es reentrante: una llamada anidada corre sin volver a tomar el candado', async () => {
++    useTmpConfigDir()
++
++    const nested = await withWriteLock(() => withWriteLock(async () => 'inner'))
++
++    expect(nested).toBe('inner')
++  })
++})
+diff --git a/src/packages/storage/src/secureStorage/credentialStoreInternals.ts b/src/packages/storage/src/secureStorage/credentialStoreInternals.ts
+index e81e04aaf..3b1f29caf 100644
+--- a/src/packages/storage/src/secureStorage/credentialStoreInternals.ts
++++ b/src/packages/storage/src/secureStorage/credentialStoreInternals.ts
+@@ -23,12 +23,20 @@
+  *   este puerto lo fija en producción todavía (su fijador real vive fuera
+  *   de alcance), así que sólo hace falta para que las pruebas puedan
+  *   activarlo y desactivarlo.
+- * - `Ci` (candado de archivo entre procesos, `proper-lock`, de
+- *   `chunk-n9sxb5zy.js`, fuera de alcance) — NO se porta: `withWriteLock`
+- *   serializa sólo dentro de este proceso (`AsyncLocalStorage` + cola de
+- *   promesas, igual que `Rn`/`vs`/`fWr`). Un candado entre procesos
+- *   exigiría la dependencia externa; sin ella, la serialización
+- *   intra-proceso es la mejor aproximación fiel disponible.
++ * - `Ci` (candado de archivo entre procesos, proper-lockfile, de
++ *   `chunk-n9sxb5zy.js`) — portado sobre `../lockfile.js`, el envoltorio
++ *   perezoso que este paquete ya tenía: `withWriteLock` toma
++ *   `<configHome>/.storage-write` con las opciones de `fWr` además de
++ *   serializar dentro del proceso (`Rn`/`vs`).
++ * - `Fw` (raíz del almacén, de `chunk-vpxas6dq.js`) — lee
++ *   `CLAUDE_SECURESTORAGE_CONFIG_DIR` antes de caer en la raíz de
++ *   configuración. No se porta: su clave propia tendría que declararse en
++ *   `.env.example` (`check_env_contract_keys.py`), fuera de los archivos de
++ *   este tramo; la raíz es `getConfigHomeDir()` directo.
++ * - `E` (lectura del backend de archivo real, `chunk-twjdyk4f.js`) — se
++ *   portan sus dos clasificadores de errno y el JSON `null` como ausencia;
++ *   la apertura con `O_NOFOLLOW` (`refused-symlink`) y el tope de tamaño no,
++ *   por vivir fuera del chunk enumerado. `Wi`/`Ps` ya mapean ese estado.
+  * - `p(...)` (telemetría, fuera de alcance) — `mutateCredentials` no
+  *   emite ningún evento al saltarse la escritura por lectura fallida; la
+  *   fuente sí lo hace (`"secure_storage_credentials_write"`).
+@@ -59,6 +67,8 @@ import { AsyncLocalStorage } from 'async_hooks'
+ import { join } from 'path'
+ import { getConfigHomeDir } from '@thyrox/config/env/configHome.js'
+ import { getErrnoCode, getFsImplementation } from '../fsOperations.js'
++import { lock } from '../lockfile.js'
++import { logError } from '../logging.js'
+ import { READ_FAILED } from './types.js'
+ import type {
+   CredentialBackend,
+@@ -99,10 +109,43 @@ export function isLibsecretAvailable(): Promise<boolean> {
+ const writeLockContext = new AsyncLocalStorage<boolean>()
+ let writeQueueTail: Promise<void> = Promise.resolve()
+ 
+-/** Puerto de `fWr`, sin el candado de archivo entre procesos (`Ci`, ver
+- * docstring del módulo). Serializa `task` respecto de otras llamadas a
+- * `withWriteLock`, y es reentrante: si ya se está dentro de un candado, se
+- * ejecuta directo. */
++/** Nombre del archivo que `fWr` bloquea bajo el directorio de
++ * configuración; proper-lockfile crea `<nombre>.lock` a su lado. */
++export const WRITE_LOCK_FILE_NAME = '.storage-write'
++
++/** Opciones con que `fWr` toma el candado (`Ci`): sin resolver symlinks
++ * —el archivo no tiene por qué existir—, diez reintentos con espera
++ * exponencial y un candado abandonado se considera caduco a los 15 s. */
++const WRITE_LOCK_OPTIONS = {
++  realpath: false,
++  retries: { retries: 10, minTimeout: 100, maxTimeout: 1000 },
++  stale: 15000,
++} as const
++
++function errorMessage(error: unknown): string {
++  return error instanceof Error ? error.message : String(error)
++}
++
++async function acquireWriteLock(): Promise<() => Promise<void>> {
++  const storageDir = getConfigHomeDir()
++  await getFsImplementation().mkdir(storageDir)
++  return lock(join(storageDir, WRITE_LOCK_FILE_NAME), {
++    ...WRITE_LOCK_OPTIONS,
++    onCompromised: error => logError(`[secureStorage] write lock compromised: ${errorMessage(error)}`),
++  })
++}
++
++async function releaseWriteLock(release: () => Promise<void>): Promise<void> {
++  try {
++    await release()
++  } catch (error) {
++    logError(`[secureStorage] write lock release failed: ${errorMessage(error)}`)
++  }
++}
++
++/** Puerto de `fWr`. Serializa `task` en dos capas: la cola de promesas de
++ * este proceso y el candado de archivo entre procesos (`Ci`). Es
++ * reentrante: si ya se está dentro de un candado, se ejecuta directo. */
+ export async function withWriteLock<T>(task: () => Promise<T>): Promise<T> {
+   if (writeLockContext.getStore() === true) {
+     return task()
+@@ -114,7 +157,12 @@ export async function withWriteLock<T>(task: () => Promise<T>): Promise<T> {
+   })
+   try {
+     await previousTail
+-    return await writeLockContext.run(true, task)
++    const release = await acquireWriteLock()
++    try {
++      return await writeLockContext.run(true, task)
++    } finally {
++      await releaseWriteLock(release)
++    }
+   } finally {
+     releaseNext()
+   }
+@@ -280,18 +328,69 @@ export async function runTracked<T>(promise: Promise<T>, state: HostGenerationSt
+ type StoragePathResolver = () => { storagePath: string }
+ type StorageDirResolver = () => { storageDir: string; storagePath: string }
+ 
+-async function classifyFileRead(getStoragePath: StoragePathResolver): Promise<CredentialCopyState> {
++type ErrnoClassifier = (code: string | undefined) => 'absent' | 'read-failed'
++
++/** Mapeador estricto de `readCredentials` (`w` en `chunk-twjdyk4f.js`):
++ * sólo ENOENT es ausencia. */
++function classifyErrnoStrict(code: string | undefined): 'absent' | 'read-failed' {
++  return mapErrnoStrictToNullOrReadFailed(code) === null ? 'absent' : 'read-failed'
++}
++
++/** Mapeador laxo de `readCredentialsStrict` (`I(e, "linux")` en
++ * `chunk-twjdyk4f.js`): también EISDIR, ENOTDIR, EACCES y EPERM son
++ * ausencia. */
++function classifyErrnoLenient(code: string | undefined): 'absent' | 'read-failed' {
++  return mapErrnoToNullOrReadFailed(code, 'linux') === null ? 'absent' : 'read-failed'
++}
++
++function parseCredentialText(raw: string): CredentialCopyState {
++  let parsed: SecureStorageData | null
++  try {
++    parsed = jsonParse<SecureStorageData | null>(raw)
++  } catch {
++    return { state: 'corrupt' }
++  }
++  return parsed === null ? { state: 'absent' } : { state: 'present', data: parsed }
++}
++
++/** Puerto de `E` (`chunk-twjdyk4f.js`) reducido a lo que un `readFile`
++ * puede ver: el errno pasa por el clasificador dado, y un JSON `null` es
++ * ausencia. Divergencia declarada: la fuente abre con `O_NOFOLLOW` y
++ * devuelve `refused-symlink` ante un enlace, y `corrupt` sobre un tamaño
++ * excesivo; ese tramo vive fuera de `chunk-mmqkf96q.js`. */
++async function classifyFileRead(
++  getStoragePath: StoragePathResolver,
++  classifyErrno: ErrnoClassifier,
++): Promise<CredentialCopyState> {
+   const { storagePath } = getStoragePath()
+   let raw: string
+   try {
+     raw = await getFsImplementation().readFile(storagePath, { encoding: 'utf8' })
+   } catch (e) {
+-    return getErrnoCode(e) === 'ENOENT' ? { state: 'absent' } : { state: 'read-failed' }
++    return { state: classifyErrno(getErrnoCode(e)) }
+   }
++  return parseCredentialText(raw)
++}
++
++/** Modo del archivo de credenciales: sólo su dueño lo lee y escribe. */
++const CREDENTIALS_FILE_MODE = 0o600
++
++function stagingPathFor(storagePath: string): string {
++  return `${storagePath}.tmp.${process.pid}.${Date.now()}`
++}
++
++/** Puerto de `An(n, b(e), 384)` (`Jne`): se escribe un temporal con el
++ * modo final y se publica con `rename`, así el destino nunca queda a
++ * medias ni con otro modo. Si la publicación falla, el temporal se
++ * retira y el error original se propaga. */
++async function publishCredentialsFile(storagePath: string, text: string): Promise<void> {
++  const stagingPath = stagingPathFor(storagePath)
+   try {
+-    return { state: 'present', data: jsonParse(raw) }
+-  } catch {
+-    return { state: 'corrupt' }
++    await writeFile(stagingPath, text, { encoding: 'utf8', mode: CREDENTIALS_FILE_MODE })
++    await getFsImplementation().rename(stagingPath, storagePath)
++  } catch (e) {
++    await getFsImplementation().unlink(stagingPath).catch(() => undefined)
++    throw e
+   }
+ }
+ 
+@@ -334,18 +433,14 @@ export function createRawFileReadBackend(getStoragePath: StoragePathResolver): {
+  * que `ji`/`withGenerationTracking` espera. */
+ export function createFileCredentialBackend(getStoragePath: StorageDirResolver): CredentialBackend {
+   return {
+-    readCredentials: () => classifyFileRead(getStoragePath),
+-    readCredentialsStrict: () => classifyFileRead(getStoragePath),
++    readCredentials: () => classifyFileRead(getStoragePath, classifyErrnoStrict),
++    readCredentialsStrict: () => classifyFileRead(getStoragePath, classifyErrnoLenient),
+     async writeCredentials(data) {
+       try {
+         const { storageDir, storagePath } = getStoragePath()
+-        try {
+-          await getFsImplementation().mkdir(storageDir)
+-        } catch (e) {
+-          if (getErrnoCode(e) !== 'EEXIST') throw e
+-        }
+-        await writeFile(storagePath, jsonStringify(data), { encoding: 'utf8' })
+-        await chmod(storagePath, 0o600)
++        await getFsImplementation().mkdir(storageDir)
++        await publishCredentialsFile(storagePath, jsonStringify(data))
++        await chmod(storagePath, CREDENTIALS_FILE_MODE)
+         return { state: 'written' }
+       } catch {
+         return { state: 'failed' }
+@@ -389,7 +484,7 @@ export function withGenerationTracking(
+       const state = getHostGenerationState(host)
+       const expectedGeneration = state.generation
+       const result = await runTracked(
+-        strict ? backend.readCredentialsStrict() : backend.readCredentials(),
++        strict ? backend.readCredentials() : backend.readCredentialsStrict(),
+         state,
+       )
+       reconcileCopy(state, result, storagePath, expectedGeneration)
+@@ -450,19 +545,20 @@ export function selectBackend(
+ export async function mutateCredentials(
+   storage: SecureStorage,
+   mutator: (data: SecureStorageData) => SecureStorageData,
++  backend?: CredentialBackend,
+ ): Promise<SecureStorageUpdateResult & { transient?: boolean }> {
+   return withWriteLock(async () => {
+     storage.invalidateCache?.()
+     const current = storage.readAsyncStrict
+-      ? await storage.readAsyncStrict(undefined, { unreadableFileAs: 'failure' })
+-      : await storage.readAsync()
++      ? await storage.readAsyncStrict(backend, { inaccessibleAs: 'failureIfTransient' })
++      : await storage.readAsync(backend)
+     if (current === READ_FAILED) {
+       return { success: false, transient: true }
+     }
+     const before = current ?? {}
+     const next = mutator(before)
+     if (next === before) return { success: true }
+-    return storage.update(next)
++    return storage.update(next, backend)
+   })
+ }
+ 
+diff --git a/src/packages/storage/src/secureStorage/plainTextStorage.ts b/src/packages/storage/src/secureStorage/plainTextStorage.ts
+index 11f01c7f9..5affc40d2 100644
+--- a/src/packages/storage/src/secureStorage/plainTextStorage.ts
++++ b/src/packages/storage/src/secureStorage/plainTextStorage.ts
+@@ -23,7 +23,9 @@
+  *   futuro hace falta, `update`/`delete` async es el símbolo que falta
+  *   portar.
+  * - `writeFileSync` (de `slowOperations.ts:124-155`) — reimplementado
+- *   fiel a su lógica de `flush` (idéntico al porte anterior).
++ *   fiel a su lógica de `flush`, y crea el archivo ya con modo 0600, como
++ *   `An(n, b(e), 384)` en `Bi.write`, en vez de crearlo con la umask y
++ *   corregirlo después.
+  * - `jsonParse`/`jsonStringify` — `JSON.parse`/`JSON.stringify` directos.
+  */
+ import { chmodSync, closeSync, fsyncSync, openSync, writeFileSync as fsWriteFileSync } from 'fs'
+@@ -69,7 +71,7 @@ function writeFileSync(
+   if (options.flush) {
+     let fd: number | undefined
+     try {
+-      fd = openSync(filePath, 'w')
++      fd = openSync(filePath, 'w', CREDENTIALS_FILE_MODE)
+       fsWriteFileSync(fd, data, { encoding: options.encoding })
+       fsyncSync(fd)
+     } finally {
+@@ -78,10 +80,14 @@ function writeFileSync(
+       }
+     }
+   } else {
+-    fsWriteFileSync(filePath, data, options)
++    fsWriteFileSync(filePath, data, { ...options, mode: CREDENTIALS_FILE_MODE })
+   }
+ }
+ 
++/** Modo del archivo de credenciales, aplicado al crearlo y reafirmado con
++ * `chmod` (`An(n, b(e), 384)` y `Li(n, 384)` en `Bi.write`). */
++const CREDENTIALS_FILE_MODE = 0o600
++
+ /** Puerto de `we`. */
+ function getStoragePath(): { storageDir: string; storagePath: string } {
+   const storageDir = getConfigHomeDir()
+@@ -93,18 +99,27 @@ function defaultBackend(): CredentialBackend {
+   return createFileCredentialBackend(getStoragePath)
+ }
+ 
++/** La copia por generación de este host, sólo si se pidió
++ * (`fromStoreCopy`), el proceso es multi-host y la copia es de esta ruta. */
++function storeCopyFor(
++  storagePath: string,
++  options: SecureStorageReadOptions | undefined,
++): { text: string | null } | undefined {
++  const wantsCopy = isMultiHostAware() && options?.fromStoreCopy === true
++  const copy = wantsCopy ? getHostGenerationState().copy : undefined
++  return copy !== undefined && copy.storagePath === storagePath ? copy : undefined
++}
++
+ export const plainTextStorage = {
+   name: 'plaintext',
+   osGuarded: false,
+   read(options?: SecureStorageReadOptions): SecureStorageData | null {
+     const { storagePath } = getStoragePath()
+-    if (isMultiHostAware() && options?.fromStoreCopy === true) {
+-      const copy = getHostGenerationState().copy
+-      if (copy !== undefined && copy.storagePath === storagePath) {
++    try {
++      const copy = storeCopyFor(storagePath, options)
++      if (copy !== undefined) {
+         return copy.text === null ? null : jsonParse(copy.text)
+       }
+-    }
+-    try {
+       const data = getFsImplementation().readFileSync(storagePath, {
+         encoding: 'utf8',
+       })
+@@ -124,8 +139,9 @@ export const plainTextStorage = {
+   },
+   async mutate(
+     mutator: (data: SecureStorageData) => SecureStorageData,
++    backend?: CredentialBackend,
+   ): Promise<SecureStorageUpdateResult & { transient?: boolean }> {
+-    return mutateCredentials(plainTextStorage, mutator)
++    return mutateCredentials(plainTextStorage, mutator, backend)
+   },
+   invalidateCache(): void {
+     invalidateHostCache()
+@@ -146,7 +162,7 @@ export const plainTextStorage = {
+         encoding: 'utf8',
+         flush: false,
+       })
+-      chmodSync(storagePath, 0o600)
++      chmodSync(storagePath, CREDENTIALS_FILE_MODE)
+       return {
+         success: true,
+         warning: PLAINTEXT_WARNING,
+diff --git a/src/packages/storage/src/secureStorage/types.ts b/src/packages/storage/src/secureStorage/types.ts
+index 4be5a3fca..5b26543d0 100644
+--- a/src/packages/storage/src/secureStorage/types.ts
++++ b/src/packages/storage/src/secureStorage/types.ts
+@@ -67,9 +67,12 @@ export type SecureStorageReadOptions = {
+ 
+ /** Opciones de `In.readAsyncStrict` — con `unreadableFileAs: 'failure'`,
+  * un archivo presente pero ilegible resuelve a `READ_FAILED` en vez de
+- * `null`. */
++ * `null`. `inaccessibleAs` es lo que `Et` pasa; el almacén de texto plano
++ * no lo lee (sólo mira `unreadableFileAs`), así que bajo `Et` su lectura
++ * es la laxa: un EACCES es ausencia, un EIO es `READ_FAILED`. */
+ export type SecureStorageReadStrictOptions = {
+   unreadableFileAs?: 'failure' | 'null'
++  inaccessibleAs?: 'failureIfTransient'
+ }
+ 
+ /**
+@@ -112,6 +115,7 @@ export type SecureStorage = {
+   /** Puerto de `In.mutate`, sobre `Et` (`mutateCredentials`). */
+   mutate?(
+     mutator: (data: SecureStorageData) => SecureStorageData,
++    backend?: CredentialBackend,
+   ): Promise<SecureStorageUpdateResult & { transient?: boolean }>
+   /** Puerto de `In.invalidateCache`, sobre `c_e`. */
+   invalidateCache?(): void

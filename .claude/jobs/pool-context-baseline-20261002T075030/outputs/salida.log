@@ -1,0 +1,5 @@
+HEAD corrida 1: aserciones: 147 de 148 · fallos: 1 · 1 FALLA: FALLA admision: la reserva ajena sigue en el registro — esperado '90
+HEAD corrida 2: aserciones: 147 de 148 · fallos: 1 · 1 FALLA: FALLA admision: la reserva ajena sigue en el registro — esperado '90
+con el cambio, 2a corrida: aserciones: 147 de 148 · fallos: 1 · FALLA admision: la reserva ajena sigue en el registro — esperado '90
+execution thyrox-worker-test-muqny9lp-23497 kind=test task=TASK-THYROX-0781 exit=0
+__BG_EXIT__=0

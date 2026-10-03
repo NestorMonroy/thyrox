@@ -36,11 +36,28 @@ export const MAX_OUTPUT_TOKENS_FOR_SUMMARY = 20_000
  */
 export const AUTOCOMPACT_BUFFER_TOKENS = 13_000
 
-/** Ventana del modelo menos lo reservado para el resumen. `null` si no está en el catálogo. */
+/**
+ * La ventana declarada de un modelo: la del catálogo, o —sólo para un modelo
+ * que el catálogo no trae— la de `THYROX_CODE_DECLARED_CONTEXT_WINDOW`.
+ *
+ * El catálogo se deriva del ejecutable vendorizado y no conoce los modelos de
+ * otros proveedores (Qwen, DeepSeek). Sin ventana el bucle ni compacta ni
+ * bloquea, y la conversación crece sin cota hasta que el proveedor la
+ * rechaza. La variable declara la ventana de quien la lanza; un valor que no
+ * es un entero positivo no declara nada.
+ */
+export function declaredContextWindow(model: string): number | null {
+  const catalogWindow = MODELS[model]?.context?.window
+  if (typeof catalogWindow === 'number') return catalogWindow
+  const declared = Number(process.env.THYROX_CODE_DECLARED_CONTEXT_WINDOW)
+  return Number.isInteger(declared) && declared > 0 ? declared : null
+}
+
+/** Ventana del modelo menos lo reservado para el resumen. `null` si no está en el catálogo ni declarada. */
 export function effectiveContextWindow(model: string): number | null {
   const registro = MODELS[model]
-  const ventana = registro?.context?.window
-  if (typeof ventana !== 'number') return null
+  const ventana = declaredContextWindow(model)
+  if (ventana === null) return null
   const salida = registro?.max_output_tokens?.default
   const reserva = Math.min(typeof salida === 'number' ? salida : MAX_OUTPUT_TOKENS_FOR_SUMMARY, MAX_OUTPUT_TOKENS_FOR_SUMMARY)
   return ventana - reserva

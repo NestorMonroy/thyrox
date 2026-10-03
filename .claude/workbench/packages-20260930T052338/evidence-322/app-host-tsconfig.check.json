@@ -1,0 +1,180 @@
+{
+  "compilerOptions": {
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "jsx": "react-jsx",
+    "types": [
+      "bun"
+    ],
+    "preserveSymlinks": true,
+    "paths": {
+      "@thyrox/app-host": [
+        "./src/index.ts"
+      ],
+      "@thyrox/app-host/contracts": [
+        "./src/contracts.ts"
+      ],
+      "@thyrox/app-host/context/fpsMetrics": [
+        "./src/context/fpsMetrics.tsx"
+      ],
+      "@thyrox/app-host/context/mailbox": [
+        "./src/context/mailbox.tsx"
+      ],
+      "@thyrox/app-host/context/notifications": [
+        "./src/context/notifications.tsx"
+      ],
+      "@thyrox/app-host/context/stats": [
+        "./src/context/stats.tsx"
+      ],
+      "@thyrox/app-host/launchRepl": [
+        "./src/launchRepl.tsx"
+      ],
+      "@thyrox/app-host/state/AppState": [
+        "./src/state/AppState.tsx"
+      ],
+      "@thyrox/app-host/cliArgs.js": [
+        "./src/cliArgs.ts"
+      ],
+      "@thyrox/app-host/activityManager.js": [
+        "./src/activityManager.ts"
+      ],
+      "@thyrox/app-host/state/sessionSelectors.js": [
+        "./src/state/sessionSelectors.ts"
+      ],
+      "@thyrox/app-host/state/hostSessionState.js": [
+        "./src/state/hostSessionState.ts"
+      ],
+      "@thyrox/app-host/state/surfaceCapabilities.js": [
+        "./src/state/surfaceCapabilities.ts"
+      ],
+      "@thyrox/app-host/state/AppStateStore.js": [
+        "./src/state/AppStateStore.ts"
+      ],
+      "@thyrox/app-host/state/store.js": [
+        "./src/state/store.ts"
+      ],
+      "@thyrox/app-host/state/refusalFallbackRestore.js": [
+        "./src/state/refusalFallbackRestore.ts"
+      ],
+      "@thyrox/app-host/state/AppState.js": [
+        "./src/state/AppState.tsx"
+      ],
+      "@thyrox/app-host/state/uiSelectors.js": [
+        "./src/state/uiSelectors.ts"
+      ],
+      "@thyrox/app-host/state/pluginSelectors.js": [
+        "./src/state/pluginSelectors.ts"
+      ],
+      "@thyrox/app-host/state/teamSelectors.js": [
+        "./src/state/teamSelectors.ts"
+      ],
+      "@thyrox/app-host/state/taskSelectors.js": [
+        "./src/state/taskSelectors.ts"
+      ],
+      "@thyrox/app-host/state/permissionSelectors.js": [
+        "./src/state/permissionSelectors.ts"
+      ],
+      "@thyrox/app-host/state/mcpSelectors.js": [
+        "./src/state/mcpSelectors.ts"
+      ],
+      "@thyrox/app-host/state/selectors.js": [
+        "./src/state/selectors.ts"
+      ],
+      "@thyrox/app-host/context/fpsMetrics.js": [
+        "./src/context/fpsMetrics.tsx"
+      ],
+      "@thyrox/app-host/context/mailbox.js": [
+        "./src/context/mailbox.tsx"
+      ],
+      "@thyrox/app-host/context/notifications.js": [
+        "./src/context/notifications.tsx"
+      ],
+      "@thyrox/app-host/context/stats.js": [
+        "./src/context/stats.tsx"
+      ],
+      "@thyrox/app-host/launchRepl.js": [
+        "./src/launchRepl.tsx"
+      ],
+      "@thyrox/app-host/context/QueuedMessageContext.js": [
+        "./src/context/QueuedMessageContext.tsx"
+      ],
+      "@thyrox/app-host/bootstrap/cleanupRegistry.js": [
+        "./src/bootstrap/cleanupRegistry.ts"
+      ],
+      "@thyrox/app-host/bootstrap/cwd.js": [
+        "./src/bootstrap/cwd.ts"
+      ],
+      "@thyrox/app-host/bootstrap/gracefulShutdown.js": [
+        "./src/bootstrap/gracefulShutdown.ts"
+      ],
+      "@thyrox/app-host/bootstrap/state.js": [
+        "./src/bootstrap/state.ts"
+      ],
+      "@thyrox/app-host/heapDumpService.js": [
+        "./src/heapDumpService.ts"
+      ],
+      "@thyrox/app-host/init.js": [
+        "./src/init.ts"
+      ],
+      "@thyrox/app-host/main/startup/context.js": [
+        "./src/main/startup/context.ts"
+      ],
+      "@thyrox/app-host/main/startup/settings.js": [
+        "./src/main/startup/settings.ts"
+      ],
+      "@thyrox/app-host/providerHostSetup.js": [
+        "./src/providerHostSetup.ts"
+      ],
+      "@thyrox/app-host/runtime/appStateCompatShim.js": [
+        "./src/runtime/appStateCompatShim.ts"
+      ],
+      "@thyrox/app-host/runtime/bootstrap.js": [
+        "./src/runtime/bootstrap.ts"
+      ],
+      "@thyrox/app-host/runtime/sessionRegistryAtLaunch.js": [
+        "./src/runtime/sessionRegistryAtLaunch.ts"
+      ],
+      "@thyrox/app-host/runtime/messagingInboxAtLaunch.js": [
+        "./src/runtime/messagingInboxAtLaunch.ts"
+      ],
+      "@thyrox/app-host/runtime/commandRegistryRuntime.js": [
+        "./src/runtime/commandRegistryRuntime.ts"
+      ],
+      "@thyrox/app-host/runtime/installCommandRuntimeBindings.js": [
+        "./src/runtime/installCommandRuntimeBindings.ts"
+      ],
+      "@thyrox/app-host/runtime/runtimeHandles.js": [
+        "./src/runtime/runtimeHandles.ts"
+      ],
+      "@thyrox/app-host/startup/ghAuthStatus.js": [
+        "./src/startup/ghAuthStatus.ts"
+      ],
+      "@thyrox/app-host/startup/profilerBase.js": [
+        "./src/startup/profilerBase.ts"
+      ],
+      "@thyrox/app-host/startup/startupProfiler.js": [
+        "./src/startup/startupProfiler.ts"
+      ]
+    }
+  },
+  "include": [
+    "src/**/*"
+  ],
+  "exclude": [
+    "**/__tests__/**",
+    "**/*.test.ts",
+    "**/*.test.tsx",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+    "node_modules",
+    "dist"
+  ],
+  "files": [
+    "../../types/build-globals.d.ts"
+  ]
+}

@@ -1,0 +1,2 @@
+src/packages/daemon/src/__tests__/specializedWorkerProfile.test.ts
+src/packages/daemon/src/podman/specializedWorkerProfile.ts

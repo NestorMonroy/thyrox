@@ -1,0 +1,87 @@
+# TASK-THYROX-0743 — P2 tramo B — GREEN
+# Después de la composición: los dos callers componen una ExecutionAuthorization y llaman
+# a runExecution. Ninguno importa runJobWithOutput, materializeContainer ni
+# WorkerContainerSpec (ni workerResourceLimitArgv, que era su acompañante).
+# Clase y referencia declaradas por outputs/p2-caller-classification.md:
+#   ollamaModelInstaller.ts  -> maintenance,        task:TASK-THYROX-0729
+#   podmanArtifactFetcher.ts -> registry-operation, task:TASK-THYROX-0729
+# readOnlyRootfs: true se conserva: el campo ya está en la autorización canónica
+# (8927d46d6), así que la migración no quita el raíz de sólo lectura que el spec daba.
+
+$ cd src/packages/local-models && grep -n "runJobWithOutput\|materializeContainer\|WorkerContainerSpec" ollamaModelInstaller.ts podmanArtifactFetcher.ts; echo "grep exit=$?"
+  grep exit=1  (sin coincidencias en los dos archivos)
+
+$ cd src/packages/local-models && grep -n "ExecutionAuthorization\|runExecution\|kind:\|citation" ollamaModelInstaller.ts podmanArtifactFetcher.ts
+  ollamaModelInstaller.ts:22:import { runExecution, type ExecutionAuthorization } from '@thyrox/podman-execution/executionAuthorization.ts'
+  ollamaModelInstaller.ts:69:export function installAuthorization(options: OllamaModelInstallerOptions, request: ModelInstallRequest): ExecutionAuthorization {
+  ollamaModelInstaller.ts:72:    reference: { kind: 'task', citation: options.taskCitation ?? DEFAULT_INSTALL_TASK_CITATION },
+  ollamaModelInstaller.ts:74:    kind: 'maintenance',
+  ollamaModelInstaller.ts:122:      const job = await runExecution(this.options.podman, installAuthorization(this.options, request))
+  podmanArtifactFetcher.ts:31:import { runExecution, type ExecutionAuthorization } from '@thyrox/podman-execution/executionAuthorization.ts'
+  podmanArtifactFetcher.ts:83:export function fetchAuthorization(options: PodmanArtifactFetcherOptions, pinned: PinnedModelArtifact, destination: string, scratchDir: string): ExecutionAuthorization {
+  podmanArtifactFetcher.ts:88:    reference: { kind: 'task', citation: options.taskCitation ?? DEFAULT_FETCH_TASK_CITATION },
+  podmanArtifactFetcher.ts:90:    kind: 'registry-operation',
+  podmanArtifactFetcher.ts:135:    const job = await runExecution(options.podman, fetchAuthorization(options, pinned, destination, scratchDir))
+
+$ cd src/packages/local-models && bun test __tests__/ollamaModelInstaller.test.ts __tests__/podmanArtifactFetcher.test.ts
+   25 pass
+   2 skip
+   0 fail
+  exit=0
+
+# Suite del paquete completo, en el mismo estado. Las cinco fallas son las del
+# baseline (verify/baseline.tsv = 5, las mismas cinco de local-models-qualify
+# medidas antes de tocar nada: ver p2b-annulment.log y el hallazgo en
+# p2b-findings.jsonl). El conteo de pases sube de 178 a 182: las cuatro pruebas
+# nuevas de este tramo.
+$ cd src/packages/local-models && bun test
+   182 pass
+   3 skip
+   5 fail
+  (fail) local-models-qualify > --context declarado viaja como num_ctx [6.17ms]
+  (fail) local-models-qualify > --isolated declara la medición aislada; sin él queda contended [6.39ms]
+  (fail) local-models-qualify > seis aciertos: sale 0 y escribe la cualificación con el contexto acotado al máximo del modelo [7.01ms]
+  (fail) local-models-qualify > suspendida: sale 1 y también se escribe [6.52ms]
+  (fail) local-models-qualify > un modelo fuera del catálogo sale 2 sin medir [2.43ms]
+  exit=1  (cinco rojos preexistentes admitidos por el baseline)
+
+# Gate de la primitiva, con el cambio puesto. Fuera de src/packages/podman-execution/
+# no hay ninguna materialización nueva: los dos callers seguían delegándola en la
+# primitiva y ahí siguen; los dos pendientes vigentes son de otra tarea
+# (TASK-THYROX-0746 y TASK-THYROX-0747), ninguno de este tramo.
+$ cd /home/user/thyrox && python3 src/verify/check_podman_materialization.py --root .
+  check_podman_materialization: 0 materialización(es) fuera de src/packages/podman-execution/, 0 pendiente(s) vencido(s), 2 pendiente(s) vigente(s) (alcance medido: 4154 archivo(s) productivos)
+  exit=0
+$ cd /home/user/thyrox && cat src/verify/podman_materialization_pending.txt | grep -vc '^#'
+  2
+
+# Largura de línea de los cuatro archivos tocados (misma familia que las líneas
+# largas aceptadas en p2a: la firma de la función y la línea del doble que declara
+# la cita de la tarea). Ninguna supera la más larga que ya tiene el paquete.
+$ cd src/packages/local-models && for f in <los cuatro>; do printf "%s: %s lineas, max %s caracteres\n" ...; done
+  ollamaModelInstaller.ts: 155 líneas, línea más larga 153 caracteres
+  podmanArtifactFetcher.ts: 158 líneas, línea más larga 169 caracteres
+  __tests__/ollamaModelInstaller.test.ts: 297 líneas, línea más larga 178 caracteres
+  __tests__/podmanArtifactFetcher.test.ts: 221 líneas, línea más larga 256 caracteres
+$ cd src/packages/local-models && gawk ... max  (las cinco líneas más largas ya existentes en el paquete, para comparar)
+  293 caracteres en /home/user/thyrox/src/packages/local-models/qualifyCommand.ts:92
+
+# Verificador del plan para un caller migrado, con los cuatro archivos del tramo en
+# su estado final. Firma leída del guion: <tramo> <paquete> <archivo>...
+$ cd /home/user/thyrox && bash .claude/workbench/managed-podman-execution-boundary-20261001T164746/verify/caller_migrated.sh p2b local-models src/packages/local-models/ollamaModelInstaller.ts src/packages/local-models/podmanArtifactFetcher.ts
+  suite local-models: 5 fallas (admitidas 5)
+  exit=0
+
+# Sonda de preservación (fuera de la suite, sobre la primitiva actual): el argv que
+# producía el spec de HEAD contra el que produce la autorización canónica, con los
+# mismos montajes, límites, red y entorno. Se declara `readOnlyRootfs: true` en la
+# autorización, así que el cambio no pierde ningún token.
+$ cd src/packages/local-models && bun /tmp/p2b/probe-head-vs-autorizacion.ts
+  HEAD   : create --name thyrox-worker-w1 --label thyrox.owner-kind=pool --label thyrox.owner-id=model-install --label thyrox.owner-pid=2804 --label thyrox.worker-id=w1 --cpus 1 --memory 512m --pids-limit 128 --network host --read-only --read-only-tmpfs=false -v /usr/bin/bun:/usr/local/bin/bun:ro --env HOME=/scratch/home --env TMPDIR=/scratch/tmp img /usr/local/bin/bun /w/x.ts --name m
+  MIGRADO: create --name thyrox-worker-w1 --label thyrox.owner-kind=pool --label thyrox.owner-id=model-install --label thyrox.owner-pid=2804 --label thyrox.worker-id=w1 --label thyrox.execution-id=w1 --label thyrox.execution-kind=maintenance --label thyrox.execution-reference=task:TASK-THYROX-0729 --cpus 1 --memory 512m --pids-limit 128 --network host --read-only --read-only-tmpfs=false -v /usr/bin/bun:/usr/local/bin/bun:ro --env HOME=/scratch/home --env TMPDIR=/scratch/tmp img /usr/local/bin/bun /w/x.ts --name m
+  anadido: ["thyrox.execution-id=w1","thyrox.execution-kind=maintenance","thyrox.execution-reference=task:TASK-THYROX-0729"]
+  perdido: []
+  exit=0
+# Lectura: `perdido` es la lista vacía; `anadido` son las tres parejas `--label` de la
+# autorización (thyrox.execution-id, -kind, -reference). Cero secretos en el argv,
+# como mide la prueba homónima.

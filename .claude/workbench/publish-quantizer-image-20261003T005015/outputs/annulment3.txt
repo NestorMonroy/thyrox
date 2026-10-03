@@ -1,0 +1,33 @@
+baseline	unit-fail=0	policy-fail=0
+identity	unit-fail=12	policy-fail=2
+  identity unit (fail) the catalog declares the quantizer image > an undeclared identity is refused by the catalog [0.24ms]
+  identity unit (fail) declared image build: refused without touching Podman > an undeclared identity [0.18ms]
+  identity unit (fail) declared image build: refused without touching Podman > a primitive subcommand as identity: run [0.08ms]
+  identity unit (fail) declared image build: refused without touching Podman > a primitive subcommand as identity: remove-image [0.06ms]
+  identity unit (fail) declared image build: refused without touching Podman > a primitive subcommand as identity: reconcile-orphans [0.09ms]
+  identity unit (fail) declared image build: refused without touching Podman > the generic builder as identity: build-image [0.16ms]
+  identity unit (fail) the catalog declares the quantizer image > an undeclared identity is refused by the catalog [0.24ms]
+  identity unit (fail) declared image build: refused without touching Podman > an undeclared identity [0.18ms]
+  identity unit (fail) declared image build: refused without touching Podman > a primitive subcommand as identity: run [0.08ms]
+  identity unit (fail) declared image build: refused without touching Podman > a primitive subcommand as identity: remove-image [0.06ms]
+  identity unit (fail) declared image build: refused without touching Podman > a primitive subcommand as identity: reconcile-orphans [0.09ms]
+  identity unit (fail) declared image build: refused without touching Podman > the generic builder as identity: build-image [0.16ms]
+  identity policy   FALLA 5 una identidad no declarada — esperado [2] obtenido [2 sin el motivo «imagen no declarada»]
+  identity policy   FALLA 5 run como identidad — esperado [2] obtenido [2 sin el motivo «imagen no declarada»]
+caller-context	unit-fail=2	policy-fail=1
+  caller-context unit (fail) declared image build: refused without touching Podman > a caller --context [0.26ms]
+  caller-context unit (fail) declared image build: refused without touching Podman > a caller --context [0.26ms]
+  caller-context policy   FALLA 5 --context del llamador — esperado [2] obtenido [2 sin el motivo «'--context'»]
+entry-row	unit-fail=0	policy-fail=2
+  entry-row policy   FALLA 1 la construcción declarada es entrada del plano de control — esperado [0] obtenido [1]
+  entry-row policy   FALLA 4 la entrada declarada no es un payload no gestionado — esperado [allow] obtenido [deny]
+disk-admission	unit-fail=4	policy-fail=0
+  disk-admission unit (fail) the build is admitted against disk before Podman runs > the declared peak is reserved before the build and released after it [0.46ms]
+  disk-admission unit (fail) the build is admitted against disk before Podman runs > a build that does not fit is refused before Podman and nothing is reserved to release [0.31ms]
+  disk-admission unit (fail) the build is admitted against disk before Podman runs > the declared peak is reserved before the build and released after it [0.46ms]
+  disk-admission unit (fail) the build is admitted against disk before Podman runs > a build that does not fit is refused before Podman and nothing is reserved to release [0.31ms]
+catalog-closure	unit-fail=2	policy-fail=0
+  catalog-closure unit (fail) the versioned identity covers the whole definition, catalog included > the revision is measured over the catalog and the build context [0.49ms]
+  catalog-closure unit (fail) the versioned identity covers the whole definition, catalog included > the revision is measured over the catalog and the build context [0.49ms]
+ M src/packages/image-registry/declaredImageBuildCommand.ts
+ M src/packages/image-registry/declaredImages.ts

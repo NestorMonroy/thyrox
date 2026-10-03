@@ -1,0 +1,12 @@
+  ok   el coordinador doble escucha
+  ok   el pool sale 0
+  ok   el ítem termina bien
+  ok   el ítem pidió su ejecución con la referencia del consumidor
+  ok   el coordinador recibió la admisión del modelo local
+  ok   el runtime recibió el modelo que concede el grant
+  ok   la respuesta del runtime llega al resultado del ítem
+  ok   nada invocó claude
+
+8 ok · 0 falla(s) (alcance medido: modelo local por el coordinador desde la unidad, con dobles)
+execution thyrox-worker-test-muq8u6gg-23044 kind=test task=TASK-THYROX-0759 exit=0
+__BG_EXIT__=0

@@ -1,0 +1,52 @@
+{
+  "id": "batch-worker-mecanica@1",
+  "taskClass": "mecanica",
+  "cases": [
+    {
+      "id": "extend-capability-union",
+      "messages": [
+        {"role": "system", "content": "You edit TypeScript. Reply with only the changed line, no explanation."},
+        {"role": "user", "content": "Add 'embeddings' to this union and keep the others in order:\nexport type ModelCapability = 'completion' | 'tools'"}
+      ],
+      "checks": [
+        {"kind": "includes", "text": "'completion' | 'tools' | 'embeddings'"},
+        {"kind": "excludes-pattern", "pattern": "\\p{Script=Han}"}
+      ]
+    },
+    {
+      "id": "rename-identifier",
+      "messages": [
+        {"role": "system", "content": "You edit TypeScript. Reply with only the rewritten code."},
+        {"role": "user", "content": "Rename the parameter `ruta` to `path` everywhere:\nexport function exists(ruta: string): boolean { return ruta.length > 0 }"}
+      ],
+      "checks": [
+        {"kind": "includes", "text": "exists(path: string)"},
+        {"kind": "includes", "text": "path.length > 0"},
+        {"kind": "excludes", "text": "ruta"}
+      ]
+    },
+    {
+      "id": "guard-clause",
+      "messages": [
+        {"role": "system", "content": "You write TypeScript. Reply with only code."},
+        {"role": "user", "content": "Write `export function requirePositive(n: number): number` that throws `new RangeError('n must be positive')` when n <= 0 and otherwise returns n."}
+      ],
+      "checks": [
+        {"kind": "includes", "text": "export function requirePositive(n: number): number"},
+        {"kind": "includes", "text": "new RangeError('n must be positive')"},
+        {"kind": "includes", "text": "<= 0"}
+      ]
+    },
+    {
+      "id": "json-field-extraction",
+      "messages": [
+        {"role": "system", "content": "Reply with only the requested value."},
+        {"role": "user", "content": "From this JSON, reply with the value of `suite` only:\n{\"model\": \"m\", \"suite\": \"embedding@1\", \"passed\": true}"}
+      ],
+      "checks": [
+        {"kind": "includes", "text": "embedding@1"},
+        {"kind": "excludes", "text": "tool-calling"}
+      ]
+    }
+  ]
+}

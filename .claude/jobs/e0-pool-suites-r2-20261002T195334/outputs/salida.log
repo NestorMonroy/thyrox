@@ -1,0 +1,14 @@
+tests/session/test-headless-pool-credential-source.sh	exit=1	aserciones: 15 de 42 · fallos: 27
+tests/session/test-headless-pool-execution-unit.sh	exit=0	14 ok · 0 falla(s) (alcance medido: headless-pool --execution unit)
+tests/session/test-headless-pool-exit-live-items.sh	exit=1	sin runtime del ítem en runA
+tests/session/test-headless-pool-frozen-launcher.sh	exit=1	result: 3 of 6 assertions green
+tests/session/test-headless-pool-item-drain.sh	exit=1	result: 7 of 17 assertions green
+tests/session/test-headless-pool-lifecycle.sh	exit=1	headless-pool: REHUSA — la política de modelo bloquea --task-class analisis: la política no permite respaldo y ningún modelo permitido cumple: catálogo local vacío: ningún modelo declarado
+tests/session/test-headless-pool-local-model-e2e.sh	exit=0	8 ok · 0 falla(s) (alcance medido: modelo local por el coordinador desde la unidad, con dobles)
+tests/session/test-headless-pool-model-policy.sh	exit=0	20 ok · 0 falla(s) (alcance medido: headless-pool --model-policy)
+tests/session/test-headless-pool-runtime.sh	exit=1	13/22 aserciones
+tests/session/test-headless-pool-thyrox-p.sh	exit=1	1 ok · 11 falla(s) (alcance medido: headless-pool con thyrox -p)
+tests/session/test-headless-pool-worktree.sh	exit=1	test-headless-pool-worktree: 46 aserciones — 22 ok, 24 falla(s)
+tests/session/test-headless-pool.sh	exit=1	aserciones: 38 de 148 · fallos: 110
+execution thyrox-worker-test-murds57x-20502 kind=test task=TASK-THYROX-0773 exit=1
+__BG_EXIT__=1

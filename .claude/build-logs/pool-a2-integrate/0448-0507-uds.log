@@ -1,0 +1,7 @@
+bun test v1.3.11 (af24e281)
+
+ 30 pass
+ 0 fail
+ 53 expect() calls
+Ran 30 tests across 2 files. [2.12s]
+rc=0

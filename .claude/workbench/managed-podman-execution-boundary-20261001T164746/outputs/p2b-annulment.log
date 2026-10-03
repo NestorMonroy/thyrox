@@ -1,0 +1,77 @@
+# TASK-THYROX-0743 — P2 tramo B — CONTROL DE ANULACIÓN
+# Se retira la causa —la llamada por spec vuelve en el archivo anulado— y se mide qué
+# cae. El criterio no es «falla algo» sino «cae exactamente la aserción nueva y
+# ninguna otra»: con la causa retirada las pruebas de composición siguen pasando,
+# porque el spec y la autorización producen el mismo argv salvo por las etiquetas de
+# la autorización.
+# Copias usadas: /tmp/p2b-install-HEAD.ts y /tmp/p2b-fetch-HEAD.ts, los dos archivos
+# de producción tal como estaban en HEAD, guardados antes de editar.
+#
+# El árbol se movió bajo este tramo: src/packages/podman-execution/
+# executionAuthorization.ts fue reescrito por el control (303 líneas, mtime
+# 2026-10-01T23:03) después de la primera lectura. Los cuatro estados de este log
+# se midieron de nuevo sobre el árbol final, y sus números son los que van abajo.
+
+## Anulación total: los dos archivos vuelven a la llamada por spec
+$ cd src/packages/local-models && bun test __tests__/ollamaModelInstaller.test.ts __tests__/podmanArtifactFetcher.test.ts
+   2 skip
+   21 pass
+   4 fail
+  (fail) createPodmanArtifactFetcher: la autorización del trabajo > corre como una ejecución autorizada: clase registry-operation y la cita de su tarea [2.34ms]
+  (fail) createPodmanArtifactFetcher: la autorización del trabajo > la cita de la tarea que autoriza es declarable por el llamador [2.17ms]
+  (fail) la autorización del trabajo > corre como una ejecución autorizada: clase maintenance y la cita de su tarea [2.29ms]
+  (fail) la autorización del trabajo > la cita de la tarea que autoriza es declarable por el llamador [2.61ms]
+  exit=1
+
+## Anulación A: sólo ollamaModelInstaller.ts vuelve a la llamada por spec
+$ cd src/packages/local-models && bun test __tests__/ollamaModelInstaller.test.ts __tests__/podmanArtifactFetcher.test.ts
+   2 fail
+   2 skip
+   23 pass
+  (fail) la autorización del trabajo > corre como una ejecución autorizada: clase maintenance y la cita de su tarea [2.93ms]
+  (fail) la autorización del trabajo > la cita de la tarea que autoriza es declarable por el llamador [2.96ms]
+  exit=1
+
+## Anulación B: sólo podmanArtifactFetcher.ts vuelve a la llamada por spec
+$ cd src/packages/local-models && bun test __tests__/ollamaModelInstaller.test.ts __tests__/podmanArtifactFetcher.test.ts
+   2 fail
+   2 skip
+   23 pass
+  (fail) createPodmanArtifactFetcher: la autorización del trabajo > corre como una ejecución autorizada: clase registry-operation y la cita de su tarea [3.12ms]
+  (fail) createPodmanArtifactFetcher: la autorización del trabajo > la cita de la tarea que autoriza es declarable por el llamador [2.51ms]
+  exit=1
+
+## Restaurados los dos
+$ cd src/packages/local-models && bun test __tests__/ollamaModelInstaller.test.ts __tests__/podmanArtifactFetcher.test.ts
+   0 fail
+   2 skip
+   25 pass
+  exit=0
+
+## La restauración se verifica por hash, no por recuerdo: el par de hashes es el del
+## estado GREEN registrado en p2b-green.log.
+$ cd src/packages/local-models && sha256sum -c /tmp/p2b/green.sha256
+  ollamaModelInstaller.ts: OK
+  podmanArtifactFetcher.ts: OK
+
+# Lectura del control.
+# - Total: 4 fallas = exactamente las cuatro aserciones nuevas; 21 pases y 2 saltos,
+#   los mismos conteos del RED. Ninguna aserción ajena cae.
+# - A: caen las dos del instalador (clase maintenance y cita declarable) y pasan las
+#   dos del fetcher. 23 pases, 2 fallas.
+# - B: caen las dos del fetcher (clase registry-operation y cita declarable) y pasan
+#   las dos del instalador. 23 pases, 2 fallas.
+# El control es por archivo: el verde de B no puede atribuirse al cambio de A, y cada
+# caller aporta exactamente sus dos aserciones cuando se le retira la suya.
+# - Restaurados: 25 pases, 0 fallas.
+
+# El mismo control, con los CUATRO archivos (producción y pruebas) en su estado de
+# HEAD, sobre el árbol final: la línea base del paquete medida en el instante de
+# comparar, no de memoria.
+$ cd src/packages/local-models && bun test   # cuatro archivos a HEAD
+   178 pass
+   3 skip
+   5 fail
+  exit=1
+# y con el cambio puesto (p2b-green.log): 182 pass / 3 skip / 5 fail.
+# Delta: +4 pases (las cuatro pruebas nuevas), cero cambio en las fallas.

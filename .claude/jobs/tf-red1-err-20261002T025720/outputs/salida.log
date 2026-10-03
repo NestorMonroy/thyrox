@@ -1,0 +1,9 @@
+# Unhandled error between tests
+-------------------------------
+65 | 
+66 | /** Devuelve el nivel canónico (minúsculas, alias resuelto) o rehúsa nombrándolo. */
+67 | export function normalizeQuantizationLevel(level: string): QuantizationLevel {
+68 |   const lowered = level.toLowerCase()
+69 |   const canonical = LEVEL_ALIASES[lowered] ?? lowered
+execution thyrox-worker-test-muqdh93x-6867 kind=test task=TASK-THYROX-0761 exit=0
+__BG_EXIT__=0

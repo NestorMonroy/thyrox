@@ -19,9 +19,8 @@
  * consulta. Apagarla quita el escalón intermedio y hace que `pctLeft` reporte
  * más margen del que hay — dos pérdidas, ninguna ganancia de ventana.
  */
-import { MODELS } from '../../models.ts'
 import { fourLevels } from '@thyrox/provider/cost/compaction'
-import { AUTOCOMPACT_BUFFER_TOKENS, effectiveContextWindow } from './autocompact.ts'
+import { AUTOCOMPACT_BUFFER_TOKENS, declaredContextWindow, effectiveContextWindow } from './autocompact.ts'
 
 /** El `k=y-20000` de `fZe`: cuánto antes de la referencia empieza a avisar. */
 export const WARN_MARGIN_TOKENS = 20_000
@@ -198,7 +197,7 @@ export function blockingWindow(model: string): number | null {
 export function compactionWindow(
   model: string, configured?: number, settings?: CompactionSettings,
 ): number | null {
-  const declarada = MODELS[model]?.context?.window
+  const declarada = declaredContextWindow(model)
   const conReserva = effectiveContextWindow(model)
   if (typeof declarada !== 'number' || conReserva === null) return null
   // `MF` resta `min(xMe(e),qZt)` a la ventana que `wv` resuelve. Esa reserva ya

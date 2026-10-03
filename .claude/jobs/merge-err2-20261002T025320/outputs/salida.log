@@ -1,0 +1,21 @@
+(pass) runCommand > sin stdin declarado, el hijo no recibe entrada [3.60ms]
+
+__tests__/packageBoundary.test.ts:
+(pass) frontera del paquete — la primitiva funciona sin el daemon > ningún módulo del paquete importa el daemon, el registro ni las credenciales, ni sale del paquete por ruta relativa [1.43ms]
+
+__tests__/executionCommand.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+336 | })
+        ^
+error: Unexpected end of file
+    at /home/user/thyrox/src/packages/podman-execution/__tests__/executionCommand.test.ts:336:3
+-------------------------------
+
+
+__tests__/podmanLockCollision.test.ts:
+(pass) isLockCollision > reconoce el literal de Podman dentro del stderr [0.03ms]
+(pass) isLockCollision > reconoce el lock que Podman no puede liberar al retirar un objeto desfasado [0.03ms]
+execution thyrox-worker-test-muqdc41x-4312 kind=test task=TASK-THYROX-0756 exit=0
+__BG_EXIT__=0

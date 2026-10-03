@@ -1,0 +1,27 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/externalArtifact.test.ts:
+142 |   requirePositiveInteger(key, value)
+143 |   return value
+144 | }
+145 | 
+146 | function requireKey(metadata: GgufMetadata, key: string): GgufValue {
+147 |   if (!Object.hasOwn(metadata, key)) throw new MissingGgufKeyError(key)
+                                                 ^
+MissingGgufKeyError: falta la clave GGUF «qwen2.attention.head_count» para estimar la memoria
+  key: "qwen2.attention.head_count",
+
+      at requireKey (/home/user/thyrox/src/packages/model-artifacts/memoryEstimate.ts:147:44)
+      at positiveIntegerKey (/home/user/thyrox/src/packages/model-artifacts/memoryEstimate.ts:140:17)
+      at attentionShapeOf (/home/user/thyrox/src/packages/model-artifacts/memoryEstimate.ts:114:21)
+      at catalogEntryFromGguf (/home/user/thyrox/src/packages/model-artifacts/modelCatalog.ts:98:21)
+      at async register (/home/user/thyrox/src/packages/local-models/externalArtifact.ts:306:23)
+      at async acquire (/home/user/thyrox/src/packages/local-models/externalArtifact.ts:239:49)
+      at async importExternalArtifact (/home/user/thyrox/src/packages/local-models/externalArtifact.ts:132:18)
+      at async <anonymous> (/home/user/thyrox/src/packages/local-models/__tests__/externalArtifact.test.ts:235:27)
+(fail) external artifact import from official shards > a merge that still declares a split fails instead of registering [15.53ms]
+
+ 10 pass
+ 1 fail
+ 27 expect() calls
+Ran 11 tests across 1 file. [288.00ms]

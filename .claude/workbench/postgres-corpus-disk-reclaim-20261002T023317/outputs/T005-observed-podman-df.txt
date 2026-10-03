@@ -1,0 +1,67 @@
+Images space usage:
+
+REPOSITORY                           TAG                             IMAGE ID      CREATED     SIZE        SHARED SIZE  UNIQUE SIZE  CONTAINERS
+docker.io/ollama/ollama              0.35.0                          c178b43788bb  3 days      5.514GB     0B           5.514GB      1
+docker.io/library/ubuntu             24.04                           6232b3879100  2 weeks     80.7MB      80.7MB       0B           0
+<none>                               <none>                          b78504eefd22  25 hours    80.69MB     80.69MB      0B           0
+<none>                               <none>                          efc2db794f6d  25 hours    80.69MB     80.69MB      0B           0
+<none>                               <none>                          2af5de6d521f  25 hours    80.69MB     80.69MB      0B           0
+<none>                               <none>                          8f8efcfd9bcf  25 hours    132.6MB     132.6MB      0B           0
+<none>                               <none>                          8f7f65176514  25 hours    132.6MB     132.6MB      0B           0
+<none>                               <none>                          0a829950cd51  25 hours    132.9MB     132.9MB      0B           0
+<none>                               <none>                          eef293cd6643  25 hours    145MB       145MB        0B           0
+<none>                               <none>                          a7e93b19c8c3  25 hours    166.2MB     166.2MB      0B           0
+<none>                               <none>                          bcffef11e5b4  25 hours    166.2MB     166.2MB      0B           0
+<none>                               <none>                          16917d594fb0  25 hours    167.3MB     167.3MB      0B           0
+<none>                               <none>                          c836eff6528c  25 hours    168.1MB     168.1MB      0B           0
+<none>                               <none>                          e9287f726381  25 hours    1.279GB     1.279GB      0B           0
+docker.io/library/redis              7.4                             64035c2c9726  13 days     116.1MB     0B           116.1MB      1
+<none>                               <none>                          6f01f65a1688  25 hours    1.28GB      1.28GB       0B           0
+<none>                               <none>                          6a743396463c  25 hours    1.28GB      1.28GB       0B           0
+localhost/thyrox-model-quantizer     dev                             ddf16d444d8b  25 hours    1.28GB      1.28GB       161B         0
+<none>                               <none>                          f3e7b383fcaf  12 hours    80.69MB     80.69MB      0B           0
+<none>                               <none>                          28c023aeef75  12 hours    80.69MB     80.69MB      0B           0
+<none>                               <none>                          5c810f8d34a2  12 hours    80.69MB     80.69MB      0B           0
+<none>                               <none>                          61b9d21cee35  12 hours    235MB       235MB        0B           0
+<none>                               <none>                          4f65c7dfee65  12 hours    334.3MB     334.3MB      0B           0
+<none>                               <none>                          0d469d62f999  12 hours    386.5MB     386.5MB      0B           0
+localhost/thyrox-task-runner         dev                             26af4d189984  12 hours    386.5MB     386.5MB      279B         0
+docker.io/pgvector/pgvector          0.8.0-pg16                      56a5b20c7a15  13 months   446.9MB     0B           446.9MB      1
+ghcr.io/ggml-org/llama.cpp           <none>                          9ace0117e8ff  46 hours    2.958GB     0B           2.958GB      0
+<none>                               <none>                          82d1a3f1a1cb  54 minutes  80.69MB     80.69MB      0B           0
+<none>                               <none>                          78f62cf98610  54 minutes  80.69MB     80.69MB      0B           0
+<none>                               <none>                          8ee2ef2046c4  54 minutes  80.69MB     80.69MB      0B           0
+<none>                               <none>                          24c9da34a856  54 minutes  80.69MB     80.69MB      0B           0
+<none>                               <none>                          95d7e60fc00b  54 minutes  80.69MB     80.69MB      0B           0
+<none>                               <none>                          264da9d03eb3  54 minutes  235MB       235MB        0B           0
+<none>                               <none>                          05ae188ca037  54 minutes  334.3MB     334.3MB      0B           0
+<none>                               <none>                          1e02a8954079  54 minutes  386.5MB     386.5MB      0B           0
+docker.io/th3rox/thyrox-task-runner  <none>                          2bb9f235830e  54 minutes  386.5MB     386.5MB      1.39kB       0
+docker.io/th3rox/thyrox-task-runner  ubuntu24.04-bun1.3.11-uv0.8.17  2bb9f235830e  54 minutes  386.5MB     386.5MB      1.39kB       0
+localhost/thyrox-task-runner         candidate                       2bb9f235830e  54 minutes  386.5MB     386.5MB      1.39kB       0
+
+Containers space usage:
+
+CONTAINER ID  IMAGE         COMMAND                               LOCAL VOLUMES  SIZE        CREATED     STATUS      NAMES
+58350c4dd680  64035c2c9726  redis-server --save  --appendonly no  1              13.52kB     26 minutes  running     thyrox-redis
+7a3b0f6d25f8  c178b43788bb  serve                                 2              15.77kB     26 minutes  running     thyrox-ollama
+587a193241fd  56a5b20c7a15  postgres                              1              1.089MB     3 minutes   running     thyrox-postgres
+
+Local Volumes space usage:
+
+VOLUME NAME                                                       LINKS       SIZE
+thyrox-ollama-probe-models                                        0           2.284kB
+thyrox-quantization-lab-models                                    0           2.284kB
+thyrox-quantization-lab-artifacts                                 0           1.923GB
+thyrox-ollama-bench-models                                        1           2.497GB
+6cec042378060862a2531f5ec607d295e4ec4acabb69250e755ceffd7900b284  0           0B
+thyrox-ollama-models                                              0           2.284kB
+167c474564b3b6588aaa1110f12541fd3576ad4a35e4dd34328931428bb9ff54  0           0B
+thyrox-postgres-data                                              1           78.05MB
+a3af5ac1864dc136daeb19d2531b1d8082a821e7d3c17dc5512dea05f4fb9a4d  0           0B
+0365981757d0bb26035a1c2c9fc3808e91b9bb54e3156c7088cc49b9dc398d75  1           0B
+76dcb8e6032a4d7b93cc4a51b5a98fc471d40ed6e9e3517d178205ed18167e54  0           0B
+97058b2e05e5058bfd9496da2b8f413cc9336f806ed98b95b7e45545a02fd347  0           0B
+36a11794a762acb39462f3eb8bf6ae66f1697f0f3bfb3b5f24c6daf5ba65575f  0           0B
+bd0cde8174d938a18c6f575eef48db7f24b7475f818923b229298d308eff26a9  0           0B
+050d75c5cb46135dad7fa82e8d27c0f23e60cab7e37036d7d0e5016339802bc3  0           0B

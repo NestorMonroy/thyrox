@@ -1,0 +1,10 @@
+línea base 29 · final 29 · sólo en el final: 0
+== loop-execution-unit:
+      FALLA tests/test_translation_loop.py::test_translate_asks_the_pool_for_units_under_the_consumer_po
+== loop-policy-readable:
+      FALLA tests/test_translation_loop.py::test_translate_asks_the_pool_for_units_under_the_consumer_po
+      FALLA tests/test_translation_loop.py::test_translate_refuses_without_a_readable_policy
+92d6db1 Nestor Monroy / jcg-admin Translate through thyrox units with the Qwen policy
+push=0
+execution thyrox-worker-test-muq9bd8k-29475 kind=test work=ai-course-notes:es-mx/executor-qwen exit=0
+__BG_EXIT__=0

@@ -1,0 +1,5 @@
+pid del contenedor: 28712
+cadena de padres: 28712:sleep 28700:conmon 1:init
+time="2026-09-30T22:03:17Z" level=warning msg="StopSignal SIGTERM failed to stop container thyrox-tree-probe-28524 in 10 seconds, resorting to SIGKILL"
+GNU Time sobre podman run: maxrss=41152KB
+(el contenedor retuvo ~200 MB en una variable)

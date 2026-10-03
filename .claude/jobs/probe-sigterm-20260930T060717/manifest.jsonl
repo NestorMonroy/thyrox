@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bash .claude/workbench/pool-exit-live-items-20260930T060212/probes/sigterm-pool.sh", "started_at": "2026-09-30T06:07:17+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-09-30T06:08:24+00:00", "duration_seconds": 67.459801}

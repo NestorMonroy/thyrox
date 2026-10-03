@@ -1,0 +1,10 @@
+tsc-podman-execution exit=1 
+bun-podman-execution exit=0 Ran 225 tests across 16 files. [319.00ms]
+bun-model-scheduling exit=0 Ran 119 tests across 15 files. [1090.00ms]
+bun-local-models exit=0 Ran 214 tests across 25 files. [1.75s]
+sh-bg-managed-execution exit=0 17 casos: 17 ok, 0 fallos
+task-duplicates exit=0   … y 83 mas
+finding-unique exit=2   entera como nueva. NO se emite conteo.
+verify_exit=1
+execution thyrox-worker-test-muqmz2er-16050 kind=test task=TASK-THYROX-0779 exit=0
+__BG_EXIT__=0

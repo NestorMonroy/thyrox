@@ -1,0 +1,4 @@
+              Generalo con: cd "/home/user/thyrox" && uv sync
+OK: finding H-THYROX-312 indexado en /home/user/thyrox/agent-results/agent_store.sqlite3
+execution thyrox-worker-test-muqme1yk-5908 kind=test task=TASK-THYROX-0763 exit=0
+__BG_EXIT__=0

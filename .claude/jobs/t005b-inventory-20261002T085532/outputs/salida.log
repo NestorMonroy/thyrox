@@ -1,0 +1,9 @@
+Traceback (most recent call last):
+  File "/home/user/thyrox/.claude/workbench/postgres-corpus-disk-reclaim-20261002T023317/probes/t005b_inventory.py", line 32, in <module>
+    from task_continuation import declared_secret_names, exposed_secret_names  # noqa: E402
+    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/user/thyrox/src/session/task_continuation.py", line 77, in <module>
+    from learning.token_usage import attempt_usage
+ModuleNotFoundError: No module named 'learning'
+execution thyrox-worker-probe-muqq9w20-4380 kind=probe task=TASK-THYROX-0758 exit=1
+__BG_EXIT__=1

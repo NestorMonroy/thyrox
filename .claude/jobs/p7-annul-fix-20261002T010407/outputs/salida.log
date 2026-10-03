@@ -1,0 +1,6 @@
+sintaxis ok
+FAILED tests/test_translation_loop.py::test_translate_refuses_without_a_readable_policy
+1 failed, 1 passed, 59 deselected in 0.50s
+3d4e027
+execution thyrox-worker-test-muq9fnjb-30992 kind=test work=ai-course-notes:es-mx/executor-qwen exit=0
+__BG_EXIT__=0

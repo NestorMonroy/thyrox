@@ -1,0 +1,7 @@
+ 40 pass
+ 0 fail
+ 91 expect() calls
+Ran 40 tests across 1 file. [175.00ms]
+declaredImageBuildCommand.ts(19,10): error TS2305: Module '"@thyrox/podman-execution/executionCommand.ts"' has no exported member 'buildManagedImage'.
+tsc-exit=2
+test-declared-image-build-entry: 13 ok, 0 falla(s)

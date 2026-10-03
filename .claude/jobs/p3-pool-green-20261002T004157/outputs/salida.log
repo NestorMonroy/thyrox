@@ -1,0 +1,17 @@
+ok
+
+12 ok · 0 falla(s) (alcance medido: headless-pool --model-policy)
+10 ok, 0 fallas (alcance medido: 1 archivo, 7 términos prohibidos, 3 congelados)
+== pool-policy-arg:
+      FALLA caso 1: la política llega al recomendador — esperado [1] obtenido [0]
+== pool-blocked:
+      FALLA caso 2: y nombra la causa de la política — esperado [si] obtenido []
+== pool-ensure-guard:
+      FALLA caso 3: no pide claude-cli al recomendador — esperado [0] obtenido [1]
+== pool-runtime-guard:
+      FALLA caso 5: un proveedor devuelto contra una política sin respaldo rehúsa con 2 — esperado [2] o
+      FALLA caso 5: ningún ítem se lanza — esperado [0] obtenido [1]
+== pool-fallback-declared:
+      FALLA caso 6: una política sin fallback.enabled declarado rehúsa con 2 — esperado [2] obtenido [0]
+execution thyrox-worker-test-muq8n58s-13990 kind=test task=TASK-THYROX-0758 exit=0
+__BG_EXIT__=0

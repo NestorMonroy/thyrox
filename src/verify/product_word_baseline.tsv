@@ -154,7 +154,7 @@ src/packages/permission/src/components/AskUserQuestionPermissionRequest/AskUserQ
 src/packages/permission/src/components/AskUserQuestionPermissionRequest/PreviewQuestionView.tsx	4
 src/packages/permission/src/components/AskUserQuestionPermissionRequest/QuestionView.tsx	6
 src/packages/permission/src/components/FilePermissionDialog/permissionOptions.tsx	17
-src/packages/permission/src/fileToolPermissions.ts	14
+src/packages/permission/src/fileToolPermissions.ts	15
 src/packages/permission/src/filesystem.ts	10
 src/packages/permission/src/internalPaths.ts	2
 src/packages/permission/src/pathSafety.ts	9

@@ -1,0 +1,10 @@
+# Segunda pasada (2026-10-02T06:15:05): reconcile-orphans corrió mientras el dueño 16335 aún moría.
+dueño 16335 muerto
+$ bin/podman-execution-execute reconcile-orphans
+retirado thyrox-worker-maintenance-muqkfjjp-16335 removed=true
+1 huérfano(s) retirado(s)
+exit=0
+unidades de tarea: 0
+procesos de trabajo: 0
+$ bin/writer_inspector <230 archivos>
+exit=0

@@ -1,0 +1,12 @@
+# hook real tras E0 publicado, invocación nueva por caso, sin override (2026-10-02T21:11:27Z)
+Agent Explore: deny
+suite en primer plano: deny
+cualificación en primer plano: deny
+payload en segundo plano: deny
+heredoc de datos en un commit: sin decisión
+heredoc que lee bash: deny
+separador en comilla de datos: sin decisión
+código de bash -c: deny
+thyrox-bg gestionado: sin decisión
+git status: sin decisión
+Edit en src/ durante la excepción: sin decisión

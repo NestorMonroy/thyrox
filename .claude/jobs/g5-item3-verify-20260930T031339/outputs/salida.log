@@ -1,0 +1,8 @@
+
+ 33 pass
+ 0 fail
+ 48 expect() calls
+Ran 33 tests across 1 file. [365.00ms]
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 1 de 1 paquete(s))
+__BG_EXIT__=0

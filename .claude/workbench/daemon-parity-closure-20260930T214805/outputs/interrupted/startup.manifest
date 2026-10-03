@@ -1,0 +1,40 @@
+predecessor_run: .thyrox/runtime/pool/3fea51d3d513-20260930T214907-2267
+predecessor_item: 2
+worktree: .thyrox/pool-worktrees/3fea51d3d513/2
+base_commit: a218cf142f82edc52755a05deb76dc6cdfad74a7
+patch: .claude/workbench/daemon-parity-closure-20260930T214805/outputs/interrupted/startup.patch
+patch_sha256: 186ad87f20b534f5c2be878a501311ee1484298f5cd3b8b313916ac6ba67a2d4
+## git status --short
+ M src/packages/daemon/src/__tests__/bgDaemonTimers.test.ts
+ M src/packages/daemon/src/bgDaemon.ts
+ M src/packages/daemon/src/bgDaemonTimers.ts
+ M src/packages/daemon/src/daemonLock.ts
+ M src/packages/daemon/src/socketProto.ts
+?? src/packages/daemon/src/__tests__/bgDaemonStartup.test.ts
+?? src/packages/daemon/src/__tests__/bgDaemonStartupTimers.test.ts
+?? src/packages/daemon/src/__tests__/daemonLockStartup.test.ts
+?? src/packages/daemon/src/__tests__/socketProto.test.ts
+?? src/packages/local-observability/tsconfig.check.json
+## git diff --name-only HEAD
+src/packages/daemon/src/__tests__/bgDaemonTimers.test.ts
+src/packages/daemon/src/bgDaemon.ts
+src/packages/daemon/src/bgDaemonTimers.ts
+src/packages/daemon/src/daemonLock.ts
+src/packages/daemon/src/socketProto.ts
+## git ls-files --others --exclude-standard
+src/packages/daemon/src/__tests__/bgDaemonStartup.test.ts
+src/packages/daemon/src/__tests__/bgDaemonStartupTimers.test.ts
+src/packages/daemon/src/__tests__/daemonLockStartup.test.ts
+src/packages/daemon/src/__tests__/socketProto.test.ts
+src/packages/local-observability/tsconfig.check.json
+## archivos del patch
+src/packages/daemon/src/__tests__/bgDaemonTimers.test.ts
+src/packages/daemon/src/bgDaemon.ts
+src/packages/daemon/src/bgDaemonTimers.ts
+src/packages/daemon/src/daemonLock.ts
+src/packages/daemon/src/socketProto.ts
+src/packages/daemon/src/__tests__/bgDaemonStartup.test.ts
+src/packages/daemon/src/__tests__/bgDaemonStartupTimers.test.ts
+src/packages/daemon/src/__tests__/daemonLockStartup.test.ts
+src/packages/daemon/src/__tests__/socketProto.test.ts
+src/packages/local-observability/tsconfig.check.json

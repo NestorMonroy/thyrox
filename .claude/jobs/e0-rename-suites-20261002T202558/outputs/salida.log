@@ -1,0 +1,20 @@
+== execution-unit
+  ok   caso 4: no monta el runtime entero
+  ok   caso 5: el .err de cada ítem conserva su referencia de trabajo
+
+14 ok · 0 falla(s) (alcance medido: headless-pool --execution unit)
+exit=0
+== local-model-e2e
+  ok   la respuesta del runtime llega al resultado del ítem
+  ok   nada invocó claude
+
+8 ok · 0 falla(s) (alcance medido: modelo local por el coordinador desde la unidad, con dobles)
+exit=0
+== model-policy
+  ok   caso 10: la política declarada sin --model-policy rechaza un proveedor con 2
+  ok   caso 10: y el recomendador recibe esa política
+
+20 ok · 0 falla(s) (alcance medido: headless-pool --model-policy)
+exit=0
+execution thyrox-worker-test-murexsl0-26199 kind=test task=TASK-THYROX-0773 exit=0
+__BG_EXIT__=0

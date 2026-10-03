@@ -1,0 +1,6 @@
+exit=0  grep -q readOnlyRootfs src/packages/podman-execution/executionAuthorization.ts
+exit=0  cd src/packages/podman-execution && bun test 2>&1 | grep -qE "^ *0 fail$"
+exit=0  cd src/packages/artifact-registry && bun test 2>&1 | grep -qE "^ *0 fail$"
+exit=0  grep -q -- --read-only src/packages/artifact-registry/__tests__/podmanJobVerifier.test.ts
+execution thyrox-worker-maintenance-muq5800s-25102 kind=maintenance task=TASK-THYROX-0743 exit=0
+__BG_EXIT__=0

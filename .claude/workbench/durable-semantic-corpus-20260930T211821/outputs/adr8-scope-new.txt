@@ -1,0 +1,8 @@
+coincidan. ``source_ref`` y ``source_revision`` siguen siendo procedencia.
+
+Si un dominio tiene identificadores que sólo son únicos dentro de un scope, el
+scope forma parte de la identidad: ``dominio + scope + identificador``. Para
+findings basta ``dominio + id``, porque ``H-<PREFIJO>-NNN`` es único en todo el
+dominio y lo vigila ``thyrox: src/verify/check_finding_id_unique.py``. Esta
+precisión impide que la fórmula se reutilice en un dominio cuyos ids se
+repiten entre scopes.

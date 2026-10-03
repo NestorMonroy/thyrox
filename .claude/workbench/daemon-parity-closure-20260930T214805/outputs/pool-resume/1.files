@@ -1,0 +1,8 @@
+src/packages/config/tsconfig.check.json
+src/packages/daemon/src/__tests__/daemonBgGating.test.ts
+src/packages/daemon/src/__tests__/daemonWorkerSet.test.ts
+src/packages/daemon/src/__tests__/supervisorWorkerConfig.test.ts
+src/packages/daemon/src/daemonCli.ts
+src/packages/daemon/src/daemonConfig.ts
+src/packages/daemon/src/main.ts
+src/packages/ide/tsconfig.check.json

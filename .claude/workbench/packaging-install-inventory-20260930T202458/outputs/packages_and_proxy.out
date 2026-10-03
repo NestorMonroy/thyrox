@@ -1,0 +1,75 @@
+== paquetes (nombre · entradas bin/*.ts · menciones de postgres|redis|ollama|podman)
+agent	4	0
+app-host	0	0
+audio-capture-napi	0	0
+binary	1	0
+bridge	0	2
+claude-for-chrome-mcp	0	0
+cli	0	1
+color-diff-napi	0	0
+command-runtime	1	1
+computer-use-input	0	0
+computer-use-mcp	0	2
+computer-use-swift	0	5
+config	1	0
+context-compression	0	0
+coordination	0	0
+daemon	0	7
+finding	1	0
+headless-sdk	1	0
+ide	0	0
+image-processor-napi	0	1
+ink	0	1
+local-observability	0	3
+mcp-runtime	0	0
+memory	0	0
+mitm	0	1
+modifiers-napi	0	0
+observability	0	0
+output	0	0
+paths	0	0
+permission	0	0
+plan	0	0
+provider	5	11
+repl	0	1
+ripgrep-napi	0	0
+semantic-search	0	4
+server	0	0
+shared-state	0	5
+shell	1	0
+skills	0	0
+stdin-napi	0	0
+storage	1	1
+store	0	3
+swarm	0	1
+task	0	1
+teleport	0	0
+tool-registry	1	6
+tools	0	4
+transparent-napi	1	0
+updater	0	0
+url-handler-napi	0	0
+voice	0	0
+workbench	0	0
+== entradas del proxy (provider/bin)
+anthropicMockServer.ts
+credentialProxy.ts
+localProxy.ts
+storeCredentialProxy.ts
+== upstreams del proxy (src/packages/provider/src/proxy)
+__tests__
+claudeCli
+combo
+context
+openaiCompat
+resilience
+sdk
+session
+translators
+== claves de entorno del proxy
+THYROX_LOCAL_PROXY_SOCKET
+THYROX_OPENAI_COMPAT_API_KEY
+THYROX_OPENAI_COMPAT_BASE_URL
+THYROX_OPENAI_COMPAT_MODEL
+THYROX_PROXY_MODE
+THYROX_REDIS_URL

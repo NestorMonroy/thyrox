@@ -286,17 +286,6 @@ const reconciler = createReconciler<
       }
     }
 
-    if (process.env.NODE_ENV === 'test') {
-      if (rootNode.childNodes.length === 0 && rootNode.hasRenderedContent) {
-        return
-      }
-      if (rootNode.childNodes.length > 0) {
-        rootNode.hasRenderedContent = true
-      }
-      rootNode.onImmediateRender?.()
-      return
-    }
-
     const _tr = COMMIT_LOG ? performance.now() : 0
     rootNode.onRender?.()
     if (COMMIT_LOG) {

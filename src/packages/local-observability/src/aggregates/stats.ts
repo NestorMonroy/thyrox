@@ -19,7 +19,7 @@
  *   en este árbol.
  * - `Entry`/`TranscriptMessage` — tipo estructural estrecho,
  *   `@thyrox/agent` no exporta `./logsTypes`.
- * - `getFsImplementation` — storage/fsOperations, subpath no exportado.
+ * - `getFsImplementation`/`getProjectsDir` ya se importan de `@thyrox/storage`.
  * - `readJSONLFile` — storage/json.js, subpath no exportado; sustituto
  *   más simple (sin camino rápido nativo de Bun ni recuperación de línea
  *   corrupta parcial — divergencia declarada en el propio sustituto).
@@ -45,10 +45,10 @@ import { open } from 'fs/promises'
 import { basename, join, sep } from 'path'
 import { errorMessage, isENOENT } from '../errorHelpers.js'
 import { logForDebugging } from '../debug.js'
+import { getFsImplementation } from '@thyrox/storage/fsOperations'
+import { getProjectsDir } from '@thyrox/storage/sessionStoragePortable.js'
 import {
   type Entry,
-  getFsImplementation,
-  getProjectsDir,
   isTranscriptMessage,
   type ModelUsage,
   readJSONLFile,

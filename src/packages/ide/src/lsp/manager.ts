@@ -1,10 +1,9 @@
 /**
  * Puerto de `ccnmt: packages/ide/src/lsp/manager.ts`. `isBareMode` viene de
- * `@claude-code-how-works/config/env/utils.js` — no está en `@thyrox/config`
- * todavía; sustituto en `../internal/pendingCrossPackageDeps.js`.
+ * `@thyrox/config/env/utils`.
  */
+import { isBareMode } from '@thyrox/config/env/utils'
 import {
-  isBareMode,
   requireLocalObservabilityDebug,
   requireLocalObservabilityErrorHelpers,
   requireLocalObservabilityLogging,

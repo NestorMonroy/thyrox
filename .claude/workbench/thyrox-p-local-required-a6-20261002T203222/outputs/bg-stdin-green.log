@@ -1,0 +1,12 @@
+== 1. --stdin entrega el archivo declarado ==
+  ok    arranca con exit 0
+  ok    el trabajo leyó el archivo
+== 2. CONTROL: sin --stdin el trabajo lee /dev/null y termina ==
+  ok    arranca con exit 0
+  ok    lee cero líneas
+== 3. un archivo ausente se rehúsa antes de lanzar ==
+  ok    rehúsa con exit 2
+  ok    nombra el archivo
+== 4. --stdin sin valor se rehúsa ==
+  ok    rehúsa con exit 2
+bg --stdin: 7 ok, 0 fallas

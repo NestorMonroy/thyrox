@@ -1,0 +1,6 @@
+install=0
+ 78 pass
+ 0 fail
+
+check-package-typecheck: 0 error(es) propio(s) (alcance medido: 1 de 1 paquete(s))
+__BG_EXIT__=0

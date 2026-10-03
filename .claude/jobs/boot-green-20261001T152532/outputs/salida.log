@@ -1,0 +1,5 @@
+ 10 pass
+ 0 fail
+TEST_EXIT=0
+TSC_EXIT=0
+__BG_EXIT__=0

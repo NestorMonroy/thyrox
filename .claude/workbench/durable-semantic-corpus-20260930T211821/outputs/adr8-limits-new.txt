@@ -1,0 +1,24 @@
+**Techo de dimensiones, medido** (pgvector 0.8.6, clúster de pruebas,
+``thyrox: .claude/workbench/durable-semantic-corpus-20260930T211821/probes/pgvector_index_limits.sh``):
+
+.. list-table::
+   :header-rows: 1
+
+   * - Índice HNSW sobre
+     - Admite
+   * - ``vector``
+     - hasta 2 000 dimensiones
+   * - ``halfvec``
+     - hasta 4 000
+   * - una columna ``bit``
+     - hasta 64 000
+   * - ``binary_quantize(vector(N))::bit(N)``
+     - hasta 16 000: el techo lo pone la columna original, no el índice
+
+El techo de 2 000 es de ``vector``, no de pgvector. En este flujo el límite
+real es 16 000, no 64 000: el reranking exacto necesita el vector original
+guardado, y ``vector``/``halfvec`` no pasan de 16 000 dimensiones. Los 64 000
+sólo valen para una columna ``bit`` nativa, sin vector original con que
+reordenar.
+
+**Reranking tiene dos significados y se nombran por separado.**
