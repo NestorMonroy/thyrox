@@ -14,8 +14,9 @@
 #
 # Veredictos: `fallido` (el ítem salió con error), `sin-cambios` (diff vacío),
 # `verificado` / `rechazado` (VERIFY salió 0 / con error, corrido en el
-# worktree), `sin-verificar` (hubo cambios y no se declaró VERIFY) y
-# `con-stash` (el ítem intentó `git stash`; ver `item_git_guard/git`).
+# worktree), `sin-verificar` (hubo cambios y no se declaró VERIFY),
+# `con-stash` (el ítem intentó `git stash`; ver `item_git_guard/git`) y, bajo
+# THYROX_POOL_LOCAL_ONLY=1, `no-local` (su `thyrox -p` no declaró servicio local).
 #
 # Un stash ajeno que aparece en refs/stash durante el intervalo del ítem —sin
 # que el ítem lo haya intentado por el envoltorio— es una ANOMALÍA COMPARTIDA,
@@ -489,6 +490,14 @@ check_shared_stash_anomaly() {
     return 0
 }
 
+# @description ¿El `thyrox -p` del ítem declaró servicio local? Al menos una línea
+# `served-by` con `"local":true` y ninguna con `"local":false` (TASK-THYROX-0930).
+# @arg $1 string el `.err` del ítem.
+served_locally() {
+    local err="$1"
+    grep -q '^served-by .*"local":true' "$err" 2>/dev/null && ! grep -q '^served-by .*"local":false' "$err"
+}
+
 finalize() {
     local repo="$1" dir="$2" out="$3" n="$4" rc="$5" verify="${6:-}" verdict
     git -C "$dir" add -A
@@ -500,6 +509,10 @@ finalize() {
         # su trabajo, y eso es lo primero que hay que saber de él, gane o
         # pierda el resto de la evaluación.
         verdict=con-stash
+    elif [[ "${THYROX_POOL_LOCAL_ONLY:-}" == 1 ]] && ! served_locally "$out/$n.err"; then
+        # TASK-THYROX-0930: bajo --local-only, una respuesta que no se declaró
+        # servida en el anfitrión no es evidencia, pase o no su verify.
+        verdict=no-local
     elif [[ "$rc" -ne 0 ]]; then
         verdict=fallido
     elif [[ ! -s "$out/$n.patch" ]]; then

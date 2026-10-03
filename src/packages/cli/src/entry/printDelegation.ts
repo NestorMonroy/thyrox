@@ -68,11 +68,45 @@ function flagValue(argv: string[], name: string): string | undefined {
   return undefined
 }
 
-/** Por dónde habla `thyrox -p` con el modelo: directo, por un proxy declarado, o por uno que hay que levantar. */
+/**
+ * Por dónde habla `thyrox -p` con el modelo: directo, por un proxy declarado, o
+ * por uno que hay que levantar. Un modelo del catálogo local se decide ANTES de
+ * mirar la credencial (TASK-THYROX-0930, H-THYROX-455): ninguna credencial lo
+ * saca del anfitrión.
+ */
 export function decidePrintRoute(argv: string[], env: Env, readFd?: ReadFd, store?: ConnectionStore): PrintRoute {
+  if (isLocalCatalogModel(flagValue(argv, '--model'))) return localModelRoute(env)
   const provider = flagValue(argv, '--provider') ?? DEFAULT_PROVIDER
   if (provider !== DEFAULT_PROVIDER) return { kind: 'own', reason: `el proveedor ${provider} no usa credencial` }
   if (resolveCredential(env, readFd, store).source !== 'none') return { kind: 'own', reason: 'thyrox tiene credencial propia' }
+  const declared = env[LOCAL_PROXY_SOCKET_ENV]?.trim()
+  return declared ? { kind: 'declared-proxy', socketPath: declared } : { kind: 'launch-proxy' }
+}
+
+/** La razón con que `localModelRoute` nombra el túnel: `own`, pero local. */
+const LOCAL_TUNNEL_REASON = 'túnel local ya declarado'
+
+/**
+ * La línea `served-by <json>` que `thyrox -p` deja en stderr: el modelo, la
+ * ruta y si el servicio fue local (TASK-THYROX-0930). La aceptación local la
+ * lee: una respuesta que salió del anfitrión no cuenta como evidencia.
+ */
+export function servedByLine(route: PrintRoute, model: string): string {
+  const local = route.kind !== 'own' || route.reason === LOCAL_TUNNEL_REASON
+  return `served-by ${JSON.stringify({ model, route: route.kind, local })}`
+}
+
+function isLocalCatalogModel(model: string | undefined): boolean {
+  return model !== undefined && parseThyroxModelName(model) !== undefined
+}
+
+/**
+ * La ruta de un modelo local: el túnel ya declarado (su socket es el proxy local
+ * de quien lanzó el ítem), el proxy declarado, o uno que se levanta. Nunca la
+ * credencial del entorno, que es remota.
+ */
+function localModelRoute(env: Env): PrintRoute {
+  if (env.ANTHROPIC_UNIX_SOCKET?.trim()) return { kind: 'own', reason: LOCAL_TUNNEL_REASON }
   const declared = env[LOCAL_PROXY_SOCKET_ENV]?.trim()
   return declared ? { kind: 'declared-proxy', socketPath: declared } : { kind: 'launch-proxy' }
 }

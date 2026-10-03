@@ -3,3 +3,6 @@
 (fail) decidePrintRoute — por dónde pasa thyrox -p > un modelo local no se va con otro --provider [0.10ms]
  22 pass
  3 fail
+(fail) decidePrintRoute — por dónde pasa thyrox -p > served-by declara la ruta y si el servicio fue local, una línea JSON [0.22ms]
+ 25 pass
+ 1 fail

@@ -1,0 +1,6 @@
+  ok   caso 17: --local-only sin --execution unit rehúsa con 2
+  FALLA caso 17: y lo dice — esperado [si] obtenido []
+  ok   caso 17: ningún ítem se lanza
+  ok   caso 18: --local-only con un proveedor recomendado rehúsa con 2
+  FALLA caso 18: y lo dice — esperado [si] obtenido []
+34 ok · 2 falla(s) (alcance medido: headless-pool --model-policy)

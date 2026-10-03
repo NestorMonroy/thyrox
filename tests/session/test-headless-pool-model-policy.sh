@@ -124,5 +124,20 @@ check "caso 15: no pide claude-cli al recomendador" "$(grep -c -- '--runtime cla
 OUTPUT="$(RECOMMEND_MODE=provider pool --model-policy "$F/abierta-sin-cadena.json")"; CODE=$?
 check "caso 16: un proveedor devuelto contra una política sin claude-cli declarado rehúsa con 2" "$CODE" "2"
 
+# TASK-THYROX-0930: --local-only es el modo de la aceptación local. Exige la
+# unidad (la ejecución host hereda credenciales) y un runtime local; nunca cae
+# al proveedor, ni por el selector ni por un Ollama caído.
+OUTPUT="$(pool --model-policy "$F/policy.json" --local-only)"; CODE=$?
+check "caso 17: --local-only sin --execution unit rehúsa con 2" "$CODE" "2"
+check "caso 17: y lo dice" "$([[ "$OUTPUT" == *"--local-only exige --execution unit"* ]] && echo si)" "si"
+check "caso 17: ningún ítem se lanza" "$(wc -l < "$F/runner.log" | tr -d ' ')" "0"
+OUTPUT="$(RECOMMEND_MODE=provider pool --model-policy "$F/con-respaldo.json" --local-only --execution unit --work-reference ai-course-notes:cs224r)"; CODE=$?
+check "caso 18: --local-only con un proveedor recomendado rehúsa con 2" "$CODE" "2"
+check "caso 18: y lo dice" "$([[ "$OUTPUT" == *"--local-only"*"runtime local"* ]] && echo si)" "si"
+
+OUTPUT="$(ENSURE_EXIT=1 pool --model-policy "$F/con-respaldo.json" --local-only --execution unit --work-reference ai-course-notes:cs224r)"; CODE=$?
+check "caso 19: --local-only con Ollama caído rehúsa con 2 aunque la política declare el proveedor" "$CODE" "2"
+check "caso 19: no pide claude-cli al recomendador" "$(grep -c -- '--runtime claude-cli' "$F/recommend.log")" "0"
+
 echo; echo "$PASS ok · $FAIL falla(s) (alcance medido: headless-pool --model-policy)"
 [[ $FAIL -eq 0 ]]

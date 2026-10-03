@@ -14,7 +14,7 @@ import { join } from 'node:path'
 import { openConnectionStore } from '@thyrox/provider/accounts/connectionStoreHome'
 import { SSH_PLACEHOLDER } from '@thyrox/provider/credentials'
 import {
-  credentialEnvironmentFor, decidePrintRoute, LOCAL_MODEL_CONTEXT_LENGTH_ENV, LOCAL_MODEL_FALLBACKS_ENV, LOCAL_PROXY_SOCKET_ENV, type LocalProxyChild, type PrintRoute, TUNNEL_BASE_URL, tunnelEnv,
+  credentialEnvironmentFor, decidePrintRoute, LOCAL_MODEL_CONTEXT_LENGTH_ENV, LOCAL_MODEL_FALLBACKS_ENV, servedByLine, LOCAL_PROXY_SOCKET_ENV, type LocalProxyChild, type PrintRoute, TUNNEL_BASE_URL, tunnelEnv,
 } from '../src/entry/printDelegation.ts'
 import { runPrint } from '../src/entry/print.ts'
 
@@ -69,6 +69,35 @@ describe('decidePrintRoute — por dónde pasa thyrox -p', () => {
     const env = { ANTHROPIC_UNIX_SOCKET: '/run/t.sock', ANTHROPIC_API_KEY: SSH_PLACEHOLDER }
     expect(decidePrintRoute(['-p', 'hola'], env, noFd).kind).toBe('own')
   })
+  // TASK-THYROX-0930: la ruta se decidía por la credencial antes de mirar el
+  // modelo, y un `thyrox-*` con una clave remota en el entorno salía del
+  // anfitrión (H-THYROX-455). Un modelo del catálogo local va siempre por el
+  // proxy local; el túnel ya declarado (`ssh-placeholder`) también es local.
+  const LOCAL_MODEL = 'thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e'
+  test('un modelo local con una credencial remota en el entorno va por el proxy local, nunca own', () => {
+    expect(decidePrintRoute(['-p', 'hola', '--model', LOCAL_MODEL], { ANTHROPIC_API_KEY: 'sk-remota' }, noFd)).toEqual({ kind: 'launch-proxy' })
+  })
+  test('un modelo local con credencial remota y proxy declarado usa ese proxy', () => {
+    const env = { ANTHROPIC_AUTH_TOKEN: 'remoto', [LOCAL_PROXY_SOCKET_ENV]: '/run/p.sock' }
+    expect(decidePrintRoute(['-p', 'hola', `--model=${LOCAL_MODEL}`], env, noFd)).toEqual({ kind: 'declared-proxy', socketPath: '/run/p.sock' })
+  })
+  test('un modelo local por un túnel ya declarado sigue por el túnel', () => {
+    const env = { ANTHROPIC_UNIX_SOCKET: '/run/t.sock', ANTHROPIC_API_KEY: SSH_PLACEHOLDER }
+    expect(decidePrintRoute(['-p', 'hola', '--model', LOCAL_MODEL], env, noFd).kind).toBe('own')
+  })
+  test('un modelo local no se va con otro --provider', () => {
+    expect(decidePrintRoute(['-p', 'hola', '--model', LOCAL_MODEL, '--provider', 'openai'], { ANTHROPIC_API_KEY: 'sk-remota' }, noFd)).toEqual({ kind: 'launch-proxy' })
+  })
+  test('served-by declara la ruta y si el servicio fue local, una línea JSON', () => {
+    const local = JSON.parse(servedByLine({ kind: 'launch-proxy' }, LOCAL_MODEL).replace(/^served-by /, ''))
+    const tunnel = JSON.parse(servedByLine({ kind: 'own', reason: 'túnel local ya declarado' }, LOCAL_MODEL).replace(/^served-by /, ''))
+    const remote = JSON.parse(servedByLine({ kind: 'own', reason: 'thyrox tiene credencial propia' }, 'claude-sonnet-5').replace(/^served-by /, ''))
+    expect([local.local, local.route, tunnel.local, remote.local, remote.model]).toEqual([true, 'launch-proxy', true, false, 'claude-sonnet-5'])
+  })
+  test('un modelo remoto con credencial sigue hablando directo', () => {
+    expect(decidePrintRoute(['-p', 'hola', '--model', 'claude-sonnet-5'], { ANTHROPIC_API_KEY: 'sk-propia' }, noFd).kind).toBe('own')
+  })
+
   test('con una conexión del store, thyrox habla directo', () => {
     const home = scratch()
     const opened = openConnectionStore({ env: { THYROX_PROVIDERS_DATA_DIR: home }, declared: () => 'k' })

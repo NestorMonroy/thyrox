@@ -224,7 +224,7 @@ RUNNER_KIND=thyrox
 PROMPT=""; OUT=""; MODEL=""; TASK_CLASS=""
 WIDTH="$(nproc 2>/dev/null || echo 4)"
 TIMEOUT=600; TOOLS="Read"; TOOLS_SET=""; ISOLATION=""; VERIFY=""; MAX_TURNS=""; WORKDIR="$PWD"; MEMFREE_SPEC=""; CACHE_TTL=""; CREDENTIAL_PROXY=""; STORE_CREDENTIAL_PROXY=""; CREDENTIAL_SOURCE=""
-EXECUTION=host; WORK_REFERENCE=""; MODEL_POLICY=""; POLICY_FALLBACK=""; POLICY_PROVIDER=""; CONTEXT_TOKENS=""; LOCAL_FALLBACKS=""; SYSTEM_BUDGET=""
+EXECUTION=host; WORK_REFERENCE=""; MODEL_POLICY=""; POLICY_FALLBACK=""; POLICY_PROVIDER=""; CONTEXT_TOKENS=""; LOCAL_FALLBACKS=""; SYSTEM_BUDGET=""; LOCAL_ONLY=""
 
 rehusa() { echo "headless-pool: REHUSA — $*" >&2; exit 2; }
 
@@ -250,6 +250,7 @@ while [[ $# -gt 0 ]]; do
         --execution) EXECUTION="${2:-}"; shift 2 ;;
         --work-reference) WORK_REFERENCE="${2:-}"; shift 2 ;;
         --model-policy) MODEL_POLICY="${2:-}"; shift 2 ;;
+        --local-only) LOCAL_ONLY=1; shift ;;
         --context-tokens) CONTEXT_TOKENS="${2:-}"; shift 2 ;;
         --system-budget-tokens) SYSTEM_BUDGET="${2:-}"; shift 2 ;;
         -h|--help) sed -n '2,69p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
@@ -268,6 +269,14 @@ case "$EXECUTION" in
             || rehusa "--execution unit no entrega credenciales del pool al ítem: no va con --credential-*" ;;
     *) rehusa "--execution va host o unit, no: $EXECUTION" ;;
 esac
+# --local-only es el modo de la aceptación local (TASK-THYROX-0930): sólo la
+# unidad no hereda credenciales del anfitrión, el runtime tiene que ser local
+# y cada ítem tiene que declarar que lo sirvió el anfitrión (`no-local` si no).
+if [[ -n "$LOCAL_ONLY" ]]; then
+    [[ "$EXECUTION" == unit ]] \
+        || rehusa "--local-only exige --execution unit: la ejecución host hereda las credenciales del anfitrión"
+    export THYROX_POOL_LOCAL_ONLY=1
+fi
 # Sin `--model-policy` rige la política declarada: la de `THYROX_EXECUTION_POLICY`
 # o la versionada del árbol, la misma que leen `agent-recommend` y el preflight.
 if [[ -z "$MODEL_POLICY" ]]; then
@@ -339,6 +348,8 @@ derive_recommendation() {
         || rehusa "la política de modelo no permite el proveedor y el selector devolvió $RUNTIME ($MODEL)"
 }
 derive_recommendation
+[[ -z "$LOCAL_ONLY" || "$RUNTIME" == "$LOCAL_RUNTIME" ]] \
+    || rehusa "--local-only exige un runtime local y el selector devolvió $RUNTIME ($MODEL)"
 # El modelo local exige el Ollama gestionado en marcha. Si no arranca, el pool
 # cae al proveedor pidiéndolo explícitamente al selector, y lo dice
 # (decisión del ejecutor 2026-10-01: local por defecto y respaldo en claude-cli).
@@ -346,6 +357,8 @@ ensure_local_runtime() {
     local ensure_exit=0
     bash "$CONTROL_PLANE_READY_BIN" "$MANAGED_OLLAMA_SERVICE" >&2 || ensure_exit=$?
     [[ "$ensure_exit" -ne 0 ]] || return 0
+    [[ -z "$LOCAL_ONLY" ]] \
+        || rehusa "$MANAGED_OLLAMA_SERVICE no arrancó (local_control_plane_ready salió $ensure_exit) y --local-only no cae al proveedor"
     [[ "${POLICY_PROVIDER:-}" != false ]] \
         || rehusa "$MANAGED_OLLAMA_SERVICE no arrancó (local_control_plane_ready salió $ensure_exit) y la política de modelo no permite respaldo"
     derive_recommendation --runtime "$PROVIDER_RUNTIME"
@@ -1170,6 +1183,7 @@ if [[ "$ISOLATION" == worktree ]]; then
     bash "$HP_LIFECYCLE" closed-items "$OUT" | while read -r n; do cat "$OUT/$n.verdict" 2>/dev/null; done | gawk '{c[$1]++} END {
         printf "verificados=%d rechazados=%d sin-cambios=%d fallidos=%d", c["verificado"], c["rechazado"], c["sin-cambios"], c["fallido"]
         if (c["sin-verificar"]) printf " sin-verificar=%d", c["sin-verificar"]
+        if (c["no-local"]) printf " no-local=%d", c["no-local"]
         if (c["con-stash"]) printf " con-stash=%d", c["con-stash"]
         print "" }'
     bash "$HP_ITEM_WORKTREE" sweep "$WORKDIR" "$HP_OUT" "$HP_LIVE"

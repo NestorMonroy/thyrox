@@ -34,7 +34,7 @@ import type { LoopResult } from '@thyrox/agent/loop/types'
 import { loopSetup } from './runLoop.ts'
 import { resolveMaxTurnsFromEnv } from './maxTurnsEnv.ts'
 import { openExistingConnectionStore, type OpenedConnectionStore } from '@thyrox/provider/accounts/connectionStoreHome'
-import { credentialEnvironmentFor, decidePrintRoute, type CredentialEnvironment, type SpawnLocalProxy } from './printDelegation.ts'
+import { credentialEnvironmentFor, decidePrintRoute, servedByLine, type CredentialEnvironment, type SpawnLocalProxy } from './printDelegation.ts'
 import { adoptLoopSessionId, registerSessionAtLaunch } from '@thyrox/app-host/runtime/sessionRegistryAtLaunch.js'
 import { startMessagingInboxAtLaunch, type MessagingInboxStop } from '@thyrox/app-host/runtime/messagingInboxAtLaunch.js'
 
@@ -224,6 +224,7 @@ export async function runPrint(argv: string[], cwd: string, transcriptDir: strin
   const opened = (deps.openStore ?? (() => openExistingConnectionStore({ env })))()
   const route = decidePrintRoute(argv, env, deps.readFd, opened?.store)
   opened?.close()
+  process.stderr.write(`${servedByLine(route, args.model)}\n`)
   let credential: CredentialEnvironment
   try {
     credential = await credentialEnvironmentFor(route, {

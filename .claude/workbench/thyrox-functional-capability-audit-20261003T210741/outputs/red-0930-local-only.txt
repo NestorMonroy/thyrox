@@ -1,0 +1,6 @@
+  ok    local-only, servido en local: verificado
+  FALLA local-only, servido fuera del anfitrión: no-local: esperado «no-local», obtenido «verificado»
+  FALLA local-only, sin declaración de servicio: no-local: esperado «no-local», obtenido «verificado»
+  ok    modo normal, servido fuera: el veredicto de siempre
+
+2 ok, 2 falla(s) (alcance medido: item_worktree finalize bajo local-only)

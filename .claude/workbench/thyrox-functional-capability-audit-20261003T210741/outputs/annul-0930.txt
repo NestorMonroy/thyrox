@@ -1,0 +1,28 @@
+== route-precedence
+(fail) decidePrintRoute — por dónde pasa thyrox -p > un modelo local con una credencial remota en el entorno va por el proxy local, nunca own [0.22ms]
+(fail) decidePrintRoute — por dónde pasa thyrox -p > un modelo local con credencial remota y proxy declarado usa ese proxy [0.12ms]
+(fail) decidePrintRoute — por dónde pasa thyrox -p > un modelo local no se va con otro --provider [0.09ms]
+ 23 pass
+ 3 fail
+== served-by-local
+(fail) decidePrintRoute — por dónde pasa thyrox -p > served-by declara la ruta y si el servicio fue local, una línea JSON [0.42ms]
+ 25 pass
+ 1 fail
+== finalize-no-local
+  FALLA local-only, servido fuera del anfitrión: no-local: esperado «no-local», obtenido «verificado»
+  FALLA local-only, sin declaración de servicio: no-local: esperado «no-local», obtenido «verificado»
+2 ok, 2 falla(s) (alcance medido: item_worktree finalize bajo local-only)
+== pool-unit
+  FALLA caso 17: --local-only sin --execution unit rehúsa con 2 — esperado [2] obtenido [0]
+  FALLA caso 17: y lo dice — esperado [si] obtenido []
+  FALLA caso 17: ningún ítem se lanza — esperado [0] obtenido [1]
+35 ok · 3 falla(s) (alcance medido: headless-pool --model-policy)
+== pool-runtime
+  FALLA caso 18: --local-only con un proveedor recomendado rehúsa con 2 — esperado [2] obtenido [1]
+  FALLA caso 18: y lo dice — esperado [si] obtenido []
+36 ok · 2 falla(s) (alcance medido: headless-pool --model-policy)
+== pool-ensure
+  FALLA caso 19: --local-only con Ollama caído rehúsa con 2 aunque la política declare el proveedor — esperado [2] obtenido [1]
+  FALLA caso 19: no pide claude-cli al recomendador — esperado [0] obtenido [1]
+36 ok · 2 falla(s) (alcance medido: headless-pool --model-policy)
+ 3 files changed, 65 insertions(+), 4 deletions(-)
