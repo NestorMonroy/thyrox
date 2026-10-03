@@ -70,7 +70,7 @@ def test_watch_stops_the_session_and_writes_the_reason() -> None:
     with tempfile.TemporaryDirectory() as directory:
         stream, report = Path(directory, "1.stream.jsonl"), Path(directory, "1.watchdog")
         call = json.dumps(tool_use("Bash", command="ls"))
-        stream.write_text("\n".join([call, call, call]) + "\n")
+        stream.write_text(f"{call}\n{call}\n{call}\n")
         item = _session(30)
         started = time.monotonic()
         watch(item.pid, stream, report, Limits(max_identical=3, max_repeats=10, idle_seconds=0), interval=0.05)
