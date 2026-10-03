@@ -1,0 +1,44 @@
+bun test v1.3.14 (0d9b296a)
+
+__tests__/recommendExecution.test.ts:
+242 |   const A6_PROFILE = { contextTokens: 24_663 }
+243 |   const qualifiedAt = (entry: ModelCatalogEntry, contextTokens: number) =>
+244 |     [protocol(entry.name), qualification(entry.name, { contextTokens })]
+245 | 
+246 |   test('admite el Qwen3-4B de Hugging Face en Q4_K_M', () => {
+247 |     expect(allowsEntry(CANONICAL, HF_QWEN)).toBe(true)
+                                                  ^
+error: expect(received).toBe(expected)
+
+Expected: true
+Received: false
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/recommendExecution.test.ts:247:45)
+(fail) la política canónica y el Qwen3-4B instalado en el clon (TASK-THYROX-0912) > admite el Qwen3-4B de Hugging Face en Q4_K_M [0.12ms]
+248 |   })
+249 | 
+250 |   test('cualificado con contexto suficiente, es el candidato local: ollama, sin respaldo', () => {
+251 |     const result = recommendExecution('mecanica', A6_PROFILE, { entries: [HF_QWEN], qualifications: qualifiedAt(HF_QWEN, 32_768) }, CANONICAL)
+252 |     expect([result.runtime, result.runtime === 'ollama' ? result.model : '', 'fallbackReason' in result])
+253 |       .toEqual(['ollama', HF_QWEN.name, false])
+             ^
+error: expect(received).toEqual(expected)
+
+@@ -1,4 +1,4 @@
+  [
+-   "ollama",
+-   "thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-eeeeeeeeeeee",
++   "blocked",
++   "",
+    false,
+
+- Expected  - 2
++ Received  + 2
+
+      at <anonymous> (/home/user/thyrox/src/packages/provider/__tests__/recommendExecution.test.ts:253:8)
+(fail) la política canónica y el Qwen3-4B instalado en el clon (TASK-THYROX-0912) > cualificado con contexto suficiente, es el candidato local: ollama, sin respaldo [0.17ms]
+
+ 24 pass
+ 2 fail
+ 42 expect() calls
+Ran 26 tests across 1 file. [208.00ms]

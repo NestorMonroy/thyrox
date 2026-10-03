@@ -1,0 +1,118 @@
+== tareas: local only
+Total: 0 (alcance medido: 2424 tarea(s) de 9 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: local only
+H-THYROX-416  [thyrox/local-bootstrap]  finding/MEDIA  user_wiring declara «sin deriva» aunque el matcher vivo difiera del declarado  (src/session/user_wiring.py)
+ERR-076  [thyrox/embedding-route-and-local-workers]  finding/MEDIA  ERR: verified an artifact with an ad-hoc sha256sum instead of the existing local-models mechanisms  (src/packages/local-models/huggingFaceSource.ts)
+H-THYROX-404  [thyrox/provider-selection]  finding/ALTA  Model decisions ignore our own measured history: Thompson priors are per plan, execution_records has no writer  (src/session/task_continuation.py:290-314; src/packages/execution-records/executionRecordSql.ts:14-45; src/packages/model-artifacts/localModelHome.ts:45; .claude/jobs/mechanism-registry-run2-20261002T062448/outputs/salida.log)
+H-THYROX-445  [podman-execution/podman-lock-recovery-autonomy]  finding/MEDIA  Two module headers still say infrastructure_ensure renumbers Podman locks; since 2026-10-02 it only detects and refuses, and nothing composes the repair with convergence  (src/session/infrastructure_ensure.sh)
+Total: 4 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: provider fallback
+#5  pending      [thyrox]  Declare a model execution policy without provider fallback
+Total: 1 (alcance medido: 2424 tarea(s) de 9 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: provider fallback
+Total: 0 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: model selection
+Total: 0 (alcance medido: 2424 tarea(s) de 9 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: model selection
+H-DOCS-1057  [docs/construir-harness-propio]  finding/MEDIA  el linter de agentes prohibe el ``model:`` que la regla vigente exige  (source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1057-linter-prohibe-el-model-que-la-regla-exige.rst)
+H-DOCS-220  [docs/implementar-base-datos-agentes]  finding/MEDIA  el alias con que se despacha un subagente no determina qué modelo corrió  (source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-220-el-alias-del-modelo-no-determina-la-version.rst)
+H-API-900  [api/adaptar-familias-odoo-monolito-modular]  finding/MEDIA  la limpieza del test fabricaba la clave que la guarda escribe  (source/gestion/pm/api/iniciativas/adaptar-familias-odoo-monolito-modular/hallazgos/hallazgo-H-API-900-la-limpieza-del-test-fabricaba-la-clave-que-la-guarda-escribe.rst)
+H-API-871  [api/completar-familia-base]  finding/ALTA  nueve de los diez tipos ``company_dependent`` no despachaban  (source/gestion/pm/api/iniciativas/completar-familia-base/hallazgos/hallazgo-H-API-871-los-nueve-despachadores-restantes.rst)
+H-DOCS-274  [docs/integrar-referencia-how-claude-code-works]  finding/ALTA  hay dos variables de esfuerzo vivas, y la regla documenta la que esta sesión NO usa  (source/gestion/pm/docs/iniciativas/integrar-referencia-how-claude-code-works/hallazgos/hallazgo-H-DOCS-274-dos-variables-de-esfuerzo-y-la-regla-nombra-la-que-no-rige.rst)
+H-DOCS-275  [docs/integrar-referencia-how-claude-code-works]  finding/MEDIA  el Advisor es un tercer eje de control, y ninguna regla nuestra lo nombra  (source/gestion/pm/docs/iniciativas/integrar-referencia-how-claude-code-works/hallazgos/hallazgo-H-DOCS-275-el-advisor-es-un-tercer-eje-sin-regla.rst)
+H-DOCS-211  [docs/implementar-base-datos-agentes]  finding/MEDIA  ``env | grep`` mide variables ASIGNADAS, no las que el binario conoce  (source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-211-env-mide-asignacion-no-existencia.rst)
+H-DOCS-1007  [docs/implementar-base-datos-agentes]  finding/MEDIA  dos reglas describían el tool ``Agent`` como una cola; rechaza  (source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-1007-dos-reglas-describian-el-tool-agent-como-una-cola-y-rechaza.rst)
+H-DOCS-1009  [docs/implementar-base-datos-agentes]  finding/BAJA  la regla listaba ``CLAUDE_EFFORT`` como entrada, y es una salida del cliente  (source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-1009-la-regla-listaba-claude-effort-como-entrada-y-es-una-salida-del-cliente.rst)
+H-DOCS-500  [docs/implementar-base-datos-agentes]  finding/ALTA  el ``effort`` SÍ se declara en el frontmatter del agente; la regla dice que sólo en un workflow  (source/gestion/pm/thyrox/iniciativas/implementar-base-datos-agentes/hallazgos/hallazgo-H-DOCS-500-el-effort-se-declara-en-el-frontmatter-del-agente.rst)
+H-DOCS-1270  [docs/repartir-iniciativas-por-dominio]  finding/MEDIA  el recorrido sin acotar que vivio 4 h 54 min sin que nada lo viera  (source/gestion/pm/docs/iniciativas/repartir-iniciativas-por-dominio/hallazgos/hallazgo-H-DOCS-1270-recorrido-sin-acotar-invisible-al-ledger.rst)
+H-THYROX-403  [provider/provider-selection-migration]  finding/MEDIA  El traductor Messages→OpenAI reenvía reasoning_content del historial; Qwen pide no hacerlo  (src/packages/provider/src/proxy/translators/requestMessagesToOpenAI.ts:436)
+Total: 12 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: qualification
+#12  pending      [thyrox]  Qualify a local model for a task class with a consumer suite
+#67  completed    [thyrox]  Recommend a qualified local model first and fall back to claude-cli declared
+#69  in_progress  [thyrox]  Declare installed Ollama models in the catalog and qualify them by suite
+#70  in_progress  [thyrox]  Fine-tune local models by RLVR with the qualification suite as reward
+#72  pending      [thyrox]  Qualify a task class by doing its work, not only by tool-call format
+#77  completed    [thyrox]  Split protocol qualification from task qualification and mark contended measurements
+#78  pending      [thyrox]  Separate durable model specifications from local model observations
+#82  completed    [thyrox]  Declare a published Qwen2.5-Coder-7B Q4_K_M GGUF with exact revision and digest
+#111  pending      [thyrox]  Qualify API candidates without assuming Ollama, keeping protocol and task suites separate
+#114  pending      [thyrox]  Run the same task qualification suite on DeepSeek Flash, the Qwen candidate, a local model and Claude as baseline
+#116  pending      [gen]  Route candidates with the existing Thompson-sampling bandit: state=task class, action=candidate, reward=verified outcome
+#135  pending      [thyrox]  Accept Ollama artifacts by digest and qualify each capability independently
+#136  pending      [thyrox]  Resolve semantic-search embeddings through a qualified local or API provider
+#138  pending      [thyrox]  Measure how much of A1-A7 the local Qwen models can execute
+#143  pending      [gen]  Distillation experiment on a sample of an external reasoning-trace dataset, only if retrieval leaves a gap
+== hallazgos: qualification
+H-THYROX-415  [thyrox/local-bootstrap]  finding/MEDIA  QualificationStore sólo agrega: la corrección de una medición se hizo fuera de su autoridad  (src/packages/local-models/qualificationStore.ts)
+H-THYROX-404  [thyrox/provider-selection]  finding/ALTA  Model decisions ignore our own measured history: Thompson priors are per plan, execution_records has no writer  (src/session/task_continuation.py:290-314; src/packages/execution-records/executionRecordSql.ts:14-45; src/packages/model-artifacts/localModelHome.ts:45; .claude/jobs/mechanism-registry-run2-20261002T062448/outputs/salida.log)
+H-THYROX-413  [thyrox/local-bootstrap]  finding/ALTA  Tras la compactación, el controlador rompió tres invariantes que sólo vivían en la conversación: subagente Explore, payload fuera del ledger, dependencia del DAG sin medir  (src/hooks/tool_use_preflight.py)
+H-THYROX-419  [thyrox/local-bootstrap]  finding/ALTA  Search Existing acotado a src/packages y excepción bootstrap ampliada por el controlador ante cada bloqueo  (.claude/workbench/math-specialist-capability-20261002T211311/outputs/search-existing-matrix.md; 65a0e2b60; e18759949)
+H-THYROX-410  [thyrox/local-bootstrap]  finding/ALTA  L1 nunca pudo correr local: plan con candidatos API escritos a mano, delegate.sh que fuerza Token Plan, ninguna cualificación local suficiente y thyrox-ollama 'running' con el proceso muerto  (thyrox: src/session/task_continuation.py)
+DEC-THYROX-007-1-17-0  [thyrox/embedding-route-and-local-workers]  decision/-  ADR-007 1.17.0: a managed execution is reclaimable only after its required execution record is durable  (src/packages/podman-execution/executionCommand.ts)
+Total: 6 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: managed worker
+Total: 0 (alcance medido: 2424 tarea(s) de 9 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: managed worker
+Total: 0 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: worktree lifecycle
+Total: 0 (alcance medido: 2424 tarea(s) de 9 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: worktree lifecycle
+DEC-THYROX-007-1-17-0  [thyrox/embedding-route-and-local-workers]  decision/-  ADR-007 1.17.0: a managed execution is reclaimable only after its required execution record is durable  (src/packages/podman-execution/executionCommand.ts)
+Total: 1 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: search existing
+#1  pending      [thyrox]  Block the agent identity on a fresh thyrox clone
+#151  pending      [thyrox]  Select a local math specialist by measured capability, not by name
+#154  pending      [thyrox]  Name the semantic corpus schema by what it owns: semantic, not semantic_search
+#157  pending      [thyrox]  Analyse the identity migration to kaupamex-ai before any rename
+Total: 4 (alcance medido: 2424 tarea(s) de 9 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: search existing
+H-THYROX-435  [thyrox/semantic-corpus]  finding/BAJA  El esquema semantic_search no lo fija ninguna autoridad: es un default de código; renombrarlo a semantic espera su Search Existing completo  (src/packages/semantic-search/ingestCommand.ts)
+H-THYROX-422  [thyrox/thyrox/local-bootstrap]  finding/MEDIA  El banco del registro de mecanismos cita TASK-THYROX-0769, que en el store es otra tarea  (.claude/workbench/mechanism-registry-20261002T061646/README.md:1; .claude/workbench/math-specialist-capability-20261002T211311/outputs/search-existing-repo-wide-v3.md §7)
+H-THYROX-413  [thyrox/local-bootstrap]  finding/ALTA  Tras la compactación, el controlador rompió tres invariantes que sólo vivían en la conversación: subagente Explore, payload fuera del ledger, dependencia del DAG sin medir  (src/hooks/tool_use_preflight.py)
+H-THYROX-419  [thyrox/local-bootstrap]  finding/ALTA  Search Existing acotado a src/packages y excepción bootstrap ampliada por el controlador ante cada bloqueo  (.claude/workbench/math-specialist-capability-20261002T211311/outputs/search-existing-matrix.md; 65a0e2b60; e18759949)
+H-THYROX-437  [thyrox/postgres-corpus-disk-reclaim]  finding/MEDIA  task_continuation duplica el ciclo de worktree de item_worktree.sh; un ítem aceptado fuera de su flujo deja el árbol huérfano  (src/session/item_worktree.sh)
+ERR-076  [thyrox/embedding-route-and-local-workers]  finding/MEDIA  ERR: verified an artifact with an ad-hoc sha256sum instead of the existing local-models mechanisms  (src/packages/local-models/huggingFaceSource.ts)
+H-THYROX-404  [thyrox/provider-selection]  finding/ALTA  Model decisions ignore our own measured history: Thompson priors are per plan, execution_records has no writer  (src/session/task_continuation.py:290-314; src/packages/execution-records/executionRecordSql.ts:14-45; src/packages/model-artifacts/localModelHome.ts:45; .claude/jobs/mechanism-registry-run2-20261002T062448/outputs/salida.log)
+Total: 7 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: dataset acquisition
+Total: 0 (alcance medido: 2424 tarea(s) de 9 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: dataset acquisition
+Total: 0 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: transformation
+#89  completed    [api]  Declare the bulk-transformation form in the eventos README and route the pending sweeps to it
+#89  completed    [docs]  Declare the bulk-transformation form in the eventos README and route the pending sweeps to it
+#143  pending      [gen]  Distillation experiment on a sample of an external reasoning-trace dataset, only if retrieval leaves a gap
+#1050  completed    [docs]  Decidir si los 54 manifiestos en español del corpus de eventos se renombran
+Total: 4 (alcance medido: 2424 tarea(s) de 9 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: transformation
+Total: 0 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: normalization
+Total: 0 (alcance medido: 2424 tarea(s) de 9 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: normalization
+H-THYROX-443  [identity/identity-migration-analysis]  decision/ALTA  Project identity declared: ecosystem kaupamex, canonical kaupamex-ai, legacy thyrox; history immutable, normalization in metadata  (.claude/workbench/identity-migration-analysis-20261003T072106/outputs/identity-declaration.json)
+Total: 1 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: chunking
+Total: 0 (alcance medido: 2424 tarea(s) de 9 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: chunking
+Total: 0 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: semantic ingestion
+#158  pending      [thyrox]  Stamp the kaupamex-ai identity at semantic ingestion before any bulk ingest
+Total: 1 (alcance medido: 2424 tarea(s) de 9 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: semantic ingestion
+H-THYROX-443  [identity/identity-migration-analysis]  decision/ALTA  Project identity declared: ecosystem kaupamex, canonical kaupamex-ai, legacy thyrox; history immutable, normalization in metadata  (.claude/workbench/identity-migration-analysis-20261003T072106/outputs/identity-declaration.json)
+Total: 1 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: embeddings
+#44  completed    [thyrox]  Persist the semantic corpus: documents, chunks and derived embeddings
+#136  pending      [thyrox]  Resolve semantic-search embeddings through a qualified local or API provider
+#212  pending      [thyrox]  Datos D5 — capacidad vectorial y FTS (decisión: qué vectorizar y modelo de embeddings)
+#315  pending      [thyrox]  Semantic search worker y API (embeddings, retrieval pgvector, reranking) y consumidor RAG
+Total: 4 (alcance medido: 2424 tarea(s) de 9 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: embeddings
+DEC-THYROX-007-1-17-0  [thyrox/embedding-route-and-local-workers]  decision/-  ADR-007 1.17.0: a managed execution is reclaimable only after its required execution record is durable  (src/packages/podman-execution/executionCommand.ts)
+Total: 1 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== tareas: corpus provenance
+Total: 0 (alcance medido: 2424 tarea(s) de 9 sesion/es en /home/user/thyrox/agent-results/agent_store.sqlite3)
+== hallazgos: corpus provenance
+H-DOCS-348  [docs/automatizar-gestion-y-control-de-documentos]  finding/MEDIA  se vendorizó un corpus cuya exclusión ya estaba medida  (source/gestion/pm/docs/iniciativas/automatizar-gestion-y-control-de-documentos/hallazgos/hallazgo-H-DOCS-348-se-vendorizo-un-corpus-cuya-exclusion-ya-estaba-medida.rst)
+Total: 1 (/home/user/thyrox/agent-results/agent_store.sqlite3)

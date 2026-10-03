@@ -7,7 +7,7 @@ import { attentionShapeOf } from '@thyrox/model-artifacts/memoryEstimate.ts'
 import type { ModelQualification } from '@thyrox/model-artifacts/modelQualification.ts'
 import { thyroxModelName } from '@thyrox/model-artifacts/modelName.ts'
 import { recommend, recommendExecution } from '../src/cost/policy.ts'
-import { ExecutionPolicyError, parseExecutionPolicy } from '../src/cost/executionPolicy.ts'
+import { ExecutionPolicyError, allowsEntry, parseExecutionPolicy } from '../src/cost/executionPolicy.ts'
 
 const CONTEXT_TOKENS = 32_000
 const ATTENTION = attentionShapeOf({
@@ -228,5 +228,42 @@ describe('la política nombra lo que excluye y distingue la fuente (TASK-THYROX-
 
   test('una fuente desconocida se rehúsa al leer la política', () => {
     expect(() => policyFor({ repository: 'library/qwen2.5-7b-instruct', source: 'docker' })).toThrow(ExecutionPolicyError)
+  })
+})
+
+describe('la política canónica y el Qwen3-4B instalado en el clon (TASK-THYROX-0912)', () => {
+  // El modelo que el clon tiene instalado y publicado es el GGUF de Hugging
+  // Face: la biblioteca de Ollama no es descargable desde este anfitrión. La
+  // política versionada lo admite como modelo local sin abrir el respaldo.
+  const CANONICAL = parseExecutionPolicy(readFileSync(resolve(import.meta.dir, '../../../session/execution_policy.json'), 'utf8'))
+  const HF_QWEN = catalogEntry('Qwen/Qwen3-4B-GGUF', 'e')
+  const NOT_ALLOWED = catalogEntry('Qwen/Qwen2.5-7B-Instruct-GGUF', 'f')
+  /** La necesidad medida de un turno de `thyrox -p` en A6. */
+  const A6_PROFILE = { contextTokens: 24_663 }
+  const qualifiedAt = (entry: ModelCatalogEntry, contextTokens: number) =>
+    [protocol(entry.name), qualification(entry.name, { contextTokens })]
+
+  test('admite el Qwen3-4B de Hugging Face en Q4_K_M', () => {
+    expect(allowsEntry(CANONICAL, HF_QWEN)).toBe(true)
+  })
+
+  test('cualificado con contexto suficiente, es el candidato local: ollama, sin respaldo', () => {
+    const result = recommendExecution('mecanica', A6_PROFILE, { entries: [HF_QWEN], qualifications: qualifiedAt(HF_QWEN, 32_768) }, CANONICAL)
+    expect([result.runtime, result.runtime === 'ollama' ? result.model : '', 'fallbackReason' in result])
+      .toEqual(['ollama', HF_QWEN.name, false])
+  })
+
+  test('con una cualificación de 8192 no alcanza la necesidad de A6: blocked, nunca claude-cli', () => {
+    const result = recommendExecution('mecanica', A6_PROFILE, { entries: [HF_QWEN], qualifications: qualifiedAt(HF_QWEN, 8_192) }, CANONICAL)
+    expect(result.runtime).toBe('blocked')
+  })
+
+  test('un modelo local que la política no admite queda blocked, nunca claude-cli', () => {
+    const result = recommendExecution('mecanica', A6_PROFILE, { entries: [NOT_ALLOWED], qualifications: qualifiedAt(NOT_ALLOWED, 32_768) }, CANONICAL)
+    expect(result.runtime).toBe('blocked')
+  })
+
+  test('el respaldo sigue cerrado', () => {
+    expect(CANONICAL.fallback.enabled).toBe(false)
   })
 })

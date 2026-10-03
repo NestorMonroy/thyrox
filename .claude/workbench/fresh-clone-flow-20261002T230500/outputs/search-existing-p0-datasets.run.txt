@@ -1,0 +1,12 @@
+gawk: warning: escape sequence `\(' treated as plain `('
+gawk: warning: escape sequence `\.' treated as plain `.'
+gawk: warning: escape sequence `\.' treated as plain `.'
+gawk: warning: escape sequence `\(' treated as plain `('
+gawk: warning: escape sequence `\(' treated as plain `('
+   314 .claude/workbench/fresh-clone-flow-20261002T230500/outputs/search-existing-p0-datasets/A-candidates.tsv
+  5635 .claude/workbench/fresh-clone-flow-20261002T230500/outputs/search-existing-p0-datasets/A-hits.tsv
+  3131 .claude/workbench/fresh-clone-flow-20261002T230500/outputs/search-existing-p0-datasets/B-definitions.tsv
+   309 .claude/workbench/fresh-clone-flow-20261002T230500/outputs/search-existing-p0-datasets/C-consumers.tsv
+   118 .claude/workbench/fresh-clone-flow-20261002T230500/outputs/search-existing-p0-datasets/D-stores.txt
+     4 .claude/workbench/fresh-clone-flow-20261002T230500/outputs/search-existing-p0-datasets/D-workbenches.txt
+  9511 total

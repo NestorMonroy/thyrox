@@ -1,0 +1,15 @@
+# concepto	regex (git grep -iE, un término por alternativa)
+local-only	local[-_ ]?only|localOnly|managed[-_ ]only|MANAGED_ONLY|allowed.*runtime|runtime.*ollama
+provider-fallback	fallback|fallbackReason|POLICY_FALLBACK|respaldo|claude-cli|unmanagedPayloads
+model-selection	recommendExecution|agent-recommend|recommend\(|qualifiedModels|selectModel|modelSelection
+qualification	qualif|QualificationKind|qualificationStore|qualifyModel|appendQualification
+managed-worker	ExecutionUnit|ExecutionGrant|executionAuthorization|managed[-_ ]execution|managedExecution|podman-execution-execute
+worktree-lifecycle	worktree|item_worktree|pool_integrate|task_continuation|retire.*worktree
+search-existing	search[-_ ]existing|searchExisting|mechanisms\.tsv|mechanism[-_ ]search
+dataset-acquisition	dataset|huggingface\.co|hf_hub|datasets/|parquet|download.*cache|source[-_ ]acquisition
+transformation	transform|transformer|thyrox-transformers-runtime|preprocess
+normalization	normaliz|canonicaliz|cleanText|clean_text
+chunking	chunk|splitText|split_text|segment(ation|er)
+semantic-ingestion	semantic[-_ ]search[-_ ]ingest|findingIngestion|ingest\(|SemanticSearchStore|ingestion
+embeddings	admittedEmbed|embedding|embed\(|embedding_spaces|pgvector|semantic_search_worker
+corpus-provenance	provenance|corpus[-_ ]?(identity|version)|contentHash|content_hash|sha256.*corpus|PROVENANCE

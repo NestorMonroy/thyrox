@@ -2,7 +2,8 @@
 # Search Existing repo-wide, cuatro pasadas, sólo lectura. Adaptado de
 # .claude/workbench/math-specialist-capability-20261002T211311/probes/search_existing_repo_wide.sh
 # con los conceptos de este banco: identidad del commit, clon nuevo, preflight.
-# Uso: search_existing_repo_wide.sh <salida>
+# Uso: search_existing_repo_wide.sh <salida> [<conceptos.tsv>]
+#   conceptos.tsv: una línea por concepto, `nombre<TAB>regex`; sin él, los tres de este banco.
 set -uo pipefail
 ROOT="${THYROX_ROOT:-/home/user/thyrox}" O="$1"
 mkdir -p "$O"
@@ -11,13 +12,22 @@ EXCLUDES=(':(exclude)_references' ':(exclude)_archived' ':(exclude)*.lock' ':(ex
           ':(exclude).claude/workbench' ':(exclude)agent-results' ':(exclude).claude/cache' ':(exclude).claude/build-logs' ':(exclude).claude/baselines' ':(exclude)**/dist/**')
 
 declare -A TERMS
-TERMS[identity]='commit[-_ ]?identity|GIT_COMMITTER|GIT_AUTHOR|noreply@anthropic|user\.email|user\.name|\bcommitter\b|AGENT_EMAILS|Co-Authored-By|THYROX_COMMIT_|gitAuthorIdentity'
-TERMS[bootstrap]='fresh[-_ ]clone|clon nuevo|clon reci[eé]n|bootstrap|onboarding|first[-_ ]run|install-hooks|hooksPath|githooks_activos|ensure_homes|write-env'
-TERMS[preflight]='preflight|toolchain_require|PROBES=|check-toolchain-ready|SIN MEDIR'
+CONCEPTS=()
+if [[ -n "${2:-}" ]]; then
+  while IFS=$'\t' read -r concept regex; do
+    [[ -z "$concept" || "$concept" == \#* ]] && continue
+    TERMS[$concept]="$regex"; CONCEPTS+=("$concept")
+  done < "$2"
+else
+  TERMS[identity]='commit[-_ ]?identity|GIT_COMMITTER|GIT_AUTHOR|noreply@anthropic|user\.email|user\.name|\bcommitter\b|AGENT_EMAILS|Co-Authored-By|THYROX_COMMIT_|gitAuthorIdentity'
+  TERMS[bootstrap]='fresh[-_ ]clone|clon nuevo|clon reci[eé]n|bootstrap|onboarding|first[-_ ]run|install-hooks|hooksPath|githooks_activos|ensure_homes|write-env'
+  TERMS[preflight]='preflight|toolchain_require|PROBES=|check-toolchain-ready|SIN MEDIR'
+  CONCEPTS=(identity bootstrap preflight)
+fi
 
 # A — comportamiento: un término por consulta, para puntuar coincidencia.
 : > "$O/A-hits.tsv"
-for concept in identity bootstrap preflight; do
+for concept in "${CONCEPTS[@]}"; do
     IFS='|' read -ra list <<< "${TERMS[$concept]}"
     for term in "${list[@]}"; do
         git grep -lIiE "$term" -- . "${EXCLUDES[@]}" 2>/dev/null \
@@ -47,11 +57,15 @@ done
 
 # D — evidencia durable: tareas, hallazgos y bancos.
 : > "$O/D-stores.txt"
-for q in "commit identity" committer "agent identity" "fresh clone" "clon nuevo" bootstrap hooksPath preflight "generate_bin" gawk; do
+QUERIES=("commit identity" committer "agent identity" "fresh clone" "clon nuevo" bootstrap hooksPath preflight "generate_bin" gawk)
+[[ -n "${2:-}" ]] && { QUERIES=(); for c in "${CONCEPTS[@]}"; do QUERIES+=("${c//-/ }"); done; }
+for q in "${QUERIES[@]}"; do
     printf '== tareas: %s\n' "$q" >> "$O/D-stores.txt"
     bash bin/agent_store buscar-tareas --query "$q" 2>&1 | head -15 >> "$O/D-stores.txt"
     printf '== hallazgos: %s\n' "$q" >> "$O/D-stores.txt"
     bash bin/agent_store buscar-hallazgos --query "$q" 2>&1 | head -15 >> "$O/D-stores.txt"
 done
-ls .claude/workbench | grep -iE 'identity|identidad|committer|clone|clon|bootstrap|onboard|preflight|toolchain|githook|install' > "$O/D-workbenches.txt"
+WB_PATTERN="identity|identidad|committer|clone|clon|bootstrap|onboard|preflight|toolchain|githook|install"
+[[ -n "${2:-}" ]] && WB_PATTERN="$(printf '%s|' "${CONCEPTS[@]}" | sed 's/|$//')"
+ls .claude/workbench | grep -iE "$WB_PATTERN" > "$O/D-workbenches.txt"
 wc -l "$O"/*.tsv "$O"/*.txt
