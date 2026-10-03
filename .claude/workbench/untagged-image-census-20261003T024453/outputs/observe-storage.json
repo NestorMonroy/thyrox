@@ -1,0 +1,5 @@
+{
+ "graphRoot": "/var/lib/containers/storage",
+ "databaseBackend": "sqlite",
+ "version": "4.9.3"
+}
