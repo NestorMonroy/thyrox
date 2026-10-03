@@ -45,6 +45,17 @@ export interface ResidencyControllerDependencies {
   readonly health: HealthPolicy
   /** Inyectable para que las pruebas no esperen de verdad. */
   readonly sleep?: (ms: number) => Promise<void>
+  /** La holgura de RAM medida; sin ella el controlador no mide antes de establecer. */
+  readonly ramHeadroom?: RamHeadroom
+}
+
+/**
+ * La RAM que queda para una residencia nueva, en bytes: lo libre menos lo
+ * comprometido sin usar (`resource_admission headroom-ram`). `undefined` si
+ * no se pudo medir.
+ */
+export interface RamHeadroom {
+  availableBytes(): Promise<number | undefined>
 }
 
 export type ResidencyStage = 'lease' | 'reserve' | 'grant' | 'materialize' | 'generation' | 'health' | 'prepare' | 'verify' | 'load' | 'observe' | 'allocate'
@@ -141,7 +152,29 @@ export class ResidencyController {
     if (residency && residency.state !== 'absent') {
       return { status: 'refused', stage: 'lease', reason: `la residencia ${plan.residencyKey} está ${residency.state}: no admite peticiones nuevas` }
     }
+    const room = await this.makeRoom(plan)
+    if (room) return { status: 'refused', stage: 'reserve', reason: room }
     return this.establish(plan)
+  }
+
+  /**
+   * Mide la RAM antes de establecer una residencia y, si no cabe, desaloja las
+   * ocupadas sin peticiones activas, de la más antigua a la más nueva, volviendo
+   * a medir tras cada una (H-THYROX-448). Devuelve la causa del rechazo, o nada
+   * si cabe. Sin medición rehúsa: admitir a ciegas es lo que agotó el anfitrión.
+   */
+  private async makeRoom(plan: ExecutionPlan): Promise<string | undefined> {
+    const { ramHeadroom, registry } = this.dependencies
+    if (!ramHeadroom || plan.memoryBytes === undefined) return undefined
+    let available = await ramHeadroom.availableBytes()
+    for (const idle of registry.list().filter(r => r.state === 'resident' && r.activeRequests === 0 && r.residencyKey !== plan.residencyKey)) {
+      if (available === undefined || available >= plan.memoryBytes) break
+      await this.evict(idle.residencyKey)
+      available = await ramHeadroom.availableBytes()
+    }
+    if (available === undefined) return `no se pudo medir la RAM libre para ${plan.residencyKey}`
+    if (available >= plan.memoryBytes) return undefined
+    return `la residencia ${plan.residencyKey} necesita ${plan.memoryBytes} bytes de RAM y quedan ${available} sin residencias ociosas que desalojar`
   }
 
   /** Suelta la VRAM de la petición y descuenta la residencia. */

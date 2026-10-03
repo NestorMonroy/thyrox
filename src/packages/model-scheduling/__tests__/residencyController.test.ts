@@ -238,3 +238,64 @@ describe('ResidencyController: la admisión lleva el grant de su residencia', ()
     expect(second.grant).toEqual(first.grant)
   })
 })
+
+// H-THYROX-448: dos residencias de Qwen (ctx24663 ociosa y ctx32768) dejaron
+// ~1 GB libre en un anfitrión de 16 GB. Antes de establecer otra residencia el
+// controlador mide la holgura de RAM y, si no cabe, desaloja las ociosas.
+describe('ResidencyController: la RAM se mide y se libera antes de establecer otra residencia', () => {
+  const GIB = 1024 ** 3
+  const TOTAL = 10 * GIB
+  const PER_RESIDENCY = 7 * GIB
+
+  /** La RAM libre: la total menos la de cada residencia que no está ausente. */
+  function headroomFrom(source: ResidencyRegistry, measured = true) {
+    return {
+      availableBytes: async () => measured
+        ? TOTAL - source.list().filter(r => r.state !== 'absent').length * PER_RESIDENCY
+        : undefined,
+    }
+  }
+
+  function memoryController(measured = true): ResidencyController {
+    return new ResidencyController({
+      coordination, ledger, issuer, primitive, runtime, registry, leaseTtlMs: 60_000,
+      health: { attempts: HEALTH_ATTEMPTS, intervalMs: 50 },
+      sleep: async ms => { sleeps.push(ms) },
+      ramHeadroom: headroomFrom(registry, measured),
+    })
+  }
+
+  function memoryPlan(residencyKey: string, requestId: string): ExecutionPlan {
+    return { ...PLAN, residencyKey, requestId, memoryBytes: PER_RESIDENCY }
+  }
+
+  test('una residencia nueva que no cabe desaloja la ociosa antes de materializar', async () => {
+    const memory = memoryController()
+    const first = await memory.admit(memoryPlan('residency/qwen/ctx24663', 'request-a'))
+    if (first.status !== 'admitted') throw new Error(JSON.stringify(first))
+    await memory.finish(first)
+    const second = await memory.admit(memoryPlan('residency/qwen/ctx32768', 'request-b'))
+    expect(second.status).toBe('admitted')
+    expect(registry.get('residency/qwen/ctx24663')?.state ?? 'absent').toBe('absent')
+    expect(registry.get('residency/qwen/ctx32768')?.state).toBe('resident')
+  })
+
+  test('una residencia con peticiones activas no se desaloja: se rehúsa en reserve con las cifras', async () => {
+    const memory = memoryController()
+    const busy = await memory.admit(memoryPlan('residency/qwen/ctx24663', 'request-a'))
+    expect(busy.status).toBe('admitted')
+    const refused = await memory.admit(memoryPlan('residency/qwen/ctx32768', 'request-b'))
+    expect(refused.status).toBe('refused')
+    if (refused.status === 'refused') {
+      expect(refused.stage).toBe('reserve')
+      expect(refused.reason).toContain(String(PER_RESIDENCY))
+    }
+    expect(registry.get('residency/qwen/ctx24663')?.state).toBe('resident')
+  })
+
+  test('sin medición de la RAM no se establece nada', async () => {
+    const refused = await memoryController(false).admit(memoryPlan('residency/qwen/ctx32768', 'request-b'))
+    expect(refused.status).toBe('refused')
+    expect(registry.list()).toEqual([])
+  })
+})

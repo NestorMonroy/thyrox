@@ -163,6 +163,7 @@ export class ModelSchedulingCoordinator {
       requestVramMib: decision.requestVramMib,
       contextLength: resolved.contextLength,
       kvCacheType: resolved.kvCacheType,
+      memoryBytes: resolved.memoryProfile.totalBytes,
     }
   }
 

@@ -19,3 +19,18 @@ La reserva de RAM se indexa por pid vivo. Opciones medibles:
 2. Una reserva por residencia en `resource_admission` con un dueño no-pid: EXTEND de esa autoridad (más amplio).
 
 Recomendación: 1, por alcance; política inicial resultante en este anfitrión: un modelo generativo grande residente.
+
+## Implementado (opción 1)
+
+| eslabón | prueba | RED | GREEN | anulación |
+|---|---|---|---|---|
+| `resource_admission headroom-ram` (sólo lectura) | caso 26 de `test_resource_admission.py` | 1 falla | 83/83 | sin descontar reservas: caen exactamente las 2 del descuento |
+| `ExecutionPlan.memoryBytes` ← `memoryProfile.totalBytes` (`planOf`) | `hostCoordinator.test.ts` | 1 falla | 10/10 | cae exactamente esa |
+| `ResidencyController` mide y desaloja ociosas antes de `establish` (`makeRoom`, puerto `RamHeadroom`) | 3 pruebas en `residencyController.test.ts` | 3 fallas | 19/19 | sin `makeRoom`: caen las 3; sin el `evict`: cae sólo la del desalojo |
+| `ResourceAdmissionCli.availableBytes` (adaptador de la autoridad) | `local-models/__tests__/resourceAdmission.test.ts` | 2 fallas | 2/2 | — (adaptador nuevo) |
+| composición: `ramHeadroom` por defecto = `bin/resource_admission` | `hostCoordinatorComposition.test.ts` 7/7 | — | — | se verifica en real |
+
+Suites: model-scheduling 136/136; model-artifacts 218/218; local-models 259 pass / 5 fail, **los mismos 5 en HEAD**
+(257/5, `local-models-qualify` sólo falla en la corrida completa del paquete; por separado 8/8 en los dos árboles).
+*Ciega a*: la carrera con otros admisores entre medir y cargar; la memoria real del proceso frente a la estimada.
+Pendiente: el control real (un coordinador vivo que desaloje la residencia ociosa al pedir otro contexto).

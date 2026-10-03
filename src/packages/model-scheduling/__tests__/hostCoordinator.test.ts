@@ -18,6 +18,8 @@ import {
 import { type AdmissionTicket, ModelSchedulingCoordinator, residencyKeyOf } from '../hostCoordinator.ts'
 import { ResidencyRegistry } from '../residency.ts'
 import { ResidencyController } from '../residencyController.ts'
+import type { ExecutionPlan } from '../scheduler.ts'
+import { resolveModel } from '@thyrox/model-artifacts/modelResolver.ts'
 import { FakeCoordination, FakeIssuer, FakeLedger, FakePrimitive, FakeRuntime, type Journal } from '../testing/schedulerFakes.ts'
 
 const QWEN_Q4 = catalogEntry()
@@ -136,5 +138,28 @@ describe('residencyKeyOf', () => {
     expect(residencyKeyOf(qwen, { kind: 'cpu' }, 16_384)).not.toBe(key)
     expect(residencyKeyOf(qwen, { kind: 'gpu', devices: ['GPU-0'] }, 8_192)).not.toBe(key)
     expect(residencyKeyOf(resolvedArtifact({ repository: DEEPSEEK_REPOSITORY, revision: DEEPSEEK_REVISION }), { kind: 'cpu' }, 8_192)).not.toBe(key)
+  })
+})
+
+// H-THYROX-448: el resolver calcula la memoria servida (`memoryProfile`) y el
+// plan no la llevaba, así que el controlador no podía medir antes de establecer.
+describe('ModelSchedulingCoordinator: el plan lleva la memoria que el resolver calculó', () => {
+  test('memoryBytes es el total del memoryProfile de la identidad resuelta', async () => {
+    let seen: ExecutionPlan | undefined
+    const spying = new ModelSchedulingCoordinator({
+      catalogEntries: async () => [QWEN_Q4],
+      place: () => CPU_PLACEMENT,
+      controller: {
+        admit: async (plan: ExecutionPlan) => { seen = plan; return { status: 'refused', stage: 'reserve', reason: 'espía' } },
+        finish: async () => {},
+        evict: async () => ({ status: 'refused', reason: 'espía' }),
+      } as unknown as ResidencyController,
+      owner: 'host-coordinator',
+      newAdmissionId: () => 'admission-1',
+    })
+    await spying.admit({ requestId: 'request-1', client: 'proxy-a', model: QWEN_Q4.name, contextLength: 4_096 })
+    const expected = resolveModel({ model: QWEN_Q4.name, contextLength: 4_096 }, [QWEN_Q4]).memoryProfile.totalBytes
+    expect(expected).toBeGreaterThan(0)
+    expect(seen?.memoryBytes).toBe(expected)
   })
 })

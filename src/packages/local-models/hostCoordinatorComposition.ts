@@ -33,11 +33,12 @@ import { MemoryGrantIssuer } from '@thyrox/model-scheduling/memoryGrantIssuer.ts
 import { createMemoryResidencyVramLedger } from '@thyrox/model-scheduling/memoryVramLedger.ts'
 import { PodmanModelUnitMaterializer } from '@thyrox/model-scheduling/podmanModelUnitMaterializer.ts'
 import { ResidencyRegistry } from '@thyrox/model-scheduling/residency.ts'
-import { ResidencyController } from '@thyrox/model-scheduling/residencyController.ts'
+import { ResidencyController, type RamHeadroom } from '@thyrox/model-scheduling/residencyController.ts'
 import { createPodmanExecutor, type PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
 import type { ContainerOwner } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
 
 import { freeLoopbackPort } from './loopbackPort.ts'
+import { ResourceAdmissionCli } from './resourceAdmission.ts'
 import type { Environment } from './managedOllama.ts'
 import { OllamaRuntimeAdapter } from './ollamaRuntimeAdapter.ts'
 import { TransformersRuntimeAdapter } from './transformersRuntimeAdapter.ts'
@@ -73,7 +74,7 @@ export type ComposedHostCoordinator = {
   owner: ContainerOwner
 }
 
-export type CompositionDependencies = { podman?: PodmanExecutor }
+export type CompositionDependencies = { podman?: PodmanExecutor; ramHeadroom?: RamHeadroom }
 
 /** El runtime que sirve cada formato de artefacto: el runtime sale del artefacto, no del llamador. */
 const RUNTIME_BY_FORMAT: Readonly<Record<ArtifactFormat, ModelRuntime>> = {
@@ -128,6 +129,9 @@ export function composeHostCoordinatorService(env: Environment, thyroxRoot: stri
     registry: new ResidencyRegistry(),
     leaseTtlMs: LEASE_TTL_MS,
     health: HEALTH,
+    // La RAM se mide antes de establecer otra residencia, y las ociosas se
+    // desalojan si no cabe (H-THYROX-448): la holgura es la de `admit-ram`.
+    ramHeadroom: dependencies.ramHeadroom ?? new ResourceAdmissionCli(join(thyroxRoot, 'bin', 'resource_admission'), process.pid),
   })
   const catalogPath = localModelHome(env, thyroxRoot).catalog
   const coordinator = new ModelSchedulingCoordinator({

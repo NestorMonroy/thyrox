@@ -33,6 +33,12 @@ export interface ExecutionPlan {
   readonly requestVramMib: number
   readonly contextLength: number
   readonly kvCacheType: KvCacheType
+  /**
+   * La RAM que la residencia necesitará servida (`memoryProfile` del
+   * resolver). Con ella el controlador mide y libera antes de establecerla
+   * (H-THYROX-448); sin ella, no mide.
+   */
+  readonly memoryBytes?: number
 }
 
 export type IssueOutcome = { readonly status: 'issued'; readonly grant: ExecutionGrant } | { readonly status: 'failed'; readonly reason: string }

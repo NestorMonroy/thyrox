@@ -35,6 +35,17 @@ export class ResourceAdmissionCli implements ResourceAdmission {
       '--memory-limit-kb', needKib, '--timeout', IMMEDIATE_DECISION])
   }
 
+  /**
+   * La holgura de RAM en bytes con que `admit-ram` decidiría ahora
+   * (`headroom-ram`); sin medición, nada. El coordinador de modelos la lee
+   * para desalojar residencias ociosas antes de establecer otra (H-THYROX-448).
+   */
+  async availableBytes(): Promise<number | undefined> {
+    const result = await runCommand(this.admissionBin, ['headroom-ram'])
+    const kib = result.stdout.trim()
+    return result.exitCode === EXIT_ADMITTED && /^-?\d+$/.test(kib) ? Number(kib) * BYTES_PER_KIB : undefined
+  }
+
   async releaseAll(): Promise<void> {
     await runCommand(this.admissionBin, ['disk-release', '--owner', this.owner()])
     await runCommand(this.admissionBin, ['release', '--owner', this.owner()])
