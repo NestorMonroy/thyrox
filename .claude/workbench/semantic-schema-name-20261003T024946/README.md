@@ -32,3 +32,13 @@ versionados; `src`+`tests`+`bin` son 91 MB; libre: 2 334 MB. Ninguna ruta de
 worker (`headless-pool --isolation worktree`, `task_continuation`) admite
 checkout disperso (0 hits de `sparse` en `src/session`). Se desbloquea con
 headroom (P0) o con checkout disperso en la ruta del worker.
+
+## Estado: SEARCH_INCOMPLETE (2026-10-03)
+
+La tabla de arriba buscó el literal `semantic_search`; no es un Search Existing
+completo (`.claude/rules/search-existing-antes-de-construir.md`). Antes de que
+un worker escriba producto faltan: todos los consumidores SQL del esquema
+(`corpusSql.ts`, `spaces.ts`, `analysisRuns.ts`, `vectorSql.ts`, las sondas que
+lo nombran), las migraciones y su tabla, la configuración por entorno, las
+pruebas, y los ADR y hallazgos del corpus. La corrección de H-THYROX-435 ya
+consta: la ruta de pool sí admite checkout disperso.

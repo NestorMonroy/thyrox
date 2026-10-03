@@ -117,3 +117,13 @@ fugas. `promoteCandidate` sigue siendo sólo `permanent`.
 - **Inspección de las 2 nuevas:** `observe` no tiene verbo de imagen
   (inspect/history); `inspectImage`/`imageHistory` existen en
   `podmanObservation.ts` y se exponen en la misma tarea.
+
+## Estado de TASK-THYROX-0915: SEARCH_INCOMPLETE (2026-10-03)
+
+«`RegistryWriter.push` tiene un solo llamador» no basta para decidir EXTEND con
+un segundo llamador. Antes de que un worker escriba producto: Search Existing
+completo sobre ImageRegistry, `RegistryWriter`, promoción, preservación,
+publicación de caché y de artefactos, espejo OCI, ciclo de vida, imagen de
+evidencia, copia remota y distribución, con autoridad, consumidores, pruebas,
+tareas, hallazgos y ADR (`.claude/rules/search-existing-antes-de-construir.md`).
+`probes/build_census.py` queda marcado EXPERIMENTAL.

@@ -1,5 +1,8 @@
 """¿Los originales de la copia huérfana están en el HEAD empujado?
 
+EXPERIMENTAL — medición exploratoria escrita antes de cerrar Search Existing:
+no es autoridad, ni producto, ni evidencia de aceptación por sí sola.
+
 Lee el informe de `orphan_copy_redundancy.py` y compara cada blob con el
 índice de `git ls-tree -r <ref>` en el mismo camino relativo al árbol
 principal. Sólo lee.

@@ -1,5 +1,8 @@
 """Cuánto de una copia huérfana de `.claude/` ya está preservado en otro sitio.
 
+EXPERIMENTAL — medición exploratoria escrita antes de cerrar Search Existing:
+no es autoridad, ni producto, ni evidencia de aceptación por sí sola.
+
 Para cada archivo regular de la copia: si el árbol principal tiene el mismo
 camino con el mismo contenido (`same_in_main`), si su blob ya existe en el
 almacén de objetos de git (`in_git_objects`), o ninguna de las dos (`unique`).

@@ -1,5 +1,8 @@
 """Censo durable de las imágenes sin etiqueta.
 
+EXPERIMENTAL — medición exploratoria escrita antes de cerrar Search Existing:
+no es autoridad, ni producto, ni evidencia de aceptación por sí sola.
+
 Une lo que ya está medido —observación del dueño (`podman-execution-execute
 observe images|containers`), el censo y la procedencia de
 `container-image-distribution-20261002T234933` y el inventario T005— en una
