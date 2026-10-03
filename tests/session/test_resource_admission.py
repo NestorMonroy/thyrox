@@ -397,5 +397,31 @@ with tempfile.TemporaryDirectory() as refusal_dir:
     check("nombra la necesidad y lo libre", True,
           "necesidad 5000 kB" in refused_ram.stderr and "libre 3000 kB" in refused_ram.stderr)
 
+print("caso 26 — headroom-ram publica, sin reservar, la holgura con que decidiría admit-ram (H-THYROX-448)")
+with tempfile.TemporaryDirectory() as headroom_dir:
+    headroom_root = Path(headroom_dir)
+    headroom_ledger = headroom_root / "ram.json"
+    headroom_meminfo = meminfo(headroom_root / "meminfo", 20_000_000)
+    reserved = cli("admit-ram", "5000000", "--self-cgroup", str(NO_CGROUP), "--ledger", str(headroom_ledger),
+                   "--owner", str(os.getpid()), "--meminfo", str(headroom_meminfo), "--timeout", "0")
+    check("una reserva previa entra", 0, reserved.returncode)
+    measured = cli("headroom-ram", "--self-cgroup", str(NO_CGROUP), "--ledger", str(headroom_ledger),
+                   "--meminfo", str(headroom_meminfo))
+    # Lo pendiente es lo reservado menos lo que ya usa el árbol del dueño —este
+    # proceso—, cuyo RSS varía: la cifra se compara con la de la propia autoridad.
+    in_process = ra.ram_headroom(ra.ReservationLedger(headroom_ledger).live(), headroom_meminfo,
+                                 cgroup=ra.CgroupView(Path(NO_CGROUP)))
+    published = int(measured.stdout.strip()) if measured.stdout.strip().isdigit() else None
+    check("sale 0 y descuenta la reserva sin usar de lo libre", (0, True),
+          (measured.returncode, published is not None and published < 20_000_000))
+    check("la cifra es la de ram_headroom, la que decide admit-ram", True,
+          published is not None and in_process is not None and abs(published - in_process) < 50_000)
+    check("no reserva nada: el registro conserva sólo la reserva previa", [str(os.getpid())],
+          sorted(ra.ReservationLedger(headroom_ledger).live()))
+    unmeasured = cli("headroom-ram", "--self-cgroup", str(NO_CGROUP), "--ledger", str(headroom_ledger),
+                     "--meminfo", str(headroom_root / "no-existe"))
+    check("sin lectura de lo libre sale 2 y no publica un cero", (2, ""),
+          (unmeasured.returncode, unmeasured.stdout.strip()))
+
 print(f"test_resource_admission: {OK} ok, {FAILED} fallos")
 sys.exit(1 if FAILED else 0)

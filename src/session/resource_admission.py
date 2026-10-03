@@ -538,6 +538,24 @@ def report_ram_refusal(need_kb: int, meminfo: Path, ledger: Path, cgroup: Cgroup
           f"reservado por otros {reserved} kB", file=sys.stderr)
 
 
+def headroom_ram(args: argparse.Namespace) -> int:
+    """Publica, sin reservar, la holgura de RAM en kB con que ``admit-ram``
+    decidiría ahora: lo libre efectivo menos lo comprometido sin usar. La lee
+    quien tiene que liberar antes de admitir —el coordinador de modelos
+    desaloja residencias ociosas si no alcanza (H-THYROX-448)—. Sin lectura
+    sale 2 sin publicar nada: un cero se leería como «no cabe»."""
+    meminfo = args.meminfo or meminfo_path()
+    ledger = args.ledger or ram_ledger_path()
+    headroom = ram_headroom(ReservationLedger(ledger).live(), meminfo,
+                            ledger_usage(ledger, args.podman, args.cgroup_root),
+                            CgroupView(args.self_cgroup, args.cgroup_root))
+    if headroom is None:
+        print("resource_admission headroom-ram: no se pudo medir lo libre o el uso de un dueño", file=sys.stderr)
+        return EXIT_UNMEASURED
+    print(headroom)
+    return EXIT_ADMITTED
+
+
 def release_ram(args: argparse.Namespace) -> int:
     release_from(args.ledger or ram_ledger_path(), args.owner, "ram-admission")
     return EXIT_ADMITTED
@@ -562,6 +580,14 @@ def build_parser() -> argparse.ArgumentParser:
     p_admit.add_argument("--self-cgroup", type=Path, default=SELF_CGROUP,
                          help="la pertenencia a cgroups cuyo límite acota la RAM libre")
     p_admit.set_defaults(handler=admit_ram)
+    p_headroom = sub.add_parser("headroom-ram", help="publica en kB, sin reservar, la holgura de RAM; sale 2 si no mide")
+    p_headroom.add_argument("--ledger", type=Path, default=None)
+    p_headroom.add_argument("--meminfo", type=Path, default=None)
+    p_headroom.add_argument("--podman", default="podman")
+    p_headroom.add_argument("--cgroup-root", type=Path, default=DEFAULT_CGROUP_ROOT)
+    p_headroom.add_argument("--self-cgroup", type=Path, default=SELF_CGROUP,
+                            help="la pertenencia a cgroups cuyo límite acota la RAM libre")
+    p_headroom.set_defaults(handler=headroom_ram)
     p_release = sub.add_parser("release", help="suelta la reserva de RAM de OWNER")
     p_release.add_argument("--ledger", type=Path, default=None)
     p_release.add_argument("--owner", type=int, required=True)
