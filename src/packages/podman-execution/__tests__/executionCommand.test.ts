@@ -200,13 +200,25 @@ describe('reconcile-orphans: un contenedor cuyo dueño de tarea murió se retira
     const h = orphanHarness({
       'thyrox-worker-a': 'task\ttask-thyrox-0001\t11',
       'thyrox-worker-b': 'task\ttask-thyrox-0001\t22',
-      'thyrox-worker-c': 'pool\tpool-x\t33',
+      'thyrox-worker-c': 'model-coordinator\tmodel-coordinator.host\t33',
     }, [22])
     const code = await runExecutionCommand(['reconcile-orphans'], h.deps)
     expect(code).toBe(0)
     expect(h.removed).toEqual(['thyrox-worker-a'])
     expect(h.stdout.join('')).toContain('retirado thyrox-worker-a')
     expect(h.stdout.join('')).toContain('1 huérfano(s) retirado(s)')
+  })
+
+  // A6 r8: el pool murió sin drenar la sesión de su ítem y el contenedor de
+  // la unidad quedó vivo con su runner muerto. Con `--owner pool:ID` el PID
+  // del dueño es el del runner, como con una tarea: muerto, es huérfano.
+  test('retira también el de dueño de pool cuyo runner murió; deja el de pool vivo', async () => {
+    const h = orphanHarness({
+      'thyrox-worker-p': 'pool\ta6-1\t44',
+      'thyrox-worker-q': 'pool\ta6-2\t55',
+    }, [55])
+    expect(await runExecutionCommand(['reconcile-orphans'], h.deps)).toBe(0)
+    expect(h.removed).toEqual(['thyrox-worker-p'])
   })
 
   test('sin huérfanos, sale 0 y lo dice', async () => {

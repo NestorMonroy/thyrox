@@ -76,3 +76,13 @@ real (`probes/system_budget_sizes.ts`): el prompt de sistema son **20 006** toke
 (nunca descarta la base); EXTEND: `thyrox -p` reenvía `--system-budget-tokens` (prueba en `print.test.ts`,
 anulación exacta) y `headless-pool --system-budget-tokens N` lo pasa a cada ítem y valida el entero
 (caso 4d, anulación exacta de sus dos aserciones). Con 8 200: 8 123 tokens, entra `search-existing-antes-de-construir`.
+
+## Cancelación de r8 — un contenedor de pool sin reconciliador
+
+Al drenar el árbol del pool con SIGKILL, la sesión del ítem (`setsid`) sobrevivió; drenada después, el
+runner murió y el contenedor de la unidad quedó vivo. `reconcile-orphans` sólo retiraba dueños `task`
+(`07593694f`, 2026-10-01), anterior a `--owner pool:ID` (`6dfa91e58`, 2026-10-02), cuyo PID también es el
+del runner. EXTEND: `RUNNER_OWNED_KINDS = task, pool`. Prueba nueva (RED → GREEN, anulación exacta); en la
+prueba existente el ejemplo de «ajeno» pasa a un dueño `model-coordinator`, que sí tiene su reconciliador.
+Aplicado al huérfano real: `retirado thyrox-worker-maintenance-musdj2lq-27184 removed=true`, coordinador
+de vuelta a `tickets=0`. Consumidores: task_continuation 70/70, declared-image-build 13/13 y 40/40.

@@ -29,6 +29,12 @@ export const PROXY_CA_BUILD_PATH = '/etc/ssl/certs/proxy-ca.crt'
 const EXECUTION_IMAGE_KEY = 'THYROX_EXEC_IMAGE'
 const PROXY_CA_KEY = 'GIT_SSL_CAINFO'
 const POOL_OWNER_KIND = 'pool'
+/**
+ * Los dueños cuyo PID es el del runner de `run`: muerto el runner, nadie más
+ * retira su contenedor. Los demás tipos tienen su propio reconciliador
+ * (`model_coordinator stop`, la adopción del daemon, el laboratorio).
+ */
+const RUNNER_OWNED_KINDS: readonly string[] = ['task', POOL_OWNER_KIND]
 const PROXY_KEYS = ['HTTPS_PROXY', 'https_proxy', 'HTTP_PROXY', 'http_proxy', 'NO_PROXY', 'no_proxy']
 const GIT_IDENTITY_KEYS = ['GIT_AUTHOR_NAME', 'GIT_AUTHOR_EMAIL', 'GIT_TERMINAL_PROMPT', 'GIT_EDITOR']
 const IMAGE_LIFECYCLE_LABEL = 'io.thyrox.image.lifecycle'
@@ -342,7 +348,7 @@ export async function buildManagedImage(deps: Pick<ExecutionCommandDeps, 'env' |
 async function reconcileOrphansCommand(deps: ExecutionCommandDeps): Promise<number> {
   const lifecycle = { podman: deps.podman, isProcessAlive: deps.isProcessAlive, killProcess: (pid: number, signal: NodeJS.Signals) => { process.kill(pid, signal) } }
   const retired = await retireOrphanedWorkerContainers(lifecycle, ({ owner }) =>
-    owner.kind === 'task' && owner.pid !== null && !deps.isProcessAlive(owner.pid))
+    RUNNER_OWNED_KINDS.includes(owner.kind) && owner.pid !== null && !deps.isProcessAlive(owner.pid))
   for (const retirement of retired) deps.output.stdout(`retirado ${retirement.name} removed=${retirement.removed}\n`)
   deps.output.stdout(`${retired.length} huérfano(s) retirado(s)\n`)
   return retired.every(retirement => retirement.removed) ? 0 : EXIT_FAILED
