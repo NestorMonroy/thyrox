@@ -191,3 +191,31 @@ ensure sólo detecta y rehúsa. Se corrige en P0c junto con el código.
 | P0d | recuperación con guardas invocada por la entrada | depende de P0c |
 | P0e | `infrastructure_ensure` → postcondiciones | depende de P0d |
 | P0f | reinicio real sin intervención | depende de P0e; el reinicio lo dispara el entorno |
+
+### ¿Cambió el harness al retirar `claude/review-branches-integrate-develop-mj1ra3`? No (medido)
+
+Hipótesis del ejecutor: la negativa del clasificador viene de haber retirado esa
+rama.
+
+- `origin/claude/review-branches-integrate-develop-mj1ra3` apunta a
+  `2f1b2e621`, que es la base de `feature/change-identity`. La rama nueva
+  contiene toda la vieja y le suma 27 commits; la vieja no tiene ningún commit
+  propio.
+- `git diff` entre las dos en `.claude/CLAUDE.md`, `.claude/rules/`,
+  `execution_policy.json`, `control_plane_entries.tsv` y `src/hooks/` sale
+  vacío.
+- Los hooks y permisos del cliente viven en `/home/user/.claude/settings.local.json`,
+  fuera del repo, así que no dependen de la rama. Ese archivo **nunca** declaró
+  `permissions`: es `null` hoy y también en la copia `settings.local.json.20261002T202230`.
+  Su última modificación es del 2026-10-02 20:22, **antes** de la recuperación
+  exitosa de las 22:11.
+
+Conclusión: la configuración era la misma cuando el clasificador permitió la
+reparación (2026-10-02) y cuando la negó (2026-10-03). La diferencia no está en
+el árbol ni en los settings, sino en la decisión del clasificador, que es
+contextual: evalúa la acción sobre la conversación, y desde la primera negativa
+la conversación registra que la reparación «la autoriza el operador».
+
+*Métrica:* contenido de rama, diff de reglas, política y hooks, y los
+`permissions` del settings activo y de su copia.
+*Ciega a:* el estado interno del clasificador; sólo se ve su veredicto.
