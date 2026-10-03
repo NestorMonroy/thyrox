@@ -182,3 +182,52 @@ install closure is not executable.
 
 **Next runnable node without product code:** a rotated publishing credential,
 which is an external action. Then publish the quantizer through promotion.
+
+## ⚠️ WARNING — risk accepted by the executor (2026-10-03, H-THYROX-426)
+
+**Decision:** keep working in this session, not a new one, to avoid losing
+the session cache. The executor accepts the risk.
+
+**What this session does NOT have**, measured by presence only and no values,
+through the process environment and `paths.reach.env_value`:
+
+| Variable Thyrox reads | Authority | State in this session |
+|---|---|---|
+| `THYROX_REGISTRY_PUBLISHER_USERNAME` | `registry-credentials/registryCredential.ts:21` | absent |
+| `THYROX_REGISTRY_PUBLISHER_TOKEN` | `registry-credentials/registryCredential.ts:22` | absent |
+| `THYROX_REGISTRY_READER_USERNAME` | `artifact-registry/readerCredential.ts:11` | absent |
+| `THYROX_REGISTRY_READER_TOKEN` | `artifact-registry/readerCredential.ts:12` | absent |
+
+The values the executor loaded into the cloud environment (`DOCKER_USER_NAME`,
+`DOCKER_PAT_RW`, `DOCKER_PAT_RWD`, `QWENCLOUD_APK_TP`, `QWENCLOUD_APK_PAYG`)
+are injected only when a session starts. This container started earlier, so
+it does not see them, and no Thyrox code reads those names.
+
+**Consequences while this session lasts:**
+
+- No image publication: the quantizer stays BLOCKED_BY_CREDENTIAL.
+- Registry reads are anonymous: public repositories only, and Docker Hub's
+  anonymous rate limit applies.
+- Nothing is published with the old `THYROX_REGISTRY_PUBLISHER_TOKEN`
+  (recorded `exposed` since 2026-10-01). No substitute credential is taken
+  from any other source.
+
+**Pending actions — the record of what must still be done:**
+
+1. In the cloud environment's settings, declare the variables with the names
+   Thyrox reads:
+   - `THYROX_REGISTRY_PUBLISHER_USERNAME` ← the Docker user;
+   - `THYROX_REGISTRY_PUBLISHER_TOKEN` ← the rotated read/write PAT, not the
+     exposed one;
+   - optionally `THYROX_REGISTRY_READER_USERNAME` and
+     `THYROX_REGISTRY_READER_TOKEN` ← a read-only token.
+
+   Keep `DOCKER_PAT_RWD` (read, write and delete) out of everyday use.
+2. Declare which provider and route `QWENCLOUD_APK_TP` and
+   `QWENCLOUD_APK_PAYG` are for, before mapping them to a credential.
+3. In the first session that starts with those variables, check presence
+   (never values), then publish the quantizer:
+   - rebuild with `build-image --lifecycle permanent`;
+   - `promoteCandidate` → `publishPromotedImage`;
+   - verify the remote digest.
+4. Update `credential-rotation.tsv` when the exposed token is replaced.
