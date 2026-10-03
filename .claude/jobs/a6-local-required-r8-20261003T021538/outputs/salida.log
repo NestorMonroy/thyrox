@@ -1,0 +1,12 @@
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+thyrox-ollama action=recreated drift=configuration created=yes started=yes health=healthy provision=not-declared volumes=thyrox-ollama-bench-models:preserved
+modelo: thyrox-library--qwen3-4b:q4_k_m-ollama-359d7dd4bcda (derivado de --task-class mecanica) runtime: ollama
+historial: sin ejecución previa de /home/user/thyrox/bin/cli en esta plantilla; ninguna con el modelo thyrox-library--qwen3-4b:q4_k_m-ollama-359d7dd4bcda: nada que derivar
+credencial: inherit (por defecto; sin variable de credencial en el entorno del pool: cada ítem la resuelve solo, y thyrox -p entra al proxy local)
+buzón: /home/user/thyrox/.thyrox/runtime/pool/734aa5a2a5ce-20261003T021556-3032/mailbox
+cache-ttl: 1h (constant)
+medida: --execution unit no mide el ítem con GNU Time; lo acota la unidad
+-- FALLIDO 17 + 25
+items=1 ok=0 fallidos=1
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)
+__BG_EXIT__=1

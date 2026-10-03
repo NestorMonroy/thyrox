@@ -1,0 +1,120 @@
+.. meta::
+   :artefacto: ADR-THYROX-002
+   :tipo: ADR
+   :dominio: thyrox
+   :estado: Aceptado
+   :version: 1.0.0
+   :fecha: 2026-09-26T20:17:36
+
+.. _adr-thyrox-002:
+
+==============================================================================
+ADR-002: El ciclo medido del despacho vive en el pool, no en quien lo invoca
+==============================================================================
+
+Estado
+------
+
+**ACEPTADO** — directiva del ejecutor 2026-09-26: el ciclo *«se puede adaptar
+para cualquier cosa, no solo para lo que estamos haciendo en
+resolve-all-thyrox-errors»*, y *«implementa lo faltante en TDD»*. Implementado
+en ``thyrox@7888bff3``.
+
+----
+
+Contexto
+--------
+
+``bin/headless-pool`` despacha N lecturas con juicio, un cliente ``-p`` por
+ítem, repartidas con GNU Parallel. Alrededor de ese despacho existía un ciclo
+—ejecutar, medir con GNU Time, reportar, ajustar el paso siguiente— pero vivía
+**sólo en** ``thyrox: src/verify/tsc_cycle.py``. Quien invocaba el pool
+directamente (un consumidor que traduce notas, o una sesión que clasifica
+hallazgos) quedaba fuera del ciclo sin saberlo, y ``tsc_cycle`` fijaba
+``--memfree 3G`` cuando lo medido por ítem fue 251–266 MB.
+
+Tres piezas del ciclo ya existían y no estaban conectadas al pool:
+
+- ``stdin_probe``, que ``wait-jobs wait`` corre en cada latido sobre el árbol
+  del trabajo registrado;
+- la medida de GNU Time por ítem (``<n>.time``: memoria pico, pared, CPU);
+- ``model_catalog.choose_cache_ttl``, que decide el TTL de la caché por el
+  mayor hueco esperado entre turnos.
+
+Decision
+--------
+
+**El ciclo es del pool.** Cada ejecución medida deja una fila en un historial
+por plantilla (``thyrox: src/session/pool_history.py``, ``bin/pool_history``),
+y la siguiente deriva de ella lo que nadie declaró:
+
+.. list-table::
+   :header-rows: 1
+
+   * - Parámetro
+     - Cómo se deriva
+     - Qué gana sobre la derivación
+   * - TTL de caché
+     - ``choose_cache_ttl`` sobre la pared máxima de un ítem. **Tres ramas**,
+       no dos: ≤ 5 min → ``5m``; hasta 1 h → ``1h``; más de 1 h → ``5m``,
+       porque ninguna caché sobrevive y la prima de 1 h se paga en vano
+     - ``--cache-ttl`` y la cadena del entorno (forzar 5m, variable del TTL,
+       activar 1h)
+   * - ``--memfree``
+     - memoria pico × 2, **más** la reserva de un vecino que corre al lado
+       (``HEADLESS_POOL_MEMFREE_RESERVE``)
+     - ``--memfree``
+   * - vigilancia de stdin
+     - no se deriva: el pool se lanza con ``thyrox-bg`` y se recoge con la
+       barrera, que corre ``stdin_probe``
+     - —
+
+Sin historial **no se inventa**: la salida lo declara
+(``historial: sin ejecución previa…``) y corre con lo declarado.
+
+La memoria que el ``3G`` mezclaba se parte en sus dos componentes: la del ítem
+la mide el historial; la del vecino —el ``tsc`` completo del pipeline, 2.0 GB
+medidos— la declara ``tsc_cycle`` como reserva con nombre
+(``TSC_MEMORY_RESERVE``).
+
+``--memfree`` es memoria del **sistema**, no de la GPU. La VRAM no se mide: el
+cliente ``-p`` envía las peticiones al servidor y el modelo no corre en la GPU
+local; en el contenedor medido tampoco hay GPU (``nvidia-smi`` ausente, sin
+``/dev/nvidia*``). Medirla sólo tendría sentido para un pool que ejecute trabajo
+local con CUDA.
+
+Alternativas descartadas
+------------------------
+
+**Dejar el ciclo en** ``tsc_cycle``. Es la situación que el ADR corrige: el
+ciclo sólo existía para un consumidor, y los demás lo perdían en silencio.
+
+**Derivar en shell, dentro de** ``headless-pool.sh``. Duplicaría
+``choose_cache_ttl``, que ya vive en Python con el catálogo de precios. El
+reparto es el mismo que ``bg.sh`` → ``job_runs.py`` y ``wait-jobs.sh`` →
+``marker_wait.py``: el shell orquesta procesos, Python decide sobre datos.
+
+**Un TTL de dos ramas** (≤ 5 min → ``5m``, si no ``1h``). Paga la prima de 1 h
+en el caso en que ninguna caché sobrevive.
+
+Consecuencias
+-------------
+
+- Un consumidor obtiene el ciclo invocando ``bin/headless-pool`` con GNU Time
+  instalado; no tiene que reimplementarlo. El historial se declara con
+  ``HEADLESS_POOL_HISTORY_DIR`` (por defecto, el caché del repo).
+- ``HEADLESS_POOL_CLAUDE`` queda declarado en ``thyrox: .env.example``: el
+  mismo pool puede apuntarse a ``bin/cli-main`` —el ``thyrox -p`` propio— sin
+  tocar el guion. Que ese cliente pase la suite del pool y una ejecución real
+  es trabajo pendiente, no una propiedad de este ADR.
+- Pendiente: derivar también la reserva del vecino desde el ``.time`` del
+  pipeline del paso anterior, en vez de declararla.
+
+*Métrica:* memoria residente pico y pared por ítem, de GNU Time; TTL por el
+catálogo del ejecutable.
+*Ciega a:* la memoria de un hijo que el proceso medido no espera, y a un ítem
+cuyo ``.time`` no llegó a escribirse.
+
+Verificación: ``thyrox: tests/session/test_pool_history.py``,
+``tests/session/test-headless-pool.sh`` y ``tests/verify/test_tsc_cycle.py``,
+con controles de anulación descritos en el mensaje de ``thyrox@7888bff3``.

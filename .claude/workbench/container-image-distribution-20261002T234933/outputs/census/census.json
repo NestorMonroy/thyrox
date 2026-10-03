@@ -1,0 +1,899 @@
+[
+ {
+  "imageId": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+  "repoTags": [
+   "localhost/thyrox-model-quantizer:dev",
+   "localhost/thyrox-model-quantizer:clean-candidate"
+  ],
+  "repoDigests": [
+   "localhost/thyrox-model-quantizer@sha256:0bca2a46b1603bac40ae0afc71747e2ef71097a4dcbe438a08455498530a58fa"
+  ],
+  "sizeBytes": 1279630682,
+  "createdAt": "2026-10-02T10:09:48.11303358Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "io.thyrox.image.lifecycle": "cache",
+   "org.opencontainers.image.version": "24.04",
+   "thyrox.task": "TASK-THYROX-0747"
+  },
+  "parentId": "ec1abf12aa460f9d0818286471db1aa80b8427e1df54b87dd356afcb3a4a4860",
+  "finalImageId": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+  "finalTags": [
+   "localhost/thyrox-model-quantizer:dev",
+   "localhost/thyrox-model-quantizer:clean-candidate"
+  ],
+  "layerCount": 13,
+  "layersArePrefixOfFinal": true,
+  "childCount": 0,
+  "historyLines": 21,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "ec1abf12aa460f9d0818286471db1aa80b8427e1df54b87dd356afcb3a4a4860",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 1279630404,
+  "createdAt": "2026-10-02T10:09:48.064794951Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "1c1a3ab4600ecd13c4ee6b5e1720128b19097a6480114135e1bf68e74a2646a1",
+  "finalImageId": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+  "finalTags": [
+   "localhost/thyrox-model-quantizer:dev",
+   "localhost/thyrox-model-quantizer:clean-candidate"
+  ],
+  "layerCount": 13,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 20,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "1c1a3ab4600ecd13c4ee6b5e1720128b19097a6480114135e1bf68e74a2646a1",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 1279630242,
+  "createdAt": "2026-10-02T10:09:48.008229027Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "b5d366f14ed67d31807787420eee702cf8b0eaddbb39b6455b2e0e69e94ba83e",
+  "finalImageId": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+  "finalTags": [
+   "localhost/thyrox-model-quantizer:dev",
+   "localhost/thyrox-model-quantizer:clean-candidate"
+  ],
+  "layerCount": 13,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 19,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "29215f3ff891dc3a0f096946532d38702ff9b945128beddf074030513e981bba",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 1279512651,
+  "createdAt": "2026-10-02T10:09:47.45729027Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "0bc5dc55d62e54ee8711bc493bfa8cf0a6e156b117ef96208bb730dea1741533",
+  "finalImageId": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+  "finalTags": [
+   "localhost/thyrox-model-quantizer:dev",
+   "localhost/thyrox-model-quantizer:clean-candidate"
+  ],
+  "layerCount": 11,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 16,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "b5d366f14ed67d31807787420eee702cf8b0eaddbb39b6455b2e0e69e94ba83e",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 1279630014,
+  "createdAt": "2026-10-02T10:09:47.939238499Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "2fe71c5b7becac26a6d8fd2d42506d89d5289e5ecbce2f1e3e58205fdef6f189",
+  "finalImageId": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+  "finalTags": [
+   "localhost/thyrox-model-quantizer:dev",
+   "localhost/thyrox-model-quantizer:clean-candidate"
+  ],
+  "layerCount": 13,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 18,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "2fe71c5b7becac26a6d8fd2d42506d89d5289e5ecbce2f1e3e58205fdef6f189",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 1279563397,
+  "createdAt": "2026-10-02T10:09:47.664704532Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "29215f3ff891dc3a0f096946532d38702ff9b945128beddf074030513e981bba",
+  "finalImageId": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+  "finalTags": [
+   "localhost/thyrox-model-quantizer:dev",
+   "localhost/thyrox-model-quantizer:clean-candidate"
+  ],
+  "layerCount": 12,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 17,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "0bc5dc55d62e54ee8711bc493bfa8cf0a6e156b117ef96208bb730dea1741533",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 1279482387,
+  "createdAt": "2026-10-02T10:09:24.425823162Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "bce466222b432e55c685080afdb10b2b1597d4fd8a103710f3a5ccc72468d064",
+  "finalImageId": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+  "finalTags": [
+   "localhost/thyrox-model-quantizer:dev",
+   "localhost/thyrox-model-quantizer:clean-candidate"
+  ],
+  "layerCount": 10,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 15,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "bce466222b432e55c685080afdb10b2b1597d4fd8a103710f3a5ccc72468d064",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 168080852,
+  "createdAt": "2026-10-02T10:08:33.891233523Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "e0eecd9add4e65c7ef1636ad7c6ecf1c92b11704f102e2d99eca83456f0dc713",
+  "finalImageId": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+  "finalTags": [
+   "localhost/thyrox-model-quantizer:dev",
+   "localhost/thyrox-model-quantizer:clean-candidate"
+  ],
+  "layerCount": 9,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 14,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "e0eecd9add4e65c7ef1636ad7c6ecf1c92b11704f102e2d99eca83456f0dc713",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 167276947,
+  "createdAt": "2026-10-02T10:08:33.648227979Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "21e1990a0075d3b977f4b1e1044e704d95b9371de33610f098aa7e0f8101167a",
+  "finalImageId": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+  "finalTags": [
+   "localhost/thyrox-model-quantizer:dev",
+   "localhost/thyrox-model-quantizer:clean-candidate"
+  ],
+  "layerCount": 8,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 13,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "21e1990a0075d3b977f4b1e1044e704d95b9371de33610f098aa7e0f8101167a",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 166174541,
+  "createdAt": "2026-10-02T10:08:33.399002171Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "0eeacaaee07135afe94d1502bfb28649eae27333122df4a04a680e6d3865ecbc",
+  "finalImageId": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+  "finalTags": [
+   "localhost/thyrox-model-quantizer:dev",
+   "localhost/thyrox-model-quantizer:clean-candidate"
+  ],
+  "layerCount": 7,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 12,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "0eeacaaee07135afe94d1502bfb28649eae27333122df4a04a680e6d3865ecbc",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 166158612,
+  "createdAt": "2026-10-02T10:08:33.084517601Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "72b5859b94bf8d0116276f1fac8a92c38a9689d78f4346d98ae32bce48defba7",
+  "finalImageId": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+  "finalTags": [
+   "localhost/thyrox-model-quantizer:dev",
+   "localhost/thyrox-model-quantizer:clean-candidate"
+  ],
+  "layerCount": 6,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 11,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "72b5859b94bf8d0116276f1fac8a92c38a9689d78f4346d98ae32bce48defba7",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 145035476,
+  "createdAt": "2026-10-02T10:08:32.429303409Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "117cb4575e462b1166ccc17c398bb77606475f0e82b42cde2f4e1b756a559329",
+  "finalImageId": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+  "finalTags": [
+   "localhost/thyrox-model-quantizer:dev",
+   "localhost/thyrox-model-quantizer:clean-candidate"
+  ],
+  "layerCount": 5,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 10,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "117cb4575e462b1166ccc17c398bb77606475f0e82b42cde2f4e1b756a559329",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 132865172,
+  "createdAt": "2026-10-02T10:08:32.095682363Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "7ee64f4ff49bdf8b41a42eecb75d0fcb7372bf0fbe4f411266828a5a31ce2ac6",
+  "finalImageId": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+  "finalTags": [
+   "localhost/thyrox-model-quantizer:dev",
+   "localhost/thyrox-model-quantizer:clean-candidate"
+  ],
+  "layerCount": 4,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 9,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "7ee64f4ff49bdf8b41a42eecb75d0fcb7372bf0fbe4f411266828a5a31ce2ac6",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 132600920,
+  "createdAt": "2026-10-02T10:08:31.892928219Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "014a46951068e47e3c31eed27de5eb34658eb94e536430193ac69d443f3e2a9d",
+  "finalImageId": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+  "finalTags": [
+   "localhost/thyrox-model-quantizer:dev",
+   "localhost/thyrox-model-quantizer:clean-candidate"
+  ],
+  "layerCount": 3,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 8,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "014a46951068e47e3c31eed27de5eb34658eb94e536430193ac69d443f3e2a9d",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 132563486,
+  "createdAt": "2026-10-02T10:08:31.135710486Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "51f6f7c671f6afa97122f17096a9509f34599159ec473e57b478ae1beab679e0",
+  "finalImageId": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+  "finalTags": [
+   "localhost/thyrox-model-quantizer:dev",
+   "localhost/thyrox-model-quantizer:clean-candidate"
+  ],
+  "layerCount": 2,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 7,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "51f6f7c671f6afa97122f17096a9509f34599159ec473e57b478ae1beab679e0",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 80693608,
+  "createdAt": "2026-10-02T10:08:18.211351763Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "6232b38791000e3818b58d8847b5a8f5612d606929e01156dd8febc423e0f2ef",
+  "finalImageId": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+  "finalTags": [
+   "localhost/thyrox-model-quantizer:dev",
+   "localhost/thyrox-model-quantizer:clean-candidate"
+  ],
+  "layerCount": 1,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 6,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "2bb9f235830eb30689864b5447eeea083ae1e3607a18fdca353b5c91de5e5e5a",
+  "repoTags": [
+   "docker.io/th3rox/thyrox-task-runner:ubuntu24.04-bun1.3.11-uv0.8.17",
+   "localhost/thyrox-task-runner:candidate"
+  ],
+  "repoDigests": [
+   "docker.io/th3rox/thyrox-task-runner@sha256:1cced65c16b40c7ac5fc73a6908ce0353ec450618251cac1893ef8c82ad25ba5",
+   "docker.io/th3rox/thyrox-task-runner@sha256:e6981bdf4149d3e5a4e03f14ec76dccc3a0fdc8560d9e1c381f359a8c6c37da2",
+   "localhost/thyrox-task-runner@sha256:1cced65c16b40c7ac5fc73a6908ce0353ec450618251cac1893ef8c82ad25ba5",
+   "localhost/thyrox-task-runner@sha256:e6981bdf4149d3e5a4e03f14ec76dccc3a0fdc8560d9e1c381f359a8c6c37da2"
+  ],
+  "sizeBytes": 386467718,
+  "createdAt": "2026-10-02T02:21:31.177761464Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "io.thyrox.image.lifecycle": "permanent",
+   "org.opencontainers.image.version": "24.04",
+   "thyrox.task": "TASK-THYROX-0724"
+  },
+  "parentId": "1e02a895407958a517a0b82851aa76befb8f65f405e7ea8422d434691f415c26",
+  "finalImageId": "2bb9f235830eb30689864b5447eeea083ae1e3607a18fdca353b5c91de5e5e5a",
+  "finalTags": [
+   "docker.io/th3rox/thyrox-task-runner:ubuntu24.04-bun1.3.11-uv0.8.17",
+   "localhost/thyrox-task-runner:candidate"
+  ],
+  "layerCount": 4,
+  "layersArePrefixOfFinal": true,
+  "childCount": 0,
+  "historyLines": 14,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "1e02a895407958a517a0b82851aa76befb8f65f405e7ea8422d434691f415c26",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 386466328,
+  "createdAt": "2026-10-02T02:21:30.60277041Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "05ae188ca037bcab1e61af8387e96c37029e0f09c82f15dfe0306053353deee8",
+  "finalImageId": "2bb9f235830eb30689864b5447eeea083ae1e3607a18fdca353b5c91de5e5e5a",
+  "finalTags": [
+   "docker.io/th3rox/thyrox-task-runner:ubuntu24.04-bun1.3.11-uv0.8.17",
+   "localhost/thyrox-task-runner:candidate"
+  ],
+  "layerCount": 4,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 13,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "05ae188ca037bcab1e61af8387e96c37029e0f09c82f15dfe0306053353deee8",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 334286445,
+  "createdAt": "2026-10-02T02:21:28.567893697Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "264da9d03eb3003c3cfa8af7cd57707e6e6e1bd283f4f5452fbf3c1ddff259bf",
+  "finalImageId": "2bb9f235830eb30689864b5447eeea083ae1e3607a18fdca353b5c91de5e5e5a",
+  "finalTags": [
+   "docker.io/th3rox/thyrox-task-runner:ubuntu24.04-bun1.3.11-uv0.8.17",
+   "localhost/thyrox-task-runner:candidate"
+  ],
+  "layerCount": 3,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 12,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "264da9d03eb3003c3cfa8af7cd57707e6e6e1bd283f4f5452fbf3c1ddff259bf",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 234985179,
+  "createdAt": "2026-10-02T02:21:25.279553429Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "95d7e60fc00bfc1baf54e911f389232d0bc604555258272ec0b57b1bd7abf006",
+  "finalImageId": "2bb9f235830eb30689864b5447eeea083ae1e3607a18fdca353b5c91de5e5e5a",
+  "finalTags": [
+   "docker.io/th3rox/thyrox-task-runner:ubuntu24.04-bun1.3.11-uv0.8.17",
+   "localhost/thyrox-task-runner:candidate"
+  ],
+  "layerCount": 2,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 11,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "82d1a3f1a1cbb2e2fc43bfcc6d576f68bcf50510d8b798bd6f1c260b16052903",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 80693600,
+  "createdAt": "2026-10-02T02:21:09.822787596Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "6232b38791000e3818b58d8847b5a8f5612d606929e01156dd8febc423e0f2ef",
+  "finalImageId": "2bb9f235830eb30689864b5447eeea083ae1e3607a18fdca353b5c91de5e5e5a",
+  "finalTags": [
+   "docker.io/th3rox/thyrox-task-runner:ubuntu24.04-bun1.3.11-uv0.8.17",
+   "localhost/thyrox-task-runner:candidate"
+  ],
+  "layerCount": 1,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 6,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "95d7e60fc00bfc1baf54e911f389232d0bc604555258272ec0b57b1bd7abf006",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 80694184,
+  "createdAt": "2026-10-02T02:21:09.87896413Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "24c9da34a856faa8b02a35daeecf7ab4b279c1242dede9de07f28d2296793059",
+  "finalImageId": "2bb9f235830eb30689864b5447eeea083ae1e3607a18fdca353b5c91de5e5e5a",
+  "finalTags": [
+   "docker.io/th3rox/thyrox-task-runner:ubuntu24.04-bun1.3.11-uv0.8.17",
+   "localhost/thyrox-task-runner:candidate"
+  ],
+  "layerCount": 1,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 10,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "24c9da34a856faa8b02a35daeecf7ab4b279c1242dede9de07f28d2296793059",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 80694023,
+  "createdAt": "2026-10-02T02:21:09.865480178Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "8ee2ef2046c4dc392dae9da8988301e9322e1b96fcf28b574c4b72e1bd2a1bc7",
+  "finalImageId": "2bb9f235830eb30689864b5447eeea083ae1e3607a18fdca353b5c91de5e5e5a",
+  "finalTags": [
+   "docker.io/th3rox/thyrox-task-runner:ubuntu24.04-bun1.3.11-uv0.8.17",
+   "localhost/thyrox-task-runner:candidate"
+  ],
+  "layerCount": 1,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 9,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "8ee2ef2046c4dc392dae9da8988301e9322e1b96fcf28b574c4b72e1bd2a1bc7",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 80693871,
+  "createdAt": "2026-10-02T02:21:09.851837364Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "78f62cf986107cbf34d06d5d967889b80a938e2c9d410ba084a54d29212116dd",
+  "finalImageId": "2bb9f235830eb30689864b5447eeea083ae1e3607a18fdca353b5c91de5e5e5a",
+  "finalTags": [
+   "docker.io/th3rox/thyrox-task-runner:ubuntu24.04-bun1.3.11-uv0.8.17",
+   "localhost/thyrox-task-runner:candidate"
+  ],
+  "layerCount": 1,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 8,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "78f62cf986107cbf34d06d5d967889b80a938e2c9d410ba084a54d29212116dd",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 80693731,
+  "createdAt": "2026-10-02T02:21:09.838622124Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "82d1a3f1a1cbb2e2fc43bfcc6d576f68bcf50510d8b798bd6f1c260b16052903",
+  "finalImageId": "2bb9f235830eb30689864b5447eeea083ae1e3607a18fdca353b5c91de5e5e5a",
+  "finalTags": [
+   "docker.io/th3rox/thyrox-task-runner:ubuntu24.04-bun1.3.11-uv0.8.17",
+   "localhost/thyrox-task-runner:candidate"
+  ],
+  "layerCount": 1,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 7,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "0d469d62f999f18272430918a9d655d1c352e9f56337a9da35f372fc7a7c4e48",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 386466658,
+  "createdAt": "2026-10-01T15:43:14.492585117Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "4f65c7dfee65d4173b6de744c7f335c7e1f2ea88f3527a02808addf7b376c457",
+  "finalImageId": "26af4d189984948a92ebc88a2c8b69e1fda2b089ea52a87818b3b1c094177d64",
+  "finalTags": [
+   "localhost/thyrox-task-runner:dev"
+  ],
+  "layerCount": 4,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 13,
+  "proxyAssignments": 3,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "26af4d189984948a92ebc88a2c8b69e1fda2b089ea52a87818b3b1c094177d64",
+  "repoTags": [
+   "localhost/thyrox-task-runner:dev"
+  ],
+  "repoDigests": [
+   "localhost/thyrox-task-runner@sha256:a6648bee8d929b9975163b9bc6366613ce18e9ecc4a666f5dce3bcdaade37165"
+  ],
+  "sizeBytes": 386466937,
+  "createdAt": "2026-10-01T15:43:14.875298303Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "io.thyrox.image.lifecycle": "cache",
+   "org.opencontainers.image.version": "24.04",
+   "thyrox.task": "TASK-THYROX-0742"
+  },
+  "parentId": "0d469d62f999f18272430918a9d655d1c352e9f56337a9da35f372fc7a7c4e48",
+  "finalImageId": "26af4d189984948a92ebc88a2c8b69e1fda2b089ea52a87818b3b1c094177d64",
+  "finalTags": [
+   "localhost/thyrox-task-runner:dev"
+  ],
+  "layerCount": 4,
+  "layersArePrefixOfFinal": true,
+  "childCount": 0,
+  "historyLines": 14,
+  "proxyAssignments": 3,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "4f65c7dfee65d4173b6de744c7f335c7e1f2ea88f3527a02808addf7b376c457",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 334286704,
+  "createdAt": "2026-10-01T15:43:12.070794332Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "61b9d21cee35de6b2849d6d92e224511e6feb167d9d2c24a5708d7c2778ef834",
+  "finalImageId": "26af4d189984948a92ebc88a2c8b69e1fda2b089ea52a87818b3b1c094177d64",
+  "finalTags": [
+   "localhost/thyrox-task-runner:dev"
+  ],
+  "layerCount": 3,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 12,
+  "proxyAssignments": 2,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "61b9d21cee35de6b2849d6d92e224511e6feb167d9d2c24a5708d7c2778ef834",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 234985368,
+  "createdAt": "2026-10-01T15:43:06.873848991Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "5c810f8d34a2e2f647a604735480e63a15293242044e273fb84f7c622e237465",
+  "finalImageId": "26af4d189984948a92ebc88a2c8b69e1fda2b089ea52a87818b3b1c094177d64",
+  "finalTags": [
+   "localhost/thyrox-task-runner:dev"
+  ],
+  "layerCount": 2,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 11,
+  "proxyAssignments": 1,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "5c810f8d34a2e2f647a604735480e63a15293242044e273fb84f7c622e237465",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 80694305,
+  "createdAt": "2026-10-01T15:42:36.482641732Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "28c023aeef75d983fe44ae713f3992b88ab5818e1e5d7730c65fd3c97e416d07",
+  "finalImageId": "26af4d189984948a92ebc88a2c8b69e1fda2b089ea52a87818b3b1c094177d64",
+  "finalTags": [
+   "localhost/thyrox-task-runner:dev"
+  ],
+  "layerCount": 1,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 10,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "28c023aeef75d983fe44ae713f3992b88ab5818e1e5d7730c65fd3c97e416d07",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 80694118,
+  "createdAt": "2026-10-01T15:42:36.465058839Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "f3e7b383fcafd936c4b78eaf181c94265d2ce0964551201edb01f34ebc60c538",
+  "finalImageId": "26af4d189984948a92ebc88a2c8b69e1fda2b089ea52a87818b3b1c094177d64",
+  "finalTags": [
+   "localhost/thyrox-task-runner:dev"
+  ],
+  "layerCount": 1,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 9,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "f3e7b383fcafd936c4b78eaf181c94265d2ce0964551201edb01f34ebc60c538",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 80693942,
+  "createdAt": "2026-10-01T15:42:36.442752389Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "efc2db794f6d3d2d903ff8e5dc1f7d68714a63b5ca879d70bfb5cc91798d7bbb",
+  "finalImageId": "26af4d189984948a92ebc88a2c8b69e1fda2b089ea52a87818b3b1c094177d64",
+  "finalTags": [
+   "localhost/thyrox-task-runner:dev"
+  ],
+  "layerCount": 1,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 8,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "efc2db794f6d3d2d903ff8e5dc1f7d68714a63b5ca879d70bfb5cc91798d7bbb",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 80693778,
+  "createdAt": "2026-10-01T02:07:38.978185626Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "b78504eefd22adbeb9b87013f5740fbe103e83030b1d5a1242f7d9cc929f0732",
+  "finalImageId": "26af4d189984948a92ebc88a2c8b69e1fda2b089ea52a87818b3b1c094177d64",
+  "finalTags": [
+   "localhost/thyrox-task-runner:dev"
+  ],
+  "layerCount": 1,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 7,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "b78504eefd22adbeb9b87013f5740fbe103e83030b1d5a1242f7d9cc929f0732",
+  "repoTags": [],
+  "repoDigests": [],
+  "sizeBytes": 80693623,
+  "createdAt": "2026-10-01T02:07:38.962599464Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": "6232b38791000e3818b58d8847b5a8f5612d606929e01156dd8febc423e0f2ef",
+  "finalImageId": "26af4d189984948a92ebc88a2c8b69e1fda2b089ea52a87818b3b1c094177d64",
+  "finalTags": [
+   "localhost/thyrox-task-runner:dev"
+  ],
+  "layerCount": 1,
+  "layersArePrefixOfFinal": true,
+  "childCount": 1,
+  "historyLines": 6,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "c178b43788bbd8f33ac3a6aa17dc561bc15dcbdba08ceac19f9388cf2415cc48",
+  "repoTags": [
+   "docker.io/ollama/ollama:0.35.0"
+  ],
+  "repoDigests": [
+   "docker.io/ollama/ollama@sha256:2a6e883b917fc543389599dae79918f5cac9e1438890506982f44aa4f5625d01",
+   "docker.io/ollama/ollama@sha256:9c1dc45ea758396139ec0adfa52947714c61f8d1e4537a6e2daef8138e7a64a9"
+  ],
+  "sizeBytes": 5513676936,
+  "createdAt": "2026-09-29T01:43:16.242329418Z",
+  "labels": {
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": null,
+  "finalImageId": "c178b43788bbd8f33ac3a6aa17dc561bc15dcbdba08ceac19f9388cf2415cc48",
+  "finalTags": [
+   "docker.io/ollama/ollama:0.35.0"
+  ],
+  "layerCount": 4,
+  "layersArePrefixOfFinal": true,
+  "childCount": 0,
+  "historyLines": 18,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "64035c2c9726d90bea2a217d43da49d7a3f13dde8647c1f409059e02e0e61287",
+  "repoTags": [
+   "docker.io/library/redis:7.4"
+  ],
+  "repoDigests": [
+   "docker.io/library/redis@sha256:95acc00495ddacfec75111ba47021f903121a890311d49264c723b4423ac9601",
+   "docker.io/library/redis@sha256:c6eabf748fc7a61dbb5a705c78bcf3d6377b1127a97d0ce965c11c44ba46896f"
+  ],
+  "sizeBytes": 116068690,
+  "createdAt": "2026-09-19T00:38:19.910809608Z",
+  "labels": {},
+  "parentId": null,
+  "finalImageId": "64035c2c9726d90bea2a217d43da49d7a3f13dde8647c1f409059e02e0e61287",
+  "finalTags": [
+   "docker.io/library/redis:7.4"
+  ],
+  "layerCount": 7,
+  "layersArePrefixOfFinal": true,
+  "childCount": 0,
+  "historyLines": 14,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "6232b38791000e3818b58d8847b5a8f5612d606929e01156dd8febc423e0f2ef",
+  "repoTags": [
+   "docker.io/library/ubuntu:24.04"
+  ],
+  "repoDigests": [
+   "docker.io/library/ubuntu@sha256:008173c23f95b170204355c12626cb5a965d779a7e1283b09e9cffbb1bf33ca3",
+   "docker.io/library/ubuntu@sha256:496754492fb28b4d3049432f2ca787449331e23fb14f0dd3fffea86bf5a93eb4"
+  ],
+  "sizeBytes": 80700787,
+  "createdAt": "2026-09-11T11:44:06.579973371Z",
+  "labels": {
+   "org.opencontainers.image.version": "24.04"
+  },
+  "parentId": null,
+  "finalImageId": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+  "finalTags": [
+   "localhost/thyrox-model-quantizer:dev",
+   "localhost/thyrox-model-quantizer:clean-candidate"
+  ],
+  "layerCount": 1,
+  "layersArePrefixOfFinal": true,
+  "childCount": 3,
+  "historyLines": 5,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ },
+ {
+  "imageId": "56a5b20c7a157dbb94149ba3cce70da76f02e1645dec234379709ddaebe607ea",
+  "repoTags": [
+   "docker.io/pgvector/pgvector:0.8.0-pg16"
+  ],
+  "repoDigests": [
+   "docker.io/pgvector/pgvector@sha256:a132765ec351c65111b5b675928a3a0515a466a40f97277329db8b8209ad8bc9",
+   "docker.io/pgvector/pgvector@sha256:c72df104202409108a1660ecccd2b7ffac6b17e44c31b2636d10e983f410f8eb"
+  ],
+  "sizeBytes": 446874579,
+  "createdAt": "2025-08-15T18:23:37.090125259Z",
+  "labels": {},
+  "parentId": null,
+  "finalImageId": "56a5b20c7a157dbb94149ba3cce70da76f02e1645dec234379709ddaebe607ea",
+  "finalTags": [
+   "docker.io/pgvector/pgvector:0.8.0-pg16"
+  ],
+  "layerCount": 16,
+  "layersArePrefixOfFinal": true,
+  "childCount": 0,
+  "historyLines": 28,
+  "proxyAssignments": 0,
+  "secretLikeAssignments": 0
+ }
+]

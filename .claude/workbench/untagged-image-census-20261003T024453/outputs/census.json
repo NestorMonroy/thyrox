@@ -1,0 +1,1283 @@
+[
+ {
+  "imageId": "a3327b10203224c725c696c12bde2628d26f4543e83bef587a2a75aa266e59a3",
+  "localDigest": [],
+  "sizeBytes": 2957557489,
+  "createdAt": "2026-10-03T01:20:23.427623369Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.created": "2026-09-30T04:38:22Z",
+   "org.opencontainers.image.description": "LLM inference in C/C++",
+   "org.opencontainers.image.revision": "eae11d2217fe9225d1aaba48773b6cca45ae4de9",
+   "org.opencontainers.image.source": "https://github.com/ggml-org/llama.cpp",
+   "org.opencontainers.image.title": "llama.cpp",
+   "org.opencontainers.image.url": "https://github.com/ggml-org/llama.cpp",
+   "org.opencontainers.image.version": "b11277"
+  },
+  "historyLines": null,
+  "historySource": "not-measured",
+  "parentId": null,
+  "layersArePrefixOfFinal": null,
+  "relatedTaggedImage": null,
+  "upstreamReference": null,
+  "buildStageOf": "localhost/thyrox-model-quantizer:candidate-81e5a993a7be",
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0912",
+  "commit": "81e5a993a7be",
+  "workbench": ".claude/workbench/publish-quantizer-image-20261003T005015",
+  "containerfile": "src/packages/model-artifacts/quantizer-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": null,
+  "uniqueBytesSource": "not-measured",
+  "reproducible": "partial: rebuilt by the declared build, identity not bit-identical",
+  "semanticValue": null,
+  "secretLikeAssignments": null,
+  "proxyAssignments": null,
+  "finalRemoteCopy": null,
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "imagen de etapa creada por la construcción declarada de TASK-THYROX-0912"
+ },
+ {
+  "imageId": "ec1abf12aa460f9d0818286471db1aa80b8427e1df54b87dd356afcb3a4a4860",
+  "localDigest": [],
+  "sizeBytes": 1279630404,
+  "createdAt": "2026-10-02T10:09:48.064794951Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 20,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "1c1a3ab4600ecd13c4ee6b5e1720128b19097a6480114135e1bf68e74a2646a1",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+   "tags": [
+    "localhost/thyrox-model-quantizer:dev",
+    "localhost/thyrox-model-quantizer:clean-candidate"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0747",
+  "commit": "4ebcdc3a8",
+  "workbench": ".claude/workbench/embedding-route-and-local-workers-20261002T093053/outputs/U1b-clean-build",
+  "containerfile": "src/packages/model-artifacts/quantizer-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": null,
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "1c1a3ab4600ecd13c4ee6b5e1720128b19097a6480114135e1bf68e74a2646a1",
+  "localDigest": [],
+  "sizeBytes": 1279630242,
+  "createdAt": "2026-10-02T10:09:48.008229027Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 19,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "b5d366f14ed67d31807787420eee702cf8b0eaddbb39b6455b2e0e69e94ba83e",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+   "tags": [
+    "localhost/thyrox-model-quantizer:dev",
+    "localhost/thyrox-model-quantizer:clean-candidate"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0747",
+  "commit": "4ebcdc3a8",
+  "workbench": ".claude/workbench/embedding-route-and-local-workers-20261002T093053/outputs/U1b-clean-build",
+  "containerfile": "src/packages/model-artifacts/quantizer-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": null,
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "29215f3ff891dc3a0f096946532d38702ff9b945128beddf074030513e981bba",
+  "localDigest": [],
+  "sizeBytes": 1279512651,
+  "createdAt": "2026-10-02T10:09:47.45729027Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 16,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "0bc5dc55d62e54ee8711bc493bfa8cf0a6e156b117ef96208bb730dea1741533",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+   "tags": [
+    "localhost/thyrox-model-quantizer:dev",
+    "localhost/thyrox-model-quantizer:clean-candidate"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0747",
+  "commit": "4ebcdc3a8",
+  "workbench": ".claude/workbench/embedding-route-and-local-workers-20261002T093053/outputs/U1b-clean-build",
+  "containerfile": "src/packages/model-artifacts/quantizer-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": null,
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "b5d366f14ed67d31807787420eee702cf8b0eaddbb39b6455b2e0e69e94ba83e",
+  "localDigest": [],
+  "sizeBytes": 1279630014,
+  "createdAt": "2026-10-02T10:09:47.939238499Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 18,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "2fe71c5b7becac26a6d8fd2d42506d89d5289e5ecbce2f1e3e58205fdef6f189",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+   "tags": [
+    "localhost/thyrox-model-quantizer:dev",
+    "localhost/thyrox-model-quantizer:clean-candidate"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0747",
+  "commit": "4ebcdc3a8",
+  "workbench": ".claude/workbench/embedding-route-and-local-workers-20261002T093053/outputs/U1b-clean-build",
+  "containerfile": "src/packages/model-artifacts/quantizer-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": null,
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "2fe71c5b7becac26a6d8fd2d42506d89d5289e5ecbce2f1e3e58205fdef6f189",
+  "localDigest": [],
+  "sizeBytes": 1279563397,
+  "createdAt": "2026-10-02T10:09:47.664704532Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 17,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "29215f3ff891dc3a0f096946532d38702ff9b945128beddf074030513e981bba",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+   "tags": [
+    "localhost/thyrox-model-quantizer:dev",
+    "localhost/thyrox-model-quantizer:clean-candidate"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0747",
+  "commit": "4ebcdc3a8",
+  "workbench": ".claude/workbench/embedding-route-and-local-workers-20261002T093053/outputs/U1b-clean-build",
+  "containerfile": "src/packages/model-artifacts/quantizer-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": null,
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "0bc5dc55d62e54ee8711bc493bfa8cf0a6e156b117ef96208bb730dea1741533",
+  "localDigest": [],
+  "sizeBytes": 1279482387,
+  "createdAt": "2026-10-02T10:09:24.425823162Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 15,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "bce466222b432e55c685080afdb10b2b1597d4fd8a103710f3a5ccc72468d064",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+   "tags": [
+    "localhost/thyrox-model-quantizer:dev",
+    "localhost/thyrox-model-quantizer:clean-candidate"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0747",
+  "commit": "4ebcdc3a8",
+  "workbench": ".claude/workbench/embedding-route-and-local-workers-20261002T093053/outputs/U1b-clean-build",
+  "containerfile": "src/packages/model-artifacts/quantizer-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": null,
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "bce466222b432e55c685080afdb10b2b1597d4fd8a103710f3a5ccc72468d064",
+  "localDigest": [],
+  "sizeBytes": 168080852,
+  "createdAt": "2026-10-02T10:08:33.891233523Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 14,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "e0eecd9add4e65c7ef1636ad7c6ecf1c92b11704f102e2d99eca83456f0dc713",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+   "tags": [
+    "localhost/thyrox-model-quantizer:dev",
+    "localhost/thyrox-model-quantizer:clean-candidate"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0747",
+  "commit": "4ebcdc3a8",
+  "workbench": ".claude/workbench/embedding-route-and-local-workers-20261002T093053/outputs/U1b-clean-build",
+  "containerfile": "src/packages/model-artifacts/quantizer-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": null,
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "e0eecd9add4e65c7ef1636ad7c6ecf1c92b11704f102e2d99eca83456f0dc713",
+  "localDigest": [],
+  "sizeBytes": 167276947,
+  "createdAt": "2026-10-02T10:08:33.648227979Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 13,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "21e1990a0075d3b977f4b1e1044e704d95b9371de33610f098aa7e0f8101167a",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+   "tags": [
+    "localhost/thyrox-model-quantizer:dev",
+    "localhost/thyrox-model-quantizer:clean-candidate"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0747",
+  "commit": "4ebcdc3a8",
+  "workbench": ".claude/workbench/embedding-route-and-local-workers-20261002T093053/outputs/U1b-clean-build",
+  "containerfile": "src/packages/model-artifacts/quantizer-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": null,
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "21e1990a0075d3b977f4b1e1044e704d95b9371de33610f098aa7e0f8101167a",
+  "localDigest": [],
+  "sizeBytes": 166174541,
+  "createdAt": "2026-10-02T10:08:33.399002171Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 12,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "0eeacaaee07135afe94d1502bfb28649eae27333122df4a04a680e6d3865ecbc",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+   "tags": [
+    "localhost/thyrox-model-quantizer:dev",
+    "localhost/thyrox-model-quantizer:clean-candidate"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0747",
+  "commit": "4ebcdc3a8",
+  "workbench": ".claude/workbench/embedding-route-and-local-workers-20261002T093053/outputs/U1b-clean-build",
+  "containerfile": "src/packages/model-artifacts/quantizer-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": null,
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "0eeacaaee07135afe94d1502bfb28649eae27333122df4a04a680e6d3865ecbc",
+  "localDigest": [],
+  "sizeBytes": 166158612,
+  "createdAt": "2026-10-02T10:08:33.084517601Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 11,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "72b5859b94bf8d0116276f1fac8a92c38a9689d78f4346d98ae32bce48defba7",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+   "tags": [
+    "localhost/thyrox-model-quantizer:dev",
+    "localhost/thyrox-model-quantizer:clean-candidate"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0747",
+  "commit": "4ebcdc3a8",
+  "workbench": ".claude/workbench/embedding-route-and-local-workers-20261002T093053/outputs/U1b-clean-build",
+  "containerfile": "src/packages/model-artifacts/quantizer-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": null,
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "72b5859b94bf8d0116276f1fac8a92c38a9689d78f4346d98ae32bce48defba7",
+  "localDigest": [],
+  "sizeBytes": 145035476,
+  "createdAt": "2026-10-02T10:08:32.429303409Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 10,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "117cb4575e462b1166ccc17c398bb77606475f0e82b42cde2f4e1b756a559329",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+   "tags": [
+    "localhost/thyrox-model-quantizer:dev",
+    "localhost/thyrox-model-quantizer:clean-candidate"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0747",
+  "commit": "4ebcdc3a8",
+  "workbench": ".claude/workbench/embedding-route-and-local-workers-20261002T093053/outputs/U1b-clean-build",
+  "containerfile": "src/packages/model-artifacts/quantizer-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": null,
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "117cb4575e462b1166ccc17c398bb77606475f0e82b42cde2f4e1b756a559329",
+  "localDigest": [],
+  "sizeBytes": 132865172,
+  "createdAt": "2026-10-02T10:08:32.095682363Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 9,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "7ee64f4ff49bdf8b41a42eecb75d0fcb7372bf0fbe4f411266828a5a31ce2ac6",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+   "tags": [
+    "localhost/thyrox-model-quantizer:dev",
+    "localhost/thyrox-model-quantizer:clean-candidate"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0747",
+  "commit": "4ebcdc3a8",
+  "workbench": ".claude/workbench/embedding-route-and-local-workers-20261002T093053/outputs/U1b-clean-build",
+  "containerfile": "src/packages/model-artifacts/quantizer-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": null,
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "7ee64f4ff49bdf8b41a42eecb75d0fcb7372bf0fbe4f411266828a5a31ce2ac6",
+  "localDigest": [],
+  "sizeBytes": 132600920,
+  "createdAt": "2026-10-02T10:08:31.892928219Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 8,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "014a46951068e47e3c31eed27de5eb34658eb94e536430193ac69d443f3e2a9d",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+   "tags": [
+    "localhost/thyrox-model-quantizer:dev",
+    "localhost/thyrox-model-quantizer:clean-candidate"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0747",
+  "commit": "4ebcdc3a8",
+  "workbench": ".claude/workbench/embedding-route-and-local-workers-20261002T093053/outputs/U1b-clean-build",
+  "containerfile": "src/packages/model-artifacts/quantizer-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": null,
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "014a46951068e47e3c31eed27de5eb34658eb94e536430193ac69d443f3e2a9d",
+  "localDigest": [],
+  "sizeBytes": 132563486,
+  "createdAt": "2026-10-02T10:08:31.135710486Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 7,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "51f6f7c671f6afa97122f17096a9509f34599159ec473e57b478ae1beab679e0",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+   "tags": [
+    "localhost/thyrox-model-quantizer:dev",
+    "localhost/thyrox-model-quantizer:clean-candidate"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0747",
+  "commit": "4ebcdc3a8",
+  "workbench": ".claude/workbench/embedding-route-and-local-workers-20261002T093053/outputs/U1b-clean-build",
+  "containerfile": "src/packages/model-artifacts/quantizer-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": null,
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "51f6f7c671f6afa97122f17096a9509f34599159ec473e57b478ae1beab679e0",
+  "localDigest": [],
+  "sizeBytes": 80693608,
+  "createdAt": "2026-10-02T10:08:18.211351763Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 6,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "6232b38791000e3818b58d8847b5a8f5612d606929e01156dd8febc423e0f2ef",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8",
+   "tags": [
+    "localhost/thyrox-model-quantizer:dev",
+    "localhost/thyrox-model-quantizer:clean-candidate"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0747",
+  "commit": "4ebcdc3a8",
+  "workbench": ".claude/workbench/embedding-route-and-local-workers-20261002T093053/outputs/U1b-clean-build",
+  "containerfile": "src/packages/model-artifacts/quantizer-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": null,
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "1e02a895407958a517a0b82851aa76befb8f65f405e7ea8422d434691f415c26",
+  "localDigest": [],
+  "sizeBytes": 386466328,
+  "createdAt": "2026-10-02T02:21:30.60277041Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 13,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "05ae188ca037bcab1e61af8387e96c37029e0f09c82f15dfe0306053353deee8",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "2bb9f235830eb30689864b5447eeea083ae1e3607a18fdca353b5c91de5e5e5a",
+   "tags": [
+    "docker.io/th3rox/thyrox-task-runner:ubuntu24.04-bun1.3.11-uv0.8.17",
+    "localhost/thyrox-task-runner:candidate"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0724",
+  "commit": "66101a01f",
+  "workbench": ".claude/workbench/publish-task-runner-image-20261002T021834",
+  "containerfile": "src/packages/podman-execution/task-runner-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": "docker.io/th3rox/thyrox-task-runner@sha256:1cced65c16b40c7ac5fc73a6908ce0353ec450618251cac1893ef8c82ad25ba5",
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "05ae188ca037bcab1e61af8387e96c37029e0f09c82f15dfe0306053353deee8",
+  "localDigest": [],
+  "sizeBytes": 334286445,
+  "createdAt": "2026-10-02T02:21:28.567893697Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 12,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "264da9d03eb3003c3cfa8af7cd57707e6e6e1bd283f4f5452fbf3c1ddff259bf",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "2bb9f235830eb30689864b5447eeea083ae1e3607a18fdca353b5c91de5e5e5a",
+   "tags": [
+    "docker.io/th3rox/thyrox-task-runner:ubuntu24.04-bun1.3.11-uv0.8.17",
+    "localhost/thyrox-task-runner:candidate"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0724",
+  "commit": "66101a01f",
+  "workbench": ".claude/workbench/publish-task-runner-image-20261002T021834",
+  "containerfile": "src/packages/podman-execution/task-runner-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": "docker.io/th3rox/thyrox-task-runner@sha256:1cced65c16b40c7ac5fc73a6908ce0353ec450618251cac1893ef8c82ad25ba5",
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "264da9d03eb3003c3cfa8af7cd57707e6e6e1bd283f4f5452fbf3c1ddff259bf",
+  "localDigest": [],
+  "sizeBytes": 234985179,
+  "createdAt": "2026-10-02T02:21:25.279553429Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 11,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "95d7e60fc00bfc1baf54e911f389232d0bc604555258272ec0b57b1bd7abf006",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "2bb9f235830eb30689864b5447eeea083ae1e3607a18fdca353b5c91de5e5e5a",
+   "tags": [
+    "docker.io/th3rox/thyrox-task-runner:ubuntu24.04-bun1.3.11-uv0.8.17",
+    "localhost/thyrox-task-runner:candidate"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0724",
+  "commit": "66101a01f",
+  "workbench": ".claude/workbench/publish-task-runner-image-20261002T021834",
+  "containerfile": "src/packages/podman-execution/task-runner-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": "docker.io/th3rox/thyrox-task-runner@sha256:1cced65c16b40c7ac5fc73a6908ce0353ec450618251cac1893ef8c82ad25ba5",
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "82d1a3f1a1cbb2e2fc43bfcc6d576f68bcf50510d8b798bd6f1c260b16052903",
+  "localDigest": [],
+  "sizeBytes": 80693600,
+  "createdAt": "2026-10-02T02:21:09.822787596Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 6,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "6232b38791000e3818b58d8847b5a8f5612d606929e01156dd8febc423e0f2ef",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "2bb9f235830eb30689864b5447eeea083ae1e3607a18fdca353b5c91de5e5e5a",
+   "tags": [
+    "docker.io/th3rox/thyrox-task-runner:ubuntu24.04-bun1.3.11-uv0.8.17",
+    "localhost/thyrox-task-runner:candidate"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0724",
+  "commit": "66101a01f",
+  "workbench": ".claude/workbench/publish-task-runner-image-20261002T021834",
+  "containerfile": "src/packages/podman-execution/task-runner-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": "docker.io/th3rox/thyrox-task-runner@sha256:1cced65c16b40c7ac5fc73a6908ce0353ec450618251cac1893ef8c82ad25ba5",
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "95d7e60fc00bfc1baf54e911f389232d0bc604555258272ec0b57b1bd7abf006",
+  "localDigest": [],
+  "sizeBytes": 80694184,
+  "createdAt": "2026-10-02T02:21:09.87896413Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 10,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "24c9da34a856faa8b02a35daeecf7ab4b279c1242dede9de07f28d2296793059",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "2bb9f235830eb30689864b5447eeea083ae1e3607a18fdca353b5c91de5e5e5a",
+   "tags": [
+    "docker.io/th3rox/thyrox-task-runner:ubuntu24.04-bun1.3.11-uv0.8.17",
+    "localhost/thyrox-task-runner:candidate"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0724",
+  "commit": "66101a01f",
+  "workbench": ".claude/workbench/publish-task-runner-image-20261002T021834",
+  "containerfile": "src/packages/podman-execution/task-runner-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": "docker.io/th3rox/thyrox-task-runner@sha256:1cced65c16b40c7ac5fc73a6908ce0353ec450618251cac1893ef8c82ad25ba5",
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "24c9da34a856faa8b02a35daeecf7ab4b279c1242dede9de07f28d2296793059",
+  "localDigest": [],
+  "sizeBytes": 80694023,
+  "createdAt": "2026-10-02T02:21:09.865480178Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 9,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "8ee2ef2046c4dc392dae9da8988301e9322e1b96fcf28b574c4b72e1bd2a1bc7",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "2bb9f235830eb30689864b5447eeea083ae1e3607a18fdca353b5c91de5e5e5a",
+   "tags": [
+    "docker.io/th3rox/thyrox-task-runner:ubuntu24.04-bun1.3.11-uv0.8.17",
+    "localhost/thyrox-task-runner:candidate"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0724",
+  "commit": "66101a01f",
+  "workbench": ".claude/workbench/publish-task-runner-image-20261002T021834",
+  "containerfile": "src/packages/podman-execution/task-runner-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": "docker.io/th3rox/thyrox-task-runner@sha256:1cced65c16b40c7ac5fc73a6908ce0353ec450618251cac1893ef8c82ad25ba5",
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "8ee2ef2046c4dc392dae9da8988301e9322e1b96fcf28b574c4b72e1bd2a1bc7",
+  "localDigest": [],
+  "sizeBytes": 80693871,
+  "createdAt": "2026-10-02T02:21:09.851837364Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 8,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "78f62cf986107cbf34d06d5d967889b80a938e2c9d410ba084a54d29212116dd",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "2bb9f235830eb30689864b5447eeea083ae1e3607a18fdca353b5c91de5e5e5a",
+   "tags": [
+    "docker.io/th3rox/thyrox-task-runner:ubuntu24.04-bun1.3.11-uv0.8.17",
+    "localhost/thyrox-task-runner:candidate"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0724",
+  "commit": "66101a01f",
+  "workbench": ".claude/workbench/publish-task-runner-image-20261002T021834",
+  "containerfile": "src/packages/podman-execution/task-runner-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": "docker.io/th3rox/thyrox-task-runner@sha256:1cced65c16b40c7ac5fc73a6908ce0353ec450618251cac1893ef8c82ad25ba5",
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "78f62cf986107cbf34d06d5d967889b80a938e2c9d410ba084a54d29212116dd",
+  "localDigest": [],
+  "sizeBytes": 80693731,
+  "createdAt": "2026-10-02T02:21:09.838622124Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 7,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "82d1a3f1a1cbb2e2fc43bfcc6d576f68bcf50510d8b798bd6f1c260b16052903",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "2bb9f235830eb30689864b5447eeea083ae1e3607a18fdca353b5c91de5e5e5a",
+   "tags": [
+    "docker.io/th3rox/thyrox-task-runner:ubuntu24.04-bun1.3.11-uv0.8.17",
+    "localhost/thyrox-task-runner:candidate"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0724",
+  "commit": "66101a01f",
+  "workbench": ".claude/workbench/publish-task-runner-image-20261002T021834",
+  "containerfile": "src/packages/podman-execution/task-runner-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": "docker.io/th3rox/thyrox-task-runner@sha256:1cced65c16b40c7ac5fc73a6908ce0353ec450618251cac1893ef8c82ad25ba5",
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "0d469d62f999f18272430918a9d655d1c352e9f56337a9da35f372fc7a7c4e48",
+  "localDigest": [],
+  "sizeBytes": 386466658,
+  "createdAt": "2026-10-01T15:43:14.492585117Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 13,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "4f65c7dfee65d4173b6de744c7f335c7e1f2ea88f3527a02808addf7b376c457",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "26af4d189984948a92ebc88a2c8b69e1fda2b089ea52a87818b3b1c094177d64",
+   "tags": [
+    "localhost/thyrox-task-runner:dev"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0742",
+  "commit": "dd85fea42",
+  "workbench": ".claude/jobs/runner-image-20261001T154236",
+  "containerfile": "src/packages/podman-execution/task-runner-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 3,
+  "finalRemoteCopy": null,
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "4f65c7dfee65d4173b6de744c7f335c7e1f2ea88f3527a02808addf7b376c457",
+  "localDigest": [],
+  "sizeBytes": 334286704,
+  "createdAt": "2026-10-01T15:43:12.070794332Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 12,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "61b9d21cee35de6b2849d6d92e224511e6feb167d9d2c24a5708d7c2778ef834",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "26af4d189984948a92ebc88a2c8b69e1fda2b089ea52a87818b3b1c094177d64",
+   "tags": [
+    "localhost/thyrox-task-runner:dev"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0742",
+  "commit": "dd85fea42",
+  "workbench": ".claude/jobs/runner-image-20261001T154236",
+  "containerfile": "src/packages/podman-execution/task-runner-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 2,
+  "finalRemoteCopy": null,
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "61b9d21cee35de6b2849d6d92e224511e6feb167d9d2c24a5708d7c2778ef834",
+  "localDigest": [],
+  "sizeBytes": 234985368,
+  "createdAt": "2026-10-01T15:43:06.873848991Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 11,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "5c810f8d34a2e2f647a604735480e63a15293242044e273fb84f7c622e237465",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "26af4d189984948a92ebc88a2c8b69e1fda2b089ea52a87818b3b1c094177d64",
+   "tags": [
+    "localhost/thyrox-task-runner:dev"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0742",
+  "commit": "dd85fea42",
+  "workbench": ".claude/jobs/runner-image-20261001T154236",
+  "containerfile": "src/packages/podman-execution/task-runner-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 1,
+  "finalRemoteCopy": null,
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "28c023aeef75d983fe44ae713f3992b88ab5818e1e5d7730c65fd3c97e416d07",
+  "localDigest": [],
+  "sizeBytes": 80694118,
+  "createdAt": "2026-10-01T15:42:36.465058839Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 9,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "f3e7b383fcafd936c4b78eaf181c94265d2ce0964551201edb01f34ebc60c538",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "26af4d189984948a92ebc88a2c8b69e1fda2b089ea52a87818b3b1c094177d64",
+   "tags": [
+    "localhost/thyrox-task-runner:dev"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0742",
+  "commit": "dd85fea42",
+  "workbench": ".claude/jobs/runner-image-20261001T154236",
+  "containerfile": "src/packages/podman-execution/task-runner-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": null,
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "5c810f8d34a2e2f647a604735480e63a15293242044e273fb84f7c622e237465",
+  "localDigest": [],
+  "sizeBytes": 80694305,
+  "createdAt": "2026-10-01T15:42:36.482641732Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 10,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "28c023aeef75d983fe44ae713f3992b88ab5818e1e5d7730c65fd3c97e416d07",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "26af4d189984948a92ebc88a2c8b69e1fda2b089ea52a87818b3b1c094177d64",
+   "tags": [
+    "localhost/thyrox-task-runner:dev"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0742",
+  "commit": "dd85fea42",
+  "workbench": ".claude/jobs/runner-image-20261001T154236",
+  "containerfile": "src/packages/podman-execution/task-runner-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": null,
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "f3e7b383fcafd936c4b78eaf181c94265d2ce0964551201edb01f34ebc60c538",
+  "localDigest": [],
+  "sizeBytes": 80693942,
+  "createdAt": "2026-10-01T15:42:36.442752389Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 8,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "efc2db794f6d3d2d903ff8e5dc1f7d68714a63b5ca879d70bfb5cc91798d7bbb",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "26af4d189984948a92ebc88a2c8b69e1fda2b089ea52a87818b3b1c094177d64",
+   "tags": [
+    "localhost/thyrox-task-runner:dev"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": "TASK-THYROX-0742",
+  "commit": "dd85fea42",
+  "workbench": ".claude/jobs/runner-image-20261001T154236",
+  "containerfile": "src/packages/podman-execution/task-runner-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": null,
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "intermedia de la cadena de construcción de una final etiquetada; sus capas son prefijo de la final"
+ },
+ {
+  "imageId": "efc2db794f6d3d2d903ff8e5dc1f7d68714a63b5ca879d70bfb5cc91798d7bbb",
+  "localDigest": [],
+  "sizeBytes": 80693778,
+  "createdAt": "2026-10-01T02:07:38.978185626Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 7,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "b78504eefd22adbeb9b87013f5740fbe103e83030b1d5a1242f7d9cc929f0732",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "26af4d189984948a92ebc88a2c8b69e1fda2b089ea52a87818b3b1c094177d64",
+   "tags": [
+    "localhost/thyrox-task-runner:dev"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": ".claude/jobs/quantizer-image-build-20261001T020736",
+  "task": "TASK-THYROX-0742",
+  "commit": "dd85fea42",
+  "workbench": ".claude/jobs/runner-image-20261001T154236",
+  "containerfile": "src/packages/podman-execution/task-runner-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": null,
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "capa intermedia reutilizada como caché por otra construcción"
+ },
+ {
+  "imageId": "b78504eefd22adbeb9b87013f5740fbe103e83030b1d5a1242f7d9cc929f0732",
+  "localDigest": [],
+  "sizeBytes": 80693623,
+  "createdAt": "2026-10-01T02:07:38.962599464Z",
+  "labels": {
+   "io.buildah.version": "1.33.7",
+   "org.opencontainers.image.version": "24.04"
+  },
+  "historyLines": 6,
+  "historySource": "container-image-distribution census/inspect.json",
+  "parentId": "6232b38791000e3818b58d8847b5a8f5612d606929e01156dd8febc423e0f2ef",
+  "layersArePrefixOfFinal": true,
+  "relatedTaggedImage": {
+   "id": "26af4d189984948a92ebc88a2c8b69e1fda2b089ea52a87818b3b1c094177d64",
+   "tags": [
+    "localhost/thyrox-task-runner:dev"
+   ]
+  },
+  "upstreamReference": null,
+  "buildStageOf": null,
+  "crossBuildCacheReuse": ".claude/jobs/quantizer-image-build-20261001T020736",
+  "task": "TASK-THYROX-0742",
+  "commit": "dd85fea42",
+  "workbench": ".claude/jobs/runner-image-20261001T154236",
+  "containerfile": "src/packages/podman-execution/task-runner-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 0,
+  "uniqueBytesSource": "container-image-distribution plan.json",
+  "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
+  "semanticValue": "provenance and build history",
+  "secretLikeAssignments": 0,
+  "proxyAssignments": 0,
+  "finalRemoteCopy": null,
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "capa intermedia reutilizada como caché por otra construcción"
+ },
+ {
+  "imageId": "9ace0117e8ff59e3d54beeea8069d919b9a882168385a1dfc5a1d8b9503df50c",
+  "localDigest": [
+   "ghcr.io/ggml-org/llama.cpp@sha256:88ef2d9c2a221e80d5eb96f707a719524e9fc522d34b272bf2852dde4898d2dc",
+   "ghcr.io/ggml-org/llama.cpp@sha256:f3f04c295b2906b706754b9b2ed239fc636751e4c92687dab823336fc026f076"
+  ],
+  "sizeBytes": 2957557436,
+  "createdAt": "2026-09-30T04:49:29.236058659Z",
+  "labels": {
+   "org.opencontainers.image.created": "2026-09-30T04:38:22Z",
+   "org.opencontainers.image.description": "LLM inference in C/C++",
+   "org.opencontainers.image.revision": "eae11d2217fe9225d1aaba48773b6cca45ae4de9",
+   "org.opencontainers.image.source": "https://github.com/ggml-org/llama.cpp",
+   "org.opencontainers.image.title": "llama.cpp",
+   "org.opencontainers.image.url": "https://github.com/ggml-org/llama.cpp",
+   "org.opencontainers.image.version": "b11277"
+  },
+  "historyLines": null,
+  "historySource": "not-measured",
+  "parentId": null,
+  "layersArePrefixOfFinal": null,
+  "relatedTaggedImage": null,
+  "upstreamReference": "ghcr.io/ggml-org/llama.cpp@sha256:88ef2d9c2a221e80d5eb96f707a719524e9fc522d34b272bf2852dde4898d2dc",
+  "buildStageOf": null,
+  "crossBuildCacheReuse": null,
+  "task": null,
+  "commit": null,
+  "workbench": null,
+  "containerfile": "src/packages/model-artifacts/quantizer-image/Containerfile",
+  "containersReferencing": [],
+  "uniqueBytes": 2958000000,
+  "uniqueBytesSource": "T005-inventory.json",
+  "reproducible": "yes: pull by digest",
+  "semanticValue": null,
+  "secretLikeAssignments": null,
+  "proxyAssignments": null,
+  "finalRemoteCopy": null,
+  "deletable": false,
+  "provisionalClass": "BUILD_CACHE",
+  "classReason": "etapa upstream fijada por digest; reproducible con pull por digest"
+ }
+]

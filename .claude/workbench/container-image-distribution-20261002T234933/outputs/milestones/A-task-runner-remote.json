@@ -1,0 +1,12 @@
+{
+  "name": "ubuntu24.04-bun1.3.11-uv0.8.17",
+  "digest": "sha256:1cced65c16b40c7ac5fc73a6908ce0353ec450618251cac1893ef8c82ad25ba5",
+  "last_updated": "2026-10-02T02:21:58.666453Z",
+  "images": [
+    {
+      "architecture": "amd64",
+      "digest": "sha256:1cced65c16b40c7ac5fc73a6908ce0353ec450618251cac1893ef8c82ad25ba5",
+      "size": 143374705
+    }
+  ]
+}

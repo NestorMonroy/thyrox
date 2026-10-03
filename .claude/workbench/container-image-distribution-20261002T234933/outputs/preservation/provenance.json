@@ -1,0 +1,9 @@
+{
+  "source": "labels thyrox.task of each final image; build benches/jobs found by image id; first commit that added them (git log --diff-filter=A)",
+  "finals": {
+    "b3014db2b8f6": {"role": "model quantizer (DEFAULT_LAB_IMAGE, labCommandOptions.ts:4)", "task": "TASK-THYROX-0747", "build": ".claude/workbench/embedding-route-and-local-workers-20261002T093053/outputs/U1b-clean-build", "commit": "4ebcdc3a8", "containerfile": "src/packages/model-artifacts/quantizer-image/Containerfile", "remoteCopy": false},
+    "2bb9f235830e": {"role": "task runner, published permanent", "task": "TASK-THYROX-0724", "build": ".claude/workbench/publish-task-runner-image-20261002T021834", "commit": "66101a01f", "containerfile": "src/packages/podman-execution/task-runner-image/Containerfile", "remoteCopy": true, "remoteReference": "docker.io/th3rox/thyrox-task-runner@sha256:1cced65c16b40c7ac5fc73a6908ce0353ec450618251cac1893ef8c82ad25ba5"},
+    "26af4d189984": {"role": "task runner :dev (DEFAULT_EXECUTION_IMAGE, executionCommand.ts:25)", "task": "TASK-THYROX-0742", "build": ".claude/jobs/runner-image-20261001T154236", "commit": "dd85fea42", "containerfile": "src/packages/podman-execution/task-runner-image/Containerfile", "remoteCopy": false, "publicationBlocked": "history records 3 proxy assignments"}
+  },
+  "crossBuildCacheReuse": {"b78504eefd22": ".claude/jobs/quantizer-image-build-20261001T020736", "efc2db794f6d": ".claude/jobs/quantizer-image-build-20261001T020736"}
+}

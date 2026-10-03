@@ -1,0 +1,13 @@
+src/lib/infrastructure.sh:123:THYROX_INFRA_POSTGRES_IMAGE="$(thyrox_infrastructure_setting THYROX_INFRA_POSTGRES_IMAGE 'docker.io/pgvector/pgvector:0.8.0-pg16')"
+src/lib/infrastructure.sh:124:THYROX_INFRA_REDIS_IMAGE="$(thyrox_infrastructure_setting THYROX_INFRA_REDIS_IMAGE 'docker.io/library/redis:7.4')"
+src/lib/infrastructure.sh:125:THYROX_INFRA_OLLAMA_IMAGE="$(thyrox_infrastructure_setting THYROX_INFRA_OLLAMA_IMAGE 'docker.io/ollama/ollama:0.35.0')"
+src/packages/artifact-registry/bin/publishArtifact.ts:37:const DEFAULT_VERIFIER_IMAGE = 'docker.io/library/ubuntu:24.04'
+src/packages/local-models/bin/ensure.ts:38:const DEFAULT_JOB_IMAGE = 'docker.io/library/ubuntu:24.04'
+src/packages/local-models/hostCoordinatorComposition.ts:47:export const OLLAMA_RUNTIME_IMAGE = 'docker.io/ollama/ollama:0.35.0'
+src/packages/local-models/hostCoordinatorComposition.ts:49:export const TRANSFORMERS_RUNTIME_IMAGE = 'localhost/thyrox-transformers-runtime:dev'
+src/packages/local-models/labCommandOptions.ts:4:export const DEFAULT_LAB_IMAGE = 'localhost/thyrox-model-quantizer:dev'
+src/packages/local-models/transformers-runtime/Containerfile:9:ARG BASE_IMAGE=docker.io/library/ubuntu:24.04
+src/packages/model-artifacts/quantizer-image/Containerfile:11:ARG BASE_IMAGE=docker.io/library/ubuntu:24.04
+src/packages/model-artifacts/quantizer-image/build.sh:18:tag="${2:-localhost/thyrox-model-quantizer:dev}"
+src/packages/podman-execution/executionCommand.ts:25:export const DEFAULT_EXECUTION_IMAGE = 'localhost/thyrox-task-runner:dev'
+src/packages/podman-execution/task-runner-image/Containerfile:8:ARG BASE_IMAGE=docker.io/library/ubuntu:24.04

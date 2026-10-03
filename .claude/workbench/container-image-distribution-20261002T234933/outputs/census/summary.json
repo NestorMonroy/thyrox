@@ -1,0 +1,14 @@
+{
+ "images": 38,
+ "tagged": 7,
+ "untagged": 31,
+ "untaggedLayersArePrefixOfFinal": 31,
+ "untaggedByFinal": {
+  "26af4d189984948a92ebc88a2c8b69e1fda2b089ea52a87818b3b1c094177d64": 8,
+  "2bb9f235830eb30689864b5447eeea083ae1e3607a18fdca353b5c91de5e5e5a": 8,
+  "b3014db2b8f6b9fa198f091e329de85c16f1ded2788176846d6d31abcdee39c8": 15
+ },
+ "historyWithProxyAssignments": [
+  "26af4d189984"
+ ]
+}

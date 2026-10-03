@@ -1,0 +1,200 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/declaredImageBuildCommand.test.ts:
+(pass) the catalog declares the quantizer image > thyrox-model-quantizer is declared with a versioned context, permanent lifecycle and its own network policy [2.71ms]
+(pass) the catalog declares the quantizer image > an undeclared identity is refused by the catalog [1.47ms]
+(pass) the catalog declares the quantizer image > every declared context lives inside the repository [0.30ms]
+(pass) declared image build: the allowed request > the quantizer builds from its catalog definition through the primitive [8.07ms]
+(pass) declared image build: the allowed request > the result names the image, its tag, its id and the definition it came from [1.57ms]
+(pass) declared image build: the allowed request > the proxy reaches the build only as the primitive passes it: never as a recorded build argument [3.21ms]
+(pass) declared image build: refused without touching Podman > an undeclared identity [0.36ms]
+(pass) declared image build: refused without touching Podman > a primitive subcommand as identity: run [0.05ms]
+(pass) declared image build: refused without touching Podman > a primitive subcommand as identity: remove-image [0.04ms]
+(pass) declared image build: refused without touching Podman > a primitive subcommand as identity: reconcile-orphans [0.05ms]
+(pass) declared image build: refused without touching Podman > the generic builder as identity: build-image [0.02ms]
+(pass) declared image build: refused without touching Podman > no identity [0.14ms]
+(pass) declared image build: refused without touching Podman > two identities [0.02ms]
+(pass) declared image build: refused without touching Podman > no task or work reference [0.08ms]
+(pass) declared image build: refused without touching Podman > a malformed task citation [0.02ms]
+(pass) declared image build: refused without touching Podman > a caller --context [0.21ms]
+(pass) declared image build: refused without touching Podman > a caller --containerfile [0.02ms]
+(pass) declared image build: refused without touching Podman > a caller --network [0.05ms]
+(pass) declared image build: refused without touching Podman > a caller --lifecycle [0.03ms]
+(pass) declared image build: refused without touching Podman > a caller --tag [0.03ms]
+(pass) declared image build: refused without touching Podman > a caller --mount of / [0.03ms]
+(pass) declared image build: refused without touching Podman > a caller --mount of HOME [0.05ms]
+(pass) declared image build: refused without touching Podman > a caller --mount of the Podman socket [0.26ms]
+(pass) declared image build: refused without touching Podman > a caller --image [0.04ms]
+(pass) declared image build: refused without touching Podman > a shell payload after -- [0.01ms]
+(pass) declared image build: refused without touching Podman > a definition with uncommitted changes has no versioned identity [0.36ms]
+(pass) declared image build: refused without touching Podman > a revision that is not a full commit is refused [0.23ms]
+(pass) the managed worker stays outside the Podman control plane > a default unit receives no Podman socket, store or host variable [7.06ms]
+(pass) the managed worker stays outside the Podman control plane > control: a caller mount of the socket does reach the unit — the reason run stays unreachable [1.12ms]
+215 | describe('the build is admitted against disk before Podman runs', () => {
+216 |   test('the declared peak is reserved before the build and released after it', async () => {
+217 |     const h = harness()
+218 |     expect(await runDeclaredImageBuildCommand(['--task', TASK, QUANTIZER], h.deps)).toBe(0)
+219 |     const image = findDeclaredImage(QUANTIZER)
+220 |     expect(h.events[0]).toBe(`admit ${image.estimatedDiskBytes} build localhost/thyrox-model-quantizer:candidate-${COMMIT.slice(0, 12)}`)
+                              ^
+error: expect(received).toBe(expected)
+
+Expected: "admit 3221225472 build localhost/thyrox-model-quantizer:candidate-bbbbbbbbbbbb"
+Received: "podman build"
+
+      at <anonymous> (/home/user/thyrox/src/packages/image-registry/__tests__/declaredImageBuildCommand.test.ts:220:25)
+(fail) the build is admitted against disk before Podman runs > the declared peak is reserved before the build and released after it [1.64ms]
+222 |     expect(h.events.at(-1)).toBe('release')
+223 |   })
+224 | 
+225 |   test('a build that does not fit is refused before Podman and nothing is reserved to release', async () => {
+226 |     const h = harness(undefined, {}, { admitted: false })
+227 |     expect(await runDeclaredImageBuildCommand(['--task', TASK, QUANTIZER], h.deps)).toBe(EXIT_REFUSED)
+                                                                                          ^
+error: expect(received).toBe(expected)
+
+Expected: 2
+Received: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/image-registry/__tests__/declaredImageBuildCommand.test.ts:227:85)
+(fail) the build is admitted against disk before Podman runs > a build that does not fit is refused before Podman and nothing is reserved to release [0.60ms]
+231 |   })
+232 | 
+233 |   test('a failed build still releases its reservation', async () => {
+234 |     const h = harness(undefined, {}, { buildFails: true })
+235 |     expect(await runDeclaredImageBuildCommand(['--task', TASK, QUANTIZER], h.deps)).toBe(1)
+236 |     expect(h.events.at(-1)).toBe('release')
+                                  ^
+error: expect(received).toBe(expected)
+
+Expected: "release"
+Received: "podman build"
+
+      at <anonymous> (/home/user/thyrox/src/packages/image-registry/__tests__/declaredImageBuildCommand.test.ts:236:29)
+(fail) the build is admitted against disk before Podman runs > a failed build still releases its reservation [0.44ms]
+(pass) the build is admitted against disk before Podman runs > every declared image declares a positive disk peak [0.06ms]
+243 | 
+244 | describe('the versioned identity covers the whole definition, catalog included', () => {
+245 |   test('the revision is measured over the catalog and the build context', async () => {
+246 |     const h = harness()
+247 |     await runDeclaredImageBuildCommand(['--task', TASK, QUANTIZER], h.deps)
+248 |     expect(h.revisedPaths).toEqual([[DEFINITION_CATALOG_PATH, 'src/packages/model-artifacts/quantizer-image']])
+                                 ^
+error: expect(received).toEqual(expected)
+
+  [
+    [
+-     "src/packages/image-registry/declaredImages.ts",
+-     "src/packages/model-artifacts/quantizer-image",
++     "s",
++     "r",
++     "c",
++     "/",
++     "p",
++     "a",
++     "c",
++     "k",
++     "a",
++     "g",
++     "e",
++     "s",
++     "/",
++     "m",
++     "o",
++     "d",
++     "e",
++     "l",
++     "-",
++     "a",
++     "r",
++     "t",
++     "i",
++     "f",
++     "a",
++     "c",
++     "t",
++     "s",
++     "/",
++     "q",
++     "u",
++     "a",
++     "n",
++     "t",
++     "i",
++     "z",
++     "e",
++     "r",
++     "-",
++     "i",
++     "m",
++     "a",
++     "g",
++     "e",
+    ],
+  ]
+
+- Expected  - 2
++ Received  + 44
+
+      at <anonymous> (/home/user/thyrox/src/packages/image-registry/__tests__/declaredImageBuildCommand.test.ts:248:28)
+(fail) the versioned identity covers the whole definition, catalog included > the revision is measured over the catalog and the build context [0.95ms]
+(pass) the versioned identity covers the whole definition, catalog included > the catalog path names the module that declares the images [0.61ms]
+256 | 
+257 | describe('a consumer work reference follows the canonical patterns', () => {
+258 |   for (const work of ['Upper:id', 'consumer:', ':id', 'consumer:/absolute']) {
+259 |     test(`--work ${work} is refused`, async () => {
+260 |       const h = harness()
+261 |       expect(await runDeclaredImageBuildCommand(['--work', work, QUANTIZER], h.deps)).toBe(EXIT_REFUSED)
+                                                                                            ^
+error: expect(received).toBe(expected)
+
+Expected: 2
+Received: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/image-registry/__tests__/declaredImageBuildCommand.test.ts:261:87)
+(fail) a consumer work reference follows the canonical patterns > --work Upper:id is refused [0.52ms]
+256 | 
+257 | describe('a consumer work reference follows the canonical patterns', () => {
+258 |   for (const work of ['Upper:id', 'consumer:', ':id', 'consumer:/absolute']) {
+259 |     test(`--work ${work} is refused`, async () => {
+260 |       const h = harness()
+261 |       expect(await runDeclaredImageBuildCommand(['--work', work, QUANTIZER], h.deps)).toBe(EXIT_REFUSED)
+                                                                                            ^
+error: expect(received).toBe(expected)
+
+Expected: 2
+Received: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/image-registry/__tests__/declaredImageBuildCommand.test.ts:261:87)
+(fail) a consumer work reference follows the canonical patterns > --work consumer: is refused [0.17ms]
+(pass) a consumer work reference follows the canonical patterns > --work :id is refused [0.06ms]
+256 | 
+257 | describe('a consumer work reference follows the canonical patterns', () => {
+258 |   for (const work of ['Upper:id', 'consumer:', ':id', 'consumer:/absolute']) {
+259 |     test(`--work ${work} is refused`, async () => {
+260 |       const h = harness()
+261 |       expect(await runDeclaredImageBuildCommand(['--work', work, QUANTIZER], h.deps)).toBe(EXIT_REFUSED)
+                                                                                            ^
+error: expect(received).toBe(expected)
+
+Expected: 2
+Received: 0
+
+      at <anonymous> (/home/user/thyrox/src/packages/image-registry/__tests__/declaredImageBuildCommand.test.ts:261:87)
+(fail) a consumer work reference follows the canonical patterns > --work consumer:/absolute is refused [0.12ms]
+(pass) a consumer work reference follows the canonical patterns > a well-formed --work builds under the consumer identity [0.20ms]
+
+7 tests failed:
+(fail) the build is admitted against disk before Podman runs > the declared peak is reserved before the build and released after it [1.64ms]
+(fail) the build is admitted against disk before Podman runs > a build that does not fit is refused before Podman and nothing is reserved to release [0.60ms]
+(fail) the build is admitted against disk before Podman runs > a failed build still releases its reservation [0.44ms]
+(fail) the versioned identity covers the whole definition, catalog included > the revision is measured over the catalog and the build context [0.95ms]
+(fail) a consumer work reference follows the canonical patterns > --work Upper:id is refused [0.52ms]
+(fail) a consumer work reference follows the canonical patterns > --work consumer: is refused [0.17ms]
+(fail) a consumer work reference follows the canonical patterns > --work consumer:/absolute is refused [0.12ms]
+
+ 33 pass
+ 7 fail
+ 83 expect() calls
+Ran 40 tests across 1 file. [273.00ms]
+exit=1

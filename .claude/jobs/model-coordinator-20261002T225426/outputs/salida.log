@@ -1,0 +1,5 @@
+[2026-10-02T22:54:35.636Z] [podman] huérfanos retirados al arrancar: 1 (thyrox-worker-unit-87fe6831-b94b-45f8-93f1-ceeb8428e34f)
+[2026-10-02T22:54:35.705Z] [model-coordinator] escuchando en /root/.claude/model-scheduling/coordinator.sock; unidades anteriores destruidas: 0
+[2026-10-02T23:15:53.738Z] [model-coordinator] detenido
+[2026-10-02T23:15:53.738Z] [podman] workers retirados al apagar: 0
+__BG_EXIT__=0

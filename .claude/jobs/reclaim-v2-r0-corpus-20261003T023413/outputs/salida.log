@@ -1,0 +1,3 @@
+exit=0
+execution thyrox-worker-probe-murs3dpa-21685 kind=probe task=TASK-THYROX-0758 exit=0
+__BG_EXIT__=0

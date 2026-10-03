@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bun /home/user/thyrox/src/packages/podman-execution/bin/execute.ts run --task TASK-THYROX-0726 --kind probe --env THYROX_EXECUTION_ENTRY -- bash .claude/workbench/container-image-distribution-20261002T234933/probes/image_census.sh .claude/workbench/container-image-distribution-20261002T234933/outputs/census docker.io/th3rox", "started_at": "2026-10-02T23:56:02+00:00"}
+{"kind": "settle", "exit_code": 2, "finished_at": "2026-10-02T23:56:51+00:00", "duration_seconds": 49.421541}

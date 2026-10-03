@@ -1,0 +1,15 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/declaredImageBuildCommand.test.ts:
+
+# Unhandled error between tests
+-------------------------------
+error: Cannot find module '../declaredImageBuildCommand.ts' from '/home/user/thyrox/.thyrox/runtime/worktrees/declared-image-build/src/packages/image-registry/__tests__/declaredImageBuildCommand.test.ts'
+-------------------------------
+
+
+ 0 pass
+ 1 fail
+ 1 error
+Ran 1 test across 1 file. [679.00ms]
+exit=1

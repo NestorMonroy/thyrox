@@ -462,6 +462,7 @@ THYROX_POOL_SNAPSHOT_INTERVAL_SECONDS	config	env	revisado 2026-10-02: ruta, umbr
 THYROX_POOL_STASH_ATTEMPTS_FILE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
 THYROX_POOL_WORKTREES_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
 THYROX_PROVIDERS_DATA_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_PROVIDER_PAYG_API_KEY	credential	env	clave de API del método Pay-As-You-Go del proveedor de API; fuente transitoria de providers add --credential-env
 THYROX_PROXY_MODE	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
 THYROX_PUBLIC_BASE_URL	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
 THYROX_PYTHON_FALLBACK	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto

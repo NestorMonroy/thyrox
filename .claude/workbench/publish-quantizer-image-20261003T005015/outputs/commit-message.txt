@@ -1,0 +1,22 @@
+Let the controller build only a declared image
+
+The control plane allowlist authorizes whole executables, so declaring
+podman-execution-execute would expose run with caller-chosen argv and
+host mounts, plus remove-image (H-THYROX-429). Add the narrow
+capability instead: image-registry-build-declared-image accepts a task
+reference and one logical image id, resolves context, network,
+lifecycle and tag from a versioned catalog, and delegates to the
+primitive's build.
+
+The catalog extends the BuildDefinition authority in image-registry
+with thyrox-model-quantizer (permanent, host network, tag derived from
+the definition commit). A definition with uncommitted changes is
+refused. buildManagedImage is the primitive's existing build-image
+composition, now exported so both callers share one implementation.
+
+Tests cover the allowed build and refuse, without touching Podman,
+undeclared ids, primitive subcommands as ids, caller context,
+Containerfile, network, lifecycle, tag, image, mounts of / $HOME and
+the Podman socket, and payloads after --. Annulment: removing the id
+check, readmitting --context or dropping the entry row each fails
+exactly its dependents. TASK-THYROX-0912.

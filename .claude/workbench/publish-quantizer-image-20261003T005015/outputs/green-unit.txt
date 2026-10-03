@@ -1,0 +1,73 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/declaredImageBuildCommand.test.ts:
+(pass) the catalog declares the quantizer image > thyrox-model-quantizer is declared with a versioned context, permanent lifecycle and its own network policy [1.39ms]
+(pass) the catalog declares the quantizer image > an undeclared identity is refused by the catalog [0.55ms]
+(pass) the catalog declares the quantizer image > every declared context lives inside the repository [0.05ms]
+(pass) declared image build: the allowed request > the quantizer builds from its catalog definition through the primitive [6.11ms]
+(pass) declared image build: the allowed request > the result names the image, its tag, its id and the definition it came from [0.76ms]
+(pass) declared image build: the allowed request > the proxy reaches the build only as the primitive passes it: never as a recorded build argument [1.40ms]
+(pass) declared image build: refused without touching Podman > an undeclared identity [0.22ms]
+(pass) declared image build: refused without touching Podman > a primitive subcommand as identity: run [0.03ms]
+(pass) declared image build: refused without touching Podman > a primitive subcommand as identity: remove-image [0.01ms]
+(pass) declared image build: refused without touching Podman > a primitive subcommand as identity: reconcile-orphans [0.02ms]
+(pass) declared image build: refused without touching Podman > the generic builder as identity: build-image [0.02ms]
+(pass) declared image build: refused without touching Podman > no identity [0.04ms]
+(pass) declared image build: refused without touching Podman > two identities [0.02ms]
+(pass) declared image build: refused without touching Podman > no task or work reference [0.02ms]
+(pass) declared image build: refused without touching Podman > a malformed task citation [0.01ms]
+(pass) declared image build: refused without touching Podman > a caller --context [0.07ms]
+(pass) declared image build: refused without touching Podman > a caller --containerfile [0.02ms]
+(pass) declared image build: refused without touching Podman > a caller --network
+(pass) declared image build: refused without touching Podman > a caller --lifecycle
+(pass) declared image build: refused without touching Podman > a caller --tag [0.01ms]
+(pass) declared image build: refused without touching Podman > a caller --mount of / [0.01ms]
+(pass) declared image build: refused without touching Podman > a caller --mount of HOME [0.01ms]
+(pass) declared image build: refused without touching Podman > a caller --mount of the Podman socket [0.05ms]
+(pass) declared image build: refused without touching Podman > a caller --image [0.02ms]
+(pass) declared image build: refused without touching Podman > a shell payload after -- [0.01ms]
+(pass) declared image build: refused without touching Podman > a definition with uncommitted changes has no versioned identity [0.31ms]
+(pass) declared image build: refused without touching Podman > a revision that is not a full commit is refused [0.15ms]
+
+ 27 pass
+ 0 fail
+ 60 expect() calls
+Ran 27 tests across 1 file. [170.00ms]
+unit-exit=0
+bun test v1.3.11 (af24e281)
+
+__tests__/executionCommand.test.ts:
+(pass) parseMount > sin destino ni modo: la misma ruta, sólo lectura [0.26ms]
+(pass) parseMount > con modo y sin destino [0.04ms]
+(pass) parseMount > con destino y modo [0.02ms]
+(pass) thyrox-exec run > el payload corre en la unidad, con el repositorio montado de escritura en su propia ruta [4.42ms]
+(pass) thyrox-exec run > THYROX_EXEC_IMAGE elige la imagen [0.29ms]
+(pass) thyrox-exec run > --script-stdin entrega el guion a bash dentro de la unidad [0.18ms]
+(pass) thyrox-exec run > la red host lleva el proxy y monta su CA de sólo lectura [0.43ms]
+(pass) thyrox-exec run > sin red, el proxy no viaja [0.29ms]
+(pass) thyrox-exec run > sin payload rehúsa con 2 y no invoca Podman [0.26ms]
+(pass) thyrox-exec run > una cita de tarea inválida rehúsa con 2 nombrando el campo [0.19ms]
+(pass) thyrox-exec run > el veredicto de la unidad es el de la orden [0.29ms]
+(pass) --secret-from-env: la credencial llega a la unidad como secreto montado > materializa el secreto por stdin y lo monta; el valor no aparece en ningún argv ni salida [2.54ms]
+(pass) --secret-from-env: la credencial llega a la unidad como secreto montado > un secreto con el mismo valor no se recrea [1.72ms]
+(pass) --secret-from-env: la credencial llega a la unidad como secreto montado > credencial ausente: sale 2, lo nombra y no toca Podman [0.18ms]
+(pass) reconcile-orphans: un contenedor cuyo dueño de tarea murió se retira sin intervención > retira sólo el de dueño de tarea con PID muerto; deja vivos y ajenos [1.38ms]
+(pass) reconcile-orphans: un contenedor cuyo dueño de tarea murió se retira sin intervención > sin huérfanos, sale 0 y lo dice [0.13ms]
+(pass) run con la referencia de trabajo de un consumidor > --work autoriza con la identidad del consumidor y --owner declara el dueño del pool [0.35ms]
+(pass) run con la referencia de trabajo de un consumidor > --task y --work juntos no son una autorización [0.13ms]
+(pass) run con la referencia de trabajo de un consumidor > un dueño que no es de pool no se declara por línea de orden [0.10ms]
+(pass) build-image con la referencia de trabajo de un consumidor (TASK-THYROX-0775) > --work construye bajo la identidad del consumidor, sin citar una TASK de thyrox [0.63ms]
+(pass) build-image con la referencia de trabajo de un consumidor (TASK-THYROX-0775) > una tarea de thyrox conserva su etiqueta de hoy [0.14ms]
+(pass) build-image con la referencia de trabajo de un consumidor (TASK-THYROX-0775) > --task y --work juntos no construyen nada [0.15ms]
+(pass) thyrox-exec build-image > con egreso, el proxy NO es argumento de build: quedaría grabado en la historia de la imagen [0.35ms]
+(pass) thyrox-exec build-image > el ciclo de vida por defecto es cache [0.11ms]
+(pass) thyrox-exec build-image > --lifecycle permanent declara la candidata que la promoción acepta [0.11ms]
+(pass) thyrox-exec build-image > un ciclo de vida desconocido rehúsa con 2 y no invoca Podman [0.10ms]
+(pass) thyrox-exec run --attest > el primitivo atesta la unidad que materializó: id de ejecución, contenedor y materializador [2.18ms]
+(pass) thyrox-exec run --attest > sin --attest no escribe nada [1.01ms]
+
+ 28 pass
+ 0 fail
+ 70 expect() calls
+Ran 28 tests across 1 file. [183.00ms]
+primitive-exit=0

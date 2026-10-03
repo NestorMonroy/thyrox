@@ -1,0 +1,3 @@
+uid=0 socket=/root/.claude/model-scheduling/coordinator.sock
+list=[]
+exit=0

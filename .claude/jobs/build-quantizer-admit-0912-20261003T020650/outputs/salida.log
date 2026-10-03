@@ -1,0 +1,4 @@
+resource_admission disk-admit: no cabe la necesidad 3221225472 bytes; techo 2581323776 bytes, piso 2147483648 bytes, reservado por otros 0 bytes
+image-registry-build-declared-image: rehusado: no se admite build localhost/thyrox-model-quantizer:candidate-b8a4d3d38ba9: su pico declarado de 3221225472 bytes no cabe en disco
+uso: image-registry-build-declared-image (--task TASK-<CAPA>-NNNN | --work CONSUMIDOR:ID) <imagen-declarada>
+__BG_EXIT__=2

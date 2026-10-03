@@ -1,0 +1,2 @@
+__tests__/executionCommand.test.ts(138,11): error TS2741: Property 'isProcessAlive' is missing in type '{ env: Record<string, string>; readStdin: () => Promise<string>; pid: number; now: () => number; podman: PodmanExecutor; repositoryRoot: string; output: { stdout: (text: string) => void; stderr: (text: string) => void; }; }' but required in type 'ExecutionCommandDeps'.
+exit=2
