@@ -15,6 +15,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "KEEP_LOCAL_UNTIL_FINAL_DURABLE",
   "reason": "0 bytes \u00fanicos, pero su imagen final s\u00f3lo existe en este almac\u00e9n",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -33,6 +35,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "KEEP_LOCAL_UNTIL_FINAL_DURABLE",
   "reason": "0 bytes \u00fanicos, pero su imagen final s\u00f3lo existe en este almac\u00e9n",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -51,6 +55,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "KEEP_LOCAL_UNTIL_FINAL_DURABLE",
   "reason": "0 bytes \u00fanicos, pero su imagen final s\u00f3lo existe en este almac\u00e9n",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -69,6 +75,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "KEEP_LOCAL_UNTIL_FINAL_DURABLE",
   "reason": "0 bytes \u00fanicos, pero su imagen final s\u00f3lo existe en este almac\u00e9n",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -87,6 +95,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "KEEP_LOCAL_UNTIL_FINAL_DURABLE",
   "reason": "0 bytes \u00fanicos, pero su imagen final s\u00f3lo existe en este almac\u00e9n",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -105,6 +115,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "KEEP_LOCAL_UNTIL_FINAL_DURABLE",
   "reason": "0 bytes \u00fanicos, pero su imagen final s\u00f3lo existe en este almac\u00e9n",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -123,6 +135,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "KEEP_LOCAL_UNTIL_FINAL_DURABLE",
   "reason": "0 bytes \u00fanicos, pero su imagen final s\u00f3lo existe en este almac\u00e9n",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -141,6 +155,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "KEEP_LOCAL_UNTIL_FINAL_DURABLE",
   "reason": "0 bytes \u00fanicos, pero su imagen final s\u00f3lo existe en este almac\u00e9n",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -159,6 +175,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "KEEP_LOCAL_UNTIL_FINAL_DURABLE",
   "reason": "0 bytes \u00fanicos, pero su imagen final s\u00f3lo existe en este almac\u00e9n",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -177,6 +195,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "KEEP_LOCAL_UNTIL_FINAL_DURABLE",
   "reason": "0 bytes \u00fanicos, pero su imagen final s\u00f3lo existe en este almac\u00e9n",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -195,6 +215,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "KEEP_LOCAL_UNTIL_FINAL_DURABLE",
   "reason": "0 bytes \u00fanicos, pero su imagen final s\u00f3lo existe en este almac\u00e9n",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -213,6 +235,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "KEEP_LOCAL_UNTIL_FINAL_DURABLE",
   "reason": "0 bytes \u00fanicos, pero su imagen final s\u00f3lo existe en este almac\u00e9n",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -231,6 +255,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "KEEP_LOCAL_UNTIL_FINAL_DURABLE",
   "reason": "0 bytes \u00fanicos, pero su imagen final s\u00f3lo existe en este almac\u00e9n",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -249,6 +275,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "KEEP_LOCAL_UNTIL_FINAL_DURABLE",
   "reason": "0 bytes \u00fanicos, pero su imagen final s\u00f3lo existe en este almac\u00e9n",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -267,6 +295,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "KEEP_LOCAL_UNTIL_FINAL_DURABLE",
   "reason": "0 bytes \u00fanicos, pero su imagen final s\u00f3lo existe en este almac\u00e9n",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -285,6 +315,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "PROVENANCE_ONLY_CANDIDATE",
   "reason": "0 bytes \u00fanicos y su imagen final tiene copia remota verificada",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -303,6 +335,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "PROVENANCE_ONLY_CANDIDATE",
   "reason": "0 bytes \u00fanicos y su imagen final tiene copia remota verificada",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -321,6 +355,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "PROVENANCE_ONLY_CANDIDATE",
   "reason": "0 bytes \u00fanicos y su imagen final tiene copia remota verificada",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -339,6 +375,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "PROVENANCE_ONLY_CANDIDATE",
   "reason": "0 bytes \u00fanicos y su imagen final tiene copia remota verificada",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -357,6 +395,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "PROVENANCE_ONLY_CANDIDATE",
   "reason": "0 bytes \u00fanicos y su imagen final tiene copia remota verificada",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -375,6 +415,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "PROVENANCE_ONLY_CANDIDATE",
   "reason": "0 bytes \u00fanicos y su imagen final tiene copia remota verificada",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -393,6 +435,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "PROVENANCE_ONLY_CANDIDATE",
   "reason": "0 bytes \u00fanicos y su imagen final tiene copia remota verificada",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -411,6 +455,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "PROVENANCE_ONLY_CANDIDATE",
   "reason": "0 bytes \u00fanicos y su imagen final tiene copia remota verificada",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -429,6 +475,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "KEEP_LOCAL_UNTIL_FINAL_DURABLE",
   "reason": "0 bytes \u00fanicos, pero su imagen final s\u00f3lo existe en este almac\u00e9n",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -447,6 +495,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "KEEP_LOCAL_UNTIL_FINAL_DURABLE",
   "reason": "0 bytes \u00fanicos, pero su imagen final s\u00f3lo existe en este almac\u00e9n",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -465,6 +515,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "KEEP_LOCAL_UNTIL_FINAL_DURABLE",
   "reason": "0 bytes \u00fanicos, pero su imagen final s\u00f3lo existe en este almac\u00e9n",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -483,6 +535,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "KEEP_LOCAL_UNTIL_FINAL_DURABLE",
   "reason": "0 bytes \u00fanicos, pero su imagen final s\u00f3lo existe en este almac\u00e9n",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -501,6 +555,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "KEEP_LOCAL_UNTIL_FINAL_DURABLE",
   "reason": "0 bytes \u00fanicos, pero su imagen final s\u00f3lo existe en este almac\u00e9n",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -519,6 +575,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "KEEP_LOCAL_UNTIL_FINAL_DURABLE",
   "reason": "0 bytes \u00fanicos, pero su imagen final s\u00f3lo existe en este almac\u00e9n",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -537,6 +595,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "BUILD_CACHE_CANDIDATE",
   "reason": "reutilizada entre builds (.claude/jobs/quantizer-image-build-20261001T020736)",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  },
  {
@@ -555,6 +615,8 @@
   "semanticValue": "provenance and build history",
   "preservationRequirement": "BUILD_CACHE_CANDIDATE",
   "reason": "reutilizada entre builds (.claude/jobs/quantizer-image-build-20261001T020736)",
+  "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+  "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
   "gcEligible": false
  }
 ]

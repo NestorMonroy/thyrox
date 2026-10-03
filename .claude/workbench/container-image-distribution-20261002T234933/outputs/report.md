@@ -93,3 +93,92 @@ domain in `semantic-search-ingest` → BLOCKED_BY_BOOTSTRAP.
 | Upstream mirror | yes | image-registry (MISSING) | design decision | — |
 | Image provenance ingestion | yes | semantic-search (EXTEND) | BLOCKED_BY_BOOTSTRAP | — |
 | Cold fetch + warm cache proof | no, but needs an isolated store or a removable known image | infrastructure_ensure / imageResolver | DEFERRED (disk-constrained; no image may be removed) | — |
+
+## Corrections (2026-10-03, second review) — these override the rows above
+
+### Evidence status
+
+- **PROVEN:**
+  - T005 is the canonical inventory and classification baseline.
+  - 38 images observed; all `safe_to_delete=false`.
+  - The 31 untagged images have `uniqueBytes=0`.
+  - Task-runner `sha256:1cced65c…` is present locally and remotely.
+  - The quantizer is local only, `lifecycle=cache`.
+  - The default task-runner is the local `:dev`, not the published image.
+- **PROVISIONAL:**
+  - The 8 / 2 / 21 split and the exact Parent → final lineage
+    (`classificationStatus: PROVISIONAL_PROVENANCE_CLASSIFICATION` in
+    `preservation/plan.json`).
+  - That two specific intermediates were reused across builds.
+  - These hold until `Parent`/`History` come from the podman-execution
+    observer, or until independent durable evidence proves the relation.
+- **Unchanged:** `gcEligible = 0`.
+
+### Separate dimensions
+
+T005 class (A–G) is the deletion and reclaim policy and keeps that
+responsibility. Ownership, provenance, distribution, lifecycle and semantic
+value are separate dimensions, and none of them is encoded in A–G.
+`ubuntu:24.04` shows why: it is T005 class E through the fallback rule, yet its
+provenance role is upstream base, not build intermediate.
+
+### Corrected matrix rows
+
+| Requirement | Was | Now |
+|---|---|---|
+| Upstream byte-identical mirror | MISSING | **EXTEND `ImageRegistry`** with an immutable copy operation, then BLOCKED_BY_BOOTSTRAP (detail below) |
+| Image provenance ingestion | EXTEND `semantic-search-ingest` with a new domain | **REUSE** the declared `evidence` domain and `corpus.ts`; **EXTEND** with a bench-evidence adapter; SEARCH_INCOMPLETE on the ADR-008 surface (detail below) |
+| Quantizer publication | owner decision | **REUSE** the mechanism; lifecycle is a **PERMANENT candidate**; publication **BLOCKED_BY_CREDENTIAL** (detail below) |
+| Default execution image (H-THYROX-424) | — | **BLOCKED_BY_BOOTSTRAP** (detail below) |
+
+**Upstream mirror.** `ImageRegistry` already owns publication, so a mirror is
+an extension of that port, not a new authority. The copy must preserve source
+manifest and blobs, verify the destination digest equals the source, and keep
+source provenance. It must not go through `promoteCandidate`, because adding
+lifecycle metadata changes the image. No `MirrorRegistry`, `DockerHubMirror`
+or parallel authority.
+
+**Image provenance ingestion.**
+- Reused as is:
+  - `corpusPolicy.ts:33-39` already declares the domain `evidence` (`shared`);
+  - `corpus.ts` owns ingestion by `domain · scope · domainId` with versions.
+- Missing: an adapter reading bench evidence. The nearest owner is
+  TASK-THYROX-0684 («Ingest pool and agent-worktree evidence into the durable
+  corpus»), whose scope today is runtime, pool and worktree evidence. That
+  adapter is code, so BLOCKED_BY_BOOTSTRAP.
+- Rejected:
+  - `analysisRuns.ts`: persisted analysis outputs;
+  - `archive_build_corpus.py`: archives `_references` builds;
+  - `src/learning/experience.py`: RL records, excluded by the A7 contract.
+- Not searched: an Intent/Mechanism/Evidence/Outcome specification was not
+  found in this repo (0 hits). If it lives in ADR-008 in `kaupamex-docs` (absent
+  here), that surface is SEARCH_INCOMPLETE.
+
+**Quantizer publication.**
+- Mechanism: REUSE `build-image --lifecycle permanent` → validation →
+  `promoteCandidate` → `publishPromotedImage`.
+- Lifecycle: PERMANENT candidate, because it is `DEFAULT_LAB_IMAGE` and should
+  survive a host recycle.
+- Publication: BLOCKED_BY_CREDENTIAL. `THYROX_REGISTRY_PUBLISHER_TOKEN` is
+  recorded `exposed` since 2026-10-01
+  (`managed-podman-execution-boundary-20261001T164746/credential-rotation.tsv:3`).
+  It is not used; a rotated credential is required first.
+
+**Default execution image (H-THYROX-424).** No hardcoded registry reference in
+`executionCommand.ts`. The fix converges on:
+logical role → `imageResolver` → configured distribution → immutable digest
+(TASK-THYROX-0726, TASK-THYROX-0756).
+
+### Batch state
+
+| Sub-batch | State |
+|---|---|
+| Discovery / census | **CLOSED** |
+| Distribution / preload | **OPEN** |
+
+Distribution / preload stays open because no image was newly published, no
+mirror exists, cold fetch is not proven, warm cache is not measured, and the
+install closure is not executable.
+
+**Next runnable node without product code:** a rotated publishing credential,
+which is an external action. Then publish the quantizer through promotion.

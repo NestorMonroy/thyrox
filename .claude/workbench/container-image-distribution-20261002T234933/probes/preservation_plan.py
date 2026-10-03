@@ -42,6 +42,8 @@ for image in census:
         "containerfile": final.get("containerfile"), "historyLines": image["historyLines"],
         "reproducible": "partial: Containerfile versioned, BASE_IMAGE ubuntu:24.04 is a mutable tag",
         "semanticValue": "provenance and build history", "preservationRequirement": requirement, "reason": reason,
+        "classificationStatus": "PROVISIONAL_PROVENANCE_CLASSIFICATION",
+        "classificationBasis": "class, safe_to_delete and uniqueBytes are canonical (T005 rerun); finalImageId comes from the non-canonical Parent chain until Parent/History are exposed by the podman-execution observer",
         "gcEligible": False,
     })
 json.dump(plan, open(output_path, "w"), indent=1)
