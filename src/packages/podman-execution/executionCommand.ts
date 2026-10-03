@@ -12,7 +12,9 @@
  */
 
 import { appendFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { parseArgs } from 'node:util'
+import { readEnvFile } from '@thyrox/paths/reach.ts'
 
 import { EXECUTION_REFERENCE_LABEL_KEY, runExecution, InvalidExecutionAuthorizationError, TASK_CITATION_PATTERN, type ExecutionAuthorization, type ExecutionKind, type ExecutionReference, type ExecutionSecret } from './executionAuthorization.js'
 import { ensureSecretValue } from './resourceMaterialization.js'
@@ -73,6 +75,18 @@ const USAGE = [
 ].join('\n')
 
 class UsageError extends Error {}
+
+/**
+ * El entorno del runner: el del proceso sobre el `.env` del proyecto que monta
+ * (o el archivo de `THYROX_ENV_FILE`, que es como se aísla una suite). Antes lo
+ * daba Bun por accidente, al cargar el `.env` del `cwd`: con el `cwd` en el
+ * worktree de un ítem, `THYROX_EXEC_IMAGE` se perdía y la unidad pedía la imagen
+ * por defecto (TASK-THYROX-0919). La precedencia es la misma: el proceso gana.
+ */
+export function runnerEnvironment(env: ExecutionCommandDeps['env'], repositoryRoot: string): ExecutionCommandDeps['env'] {
+  const declared = env.THYROX_ENV_FILE?.trim()
+  return { ...readEnvFile(declared || join(repositoryRoot, '.env')), ...env }
+}
 
 function requireValue(value: string | undefined, name: string): string {
   if (!value) throw new UsageError(`falta --${name}`)

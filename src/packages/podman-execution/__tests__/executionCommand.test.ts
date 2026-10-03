@@ -1,9 +1,9 @@
 import { describe, expect, test } from 'bun:test'
-import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs'
+import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { DEFAULT_EXECUTION_IMAGE, parseMount, runExecutionCommand, type ExecutionCommandDeps } from '../executionCommand.js'
+import { DEFAULT_EXECUTION_IMAGE, parseMount, runExecutionCommand, runnerEnvironment, type ExecutionCommandDeps } from '../executionCommand.js'
 import type { PodmanCommandResult, PodmanExecutor } from '../podmanExecutor.js'
 
 const ROOT = '/srv/repo'
@@ -69,6 +69,36 @@ describe('thyrox-exec run', () => {
     const h = harness({ THYROX_EXEC_IMAGE: 'localhost/otra:1' })
     await runExecutionCommand(['run', '--task', 'TASK-THYROX-0001', '--kind', 'probe', '--', 'true'], h.deps)
     expect(createArgv(h)).toContain('localhost/otra:1')
+  })
+
+  // TASK-THYROX-0919: con `cwd` en el worktree de un ítem el runner perdió
+  // THYROX_EXEC_IMAGE: llegaba sólo porque Bun carga el `.env` del `cwd`. El
+  // entorno del runner es el del proceso sobre el `.env` del proyecto que monta.
+  test('el .env del proyecto montado da THYROX_EXEC_IMAGE aunque el cwd no lo tenga', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'runner-env-'))
+    try {
+      writeFileSync(join(root, '.env'), 'THYROX_EXEC_IMAGE=docker.io/x/runner@sha256:abc\n')
+      const h = harness()
+      h.deps.env = runnerEnvironment({}, root)
+      await runExecutionCommand(['run', '--task', 'TASK-THYROX-0001', '--kind', 'probe', '--', 'true'], h.deps)
+      expect(createArgv(h)).toContain('docker.io/x/runner@sha256:abc')
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
+  })
+
+  test('en el entorno del runner gana el proceso, y THYROX_ENV_FILE elige el archivo', () => {
+    const root = mkdtempSync(join(tmpdir(), 'runner-env-'))
+    try {
+      writeFileSync(join(root, '.env'), 'A=del-proyecto\nB=del-proyecto\n')
+      writeFileSync(join(root, 'aislado.env'), 'B=aislado\n')
+      expect(runnerEnvironment({ A: 'del-proceso' }, root)).toMatchObject({ A: 'del-proceso', B: 'del-proyecto' })
+      const isolated = runnerEnvironment({ THYROX_ENV_FILE: join(root, 'aislado.env') }, root)
+      expect(isolated.B).toBe('aislado')
+      expect(isolated.A).toBeUndefined()
+    } finally {
+      rmSync(root, { recursive: true, force: true })
+    }
   })
 
   test('--script-stdin entrega el guion a bash dentro de la unidad', async () => {

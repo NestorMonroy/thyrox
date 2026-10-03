@@ -2,7 +2,7 @@
 /** Entrada de `bin/podman-execution-execute`; la orden vive en `executionCommand.ts`. */
 import { resolve } from 'node:path'
 
-import { runExecutionCommand } from '../executionCommand.ts'
+import { runExecutionCommand, runnerEnvironment } from '../executionCommand.ts'
 import { createPodmanExecutor } from '../podmanExecutor.ts'
 
 const repositoryRoot = process.env.THYROX_ROOT ?? resolve(import.meta.dir, '../../../..')
@@ -12,7 +12,7 @@ const output = {
 }
 process.exit(
   await runExecutionCommand(process.argv.slice(2), {
-    env: process.env,
+    env: runnerEnvironment(process.env, repositoryRoot),
     readStdin: () => Bun.stdin.text(),
     output,
     pid: process.pid,
