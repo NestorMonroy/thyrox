@@ -1,0 +1,11 @@
+gpu: sin nvidia-smi (nvidia-smi): no se mide la VRAM de los items
+podman 4.9.3 · backend sqlite · locks asignados 11, referenciados 11 · marcador /run/libpod/alive
+thyrox-ollama action=kept drift=- created=no started=no health=healthy provision=not-declared volumes=thyrox-ollama-models:preserved
+modelo: thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e (derivado de --task-class mecanica) runtime: ollama
+historial: sin ejecución previa de /home/user/thyrox/bin/cli en esta plantilla; ninguna con el modelo thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e: nada que derivar
+credencial: inherit (por defecto; sin variable de credencial en el entorno del pool: cada ítem la resuelve solo, y thyrox -p entra al proxy local)
+buzón: /home/user/thyrox/.thyrox/runtime/pool/4c7475127299-20261003T130155-29046/mailbox
+cache-ttl: 1h (constant)
+items=1 ok=1 fallidos=0
+memoria: sin GNU time, no se midio la de los items (instalalo con thyrox_toolchain_require_gnu_time)
+__BG_EXIT__=0

@@ -86,3 +86,20 @@ del runner. EXTEND: `RUNNER_OWNED_KINDS = task, pool`. Prueba nueva (RED → GRE
 prueba existente el ejemplo de «ajeno» pasa a un dueño `model-coordinator`, que sí tiene su reconciliador.
 Aplicado al huérfano real: `retirado thyrox-worker-maintenance-musdj2lq-27184 removed=true`, coordinador
 de vuelta a `tickets=0`. Consumidores: task_continuation 70/70, declared-image-build 13/13 y 40/40.
+
+## A6 r9 — PASS
+
+| criterio | medido | fuente |
+|---|---|---|
+| task-class | mecanica | `salida.log`: «derivado de --task-class mecanica» |
+| modelo | thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e | `salida.log` y `system/init` del stream |
+| runtime | ollama | `salida.log`, etiqueta `thyrox.model.runtime` |
+| fallback | ninguno; `fallback.enabled=false` | `execution_policy.json` |
+| ExecutionUnit | gestionada: `execution thyrox-worker-maintenance-museilm2-29770 kind=maintenance work=thyrox:a6/1 exit=0` | `1.err` |
+| coordinador | gestionado; residencia `…/cpu/ctx32768` | etiquetas de la unidad de modelo |
+| contexto concedido | 32768 (`OLLAMA_CONTEXT_LENGTH=32768`); no 24663, por H-THYROX-447 | entorno de la unidad |
+| proveedor remoto | nunca: sin ejecutable `claude` en la unidad, sin credencial; 0 menciones de claude-cli/APIs remotas en `1.err` | `1.err`, `credential-source` |
+| resultado | `42`, `success`, 1 turno, 764 s | línea `result` del stream |
+| exit | 0 (`items=1 ok=1 fallidos=0`, `__BG_EXIT__=0`) | `salida.log` |
+
+Prompt de sistema acotado a 8 200 tokens: la petición midió ~10 000 tokens (antes 25 468); prefill a 45 tok/s al empezar.
