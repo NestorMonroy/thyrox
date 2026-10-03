@@ -9,6 +9,9 @@
  * - **tarea** (`kind: 'task'`): que resuelve el trabajo de la clase, medido
  *   con un ítem real y su verify.
  *
+ * La de **flujo** (`kind: 'workflow'`) mide el worker entero en un worktree
+ * aislado; es otra evidencia, no entra en la elegibilidad de la clase.
+ *
  * Cada medición declara su condición: `isolated` (sin otra carga que la
  * desplace) o `contended`. Una velocidad contendida no ordena candidatos: se
  * sabe inválida para comparar.
@@ -23,8 +26,12 @@ import type { ModelCatalogEntry } from './catalogEntry.js'
 export const LOCAL_TASK_CLASSES = ['mecanica', 'analisis', 'adversarial', 'frontera'] as const
 export type LocalTaskClass = (typeof LOCAL_TASK_CLASSES)[number]
 
-/** Qué demuestra una cualificación: el formato del protocolo, la tarea de una clase o la recuperación por embeddings. */
-export type QualificationKind = 'protocol' | 'task' | 'embedding'
+/**
+ * Qué demuestra una cualificación: el formato del protocolo, la tarea de una
+ * clase, el flujo entero del worker sobre un repositorio (`workflow`,
+ * `repo-code-change@1`) o la recuperación por embeddings.
+ */
+export type QualificationKind = 'protocol' | 'task' | 'workflow' | 'embedding'
 
 /** Si la medición corrió sola o con otra carga que la desplazaba. */
 export type MeasurementCondition = 'isolated' | 'contended'
@@ -41,7 +48,7 @@ export interface ModelQualification {
   /** Nombre contractual del catálogo. */
   readonly model: string
   readonly kind: QualificationKind
-  /** La clase que una cualificación de tarea mide; una de protocolo no tiene. */
+  /** La clase que una cualificación de tarea o de flujo mide; las demás no tienen. */
   readonly taskClass?: LocalTaskClass
   /** Identificador y versión de la suite que midió (`tool-calling@1`). */
   readonly suite: string
@@ -114,8 +121,8 @@ function requireNonNegativeInteger(record: Record<string, unknown>, key: string,
   return value
 }
 
-const QUALIFICATION_KINDS: readonly QualificationKind[] = ['protocol', 'task', 'embedding']
-const KIND_LABELS: Readonly<Record<QualificationKind, string>> = { protocol: 'protocolo', task: 'tarea', embedding: 'embeddings' }
+const QUALIFICATION_KINDS: readonly QualificationKind[] = ['protocol', 'task', 'workflow', 'embedding']
+const KIND_LABELS: Readonly<Record<QualificationKind, string>> = { protocol: 'protocolo', task: 'tarea', workflow: 'flujo', embedding: 'embeddings' }
 const MEASUREMENT_CONDITIONS: readonly MeasurementCondition[] = ['isolated', 'contended']
 const REASONING_EFFORTS: readonly ReasoningEffort[] = ['none', 'model-default']
 const PROMPT_CACHE_POLICIES: readonly PromptCachePolicy[] = ['disabled', 'enabled', 'runtime-default']
@@ -130,7 +137,7 @@ function requireOneOf<T extends string>(record: Record<string, unknown>, key: st
 
 /** La clase es obligatoria en una cualificación de tarea y no existe en las demás. */
 function taskClassFor(kind: QualificationKind, record: Record<string, unknown>, path: string): LocalTaskClass | undefined {
-  if (kind === 'task') return requireTaskClass(record, path)
+  if (kind === 'task' || kind === 'workflow') return requireTaskClass(record, path)
   if (record.taskClass !== undefined) {
     throw new InvalidQualificationError(`${path}.taskClass`, `una cualificación de ${KIND_LABELS[kind]} no mide ninguna clase`)
   }
@@ -224,7 +231,8 @@ export function parseQualifications(text: string): ModelQualification[] {
 }
 
 function scopeOf(qualification: ModelQualification): string {
-  return qualification.kind === 'task' ? `task:${qualification.taskClass}` : qualification.kind
+  const measuresClass = qualification.kind === 'task' || qualification.kind === 'workflow'
+  return measuresClass ? `${qualification.kind}:${qualification.taskClass}` : qualification.kind
 }
 
 function byMeasurementKey(left: ModelQualification, right: ModelQualification): number {

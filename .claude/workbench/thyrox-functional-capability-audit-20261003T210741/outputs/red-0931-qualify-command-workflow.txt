@@ -1,0 +1,6 @@
+error: expect(received).toBe(expected)
+(fail) runQualifyCommand --workflow-suite: el flujo entero por el pool (TASK-THYROX-0931) > mantiene la admisión mientras corre el pool y escribe una cualificación de flujo [5.17ms]
+error: expect(received).toBe(expected)
+(fail) runQualifyCommand --workflow-suite: el flujo entero por el pool (TASK-THYROX-0931) > un caso rechazado por su verify suspende y también se escribe [4.15ms]
+ 10 pass
+ 2 fail

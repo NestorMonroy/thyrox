@@ -281,3 +281,26 @@ describe('runtimeProfile de una cualificación (TASK-THYROX-0931)', () => {
     expect(qualifiedModels([FAST], [protocolWithoutProfile, withoutProfile], 'mecanica', 0)).toEqual([])
   })
 })
+
+// TASK-THYROX-0931: `repo-code-change@1` mide el flujo entero del worker —leer,
+// buscar lo existente, editar, correr la prueba, reparar— en un worktree
+// aislado. Es otra evidencia: ni sustituye a la de tarea ni se infiere de ella.
+describe('cualificación de flujo (workflow)', () => {
+  const workflow = (model: string, parts: Partial<ModelQualification> = {}): ModelQualification =>
+    measured(model, { kind: 'workflow', suite: 'repo-code-change@1', ...parts })
+
+  test('exige su clase y se valida tal cual', () => {
+    expect(validateQualification(workflow(FAST.name))).toEqual(workflow(FAST.name))
+    const { taskClass: _taskClass, ...withoutClass } = workflow(FAST.name)
+    expect(() => validateQualification(withoutClass)).toThrow(/qualification\.taskClass/)
+  })
+
+  test('un flujo aprobado no sustituye a la tarea: sin tarea no hay elegible', () => {
+    expect(qualifiedModels([FAST], [protocolPass(FAST.name), workflow(FAST.name)], 'mecanica', 1)).toEqual([])
+  })
+
+  test('una tarea suspendida posterior a un flujo aprobado gobierna sólo su ámbito', () => {
+    const qualifications = [protocolPass(FAST.name), measured(FAST.name), workflow(FAST.name, { passed: false, casesPassed: 0, measuredAt: '2026-10-01T09:00:00Z' })]
+    expect(qualifiedModels([FAST], qualifications, 'mecanica', 1).map((q) => q.entry.name)).toEqual([FAST.name])
+  })
+})

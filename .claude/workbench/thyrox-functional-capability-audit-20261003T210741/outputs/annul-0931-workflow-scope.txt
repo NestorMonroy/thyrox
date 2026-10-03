@@ -1,0 +1,4 @@
+(fail) cualificación de flujo (workflow) > un flujo aprobado no sustituye a la tarea: sin tarea no hay elegible [0.26ms]
+(fail) cualificación de flujo (workflow) > una tarea suspendida posterior a un flujo aprobado gobierna sólo su ámbito [0.15ms]
+ 34 pass
+ 2 fail

@@ -8,10 +8,11 @@ import { resolvedArtifact } from '@thyrox/model-artifacts/testing/resolvedArtifa
 import type { AdmissionTicket } from '@thyrox/model-scheduling/hostCoordinator.ts'
 
 import { OllamaRequestError } from '../ollamaApi.js'
-import { ContextBeyondGrantError, UnmeasuredSpeedError, UnprofiledUnitError, runEmbeddingQualification, runQualification, runTaskQualification } from '../qualifyModel.js'
+import { ContextBeyondGrantError, UnmeasuredSpeedError, UnprofiledUnitError, runEmbeddingQualification, runQualification, runTaskQualification, runWorkflowQualification, type WorkflowCaseResult } from '../qualifyModel.js'
 import type { EmbeddingSuite } from '../embeddingSuite.js'
 import { loadTaskSuite, type TaskSuite } from '../taskSuite.js'
 import { TOOL_CALLING_SUITE_PATH, loadSuite } from '../toolCallingSuite.js'
+import type { WorkflowCase, WorkflowSuite } from '../workflowSuite.ts'
 import { CORRECT_TOOL_CALLING_REPLIES, startFakeOllama, type FakeChatReply, type FakeOllama } from '../testing/fakeOllama.js'
 
 const ARTIFACT = resolvedArtifact()
@@ -253,5 +254,53 @@ describe('runQualification — el perfil de runtime con que se midió (TASK-THYR
     const suite = await loadSuite(TOOL_CALLING_SUITE_PATH)
     const { qualification } = await runQualification({ ticket: { ...ticket, unit }, suite, measurementCondition: 'isolated', contextTokens: CONTEXT_TOKENS, now: () => NOW })
     expect(qualification.runtimeProfile?.promptCache).toBe('runtime-default')
+  })
+})
+
+describe('runWorkflowQualification — repo-code-change@1 por el pool (TASK-THYROX-0931)', () => {
+  const SUITE: WorkflowSuite = {
+    id: 'repo-code-change@1', taskClass: 'mecanica', promptPath: '/suite/prompt.md', tools: ['Read', 'Write', 'Edit', 'Bash'],
+    cases: [{ id: 'title-slug', item: 'Implement title_slug.', verify: 'bash verify.sh' }, { id: 'second', item: 'Other.', verify: 'true' }],
+  }
+  const ticket = () => ticketTo('http://127.0.0.1:1')
+
+  function results(byCase: Record<string, WorkflowCaseResult>): (workflowCase: WorkflowCase) => Promise<WorkflowCaseResult> {
+    return async workflowCase => byCase[workflowCase.id] as WorkflowCaseResult
+  }
+
+  test('aprueba sólo con todos los casos verificados; registra flujo, clase, herramientas y velocidad de pared', async () => {
+    const runCase = results({
+      'title-slug': { verdict: 'verificado', outputTokens: 600, durationMs: 60_000 },
+      second: { verdict: 'verificado', outputTokens: 400, durationMs: 40_000 },
+    })
+    const { qualification, outcomes } = await runWorkflowQualification({ ticket: ticket(), suite: SUITE, runCase, measurementCondition: 'isolated', contextTokens: CONTEXT_TOKENS, now: () => NOW })
+    expect(outcomes.map(o => [o.caseId, o.passed, o.observed])).toEqual([['title-slug', true, 'verificado'], ['second', true, 'verificado']])
+    expect(qualification).toMatchObject({ kind: 'workflow', taskClass: 'mecanica', suite: 'repo-code-change@1', casesPassed: 2, casesTotal: 2, passed: true, tokensPerSecond: 10 })
+    expect(qualification.runtimeProfile?.tools).toEqual(['Read', 'Write', 'Edit', 'Bash'])
+  })
+
+  test('un caso rechazado, sin cambios o no servido localmente suspende', async () => {
+    for (const verdict of ['rechazado', 'sin-cambios', 'no-local', 'fallido']) {
+      const runCase = results({ 'title-slug': { verdict, outputTokens: 10, durationMs: 1000 }, second: { verdict: 'verificado', outputTokens: 10, durationMs: 1000 } })
+      const { qualification } = await runWorkflowQualification({ ticket: ticket(), suite: SUITE, runCase, measurementCondition: 'isolated', contextTokens: CONTEXT_TOKENS, now: () => NOW })
+      expect([verdict, qualification.passed, qualification.casesPassed]).toEqual([verdict, false, 1])
+    }
+  })
+
+  test('sin tokens generados no hay velocidad: no se registra', async () => {
+    const runCase = results({ 'title-slug': { verdict: 'fallido', outputTokens: 0, durationMs: 0 }, second: { verdict: 'fallido', outputTokens: 0, durationMs: 0 } })
+    await expect(runWorkflowQualification({ ticket: ticket(), suite: SUITE, runCase, measurementCondition: 'isolated', contextTokens: CONTEXT_TOKENS, now: () => NOW }))
+      .rejects.toBeInstanceOf(UnmeasuredSpeedError)
+  })
+
+  test('el contexto pedido no excede el concedido, y la unidad sin perfil se rehúsa antes de correr ningún caso', async () => {
+    let ran = 0
+    const runCase = async () => { ran += 1; return { verdict: 'verificado', outputTokens: 1, durationMs: 1 } }
+    await expect(runWorkflowQualification({ ticket: ticket(), suite: SUITE, runCase, measurementCondition: 'isolated', contextTokens: GRANTED_CONTEXT + 1, now: () => NOW }))
+      .rejects.toBeInstanceOf(ContextBeyondGrantError)
+    const { profile: _profile, ...unprofiled } = ticket().unit
+    await expect(runWorkflowQualification({ ticket: { ...ticket(), unit: unprofiled }, suite: SUITE, runCase, measurementCondition: 'isolated', contextTokens: CONTEXT_TOKENS, now: () => NOW }))
+      .rejects.toBeInstanceOf(UnprofiledUnitError)
+    expect(ran).toBe(0)
   })
 })

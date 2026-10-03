@@ -1,0 +1,3 @@
+error: Cannot find module '../workflowPool.ts' from '/home/user/thyrox/src/packages/local-models/__tests__/workflowPool.test.ts'
+ 0 pass
+ 1 fail

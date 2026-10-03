@@ -1,0 +1,15 @@
+## A: aprueba todo lo que no sea rechazado
+replace_literal: 1 reemplazo(s) en src/packages/local-models/qualifyModel.ts
+(fail) runWorkflowQualification — repo-code-change@1 por el pool (TASK-THYROX-0931) > un caso rechazado, sin cambios o no servido localmente suspende [0.41ms]
+ 20 pass
+ 1 fail
+## B: la política del pool deja abierto el respaldo
+replace_literal: 1 reemplazo(s) en src/packages/local-models/workflowPool.ts
+(fail) poolCaseRunner (TASK-THYROX-0931) > la política del pool permite sólo el modelo medido y cierra el respaldo [9.16ms]
+ 3 pass
+ 1 fail
+## C: --workflow-suite sin --out no se rehúsa
+replace_literal: 1 reemplazo(s) en src/packages/local-models/qualifyCommand.ts
+(fail) runQualifyCommand --workflow-suite: el flujo entero por el pool (TASK-THYROX-0931) > sin --out se rehúsa antes de pedir admisión: la evidencia del pool tiene destino declarado [7.05ms]
+ 11 pass
+ 1 fail

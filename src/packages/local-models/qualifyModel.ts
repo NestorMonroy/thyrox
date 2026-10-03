@@ -24,6 +24,7 @@ import { scoreEmbeddingCase, type EmbeddingCase, type EmbeddingSuite } from './e
 import type { ChatReply } from './ollamaApi.js'
 import { scoreTaskReply, type TaskCase, type TaskSuite } from './taskSuite.js'
 import { scoreReply, type Suite, type SuiteCase } from './toolCallingSuite.js'
+import type { WorkflowCase, WorkflowSuite } from './workflowSuite.ts'
 
 /** La semilla del benchmark de origen: la misma medición se repite igual. */
 export const QUALIFICATION_SEED = 7
@@ -51,6 +52,24 @@ export interface TaskQualificationRequest extends MeasurementSettings {
 export interface EmbeddingQualificationRequest extends MeasurementSettings {
   readonly suite: EmbeddingSuite
 }
+
+/** Lo que el pool dejó de un caso de flujo: su verdict y lo que el worker generó. */
+export interface WorkflowCaseResult {
+  /** `verificado`, `rechazado`, `sin-cambios`, `no-local`, `fallido`… (`item_worktree.sh finalize`). */
+  readonly verdict: string
+  readonly outputTokens: number
+  readonly durationMs: number
+}
+
+export interface WorkflowQualificationRequest extends MeasurementSettings {
+  readonly suite: WorkflowSuite
+  /** Corre un caso por el pool, contra la residencia que este ticket mantiene. */
+  readonly runCase: (workflowCase: WorkflowCase) => Promise<WorkflowCaseResult>
+}
+
+/** El único verdict que aprueba un caso: el pool aplicó el cambio en el worktree y su verify pasó. */
+const VERIFIED_VERDICT = 'verificado'
+const MILLISECONDS_PER_SECOND = 1000
 
 export interface CaseOutcome {
   readonly caseId: string
@@ -130,6 +149,28 @@ export async function runEmbeddingQualification(request: EmbeddingQualificationR
   const outcomes = request.suite.cases.map((embeddingCase, index) => embeddingOutcome(embeddingCase, replies[index] as EmbedReply))
   const speed = ratePerSecond(model, replies.map(reply => ({ tokens: reply.promptEvalCount, nanoseconds: reply.totalDurationNs })))
   return qualificationRun(request, { kind: 'embedding', suite: request.suite.id }, outcomes, speed, [])
+}
+
+/**
+ * La suite de flujo (`repo-code-change@1`): cada caso es un ítem del pool en un
+ * worktree aislado, y aprueba sólo si su verdict es `verificado`. La velocidad
+ * es de PARED —tokens generados entre la duración del ítem—, no de decodificación:
+ * incluye herramientas, verify y prefill, que es lo que cuesta el flujo.
+ */
+export async function runWorkflowQualification(request: WorkflowQualificationRequest): Promise<QualificationRun> {
+  requireContextWithinGrant(request)
+  requireUnitProfile(request)
+  const results: WorkflowCaseResult[] = []
+  for (const workflowCase of request.suite.cases) results.push(await request.runCase(workflowCase))
+  const outcomes = request.suite.cases.map((workflowCase, index) => workflowOutcome(workflowCase, results[index] as WorkflowCaseResult))
+  const speed = ratePerSecond(request.ticket.grant.artifact.modelId,
+    results.map(result => ({ tokens: result.outputTokens, nanoseconds: result.durationMs / MILLISECONDS_PER_SECOND * NANOSECONDS_PER_SECOND })))
+  const identity = { kind: 'workflow', taskClass: request.suite.taskClass, suite: request.suite.id } as const
+  return qualificationRun(request, identity, outcomes, speed, request.suite.tools)
+}
+
+function workflowOutcome(workflowCase: WorkflowCase, result: WorkflowCaseResult): CaseOutcome {
+  return { caseId: workflowCase.id, passed: result.verdict === VERIFIED_VERDICT, observed: result.verdict }
 }
 
 /**

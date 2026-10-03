@@ -8,7 +8,7 @@
  * que siga dependiendo del contenedor `thyrox-ollama`.
  */
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import type { ExecutionGrant } from '@thyrox/model-artifacts/executionGrant.ts'
@@ -18,8 +18,9 @@ import { type ModelCoordinatorServer, type ServedCoordinator, startModelCoordina
 import type { AdmissionRequest, AdmissionTicket, CoordinatorAdmission } from '@thyrox/model-scheduling/hostCoordinator.ts'
 
 import type { CommandContext } from '../catalogCommand.js'
-import { EXIT_OK, EXIT_REFUSED } from '../commandOutput.js'
+import { EXIT_NOT_APPROVED, EXIT_OK, EXIT_REFUSED } from '../commandOutput.js'
 import { runQualifyCommand } from '../qualifyCommand.js'
+import { REPO_CODE_CHANGE_SUITE_PATH } from '../workflowSuite.ts'
 import { CORRECT_TOOL_CALLING_REPLIES, startFakeOllama, type FakeOllama } from '../testing/fakeOllama.js'
 
 const ARTIFACT = resolvedArtifact()
@@ -202,6 +203,53 @@ describe('runQualifyCommand --embedding-suite: la cualificación de embeddings',
   test('--suite y --embedding-suite juntas se rehúsan antes de pedir admisión', async () => {
     const coordinator = await coordinatorWith()
     expect(await runQualifyCommand([MODEL, '--suite', embeddingSuiteFile(), '--embedding-suite', embeddingSuiteFile()], contextFor())).toBe(EXIT_REFUSED)
+    expect(coordinator.admitted).toHaveLength(0)
+  })
+})
+
+describe('runQualifyCommand --workflow-suite: el flujo entero por el pool (TASK-THYROX-0931)', () => {
+  /** Un `bin/headless-pool` falso bajo una raíz temporal: deja el verdict y el resultado del ítem. */
+  function rootWithPool(verdict: string): string {
+    const root = join(directory, 'root')
+    mkdirSync(join(root, 'bin'), { recursive: true })
+    const pool = join(root, 'bin', 'headless-pool')
+    writeFileSync(pool, `#!/usr/bin/env bash
+cat >/dev/null; out=""
+while [[ $# -gt 0 ]]; do case "$1" in --out) out="$2"; shift 2 ;; *) shift ;; esac; done
+mkdir -p "$out"; echo ${verdict} > "$out/1.verdict"
+echo '{"type":"result","duration_ms":10000,"usage":{"output_tokens":50}}' > "$out/1.json"
+`)
+    chmodSync(pool, 0o755)
+    return root
+  }
+
+  test('mantiene la admisión mientras corre el pool y escribe una cualificación de flujo', async () => {
+    const coordinator = await coordinatorWith()
+    const context = { ...contextFor(), thyroxRoot: rootWithPool('verificado') }
+    const code = await runQualifyCommand([MODEL, '--workflow-suite', REPO_CODE_CHANGE_SUITE_PATH, '--out', join(directory, 'out'), '--isolated'], context)
+    expect(code).toBe(EXIT_OK)
+    expect(coordinator.finished).toEqual(['admission-1'])
+    const [stored] = JSON.parse(readFileSync(join(directory, 'qualifications.json'), 'utf8')).qualifications
+    expect(stored).toMatchObject({ kind: 'workflow', taskClass: 'mecanica', suite: 'repo-code-change@1', passed: true, tokensPerSecond: 5 })
+    expect(stdout.join('\n')).toContain('flujo mecanica repo-code-change@1 1/1')
+  })
+
+  test('un caso rechazado por su verify suspende y también se escribe', async () => {
+    await coordinatorWith()
+    const context = { ...contextFor(), thyroxRoot: rootWithPool('rechazado') }
+    expect(await runQualifyCommand([MODEL, '--workflow-suite', REPO_CODE_CHANGE_SUITE_PATH, '--out', join(directory, 'out')], context)).toBe(EXIT_NOT_APPROVED)
+    expect(JSON.parse(readFileSync(join(directory, 'qualifications.json'), 'utf8')).qualifications[0].passed).toBe(false)
+  })
+
+  test('sin --out se rehúsa antes de pedir admisión: la evidencia del pool tiene destino declarado', async () => {
+    const coordinator = await coordinatorWith()
+    expect(await runQualifyCommand([MODEL, '--workflow-suite', REPO_CODE_CHANGE_SUITE_PATH], contextFor())).toBe(EXIT_REFUSED)
+    expect(coordinator.admitted).toHaveLength(0)
+  })
+
+  test('--workflow-suite con --suite se rehúsa: una medición por invocación', async () => {
+    const coordinator = await coordinatorWith()
+    expect(await runQualifyCommand([MODEL, '--workflow-suite', REPO_CODE_CHANGE_SUITE_PATH, '--suite', REPO_CODE_CHANGE_SUITE_PATH, '--out', directory], contextFor())).toBe(EXIT_REFUSED)
     expect(coordinator.admitted).toHaveLength(0)
   })
 })
