@@ -564,3 +564,18 @@ La sección 7 contradecía la regla de la sección 1 en dos puntos:
 - **Mientras tanto:** la metadata queda en `PromotionEvidence.provenance` (registro fuera
   de la imagen, ya existente) y en el corpus semántico. Ahí la búsqueda `thyrox quantizer
   TASK-THYROX-0912` y la búsqueda `kaupamex-ai quantizer` llegan a la misma evidencia.
+
+## 8. Cuándo se aplica «normalizar en metadata, no reescribir la evidencia»
+
+| Momento | Pieza | Qué hace la regla |
+|---|---|---|
+| **1. Ingesta al corpus semántico** (lo que llena PostgreSQL) | el reconocedor de dominio (`findingIngestion.ts`, y los futuros de logs y bancos) → `ingestDocument` | los chunks guardan el texto **tal cual** (`thyrox-ollama failed…`, `TASK-THYROX-0710`); `canonical_project=kaupamex-ai` y `legacy_project=thyrox` van a `documents.metadata`; el `domain_id` sigue siendo el id histórico. Medido (sección 4): con el mismo contenido la ingesta devuelve `unchanged` y **no reescribe la metadata**, así que la declaración tiene que existir antes de la ingesta masiva o hay que extender `ingestDocument` |
+| **2. Consulta** | `semantic-search` (búsqueda) | `kaupamex-ai quantizer` tiene que encontrar texto que dice `thyrox`: expansión de alias en la consulta o filtro por metadata. Hoy no existe (MISSING, sección 2) |
+| **3. Release del dataset y publicación OCI** | futuro `DatasetArtifact` / `PromotionEvidence.provenance` / artefacto de procedencia | el contenido y las etiquetas `io.thyrox.*` horneadas no cambian; la identidad nueva va en el registro de procedencia, no en los bytes |
+| **4. Rename físico (fase 7)** | `renameProductInText.ts`, `renameEnvPrefix.ts` y los gates de trinquete | el alcance del rename **excluye** la evidencia histórica: `.claude/workbench`, `.claude/jobs`, `.claude/build-logs`, `.claude/cache`, `_archived`, `_references`, el store y la historia de git. Son el 94,5 % de las apariciones (sección 2). Sólo se renombra código y configuración vigentes, y cada nombre viejo queda como alias aceptado |
+
+**Decisión del ejecutor (2026-10-03): namespace del registro = `th3rox`, por ahora.** Las
+primeras publicaciones van como `docker.io/th3rox/kaupamex-ai-*` (imágenes propias) y
+`docker.io/th3rox/kaupamex-*` (espejos y caché, según su dueño). El host sigue siendo
+configurable (`THYROX_REGISTRY_PUBLISHER_REGISTRY`), así que cambiar de namespace o de
+proveedor después es cambiar una ubicación, no la identidad lógica (sección 1, resp. 10).
