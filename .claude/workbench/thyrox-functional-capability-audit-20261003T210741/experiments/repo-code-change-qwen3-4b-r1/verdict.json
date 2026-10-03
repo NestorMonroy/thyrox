@@ -1,0 +1,15 @@
+{
+ "passed": false,
+ "casesPassed": 0,
+ "casesTotal": 1,
+ "tokensPerSecond": 1.0199240100572726,
+ "pool_verdict": "rechazado",
+ "observations": [
+  "Edit reemplazó sólo la línea raise con un def anidado que duplica slugify",
+  "escribió \\u0000 sin escapar para JSON: slug.py quedó binario",
+  "editó el archivo de pruebas",
+  "repitió un Edit sin cambio 3 veces y la misma prueba 5",
+  "su última llamada salió como texto",
+  "el proceso del vigilante de este ítem se retiró a mano (H-THYROX-467)"
+ ]
+}

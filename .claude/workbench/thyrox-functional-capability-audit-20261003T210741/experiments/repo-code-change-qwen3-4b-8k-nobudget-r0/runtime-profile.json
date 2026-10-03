@@ -1,0 +1,7 @@
+{
+ "contextTokens": 8192,
+ "measurementCondition": "isolated",
+ "reasoningEffort": "none",
+ "runtimeProfile": null,
+ "note": "sin registro: el perfil es el de la invocación (8K, sin presupuesto de sistema)"
+}

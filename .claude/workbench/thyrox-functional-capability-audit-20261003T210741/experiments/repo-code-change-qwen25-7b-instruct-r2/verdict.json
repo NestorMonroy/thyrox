@@ -1,0 +1,14 @@
+{
+ "passed": false,
+ "casesPassed": 0,
+ "casesTotal": 1,
+ "tokensPerSecond": 1.9107646178693638,
+ "pool_verdict": "rechazado",
+ "observations": [
+  "leyó la ruta correcta y apuntó a reutilizar slugify",
+  "old_string escapado como regex (NotImplementedError\\\\() no casó en dos Edit",
+  "editó la firma y dejó un error de sintaxis",
+  "nunca corrió las pruebas",
+  "su última llamada salió como texto"
+ ]
+}

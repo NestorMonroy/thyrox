@@ -1,0 +1,24 @@
+{
+ "contextTokens": 8192,
+ "measurementCondition": "isolated",
+ "reasoningEffort": "none",
+ "runtimeProfile": {
+  "artifactSha256": "1875fb29e8c91c86615c00e92d8b4114e56bc24359adb5a8db8b36452fae4a49",
+  "revision": "bb5d59e06d9551d752d08b292a50eb208b07ab1f",
+  "quantization": "q4_k_m",
+  "kvCacheType": "f16",
+  "promptCache": "disabled",
+  "runtime": "docker.io/ollama/ollama:0.35.0",
+  "cpus": 2,
+  "memoryMib": 8192,
+  "threads": null,
+  "tools": [
+   "Read",
+   "Write",
+   "Edit",
+   "Bash"
+  ],
+  "systemBudgetTokens": 2048
+ },
+ "note": null
+}

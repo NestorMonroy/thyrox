@@ -1,0 +1,10 @@
+{
+ "experiment_id": "tool-calling-qwen25-7b-instruct-8k-r1",
+ "model": "thyrox-qwen--qwen2.5-7b-instruct-gguf:q4_k_m-hf-bb5d59e06d95",
+ "suite": "tool-calling@1",
+ "suite_definition": "src/packages/local-models/suites/tool-calling-1.json",
+ "job": ".claude/jobs/qualify-q25-7b-protocol-8k-20261003T224613",
+ "job_log": ".claude/jobs/qualify-q25-7b-protocol-8k-20261003T224613/outputs/salida.log",
+ "measured_at": "2026-10-03T22:47:52.400Z",
+ "qualification_recorded": true
+}

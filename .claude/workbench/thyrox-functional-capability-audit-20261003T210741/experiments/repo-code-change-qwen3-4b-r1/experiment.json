@@ -1,0 +1,10 @@
+{
+ "experiment_id": "repo-code-change-qwen3-4b-r1",
+ "model": "thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e",
+ "suite": "repo-code-change@1",
+ "suite_definition": "src/packages/local-models/suites/repo-code-change-1/suite.json",
+ "job": ".claude/jobs/qualify-workflow-8k-t5400-20261003T220454",
+ "job_log": ".claude/jobs/qualify-workflow-8k-t5400-20261003T220454/outputs/salida.log",
+ "measured_at": "2026-10-03T22:18:59.247Z",
+ "qualification_recorded": true
+}

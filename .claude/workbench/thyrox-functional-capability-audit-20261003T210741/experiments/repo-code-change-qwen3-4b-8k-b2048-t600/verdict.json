@@ -1,0 +1,11 @@
+{
+ "passed": false,
+ "casesPassed": 0,
+ "casesTotal": 1,
+ "tokensPerSecond": 0,
+ "pool_verdict": "no-local",
+ "observations": [
+  "el pool mató el caso a los 600 s (su --timeout por defecto) antes del primer evento",
+  "veredicto no-local: sin línea served-by"
+ ]
+}

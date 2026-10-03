@@ -1,0 +1,10 @@
+{
+ "pool": {
+  "1.stream.jsonl": "outputs/workflow-qualify-8k/title-slug/pool/1.stream.jsonl",
+  "1.err": "outputs/workflow-qualify-8k/title-slug/pool/1.err",
+  "1.patch": "outputs/workflow-qualify-8k/title-slug/pool/1.patch",
+  "1.verdict": "outputs/workflow-qualify-8k/title-slug/pool/1.verdict",
+  "policy.json": "outputs/workflow-qualify-8k/title-slug/policy.json"
+ },
+ "prompt": "src/packages/local-models/suites/repo-code-change-1/prompt.md"
+}

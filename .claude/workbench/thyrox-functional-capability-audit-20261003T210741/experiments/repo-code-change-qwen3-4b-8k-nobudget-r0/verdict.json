@@ -1,0 +1,11 @@
+{
+ "passed": false,
+ "casesPassed": 0,
+ "casesTotal": 1,
+ "tokensPerSecond": null,
+ "pool_verdict": "fallido",
+ "observations": [
+  "primer turno de 26085 tokens de prompt contra n_ctx 8192 (exceed_context_size_error)",
+  "la suspensión no se escribió: sin tokens generados no había velocidad positiva (corregido después)"
+ ]
+}

@@ -1,0 +1,19 @@
+{
+ "finding_id": "H-THYROX-470",
+ "store_revision_commit": "fd3d113ce",
+ "row": {
+  "id": 107045,
+  "finding_id": "H-THYROX-470",
+  "submodule": "thyrox",
+  "initiative": "thyrox/self-implementation",
+  "finding_type": "finding",
+  "severity": "CRITICA",
+  "summary": "Ningún modelo que cabe en el contenedor completa repo-code-change@1: la autoimplementación local queda bloqueada por el techo físico",
+  "content": "n=4 corridas reales con la infraestructura completa funcionando: qwen3-4b rechazado; Qwen2.5-Coder-7B no pasa protocolo (2/6); Qwen2.5-7B-Instruct sin-cambios y rechazado. Techo: disco 8.7 GB (dos copias por modelo), RAM efectiva ~6 GB, 4 CPU sin GPU; hasta ~7B Q4 a 8K. Desbloquean: andamiaje de prompt (contradice prompt limpio), más hardware, o proveedor por API con clave. Decisión del ejecutor.",
+  "source_ref": ".claude/workbench/thyrox-functional-capability-audit-20261003T210741/outputs/REPORT.md",
+  "metadata_json": null,
+  "session_id": null,
+  "created_at": "2026-10-03T23:11:51",
+  "updated_at": "2026-10-03T23:11:51"
+ }
+}

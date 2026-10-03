@@ -1,0 +1,58 @@
+{
+ "_contract": "Fuente de las evaluaciones por dominio. current_state es el vigente; transitions conserva cada cambio con su evidencia. Snapshots: inicial = snapshots/report-20261003T211141Z-eb9d035f2.md; cierre = snapshots/report-20261003T232116Z-d5502b7b6.md.",
+ "execution": [
+  {"capability": "ejecución en unidad gestionada", "current_state": "REAL_VERIFIED", "transitions": [{"timestamp": "2026-10-03T21:11Z", "previous": null, "new": "REAL_VERIFIED", "evidence": "snapshots/report-20261003T211141Z-eb9d035f2.md"}], "gap": "imagen por defecto :dev ausente; funciona sólo con THYROX_EXEC_IMAGE al digest publicado (H-THYROX-469)"},
+  {"capability": "worktree aislado + verify + integración", "current_state": "REAL_VERIFIED", "transitions": [{"timestamp": "2026-10-03T21:11Z", "previous": null, "new": "REAL_VERIFIED", "evidence": "snapshots/report-20261003T211141Z-eb9d035f2.md"}], "gap": "huérfanos: item_worktree sweep-orphans con rescate (usado hoy, outputs/salvaged/)"},
+  {"capability": "localidad (thyrox-* nunca own)", "current_state": "REAL_VERIFIED", "transitions": [{"timestamp": "2026-10-03T21:11Z", "previous": null, "new": "ABSENT (bloqueante 3)", "evidence": "snapshots/report-20261003T211141Z-eb9d035f2.md"}, {"timestamp": "2026-10-03T23:21Z", "previous": "ABSENT", "new": "REAL_VERIFIED", "evidence": "experiments/repo-code-change-*/evidence.json (served-by local:true)"}]},
+  {"capability": "fallback de selección y local→local", "current_state": "IMPLEMENTED", "transitions": [{"timestamp": "2026-10-03T21:11Z", "previous": null, "new": "IMPLEMENTED (dobles)", "evidence": "snapshots/report-20261003T211141Z-eb9d035f2.md"}], "gap": "ningún salto real ejercido"}
+ ],
+ "podman": [
+  {"capability": "autoridad de materialización", "current_state": "INTEGRATED", "transitions": [{"timestamp": "2026-10-03T21:11Z", "previous": null, "new": "INTEGRATED", "evidence": "gates check_podman_* (0 violaciones)"}], "gap": "5 excepciones pendientes (0746, 0759×3) — src/verify/podman_*_pending.txt"},
+  {"capability": "observación (observe)", "current_state": "PARTIAL", "transitions": [{"timestamp": "2026-10-03T21:11Z", "previous": null, "new": "PARTIAL", "evidence": "outputs/03-podman-direct.txt"}], "gap": "sin logs/stats/health (#20)"},
+  {"capability": "volumen durable perdido", "current_state": "INTEGRATED", "transitions": [{"timestamp": "2026-10-03T22:40Z", "previous": "ABSENT", "new": "INTEGRATED", "evidence": "outputs/annul-464-durable-volume.txt; commit 70ef69843"}], "gap": "no ejercido en real"},
+  {"capability": "ciclo de vida de imágenes", "current_state": "PARTIAL", "transitions": [{"timestamp": "2026-10-03T21:11Z", "previous": null, "new": "PARTIAL", "evidence": "outputs/04-artifacts.txt"}], "gap": "catálogo declara 1 imagen; defaults :dev (H-THYROX-469)"}
+ ],
+ "model-control-plane": [
+  {"capability": "convergencia tras reciclado", "current_state": "REAL_VERIFIED", "transitions": [{"timestamp": "2026-10-03T21:11Z", "previous": null, "new": "PARTIAL", "evidence": "snapshots/report-20261003T211141Z-eb9d035f2.md"}, {"timestamp": "2026-10-03T21:30Z", "previous": "PARTIAL", "new": "REAL_VERIFIED", "evidence": "outputs/real-0928-converge.log"}]},
+  {"capability": "catálogo / import / validación", "current_state": "REAL_VERIFIED", "transitions": [{"timestamp": "2026-10-03T21:11Z", "previous": null, "new": "REAL_VERIFIED (sin entrada declarada)", "evidence": "snapshots/report-20261003T211141Z-eb9d035f2.md"}, {"timestamp": "2026-10-03T22:28Z", "previous": "sin entrada declarada", "new": "entrada declarada", "evidence": "commit 3116cf25f"}], "gap": "defaults inservibles aquí (H-THYROX-469)"},
+  {"capability": "materialización en la unidad", "current_state": "REAL_VERIFIED", "transitions": [{"timestamp": "2026-10-03T21:11Z", "previous": null, "new": "REAL_VERIFIED", "evidence": "snapshots/report-20261003T211141Z-eb9d035f2.md"}], "gap": "dos copias por modelo (H-THYROX-471)"},
+  {"capability": "selección de modelo", "current_state": "INTEGRATED (dos activas + una desconectada)", "transitions": [{"timestamp": "2026-10-03T21:11Z", "previous": null, "new": "INTEGRATED, tres autoridades", "evidence": "outputs/05-selection-authorities.txt"}, {"timestamp": "2026-10-03T23:21Z", "previous": "tres autoridades", "new": "dos activas + providerSelection sin consumidores", "evidence": "outputs/dims/02-redis-selection.txt"}], "gap": "#12"}
+ ],
+ "qualification": [
+  {"capability": "cualificación con perfil de runtime", "current_state": "REAL_VERIFIED", "transitions": [{"timestamp": "2026-10-03T21:11Z", "previous": null, "new": "REAL_VERIFIED (perfil parcial)", "evidence": "snapshots/report-20261003T211141Z-eb9d035f2.md"}, {"timestamp": "2026-10-03T21:39Z", "previous": "perfil parcial", "new": "perfil completo", "evidence": "experiments/tool-calling-qwen3-4b-8k-r1/runtime-profile.json"}]},
+  {"capability": "cualificación de flujo repo-code-change@1", "current_state": "REAL_VERIFIED", "transitions": [{"timestamp": "2026-10-03T21:11Z", "previous": null, "new": "ABSENT", "evidence": "snapshots/report-20261003T211141Z-eb9d035f2.md"}, {"timestamp": "2026-10-03T22:18Z", "previous": "ABSENT", "new": "REAL_VERIFIED", "evidence": "experiments/repo-code-change-qwen3-4b-r1"}], "gap": "ninguna identidad aprobada (H-THYROX-470); tres cualificaciones distintas (H-THYROX-472)"}
+ ],
+ "transformers-ml": [
+  {"capability": "TransformersRuntimeAdapter", "current_state": "INTEGRATED", "transitions": [{"timestamp": "2026-10-03T22:10Z", "previous": null, "new": "INTEGRATED (nunca construido)", "evidence": "outputs/ml/01-search-existing.tsv"}], "gap": "H-THYROX-465"},
+  {"capability": "embeddings", "current_state": "IMPLEMENTED (orquestación); modelo/cualificación/producción ABSENT", "transitions": [{"timestamp": "2026-10-03T22:10Z", "previous": null, "new": "ver descomposición", "evidence": "outputs/ml/"}], "gap": "0904 (#27), H-THYROX-466"},
+  {"capability": "SentenceTransformer / CrossEncoder / reward-value", "current_state": "ABSENT", "transitions": [{"timestamp": "2026-10-03T22:10Z", "previous": null, "new": "ABSENT", "evidence": "outputs/ml/01-search-existing.tsv"}]},
+  {"capability": "traducción por Transformers", "current_state": "IMPLEMENTED", "transitions": [{"timestamp": "2026-10-03T22:10Z", "previous": null, "new": "IMPLEMENTED (no verificada)", "evidence": "outputs/ml/01-search-existing.tsv"}]}
+ ],
+ "semantic-search": [
+  {"capability": "SemanticSearch store", "current_state": "IMPLEMENTED", "transitions": [{"timestamp": "2026-10-03T21:11Z", "previous": null, "new": "REAL_VERIFIED (PG de prueba)", "evidence": "snapshots/report-20261003T211141Z-eb9d035f2.md"}, {"timestamp": "2026-10-03T22:15Z", "previous": "REAL_VERIFIED (PG de prueba)", "new": "IMPLEMENTED; corpus vivo vacío", "evidence": "outputs/ml/02-corpus-counts.jsonl"}], "gap": "0 consumidores; sin productor de vectores"},
+  {"capability": "RAG", "current_state": "ABSENT", "transitions": [{"timestamp": "2026-10-03T21:11Z", "previous": null, "new": "ABSENT", "evidence": "snapshots/report-20261003T211141Z-eb9d035f2.md"}]}
+ ],
+ "persistence": [
+  {"capability": "PostgreSQL + pgvector", "current_state": "REAL_VERIFIED como servicio; no consumible", "transitions": [{"timestamp": "2026-10-03T21:11Z", "previous": null, "new": "REAL_VERIFIED", "evidence": "snapshots/report-20261003T211141Z-eb9d035f2.md"}, {"timestamp": "2026-10-03T23:21Z", "previous": "REAL_VERIFIED", "new": "no consumible: ninguna THYROX_*_DATABASE_URL en .env", "evidence": "outputs/dims/01-batch.txt"}], "gap": "corpus perdido (H-THYROX-464)"}
+ ],
+ "redis": [
+  {"capability": "Redis en producción", "current_state": "INTEGRATED parcial", "transitions": [{"timestamp": "2026-10-03T21:11Z", "previous": null, "new": "REAL_VERIFIED como infraestructura; sólo runLease", "evidence": "snapshots/report-20261003T211141Z-eb9d035f2.md"}, {"timestamp": "2026-10-03T23:21Z", "previous": "sólo runLease", "new": "runLease real + proxy del anfitrión con THYROX_REDIS_URL; unidades en memoria", "evidence": "outputs/dims/02-redis-selection.txt"}], "gap": "claves sin prefijo (H-THYROX-463); #21"}
+ ],
+ "resource-admission": [
+  {"capability": "admisión RAM", "current_state": "REAL_VERIFIED, mide el cgroup equivocado", "transitions": [{"timestamp": "2026-10-03T21:11Z", "previous": null, "new": "REAL_VERIFIED", "evidence": "snapshots/report-20261003T211141Z-eb9d035f2.md"}, {"timestamp": "2026-10-03T23:18Z", "previous": "REAL_VERIFIED", "new": "REAL_VERIFIED, mide el cgroup equivocado", "evidence": "outputs/resources/ram.txt"}], "gap": "H-THYROX-471"},
+  {"capability": "admisión CPU", "current_state": "INTEGRATED", "transitions": [{"timestamp": "2026-10-03T21:11Z", "previous": null, "new": "ABSENT", "evidence": "snapshots/report-20261003T211141Z-eb9d035f2.md"}, {"timestamp": "2026-10-03T22:22Z", "previous": "ABSENT", "new": "INTEGRATED", "evidence": "outputs/annul-0932-cpu.txt; commit def5a0845"}]},
+  {"capability": "admisión disco", "current_state": "REAL_VERIFIED", "transitions": [{"timestamp": "2026-10-03T21:11Z", "previous": null, "new": "REAL_VERIFIED", "evidence": "snapshots/report-20261003T211141Z-eb9d035f2.md"}]}
+ ],
+ "process-monitoring": [
+  {"capability": "trabajos y procesos", "current_state": "REAL_VERIFIED", "transitions": [{"timestamp": "2026-10-03T21:11Z", "previous": null, "new": "REAL_VERIFIED", "evidence": "snapshots/report-20261003T211141Z-eb9d035f2.md"}], "gap": "2 trabajos A6 SIN-RECOGER (outputs/dims/04-images-jobs.txt)"},
+  {"capability": "vigilante del ítem", "current_state": "REAL_VERIFIED (pruebas host y unidad)", "transitions": [{"timestamp": "2026-10-03T21:11Z", "previous": null, "new": "ABSENT (bloqueante 5)", "evidence": "snapshots/report-20261003T211141Z-eb9d035f2.md"}, {"timestamp": "2026-10-03T22:00Z", "previous": "ABSENT", "new": "INTEGRATED (host)", "evidence": "outputs/annul-f7-watchdog.txt"}, {"timestamp": "2026-10-03T22:16Z", "previous": "INTEGRATED (host)", "new": "INTEGRATED (host y unidad)", "evidence": "outputs/annul-f7-unit-live.txt; H-THYROX-467"}], "gap": "no disparó en una corrida real"}
+ ],
+ "identity-migration": [
+  {"capability": "identidad kaupamex-ai", "current_state": "AUDITED (nada migrado)", "transitions": [{"timestamp": "2026-10-03T21:55Z", "previous": null, "new": "AUDITED", "evidence": "outputs/identity-surface-inventory.tsv; outputs/identity/"}], "gap": "#24, #25; H-THYROX-461/462/463"}
+ ],
+ "self-implementation": [
+  {"capability": "AUTONOMOUS_LOCAL_SELF_IMPLEMENTATION", "current_state": "NOT_ACCEPTED_YET", "transitions": [{"timestamp": "2026-10-03T21:11Z", "previous": null, "new": "ABSENT", "evidence": "snapshots/report-20261003T211141Z-eb9d035f2.md"}, {"timestamp": "2026-10-03T23:11Z", "previous": "ABSENT", "new": "HARD_PHYSICAL_LIMIT (retirado)", "evidence": "snapshots/report-20261003T231152Z-fd3d113ce.md"}, {"timestamp": "2026-10-03T23:18Z", "previous": "HARD_PHYSICAL_LIMIT", "new": "NOT_ACCEPTED_YET", "evidence": "findings/H-THYROX-470.md"}], "gap": "H-THYROX-470 (MIXED provisional)"},
+  {"capability": "Search Existing", "current_state": "DESIGNED_ONLY", "transitions": [{"timestamp": "2026-10-03T21:11Z", "previous": null, "new": "DESIGNED_ONLY", "evidence": "snapshots/report-20261003T211141Z-eb9d035f2.md"}], "gap": "0 archivos; parche rescatado de 0919 (outputs/salvaged/)"},
+  {"capability": "specialist routing", "current_state": "ABSENT", "transitions": [{"timestamp": "2026-10-03T21:11Z", "previous": null, "new": "ABSENT", "evidence": "outputs/dims/01-batch.txt"}]}
+ ]
+}

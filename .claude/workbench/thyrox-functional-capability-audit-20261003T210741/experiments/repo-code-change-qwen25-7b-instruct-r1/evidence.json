@@ -1,0 +1,11 @@
+{
+ "pool": {
+  "1.stream.jsonl": "outputs/workflow-q25-7b-8k/title-slug/pool/1.stream.jsonl",
+  "1.live.jsonl": "outputs/workflow-q25-7b-8k/title-slug/pool/1.live.jsonl",
+  "1.err": "outputs/workflow-q25-7b-8k/title-slug/pool/1.err",
+  "1.patch": "outputs/workflow-q25-7b-8k/title-slug/pool/1.patch",
+  "1.verdict": "outputs/workflow-q25-7b-8k/title-slug/pool/1.verdict",
+  "policy.json": "outputs/workflow-q25-7b-8k/title-slug/policy.json"
+ },
+ "prompt": "src/packages/local-models/suites/repo-code-change-1/prompt.md"
+}

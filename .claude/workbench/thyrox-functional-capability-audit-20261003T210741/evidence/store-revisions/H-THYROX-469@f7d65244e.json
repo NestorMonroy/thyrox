@@ -1,0 +1,19 @@
+{
+ "finding_id": "H-THYROX-469",
+ "store_revision_commit": "f7d65244e",
+ "row": {
+  "id": 107044,
+  "finding_id": "H-THYROX-469",
+  "submodule": "thyrox",
+  "initiative": "thyrox/self-implementation",
+  "finding_type": "finding",
+  "severity": "MEDIA",
+  "summary": "La importación no corre con sus valores por defecto: busca la imagen del laboratorio por :dev y pide 8 GiB que la admisión nunca concede aquí",
+  "content": "local-models-import usa DEFAULT_LAB_IMAGE localhost/thyrox-model-quantizer:dev (el tag de build.sh manual), pero el build declarado etiqueta candidate-<commit de definición>; con sólo el candidate presente rehúsa. Y su límite de 8 GiB más el piso de 2 GiB supera la holgura efectiva medida (cgroup ancestro: 8.33 GB, que cuenta la caché de páginas como usada; MemAvailable 15.3 GB). Funcionó con THYROX_QUANTIZER_IMAGE=…:candidate-2027edfaf1a2 y --memory-limit-bytes 5.5 GiB. La imagen debería resolverse por identidad lógica del catálogo de imágenes, y el límite por defecto derivarse del tamaño del artefacto.",
+  "source_ref": "src/packages/local-models/labCommandOptions.ts:4; src/session/resource_admission.py:359; .claude/workbench/thyrox-functional-capability-audit-20261003T210741/outputs/coder-7b-import/refusal.json",
+  "metadata_json": null,
+  "session_id": null,
+  "created_at": "2026-10-03T22:36:15",
+  "updated_at": "2026-10-03T22:36:15"
+ }
+}

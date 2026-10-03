@@ -1,710 +1,126 @@
-# Auditoría funcional de Thyrox — qué puede pedir hoy un consumidor
+# Auditoría funcional de Thyrox — vista consolidada
 
-Fecha: 2026-10-03T21:07Z, sobre `a090c0b81`. Complementa (no repite) la fotografía de
-`thyrox-state-audit-20261003T204631/outputs/REPORT.md`; las cifras de máquina, contenedores e
-imágenes vienen de allí. Aquí la pregunta es de PRODUCTO: entrada soportada → resultado completo.
+> **Vista derivada**, generada 2026-10-03T23:29:56Z por `probes/assemble_report.py`. No es la fuente de verdad:
+> cada afirmación apunta a su registro (capability, finding, experiment, decision, evidence).
+> La cronología vive en `manifest.jsonl` y en `snapshots/`; no hace falta `git log` para reconstruirla.
 
-Escala: ABSENT · DESIGNED_ONLY · IMPLEMENTED · INTEGRATED · REAL_VERIFIED · **CONSUMABLE** (un
-consumidor lo pide hoy por una entrada soportada y obtiene el resultado completo) · ACTIVE_NOW.
-Contexto que decide CONSUMABLE hoy: la VM se recicló a las 20:46Z y **nada del runtime corre**
-(coordinador, Ollama, PostgreSQL, Redis en `created`). Una capacidad cuya entrada exige el runtime
-no es CONSUMABLE hasta que exista la convergencia tras reciclado (fase 2).
+## Executive summary
 
-## Capability matrix
+- La fotografía de medición está cerrada; las conclusiones de dominio están en `capabilities/` y `decisions/`.
+- `AUTONOMOUS_LOCAL_SELF_IMPLEMENTATION = NOT_ACCEPTED_YET`: ninguna identidad probada aprobó `repo-code-change@1` ([H-THYROX-470](../findings/H-THYROX-470.md), clasificación provisional MIXED).
+- Las mediciones que limitaron esos experimentos no representaban el hardware ([H-THYROX-471](../findings/H-THYROX-471.md)): rama A del DAG.
+- `controller.implementation` sigue en `bootstrap-exception`.
 
-| Capability | State | Authority | Consumers | Real proof | Consumable today | Gap |
-|---|---|---|---|---|---|---|
-| ejecutar una tarea en unidad Podman | REAL_VERIFIED | `podman-execution-execute run` | headless-pool `--execution unit`, task_continuation | A6 r9, contención e2e | **sí** (no exige runtime de modelos) | — |
-| ExecutionAuthorization | INTEGRATED | `podman-execution/executionAuthorization.ts` | primitiva | gate 0 violaciones | sí | — |
-| worktrees aislados | REAL_VERIFIED | `headless-pool --isolation worktree` + `pool_integrate` | pool | 0919 r3–r5, write-route | sí | worktree retenido sin retirar (`.thyrox/pool-worktrees/276193a40e30/1`) |
-| background jobs | REAL_VERIFIED | `thyrox-bg` + `wait-jobs` | sesión, pools | ledger real | sí | 2 trabajos A6 sin recoger |
-| cancelación / timeout / cleanup | REAL_VERIFIED | `bin/execute.ts` SIGTERM → `retireOwnedContainers`; `timeout` del pool | pool | `runner_sigterm.sh` real | sí | — |
-| orphan reconciliation | REAL_VERIFIED | `podman-execution-execute reconcile-orphans` | manual; no está en ninguna composición de arranque | real (62dfeec20) | sí, a mano | no entra en `local_control_plane_ready` |
-| declarar / catálogo de modelos | INTEGRATED | `model-artifacts/modelCatalog.ts`, `bin/local-models-catalog` | coordinador, recomendador | A6 | sí | capacidades declaradas `[completion]` sin `tools` |
-| importar artefacto | REAL_VERIFIED | `local-models-import` → `externalArtifact.ts` | manual | import real de qwen3-4b (`.thyrox/runtime/qwen3-4b-hf-import`) | **no bajo la política**: import/ensure no son entradas declaradas del plano de control (`control_plane_entries.tsv`) | ruta declarada (plan matemático, «BLOCKED_BY_BOOTSTRAP») |
-| validar artefacto | REAL_VERIFIED | `importCommand.ts:74` en `DEFAULT_LAB_IMAGE` | import | real | igual que import | — |
-| materializar / asegurar modelo | REAL_VERIFIED | `local-models-ensure` + Ollama gestionado | manual | real (manifiesto en el volumen) | no declarado bajo la política | igual |
-| cualificar modelo | REAL_VERIFIED (perfil parcial) | `local-models-qualify` → `qualifyModel.ts` vía coordinador | recomendador | 3 registros reales | no (exige coordinador) | perfil incompleto; sin suite de repo |
-| seleccionar modelo | INTEGRATED, **tres autoridades** | `recommendExecution` / `providerSelection` / `choose_candidate` (05) | pool y tsc_cycle / nadie / task_continuation | dobles | sí (CLI responde: hoy `blocked unqualified_profile`) | conflicto de autoridades |
-| admitir recursos RAM / disco | REAL_VERIFIED | `resource_admission.py`, `disk-headroom` | coordinador, builds, pools | real | medición sí | `makeRoom` abierto por tipo (H-THYROX-456) |
-| admitir CPU | ABSENT | — | — | — | no | `UNIT_LIMITS cpus 2` fijo |
-| admitir VRAM | IMPLEMENTED (nivel 1) | `gpu_monitor`, `resource_admission` | pools | sin GPU | no aplica | — |
-| residencia: crear / reutilizar / desalojar | REAL_VERIFIED | `ResidencyController` | coordinador | eviction real (run 3) | no (coordinador parado) | arranque |
-| inferencia local | REAL_VERIFIED | coordinador → unidad Ollama → `admittedUpstream` | `thyrox -p` por proxy | A6 r9 | no (coordinador parado) | arranque |
-| fallback de selección | IMPLEMENTED (dobles) | `policy.ts` cadena derivada | recommend, pool | dobles | sí | un solo modelo |
-| fallback de ejecución local→local | IMPLEMENTED (dobles) | `admittedUpstream.ts` | `localProxy --fallback-model` | dobles | no (coordinador) | sin salto real |
-| model routing por capacidad | ABSENT | — (`RouteRequirement` 0 apariciones) | — | — | no | — |
-| PostgreSQL | REAL_VERIFIED | `infrastructure-bootstrap` / `infrastructure_ensure` | semantic-search | volumen con 47 MB | no (`created`) | arranque |
-| pgvector | IMPLEMENTED (provisión declarada) | `infrastructure.sh:227` | semantic-search `migrate` | PG del toolchain | no | arranque |
-| Redis | REAL_VERIFIED como infraestructura | `infrastructure_ensure` | `runLease` | contenedor creado | no (`created`) | arranque; sin persistencia por diseño |
-| Ollama gestionado | REAL_VERIFIED | `infrastructure_ensure thyrox-ollama` | ensure, import | real | no (`created`) | arranque |
-| bootstrap / reconcile tras reciclado | PARTIAL | `local_control_plane_ready` (lock recovery + ensure) | manual | real (esta tarde: 0/13 → 13/13) | sólo a medias | sin modo status/help read-only; sin reconcile-orphans, coordinador ni salud final |
-| health de contenedores | PARTIAL | `infrastructure_ensure` (health por declaración) | ensure | real | no como observación | `observe` sin health |
-| observación de contenedores | PARTIAL | `podman-execution-execute observe` (8 vistas) | auditorías | real | sí | sin logs/stats/health; 4 sitios observan fuera de la primitiva (03) |
-| volúmenes / imágenes / disco | PARTIAL | `observe volumes/images`, `remove-image`, `build-image`, labels de ciclo de vida | builds | real | parcial | 14 imágenes sin dueño; GGUF ×4 (04) |
-| shared state memoria | INTEGRATED, **ACTIVE por defecto** | `@thyrox/shared-state` | proxy, scheduler | — | sí | — |
-| shared state Redis | REAL_VERIFIED (adapter, redis del toolchain) | `factory.ts` | sólo `runLease` en producción | no contra `thyrox-redis` | no | wiring de producción |
-| leases / cooldowns / ventanas / coordinación | IMPLEMENTED | proxy resilience, coordinationFactory | proxy, scheduler | contra redis del toolchain | en memoria | wiring |
-| ingest de documentos / identidad / versión / chunks | REAL_VERIFIED (PG de prueba) | `semantic-search/store.ts` | `bin/semantic-search-ingest` (sólo hallazgos RST) | 7 suites `*.postgres.test.ts` | no (PG parado) | — |
-| espacios de embeddings / putEmbeddings | IMPLEMENTED | `spaces.ts` | **ninguno** fuera del paquete | PG de prueba | no | sin productor de embeddings |
-| nearest search | IMPLEMENTED | `store.searchNearest` | **ninguno** | PG de prueba | no | — |
-| worker retrieval / RAG | ABSENT | — | — | — | no | — |
-| Read / Write / Edit / Bash en el worker | REAL_VERIFIED | `thyrox -p --tools`, pool `--tools` | pool | write-route (60 líneas) | no (coordinador) | arranque |
-| tool calling | REAL_VERIFIED (formato) | Ollama `/v1` + traducción | worker | `tool-calling@1` 6/6 | — | sólo formato |
-| navegación de repo / bucle de corrección | ABSENT como capacidad medida | — | — | 0919 sin PASS | no | suite de repo |
-| verifier | REAL_VERIFIED | `headless-pool --verify` + `pool_integrate` | pool | veredictos reales (rechazado/sin-cambios) | sí | — |
-| Search Existing | DESIGNED_ONLY | regla + contrato RED | prompt del worker | — | no | — |
-| specialist routing / mathematical reasoning | ABSENT | — | — | — | no | `RouteRequirement` |
-| jobs / process ownership | REAL_VERIFIED | `wait-jobs`, `process_ownership`, `stdin_probe` | sesión | real | sí | sin sleeping/stuck unificado |
-| RAM / disco / VRAM / CPU observados | RAM, disco: CONSUMABLE; VRAM: N/A; CPU: ABSENT | `resource_admission`, `disk-headroom`, `hardware-inventory` | — | real | sí | CPU |
-| container logs / stats | ABSENT por la primitiva | — | — | — | no | `observe` |
+## Capability matrix (current_state)
 
-## Authority map (una por dominio)
-
-| Dominio | Autoridad | Conflicto |
-|---|---|---|
-| selección de modelo | **en conflicto**: `recommendExecution` (pool, tsc_cycle), `providerSelection` (nadie), `choose_candidate` (task_continuation) | 3 autoridades; tsc_cycle además exige `claude-` |
-| cualificación | `ModelQualification` + `local-models-qualify` | — |
-| política de ejecución | `executionPolicy.ts` (TS) + `execution_policy.py` (preflight) sobre el mismo JSON | dos lectores, un archivo: coherentes por prueba (caso 13) |
-| scheduling | `ModelSchedulingCoordinator` / `hostCoordinator` | — |
-| admisión de recursos | `resource_admission.py` (RAM, disco, VRAM) | CPU ausente |
-| materialización de contenedores | `@thyrox/podman-execution` | 0 violaciones; 4 observadores fuera |
-| ciclo de vida de infraestructura | `@thyrox/infrastructure` (`infrastructure-bootstrap`) vía `infrastructure_ensure` | — |
-| identidad de artefactos | `model-artifacts` (nombre, catálogo) + `artifact-locations.json` (registry durable) | — |
-| identidad de imágenes | `image-registry/declaredImages.ts` | 14 imágenes sin etiqueta de dueño |
-| estado compartido | `@thyrox/shared-state` | — |
-| corpus semántico | `semantic-search/store.ts` | — |
-| estado de trabajos | `job_ledger` vía `thyrox-bg`/`wait-jobs` | — |
-| credenciales | `provider/src/credentials.ts` (`resolveCredential`) | — |
-| ruteo de proveedor | `decidePrintRoute` (por credencial) + routing del proxy (por modelo) | **la ruta se decide por credencial antes de mirar el modelo** (H-THYROX-455) |
-
-## Duplicate implementations
-
-- Tres selectores (arriba). Mi TASK-THYROX-0920/0923 creció sobre `recommendExecution` (H-THYROX-453).
-- Cualificación de modelos por API como sonda de banco (`cutover_bootstrap.sh`) frente a
-  `local-models-qualify`: criterios útiles fuera de la autoridad.
-- Vigilancia de inactividad en `delegate.sh` (banco) frente a `wait-jobs` heartbeat/probe.
-- Respaldo de modelo del bucle portado (`withRetry`, `query.ts`, `--fallback-model`) frente al de la
-  ruta local (`admittedUpstream`).
-
-## Disconnected implementations
-
-`providerSelection.ts`; `apiModelCatalog` (Model Studio); `semantic-search` espacios y búsqueda;
-`withRetry.FallbackTriggeredError` en la ruta local; `cutover_bootstrap.sh`; `delegate.sh`
-(watchdog); `reconcile-orphans` fuera de la composición de arranque.
-
-## Bootstrap exceptions
-
-`controller.implementation: bootstrap-exception` (el controlador implementa); entradas estrechas en
-`control_plane_entries.tsv` (9 filas, incluida `image-registry-build-declared-image` como excepción
-estrecha de 0912); `local-models-import/ensure` sin entrada declarada (se usan a mano);
-pendientes de Podman con tarea (0746, 0759).
-
-## Critical blockers (sólo los que impiden la autoimplementación local)
-
-1. **Runtime no converge tras reciclado** con una entrada declarada; además status y help no son
-   read-only (`local_control_plane_ready` actúa siempre; 02).
-2. **Disco**: 4 GiB libres; GGUF ×4 (una descarga parcial huérfana de 2.5 GB en el volumen de
-   Ollama), 14 imágenes sin dueño.
-3. **Localidad**: `thyrox -p` toma la ruta `own` con cualquier credencial aunque el modelo sea
-   `thyrox-*`; la ejecución host la hereda.
-4. **Cualificación** sin perfil completo ni suite de trabajo en repo; qwen3-4b inelegible.
-5. **Sin watchdog** de repetición/no progreso en la ruta del pool (sólo `timeout`).
-6. **Search Existing** inexistente — es lo que construye 0919.
-
-## Non-critical gaps
-
-Redis en producción (proxy/scheduler en memoria) · RAG (sin productor de embeddings ni consumidor)
-· especialista matemático (sin `RouteRequirement`) · admisión de CPU · logs/stats/health por la
-primitiva · tres autoridades de selección (no bloquea mientras el pool use `recommendExecution`) ·
-import/ensure sin entrada declarada (no bloquea: el modelo ya está instalado).
-
-## Reusable mechanisms (no reimplementar)
-
-`local_control_plane_ready` + `podman_lock_recovery --classify` + `infrastructure_ensure` +
-`reconcile-orphans` + `model_coordinator start|status` (convergencia); `observe` (inventario);
-`remove-image` (borrado gestionado); `artifact-locations.json` + `externalArtifact` (identidad y
-recuperación del modelo); `ModelQualification` + `qualifyModel.ts` + `suites/` (cualificación);
-criterios de `cutover_bootstrap.sh`; `wait-jobs` heartbeat + `stdin_probe` + watchdog de
-`delegate.sh` (vigilancia); `decidePrintRoute` + `credential-source` (localidad);
-`headless-pool --isolation worktree --verify` + `pool_integrate` (aceptación); `bin/binary`.
-
-## Dependency graph (orden de ejecución)
-
-```
-F2 convergencia tras reciclado (EXTEND local_control_plane_ready: status/help read-only,
-   reconcile-orphans, model_coordinator, salud)           ─┐
-F3 disco (clasificar por digest; retirar ORPHAN y           ├→ F5 cualificación con perfil completo
-   BUILD_INTERMEDIATE por la primitiva / borrado probado)  ─┤      + suite repo-code-change@1
-F4 localidad (thyrox-* nunca `own`; unit obligatoria)      ─┘          │
-                                                                       → F6 recualificar qwen3-4b
-                                                                         (8K → 16K → … mínimo)
-F7 watchdog mínimo (REUSE delegate.sh / wait-jobs) ────────────────────┤
-                                                                       → F8 0919 (bootstrap de Search Existing)
-                                                                       → F9 Search Existing durable
-                                                                       → F10 fases del worker
-                                                                       → F11 aceptación nueva → managed-only
-```
-
----
-
-## Identity migration audit (THYROX → kaupamex-ai) — 2026-10-03
-
-Directiva del ejecutor, añadida a la auditoría en curso. **Nada se renombró.**
-Salidas: `identity-surface-inventory.tsv` (39 superficies, 11 columnas) y
-`identity/` (extractos por superficie y conteos).
-
-### Canonical proposed identity
-
-```
-ecosystem: kaupamex
-component: ai
-product: kaupamex-ai
-CLI: kaupamex-ai        (no `kaupamex -p`: el ecosistema no tiene CLI raíz)
-legacy alias: thyrox
-```
-
-### Surface inventory — apariciones versionadas por categoría
-
-Métrica: `identity/classify_occurrences.sh`, primera regla que casa sobre cada
-aparición de «thyrox» (insensible), sin `_references` ni `_archived`.
-Ciega a: lo no versionado (`.thyrox/`, `.env`, volúmenes) y al significado de un
-literal que ninguna regla separa (cae en PRODUCT_NAME).
-
-| categoría | apariciones |
-|---|---|
-| HISTORICAL_REFERENCE (benches, jobs, cachés, agent-results) | 1 010 334 |
-| STABLE_DOMAIN_ID (H-/TASK-THYROX-*) | 17 492 |
-| PACKAGE_NAMESPACE (@thyrox/*) | 15 177 |
-| TEST_FIXTURE | 9 795 |
-| ENV_NAMESPACE (THYROX_*) | 7 124 |
-| PRODUCT_NAME | 2 963 |
-| DOCUMENTATION | 528 |
-| FILESYSTEM_NAMESPACE (.thyrox/) | 308 |
-| USER_FACING_COMMAND | 269 |
-| COMPATIBILITY_ALIAS (`thyrox-rename: keep`) | 58 |
-| RUNTIME_RESOURCE_NAME | 47 |
-| OCI_LOGICAL_IDENTITY (labels) | 43 |
-| OCI_DISTRIBUTION_NAME | 8 |
-
-El 96 % es historia y procedencia: **no se toca**. El código vivo que importa
-es del orden de 25 000 apariciones, casi todas de paquete y entorno.
-
-### Must remain stable
-
-- `H-THYROX-*` (hasta 460) y `TASK-THYROX-*`: ids estables; el componente se
-  declara en metadata, el prefijo futuro es una decisión separada del ecosistema.
-- Identidad de documento `domain + domainId`; `source_ref` es procedencia.
-  Probado contra PostgreSQL real: `thyrox@0123456:…` y luego
-  `kaupamex-ai@89abcde:…` con `H-THYROX-293` → **un** documento, versión 1,
-  procedencia actualizada (`identity.postgres.test.ts` 4b, 10/10).
-- Digests: `sha256:6775c008…` (manifiesto publicado), `7485fe6f…` (GGUF).
-- Nombres contractuales de modelo `thyrox-<slug>:<quant>-<src>-<rev12>`: son
-  clave de `qualifications.json`.
-- Esquemas versionados persistidos: `thyrox.*-record.v1`, `thyrox.gguf.v1`,
-  `thyrox-cred-v1.`.
-- Commits de git.
-
-### Can migrate by alias
-
-- CLI `thyrox -p` → `kaupamex-ai -p`, mismo `bin/cli` → `cli.tsx` antes de
-  parsear; el alias se mide para retirarlo.
-- `THYROX_*` (555 nombres: 505 config, 30 credential, 13 sensitive-config, 7
-  secret-reference) → `KAUPAMEX_AI_*`, con el contrato canónico/legacy/iguales/
-  distintos=FAIL CLOSED. Precedente en el ecosistema: `KAUPAMEX_ROOT`,
-  `KAUPAMEX_DOCS_ROOT`, `KAUPAMEX_RESULTS_DIR` (prefijo por componente).
-- `~/.thyrox` → candidato `~/.kaupamex/ai`: `configHome.ts` **ya** implementa
-  propio→heredado como respaldo de lectura (lo dejó el renombre CLAUDE→THYROX).
-- Labels `thyrox.*` / `io.thyrox.*`: lectura dual durante la transición.
-- `/thyrox:*` del plugin.
-
-### Can migrate by recreation
-
-`thyrox-redis`; contenedores `thyrox-worker-*`, `thyrox-model-*`,
-`thyrox-task-*`; imágenes `localhost/thyrox-*` (reconstruibles por definición +
-commit); `.thyrox/runtime`, `.thyrox/pool-worktrees`; el socket del coordinador;
-el scope `@thyrox/*` (62 paquetes, **todos** `private`, sin `publishConfig` ni
-`bin`: es protocolo interno del workspace, no un contrato externo).
-
-### Requires durable migration
-
-- `thyrox-postgres-data` (+ `thyrox-postgres-password`): no se renombra ni se
-  recrea sin prueba de preservación; db/rol `thyrox` es namespace físico y
-  puede quedarse.
-- `thyrox-ollama-models`: materialización reconstruible desde el artefacto
-  permanente, pero cara; clasificar su lifecycle antes.
-- `.thyrox/models/` (catálogo, `qualifications.json`, caché de artefactos).
-- Nombres contractuales de modelo (resolver ambos prefijos, no reescribir).
-
-### Provenance only
-
-`source_ref`/`source_revision` históricos, los 1 010 334 de benches/jobs/
-cachés, mensajes de commit, el repositorio publicado `docker.io/th3rox/
-thyrox-quantization-lab-artifacts`.
-
-### Ecosystem collision risks
-
-| sitio | riesgo |
-|---|---|
-| `src/session/write-env.sh:71` — `THYROX_CLONE_PREFIX:-kaupamex-` | un clon `kaupamex-ai` se leería como consumidor `kaupamex-*` |
-| `src/paths/reach.py:615`, `src/packages/paths/reach.ts:496` | el roster deriva hermanos por prefijo |
-| `src/verify/thyrox-audit.sh:259` — `ls -d "$PARENT"/kaupamex-*` | contaría a kaupamex-ai entre los consumidores |
-| `src/task/task_ids.py:134`, `layer_signals.tsv:7` | el modelo «los kaupamex-* son consumidores, thyrox el proveedor» deja de valer |
-| `workerContainerLifecycle.ts:219` — `name=^thyrox-worker-` | el barrido de huérfanos decide pertenencia por nombre; renombrar a `kaupamex-*` lo volvería ajeno-inclusivo |
-| `shared-state/redis.ts:46`, `redisCoordination.ts:111` — `keyPrefix ''` | ningún namespace de componente: chocaría con otro componente en el mismo Redis |
-
-Ninguna regla nueva puede ser `startswith("kaupamex-")`: pertenencia = identidad
-de componente (label/metadata) o un roster declarado.
-
-### Search Existing de lo que se reutiliza
-
-- **Esquema de labels: no hay una autoridad única.** Cuatro módulos en dos
-  paquetes y dos prefijos (`io.thyrox.*` en image-registry/infra, `thyrox.*` en
-  podman-execution/model-scheduling). EXTEND: un esquema en `podman-execution`
-  (autoridad de la primitiva) que añada `component`, `product`,
-  `identity-version`, `legacy-name`; los nombres candidatos
-  `io.kaupamex.*` se fijan ahí y no antes.
-- **Rename toolkit existente:** `renameEnvPrefix.ts`, `renameEnvNames.ts`,
-  `renameProductInText.ts` (AST, sólo literales visibles), `check_key_rename_
-  symmetry.py`, marca `thyrox-rename: keep`. Es el instrumento del cutover; un
-  `s///g` global ya costó H-THYROX-171.
-- **Hogares:** `configHome.ts` + `resolveDataDir` es la autoridad de rutas.
-
-### Proposed migration DAG (no ejecutado)
-
-```
-0 AUDIT CURRENT STATE (esto)  — la auditoría funcional sigue antes del cutover
-1 DECISIÓN: identidad canónica + contrato de compatibilidad
-  (prefijo de ids futuros, scope npm, raíz .kaupamex/ai) — del ecosistema
-2 metadata de componente: esquema único de labels (EXTEND podman-execution)
-  + component=kaupamex-ai en store/corpus; GC/huérfanos por label, no por nombre
-3 pertenencia sin prefijo: roster/reach/thyrox-audit/write-env por identidad
-  declarada; keyPrefix de Redis derivado del componente
-4 alias: CLI kaupamex-ai (+ thyrox medido), KAUPAMEX_AI_* con FAIL CLOSED,
-  configHome .kaupamex/ai con .thyrox heredado — EXTEND rename toolkit
-5 nombres de publicación nuevos (imágenes/artefactos permanentes) — antes de
-  publicar nada nuevo
-6 recursos de runtime recreables (redis, workers, units, imágenes locales)
-7 durables con prueba de preservación (postgres-data, ollama-models,
-  .thyrox/models)
-8 paquetes @thyrox/* y rutas
-9 cutover de owner/scope semántico
-10 medir uso legacy → retirar alias
-```
-
----
-
-## Transformers / ML runtime capability audit — 2026-10-03
-
-Directiva del ejecutor, añadida a la auditoría en curso. **Nada se construyó,
-descargó ni instaló.** Evidencia: `ml/` (Search Existing, conteos del corpus,
-`observe images|volumes` por la entrada canónica `podman-execution-execute`).
-Se midió con la cualificación de flujo corriendo en CPU: sólo lecturas cortas.
-
-Estados: IMPLEMENTED (código + pruebas) · INTEGRATED (cableado en una
-autoridad viva) · REAL_VERIFIED (corrió de verdad, con evidencia) · CONSUMABLE
-(un consumidor de producto puede usarlo hoy) · ACTIVE_NOW (corriendo/residente).
-
-### Capability matrix — ML
-
-| Capability | State | Authority | Code | Consumer | Qualification | Real proof | Consumable today | Active now | Identity impact | Blocking gap |
-|---|---|---|---|---|---|---|---|---|---|---|
-| TransformersRuntimeAdapter | IMPLEMENTED + INTEGRATED | `hostCoordinatorComposition.ts` (adapters por runtime) | `local-models/transformersRuntimeAdapter.ts` (+ API cliente) | HostCoordinator | — | ninguna (sólo dobles HTTP en tests) | no | no | `thyrox-transformers-runtime` | imagen inexistente; ningún modelo safetensors en catálogo |
-| Transformers runtime image | DEFINED, NEVER BUILT | `hostCoordinatorComposition.ts:50` `TRANSFORMERS_RUNTIME_IMAGE`; **fuera** del catálogo de `image-registry` | `transformers-runtime/Containerfile` + `transformers_runtime_server.py` | unidades transformers | — | único build (`.claude/jobs/build-transformers-runtime-20261002T030337`) **EXIT=1** al commitear capa; `observe images`: ausente | no | no | candidata a identidad lógica `role=transformers-runtime` | no está declarada en el catálogo de imágenes: nada la reconstruye |
-| safetensors runtime resolution | IMPLEMENTED + INTEGRATED | `RUNTIME_BY_FORMAT` en `hostCoordinatorComposition.ts:80` (gguf/ollama-registry→ollama, safetensors→transformers), usado por `cpuPlacementOf` | ídem | coordinator placement | — | sólo GGUF real | sí (para GGUF) | GGUF sí | — | la autoridad existe: **no crear otro selector** |
-| embedding orchestration / admittedEmbed | IMPLEMENTED + INTEGRATED (sólo Ollama) | ticket de admisión (ADR-007 M8) | `local-models/admittedEmbed.ts` → `/api/embed` de la unidad Ollama | **sólo** `qualifyModel.runEmbeddingQualification` | — | ninguna: el único rastro (`method-matrix-probe`) es una matriz de códigos HTTP, no un vector | no | no | — | ningún consumidor de producto; el runtime transformers no tiene endpoint de embeddings |
-| embedding model availability | ABSENT | catálogo `.thyrox/models/catalog.json` | — | — | — | catálogo = 1 modelo (qwen3-4b GGUF, `completion`) | no | no | nombres contractuales `thyrox-…` | ningún modelo con capacidad `embeddings` declarado |
-| embedding qualification | IMPLEMENTED, NEVER RUN | `modelQualification.ts` (`kind: embedding`, `qualifiedEmbeddingModels`) | `embeddingSuite.ts`, `embeddingSuiteFromCorpus.ts`, `qualify --embedding-suite` | recomendador de embeddings | **0** cualificaciones `embedding` en el store | — | no | no | — | sin suite versionada en `suites/`; sin modelo |
-| embedding production | NOT VERIFIED / NOT WIRED | — | no hay código que lleve vectores de `admittedEmbed` a `putEmbedding` | — | — | — | no | no | — | **pieza ausente**: ningún paquete depende de `@thyrox/semantic-search` |
-| embedding spaces | IMPLEMENTED (persistencia), EMPTY | `semantic-search/spaces.ts` (create/activate, índice único de `active`) | `store.ts`, `vectorSql.ts` | — | — | tests postgres (disposable) | no | **ninguno**: no hay corpus | — | `embedding_spaces` no guarda runtime/revisión/normalización (0904) |
-| semantic_search_worker | DECLARATION/PROFILE ONLY | `daemon/podman/specializedWorkerProfile.ts` | mecanismo de build y límites | **ninguno** fuera de su test | — | — | no | no | nombre de perfil | su cabecera excluye modelo y dimensiones «hasta D5» |
-| SentenceTransformer embeddings | ABSENT | — | 0 hits en `src`; sólo `_archived/requirements.txt` | — | — | — | no | no | — | — |
-| CrossEncoder reranking | ABSENT | (frontera: el rerank por modelo es del worker) | 0 hits | — | — | — | no | no | — | — |
-| database rerank (cosine exacto) | IMPLEMENTED | `semantic-search/rerank.ts` («el reranking por modelo no es del store») | `rerank.ts` + tests | `analysisRuns` | — | tests | sí, sin vectores no hay qué ordenar | no | — | frontera respetada |
-| translation via Transformers | IMPLEMENTED (código), NOT REAL_VERIFIED | `admittedSeq2seq.ts` + `/v1/seq2seq` (`AutoModelForSeq2SeqLM`, MADLAD-400/T5) | servidor + adapter + tests | ninguno de producto | ninguna suite de traducción | ninguna (imagen nunca construida, sin modelo) | no | no | — | imagen, modelo MADLAD, suite, consumidor; la ruta viva de traducción es Qwen/Ollama (tarea) |
-| Rust candle seq2seq | EXPERIMENTAL | bench `candle-seq2seq-runtime-20261002T070810` | `probes/candle-worker` | — | — | bench | no | no | — | no es producto |
-| ExecutionOutcomeClassifier | INTERFACE ONLY | `task_continuation.learned_classifier_from_environment` | orden externa `THYROX_OUTCOME_CLASSIFIER_COMMAND` (vacía en `.env.example`); sólo casos ambiguos, nunca sobre una regla | `task_continuation` | — | — (sin modelo, sin implementación de inferencia) | no | no | variable `THYROX_*` | sin modelo/tokenizer/runtime: DESIGNED_ONLY detrás de una interfaz real |
-| reward/value model | ABSENT | — | los 4 hits de «value model» son ajenos (schema, alias de proveedor, protocolo del coordinador) | — | — | — | no | no | — | — |
-| ML runtime dependency stack | IMAGE-SCOPED | `transformers-runtime/Containerfile` y `model-artifacts/quantizer-image/Containerfile` | torch 2.11.0 CPU, transformers 4.57.6, tokenizers 0.22.2, safetensors 0.8.0, sentencepiece, numpy 2.2.6, huggingface_hub (HF_HUB_OFFLINE=1) | sólo dentro de esas imágenes | — | quantizer sí corrió; transformers-runtime no | — | — | imágenes `thyrox-*` | `pyproject.toml`/`uv.lock` no traen ninguna dependencia de ML: el anfitrión no las tiene, y está bien |
-
-### Embedding decompuesto (la contradicción resuelta)
-
-«SemanticSearchStore implementado / productor ausente» y «admittedEmbed es la
-ruta local» son ciertas a la vez, porque miden piezas distintas:
-
-| pieza | estado |
-|---|---|
-| Embedding API (persistencia: spaces, `putEmbedding`, activación) | IMPLEMENTED |
-| Embedding orchestration (`admittedEmbed` con ticket) | IMPLEMENTED + INTEGRATED, sólo contra Ollama |
-| Embedding runtime | Ollama `/api/embed`: disponible; Transformers: sin endpoint |
-| Embedding model | ABSENT (catálogo sin modelo de embeddings; nomic-embed-text v1.5 sólo en tests/comentarios/benches) |
-| Embedding qualification | IMPLEMENTED, nunca ejecutada (0 registros) |
-| Embedding execution | NOT VERIFIED (ningún vector real en la evidencia) |
-| Embedding persistence | IMPLEMENTED; corpus actual **vacío** |
-| Embedding-space activation | IMPLEMENTED; ninguna activa |
-| Embedding consumer (orquestación → store) | **ABSENT**: nada conecta `admittedEmbed` con `semantic-search` |
-
-RAG sigue siendo otra capability: sin retrieval real no hay contexto que montar.
-
-### Model inventory (estado ACTUAL)
-
-| modelo | formato | runtime | instalado | cualificado | residente | consumidor |
-|---|---|---|---|---|---|---|
-| qwen3-4b `thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e` (`7485fe6f…`) | GGUF | Ollama | sí | protocolo 6/6 y mecanica 4/4 a 8K con perfil; flujo suspendido | sí | pool / worker |
-| nomic-embed-text v1.5 | — | — | **no** (no está en catálogo ni en el volumen de Ollama) | no | no | — |
-| MADLAD-400 / T5 | — | — | no | no | no | — |
-
-### TASK-THYROX-0904 (embeddings por proveedor cualificado) — sigue `pending`
-
-| subcapacidad | decisión |
-|---|---|
-| `embedding@1` qualification | REUSE (suite, loader, `kind: embedding`, `qualifiedEmbeddingModels`); falta la suite versionada |
-| perfil de embedding por `embedding_space` | EXTEND `embedding_spaces` (hoy: model, dimensions, representation, state) |
-| routing local-only / api-only / local-preferred / api-preferred | MISSING (0 hits) — y debe REUSAR la política de ejecución, no crear selector |
-| comparación ONNX / Ollama / API | MISSING (sin onnxruntime en ninguna imagen) |
-
-### Corpus real (medido hoy, sólo lectura)
-
-`thyrox` en `thyrox-postgres`: **ningún esquema con `documents`**; la única tabla
-es `public.thyrox_p0_sentinel`; pgvector 0.8.0 instalado.
-documents = versions = chunks = embedding_spaces = embeddings = analysis_runs = **0**.
-Histórico: 1675 / 9981 / 0 espacios el 2026-10-02
-(`postgres-corpus-disk-reclaim-20261002T023317/outputs/T003-snapshot-after.json`).
-
-**Por qué desapareció (medido):** `stat` del clúster: `PG_VERSION` nacido
-2026-10-03 10:04:32; `observe volumes`: `thyrox-postgres-data` creado
-10:04:25; y `local-control-plane-ready-full-20261003T100423` registró
-`thyrox-postgres action=created … volumes=thyrox-postgres-data:created`. El
-volumen durable ya no existía y la reconciliación **creó uno vacío sin avisar**.
-Mi convergencia de las 21:13 (0928) dice `preserved` de un volumen ya vacío:
-«preserved» mide el enganche, no el contenido (H-THYROX-464).
-
-### Caches y disco ML
-
-`~/.cache/huggingface`, `~/.cache/torch`, `~/.cache/transformers`: ausentes. ONNX:
-ninguno. Snapshots safetensors en la caché de artefactos: ninguno
-(`.thyrox/models/artifacts` = 2.4 G, sólo el GGUF `7485fe6f…`, CACHE con copia
-canónica en `docker.io/th3rox/…@sha256:6775c008…`). Imagen transformers: ausente,
-0 bytes. Nada de esto es la única copia de un artefacto.
-
-### Runtime image ≠ model artifact
-
-Se respeta: la imagen corre `HF_HUB_OFFLINE=1`, no trae pesos y monta el
-snapshot concedido de sólo lectura en `/model`; la identidad del modelo sale del
-grant (artefacto), no de la imagen. Coincide con la frontera que ya midió
-TASK-THYROX-0917 (`identity-migration-analysis-20261003T072106`): carril A
-`image-registry`, carril B `artifact-registry`/`model-artifacts`.
-
-### Prior work que esta auditoría de identidad no citó (corrección)
-
-`identity-migration-analysis-20261003T072106` (TASK-THYROX-0917) ya hizo un
-censo de identidad y un plan OCI de primera publicación, con `observe` canónico.
-Mi inventario de esta tarde no lo encontró por buscar en `src/` y no en los
-benches: es Search Existing incompleto sobre la propia auditoría. Ambos se
-leen juntos; el plan de fases debe partir de los dos.
-
----
-
-## F6 — repo-code-change@1 sobre qwen3-4b (resultado real, 2026-10-03)
-
-| corrida | contexto · presupuesto · plazo | veredicto | causa |
-|---|---|---|---|
-| `workflow-qualify-8k` | 8192 · sin tope · 600 s | no registrada → corregido | primer turno de **26 085** tokens (`exceed_context_size_error`); la suspensión no se escribía (H-THYROX-460) |
-| `workflow-qualify-8k-b2048` | 8192 · 2048 · 600 s (por defecto del pool) | suspendida 0/1, 0 tok/s | el pool mató el caso a los 600 s antes del primer evento → `timeoutSeconds` en la suite |
-| `workflow-qualify-8k-b2048-t5400` | 8192 · 2048 · 5400 s | **suspendida 0/1** (`rechazado`), 1.0 tok/s de pared | **MODEL_CAPACITY** (abajo) |
-
-La infraestructura funcionó de punta a punta en la tercera: ruta local
-(`served-by … "local":true`), unidad gestionada, worktree aislado, verify,
-cualificación `workflow` escrita con su perfil. 12 turnos, 803 s, 819 tokens
-generados.
-
-Lo que hizo el modelo (de `1.stream.jsonl`):
-
-1. corrió la prueba (bien);
-2. `Edit` reemplazó sólo la línea `raise …` por un `def title_slug` anidado con
-   `import re` y su propia normalización — duplica `slugify`, que el verify
-   prohíbe;
-3. escribió la regex `[^\u0000-\u007f]` sin escapar para JSON: el decodificador
-   la volvió un NUL literal y `slug.py` quedó binario (`source code string
-   cannot contain null bytes`); `Edit` escribió fielmente lo recibido;
-4. editó el archivo de pruebas (la plantilla lo prohíbe);
-5. repitió un `Edit` sin cambio (old == new) tres veces y la misma prueba cinco:
-   el bucle exacto que el vigilante detiene (aquí su proceso se había retirado
-   a mano, H-THYROX-467);
-6. su última llamada salió como TEXTO (protocolo de herramientas roto).
-
-Conclusión: qwen3-4b a 8K pasa protocolo (6/6) y mecanica de un turno (4/4),
-pero **no** cualifica para cambiar un repositorio. Según F8, el siguiente paso
-es evaluar un coder mayor por el mismo pipeline; F14 lo condiciona a disco,
-perfil, admisión y cualificación: los cuatro existen salvo la admisión por CPU
-(TASK-THYROX-0932, #19), que un 7B en CPU necesita.
-
-### F8 — coder mayor por el mismo pipeline (2026-10-03)
-
-| modelo | resultado | causa |
-|---|---|---|
-| Qwen2.5-Coder-7B-Instruct Q4_K_M (`13fb94bf…`, sha `509287f7…`) | **protocolo suspendido 2/6** a 8K, 2.4 tok/s | escribe las llamadas como TEXTO (`<tools>`, JSON cercado, `<response>`), no por el formato de herramientas: no elegible |
-
-Techo físico medido para un candidato local: disco 8.7 GB de asignación fija
-(copias: caché + blob de la unidad), RAM efectiva ≈ 6 GB tras el piso (cgroup
-ancestro 8.33 GB que cuenta la caché de páginas). Qwen3-8B Q4 a 8K
-(≈5 GB + 1.2 GB de KV) no cabe en RAM. Siguiente candidato dentro del techo:
-Qwen2.5-7B-Instruct Q4_K_M (`bb5d59e0…`, la revisión que ya nombran los fixtures
-del árbol). Coder-7B retirado con prueba (`disk/proof-before-delete-coder7b.txt`):
-su blob vivía en el volumen anónimo de su unidad y se fue con ella.
-
-### F6/F8 — resultado: BLOCKED_FOR_CURRENT_ACCEPTANCE_PROFILE (2026-10-03; corregido)
-
-> **Corrección del ejecutor (2026-10-03).** La primera redacción de esta sección
-> concluía «HARD_BLOCK físico» y «ningún modelo que cabe en el contenedor puede».
-> Eso excede lo demostrado: se probaron identidades concretas bajo un perfil
-> concreto, y el «techo físico» mezclaba configuración de admisión y
-> materialización con límites de la máquina. La conclusión válida está en
-> «Local autonomous implementation experiment» y en «Resource ceiling: physical
-> vs configured», más abajo. Se conserva el texto original tachado para que la
-> corrección sea trazable.
-
-| modelo (Q4_K_M, 8K, presupuesto de sistema 2048) | tool-calling@1 | mecanica | repo-code-change@1 |
-|---|---|---|---|
-| qwen3-4b | 6/6 | 4/4 | 0/1 `rechazado`: def anidado que duplica `slugify`, NUL sin escapar, edita las pruebas, bucle |
-| Qwen2.5-Coder-7B | **2/6** (llamadas como texto) | — | no elegible |
-| Qwen2.5-7B-Instruct, muestra 1 | 6/6 | 4/4 | 0/1 `sin-cambios`: ruta mal leída, se rinde en 4 turnos |
-| Qwen2.5-7B-Instruct, muestra 2 | — | — | 0/1 `rechazado`: `old_string` escapado como regex (no casa), deja un error de sintaxis, nunca corre las pruebas, última llamada como texto |
-
-La infraestructura funcionó de punta a punta en todas: ruta local, unidad
-gestionada, worktree aislado, verify, registro con perfil. Los fallos son del
-modelo.
-
-~~**Techo físico medido de este contenedor:** disco 8.7 GB de asignación fija~~
-~~(el modelo ocupa dos copias), RAM efectiva ≈ 6 GB (cgroup ancestro 8.33 GB~~
-~~menos piso 2 GiB), 4 CPU sin GPU. Cabe hasta ~7B Q4 a 8K; Qwen3-8B a 8K ya no~~
-~~cabe en RAM.~~
-
-~~**Conclusión:** ningún modelo que cabe en este contenedor completa un cambio de~~
-~~repositorio con el prompt limpio que pide F8 (n=4 corridas reales). La~~
-~~autoimplementación local real queda bloqueada por un límite físico, no por~~
-~~código. Lo que desbloquea es una decisión del ejecutor:~~
-
-~~1. **Andamiaje del prompt** (como la corrida 0919 de las 12:05, pasos guiados):~~
-~~   contradice «prompt limpio» de F8; mediría capacidad guiada, no autónoma.~~
-~~2. **Más hardware** (RAM ≥ 16 GB efectiva o GPU) para un modelo ≥ 14B: fuera~~
-~~   de esta sesión.~~
-~~3. **Proveedor por API** como respaldo declarado: la política lo admite sólo~~
-~~   con clave; las claves PAYG/Token Plan existen sólo en una sesión nueva~~
-~~   (TASK #13) y las cuatro rutas probadas daban 401.~~
-
-~~Hasta esa decisión, `controller.implementation` sigue en `bootstrap-exception`~~
-~~(F11 no se cumple: no hay worker local cualificado para `workflow`).~~
-
----
-
-## Local autonomous implementation experiment (2026-10-03)
-
-**Perfil de aceptación probado (CURRENT_ACCEPTANCE_PROFILE):**
-`repo-code-change@1` · runtime local (Ollama 0.35.0) · ejecución en unidad
-gestionada · contexto 8192 · presupuesto de sistema 2048 · perfil del worker
-actual (reasoning none, caché de prompt desactivada, 2 CPU, 8192 MiB) ·
-herramientas Read/Write/Edit/Bash · prompt limpio (`suites/repo-code-change-1/prompt.md`)
-· vigilante activo (excepto la corrida de qwen3-4b, donde su proceso se retiró a
-mano, H-THYROX-467) · `--local-only` · plazo del caso 5400 s.
-
-**Identidades probadas (exactas):**
-
-| identidad | revisión · cuantización · artefacto | tool-calling@1 | mecanica (batch-worker-mecanica@1) | repo-code-change@1 |
+| dominio | capability | current_state | gap | historia |
 |---|---|---|---|---|
-| `thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e` | `bc640142c66e…` · Q4_K_M · sha `7485fe6f…` | PASS 6/6 | PASS 4/4 | FAIL (`rechazado`) |
-| `thyrox-qwen--qwen2.5-coder-7b-instruct-gguf:q4_k_m-hf-13fb94bfda8c` | `13fb94bfda8c…` · Q4_K_M · sha `509287f7…` | FAIL 2/6 | — | no elegible |
-| `thyrox-qwen--qwen2.5-7b-instruct-gguf:q4_k_m-hf-bb5d59e06d95` | `bb5d59e06d95…` · Q4_K_M · sha `1875fb29…` | PASS 6/6 | PASS 4/4 | FAIL muestra 1 (`sin-cambios`), FAIL muestra 2 (`rechazado`) |
+| execution | ejecución en unidad gestionada | REAL_VERIFIED | imagen por defecto :dev ausente; funciona sólo con THYROX_EXEC_IMAGE al digest publicado (H-THYROX-469) | [capabilities/execution.md](../capabilities/execution.md) |
+| execution | worktree aislado + verify + integración | REAL_VERIFIED | huérfanos: item_worktree sweep-orphans con rescate (usado hoy, outputs/salvaged/) | [capabilities/execution.md](../capabilities/execution.md) |
+| execution | localidad (thyrox-* nunca own) | REAL_VERIFIED | — | [capabilities/execution.md](../capabilities/execution.md) |
+| execution | fallback de selección y local→local | IMPLEMENTED | ningún salto real ejercido | [capabilities/execution.md](../capabilities/execution.md) |
+| podman | autoridad de materialización | INTEGRATED | 5 excepciones pendientes (0746, 0759×3) — src/verify/podman_*_pending.txt | [capabilities/podman.md](../capabilities/podman.md) |
+| podman | observación (observe) | PARTIAL | sin logs/stats/health (#20) | [capabilities/podman.md](../capabilities/podman.md) |
+| podman | volumen durable perdido | INTEGRATED | no ejercido en real | [capabilities/podman.md](../capabilities/podman.md) |
+| podman | ciclo de vida de imágenes | PARTIAL | catálogo declara 1 imagen; defaults :dev (H-THYROX-469) | [capabilities/podman.md](../capabilities/podman.md) |
+| model-control-plane | convergencia tras reciclado | REAL_VERIFIED | — | [capabilities/model-control-plane.md](../capabilities/model-control-plane.md) |
+| model-control-plane | catálogo / import / validación | REAL_VERIFIED | defaults inservibles aquí (H-THYROX-469) | [capabilities/model-control-plane.md](../capabilities/model-control-plane.md) |
+| model-control-plane | materialización en la unidad | REAL_VERIFIED | dos copias por modelo (H-THYROX-471) | [capabilities/model-control-plane.md](../capabilities/model-control-plane.md) |
+| model-control-plane | selección de modelo | INTEGRATED (dos activas + una desconectada) | #12 | [capabilities/model-control-plane.md](../capabilities/model-control-plane.md) |
+| qualification | cualificación con perfil de runtime | REAL_VERIFIED | — | [capabilities/qualification.md](../capabilities/qualification.md) |
+| qualification | cualificación de flujo repo-code-change@1 | REAL_VERIFIED | ninguna identidad aprobada (H-THYROX-470); tres cualificaciones distintas (H-THYROX-472) | [capabilities/qualification.md](../capabilities/qualification.md) |
+| transformers-ml | TransformersRuntimeAdapter | INTEGRATED | H-THYROX-465 | [capabilities/transformers-ml.md](../capabilities/transformers-ml.md) |
+| transformers-ml | embeddings | IMPLEMENTED (orquestación); modelo/cualificación/producción ABSENT | 0904 (#27), H-THYROX-466 | [capabilities/transformers-ml.md](../capabilities/transformers-ml.md) |
+| transformers-ml | SentenceTransformer / CrossEncoder / reward-value | ABSENT | — | [capabilities/transformers-ml.md](../capabilities/transformers-ml.md) |
+| transformers-ml | traducción por Transformers | IMPLEMENTED | — | [capabilities/transformers-ml.md](../capabilities/transformers-ml.md) |
+| semantic-search | SemanticSearch store | IMPLEMENTED | 0 consumidores; sin productor de vectores | [capabilities/semantic-search.md](../capabilities/semantic-search.md) |
+| semantic-search | RAG | ABSENT | — | [capabilities/semantic-search.md](../capabilities/semantic-search.md) |
+| persistence | PostgreSQL + pgvector | REAL_VERIFIED como servicio; no consumible | corpus perdido (H-THYROX-464) | [capabilities/persistence.md](../capabilities/persistence.md) |
+| redis | Redis en producción | INTEGRATED parcial | claves sin prefijo (H-THYROX-463); #21 | [capabilities/redis.md](../capabilities/redis.md) |
+| resource-admission | admisión RAM | REAL_VERIFIED, mide el cgroup equivocado | H-THYROX-471 | [capabilities/resource-admission.md](../capabilities/resource-admission.md) |
+| resource-admission | admisión CPU | INTEGRATED | — | [capabilities/resource-admission.md](../capabilities/resource-admission.md) |
+| resource-admission | admisión disco | REAL_VERIFIED | — | [capabilities/resource-admission.md](../capabilities/resource-admission.md) |
+| process-monitoring | trabajos y procesos | REAL_VERIFIED | 2 trabajos A6 SIN-RECOGER (outputs/dims/04-images-jobs.txt) | [capabilities/process-monitoring.md](../capabilities/process-monitoring.md) |
+| process-monitoring | vigilante del ítem | REAL_VERIFIED (pruebas host y unidad) | no disparó en una corrida real | [capabilities/process-monitoring.md](../capabilities/process-monitoring.md) |
+| identity-migration | identidad kaupamex-ai | AUDITED (nada migrado) | #24, #25; H-THYROX-461/462/463 | [capabilities/identity-migration.md](../capabilities/identity-migration.md) |
+| self-implementation | AUTONOMOUS_LOCAL_SELF_IMPLEMENTATION | NOT_ACCEPTED_YET | H-THYROX-470 (MIXED provisional) | [capabilities/self-implementation.md](../capabilities/self-implementation.md) |
+| self-implementation | Search Existing | DESIGNED_ONLY | 0 archivos; parche rescatado de 0919 (outputs/salvaged/) | [capabilities/self-implementation.md](../capabilities/self-implementation.md) |
+| self-implementation | specialist routing | ABSENT | — | [capabilities/self-implementation.md](../capabilities/self-implementation.md) |
 
-### Causas por fracaso (evidencia, puede haber varias)
+## Current findings
 
-| corrida | observado | MODEL_CAPABILITY | TOOL_PROTOCOL | WORKFLOW | RUNTIME_PROFILE |
-|---|---|---|---|---|---|
-| qwen3-4b | reemplaza sólo la línea `raise` con un `def` anidado que duplica `slugify` | sí (razonamiento de alcance en el repo) | — | — | posible: presupuesto 2048 recorta la guía del sistema |
-| qwen3-4b | `\u0000` sin escapar para JSON → archivo binario | posible | sí (escape de argumentos) | — | — (seguridad de salida/edición: `Edit` acepta NUL) |
-| qwen3-4b | edita el archivo de pruebas | sí | — | sí (la plantilla lo prohíbe; nada lo impide) | — |
-| qwen3-4b | `Edit` sin cambio ×3 y la misma prueba ×5 | sí | — | sí (lo detiene el vigilante cuando está activo) | — |
-| qwen3-4b | última llamada como texto | — | sí | — | posible (contexto 8K agotado) |
-| qwen2.5-7b m1 | lee una ruta truncada (`textkit/slug.py` sin `suites/repo-code-change-1/`) | posible | — | posible (presentación del ítem) | posible (presupuesto 2048) |
-| qwen2.5-7b m1 | termina con prosa tras 4 turnos, sin cambios | sí | — | sí (el bucle termina en un turno sin herramienta) | — |
-| qwen2.5-7b m2 | `old_string` escapado como regex → no casa ×2 | posible | posible (ergonomía de `Edit`: texto literal) | — | — |
-| qwen2.5-7b m2 | deja un error de sintaxis; nunca corre las pruebas | sí | — | sí | — |
-| qwen2.5-7b m2 | última llamada como texto | — | sí | — | posible |
-| coder-7b | protocolo 2/6: llamadas como texto | — | sí (PROTOCOL_CAPABILITY) | — | — |
+| finding | severidad | evaluación vigente | registro |
+|---|---|---|---|
+| H-THYROX-452 | ALTA | El respaldo de la referencia ya estaba portado a medias y no llega a la ruta local; la política lo reducía a un booleano | [findings/H-THYROX-452.md](../findings/H-THYROX-452.md) |
+| H-THYROX-453 | ALTA | TASK-THYROX-0920 extendió la vía de selección que TASK-THYROX-0750 iba a migrar, por una búsqueda acotada a 'fallback' | [findings/H-THYROX-453.md](../findings/H-THYROX-453.md) |
+| H-THYROX-454 | ALTA | Tras reciclar la VM, Podman declara running cuatro contenedores cuyos pids no existen; dos guiones ignoran --help y ejecutan | [findings/H-THYROX-454.md](../findings/H-THYROX-454.md) |
+| H-THYROX-455 | ALTA | thyrox -p elige la ruta por la credencial, no por la localidad del modelo: un trabajo local puede salir del anfitrión | [findings/H-THYROX-455.md](../findings/H-THYROX-455.md) |
+| H-THYROX-456 | MEDIA | makeRoom admite sin objeción si falta el medidor de RAM o el plan no trae memoryBytes | [findings/H-THYROX-456.md](../findings/H-THYROX-456.md) |
+| H-THYROX-457 | ALTA | El mismo GGUF de 2.4 GB vive tres veces y hay 14 imágenes sin tag, con 4 GiB libres | [findings/H-THYROX-457.md](../findings/H-THYROX-457.md) |
+| H-THYROX-458 | ALTA | La cualificación no representa el perfil de ejecución y mecanica sustituye capacidades que no prueba | [findings/H-THYROX-458.md](../findings/H-THYROX-458.md) |
+| H-THYROX-459 | BAJA | check_podman_access_ownership no ve un verbo de Podman invocado por variable | [findings/H-THYROX-459.md](../findings/H-THYROX-459.md) |
+| H-THYROX-460 | ALTA | El prompt del worker local mide 26 085 tokens en su primer turno: 8K no alcanza sin presupuesto de sistema | [findings/H-THYROX-460.md](../findings/H-THYROX-460.md) |
+| H-THYROX-461 | ALTA | La pertenencia al ecosistema se decide por el prefijo kaupamex-: un clon kaupamex-ai se contaría como consumidor | [findings/H-THYROX-461.md](../findings/H-THYROX-461.md) |
+| H-THYROX-462 | MEDIA | El esquema de labels de identidad no tiene autoridad única: cuatro módulos y dos prefijos (io.thyrox.* y thyrox.*) | [findings/H-THYROX-462.md](../findings/H-THYROX-462.md) |
+| H-THYROX-463 | MEDIA | Redis no lleva namespace de componente: keyPrefix vale '' por defecto en shared-state y en la coordinación de modelos | [findings/H-THYROX-463.md](../findings/H-THYROX-463.md) |
+| H-THYROX-464 | CRITICA | El volumen durable del corpus desapareció y la reconciliación creó uno vacío sin avisar; preserved no mide contenido | [findings/H-THYROX-464.md](../findings/H-THYROX-464.md) |
+| H-THYROX-465 | MEDIA | El runtime de Transformers está integrado en el coordinador pero su imagen nunca se construyó y no está en el catálogo de imágenes | [findings/H-THYROX-465.md](../findings/H-THYROX-465.md) |
+| H-THYROX-466 | MEDIA | admittedEmbed existe y nada lo conecta al corpus: la orquestación de embeddings sólo la consume la cualificación | [findings/H-THYROX-466.md](../findings/H-THYROX-466.md) |
+| H-THYROX-467 | ALTA | La salida de un ítem en unidad llega sólo al terminar: el vigilante no veía nada y su plazo sin progreso habría matado ítems sanos | [findings/H-THYROX-467.md](../findings/H-THYROX-467.md) |
+| H-THYROX-468 | ALTA | qwen3-4b no cualifica para cambiar un repositorio: la infraestructura completa funciona y el fallo es del modelo | [findings/H-THYROX-468.md](../findings/H-THYROX-468.md) |
+| H-THYROX-469 | MEDIA | Las imágenes por defecto se nombran por tags :dev fuera del catálogo declarado: laboratorio de import y runner de ejecución; además el import pide 8 GiB que la admisión no concede | [findings/H-THYROX-469.md](../findings/H-THYROX-469.md) |
+| H-THYROX-470 | ALTA | CURRENT_LOCAL_MODELS_FAIL_REPO_CODE_CHANGE_ACCEPTANCE: las identidades probadas fallan repo-code-change@1 bajo el perfil actual (BLOCKED_FOR_CURRENT_ACCEPTANCE_PROFILE) | [findings/H-THYROX-470.md](../findings/H-THYROX-470.md) |
+| H-THYROX-471 | ALTA | La admisión de RAM mide el cgroup de la sesión y cuenta su caché de páginas, pero las unidades corren en libpod_parent; y cada modelo se guarda dos veces por materialización | [findings/H-THYROX-471.md](../findings/H-THYROX-471.md) |
+| H-THYROX-472 | ALTA | tool-calling@1 y mecanica aprobadas no implican repo-code-change@1: son tres cualificaciones distintas | [findings/H-THYROX-472.md](../findings/H-THYROX-472.md) |
+| H-THYROX-473 | ALTA | agregar-hallazgo --force sobrescribe la fila sin conservar la versión anterior: el store no guarda la historia de un hallazgo | [findings/H-THYROX-473.md](../findings/H-THYROX-473.md) |
 
-Ninguna corrección se aplica durante la auditoría: medir no lo exige.
+## Local model qualification (experimentos inmutables)
 
-### Hallazgo arquitectónico
+| experimento | modelo | suite | casos | tok/s | veredicto del pool | registro |
+|---|---|---|---|---|---|---|
+| mecanica-qwen25-7b-instruct-8k-r1 | `thyrox-qwen--qwen2.5-7b-instruct-gguf:q4_k_m-hf-bb5d59e06d95` | batch-worker-mecanica@1 | 4/4 | 1.98 | — | [experiments/mecanica-qwen25-7b-instruct-8k-r1](../experiments/mecanica-qwen25-7b-instruct-8k-r1) |
+| mecanica-qwen3-4b-8k-r1 | `thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e` | batch-worker-mecanica@1 | 4/4 | 4.55 | — | [experiments/mecanica-qwen3-4b-8k-r1](../experiments/mecanica-qwen3-4b-8k-r1) |
+| repo-code-change-qwen25-7b-instruct-r1 | `thyrox-qwen--qwen2.5-7b-instruct-gguf:q4_k_m-hf-bb5d59e06d95` | repo-code-change@1 | 0/1 | 1.52 | sin-cambios | [experiments/repo-code-change-qwen25-7b-instruct-r1](../experiments/repo-code-change-qwen25-7b-instruct-r1) |
+| repo-code-change-qwen25-7b-instruct-r2 | `thyrox-qwen--qwen2.5-7b-instruct-gguf:q4_k_m-hf-bb5d59e06d95` | repo-code-change@1 | 0/1 | 1.91 | rechazado | [experiments/repo-code-change-qwen25-7b-instruct-r2](../experiments/repo-code-change-qwen25-7b-instruct-r2) |
+| repo-code-change-qwen3-4b-8k-b2048-t600 | `thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e` | repo-code-change@1 | 0/1 | 0.00 | no-local | [experiments/repo-code-change-qwen3-4b-8k-b2048-t600](../experiments/repo-code-change-qwen3-4b-8k-b2048-t600) |
+| repo-code-change-qwen3-4b-8k-nobudget-r0 | `thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e` | repo-code-change@1 | 0/1 | — | fallido | [experiments/repo-code-change-qwen3-4b-8k-nobudget-r0](../experiments/repo-code-change-qwen3-4b-8k-nobudget-r0) |
+| repo-code-change-qwen3-4b-r1 | `thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e` | repo-code-change@1 | 0/1 | 1.02 | rechazado | [experiments/repo-code-change-qwen3-4b-r1](../experiments/repo-code-change-qwen3-4b-r1) |
+| tool-calling-qwen25-7b-instruct-8k-r1 | `thyrox-qwen--qwen2.5-7b-instruct-gguf:q4_k_m-hf-bb5d59e06d95` | tool-calling@1 | 6/6 | 2.65 | — | [experiments/tool-calling-qwen25-7b-instruct-8k-r1](../experiments/tool-calling-qwen25-7b-instruct-8k-r1) |
+| tool-calling-qwen25-coder-7b-8k-r1 | `thyrox-qwen--qwen2.5-coder-7b-instruct-gguf:q4_k_m-hf-13fb94bfda8c` | tool-calling@1 | 2/6 | 2.39 | — | [experiments/tool-calling-qwen25-coder-7b-8k-r1](../experiments/tool-calling-qwen25-coder-7b-8k-r1) |
+| tool-calling-qwen3-4b-8k-r1 | `thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e` | tool-calling@1 | 6/6 | 4.61 | — | [experiments/tool-calling-qwen3-4b-8k-r1](../experiments/tool-calling-qwen3-4b-8k-r1) |
 
-`tool-calling@1 PASS` + `mecanica PASS` **≠** `repo-code-change@1 PASS`. Son tres
-cualificaciones distintas: protocolo, tarea de un turno y flujo de repositorio.
-`mecanica` no vuelve a usarse como sustituto de capacidad de implementación
-(H-THYROX-472).
+## Identity migration
 
-### Proven
+Inventario: [`outputs/identity-surface-inventory.tsv`](identity-surface-inventory.tsv); análisis textual: [`evidence/snapshot-sections/identity-migration.md`](../evidence/snapshot-sections/identity-migration.md); evaluación: [`capabilities/identity-migration.md`](../capabilities/identity-migration.md).
 
-- la ejecución local gestionada funciona (unidad, `served-by … local:true`);
-- el worktree aislado y el verify funcionan;
-- el ruteo de modelos locales funciona (política del pool limitada al modelo medido);
-- la cualificación registra el perfil de runtime completo;
-- el vigilante funciona (en host y, tras H-THYROX-467, en unidad);
-- `repo-code-change@1` discrimina capacidad (un cuerpo correcto pasa; uno ingenuo y uno duplicado no);
-- las identidades probadas fallaron el cambio de repositorio con prompt limpio.
+## Transformers / ML
 
-### Not proven
+Análisis textual: [`evidence/snapshot-sections/transformers-ml.md`](../evidence/snapshot-sections/transformers-ml.md); evaluación: [`capabilities/transformers-ml.md`](../capabilities/transformers-ml.md).
 
-- que todos los modelos ≤ 7B fallen;
-- que 14B sea el mínimo necesario (un modelo mayor es **experimento candidato**, no requisito);
-- que haga falta GPU;
-- que haga falta un flujo guiado;
-- que haga falta respaldo por API;
-- que el hardware sea un bloqueo inevitable.
+## Authority map, duplication y disconnected
 
-### Current verdict
+[`decisions/final-dag.md`](../decisions/final-dag.md) (vigente) · [`decisions/initial-plan.md`](../decisions/initial-plan.md) (inicial).
 
-```
-AUTONOMOUS_LOCAL_SELF_IMPLEMENTATION = NOT_ACCEPTED_YET
-reason: no currently qualified/tested local model passed repo-code-change@1
-H-THYROX-470 = BLOCKED_FOR_CURRENT_ACCEPTANCE_PROFILE  (clasificación final tras el DAG)
-```
+## Dependency graph
 
-## Resource ceiling: physical vs configured (medido 2026-10-03)
+Vigente en [`decisions/final-dag.md`](../decisions/final-dag.md) («Final dependency graph»).
 
-### RAM (`resources/ram.txt`)
+## Recommended next execution
 
-| capa | valor | clase |
+Rama A: A1 admisión de RAM sobre la frontera real de las unidades; A2 materialización sin copia duplicada inexplicada. Después, repetir la línea base de `repo-code-change@1` y los experimentos uno por uno.
+
+## Evidence index
+
+| snapshot | commit | sha256 |
 |---|---|---|
-| RAM física | 16 480 972 kB (≈15.7 GiB), sin swap | FÍSICO |
-| cgroup de la sesión (`process_api/…/claude-code-bash`) | límite 14 345 035 776 B (≈13.4 GiB) | CONFIGURACIÓN del anfitrión |
-| cgroup de las unidades (`libpod_parent`) | sin límite; 5.75 GB con qwen2.5-7b residente | — |
-| piso de admisión | 2 GiB (`DEFAULT_RAM_FLOOR_MB`) | CONFIGURACIÓN |
-| límite de memoria por unidad | 8192 MiB (`UNIT_LIMITS`) | CONFIGURACIÓN |
-| holgura que mide la admisión | la del cgroup **de la sesión**, contando la caché de páginas como usada | MEDICIÓN |
+| [`snapshots/report-20261003T232604Z-pre-structured-audit.md`](../snapshots/report-20261003T232604Z-pre-structured-audit.md) | d5502b7b6558 | 75a113337c2d367b… |
+| [`snapshots/report-20261003T211141Z-eb9d035f2.md`](../snapshots/report-20261003T211141Z-eb9d035f2.md) | eb9d035f270a | 7a196e87f57a481c… |
+| [`snapshots/report-20261003T215227Z-69769edd7.md`](../snapshots/report-20261003T215227Z-69769edd7.md) | 69769edd73c9 | 226f8bbf6a94b5b3… |
+| [`snapshots/report-20261003T221146Z-92e9437fa.md`](../snapshots/report-20261003T221146Z-92e9437fa.md) | 92e9437faed3 | b362f7ba2cb5d112… |
+| [`snapshots/report-20261003T222000Z-9420979bc.md`](../snapshots/report-20261003T222000Z-9420979bc.md) | 9420979bc659 | c9f56eb386d091df… |
+| [`snapshots/report-20261003T224054Z-ea9277469.md`](../snapshots/report-20261003T224054Z-ea9277469.md) | ea92774691b0 | dd806333ee77fe2b… |
+| [`snapshots/report-20261003T231152Z-fd3d113ce.md`](../snapshots/report-20261003T231152Z-fd3d113ce.md) | fd3d113ceb9f | 2b40256636ed3358… |
+| [`snapshots/report-20261003T231847Z-6f011826c.md`](../snapshots/report-20261003T231847Z-6f011826c.md) | 6f011826c6ce | 6f4d518837d24572… |
+| [`snapshots/report-20261003T232116Z-d5502b7b6.md`](../snapshots/report-20261003T232116Z-d5502b7b6.md) | d5502b7b6558 | 75a113337c2d367b… |
 
-**Corrección:** las unidades de modelo se cargan a `libpod_parent`, fuera del
-cgroup de la sesión; la admisión mide el de la sesión y cuenta su caché de
-páginas (que mis propios `sha256sum` de GGUF de 4.7 GB inflaron). El rechazo del
-laboratorio de 8 GiB salió de esa medición, no de la máquina (H-THYROX-471). Un
-modelo de ~9 GB de pesos + KV a 8K **no** está excluido por la RAM física; sí por
-`UNIT_LIMITS` (8192 MiB) y por la medición actual.
-
-### Disco (`resources/disk.txt`)
-
-| capa | valor | clase |
-|---|---|---|
-| dispositivo | 251.97 GiB | FÍSICO |
-| reservado por el montaje (`resv_strict`) | 213.66 GiB | CONFIGURACIÓN del anfitrión (asignación de la sesión) |
-| disponible al inicio de la sesión | ≈ 8.7 GB; hoy 4.5 GB con lo de abajo | — |
-| piso de admisión de disco | 2 GiB | CONFIGURACIÓN |
-| artefacto canónico | remoto (HF por revisión, o `docker.io/th3rox/…@sha256`): **0 bytes locales obligatorios** | — |
-| caché de artefactos | 4.68 GB (qwen2.5-7b) | CACHE |
-| materialización en la unidad | copia por `pushBlob` en la capa escribible de la unidad (≈4.7 GB) o en `thyrox-ollama-models` (2.4 GB, qwen3-4b) | RUNTIME_MATERIALIZATION |
-| shards de descarga | transitorios: hasta 2× el modelo durante el ensamblado | BUILD_INTERMEDIATE |
-
-**Mínimos reales:** bytes canónicos locales = 0; bytes de runtime = 1 copia del
-modelo si la unidad leyera la caché montada en lugar de copiarla (hoy son 2: caché
-+ copia de `pushBlob`); más el piso. Con una sola copia, la asignación actual de la
-sesión admite un GGUF de ≈ 12 GB; con la doble materialización actual, ≈ 6 GB.
-«Dos copias» es consecuencia de la materialización, no un requisito físico
-(H-THYROX-471).
-
----
-
-## Capability matrix — estado al cierre de la fotografía (2026-10-03)
-
-Sustituye a la matriz inicial (arriba), que describía el estado antes de los
-cambios de esta tarde. Evidencia nueva en `dims/`, `ml/`, `resources/`, `identity/`.
-
-| Capability | State | Authority | Consumer | Real proof | Consumable today | Active now | Gap / dependencia |
-|---|---|---|---|---|---|---|---|
-| ejecución en unidad gestionada | REAL_VERIFIED | `podman-execution-execute run` | pool `--execution unit` | 4 corridas de flujo hoy | sí | no (bajo demanda) | imagen por defecto `:dev` ausente; sólo funciona con `THYROX_EXEC_IMAGE` al digest publicado |
-| worktree aislado + verify + integración | REAL_VERIFIED | `headless-pool --isolation worktree --verify` + `pool_integrate` | pool, cualificación de flujo | veredictos reales hoy | sí | no | huérfanos: los retira `item_worktree sweep-orphans` con rescate (usado hoy) |
-| vigilante del ítem | REAL_VERIFIED (host y unidad en pruebas) | `item_watchdog.py` | pool | pruebas + anulación; no disparó en real (su proceso se retiró a mano en una corrida) | sí | por ítem | — |
-| convergencia tras reciclado | REAL_VERIFIED | `local_control_plane_ready` (status/converge) | sesión | 0/13 → 13/13 | sí | — | — |
-| volumen durable perdido | IMPLEMENTED + INTEGRATED | `resourceMaterialization.ensureVolumes` + libro de volúmenes durables | infraestructura | pruebas + anulación; no ejercido en real | sí (al próximo ensure) | — | el corpus ya se perdió (H-THYROX-464) |
-| catálogo / import / validación | REAL_VERIFIED | `local-models-catalog`, `local-models-import` (entrada declarada) | manual | 2 imports reales hoy | sí | — | valores por defecto inservibles aquí: lab `:dev`, 8 GiB (H-THYROX-469) |
-| materialización en la unidad | REAL_VERIFIED | `OllamaRuntimeAdapter.prepareRuntimeArtifact` (`pushBlob`) | coordinador | real | sí | 1 residencia | dos copias por modelo (H-THYROX-471) |
-| cualificación con perfil | REAL_VERIFIED | `ModelQualification.runtimeProfile` + `local-models-qualify` | recomendador | 10+ registros hoy | sí | — | — |
-| cualificación de flujo (`repo-code-change@1`) | REAL_VERIFIED | `--workflow-suite` + `workflowPool` | — | 4 corridas reales; discrimina | sí | — | ninguna identidad aprobada (H-THYROX-470) |
-| selección de modelo | INTEGRATED, **dos autoridades activas + una desconectada** | `recommendExecution` (pool, tsc_cycle) · `choose_candidate` (task_continuation) · `providerSelection.ts` (0 consumidores) | pool, task_continuation | real (pool eligió el modelo medido) | sí | — | unificar (0750/0925) |
-| admisión RAM | REAL_VERIFIED, **mide el cgroup equivocado** | `resource_admission.py` | coordinador, import | rechazos reales hoy | sí | — | cgroup de sesión + caché de páginas; unidades en `libpod_parent` (H-THYROX-471) |
-| admisión CPU | IMPLEMENTED + INTEGRATED | `ResidencyController.makeRoom` + `unitCpuCapacity` | coordinador | pruebas + anulaciones | sí | — | no cuenta las unidades que no son de modelo |
-| admisión disco | REAL_VERIFIED | `resource_admission disk-admit` + `disk-headroom` | import | rechazo real hoy (145 MB) | sí | — | — |
-| fallback de selección / local→local | IMPLEMENTED (dobles) | `policy.ts`, `admittedUpstream.ts` | pool, proxy | dobles | sí | — | ningún salto real ejercido |
-| localidad (thyrox-* nunca `own`) | REAL_VERIFIED | `decidePrintRoute` + `served-by` + `--local-only` | pool | `served-by … local:true` en las 4 corridas | sí | — | — |
-| Redis en producción | INTEGRATED parcial | `@thyrox/shared-state` (proxy, si `THYROX_REDIS_URL`) · `runLease` (import/quantize) | proxy del anfitrión, import | lease real en los imports de hoy | sí | sólo leases de import | claves sin prefijo de componente (H-THYROX-463); las unidades no reciben la URL (memoria); coordinación de modelos `local` |
-| PostgreSQL + pgvector | REAL_VERIFIED como servicio | `infrastructure-bootstrap` | semantic-search, observabilidad | sano, pgvector 0.8.0 | **no**: ninguna `THYROX_*_DATABASE_URL` declarada en `.env` | contenedor sí | corpus perdido; sin URL de consumidor |
-| SemanticSearch (store) | IMPLEMENTED | `semantic-search/store.ts` | 0 paquetes de producto | suites postgres (esquema desechable), caso 4b hoy | no | no | sin productor de vectores (H-THYROX-466) |
-| RAG | ABSENT | — | — | — | no | no | depende de embeddings + retrieval |
-| Transformers runtime | IMPLEMENTED + INTEGRATED, nunca construido | `hostCoordinatorComposition` | — | — | no | no | H-THYROX-465 |
-| embeddings | orquestación IMPLEMENTED; modelo, cualificación, producción ABSENT | `admittedEmbed` | sólo cualificación | ninguna | no | no | 0904 |
-| semantic_search_worker | PROFILE ONLY | `specializedWorkerProfile.ts` | ninguno | — | no | no | D5 |
-| SentenceTransformer / CrossEncoder / reward-value | ABSENT | — | — | — | no | no | — |
-| traducción por Transformers | IMPLEMENTED, no verificada | `admittedSeq2seq` + `/v1/seq2seq` | ninguno | — | no | no | imagen, modelo, suite |
-| clasificador de resultados | INTERFACE ONLY | `THYROX_OUTCOME_CLASSIFIER_COMMAND` | task_continuation | — | no | no | sin modelo |
-| autoridades de Podman | INTEGRATED | `@thyrox/podman-execution` (0 violaciones) | todos | gates 0 | sí | — | 5 excepciones pendientes con tarea (0746 capacidades, 0759 observación ×3) |
-| ciclo de vida de imágenes | PARTIAL | `image-registry/declaredImages.ts` | builds | candidate del quantizer | parcial | — | catálogo declara **1** imagen; runner, transformers y otras sin declarar (nada las reconstruye); por defecto `:dev` en dos sitios |
-| ciclo de vida de artefactos | REAL_VERIFIED | `artifact-locations.json`, `externalArtifact`, caché por digest | coordinador | real | sí | — | publicación durable sólo de qwen3-4b; los 7B importados sin publicar (decisión de identidad) |
-| propiedad de runtime/caché | PARTIAL | `configHome`/`resolveDataDir`, `.thyrox/` | todos | — | sí | — | pertenencia por prefijo `thyrox-`/`kaupamex-` (H-THYROX-461/462) |
-| monitoreo de procesos/trabajos | REAL_VERIFIED | `thyrox-bg`, `wait-jobs` (heartbeat + `stdin_probe`), `item_watchdog` | sesión, pool | real | sí | — | 2 trabajos A6 `SIN-RECOGER` desde las 11:16 |
-| logs/stats/health por la primitiva | ABSENT | — | — | — | no | — | #20 |
-| Search Existing | DESIGNED_ONLY | regla `search-existing-antes-de-construir.md` | — | 0 archivos (`search_existing_mechanisms.py`, `mechanisms.tsv`, bins): sólo el parche rescatado de 0919 | no | no | depende de un worker aceptado o de implementación del controlador |
-| specialist routing | ABSENT | — (`RouteRequirement`: 0) | — | — | no | no | — |
-| identidad kaupamex-ai | AUDITADO, nada migrado | inventario + DAG de fases | — | — | — | — | #24, #25 |
-
-## Authority duplication (actual)
-
-- **Selección**: `recommendExecution` y `choose_candidate` activos; `providerSelection.ts` sin consumidores.
-- **Imagen por defecto vs catálogo**: `DEFAULT_LAB_IMAGE`/`DEFAULT_EXECUTION_IMAGE` fijan tags `:dev` fuera de `declaredImages` (que etiqueta `candidate-<commit>`).
-- **Esquema de etiquetas**: cuatro módulos, dos prefijos (H-THYROX-462).
-- **Holgura de RAM**: la admisión del anfitrión (cgroup de sesión) y la realidad de las unidades (`libpod_parent`) no miden el mismo recurso (H-THYROX-471).
-- **Respaldo de modelo**: `withRetry`/`--fallback-model` del bucle portado frente a `admittedUpstream` de la ruta local.
-
-## Disconnected implementations (actual)
-
-`providerSelection.ts` · `semantic-search` (store completo, 0 consumidores) ·
-`admittedEmbed` fuera de la cualificación · `TransformersRuntimeAdapter` (imagen
-inexistente) · `admittedSeq2seq` · `specializedWorkerProfile` ·
-`learned_classifier_from_environment` sin orden declarada · `apiModelCatalog` ·
-`cutover_bootstrap.sh` / `delegate.sh` (bancos).
-
-## Final dependency graph (DAG) — tras la fotografía completa
-
-```
-A. Medición correcta de recursos (H-THYROX-471)
-   A1 admisión de RAM sobre el cgroup donde corren las unidades, sin caché
-      de páginas como usada
-   A2 una sola copia por modelo (la unidad lee la caché, sin pushBlob)
-        └→ habilita experimentos de contexto/presupuesto y candidatos mayores
-B. Experimentos de aceptación (no requisitos) sobre repo-code-change@1
-   B1 mismas identidades con contexto/presupuesto mayores (RUNTIME_PROFILE)
-   B2 ergonomía de herramientas: Edit literal, rechazo de NUL (TOOL_PROTOCOL)
-   B3 flujo del worker: correr pruebas antes de terminar, no tocar tests,
-      no terminar en prosa (WORKFLOW; F9/F10)
-   B4 candidato mayor = experimento, tras A1+A2
-        └→ C. aceptación nueva (F11) → managed-only
-D. Search Existing (F9) — depende de C o de una excepción declarada del
-   controlador
-E. Identidad kaupamex-ai: E1 decisiones (#24) → E2 pertenencia por identidad
-   (#25: H-461/462/463) → E3 fases del DAG de identidad — antes de publicar
-   nuevos artefactos permanentes (los 7B importados quedan sin publicar)
-F. Datos: F1 corpus re-ingerido (fuentes en kaupamex-docs) → F2 embeddings
-   (#27/0904: modelo, suite, productor, espacio activo, imagen transformers
-   declarada) → F3 retrieval → F4 RAG
-G. Redis: prefijo por componente (H-463) → decisión de producción (#21)
-H. Observación por la primitiva (#20) y cierre de las 5 excepciones de Podman
-I. Imágenes: declarar runner y transformers en el catálogo; quitar `:dev`
-   como identidad (H-469)
-J. Selección: unificar autoridades (#12)
-```
-
-### Clasificación de H-THYROX-470 respecto del resto
-
-**MIXED.** La evidencia de las cuatro corridas contiene MODEL_CAPABILITY
-(alcance, ruta, abandono), TOOL_PROTOCOL (escape de argumentos, llamadas como
-texto, `Edit` no literal), WORKFLOW (no corre pruebas, edita tests, termina en
-prosa) y un RUNTIME_PROFILE no explorado (8K y presupuesto 2048 elegidos por una
-admisión que medía el recurso equivocado, H-471). **PHYSICAL_RESOURCE_BLOCK no
-está demostrado**: la RAM física (15.7 GiB) y una materialización de una copia
-dejan espacio para experimentos que hoy la configuración impide. La rama B del
-DAG es la que puede convertirla en MODEL_CAPABILITY_LIMIT o en aceptación.
+Otros: `outputs/` (salidas de sondas, rojos y anulaciones), `evidence/store-revisions/` (versiones del store recuperadas), `evidence/snapshot-sections/`, `decisions/`, `manifest.jsonl`.

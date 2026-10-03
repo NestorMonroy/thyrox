@@ -1,0 +1,10 @@
+{
+ "experiment_id": "mecanica-qwen3-4b-8k-r1",
+ "model": "thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e",
+ "suite": "batch-worker-mecanica@1",
+ "suite_definition": "src/packages/local-models/suites/batch-worker-mecanica-1.json",
+ "job": ".claude/jobs/qualify-mecanica-8k-0931-20261003T213959",
+ "job_log": ".claude/jobs/qualify-mecanica-8k-0931-20261003T213959/outputs/salida.log",
+ "measured_at": "2026-10-03T21:40:23.054Z",
+ "qualification_recorded": true
+}

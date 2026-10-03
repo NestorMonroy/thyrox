@@ -61,3 +61,21 @@ publicación; ORPHAN el blob parcial `3e4cb141…`.
 - Se conservan: task-runner (`THYROX_EXEC_IMAGE`), base llama.cpp por digest, cuantizador permanente.
 - Disco disponible: 4039.71 MiB (auditoría) → 6410.19 (tras recrear Ollama) → **8791.93 MiB**.
 - Gap de ciclo de vida del scratch: NON_BLOCKING, TASK-THYROX-0936.
+
+## Contrato de persistencia (desde 2026-10-03T23:26Z)
+
+| término | qué es | dónde | mutabilidad |
+|---|---|---|---|
+| evidence | medición cruda | `outputs/` (sondas, rojos, anulaciones), `evidence/` | inmutable |
+| experiment | resultado de una corrida real | `experiments/<id>/` (`experiment.json`, `runtime-profile.json`, `evidence.json`, `verdict.json`, sólo lectura) | inmutable |
+| finding | problema identificado, id durable | `findings/<id>.md` (OBSERVATION · ASSESSMENT HISTORY · CURRENT ASSESSMENT) + store | historia append-only |
+| assessment | interpretación que puede evolucionar | `capabilities/assessments.json` (con `transitions`) → `capabilities/<dominio>.md` | versionada |
+| verdict | decisión vigente | `current_state` / `current_assessment` | — |
+| snapshot | vista histórica congelada | `snapshots/` (sólo lectura, sha256 en el manifiesto) | inmutable |
+| REPORT.md | vista consolidada **derivada** | `outputs/REPORT.md`, sólo la escribe `probes/assemble_report.py` | regenerable |
+
+`manifest.jsonl` es la cronología append-only (`snapshot.created`,
+`experiment.completed`, `report.generated`, …). `probes/check_report_coverage.py`
+comprueba que ningún identificador del snapshot previo se perdió (anulación en
+`outputs/annul-report-coverage.txt`). El store no guarda revisiones de un
+hallazgo (H-THYROX-473): la historia vive en `findings/`.

@@ -1,0 +1,10 @@
+{
+ "passed": false,
+ "casesPassed": 2,
+ "casesTotal": 6,
+ "tokensPerSecond": 2.385311170842606,
+ "pool_verdict": null,
+ "observations": [
+  "4 de 6 casos: llamadas emitidas como texto (<tools>, JSON cercado, <response>)"
+ ]
+}

@@ -1,0 +1,12 @@
+{
+ "passed": false,
+ "casesPassed": 0,
+ "casesTotal": 1,
+ "tokensPerSecond": 1.5234869148234227,
+ "pool_verdict": "sin-cambios",
+ "observations": [
+  "leyó src/packages/local-models/textkit/slug.py: la ruta del ítem sin suites/repo-code-change-1/",
+  "listó el directorio correcto, probó otra ruta errónea y terminó con prosa a los 4 turnos",
+  "sin cambios"
+ ]
+}

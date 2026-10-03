@@ -1,0 +1,2 @@
+ids en el snapshot: 21 · preservados: 16 · perdidos: ['H-THYROX-171', 'H-THYROX-293', 'TASK-THYROX-0904', 'TASK-THYROX-0917', 'TASK-THYROX-0932']
+experimentos sin referencia en REPORT.md: []

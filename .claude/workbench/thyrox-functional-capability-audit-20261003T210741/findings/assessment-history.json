@@ -1,0 +1,21 @@
+{
+ "H-THYROX-470": [
+  {"timestamp": "2026-10-03T23:11:51Z", "previous": null, "new": "HARD_PHYSICAL_LIMIT",
+   "reason": "redacción inicial tras la segunda muestra de qwen2.5-7b: «ningún modelo que cabe en el contenedor completa repo-code-change@1»",
+   "evidence": ["evidence/store-revisions/H-THYROX-470@fd3d113ce.json", "snapshots/report-20261003T231152Z-fd3d113ce.md"]},
+  {"timestamp": "2026-10-03T23:18:30Z", "previous": "HARD_PHYSICAL_LIMIT", "new": "BLOCKED_FOR_CURRENT_ACCEPTANCE_PROFILE",
+   "reason": "corrección del ejecutor: se probaron identidades concretas bajo un perfil concreto; el techo mezclaba configuración y materialización con física",
+   "evidence": ["evidence/store-revisions/H-THYROX-470@HEAD.json", "snapshots/report-20261003T231847Z-6f011826c.md", "outputs/resources/ram.txt", "outputs/resources/disk.txt"]},
+  {"timestamp": "2026-10-03T23:21:16Z", "previous": "BLOCKED_FOR_CURRENT_ACCEPTANCE_PROFILE", "new": "MIXED (provisional, clasificación del DAG)",
+   "reason": "las corridas contienen evidencia de MODEL_CAPABILITY, TOOL_PROTOCOL y WORKFLOW, y un RUNTIME_PROFILE no explorado; PHYSICAL no demostrado",
+   "evidence": ["snapshots/report-20261003T232116Z-d5502b7b6.md"]}
+ ],
+ "H-THYROX-469": [
+  {"timestamp": "2026-10-03T22:36:15Z", "previous": null, "new": "registrado",
+   "reason": "el import busca el laboratorio por :dev y pide 8 GiB",
+   "evidence": ["evidence/store-revisions/H-THYROX-469@f7d65244e.json"]},
+  {"timestamp": "2026-10-03T23:21:15Z", "previous": "registrado", "new": "ampliado",
+   "reason": "el mismo patrón :dev aparece en DEFAULT_EXECUTION_IMAGE; el catálogo declara una sola imagen; la causa de los 8 GiB pasa a H-THYROX-471",
+   "evidence": ["evidence/store-revisions/H-THYROX-469@HEAD.json", "outputs/dims/04-images-jobs.txt"]}
+ ]
+}
