@@ -3,7 +3,7 @@ import { mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'n
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
-import { DEFAULT_EXECUTION_IMAGE, parseMount, runExecutionCommand, runnerEnvironment, type ExecutionCommandDeps } from '../executionCommand.js'
+import { DEFAULT_EXECUTION_IMAGE, parseMount, retireOwnedContainers, runExecutionCommand, runnerEnvironment, type ExecutionCommandDeps } from '../executionCommand.js'
 import type { PodmanCommandResult, PodmanExecutor } from '../podmanExecutor.js'
 
 const ROOT = '/srv/repo'
@@ -249,6 +249,20 @@ describe('reconcile-orphans: un contenedor cuyo dueño de tarea murió se retira
     }, [55])
     expect(await runExecutionCommand(['reconcile-orphans'], h.deps)).toBe(0)
     expect(h.removed).toEqual(['thyrox-worker-p'])
+  })
+
+  // TASK-THYROX-0919 r2: el `timeout` del pool mató al runner y su contenedor
+  // siguió vivo, con `thyrox -p` pidiendo turnos al modelo. Al recibir la señal,
+  // el runner retira lo que lleva su propio PID, de tarea o de pool.
+  test('retireOwnedContainers retira sólo los contenedores cuyo dueño es este runner', async () => {
+    const h = orphanHarness({
+      'thyrox-worker-mio-pool': 'pool\ta6-1\t77',
+      'thyrox-worker-mio-tarea': 'task\ttask-thyrox-0001\t77',
+      'thyrox-worker-otro': 'pool\ta6-2\t88',
+      'thyrox-worker-modelo': 'model-coordinator\tmodel-coordinator.host\t77',
+    }, [77, 88])
+    await retireOwnedContainers(h.deps)
+    expect(h.removed.sort()).toEqual(['thyrox-worker-mio-pool', 'thyrox-worker-mio-tarea'])
   })
 
   test('sin huérfanos, sale 0 y lo dice', async () => {

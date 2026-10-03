@@ -359,6 +359,17 @@ export async function buildManagedImage(deps: Pick<ExecutionCommandDeps, 'env' |
  * Los contenedores de otros dueños (pool, daemon, laboratorio) tienen su propia
  * política de huérfanos y no se tocan.
  */
+/**
+ * Retira los contenedores cuyo dueño es este runner (su PID, de tarea o de
+ * pool). Lo llama la entrada al recibir SIGTERM o SIGINT: sin esto, el
+ * `timeout` de un pool mataba al runner y su contenedor seguía vivo, con su
+ * cliente pidiendo turnos al modelo (TASK-THYROX-0919 r2).
+ */
+export async function retireOwnedContainers(deps: ExecutionCommandDeps): Promise<void> {
+  const lifecycle = { podman: deps.podman, isProcessAlive: deps.isProcessAlive, killProcess: (pid: number, signal: NodeJS.Signals) => { process.kill(pid, signal) } }
+  await retireOrphanedWorkerContainers(lifecycle, ({ owner }) => RUNNER_OWNED_KINDS.includes(owner.kind) && owner.pid === deps.pid)
+}
+
 async function reconcileOrphansCommand(deps: ExecutionCommandDeps): Promise<number> {
   const lifecycle = { podman: deps.podman, isProcessAlive: deps.isProcessAlive, killProcess: (pid: number, signal: NodeJS.Signals) => { process.kill(pid, signal) } }
   const retired = await retireOrphanedWorkerContainers(lifecycle, ({ owner }) =>

@@ -1,0 +1,2 @@
+Seq	Host	Starttime	JobRuntime	Send	Receive	Exitval	Signal	Command
+1	:	1791033696.276	  5441.753	0	0	124	0	_headless_item 1 TASK-THYROX-0919

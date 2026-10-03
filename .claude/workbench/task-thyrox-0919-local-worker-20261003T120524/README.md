@@ -38,3 +38,21 @@ en las A6 el `cwd` era la raíz y en modo worktree es el worktree, sin `.env`. E
 `runnerEnvironment` compone el entorno con `readEnvFile` (`@thyrox/paths/reach`) del `.env` del proyecto montado, o
 de `THYROX_ENV_FILE`; el proceso gana. RED → GREEN 31/31; anulación: caen exactamente las 2 pruebas nuevas.
 Consumidores: ownership 14/14, contención e2e 8/8, aislamiento delegado 4/4, build declarado 13/13; paquete 221/221.
+
+### r2 — corre en Qwen local, pero a <1 tok/s y con razonamiento por acción (H-THYROX-449)
+
+Imagen correcta (`docker.io/th3rox/thyrox-task-runner@sha256:1cced65c…`), exit 124 por timeout a los 5 441 s con el
+stream vacío. `llama-server`: 3 turnos; prompt 11 212 → 13 144 tokens; generación 908 / 1 579 / 1 298 tokens a
+0.97 / 0.89 / 0.84 tok/s (25, 31 y 27 min por turno). La cualificación midió 3 tok/s con prompts cortos.
+La traducción Messages→OpenAI no fija `reasoning_effort` con el razonamiento apagado: Ollama razona por defecto.
+Siguiente medición: `probes/think_control.sh` (qué campo apaga el razonamiento en el `/v1` de Ollama).
+
+### Tras r2 — el contenedor del ítem sobrevivió al `timeout`
+
+Tras el exit 124, el contenedor del ítem seguía vivo y su `thyrox -p` seguía pidiendo turnos al modelo
+(`n_gen` creciendo con el pool ya cerrado; el coordinador rehusaba pararse con 1 ticket vivo). El `timeout`
+mata al runner y la entrada no manejaba señales. `reconcile-orphans` (extendido en `62dfeec20`) lo retiró.
+EXTEND: `retireOwnedContainers` (REUSE de `retireOrphanedWorkerContainers` con el PID del propio runner) en
+SIGTERM/SIGINT de `bin/execute.ts`. Unitaria: RED → GREEN, anulación exacta. Control real con Podman
+(`probes/runner_sigterm.sh`): con el manejador `vivo_tras_sigterm=0`; sin él, `1` (`runner_sigterm.annulled.out`).
+La sonda de razonamiento (`probes/think_control.sh`) quedó sin datos: la unidad estaba ocupada por ese cliente.
