@@ -1,0 +1,12 @@
+capability	authority	bin	file	consumers / wiring	tests	decision
+relevo de sesión (sesión nueva que relee la config)	session_restart	bin/session_restart	src/session/session_restart.py	manual: imprime la carga de create_session; no reinicia la sesión viva	tests/session/test_session_restart.py	REUSE (no reinicia la VM ni Podman)
+arranque de sesión: retirar worktrees huérfanos	item_worktree	bin/item_worktree sweep-orphans	src/session/item_worktree.sh	SessionStart startup (declared_wiring)	tests/session	REUSE
+arranque de sesión legacy (incluye reconcile_user_hooks)	session-start.sh	bin/session-start	src/session/session-start.sh	cero invocadores; no está en declared_wiring	tests/session/test-session-start.sh	no cableado (H-THYROX-438)
+re-materializar la infraestructura tras reiniciar	infrastructure_ensure	bin/infrastructure_ensure	src/session/infrastructure_ensure.sh -> bin/infrastructure-bootstrap -> src/packages/infrastructure/bin/bootstrap.ts -> primitiva	manual / entrada del plano de control; headless-pool lo llama para Ollama	tests/session/test-infrastructure-ensure.sh	REUSE
+reparar locks de Podman desfasados	podman_lock_recovery	bin/podman_lock_recovery	src/session/podman_lock_recovery.sh (+ src/lib/podman_locks.sh)	manual, «pedida por un operador»; el ensure nombra el remedio	tests/session/test-podman-lock-recovery.sh (23/23 hoy)	REUSE; automatizar = tarea #99
+estado running con proceso muerto	podman_locks.sh thyrox_podman_live_containers + primitiva stale-runtime-state	—	src/lib/podman_locks.sh; @thyrox/podman-execution	ensure, recovery	tests/lib/test-infrastructure.sh	REUSE
+capacidades de Podman	podman_capabilities	bin/podman_capabilities	src/lib/podman_capabilities.sh	preflight	tests	REUSE
+observar Podman	podman-execution observe	bin/podman-execution-execute observe	@thyrox/podman-execution	todos los observadores	podman-execution tests	REUSE
+Ollama de infraestructura no ejecuta	check_infrastructure_runtime_idle	bin/check_infrastructure_runtime_idle	src/verify/check_infrastructure_runtime_idle.py	gate	tests/verify	REUSE
+hacer volátil /run (tmp_dir/runroot en tmpfs)	—	—	—	—	—	MISSING (H-THYROX-442; sin medir)
+automatizar «tras reiniciar: recuperar + ensure»	—	—	—	—	—	MISSING por decisión: tarea #99 «Measure Podman lock recovery before deciding whether to automate it»

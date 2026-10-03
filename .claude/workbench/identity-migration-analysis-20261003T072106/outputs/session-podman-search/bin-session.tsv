@@ -1,0 +1,10 @@
+check_stale_divergence	src/session/generate_bin.py
+podman_lock_recovery	src/session/generate_bin.py
+reconcile-agents	src/session/generate_bin.py
+reconcile_store	src/session/generate_bin.py
+reconcile_user_hooks	src/session/generate_bin.py
+recovery	src/session/generate_bin.py
+recovery_controller	src/session/generate_bin.py
+session-resume	src/session/generate_bin.py
+session-start	src/session/generate_bin.py
+session_restart	src/session/generate_bin.py

@@ -1,0 +1,10 @@
+src/session/session-start.sh:2:# session-start.sh — SessionStart hook para Claude Code
+src/session/session-start.sh:4:# Install: configurar en .claude/settings.json como hook SessionStart
+src/session/session-start.sh:63:_reconcile="${PROJECT_ROOT}/src/session/reconcile_user_hooks.py"
+src/session/session-start.sh:64:if [ -f "$_reconcile" ]; then
+src/session/session-start.sh:65:    python3 "$_reconcile" 2>&1 | sed 's/^/  [hooks] /'
+src/session/user_wiring.py:254:            "SessionStart": [{
+src/session/user_wiring.py:268:                "matcher": "startup",
+src/session/user_wiring.py:269:                "hooks": [cmd(f"bash {base}/bin/item_worktree sweep-orphans {repo}",
+src/session/user_wiring.py:790:    no existe: `session-start.sh` tiene cero invocadores ejecutables y el
+src/session/user_wiring.py:791:    settings vivo no declara `SessionStart`. Inventarle uno seria afirmar una

@@ -1,0 +1,15 @@
+     8 /home/user/thyrox/.claude/workbench/identity-migration-analysis-20261003T072106/outputs/session-podman-search/bin-podman.tsv
+    10 /home/user/thyrox/.claude/workbench/identity-migration-analysis-20261003T072106/outputs/session-podman-search/bin-session.tsv
+   322 /home/user/thyrox/.claude/workbench/identity-migration-analysis-20261003T072106/outputs/session-podman-search/bin-targets.tsv
+   358 /home/user/thyrox/.claude/workbench/identity-migration-analysis-20261003T072106/outputs/session-podman-search/code-podman-files.txt
+  1486 /home/user/thyrox/.claude/workbench/identity-migration-analysis-20261003T072106/outputs/session-podman-search/code-session-files.txt
+   144 /home/user/thyrox/.claude/workbench/identity-migration-analysis-20261003T072106/outputs/session-podman-search/code-session-x-podman.txt
+     7 /home/user/thyrox/.claude/workbench/identity-migration-analysis-20261003T072106/outputs/session-podman-search/rules-hits.txt
+    28 /home/user/thyrox/.claude/workbench/identity-migration-analysis-20261003T072106/outputs/session-podman-search/store-findings.txt
+    45 /home/user/thyrox/.claude/workbench/identity-migration-analysis-20261003T072106/outputs/session-podman-search/store-tasks.txt
+    41 /home/user/thyrox/.claude/workbench/identity-migration-analysis-20261003T072106/outputs/session-podman-search/tests-podman-files.txt
+   168 /home/user/thyrox/.claude/workbench/identity-migration-analysis-20261003T072106/outputs/session-podman-search/tests-session-files.txt
+    10 /home/user/thyrox/.claude/workbench/identity-migration-analysis-20261003T072106/outputs/session-podman-search/wiring-hits.txt
+  2627 total
+execution thyrox-worker-probe-mus3ujgn-6193 kind=probe task=TASK-THYROX-0917 exit=0
+__BG_EXIT__=0

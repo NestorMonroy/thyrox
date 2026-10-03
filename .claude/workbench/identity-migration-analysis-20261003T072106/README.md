@@ -372,3 +372,39 @@ Es la evidencia concreta del argumento «identidad antes del dataset».
    o reingesta tras la declaración).
 6. Sólo entonces el release `kaupamex-semantic-corpus` (dataset) y los dominios
    nuevos.
+
+## 5. Search Existing: reinicio de sesión y Podman (pedido del ejecutor)
+
+Sonda `probes/session_podman_search.sh` (EXPERIMENTAL), corrida con `bin/thyrox-bg`
+como trabajo gestionado (TASK-THYROX-0917). Salidas:
+`outputs/session-podman-search/`. Recorrió:
+
+- 322 ejecutables de `bin/` y su destino;
+- el código, las pruebas y las reglas;
+- el cableado declarado;
+- el store de hallazgos y tareas.
+
+Matriz: `outputs/session-podman-search/search-existing-matrix.tsv`.
+
+**Reiniciar la sesión.** Existe `bin/session_restart` (`src/session/session_restart.py`),
+pero **no reinicia nada**. Su cabecera lo dice: «No puede hacer que una sesión viva
+recargue su configuración». Prepara el **relevo**, la carga de `create_session` para
+una sesión nueva en el mismo entorno, repo y rama. No toca la VM ni Podman.
+
+**Qué corre al arrancar una sesión.** Sólo `item_worktree sweep-orphans` (SessionStart
+`startup`). `session-start.sh`, que llamaba a `reconcile_user_hooks`, tiene cero
+invocadores. **Nada re-materializa la infraestructura al arrancar.** Es deliberado:
+`infrastructure_ensure` dice «nada de lo que declara infrastructure.sh vuelve solo
+tras reiniciar la VM» (no hay systemd; PID 1 es `process_api`), y orquesta esa vuelta
+a petición.
+
+**La cadena de Podman tras un reinicio ya está completa y es manual:**
+
+```
+bin/podman_lock_recovery            # plan
+bin/podman_lock_recovery --confirm  # operador: retira /run/libpod/alive, Podman refresca
+bin/infrastructure_ensure           # bootstrap -> primitiva: postgres, redis, ollama
+```
+
+Falta, a propósito: automatizar la cadena es la tarea #99, sin decidir. Falta, sin
+medir: la causa raíz, `/run` persistente (H-THYROX-442).
