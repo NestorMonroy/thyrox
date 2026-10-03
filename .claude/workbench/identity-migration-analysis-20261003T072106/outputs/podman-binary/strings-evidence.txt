@@ -1,0 +1,19 @@
+# /usr/bin/podman 4.9.3 sha256=859cb7e29723d1ca2f6bec025405b7ed6ea3040709ed129d7fed5f8fca92d2ca
+# strings -n 8 /usr/bin/podman | grep -o …
+## refresco
+Podman detected system restart - performing state refresh
+alive.lck
+retrieving alive lock
+## configuracion en la base
+SELECT StaticDir, TmpDir, GraphRoot, RunRoot, GraphDriver, VolumeDir FROM DBConfig;
+Overriding tmp dir %q with %q from database
+database %s %q does not match our %s %q: %w
+database configuration mismatch
+## renumber con sqlite
+UPDATE VolumeConfig SET Name=?, JSON=? WHERE ID=?;
+        CREATE TABLE IF NOT EXISTS VolumeConfig(
+                Name            TEXT    PRIMARY KEY NOT NULL,
+                StorageID       TEXT,
+                JSON            TEXT    NOT NULL,
+                FOREIGN KEY (Name) REFERENCES VolumeState(Name) DEFERRABLE INITIALLY DEFER
+        );Manages which registries you trust as a source of container images based on thei

@@ -727,3 +727,36 @@ C no está implementada ni medida. Antes de implementarla hay que medir dos cosa
 
 Es la tarea #99, que pasa de «¿automatizar?» a una pregunta concreta: **montar
 tmpfs en el arranque contra retirar el marcador en el arranque**.
+
+### Confirmado en el binario (`/usr/bin/podman` 4.9.3)
+
+Pedido del ejecutor: *«si no viene en la documentación, analiza los binarios»*.
+Lectura de cadenas, sin ejecutar Podman: `outputs/podman-binary/strings-evidence.txt`.
+
+1. **El refresco depende del marcador.** El binario contiene `alive.lck`,
+   `retrieving alive lock` y `Podman detected system restart - performing state
+   refresh`. Sin `alive` en el `tmp_dir`, Podman refresca y reasigna locks. Es
+   justo lo que hace la solución A.
+2. **`tmp_dir` está fijado en la base.** `SELECT StaticDir, TmpDir, GraphRoot,
+   RunRoot, GraphDriver, VolumeDir FROM DBConfig;` junto con dos mensajes:
+   - `Overriding tmp dir %q with %q from database`: si no se declara, Podman
+     ignora el default y usa el de la base;
+   - `database %s %q does not match our %s %q` / `database configuration
+     mismatch`: si se declara uno distinto, rehúsa.
+
+   La solución B queda descartada por las dos ramas, no sólo por la documentación.
+   La C (tmpfs sobre la **misma** ruta) no cambia ningún valor de `DBConfig`.
+3. **Por qué `podman system renumber` no sirve aquí (H-THYROX-308): es un defecto
+   de Podman 4.9.3 con sqlite.**
+   - `renumber` reescribe cada volumen con `UPDATE VolumeConfig SET Name=?,
+     JSON=? WHERE ID=?;`.
+   - La tabla que crea el mismo binario es `VolumeConfig(Name PRIMARY KEY,
+     StorageID, JSON)`, sin columna `ID`. De ahí `no such column: ID` en el primer
+     volumen.
+   - Con 22 volúmenes, `renumber` no puede terminar nunca en esta versión. No es
+     configuración ni estado corrupto.
+   - Las salidas son actualizar Podman (no medido aquí) o el refresco por
+     marcador (A/C).
+
+**Conclusión.** La reparación de hoy es A y no hay otra no destructiva en 4.9.3. La
+causa raíz se corrige con C, que falta medir y cablear (#99).
