@@ -469,10 +469,14 @@ function shortfallOf(kind: TaskKind, profile: TurnProfile, local: LocalModelInve
  */
 function localFallbackModels(kind: TaskKind, profile: TurnProfile, permitted: LocalModelInventory,
   policy: ExecutionPolicy | undefined, chosen: string): string[] {
+  if (policy === undefined || !policy.fallback.enabled) return []
   const qualified = qualifiedModels(permitted.entries, permitted.qualifications, kind, profile.contextTokens)
-  const ordered = (policy?.fallback.chain ?? []).flatMap(target => (isProviderTarget(target)
-    ? []
-    : qualified.filter(candidate => matchesSelector(target, candidate.entry)).map(candidate => candidate.entry.name)))
+  const chain = policy.fallback.chain
+  const ordered = chain === undefined
+    ? qualified.map(candidate => candidate.entry.name)
+    : chain.flatMap(target => (isProviderTarget(target)
+      ? []
+      : qualified.filter(candidate => matchesSelector(target, candidate.entry)).map(candidate => candidate.entry.name)))
   return [...new Set(ordered)].filter(name => name !== chosen)
 }
 
@@ -489,10 +493,17 @@ function providerFallback(kind: TaskKind, profile: TurnProfile, policy: Executio
     return { runtime: 'blocked', taskClass: kind, contextTokens: profile.contextTokens, trigger: shortfall.trigger,
       blockedReason: `la política no permite respaldo y ningún modelo permitido cumple: ${shortfall.reason}` }
   }
-  const chainIndex = policy.fallback.chain.findIndex(isProviderTarget)
+  const chain = policy.fallback.chain
+  if (chain === undefined) {
+    // La cadena derivada son los locales permitidos y medidos: si ninguno
+    // cumple, la causa es la local, y el proveedor no se alcanza sin declararlo.
+    return { runtime: 'blocked', taskClass: kind, contextTokens: profile.contextTokens, trigger: shortfall.trigger,
+      blockedReason: `ningún modelo local permitido cumple y fallback.chain no declara claude-cli: ${shortfall.reason}` }
+  }
+  const chainIndex = chain.findIndex(isProviderTarget)
   if (chainIndex < 0) {
     return { runtime: 'blocked', taskClass: kind, contextTokens: profile.contextTokens, trigger: 'no_usable_fallback',
-      blockedReason: `ningún eslabón de fallback.chain es utilizable (${policy.fallback.chain.length} declarado(s)): ${shortfall.reason}` }
+      blockedReason: `ningún eslabón de fallback.chain es utilizable (${chain.length} declarado(s)): ${shortfall.reason}` }
   }
   return { ...providerExecution(kind, profile), fallback: { ...step, chainIndex }, fallbackReason: shortfall.reason }
 }

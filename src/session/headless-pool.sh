@@ -282,9 +282,9 @@ if [[ -n "$MODEL_POLICY" ]]; then
     POLICY_FALLBACK="$(jq -r '.fallback.enabled | if type == "boolean" then tostring else "" end' "$MODEL_POLICY" 2>/dev/null)"
     [[ "$POLICY_FALLBACK" == true || "$POLICY_FALLBACK" == false ]] \
         || rehusa "--model-policy declara fallback.enabled (true o false); el respaldo no tiene valor por defecto: $MODEL_POLICY"
-    # Llegar al proveedor exige el interruptor abierto y claude-cli en la cadena;
-    # sin cadena declarada rige [claude-cli] (TASK-THYROX-0920, `allowsProvider`).
-    POLICY_PROVIDER="$(jq -r '.fallback.enabled and ((.fallback.chain // [{"runtime":"claude-cli"}]) | any(.runtime == "claude-cli"))' "$MODEL_POLICY" 2>/dev/null)"
+    # Llegar al proveedor exige el interruptor abierto y claude-cli DECLARADO en la
+    # cadena; sin cadena, la derivada es local (TASK-THYROX-0923, `allowsProvider`).
+    POLICY_PROVIDER="$(jq -r '.fallback.enabled and ((.fallback.chain // []) | any(.runtime == "claude-cli"))' "$MODEL_POLICY" 2>/dev/null)"
 fi
 
 command -v "$PARALLEL_BIN" >/dev/null 2>&1 \

@@ -20,7 +20,7 @@
 # ítem con máscara encuentra `claude` en el PATH (lo decide `thyrox -p`).
 set -uo pipefail
 # Esta suite mide la mecánica del pool, no la política de ejecución: la declara
-# sin restricción (sin ella regiría la versionada del árbol, que no admite respaldo).
+# sin restricción (sin ella regiría la versionada del árbol, y la suite dependería de ella).
 THYROX_EXECUTION_POLICY="$(cd "$(dirname "${BASH_SOURCE[0]}")/../fixtures" && pwd)/execution_policy_unrestricted.json"
 export THYROX_EXECUTION_POLICY
 ROOT="$(cd "$(dirname "$0")/../.." && pwd)"

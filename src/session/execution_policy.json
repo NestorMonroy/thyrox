@@ -3,6 +3,6 @@
     { "runtime": "ollama", "repository": "library/qwen3-4b", "quantization": "q4_k_m", "source": "ollama" },
     { "runtime": "ollama", "repository": "Qwen/Qwen3-4B-GGUF", "quantization": "q4_k_m", "source": "hf" }
   ],
-  "fallback": { "enabled": false },
+  "fallback": { "enabled": true },
   "controller": { "subagents": false, "unmanagedPayloads": false, "implementation": "bootstrap-exception" }
 }

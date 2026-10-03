@@ -11,7 +11,8 @@
  *                             { "runtime": "claude-cli" }] } }
  *
  * `fallback.enabled` es el interruptor; `fallback.chain`, el orden de los
- * respaldos (TASK-THYROX-0920). Sin `chain` declarada rige `[claude-cli]`.
+ * respaldos (TASK-THYROX-0920). Sin `chain` declarada la cadena se deriva de
+ * los modelos locales permitidos y medidos; `claude-cli` sólo entra declarado.
  *
  * Un modelo local se permite por su repositorio de origen (y su cuantización,
  * si se declara), no por su nombre contractual: el nombre lleva la revisión y
@@ -65,11 +66,14 @@ export type FallbackTarget = LocalModelSelector | ProviderTarget
 /**
  * El respaldo, en la forma de la referencia `claude-code-bin` (`rre`/`$a`): `enabled` es el
  * interruptor (`CLAUDE_CODE_NO_MODEL_FALLBACK` invertido) y `chain` el orden en
- * que se prueban los respaldos, cada uno dentro de lo permitido.
+ * que se prueban los respaldos, cada uno dentro de lo permitido. Sin `chain`
+ * la cadena se DERIVA de los modelos locales permitidos y medidos, como la
+ * escalera `yb` que la referencia arma cuando nada se configuró; el proveedor
+ * no entra nunca en ella.
  */
 export interface FallbackPolicy {
   readonly enabled: boolean
-  readonly chain: readonly FallbackTarget[]
+  readonly chain?: readonly FallbackTarget[]
 }
 
 export interface ExecutionPolicy {
@@ -99,7 +103,7 @@ export function parseExecutionPolicy(text: string): ExecutionPolicy {
   }
   const selectors = allowed.map(selectorOf)
   const chain = chainOf((fallback as { chain?: unknown }).chain, selectors)
-  const parsed = { allowed: selectors, fallback: { enabled, chain } }
+  const parsed = { allowed: selectors, fallback: chain === undefined ? { enabled } : { enabled, chain } }
   return controller === undefined ? parsed : { ...parsed, controller: controllerOf(controller) }
 }
 
@@ -166,7 +170,7 @@ function sameText(left: string, right: string): boolean {
 
 /** ¿La política deja llegar al proveedor? Interruptor abierto y `claude-cli` en la cadena. */
 export function allowsProvider(policy: ExecutionPolicy): boolean {
-  return policy.fallback.enabled && policy.fallback.chain.some(isProviderTarget)
+  return policy.fallback.enabled && (policy.fallback.chain ?? []).some(isProviderTarget)
 }
 
 export function isProviderTarget(target: FallbackTarget): target is ProviderTarget {
@@ -174,13 +178,13 @@ export function isProviderTarget(target: FallbackTarget): target is ProviderTarg
 }
 
 /**
- * La cadena declarada. Sin declararla rige `[claude-cli]`, el respaldo que
- * `enabled` daba antes de existir la cadena. Una entrada local tiene que estar
- * en `allowed` (el `Hr` de la referencia): un respaldo no amplía lo permitido,
- * y aquí se rehúsa en vez de filtrarse en silencio.
+ * La cadena declarada; sin declararla, ninguna (se deriva al recomendar). Una
+ * entrada local tiene que estar en `allowed` (el `Hr` de la referencia): un
+ * respaldo no amplía lo permitido, y aquí se rehúsa en vez de filtrarse en
+ * silencio.
  */
-function chainOf(value: unknown, allowed: readonly LocalModelSelector[]): readonly FallbackTarget[] {
-  if (value === undefined) return [{ runtime: PROVIDER_RUNTIME }]
+function chainOf(value: unknown, allowed: readonly LocalModelSelector[]): readonly FallbackTarget[] | undefined {
+  if (value === undefined) return undefined
   if (!Array.isArray(value)) throw new ExecutionPolicyError('`fallback.chain` es la lista ordenada de respaldos')
   return value.map((item, index) => chainTargetOf(item, index, allowed))
 }

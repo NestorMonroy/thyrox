@@ -1,0 +1,10 @@
+(fail) recommendExecution con una política de ejecución declarada (TASK-THYROX-0773) > con el respaldo abierto y sin cadena, no cae a claude-cli: la cadena derivada es local [0.35ms]
+(fail) la política canónica y el Qwen3-4B instalado en el clon (TASK-THYROX-0912) > con una cualificación de 8192 no alcanza la necesidad de A6: bloqueada con su motivo, nunca claude-cli [0.21ms]
+(fail) la política canónica y el Qwen3-4B instalado en el clon (TASK-THYROX-0912) > un modelo local que la política no admite: bloqueada nombrando a la política, nunca claude-cli [0.23ms]
+(fail) la política canónica y el Qwen3-4B instalado en el clon (TASK-THYROX-0912) > el respaldo está abierto, la cadena no se declara y no alcanza al proveedor [0.11ms]
+(fail) fallback.chain — cadena ordenada con motivos tipados (TASK-THYROX-0920) > enabled sin cadena declarada: la cadena se deriva, no se fija [0.33ms]
+(fail) fallback.chain — cadena ordenada con motivos tipados (TASK-THYROX-0920) > la cadena derivada da al elegido los demás locales cualificados, en el orden medido [0.19ms]
+(fail) fallback.chain — cadena ordenada con motivos tipados (TASK-THYROX-0920) > agotada la cadena derivada, bloqueada con la causa local, nunca el proveedor [0.29ms]
+(fail) fallback.chain — cadena ordenada con motivos tipados (TASK-THYROX-0920) > allowsProvider: sólo con el interruptor abierto y claude-cli DECLARADO en la cadena [0.14ms]
+ 31 pass
+ 8 fail

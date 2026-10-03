@@ -107,3 +107,25 @@ este diff.
 
 *Ciega a:* un salto real contra el coordinador y Ollama del anfitrión; las
 pruebas usan un coordinador y un runtime dobles.
+
+## TASK-THYROX-0923 — respaldo abierto en la versionada, cadena derivada
+
+Directiva del ejecutor: `enabled: true`, sin cadena declarada, y un valor por
+defecto que no sea `claude-cli` («eso está en contra de lo que queremos»). La
+primera versión de esta tarea hizo regir `[claude-cli]` sin cadena: era una
+suposición. La referencia, sin cadena configurada, arma la escalera `yb` de la
+misma familia filtrada por `Hr` (`outputs/symbol-chain*.txt`). Aquí:
+
+- sin `chain`, la cadena se DERIVA de los locales permitidos y medidos, en el
+  orden de su medición; el proveedor no entra nunca en ella;
+- `claude-cli` y cualquier remoto entran sólo DECLARADOS; un remoto, además,
+  sólo con su API (`outputs/remote-api-prior-work.md`, tarea de convergencia);
+- la fixture «sin restricción» de las suites del pool declara ahora `claude-cli`.
+
+Rojo `outputs/red-0923*.txt`; anulaciones `outputs/annul-0923.txt` —
+invented-default 8, derived-order 1, derived-blocked 4, kill-switch 1,
+repo-closed 2—. Subconjunto derivado `outputs/green-0923.txt`: verde salvo las
+dos fallas previas medidas en HEAD.
+
+Hallazgo H-THYROX-453: 0920 extendió la vía que TASK-THYROX-0750 iba a
+migrar a `providerSelection`; la búsqueda se acotó a «fallback».

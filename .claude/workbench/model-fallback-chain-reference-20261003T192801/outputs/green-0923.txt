@@ -1,0 +1,19 @@
+recommendExecution →  40 pass  0 fail 
+tests/agents/test_recommend_cli.py → fallas=0
+tests/hooks/test_execution_policy_enforcement.py → fallas=0
+tests/session/test-headless-pool-credential-source.sh → aserciones: 42 de 42 · fallos: 0 
+tests/session/test-headless-pool-execution-unit.sh → 28 ok · 0 falla(s) (alcance medido: headless-pool --execution unit) 
+tests/session/test-headless-pool-exit-live-items.sh → 24/24 aserciones 
+tests/session/test-headless-pool-frozen-launcher.sh → 
+tests/session/test-headless-pool-item-drain.sh → 
+tests/session/test-headless-pool-lifecycle.sh → 
+tests/session/test-headless-pool-local-model-e2e.sh → 8 ok · 0 falla(s) (alcance medido: modelo local por el coordinador desde la unidad, con dobles) 
+tests/session/test-headless-pool-model-policy.sh → 31 ok · 0 falla(s) (alcance medido: headless-pool --model-policy) 
+tests/session/test-headless-pool-runtime.sh → 24/24 aserciones 
+tests/session/test-headless-pool-thyrox-p.sh → 12 ok · 0 falla(s) (alcance medido: headless-pool con thyrox -p) 
+tests/session/test-headless-pool-worktree.sh →   FALLA el trabajo aparece bajo la salida del ítem: esperado «1», obtenido «0» test-headless-pool-worktree: 46 aserciones — 45 ok, 1 falla(s) 
+tests/session/test-headless-pool.sh → FALLA admision: la reserva ajena sigue en el registro — esperado '900', obtenido '{ aserciones: 145 de 146 · fallos: 1 
+DONE
+tests/session/test-headless-pool-frozen-launcher.sh → exit=0
+tests/session/test-headless-pool-item-drain.sh → exit=0
+tests/session/test-headless-pool-lifecycle.sh → exit=0

@@ -1,5 +1,5 @@
 {
   "allowed": [],
-  "fallback": { "enabled": true },
+  "fallback": { "enabled": true, "chain": [{ "runtime": "claude-cli" }] },
   "controller": { "subagents": true, "unmanagedPayloads": true, "implementation": "bootstrap-exception" }
 }

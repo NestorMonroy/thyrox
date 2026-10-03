@@ -1,0 +1,5 @@
+  ok   caso 4: con respaldo admitido, el respaldo de hoy no cambia (pide claude-cli)
+  FALLA caso 15: abierta sin cadena y Ollama caído rehúsa con 2 — esperado [2] obtenido [0]
+  FALLA caso 15: no pide claude-cli al recomendador — esperado [0] obtenido [1]
+  FALLA caso 16: un proveedor devuelto contra una política sin claude-cli declarado rehúsa con 2 — esperado [2] obtenido [0]
+28 ok · 3 falla(s) (alcance medido: headless-pool --model-policy)

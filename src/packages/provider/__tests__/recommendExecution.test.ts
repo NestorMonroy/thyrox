@@ -152,9 +152,9 @@ describe('recommendExecution con una política de ejecución declarada (TASK-THY
     expect(result.runtime === 'blocked' ? result.blockedReason : '').toMatch(/política/)
   })
 
-  test('con el respaldo declarado, cae a claude-cli y lo nombra', () => {
+  test('con el respaldo abierto y sin cadena, no cae a claude-cli: la cadena derivada es local', () => {
     const result = recommendExecution('mecanica', PROFILE, onlyOther, policyOf(true))
-    expect(result.runtime).toBe('claude-cli')
+    expect(result.runtime).toBe('blocked')
   })
 
   test('sin política, el comportamiento de hoy no cambia', () => {
@@ -203,7 +203,7 @@ describe('parseExecutionPolicy', () => {
   test('la política versionada del árbol se lee igual que en el preflight (test_execution_policy_enforcement, caso 13)', () => {
     const policy = parseExecutionPolicy(readFileSync(resolve(import.meta.dir, '../../../session/execution_policy.json'), 'utf8'))
     expect([policy.fallback.enabled, policy.controller?.subagents, policy.controller?.unmanagedPayloads, policy.controller?.implementation])
-      .toEqual([false, false, false, 'bootstrap-exception'])
+      .toEqual([true, false, false, 'bootstrap-exception'])
   })
 })
 
@@ -270,18 +270,24 @@ describe('la política canónica y el Qwen3-4B instalado en el clon (TASK-THYROX
       .toEqual(['ollama', HF_QWEN.name, false])
   })
 
-  test('con una cualificación de 8192 no alcanza la necesidad de A6: blocked, nunca claude-cli', () => {
+  // Directiva del ejecutor 2026-10-03 (TASK-THYROX-0923): el respaldo de la
+  // política versionada está abierto y SIN cadena declarada. Rige la derivada
+  // —los locales permitidos y medidos—, nunca el proveedor: una cadena escrita
+  // aquí congelaría un análisis que hay que rehacer, y `claude-cli` por defecto
+  // iría contra la autoimplementación local.
+  test('con una cualificación de 8192 no alcanza la necesidad de A6: bloqueada con su motivo, nunca claude-cli', () => {
     const result = recommendExecution('mecanica', A6_PROFILE, { entries: [HF_QWEN], qualifications: qualifiedAt(HF_QWEN, 8_192) }, CANONICAL)
-    expect(result.runtime).toBe('blocked')
+    expect([result.runtime, result.runtime === 'blocked' ? result.trigger : undefined]).toEqual(['blocked', 'insufficient_context'])
   })
 
-  test('un modelo local que la política no admite queda blocked, nunca claude-cli', () => {
+  test('un modelo local que la política no admite: bloqueada nombrando a la política, nunca claude-cli', () => {
     const result = recommendExecution('mecanica', A6_PROFILE, { entries: [NOT_ALLOWED], qualifications: qualifiedAt(NOT_ALLOWED, 32_768) }, CANONICAL)
-    expect(result.runtime).toBe('blocked')
+    expect([result.runtime, result.runtime === 'blocked' ? result.trigger : undefined]).toEqual(['blocked', 'policy_excludes_catalog'])
   })
 
-  test('el respaldo sigue cerrado', () => {
-    expect(CANONICAL.fallback.enabled).toBe(false)
+  test('el respaldo está abierto, la cadena no se declara y no alcanza al proveedor', () => {
+    const declared = JSON.parse(readFileSync(resolve(import.meta.dir, '../../../session/execution_policy.json'), 'utf8')) as { fallback: Record<string, unknown> }
+    expect([CANONICAL.fallback.enabled, 'chain' in declared.fallback, allowsProvider(CANONICAL)]).toEqual([true, false, false])
   })
 })
 
@@ -301,8 +307,28 @@ describe('fallback.chain — cadena ordenada con motivos tipados (TASK-THYROX-09
   }
   const unqualified = { entries: [QWEN], qualifications: [] }
 
-  test('enabled sin cadena declarada conserva el respaldo de hoy: la cadena es [claude-cli]', () => {
-    expect(policyWith({ enabled: true }).fallback.chain).toEqual([{ runtime: 'claude-cli' }])
+  // Revisión del ejecutor 2026-10-03: sin cadena declarada, la referencia no
+  // salta a otro proveedor —`rre` construye la escalera `yb(primary)` de la
+  // misma familia, filtrada por `Hr`—. Aquí la cadena se DERIVA de los modelos
+  // locales permitidos y medidos; `claude-cli` sólo entra declarado.
+  test('enabled sin cadena declarada: la cadena se deriva, no se fija', () => {
+    expect(policyWith({ enabled: true }).fallback.chain).toBeUndefined()
+  })
+
+  test('la cadena derivada da al elegido los demás locales cualificados, en el orden medido', () => {
+    const result = recommendExecution('mecanica', PROFILE, qualifiedBoth, policyWith({ enabled: true }))
+    expect([result.runtime === 'ollama' ? result.model : '', result.runtime === 'ollama' ? result.fallbackModels : undefined])
+      .toEqual([FAST.name, [QWEN.name]])
+  })
+
+  test('el interruptor cerrado apaga también los respaldos locales (el G6 de la referencia)', () => {
+    const result = recommendExecution('mecanica', PROFILE, qualifiedBoth, policyWith({ enabled: false, chain: [QWEN_SELECTOR] }))
+    expect(result.runtime === 'ollama' ? result.fallbackModels : undefined).toEqual([])
+  })
+
+  test('agotada la cadena derivada, bloqueada con la causa local, nunca el proveedor', () => {
+    const result = recommendExecution('mecanica', PROFILE, unqualified, policyWith({ enabled: true }))
+    expect([result.runtime, result.runtime === 'blocked' ? result.trigger : undefined]).toEqual(['blocked', 'unqualified'])
   })
 
   test('una entrada local de la cadena que no está en allowed se rehúsa', () => {
@@ -352,11 +378,12 @@ describe('fallback.chain — cadena ordenada con motivos tipados (TASK-THYROX-09
     expect(triggers).toEqual(['unqualified_profile', 'insufficient_context', 'empty_catalog'])
   })
 
-  test('allowsProvider: sólo con el interruptor abierto y claude-cli en la cadena', () => {
+  test('allowsProvider: sólo con el interruptor abierto y claude-cli DECLARADO en la cadena', () => {
     expect([
       allowsProvider(policyWith({ enabled: true })),
       allowsProvider(policyWith({ enabled: true, chain: [FAST_SELECTOR] })),
       allowsProvider(policyWith({ enabled: false })),
-    ]).toEqual([true, false, false])
+      allowsProvider(policyWith({ enabled: true, chain: [{ runtime: 'claude-cli' }] })),
+    ]).toEqual([false, false, false, true])
   })
 })

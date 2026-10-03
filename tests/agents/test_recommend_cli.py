@@ -90,7 +90,7 @@ class LocalHome:
         # ella regiría la versionada del árbol (src/session/execution_policy.json).
         self.policy = self.root / "execution-policy.json"
         self.policy.write_text(json.dumps({"allowed": [{"runtime": "ollama", "repository": CATALOG_ENTRY["repository"]}],
-                                           "fallback": {"enabled": True}}))
+                                           "fallback": {"enabled": True, "chain": [{"runtime": "claude-cli"}]}}))
 
     def write_qualified_model(self) -> None:
         self.catalog.write_text(json.dumps({"entries": [CATALOG_ENTRY]}))

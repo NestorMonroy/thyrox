@@ -1,0 +1,9 @@
+(fail) parseExecutionPolicy > la política versionada del árbol se lee igual que en el preflight (test_execution_policy_enforcement, caso 13) [0.63ms]
+(fail) la política canónica y el Qwen3-4B instalado en el clon (TASK-THYROX-0912) > con una cualificación de 8192 no alcanza la necesidad de A6: cae a claude-cli con su motivo [0.17ms]
+(fail) la política canónica y el Qwen3-4B instalado en el clon (TASK-THYROX-0912) > un modelo local que la política no admite cae a claude-cli nombrando a la política [0.20ms]
+(fail) la política canónica y el Qwen3-4B instalado en el clon (TASK-THYROX-0912) > un clon nuevo, sin catálogo local, no queda bloqueado [0.11ms]
+(fail) la política canónica y el Qwen3-4B instalado en el clon (TASK-THYROX-0912) > el respaldo está abierto y la cadena no se declara: rige la de por defecto [0.13ms]
+ 33 pass
+ 5 fail
+  FALLA 13 la versionada declara los tres permisos y la excepción vigente — esperado (True, False, False, 'bootstrap-exception') obtenido (False, False, False, 'bootstrap-exception')
+execution_policy: 64 ok, 1 fallas

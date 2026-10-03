@@ -197,7 +197,7 @@ def main() -> int:
     check("13 versionada: payload en primer plano deny", "deny", run(EPISODE_UNMANAGED))
     declared = json.loads(VERSIONED.read_text())
     check("13 la versionada declara los tres permisos y la excepción vigente",
-          (False, False, False, "bootstrap-exception"),
+          (True, False, False, "bootstrap-exception"),
           (declared["fallback"]["enabled"], declared["controller"]["subagents"],
            declared["controller"]["unmanagedPayloads"], declared["controller"]["implementation"]))
 

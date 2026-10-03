@@ -59,9 +59,9 @@ check "caso 3: Ollama caído y política sin respaldo rehúsa con 2" "$CODE" "2"
 check "caso 3: no pide claude-cli al recomendador" "$(grep -c -- '--runtime claude-cli' "$F/recommend.log")" "0"
 check "caso 3: ningún ítem se lanza" "$(wc -l < "$F/runner.log" | tr -d ' ')" "0"
 
-# Una política que admite el respaldo: el de hoy no cambia. Sin ninguna declarada
-# regiría la versionada del árbol, que no lo admite (caso 10).
-printf '{"allowed":[{"runtime":"ollama","repository":"Qwen/Qwen2.5-7B-Instruct-GGUF"}],"fallback":{"enabled":true}}\n' > "$F/con-respaldo.json"
+# Una política que declara el proveedor en su cadena: el respaldo a claude-cli
+# no cambia. Abierta y sin cadena no lo alcanza (casos 15 y 16).
+printf '{"allowed":[{"runtime":"ollama","repository":"Qwen/Qwen2.5-7B-Instruct-GGUF"}],"fallback":{"enabled":true,"chain":[{"runtime":"claude-cli"}]}}\n' > "$F/con-respaldo.json"
 OUTPUT="$(THYROX_EXECUTION_POLICY="$F/con-respaldo.json" ENSURE_EXIT=1 pool)"; CODE=$?
 check "caso 4: con respaldo admitido, el respaldo de hoy no cambia (pide claude-cli)" "$(grep -c -- '--runtime claude-cli' "$F/recommend.log")" "1"
 
@@ -114,6 +114,15 @@ check "caso 13: y el anuncio los nombra" "$([[ "$OUTPUT" == *"respaldos locales:
 : > "$F/runner.env"
 OUTPUT="$(pool --model-policy "$F/policy.json")"; CODE=$?
 check "caso 14: sin respaldos, el ítem no recibe la variable" "$(cat "$F/runner.env")" "fallbacks="
+
+# TASK-THYROX-0923: abierto y sin cadena, la cadena se deriva de los locales y
+# no alcanza al proveedor: ni por Ollama caído ni por un selector que lo devuelva.
+printf '{"allowed":[{"runtime":"ollama","repository":"Qwen/Qwen2.5-7B-Instruct-GGUF"}],"fallback":{"enabled":true}}\n' > "$F/abierta-sin-cadena.json"
+OUTPUT="$(ENSURE_EXIT=1 pool --model-policy "$F/abierta-sin-cadena.json")"; CODE=$?
+check "caso 15: abierta sin cadena y Ollama caído rehúsa con 2" "$CODE" "2"
+check "caso 15: no pide claude-cli al recomendador" "$(grep -c -- '--runtime claude-cli' "$F/recommend.log")" "0"
+OUTPUT="$(RECOMMEND_MODE=provider pool --model-policy "$F/abierta-sin-cadena.json")"; CODE=$?
+check "caso 16: un proveedor devuelto contra una política sin claude-cli declarado rehúsa con 2" "$CODE" "2"
 
 echo; echo "$PASS ok · $FAIL falla(s) (alcance medido: headless-pool --model-policy)"
 [[ $FAIL -eq 0 ]]
