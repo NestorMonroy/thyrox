@@ -34,7 +34,7 @@ import {
 } from '@thyrox/podman-execution/workerContainerLifecycle.ts'
 import type { WorkerPublishedPort } from '@thyrox/podman-execution/workerResourceProfile.ts'
 
-import type { ModelExecutionUnit, MaterializationOutcome, ModelUnitMaterializer } from './modelUnitMaterializer.ts'
+import type { ModelExecutionUnit, MaterializationOutcome, ModelUnitMaterializer, ModelUnitProfile } from './modelUnitMaterializer.ts'
 
 /** Prefijo del nombre de contenedor de una unidad de modelo. */
 export const MODEL_UNIT_CONTAINER_PREFIX = WORKER_CONTAINER_NAME_PREFIX
@@ -59,6 +59,8 @@ export const MODEL_UNIT_LABELS = {
   createdAt: 'thyrox.model.created-at',
   /** UUID de los dispositivos concedidos, separados por coma; vacío en CPU. */
   devices: 'thyrox.model.devices',
+  /** El perfil de ejecución en JSON (TASK-THYROX-0931); ausente en unidades anteriores. */
+  profile: 'thyrox.model.profile',
 } as const
 
 type ModelUnitLabelKey = keyof typeof MODEL_UNIT_LABELS
@@ -180,6 +182,30 @@ function unitLabels(spec: ModelUnitContainerSpec): Record<ModelUnitLabelKey, str
     port: String(spec.port),
     createdAt: spec.createdAt,
     devices: grantedDevices(grant).join(DEVICE_SEPARATOR),
+    profile: JSON.stringify(unitProfileOf(spec)),
+  }
+}
+
+/** Lo que la unidad recibe de su perfil de runtime, de los límites y del grant. */
+function unitProfileOf(spec: ModelUnitContainerSpec): ModelUnitProfile {
+  return {
+    image: spec.profile.image,
+    cpus: spec.limits.cpus,
+    memoryMib: spec.limits.memoryMib,
+    environment: { ...spec.profile.environment, ...spec.profile.grantEnvironment?.(spec.grant) },
+  }
+}
+
+/** El perfil de la etiqueta, si está y se lee entero; si no, ninguno. */
+function profileFromLabel(text: string | undefined): ModelUnitProfile | undefined {
+  if (text === undefined) return undefined
+  try {
+    const value = JSON.parse(text) as Partial<ModelUnitProfile>
+    const complete = typeof value.image === 'string' && typeof value.cpus === 'number' && typeof value.memoryMib === 'number'
+      && typeof value.environment === 'object' && value.environment !== null
+    return complete ? (value as ModelUnitProfile) : undefined
+  } catch {
+    return undefined
   }
 }
 
@@ -254,6 +280,10 @@ function isKnownRuntime(text: string): text is ModelRuntime {
   return (KNOWN_RUNTIMES as readonly string[]).includes(text)
 }
 
+function optionalProfile(profile: ModelUnitProfile | undefined): { profile?: ModelUnitProfile } {
+  return profile === undefined ? {} : { profile }
+}
+
 function parseDevices(text: string | undefined): readonly string[] {
   return text ? text.split(DEVICE_SEPARATOR) : []
 }
@@ -288,6 +318,7 @@ function unitFromContainer(container: ListedContainer): ModelExecutionUnit | und
     endpoint: loopbackEndpoint(port),
     containerId: container.Id as string,
     devices: parseDevices(labelValue(container, 'devices')),
+    ...optionalProfile(profileFromLabel(labelValue(container, 'profile'))),
     hostPids: pidsOf(container.Pid),
     createdAt: label('createdAt'),
   }
@@ -358,6 +389,7 @@ export class PodmanModelUnitMaterializer implements ModelUnitMaterializer {
       runtime: grant.runtime,
       endpoint: loopbackEndpoint(port),
       devices: grantedDevices(grant),
+      profile: unitProfileOf({ grant, unitId, port, createdAt, profile, owner, limits }),
     }
     return { status: 'materialized', unit }
   }

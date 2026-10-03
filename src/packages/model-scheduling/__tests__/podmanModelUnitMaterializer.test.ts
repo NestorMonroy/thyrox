@@ -332,3 +332,47 @@ describe('una unidad de Transformers con el artefacto del grant montado (TASK-TH
     expect(units[0]).toMatchObject({ runtime: 'transformers', artifact: T5_GRANT.artifact })
   })
 })
+
+// TASK-THYROX-0931: la cualificación registra el perfil con que corrió el
+// modelo —imagen del runtime, CPU, memoria y entorno de la unidad—, y ese
+// perfil sólo lo conoce quien materializa la unidad. Viaja en la unidad y en una
+// etiqueta, para que una unidad reconstruida tras reiniciar el coordinador lo
+// conserve. Una unidad anterior, sin la etiqueta, se reconstruye sin perfil.
+describe('PodmanModelUnitMaterializer: el perfil de ejecución de la unidad (TASK-THYROX-0931)', () => {
+  const PROFILE = { image: 'docker.io/ollama/ollama:0.35.0', cpus: 2, memoryMib: 4_096, environment: { OLLAMA_HOST: '0.0.0.0:11434' } }
+
+  test('la unidad materializada lleva imagen, CPU, memoria y entorno', async () => {
+    const outcome = await primitiveWith(healthyPodman()).materialize(GRANT)
+    if (outcome.status !== 'materialized') throw new Error(JSON.stringify(outcome))
+    expect(outcome.unit.profile).toEqual(PROFILE)
+  })
+
+  test('el perfil viaja en la etiqueta thyrox.model.profile', async () => {
+    const podman = healthyPodman()
+    await primitiveWith(podman).materialize(GRANT)
+    expect(JSON.parse(labelOf(podman.calls[0]!.join(' '), MODEL_UNIT_LABELS.profile) ?? 'null')).toEqual(PROFILE)
+  })
+
+  function listedWith(extra: Record<string, string>): string {
+    const labels = {
+      [MODEL_UNIT_LABELS.unit]: 'unit-a', [MODEL_UNIT_LABELS.grant]: 'grant-a', [MODEL_UNIT_LABELS.model]: GRANT.artifact.modelId,
+      [MODEL_UNIT_LABELS.repository]: GRANT.artifact.repository, [MODEL_UNIT_LABELS.source]: GRANT.artifact.source,
+      [MODEL_UNIT_LABELS.revision]: GRANT.artifact.revision, [MODEL_UNIT_LABELS.format]: GRANT.artifact.format,
+      [MODEL_UNIT_LABELS.quantization]: GRANT.artifact.quantization, [MODEL_UNIT_LABELS.bytes]: String(GRANT.artifact.bytes),
+      [MODEL_UNIT_LABELS.residency]: 'residency/qwen/gpu0', [MODEL_UNIT_LABELS.generation]: '3', [MODEL_UNIT_LABELS.sha256]: SHA,
+      [MODEL_UNIT_LABELS.runtime]: 'ollama', [MODEL_UNIT_LABELS.port]: String(PORT), [MODEL_UNIT_LABELS.createdAt]: NOW.toISOString(),
+      ...OWNER_LABELS, ...extra,
+    }
+    return JSON.stringify([{ Id: CONTAINER_ID, Names: [`${MODEL_UNIT_CONTAINER_PREFIX}unit-a`], Labels: labels, Pid: 4242 }])
+  }
+
+  test('una unidad reconstruida conserva su perfil', async () => {
+    const units = await primitiveWith(healthyPodman({ ps: ok(listedWith({ [MODEL_UNIT_LABELS.profile]: JSON.stringify(PROFILE) })) })).units()
+    expect(units[0]?.profile).toEqual(PROFILE)
+  })
+
+  test('una unidad anterior, sin la etiqueta, se reconstruye sin perfil', async () => {
+    const units = await primitiveWith(healthyPodman({ ps: ok(listedWith({})) })).units()
+    expect([units.length, units[0]?.profile]).toEqual([1, undefined])
+  })
+})

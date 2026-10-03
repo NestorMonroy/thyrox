@@ -1,0 +1,10 @@
+## anulación A: caché de prompt siempre 'disabled'
+replace_literal: 1 reemplazo(s) en src/packages/local-models/qualifyModel.ts
+(fail) runQualification — el perfil de runtime con que se midió (TASK-THYROX-0931) > sin LLAMA_ARG_CACHE_RAM=0 la caché de prompt es la del runtime, no «desactivada» [2.68ms]
+ 16 pass
+ 1 fail
+## anulación B: sin rechazo de la unidad sin perfil
+replace_literal: 1 reemplazo(s) en src/packages/local-models/qualifyModel.ts
+(fail) runQualification — el perfil de runtime con que se midió (TASK-THYROX-0931) > una unidad sin perfil declarado no cualifica: la medida no diría con qué se tomó [3.61ms]
+ 16 pass
+ 1 fail

@@ -50,6 +50,11 @@ function qualification(model: string, overrides: Partial<ModelQualification> = {
     measurementCondition: 'isolated',
     measuredAt: '2026-10-01T01:00:00Z',
     reasoningEffort: 'none',
+    runtimeProfile: {
+      artifactSha256: 'b'.repeat(64), revision: 'a'.repeat(40), quantization: 'q4_k_m', kvCacheType: 'f16',
+      promptCache: 'disabled', runtime: 'docker.io/ollama/ollama:0.35.0', cpus: 2, memoryMib: 8_192, threads: null,
+      tools: ['Read', 'Write', 'Edit', 'Bash'], systemBudgetTokens: null,
+    },
     ...overrides,
   }
 }
@@ -128,6 +133,17 @@ describe('recommendExecution con una política de ejecución declarada (TASK-THY
     const result = recommendExecution('mecanica', PROFILE, both, policyOf(false))
     expect(result.runtime).toBe('ollama')
     expect(result.runtime === 'ollama' ? result.model : '').toBe(QWEN.name)
+  })
+
+  // TASK-THYROX-0931: una medida sin perfil de runtime no dice con qué CPU,
+  // memoria, caché ni herramientas se midió; no habilita al worker.
+  test('medidas sin perfil de runtime: bloqueada como perfil no cualificado', () => {
+    const { runtimeProfile: _p, ...task } = qualification(QWEN.name)
+    const { runtimeProfile: _q, ...proto } = protocol(QWEN.name)
+    const result = recommendExecution('mecanica', PROFILE, { entries: [QWEN], qualifications: [proto, task] }, policyOf(false))
+    expect(result.runtime).toBe('blocked')
+    expect(result.runtime === 'blocked' ? result.trigger : '').toBe('unqualified_profile')
+    expect(result.runtime === 'blocked' ? result.blockedReason : '').toMatch(/perfil de runtime/)
   })
 
   // Revisión del ejecutor 2026-10-03: la cualificación de Qwen se tomó razonando

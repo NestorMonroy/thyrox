@@ -1,0 +1,8 @@
+error: expect(received).toEqual(expected)
+(fail) PodmanModelUnitMaterializer: el perfil de ejecución de la unidad (TASK-THYROX-0931) > la unidad materializada lleva imagen, CPU, memoria y entorno [0.50ms]
+TypeError: undefined is not an object (evaluating 'key.replace')
+(fail) PodmanModelUnitMaterializer: el perfil de ejecución de la unidad (TASK-THYROX-0931) > el perfil viaja en la etiqueta thyrox.model.profile [0.39ms]
+error: expect(received).toEqual(expected)
+(fail) PodmanModelUnitMaterializer: el perfil de ejecución de la unidad (TASK-THYROX-0931) > una unidad reconstruida conserva su perfil [0.35ms]
+ 19 pass
+ 3 fail

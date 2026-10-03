@@ -20,7 +20,7 @@ import { CATALOG, MODELS, effortCostIndex, usageEquivalentTokens } from '@thyrox
 import type { EffortLevel, PricingTier } from '@thyrox/agent/models'
 import type { AgentDefinition, CacheTtl } from '@thyrox/agent/types'
 import type { ModelCatalogEntry } from '@thyrox/model-artifacts/catalogEntry.ts'
-import { LOCAL_REASONING_EFFORT, qualifiedModels, type ModelQualification } from '@thyrox/model-artifacts/modelQualification.ts'
+import { LOCAL_REASONING_EFFORT, isWorkerProfileMeasurement, qualifiedModels, type ModelQualification } from '@thyrox/model-artifacts/modelQualification.ts'
 import { promptCacheKey } from './cacheBreak.ts'
 import { allowsEntry, isProviderTarget, matchesSelector, type ExecutionPolicy } from './executionPolicy.ts'
 
@@ -433,7 +433,7 @@ function localShortfall(kind: TaskKind, profile: TurnProfile, local: LocalModelI
   const approvedAtAnyContext = qualifiedModels(local.entries, local.qualifications, kind, 0)
   if (approvedAtAnyContext.length === 0 && measuredWithOtherProfile(local, kind)) {
     return { trigger: 'unqualified_profile',
-      reason: `hay medidas aprobadas de la clase ${kind}, pero con otro razonamiento: falta cualificar con el perfil del worker (reasoningEffort ${LOCAL_REASONING_EFFORT})` }
+      reason: `hay medidas aprobadas de la clase ${kind}, pero sin el perfil del worker: falta cualificar con reasoningEffort ${LOCAL_REASONING_EFFORT} y su perfil de runtime declarado` }
   }
   if (approvedAtAnyContext.length === 0) {
     return { trigger: 'unqualified',
@@ -444,10 +444,10 @@ function localShortfall(kind: TaskKind, profile: TurnProfile, local: LocalModelI
     reason: `contexto medido insuficiente: el mayor aprobado para ${kind} midió ${widest} tokens < ${profile.contextTokens} exigidos` }
 }
 
-/** Hay una cualificación aprobada de la clase, pero medida con otro razonamiento que el del worker local. */
+/** Hay una cualificación aprobada de la clase, pero medida con otro razonamiento o sin perfil de runtime. */
 function measuredWithOtherProfile(local: LocalModelInventory, kind: TaskKind): boolean {
   const names = new Set(local.entries.map(entry => entry.name))
-  return local.qualifications.some(q => names.has(q.model) && q.passed && q.taskClass === kind && q.reasoningEffort !== LOCAL_REASONING_EFFORT)
+  return local.qualifications.some(q => names.has(q.model) && q.passed && q.taskClass === kind && !isWorkerProfileMeasurement(q))
 }
 
 /** La política dejó fuera un catálogo que sí tiene entradas: la causa es la política, no el catálogo. */

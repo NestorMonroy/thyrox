@@ -56,6 +56,34 @@ export interface ModelQualification {
   readonly measuredAt: string
   /** El razonamiento con que se midió; ausente en las cualificaciones anteriores al perfil. */
   readonly reasoningEffort?: ReasoningEffort
+  /** El perfil completo con que corrió (TASK-THYROX-0931); ausente en las anteriores. */
+  readonly runtimeProfile?: QualificationRuntimeProfile
+}
+
+/** Si el runtime guardó prompts entre peticiones: apagada, encendida, o lo que el runtime haga sin declararlo. */
+export type PromptCachePolicy = 'disabled' | 'enabled' | 'runtime-default'
+
+/**
+ * Con qué corrió la medición, además del contexto y el razonamiento: lo que
+ * hace que una cifra sea reproducible en otra ejecución (TASK-THYROX-0931).
+ */
+export interface QualificationRuntimeProfile {
+  /** sha256 del artefacto servido y su revisión completa. */
+  readonly artifactSha256: string
+  readonly revision: string
+  readonly quantization: string
+  readonly kvCacheType: string
+  readonly promptCache: PromptCachePolicy
+  /** Imagen del runtime, con su versión (`docker.io/ollama/ollama:0.35.0`). */
+  readonly runtime: string
+  readonly cpus: number
+  readonly memoryMib: number
+  /** Hilos del runtime; `null` si no se declaran y el runtime decide. */
+  readonly threads: number | null
+  /** Herramientas ofrecidas al modelo; vacío si la suite no ofrece ninguna. */
+  readonly tools: readonly string[]
+  /** Presupuesto del prompt de sistema del worker; `null` si la suite no lo usa. */
+  readonly systemBudgetTokens: number | null
 }
 
 export class InvalidQualificationError extends Error {
@@ -90,6 +118,7 @@ const QUALIFICATION_KINDS: readonly QualificationKind[] = ['protocol', 'task', '
 const KIND_LABELS: Readonly<Record<QualificationKind, string>> = { protocol: 'protocolo', task: 'tarea', embedding: 'embeddings' }
 const MEASUREMENT_CONDITIONS: readonly MeasurementCondition[] = ['isolated', 'contended']
 const REASONING_EFFORTS: readonly ReasoningEffort[] = ['none', 'model-default']
+const PROMPT_CACHE_POLICIES: readonly PromptCachePolicy[] = ['disabled', 'enabled', 'runtime-default']
 
 function requireOneOf<T extends string>(record: Record<string, unknown>, key: string, allowed: readonly T[], path: string): T {
   const value = requireString(record, key, path)
@@ -148,7 +177,42 @@ export function validateQualification(value: unknown, path = 'qualification'): M
     measurementCondition: requireOneOf(record, 'measurementCondition', MEASUREMENT_CONDITIONS, path),
     measuredAt,
     ...(record.reasoningEffort === undefined ? {} : { reasoningEffort: requireOneOf(record, 'reasoningEffort', REASONING_EFFORTS, path) }),
+    ...(record.runtimeProfile === undefined ? {} : { runtimeProfile: runtimeProfileOf(record.runtimeProfile, `${path}.runtimeProfile`) }),
   }
+}
+
+/** Un perfil se declara entero: un campo que falta no se presume. */
+function runtimeProfileOf(value: unknown, path: string): QualificationRuntimeProfile {
+  const record = requireRecord(value, path)
+  return {
+    artifactSha256: requireString(record, 'artifactSha256', path),
+    revision: requireString(record, 'revision', path),
+    quantization: requireString(record, 'quantization', path),
+    kvCacheType: requireString(record, 'kvCacheType', path),
+    promptCache: requireOneOf(record, 'promptCache', PROMPT_CACHE_POLICIES, path),
+    runtime: requireString(record, 'runtime', path),
+    cpus: requirePositiveNumber(record, 'cpus', path),
+    memoryMib: requirePositiveNumber(record, 'memoryMib', path),
+    threads: record.threads === null ? null : requirePositiveNumber(record, 'threads', path),
+    tools: requireStringList(record, 'tools', path),
+    systemBudgetTokens: record.systemBudgetTokens === null ? null : requirePositiveNumber(record, 'systemBudgetTokens', path),
+  }
+}
+
+function requirePositiveNumber(record: Record<string, unknown>, key: string, path: string): number {
+  const value = record[key]
+  if (typeof value !== 'number' || !Number.isFinite(value) || value <= 0) {
+    throw new InvalidQualificationError(`${path}.${key}`, 'se espera un número positivo')
+  }
+  return value
+}
+
+function requireStringList(record: Record<string, unknown>, key: string, path: string): string[] {
+  const value = record[key]
+  if (!Array.isArray(value) || value.some(item => typeof item !== 'string')) {
+    throw new InvalidQualificationError(`${path}.${key}`, 'se espera una lista de textos')
+  }
+  return [...value] as string[]
 }
 
 /** Lee el archivo de cualificaciones (`{"qualifications":[…]}`). */
@@ -212,6 +276,11 @@ function bySpeedWhenIsolated<Entry extends { readonly name: string }>(left: Qual
  * cuenta: el nombre lleva la revisión, así que otra revisión es otro modelo.
  * Elegible no es autorizado: decide el scheduler y autoriza el grant.
  */
+/** ¿Medida sin razonar y con su perfil de ejecución declarado? */
+export function isWorkerProfileMeasurement(qualification: ModelQualification): boolean {
+  return qualification.reasoningEffort === LOCAL_REASONING_EFFORT && qualification.runtimeProfile !== undefined
+}
+
 export function qualifiedModels<Entry extends { readonly name: string } = ModelCatalogEntry>(
   entries: readonly Entry[],
   qualifications: readonly ModelQualification[],
@@ -220,7 +289,8 @@ export function qualifiedModels<Entry extends { readonly name: string } = ModelC
 ): QualifiedLocalModel<Entry>[] {
   // Sólo cuentan las medidas con el perfil del worker local: una tomada
   // razonando no dice nada de cómo trabaja sin razonar.
-  const ofWorkerProfile = qualifications.filter((q) => q.reasoningEffort === LOCAL_REASONING_EFFORT)
+  // Y sólo las que declaran el perfil con que corrieron (TASK-THYROX-0931).
+  const ofWorkerProfile = qualifications.filter(isWorkerProfileMeasurement)
   return entries
     .map((entry) => ({
       entry,

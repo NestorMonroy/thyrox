@@ -1,0 +1,10 @@
+error: expect(received).toEqual(expected)
+(fail) validateQualification > una medición válida se devuelve intacta [0.55ms]
+error: expect(received).toBe(expected)
+(fail) parse y serialize > ida y vuelta estable, ordenada por modelo, clase e instante [1.54ms]
+error: expect(received).toEqual(expected)
+(fail) cualificación de embeddings > una de embeddings no mide ninguna clase [0.20ms]
+error: expect(received).toEqual(expected)
+(fail) runtimeProfile de una cualificación (TASK-THYROX-0931) > un perfil completo vuelve intacto [0.24ms]
+error: expect(received).toThrow(expected)
+(fail) runtimeProfile de una cualificación (TASK-THYROX-0931) > un perfil sin CPU se rehúsa nombrando el campo [0.15ms]

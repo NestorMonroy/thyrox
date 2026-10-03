@@ -57,6 +57,13 @@ QUALIFICATION = {
     "measuredAt": "2026-10-01T01:00:00Z",
     # El perfil del worker local: sin razonamiento (LOCAL_REASONING_EFFORT).
     "reasoningEffort": "none",
+    # Y el perfil de runtime con que se midió: sin él la medida no es del worker.
+    "runtimeProfile": {
+        "artifactSha256": "b" * 64, "revision": "a" * 40, "quantization": "q4_k_m",
+        "kvCacheType": "f16", "promptCache": "disabled", "runtime": "docker.io/ollama/ollama:0.35.0",
+        "cpus": 2, "memoryMib": 8192, "threads": None, "tools": ["Read", "Write", "Edit", "Bash"],
+        "systemBudgetTokens": None,
+    },
 }
 # Sin la cualificación de protocolo, la de tarea no hace elegible al modelo.
 PROTOCOL_QUALIFICATION = {

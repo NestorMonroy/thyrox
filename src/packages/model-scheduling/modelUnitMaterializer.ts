@@ -30,6 +30,20 @@ export interface ModelExecutionUnit extends ExecutionUnit {
   readonly endpoint: string
   /** UUID de los dispositivos concedidos; vacío en CPU. */
   readonly devices: readonly string[]
+  /**
+   * Con qué corre la unidad: imagen del runtime, CPU, memoria y entorno
+   * (TASK-THYROX-0931). La cualificación lo registra; una unidad reconstruida de
+   * un contenedor anterior a la etiqueta no lo tiene.
+   */
+  readonly profile?: ModelUnitProfile
+}
+
+/** El perfil de ejecución de una unidad, tal como la materializó la primitiva. */
+export interface ModelUnitProfile {
+  readonly image: string
+  readonly cpus: number
+  readonly memoryMib: number
+  readonly environment: Readonly<Record<string, string>>
 }
 
 /**

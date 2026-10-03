@@ -12,6 +12,7 @@ import {
   serializeQualifications,
   validateQualification,
   type ModelQualification,
+  type QualificationRuntimeProfile,
 } from '../modelQualification.js'
 import { localModelHome } from '../localModelHome.js'
 
@@ -43,6 +44,13 @@ function entry(repository: string, revision: string): ModelCatalogEntry {
 const FAST = entry('Qwen/Qwen2.5-3B-Instruct-GGUF', 'a'.repeat(40))
 const SLOW = entry('meta-llama/Llama-3.2-3B-Instruct', 'c'.repeat(40))
 
+/** El perfil con que corrió la medición (TASK-THYROX-0931). */
+const RUNTIME_PROFILE: QualificationRuntimeProfile = {
+  artifactSha256: 'd'.repeat(64), revision: 'a'.repeat(40), quantization: 'q4_k_m', kvCacheType: 'f16',
+  promptCache: 'disabled', runtime: 'docker.io/ollama/ollama:0.35.0', cpus: 2, memoryMib: 8_192, threads: null,
+  tools: ['Read', 'Write', 'Edit', 'Bash'], systemBudgetTokens: 24_000,
+}
+
 function measured(model: string, parts: Partial<ModelQualification> = {}): ModelQualification {
   return {
     model,
@@ -57,6 +65,7 @@ function measured(model: string, parts: Partial<ModelQualification> = {}): Model
     measurementCondition: 'isolated',
     measuredAt: '2026-10-01T00:10:00Z',
     reasoningEffort: LOCAL_REASONING_EFFORT,
+    runtimeProfile: RUNTIME_PROFILE,
     ...parts,
   }
 }
@@ -244,5 +253,31 @@ describe('la cualificación lleva el perfil de razonamiento con que se midió', 
     expect(qualifiedModels([FAST], [legacyProtocol, legacyTask], 'mecanica', 1)).toEqual([])
     expect(qualifiedModels([FAST], [protocolPass(FAST.name, { reasoningEffort: 'model-default' }), measured(FAST.name, { reasoningEffort: 'model-default' })], 'mecanica', 1)).toEqual([])
     expect(qualifiedModels([FAST], [protocolPass(FAST.name), measured(FAST.name)], 'mecanica', 1).map(q => q.entry.name)).toEqual([FAST.name])
+  })
+})
+
+// TASK-THYROX-0931: la cualificación declara el perfil completo con que corrió
+// —artefacto, KV, caché de prompts, runtime, CPU, memoria, hilos, herramientas y
+// presupuesto de sistema—, y sólo una medida con perfil habilita al worker.
+describe('runtimeProfile de una cualificación (TASK-THYROX-0931)', () => {
+  test('un perfil completo vuelve intacto', () => {
+    expect(validateQualification(measured(FAST.name)).runtimeProfile).toEqual(RUNTIME_PROFILE)
+  })
+
+  test('un perfil sin CPU se rehúsa nombrando el campo', () => {
+    const { cpus: _cpus, ...partial } = RUNTIME_PROFILE
+    expect(() => validateQualification(measured(FAST.name, { runtimeProfile: partial as QualificationRuntimeProfile })))
+      .toThrow(/runtimeProfile\.cpus/)
+  })
+
+  test('la caché de prompts es una enumeración cerrada', () => {
+    expect(() => validateQualification(measured(FAST.name, { runtimeProfile: { ...RUNTIME_PROFILE, promptCache: 'a medias' as 'disabled' } })))
+      .toThrow(/runtimeProfile\.promptCache/)
+  })
+
+  test('una medida sin perfil no habilita al worker, aunque no razone', () => {
+    const { runtimeProfile: _profile, ...withoutProfile } = measured(FAST.name)
+    const { runtimeProfile: _protocolProfile, ...protocolWithoutProfile } = protocolPass(FAST.name)
+    expect(qualifiedModels([FAST], [protocolWithoutProfile, withoutProfile], 'mecanica', 0)).toEqual([])
   })
 })

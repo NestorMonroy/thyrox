@@ -48,6 +48,7 @@ class FakeCoordinator implements ServedCoordinator {
       unit: {
         unitId: 'unit-1', grantId: grant.grantId, artifact: ARTIFACT, residencyKey: 'residency-1', generation: 1,
         runtime: 'ollama', endpoint: this.endpoint, containerId: 'container-1', devices: [],
+        profile: { image: 'docker.io/ollama/ollama:0.35.0', cpus: 2, memoryMib: 8192, environment: { LLAMA_ARG_CACHE_RAM: '0' } },
       },
     }
     this.live.set(ticket.admissionId, ticket)

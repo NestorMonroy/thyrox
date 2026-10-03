@@ -8,7 +8,7 @@ import { resolvedArtifact } from '@thyrox/model-artifacts/testing/resolvedArtifa
 import type { AdmissionTicket } from '@thyrox/model-scheduling/hostCoordinator.ts'
 
 import { OllamaRequestError } from '../ollamaApi.js'
-import { ContextBeyondGrantError, UnmeasuredSpeedError, runEmbeddingQualification, runQualification, runTaskQualification } from '../qualifyModel.js'
+import { ContextBeyondGrantError, UnmeasuredSpeedError, UnprofiledUnitError, runEmbeddingQualification, runQualification, runTaskQualification } from '../qualifyModel.js'
 import type { EmbeddingSuite } from '../embeddingSuite.js'
 import { loadTaskSuite, type TaskSuite } from '../taskSuite.js'
 import { TOOL_CALLING_SUITE_PATH, loadSuite } from '../toolCallingSuite.js'
@@ -19,6 +19,19 @@ const MODEL = ARTIFACT.modelId
 const NOW = new Date('2026-10-01T05:00:00.000Z')
 const CONTEXT_TOKENS = 8192
 const GRANTED_CONTEXT = 16384
+
+/** El perfil con que la unidad se materializó: la cualificación lo registra (TASK-THYROX-0931). */
+const UNIT_PROFILE = {
+  image: 'docker.io/ollama/ollama:0.35.0', cpus: 2, memoryMib: 8192,
+  environment: { OLLAMA_HOST: '0.0.0.0:11434', LLAMA_ARG_CACHE_RAM: '0' },
+}
+
+/** Lo que la cualificación registra de ese perfil y del grant. */
+const RUNTIME_PROFILE = {
+  artifactSha256: ARTIFACT.artifactId, revision: ARTIFACT.revision, quantization: ARTIFACT.quantization,
+  kvCacheType: 'f16', promptCache: 'disabled', runtime: 'docker.io/ollama/ollama:0.35.0',
+  cpus: 2, memoryMib: 8192, threads: null, systemBudgetTokens: null,
+}
 
 /**
  * La cualificación sólo alcanza el runtime por una admisión (ADR-007 1.14.0,
@@ -34,7 +47,7 @@ function ticketTo(endpoint: string): AdmissionTicket {
     admissionId: 'admission-1', requestId: 'request-1', client: 'qualify', grant,
     unit: {
       unitId: 'unit-1', grantId: grant.grantId, artifact: ARTIFACT, residencyKey: 'residency-1', generation: 1,
-      runtime: 'ollama', endpoint, containerId: 'container-1', devices: [],
+      runtime: 'ollama', endpoint, containerId: 'container-1', devices: [], profile: UNIT_PROFILE,
     },
   }
 }
@@ -71,6 +84,7 @@ describe('runQualification — tool-calling@1 contra /api/chat', () => {
       measurementCondition: 'contended',
       measuredAt: '2026-10-01T05:00:00.000Z',
       reasoningEffort: 'none',
+      runtimeProfile: { ...RUNTIME_PROFILE, tools: ['add', 'get_weather', 'list_dir', 'read_file', 'set_mode'] },
     })
   })
 
@@ -160,6 +174,7 @@ describe('runTaskQualification — la suite de tarea de un consumidor (TASK-THYR
       measurementCondition: 'isolated',
       measuredAt: '2026-10-01T05:00:00.000Z',
       reasoningEffort: 'none',
+      runtimeProfile: { ...RUNTIME_PROFILE, tools: [] },
     })
   })
 
@@ -218,5 +233,25 @@ describe('runEmbeddingQualification', () => {
 
   test('without a declared duration there is no qualification', async () => {
     await expect(qualifyEmbedding(topical, { promptEvalCount: 40, totalDurationNs: 0 })).rejects.toThrow(UnmeasuredSpeedError)
+  })
+})
+
+describe('runQualification — el perfil de runtime con que se midió (TASK-THYROX-0931)', () => {
+  test('una unidad sin perfil declarado no cualifica: la medida no diría con qué se tomó', async () => {
+    server = startFakeOllama({ chat: prompt => correct(prompt) })
+    const ticket = ticketTo(server.baseUrl)
+    const { profile: _profile, ...unprofiled } = ticket.unit
+    const suite = await loadSuite(TOOL_CALLING_SUITE_PATH)
+    await expect(runQualification({ ticket: { ...ticket, unit: unprofiled }, suite, measurementCondition: 'isolated', contextTokens: CONTEXT_TOKENS, now: () => NOW }))
+      .rejects.toBeInstanceOf(UnprofiledUnitError)
+  })
+
+  test('sin LLAMA_ARG_CACHE_RAM=0 la caché de prompt es la del runtime, no «desactivada»', async () => {
+    server = startFakeOllama({ chat: prompt => correct(prompt) })
+    const ticket = ticketTo(server.baseUrl)
+    const unit = { ...ticket.unit, profile: { ...UNIT_PROFILE, environment: { OLLAMA_HOST: '0.0.0.0:11434' } } }
+    const suite = await loadSuite(TOOL_CALLING_SUITE_PATH)
+    const { qualification } = await runQualification({ ticket: { ...ticket, unit }, suite, measurementCondition: 'isolated', contextTokens: CONTEXT_TOKENS, now: () => NOW })
+    expect(qualification.runtimeProfile?.promptCache).toBe('runtime-default')
   })
 })

@@ -1,0 +1,3 @@
+(fail) recommendExecution con una política de ejecución declarada (TASK-THYROX-0773) > medidas sin perfil de runtime: bloqueada como perfil no cualificado [0.26ms]
+ 40 pass
+ 1 fail

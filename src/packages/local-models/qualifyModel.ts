@@ -13,9 +13,10 @@
  * Ciega a: la variación entre corridas y la calidad fuera de estos casos.
  */
 
-import { LOCAL_REASONING_EFFORT, type MeasurementCondition, type ModelQualification } from '@thyrox/model-artifacts/modelQualification.ts'
+import { LOCAL_REASONING_EFFORT, type MeasurementCondition, type ModelQualification, type QualificationRuntimeProfile } from '@thyrox/model-artifacts/modelQualification.ts'
 
 import type { AdmissionTicket } from '@thyrox/model-scheduling/hostCoordinator.ts'
+import type { ModelUnitProfile } from '@thyrox/model-scheduling/modelUnitMaterializer.ts'
 
 import { admittedChat } from './admittedChat.js'
 import { admittedEmbed, type EmbedReply } from './admittedEmbed.js'
@@ -77,9 +78,25 @@ export class ContextBeyondGrantError extends Error {
   }
 }
 
+/**
+ * La unidad admitida no declara el perfil con que se materializó: la medida
+ * no podría decir con qué CPU, memoria, imagen ni caché se tomó (TASK-THYROX-0931).
+ */
+export class UnprofiledUnitError extends Error {
+  constructor(readonly unitId: string) {
+    super(`la unidad ${unitId} no declara su perfil de runtime: sin él la cualificación no es del worker`)
+    this.name = 'UnprofiledUnitError'
+  }
+}
+
+/** La variable con que la unidad de Ollama apaga la caché de prompt en RAM (`hostCoordinatorComposition.ts`). */
+const PROMPT_CACHE_OFF = { variable: 'LLAMA_ARG_CACHE_RAM', value: '0' } as const
+
 /** Un caso listo para medir: lo que se envía y cómo se puntúa la respuesta. */
 interface MeasuredCase {
   readonly prompt: Readonly<Record<string, unknown>>
+  /** Nombres de las herramientas que el caso ofrece al modelo. */
+  readonly tools: readonly string[]
   outcome(reply: ChatReply): CaseOutcome
 }
 
@@ -106,12 +123,13 @@ export async function runTaskQualification(request: TaskQualificationRequest): P
  */
 export async function runEmbeddingQualification(request: EmbeddingQualificationRequest): Promise<QualificationRun> {
   requireContextWithinGrant(request)
+  requireUnitProfile(request)
   const model = request.ticket.grant.artifact.modelId
   const replies: EmbedReply[] = []
   for (const embeddingCase of request.suite.cases) replies.push(await admittedEmbed(request.ticket, textsOf(embeddingCase)))
   const outcomes = request.suite.cases.map((embeddingCase, index) => embeddingOutcome(embeddingCase, replies[index] as EmbedReply))
   const speed = ratePerSecond(model, replies.map(reply => ({ tokens: reply.promptEvalCount, nanoseconds: reply.totalDurationNs })))
-  return qualificationRun(request, { kind: 'embedding', suite: request.suite.id }, outcomes, speed)
+  return qualificationRun(request, { kind: 'embedding', suite: request.suite.id }, outcomes, speed, [])
 }
 
 /**
@@ -122,13 +140,14 @@ const CASE_DEADLINE_MS = 30 * 60_000
 
 async function measure(settings: MeasurementSettings, cases: readonly MeasuredCase[], identity: QualificationIdentity): Promise<QualificationRun> {
   requireContextWithinGrant(settings)
+  requireUnitProfile(settings)
   const model = settings.ticket.grant.artifact.modelId
   const replies: ChatReply[] = []
   for (const measuredCase of cases) {
     replies.push(await admittedChat(settings.ticket, chatBody(settings, measuredCase), { deadlineMs: CASE_DEADLINE_MS }))
   }
   const outcomes = cases.map((measuredCase, index) => measuredCase.outcome(replies[index] as ChatReply))
-  return qualificationRun(settings, identity, outcomes, tokensPerSecond(model, replies))
+  return qualificationRun(settings, identity, outcomes, tokensPerSecond(model, replies), offeredTools(cases))
 }
 
 function requireContextWithinGrant(settings: MeasurementSettings): void {
@@ -136,7 +155,43 @@ function requireContextWithinGrant(settings: MeasurementSettings): void {
   if (settings.contextTokens > granted) throw new ContextBeyondGrantError(settings.contextTokens, granted)
 }
 
-function qualificationRun(settings: MeasurementSettings, identity: QualificationIdentity, outcomes: readonly CaseOutcome[], speed: number): QualificationRun {
+/**
+ * El perfil de runtime de la medida: la identidad del artefacto y el KV del
+ * grant, y la imagen, CPU, memoria y caché de prompt de la unidad. Los hilos y
+ * el presupuesto de sistema quedan en `null`: esta medición no los fija.
+ */
+function runtimeProfileOf(settings: MeasurementSettings, tools: readonly string[]): QualificationRuntimeProfile {
+  const { grant } = settings.ticket
+  const profile = requireUnitProfile(settings)
+  const promptCacheOff = profile.environment[PROMPT_CACHE_OFF.variable] === PROMPT_CACHE_OFF.value
+  return {
+    artifactSha256: grant.artifact.artifactId,
+    revision: grant.artifact.revision,
+    quantization: grant.artifact.quantization,
+    kvCacheType: grant.kvCacheType,
+    promptCache: promptCacheOff ? 'disabled' : 'runtime-default',
+    runtime: profile.image,
+    cpus: profile.cpus,
+    memoryMib: profile.memoryMib,
+    threads: null,
+    tools: [...tools],
+    systemBudgetTokens: null,
+  }
+}
+
+/** Se rehúsa antes de hablar con la unidad: una medida sin perfil no se registraría. */
+function requireUnitProfile(settings: MeasurementSettings): ModelUnitProfile {
+  const { unit } = settings.ticket
+  if (unit.profile === undefined) throw new UnprofiledUnitError(unit.unitId)
+  return unit.profile
+}
+
+/** La unión ordenada de las herramientas que ofrecen los casos. */
+function offeredTools(cases: readonly MeasuredCase[]): string[] {
+  return [...new Set(cases.flatMap(measuredCase => measuredCase.tools))].sort()
+}
+
+function qualificationRun(settings: MeasurementSettings, identity: QualificationIdentity, outcomes: readonly CaseOutcome[], speed: number, tools: readonly string[]): QualificationRun {
   const casesPassed = outcomes.filter(outcome => outcome.passed).length
   return {
     outcomes,
@@ -151,6 +206,7 @@ function qualificationRun(settings: MeasurementSettings, identity: Qualification
       measurementCondition: settings.measurementCondition,
       measuredAt: settings.now().toISOString(),
       reasoningEffort: LOCAL_REASONING_EFFORT,
+      runtimeProfile: runtimeProfileOf(settings, tools),
     },
   }
 }
@@ -168,6 +224,7 @@ function embeddingOutcome(embeddingCase: EmbeddingCase, reply: EmbedReply): Case
 function protocolCase(suiteCase: SuiteCase): MeasuredCase {
   return {
     prompt: { messages: suiteCase.messages, tools: suiteCase.tools },
+    tools: suiteCase.tools.map(tool => toolName(tool)),
     outcome: reply => ({
       caseId: suiteCase.id,
       passed: scoreReply(suiteCase.expectation, reply),
@@ -179,6 +236,7 @@ function protocolCase(suiteCase: SuiteCase): MeasuredCase {
 function measuredTaskCase(taskCase: TaskCase): MeasuredCase {
   return {
     prompt: { messages: taskCase.messages },
+    tools: [],
     outcome: reply => {
       const score = scoreTaskReply(taskCase.checks, reply.content)
       const preview = reply.content.slice(0, OBSERVED_PREVIEW_LENGTH)
@@ -207,4 +265,11 @@ function ratePerSecond(model: string, samples: readonly { readonly tokens: numbe
   const nanoseconds = samples.reduce((sum, sample) => sum + sample.nanoseconds, 0)
   if (!(nanoseconds > 0) || !(tokens > 0)) throw new UnmeasuredSpeedError(model)
   return tokens / (nanoseconds / NANOSECONDS_PER_SECOND)
+}
+
+/** El nombre de una herramienta en la forma de función de `/api/chat`. */
+function toolName(tool: unknown): string {
+  const name = (tool as { readonly function?: { readonly name?: unknown } }).function?.name
+  if (typeof name !== 'string') throw new TypeError(`herramienta sin function.name: ${JSON.stringify(tool)}`)
+  return name
 }
