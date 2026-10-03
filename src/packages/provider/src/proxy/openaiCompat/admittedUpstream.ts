@@ -92,6 +92,19 @@ function admissionRequestOf(options: AdmittedUpstreamOptions, model: string): Ad
   return options.contextLength === undefined ? request : { ...request, contextLength: options.contextLength }
 }
 
+/**
+ * Sin razonamiento pedido, el relé lo apaga: Ollama hace razonar a Qwen3 por
+ * defecto, y en CPU eso eran 900-1600 tokens por turno a <1 tok/s
+ * (TASK-THYROX-0919 r2). `"none"` es el valor que ese runtime acepta: `think:
+ * false` y `"low"` siguieron razonando (`probes/think_control.variants.out`).
+ * El razonamiento que la petición pide pasa tal cual.
+ */
+const REASONING_OFF = 'none'
+
+function runtimeBodyOf(body: Record<string, unknown>, modelId: string): Record<string, unknown> {
+  return { reasoning_effort: REASONING_OFF, ...body, model: modelId }
+}
+
 async function readJsonObject(request: Request): Promise<Record<string, unknown>> {
   try {
     const parsed: unknown = await request.json()
@@ -128,7 +141,7 @@ async function forwardAdmitted(
     runtimeResponse = await fetch(target, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ ...body, model: ticket.grant.artifact.modelId }),
+      body: JSON.stringify(runtimeBodyOf(body, ticket.grant.artifact.modelId)),
       timeout: false,
     } as RequestInit)
   } catch (error) {

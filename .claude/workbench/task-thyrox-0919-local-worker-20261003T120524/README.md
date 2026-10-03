@@ -56,3 +56,12 @@ EXTEND: `retireOwnedContainers` (REUSE de `retireOrphanedWorkerContainers` con e
 SIGTERM/SIGINT de `bin/execute.ts`. Unitaria: RED → GREEN, anulación exacta. Control real con Podman
 (`probes/runner_sigterm.sh`): con el manejador `vivo_tras_sigterm=0`; sin él, `1` (`runner_sigterm.annulled.out`).
 La sonda de razonamiento (`probes/think_control.sh`) quedó sin datos: la unidad estaba ocupada por ese cliente.
+
+### El razonamiento por defecto de Qwen3 en Ollama (H-THYROX-449, segunda causa)
+
+`probes/think_control.sh` contra la unidad ociosa, «¿17 + 25?»: por defecto 319 tokens (740 caracteres de
+razonamiento) en 90 s; `"reasoning_effort":"none"` 3 tokens en 1 s; `"think":false` 287 tokens y `"low"` 264, los
+dos razonando. EXTEND del relé admitido (sólo modelos locales; la traducción compartida no se toca porque otros
+upstreams pueden rechazar `"none"`): sin razonamiento pedido, envía `"none"`; el pedido pasa tal cual. RED → GREEN,
+anulación exacta. **Sin medir**: la calidad de Qwen3-4B sin razonar en `mecanica` —la cualificación se tomó con
+razonamiento—; r3 la mide sobre la TASK real.

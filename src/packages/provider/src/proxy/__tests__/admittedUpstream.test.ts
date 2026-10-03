@@ -137,6 +137,21 @@ describe('startAdmittedUpstream', () => {
     expect(toUnit.map(init => init.timeout)).toEqual([false])
   })
 
+  // TASK-THYROX-0919 r2: Qwen3 en Ollama razona por defecto; «42» costó 319
+  // tokens, y con `reasoning_effort: "none"` 3 (`probes/think_control.*.out`).
+  // A <1 tok/s en CPU, cada turno de 900-1600 tokens eran 25-31 min.
+  test('una petición que no pide razonamiento llega a la unidad con reasoning_effort none', async () => {
+    const runtime = fakeRuntime()
+    await chat(relay(new FakeSource(admitTo(endpointOf(runtime)))), HELLO)
+    expect(runtime.received[0]?.reasoning_effort).toBe('none')
+  })
+
+  test('el razonamiento que la petición pide se respeta', async () => {
+    const runtime = fakeRuntime()
+    await chat(relay(new FakeSource(admitTo(endpointOf(runtime)))), { ...HELLO, reasoning_effort: 'medium' })
+    expect(runtime.received[0]?.reasoning_effort).toBe('medium')
+  })
+
   test('en streaming, finish espera a que el cliente termine de leer el cuerpo', async () => {
     const runtime = fakeRuntime()
     const source = new FakeSource(admitTo(endpointOf(runtime)))

@@ -1,0 +1,5 @@
+"reasoning_effort":"none"	segundos=1	completion_tokens=3	reasoning_chars=0	content=42 
+"think":false	segundos=73	completion_tokens=287	reasoning_chars=710	content=42 
+"reasoning_effort":"low"	segundos=62	completion_tokens=264	reasoning_chars=647	content=42 
+
+[exited with code 0]
