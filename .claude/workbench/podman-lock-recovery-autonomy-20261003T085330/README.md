@@ -295,3 +295,82 @@ canarios:
 Las cabeceras de H-THYROX-445 se corrigen en P0c2:
 `src/packages/local-models/infrastructureReadiness.ts` y
 `src/packages/podman-execution/podmanLockCollision.ts`.
+
+## Segunda ronda de correcciones del ejecutor (2026-10-03): P0 definitivo
+
+1. **P0 es autocuración bajo demanda, no autocuración al arrancar.** En esta
+   VM nada de thyrox corre al arrancar (no hay init). Así que P0 no se amplía
+   para portar un servicio de arranque: eso queda como tarea aparte, «host boot
+   autonomy», para anfitriones con systemd, launchd u otro supervisor.
+   - **A, bajo demanda (P0):** reinicio → primer uso local normal →
+     `local_control_plane_ready` → recuperación → ensure → el consumidor sigue.
+   - **B, al arrancar (fuera de P0):** reinicio → thyrox arranca solo → queda
+     listo antes de cualquier consumidor.
+2. **`--after-reboot` repara sólo la firma post-reinicio demostrada:**
+   `allocated == 0 AND referenced > 0`, no cualquier `allocated <
+   referenced`.
+   - Las firmas medidas fueron 0/7, 0/21 y 0/21.
+   - El 3/4 del 2026-10-01 es otro estado (el `renumber` fallido).
+   - Cualquier otro balance (3/4, 5/21, 20/21) **rehúsa**: estado de locks
+     desconocido, va al operador, que conserva `--confirm`.
+
+   Guardas completas: Podman 4.9.x, sqlite, uid 0, marcador presente,
+   `marker.mtime < kernel.btime`, `allocated == 0`, `referenced > 0` y 0
+   contenedores vivos.
+3. **H-THYROX-445 sale de la ruta crítica.** Es corrección de comentarios, no
+   lo que impide recuperar, y se hace después de P0c. La edición de
+   `infrastructureReadiness.ts` y `headless-pool.sh` que P0d sí necesita tiene
+   otra razón, funcional: que el primer consumidor llame a la entrada. Viene
+   después de demostrar la composición.
+4. **P0f mide el flujo real, no la herramienta.** No se acepta «reinicio →
+   correr `local_control_plane_ready` a mano». La prueba parte de un
+   consumidor verdadero:
+   - **Modelos locales:** reinicio → `headless-pool` u otra operación de
+     modelo local → readiness → `local_control_plane_ready` → detecta 0/N →
+     `--after-reboot` → N/N → `infrastructure_ensure` → Ollama `healthy` → la
+     petición a qwen responde.
+   - **Búsqueda semántica:** una operación normal encuentra PostgreSQL
+     disponible.
+
+### Dos autorizaciones distintas, y ninguna se inventa en el script
+
+| Pregunta | Quién la responde |
+|---|---|
+| **quién** puede invocar la reparación | `control_plane_entries.tsv` + `managed_execution` + la política de ejecución vigente |
+| **cuándo** es segura la mutación | las guardas de `--after-reboot` |
+
+El script no intenta averiguar la identidad del actor: eso lo impone el plano de
+control. Las guardas sólo autorizan la **transición de estado**.
+
+### Canarios
+
+- **PostgreSQL:** un centinela conocido sobrevive idéntico al reinicio.
+- **Ollama:** un modelo gestionado conocido sigue visible y responde a una
+  inferencia controlada.
+- **Redis:** sin canario de datos. Su contrato no dice que su estado deba
+  sobrevivir, y la prueba no debe darle semántica de base durable.
+
+### P0 PASS
+
+Tras un reinicio, ningún operador tiene que conocer, diagnosticar ni ejecutar
+la reparación de Podman para usar los modelos locales.
+
+### Permisos mínimos del bootstrap (andamio de la sesión, no arquitectura)
+
+```
+Bash(bash bin/podman_lock_recovery --confirm)
+Bash(bash bin/infrastructure_ensure)
+Edit(src/session/podman_lock_recovery.sh)
+Edit(tests/session/test-podman-lock-recovery.sh)
+Write(src/session/local_control_plane_ready.sh)
+Write(tests/session/test-local-control-plane-ready.sh)
+Edit(src/session/control_plane_entries.tsv)
+```
+
+Fuera de esta lista:
+
+- `execution_policy.json`: sin el RED de P0c4, no se toca;
+- las cabeceras de H-THYROX-445: después de P0c.
+
+Estado al escribir esto: ningún settings declara reglas `permissions.allow`.
+**P0b no se reintenta** hasta que existan.
