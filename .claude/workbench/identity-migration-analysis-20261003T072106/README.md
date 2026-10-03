@@ -525,3 +525,42 @@ donde es identidad histórica o un nombre técnico vigente: rutas, `bin/`, `THYR
 
 Un registro pull-through, que cachea automáticamente cualquier pull, sería otra pieza de
 infraestructura; no hace falta ahora.
+
+### Corrección de la sección 7 (ejecutor, 2026-10-03)
+
+La sección 7 contradecía la regla de la sección 1 en dos puntos:
+
+1. **Llamaba «neutros» a los espejos `cache-*`.** No lo son: un espejo es una primera
+   publicación y nace bajo Kaupamex, conservando el `sourceReference` y el
+   `sourceDigest` de upstream.
+2. **Proponía `build-cache-*` sin dueño.** El caché de construcción y las imágenes sin
+   etiqueta que se preserven también nacen bajo Kaupamex:
+   - `kaupamex-ai-build-cache` si sólo contiene builds de kaupamex-ai;
+   - `kaupamex-build-cache` si va a preservar varios `kaupamex-*`.
+
+   Es una decisión de dueño, pendiente.
+
+**Regla única:**
+
+| Caso | Qué hacer |
+|---|---|
+| imagen local de la etapa thyrox, nunca publicada (`245ae25cd5be`, el cuantizador) | primera publicación como `kaupamex-ai-model-quantizer`; mismo image ID, sin reconstruir |
+| upstream sin modificar (ollama, redis, pgvector, ubuntu) | espejo bajo `kaupamex-*` con `sourceReference` + `sourceDigest`; ubuntu con `24.04-<digest12>` |
+| ya publicada como `thyrox-*` (`th3rox/thyrox-task-runner`, `th3rox/thyrox-quantization-lab-artifacts`) | se conserva; si hace falta, espejo o alias Kaupamex |
+| local consumida por código que espera `thyrox-*` (`localhost/thyrox-model-quantizer:*`, `localhost/thyrox-task-runner:dev`) | se mantiene la etiqueta vieja y se añade la Kaupamex **al mismo image ID**; los consumidores migran después |
+| caché de construcción / sin etiqueta que pase el gate | `kaupamex(-ai)-build-cache` |
+| metadata histórica (`TASK-THYROX-0912`, `io.thyrox.*`, commits) | intacta: nunca `find/replace` |
+
+**Dónde va la metadata nueva sin cambiar los bytes (hueco abierto):**
+
+- **Etiquetas de la imagen:** no sirven. Están en la configuración, y añadir
+  `canonical_project=kaupamex-ai` cambia el digest.
+- **Anotaciones del manifiesto:** cambian el digest del manifiesto, aunque las capas y la
+  configuración sigan iguales.
+- **La forma que conserva el digest exacto es un artefacto de procedencia aparte**, que
+  apunta a la imagen por su digest (`subject`, OCI 1.1 referrers). Lo publicaría
+  `ArtifactRegistry` (EXTEND). INFERRED: si el registro configurado acepta referrers es
+  SEARCH_INCOMPLETE; no se midió.
+- **Mientras tanto:** la metadata queda en `PromotionEvidence.provenance` (registro fuera
+  de la imagen, ya existente) y en el corpus semántico. Ahí la búsqueda `thyrox quantizer
+  TASK-THYROX-0912` y la búsqueda `kaupamex-ai quantizer` llegan a la misma evidencia.
