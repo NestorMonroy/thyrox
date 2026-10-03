@@ -41,6 +41,11 @@
 # local de 32k alcanza aunque esté cualificado; un ítem de traducción midió
 # p90 13 406 tokens por turno en 400 ítems de olas anteriores.
 #
+# `--system-budget-tokens N` acota el prompt de sistema de cada ítem
+# (`thyrox -p` lo pasa a `assembleSystemPrompt`, que nunca descarta la base y
+# salta las reglas que no caben). Con un modelo local en CPU cada token del
+# piso se paga en prefill: en A6 r8, 20 000 de 25 468 tokens eran reglas.
+#
 # El modelo de los ítems no se declara: se deriva de `--task-class` con
 # `bin/agent-recommend` (`recommend(tipo, perfil)` de @thyrox/agent), que
 # fija rango mínimo y compara los registros del catálogo. Un identificador
@@ -58,7 +63,7 @@
 #                    [--credential-source inherit|proxy-env|proxy-store|proxy-store-url]
 #                    [--isolation worktree [--verify CMD]]
 #                    [--execution host|unit [--work-reference CONSUMIDOR:ÁMBITO]]
-#                    [--model-policy ARCHIVO] [--context-tokens N]
+#                    [--model-policy ARCHIVO] [--context-tokens N] [--system-budget-tokens N]
 #                    < items (uno por linea)
 #
 # Sin `--max-turns` el ítem no tiene tope de turnos, igual que `claude -p`:
@@ -219,7 +224,7 @@ RUNNER_KIND=thyrox
 PROMPT=""; OUT=""; MODEL=""; TASK_CLASS=""
 WIDTH="$(nproc 2>/dev/null || echo 4)"
 TIMEOUT=600; TOOLS="Read"; TOOLS_SET=""; ISOLATION=""; VERIFY=""; MAX_TURNS=""; WORKDIR="$PWD"; MEMFREE_SPEC=""; CACHE_TTL=""; CREDENTIAL_PROXY=""; STORE_CREDENTIAL_PROXY=""; CREDENTIAL_SOURCE=""
-EXECUTION=host; WORK_REFERENCE=""; MODEL_POLICY=""; POLICY_FALLBACK=""; CONTEXT_TOKENS=""
+EXECUTION=host; WORK_REFERENCE=""; MODEL_POLICY=""; POLICY_FALLBACK=""; CONTEXT_TOKENS=""; SYSTEM_BUDGET=""
 
 rehusa() { echo "headless-pool: REHUSA — $*" >&2; exit 2; }
 
@@ -246,6 +251,7 @@ while [[ $# -gt 0 ]]; do
         --work-reference) WORK_REFERENCE="${2:-}"; shift 2 ;;
         --model-policy) MODEL_POLICY="${2:-}"; shift 2 ;;
         --context-tokens) CONTEXT_TOKENS="${2:-}"; shift 2 ;;
+        --system-budget-tokens) SYSTEM_BUDGET="${2:-}"; shift 2 ;;
         -h|--help) sed -n '2,69p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
         *) rehusa "opcion desconocida: $1" ;;
     esac
@@ -295,6 +301,8 @@ case "$TASK_CLASS" in
 esac
 [[ -z "$CONTEXT_TOKENS" || "$CONTEXT_TOKENS" =~ ^[1-9][0-9]*$ ]] \
     || rehusa "--context-tokens exige un entero positivo de tokens, no: $CONTEXT_TOKENS"
+[[ -z "$SYSTEM_BUDGET" || "$SYSTEM_BUDGET" =~ ^[1-9][0-9]*$ ]] \
+    || rehusa "--system-budget-tokens exige un entero positivo de tokens, no: $SYSTEM_BUDGET"
 # >>> runtime-routing
 RECOMMEND_BIN="${HEADLESS_POOL_RECOMMEND:-$THYROX_ROOT/bin/agent-recommend}"
 # El arranque del Ollama gestionado pasa por local_control_plane_ready: recupera
@@ -838,7 +846,8 @@ _headless_item_run() {
          item_argv=("$HP_RUNNER" -p \
             --model "$HP_MODEL" --setting-sources project \
             --tools "$HP_TOOLS" --allowedTools "$HP_TOOLS" \
-            ${HP_MAX_TURNS:+--max-turns "$HP_MAX_TURNS"} --no-session-persistence "${session_args[@]}" \
+            ${HP_MAX_TURNS:+--max-turns "$HP_MAX_TURNS"} ${HP_SYSTEM_BUDGET:+--system-budget-tokens "$HP_SYSTEM_BUDGET"} \
+            --no-session-persistence "${session_args[@]}" \
             --output-format stream-json --verbose)
          if [[ "$HP_EXECUTION" == unit ]]; then
              # La unidad no recibe la entrada estándar del pool: el texto del
@@ -1013,7 +1022,7 @@ HP_OUT="$(cd "$OUT" && pwd)"
 HP_RUNNER="$(command -v "$RUNNER_BIN")"
 export HP_PROMPT HP_OUT HP_RUNNER
 export HP_WORKDIR="$WORKDIR" HP_TIMEOUT="$TIMEOUT" HP_MODEL="$MODEL"
-export HP_TOOLS="$TOOLS" HP_MAX_TURNS="$MAX_TURNS" HP_CACHE_TTL="$CACHE_TTL"
+export HP_TOOLS="$TOOLS" HP_MAX_TURNS="$MAX_TURNS" HP_CACHE_TTL="$CACHE_TTL" HP_SYSTEM_BUDGET="$SYSTEM_BUDGET"
 export HP_ISOLATION="$ISOLATION" HP_VERIFY="$VERIFY" HP_RUNNER_KIND="$RUNNER_KIND"
 # El runner gestionado, el mismo que usa `thyrox-bg --task`: el pool sólo pide la
 # ejecución; qué la materializa no vive en este guion.

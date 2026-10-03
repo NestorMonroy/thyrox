@@ -70,7 +70,7 @@ export type PrintArgs = {
 /** Banderas con valor que se traducen o se pasan al bucle tal cual. */
 const WITH_VALUE = new Set(['--model', '--max-turns', '--setting-sources', '--tools', '--allowedTools',
   '--allowed-tools', '--output-format', '--provider', '--grabacion', '--system', '--connection', '--store',
-  '--messaging-socket-path'])
+  '--messaging-socket-path', '--system-budget-tokens'])
 /** Banderas sin valor que se aceptan. `--verbose` no cambia nada aquí. */
 const FLAGS = new Set(['-p', '--print', '--no-session-persistence', '--verbose'])
 
@@ -130,7 +130,9 @@ export function parsePrintArgs(argv: string[], stdin: string | null, env: Record
   // proyecto» de lo demás, que es lo que el pool pide.
   const sources = values.get('--setting-sources')
   if (sources !== undefined && toolList(sources).join(',') === 'project') loopArgv.push('--settings-source', 'project')
-  for (const passthrough of ['--grabacion', '--system', '--connection', '--store']) {
+  // `--system-budget-tokens` acota el prompt de sistema (`systemPrompt.ts`): un
+  // modelo local en CPU paga cada token del piso en prefill (A6 r8).
+  for (const passthrough of ['--grabacion', '--system', '--connection', '--store', '--system-budget-tokens']) {
     const v = values.get(passthrough)
     if (v !== undefined) loopArgv.push(passthrough, v)
   }

@@ -66,3 +66,13 @@ envoltorio de git primero en el PATH; se monta el directorio git común. Caso 6:
 Suite derivada (`evidence/a6-r4-oom/derived-suite-timeouts.txt`): los rojos preexistentes de siempre; uno nuevo
 de `env_contract_keys` (variable sin declarar) y uno del control de `worktree` (mi comentario contenía la cadena
 que el control cuenta), ambos corregidos; `bg-stdin` falló una vez con el anfitrión a ~1 GB libres y pasa al repetir.
+
+## A6 r8 — el piso de instrucciones domina el prefill
+
+`llama-server` en la unidad: prefill a 26→17 tokens/s, cayendo; a los 850 s, 14 336 de 25 468 tokens. Proyección
+del primer turno ~2 250 s > `--timeout 1800`: se cancela con `process_ownership drain`. Medido con el ensamblador
+real (`probes/system_budget_sizes.ts`): el prompt de sistema son **20 006** tokens, ~10 000 de ellos
+`trabajo-en-segundo-plano.md` (orquestación). REUSE de `assembleSystemPrompt` y su `budgetTokens`
+(nunca descarta la base); EXTEND: `thyrox -p` reenvía `--system-budget-tokens` (prueba en `print.test.ts`,
+anulación exacta) y `headless-pool --system-budget-tokens N` lo pasa a cada ítem y valida el entero
+(caso 4d, anulación exacta de sus dos aserciones). Con 8 200: 8 123 tokens, entra `search-existing-antes-de-construir`.

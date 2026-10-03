@@ -131,6 +131,21 @@ printf 'alfa\n' | API_TIMEOUT_MS=777 HEADLESS_POOL_RUNNER="$F/thyrox-p-timeout" 
   pool --out "$F/out-timeout-declared" --execution unit --work-reference ai-course-notes:cs224r --timeout 1800 >/dev/null 2>&1
 check "caso 4c: el plazo de la petición es el del ítem, y uno declarado gana" "$(tr '\n' ' ' < "$F/timeout.log")" "1800000 777 "
 
+# Caso 4d (A6 r8): el pool acota el prompt de sistema de sus ítems. 20 000 de
+# los 25 468 tokens eran reglas siempre cargadas, y un modelo local en CPU
+# paga cada token en prefill. Un presupuesto que no es entero se rehúsa.
+cat > "$F/thyrox-p-argv" <<R
+#!/usr/bin/env bash
+printf '%s\n' "\$*" >> "$F/argv.log"
+R
+chmod +x "$F/thyrox-p-argv"
+: > "$F/argv.log"
+printf 'alfa\n' | HEADLESS_POOL_RUNNER="$F/thyrox-p-argv" \
+  pool --out "$F/out-budget" --execution unit --work-reference ai-course-notes:cs224r --system-budget-tokens 8000 >/dev/null 2>&1
+check "caso 4d: el ítem recibe --system-budget-tokens" "$(grep -c -- '--system-budget-tokens 8000' "$F/argv.log")" "1"
+printf 'alfa\n' | pool --out "$F/out-budget-bad" --execution unit --work-reference ai-course-notes:cs224r --system-budget-tokens mucho >/dev/null 2>&1; CODE=$?
+check "caso 4d: un presupuesto que no es entero se rehúsa con 2" "$CODE" "2"
+
 # Caso 5: la identidad del consumidor se reconstruye desde la evidencia publicada.
 # El runner real imprime `execution <contenedor> kind=… work=<ref>` por stderr
 # (executionCommand.test.ts); el doble repite esa línea, y el pool tiene que

@@ -80,6 +80,15 @@ describe('parsePrintArgs — el contrato de thyrox -p', () => {
     expect(r.loopArgv).toEqual(expect.arrayContaining(['--provider', 'recorded', '--grabacion', 'g.json']))
   })
 
+  // A6 r8: 20 000 de los 25 468 tokens del prompt eran reglas siempre cargadas;
+  // con un modelo local en CPU cada mil tokens cuestan ~1 min de prefill. El
+  // presupuesto del prompt de sistema ya lo aplica `assembleSystemPrompt`.
+  test('--system-budget-tokens llega al bucle, que acota con él el prompt de sistema', () => {
+    const r = parsePrintArgs(['-p', 'x', '--system-budget-tokens', '8000'], null)
+    expect(r.loopArgv.slice(r.loopArgv.indexOf('--system-budget-tokens'), r.loopArgv.indexOf('--system-budget-tokens') + 2))
+      .toEqual(['--system-budget-tokens', '8000'])
+  })
+
   test('una bandera desconocida se rehúsa nombrándola', () => {
     expect(() => parsePrintArgs(['-p', 'x', '--permission-mode', 'plan'], null)).toThrow(/--permission-mode/)
   })
