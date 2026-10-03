@@ -489,3 +489,39 @@ historia sería reescribirla (decisión del ejecutor).
 A partir de aquí la prosa nombra el proyecto **kaupamex-ai**. `thyrox` sólo aparece
 donde es identidad histórica o un nombre técnico vigente: rutas, `bin/`, `THYROX_*`,
 `TASK-THYROX-*`, contenedores `thyrox-*`.
+
+## 7. Caché de imágenes en el registro (espejo de upstream) — Search Existing
+
+| Capacidad | Autoridad | Estado | Decisión |
+|---|---|---|---|
+| ensure cache-first por digest (local → registro → verificar), con admisión de disco | `image-registry/imageResolver.ts` (contratos 15, 16 y 19 de TASK-THYROX-0691): `permanent`/`infrastructure` usan el almacén local si tiene el digest y si no traen por digest | existe; **sus únicos consumidores son `imageRequirement.ts` y él mismo** | REUSE + cablear (tarea #88 «Wire image resolution… into the worker launch») |
+| infraestructura fijada por digest | `infrastructure.sh` resuelve `THYROX_INFRA_{POSTGRES,REDIS,OLLAMA}_IMAGE` por **etiqueta mutable** | deuda reconocida por la arquitectura 1.1.0 §32 | EXTEND: la declaración pasa a llevar digest |
+| resolver la etiqueta contra el digest **del registro** | `ImageRegistry.resolve` | tarea #119 pendiente | EXTEND |
+| espejo byte a byte de upstream (`sourceReference/sourceDigest` → `mirrorReference/mirrorDigest`) | ninguna (0 símbolos `mirror`/`sourceDigest` en image-registry; 0 tareas ni hallazgos) | — | **MISSING**; la arquitectura 1.1.0 §21 se lo asigna a `ImageRegistry` → EXTEND de esa autoridad, no un publicador nuevo |
+| publicar el caché de construcción en un repo | `promotion.ts` rehúsa ciclo `cache` (`promotion.test.ts:43`) | decidido en el censo de imágenes sin etiqueta | MISSING por decisión; separar `build-cache-*` del espejo de runtime |
+| manifiesto de release / preload de la instalación | — | tareas Empaquetado P12/P13 (#38, #39) pendientes | MISSING (lo cubren esas tareas) |
+| proveedor configurable, no Docker Hub fijo | `registryFactory.ts`; `THYROX_REGISTRY_PUBLISHER_REGISTRY` | existe | REUSE |
+
+**Nombres (cruce con la sección 1):**
+
+- **Repos `cache-*`.** Son espejos: la procedencia es upstream, el digest no cambia y el
+  nombre es neutro. Encajan.
+- **Imágenes propias nuevas.** La regla de identidad dice que lo nunca publicado nace bajo
+  `kaupamex-ai`, así que serían `kaupamex-ai-model-quantizer` y
+  `kaupamex-ai-transformers-runtime`, no `thyrox-*`. `thyrox-task-runner` ya está publicado
+  y se conserva.
+- **El namespace del registro** (`th3rox` o uno de kaupamex) sigue sin decidir.
+
+**Orden propuesto (PROPOSED):**
+
+1. Digest en la declaración de la infraestructura (§32) y resolución contra el registro
+   (#119).
+2. Espejo como EXTEND de `ImageRegistry` (copiar sin modificar, verificar
+   `sourceDigest == mirrorDigest`, registrar la procedencia). Ubuntu entra con
+   `24.04-<digest12>`, nunca sólo `:24.04`.
+3. Cablear `imageResolver` en la infraestructura y en el lanzamiento de workers (#88).
+4. Manifiesto de release y preload (P12/P13). Fuente preferida: el espejo; upstream sólo
+   si la política lo permite.
+
+Un registro pull-through, que cachea automáticamente cualquier pull, sería otra pieza de
+infraestructura; no hace falta ahora.
