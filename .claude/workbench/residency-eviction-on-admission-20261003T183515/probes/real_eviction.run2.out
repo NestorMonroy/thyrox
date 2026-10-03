@@ -1,0 +1,14 @@
+bg daemon: shutdown signal accepted
+/root/.claude/model-scheduling/coordinator.sock
+antes de ctx16384: holgura_kB=10724492 unidades=
+admitted elapsedMs=16740 endpoint={"unitId":"unit-0713c389-ed01-4ae7-b292-6989e5bba537","kind":"model-runtime","reference":{"kind":"grant","grantId":"0713c389-e
+finish=finished
+antes de ctx24576: holgura_kB=8031260 unidades=ctx16384
+admitted elapsedMs=21019 endpoint={"unitId":"unit-e665bdb7-fdb7-4948-b50d-c311d832e227","kind":"model-runtime","reference":{"kind":"grant","grantId":"e665bdb7-f
+finish=finished
+antes de ctx32768: holgura_kB=1688156 unidades=ctx16384,ctx24576
+admitted elapsedMs=17452 endpoint={"unitId":"unit-e6694277-9227-40fa-afe5-42934fd84463","kind":"model-runtime","reference":{"kind":"grant","grantId":"e6694277-9
+finish=finished
+final: holgura_kB=-667972 unidades=ctx24576,ctx32768
+
+[exited with code 0]
