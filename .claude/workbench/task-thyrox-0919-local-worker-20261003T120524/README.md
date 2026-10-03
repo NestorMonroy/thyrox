@@ -115,3 +115,11 @@ línea en el argumento.
 trae las cinco líneas y el archivo queda con `alfa`, `beta` y `gama`. La cadena conserva los saltos de línea; lo que
 falla es un **cuerpo largo** en una tool call con el contexto de la TASK. `probes/printf-long` en contexto mínimo
 también pasó. `prompt.md`: el programa se escribe por partes de ≤12 líneas (`>` la primera, `>>` las siguientes).
+
+### Write con contenido largo por la ruta completa — el contenido llega íntegro
+
+`probes/write-route/` (`--tools Read,Write,Edit,Bash`, worktree aislado, unidad gestionada): una sola tool call
+`Write` con 2 450 caracteres; el archivo tiene **60 líneas, de `handler_01` a `handler_60`, completas**
+(`written-content.txt`). El verifier lo rechazó porque el modelo quitó los prefijos `linea NN:` del prompt —los
+leyó como numeración— y el `grep` los buscaba: es un defecto de la sonda, no del transporte. 2 turnos, 1 412 s.
+Decisión (tarea #3): el worker escribe con `Write`/`Edit` (REUSE de `CORE_TOOLS`), no con heredocs.
