@@ -408,3 +408,68 @@ bin/infrastructure_ensure           # bootstrap -> primitiva: postgres, redis, o
 
 Falta, a propósito: automatizar la cadena es la tarea #99, sin decidir. Falta, sin
 medir: la causa raíz, `/run` persistente (H-THYROX-442).
+
+## 6. Recrear la infraestructura, red entre contenedores, especialista matemático (pedido del ejecutor)
+
+Los archivos `Containerfile` y `dckrman.sh` entregados son **del proyecto Podman**: el
+primero genera su documentación y el segundo crea alias `docker*` de sus páginas de
+manual. No describen ningún servicio de thyrox.
+
+### El «Containerfile de todo» ya existe, como declaración (REUSE)
+
+| Necesidad | Autoridad | Qué fija |
+|---|---|---|
+| estado deseado de la infraestructura | `src/lib/infrastructure.sh` (`_thyrox_infrastructure_desired_{postgres,redis,ollama}`) | imagen, nombre, volumen, red, puertos, secreto y **comando de salud** (`pg_isready`, `redis-cli ping`, `ollama list`) |
+| «compose up» | `bin/infrastructure_ensure` → `infrastructure-bootstrap` → primitiva | crea, recrea o arranca desde la declaración; comprueba la salud |
+| reparación tras reiniciar | `bin/podman_lock_recovery` | locks (H-THYROX-302/308/442) |
+| imágenes propias | `image-registry/declaredImages.ts` + su Containerfile versionado (`model-artifacts/quantizer-image`) | construcción por identidad lógica (arquitectura 1.1.0 §9) |
+
+Un Containerfile o un compose aparte sería una segunda autoridad de materialización:
+contradice §3.2, §7 y §4.3 de la arquitectura 1.1.0. Lo que falta no es la receta, sino
+el disparo automático (tarea #99) y fijar las imágenes por digest (§32, «mutable image
+tags»).
+
+### Redis y la red entre contenedores
+
+- `thyrox-redis` se declara junto a postgres y ollama (`infrastructure.sh:77`, imagen
+  `redis:7.4`, puerto `127.0.0.1:56379`).
+- **postgres y redis** están en la red con nombre `thyrox-infra`: bridge con DNS
+  (aardvark-dns), 10.89.0.0/24. Publican en loopback: 55432 y 56379.
+- **ollama** está en la red del anfitrión (`127.0.0.1:51434`). Es una decisión medida:
+  la descarga por la red de Podman era lenta (`infrastructure.sh:106-113`).
+- **Red interna worker ↔ unidad de modelo:** diseñada, no implementada. Es
+  TASK-THYROX-0913 / tarea #153, y exige enmendar ADR-007
+  (`podman-inter-container-communication-20261003T022754`).
+- Hoy postgres y redis están `created` o con el PID muerto: dependen de la reparación
+  de Podman.
+
+### Especialista matemático: ya analizado
+
+`math-specialist-search-existing-20261003T020646`:
+
+- **No es un servicio nuevo.** Es un modelo del catálogo servido por el mismo Ollama
+  gestionado.
+- **Orden de candidatos:** OpenReasoning-Nemotron-1.5B → OpenMath-Nemotron-1.5B →
+  DeepScaleR-1.5B, todos en Q4_K_M; ningún candidato necesita cuantización.
+
+| Pieza | Decisión |
+|---|---|
+| runner de cualificación | REUSE |
+| `ModelQualification` | REUSE |
+| `externalArtifact` | REUSE |
+| `local-models-ensure` | REUSE |
+| UNSCHEDULABLE sin modelo cualificado | REUSE |
+| ruta de import/ensure bajo E0 | MISSING |
+| suite `mathematical-reasoning@1` | MISSING |
+| eje de capacidad en la selección | EXTEND (depende de A7 y de 0699) |
+
+### Autoimplementación con workers locales — dónde está
+
+- E0 está cerrado.
+- `qwen3-4b` está cualificado 4/4 para `mecanica`.
+- El siguiente paso, repetir A6, **está bloqueado por Podman**: `infrastructure_ensure`
+  sale 3 por los locks, sin Ollama no hay worker local, y la reparación espera al
+  operador.
+
+La misma reparación desbloquea las tres líneas: el corpus en PostgreSQL, el pase con
+modelos locales y A6.
