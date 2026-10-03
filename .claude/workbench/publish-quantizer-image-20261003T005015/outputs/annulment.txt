@@ -1,0 +1,28 @@
+baseline	unit-fail=0	policy-fail=0
+identity	unit-fail=12	policy-fail=3
+  identity unit (fail) the catalog declares the quantizer image > an undeclared identity is refused by the catalog [2.59ms]
+  identity unit (fail) declared image build: refused without touching Podman > an undeclared identity [0.19ms]
+  identity unit (fail) declared image build: refused without touching Podman > a primitive subcommand as identity: run [0.08ms]
+  identity unit (fail) declared image build: refused without touching Podman > a primitive subcommand as identity: remove-image [0.07ms]
+  identity unit (fail) declared image build: refused without touching Podman > a primitive subcommand as identity: reconcile-orphans [0.09ms]
+  identity unit (fail) declared image build: refused without touching Podman > the generic builder as identity: build-image [0.10ms]
+  identity unit (fail) the catalog declares the quantizer image > an undeclared identity is refused by the catalog [2.59ms]
+  identity unit (fail) declared image build: refused without touching Podman > an undeclared identity [0.19ms]
+  identity unit (fail) declared image build: refused without touching Podman > a primitive subcommand as identity: run [0.08ms]
+  identity unit (fail) declared image build: refused without touching Podman > a primitive subcommand as identity: remove-image [0.07ms]
+  identity unit (fail) declared image build: refused without touching Podman > a primitive subcommand as identity: reconcile-orphans [0.09ms]
+  identity unit (fail) declared image build: refused without touching Podman > the generic builder as identity: build-image [0.10ms]
+  identity policy   FALLA 5 una identidad no declarada — esperado [2] obtenido [0]
+  identity policy   FALLA 5 run como identidad — esperado [2] obtenido [0]
+  identity policy   FALLA 5 Podman no se invocó en ningún rechazo — esperado [0] obtenido [4]
+caller-context	unit-fail=2	policy-fail=2
+  caller-context unit (fail) declared image build: refused without touching Podman > a caller --context [0.18ms]
+  caller-context unit (fail) declared image build: refused without touching Podman > a caller --context [0.18ms]
+  caller-context policy   FALLA 5 --context del llamador — esperado [2] obtenido [0]
+  caller-context policy   FALLA 5 Podman no se invocó en ningún rechazo — esperado [0] obtenido [2]
+entry-row	unit-fail=0	policy-fail=2
+  entry-row policy   FALLA 1 la construcción declarada es entrada del plano de control — esperado [0] obtenido [1]
+  entry-row policy   FALLA 4 la entrada declarada no es un payload no gestionado — esperado [allow] obtenido [deny]
+ A src/packages/image-registry/declaredImageBuildCommand.ts
+ A src/packages/image-registry/declaredImages.ts
+ M src/session/control_plane_entries.tsv

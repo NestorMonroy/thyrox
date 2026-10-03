@@ -1,0 +1,35 @@
+bun test v1.3.11 (af24e281)
+
+__tests__/declaredImageBuildCommand.test.ts:
+(pass) the catalog declares the quantizer image > thyrox-model-quantizer is declared with a versioned context, permanent lifecycle and its own network policy [0.12ms]
+(pass) the catalog declares the quantizer image > an undeclared identity is refused by the catalog [0.15ms]
+(pass) the catalog declares the quantizer image > every declared context lives inside the repository [0.07ms]
+(pass) declared image build: the allowed request > the quantizer builds from its catalog definition through the primitive [1.12ms]
+(pass) declared image build: the allowed request > the result names the image, its tag, its id and the definition it came from [0.18ms]
+(pass) declared image build: the allowed request > the proxy reaches the build only as the primitive passes it: never as a recorded build argument [0.21ms]
+(pass) declared image build: refused without touching Podman > an undeclared identity [0.15ms]
+(pass) declared image build: refused without touching Podman > a primitive subcommand as identity: run [0.02ms]
+(pass) declared image build: refused without touching Podman > a primitive subcommand as identity: remove-image [0.02ms]
+(pass) declared image build: refused without touching Podman > a primitive subcommand as identity: reconcile-orphans [0.02ms]
+(pass) declared image build: refused without touching Podman > the generic builder as identity: build-image [0.03ms]
+(pass) declared image build: refused without touching Podman > no identity [0.04ms]
+(pass) declared image build: refused without touching Podman > two identities [0.04ms]
+(pass) declared image build: refused without touching Podman > no task or work reference [0.02ms]
+(pass) declared image build: refused without touching Podman > a malformed task citation [0.01ms]
+(pass) declared image build: refused without touching Podman > a caller --context [0.05ms]
+(pass) declared image build: refused without touching Podman > a caller --containerfile [0.02ms]
+(pass) declared image build: refused without touching Podman > a caller --network [0.01ms]
+(pass) declared image build: refused without touching Podman > a caller --lifecycle [0.01ms]
+(pass) declared image build: refused without touching Podman > a caller --tag [0.01ms]
+(pass) declared image build: refused without touching Podman > a caller --mount of / [0.01ms]
+(pass) declared image build: refused without touching Podman > a caller --mount of HOME [0.01ms]
+(pass) declared image build: refused without touching Podman > a caller --mount of the Podman socket [0.05ms]
+(pass) declared image build: refused without touching Podman > a caller --image [0.02ms]
+(pass) declared image build: refused without touching Podman > a shell payload after -- [0.01ms]
+(pass) declared image build: refused without touching Podman > a definition with uncommitted changes has no versioned identity [0.13ms]
+(pass) declared image build: refused without touching Podman > a revision that is not a full commit is refused [0.07ms]
+
+ 27 pass
+ 0 fail
+ 60 expect() calls
+Ran 27 tests across 1 file. [201.00ms]

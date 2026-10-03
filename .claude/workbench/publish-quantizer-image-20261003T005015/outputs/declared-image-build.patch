@@ -1,0 +1,600 @@
+diff --git a/bin/image-registry-build-declared-image b/bin/image-registry-build-declared-image
+new file mode 100755
+index 000000000..c1d53eb1b
+--- /dev/null
++++ b/bin/image-registry-build-declared-image
+@@ -0,0 +1,15 @@
++#!/usr/bin/env bash
++# Generado por src/session/generate_bin.py — no editar a mano.
++WRAPPER_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
++THYROX_ROOT="${THYROX_ROOT:-$WRAPPER_ROOT}"
++export THYROX_ROOT
++LIB="$WRAPPER_ROOT/src/lib/toolchain.sh"
++if [ ! -r "$LIB" ]; then
++  echo "bin/image-registry-build-declared-image: no alcanza $LIB — el arbol esta incompleto." >&2
++  exit 1
++fi
++# shellcheck source=/dev/null
++source "$LIB"
++THYROX_TOOLCHAIN_NODE_MODULES_HOME="${THYROX_TOOLCHAIN_NODE_MODULES_HOME:-$WRAPPER_ROOT/node_modules}" \
++  thyrox_toolchain_require_bun || exit 1
++exec "${THYROX_TOOLCHAIN_BUN_BIN:-bun}" "$WRAPPER_ROOT/src/packages/image-registry/bin/buildDeclaredImage.ts" "$@"
+diff --git a/src/packages/image-registry/__tests__/declaredImageBuildCommand.test.ts b/src/packages/image-registry/__tests__/declaredImageBuildCommand.test.ts
+new file mode 100644
+index 000000000..513918ff5
+--- /dev/null
++++ b/src/packages/image-registry/__tests__/declaredImageBuildCommand.test.ts
+@@ -0,0 +1,201 @@
++/**
++ * La frontera de construcción declarada (TASK-THYROX-0912, H-THYROX-429): el
++ * controlador pide una imagen por su identidad lógica y nada más. Contexto,
++ * Containerfile, red, ciclo de vida y etiqueta salen del catálogo versionado;
++ * la construcción la materializa la primitiva.
++ *
++ * Positivo: `thyrox-model-quantizer` se construye con la definición del
++ * catálogo. Negativos: toda identidad no declarada, todo argumento que
++ * reabriría el `build-image` genérico y toda definición sin versionar se
++ * rehúsan con 2 sin invocar Podman.
++ */
++import { describe, expect, test } from 'bun:test'
++import { join } from 'node:path'
++
++import { runExecutionCommand, type ExecutionCommandDeps } from '@thyrox/podman-execution/executionCommand.ts'
++import type { PodmanCommandResult, PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
++
++import { runDeclaredImageBuildCommand, type DeclaredImageBuildDeps } from '../declaredImageBuildCommand.ts'
++import { DECLARED_IMAGES, DEFINITION_COMMIT_LABEL, DEFINITION_LABEL, findDeclaredImage, UndeclaredImageError } from '../declaredImages.ts'
++import { LIFECYCLE_LABEL } from '../imageLifecycle.ts'
++
++const ROOT = '/srv/thyrox'
++const COMMIT = 'b'.repeat(40)
++const TASK = 'TASK-THYROX-0912'
++const QUANTIZER = 'thyrox-model-quantizer'
++const EXIT_REFUSED = 2
++
++type Harness = { deps: DeclaredImageBuildDeps; calls: string[][]; stdout: string[]; stderr: string[] }
++
++function harness(revision = { commit: COMMIT, clean: true }, env: Record<string, string> = {}): Harness {
++  const calls: string[][] = []
++  const stdout: string[] = []
++  const stderr: string[] = []
++  const podman: PodmanExecutor = {
++    async run(args) {
++      calls.push([...args])
++      const result: PodmanCommandResult = { exitCode: 0, stdout: args[0] === 'image' ? `sha256:${'c'.repeat(64)}\n` : '', stderr: '' }
++      return result
++    },
++  }
++  const deps: DeclaredImageBuildDeps = {
++    env,
++    podman,
++    repositoryRoot: ROOT,
++    output: { stdout: text => { stdout.push(text) }, stderr: text => { stderr.push(text) } },
++    definitionRevision: async () => revision,
++  }
++  return { deps, calls, stdout, stderr }
++}
++
++function buildArgv(h: Harness): string[] {
++  return h.calls.find(call => call[0] === 'build') ?? []
++}
++
++describe('the catalog declares the quantizer image', () => {
++  test('thyrox-model-quantizer is declared with a versioned context, permanent lifecycle and its own network policy', () => {
++    const image = findDeclaredImage(QUANTIZER)
++    expect(image.context).toBe('src/packages/model-artifacts/quantizer-image')
++    expect(image.lifecycle).toBe('permanent')
++    expect(image.network).toBe('host')
++    expect(image.repository).toBe('localhost/thyrox-model-quantizer')
++  })
++
++  test('an undeclared identity is refused by the catalog', () => {
++    expect(() => findDeclaredImage('thyrox-task-runner-anything')).toThrow(UndeclaredImageError)
++  })
++
++  test('every declared context lives inside the repository', () => {
++    for (const image of DECLARED_IMAGES) expect(image.context.startsWith('/') || image.context.includes('..')).toBe(false)
++  })
++})
++
++describe('declared image build: the allowed request', () => {
++  test('the quantizer builds from its catalog definition through the primitive', async () => {
++    const h = harness()
++    const code = await runDeclaredImageBuildCommand(['--task', TASK, QUANTIZER], h.deps)
++    const argv = buildArgv(h).join(' ')
++    expect(code).toBe(0)
++    expect(argv).toContain(`--label ${LIFECYCLE_LABEL}=permanent`)
++    expect(argv).toContain(`--label ${DEFINITION_LABEL}=${QUANTIZER}`)
++    expect(argv).toContain(`--label ${DEFINITION_COMMIT_LABEL}=${COMMIT}`)
++    expect(argv).toContain(`--label thyrox.task=${TASK}`)
++    expect(argv).toContain('--network host')
++    expect(argv).toContain(`-t localhost/thyrox-model-quantizer:candidate-${COMMIT.slice(0, 12)}`)
++    expect(buildArgv(h).at(-1)).toBe(join(ROOT, 'src/packages/model-artifacts/quantizer-image'))
++  })
++
++  test('the result names the image, its tag, its id and the definition it came from', async () => {
++    const h = harness()
++    await runDeclaredImageBuildCommand(['--task', TASK, QUANTIZER], h.deps)
++    const record = JSON.parse(h.stdout.join(''))
++    expect(record).toEqual({
++      image: QUANTIZER,
++      tag: `localhost/thyrox-model-quantizer:candidate-${COMMIT.slice(0, 12)}`,
++      id: `sha256:${'c'.repeat(64)}`,
++      lifecycle: 'permanent',
++      definition: { context: 'src/packages/model-artifacts/quantizer-image', commit: COMMIT },
++    })
++  })
++
++  test('the proxy reaches the build only as the primitive passes it: never as a recorded build argument', async () => {
++    const h = harness(undefined, { HTTPS_PROXY: 'http://127.0.0.1:9', GIT_SSL_CAINFO: '/ca.crt' })
++    await runDeclaredImageBuildCommand(['--task', TASK, QUANTIZER], h.deps)
++    const argv = buildArgv(h).join(' ')
++    expect(argv).not.toContain('HTTPS_PROXY=')
++    expect(argv).toContain('-v /ca.crt:/etc/ssl/certs/proxy-ca.crt:ro')
++  })
++})
++
++describe('declared image build: refused without touching Podman', () => {
++  const refusals: [string, string[]][] = [
++    ['an undeclared identity', ['--task', TASK, 'thyrox-anything']],
++    ['a primitive subcommand as identity: run', ['--task', TASK, 'run']],
++    ['a primitive subcommand as identity: remove-image', ['--task', TASK, 'remove-image']],
++    ['a primitive subcommand as identity: reconcile-orphans', ['--task', TASK, 'reconcile-orphans']],
++    ['the generic builder as identity: build-image', ['--task', TASK, 'build-image']],
++    ['no identity', ['--task', TASK]],
++    ['two identities', ['--task', TASK, QUANTIZER, QUANTIZER]],
++    ['no task or work reference', [QUANTIZER]],
++    ['a malformed task citation', ['--task', 'TASK-1', QUANTIZER]],
++    ['a caller --context', ['--task', TASK, '--context', '/', QUANTIZER]],
++    ['a caller --containerfile', ['--task', TASK, '--containerfile', '/tmp/Containerfile', QUANTIZER]],
++    ['a caller --network', ['--task', TASK, '--network', 'host', QUANTIZER]],
++    ['a caller --lifecycle', ['--task', TASK, '--lifecycle', 'cache', QUANTIZER]],
++    ['a caller --tag', ['--task', TASK, '--tag', 'docker.io/someone/anything:latest', QUANTIZER]],
++    ['a caller --mount of /', ['--task', TASK, '--mount', '/:/host:rw', QUANTIZER]],
++    ['a caller --mount of HOME', ['--task', TASK, '--mount', '/root:/root:rw', QUANTIZER]],
++    ['a caller --mount of the Podman socket', ['--task', TASK, '--mount', '/run/podman/podman.sock:/run/podman/podman.sock', QUANTIZER]],
++    ['a caller --image', ['--task', TASK, '--image', 'docker.io/library/ubuntu:24.04', QUANTIZER]],
++    ['a shell payload after --', ['--task', TASK, QUANTIZER, '--', 'bash', '-c', 'id']],
++  ]
++  for (const [name, argv] of refusals) {
++    test(name, async () => {
++      const h = harness()
++      expect(await runDeclaredImageBuildCommand(argv, h.deps)).toBe(EXIT_REFUSED)
++      expect(h.calls).toEqual([])
++    })
++  }
++
++  test('a definition with uncommitted changes has no versioned identity', async () => {
++    const h = harness({ commit: COMMIT, clean: false })
++    expect(await runDeclaredImageBuildCommand(['--task', TASK, QUANTIZER], h.deps)).toBe(EXIT_REFUSED)
++    expect(h.calls).toEqual([])
++    expect(h.stderr.join('')).toContain('src/packages/model-artifacts/quantizer-image')
++  })
++
++  test('a revision that is not a full commit is refused', async () => {
++    const h = harness({ commit: 'HEAD', clean: true })
++    expect(await runDeclaredImageBuildCommand(['--task', TASK, QUANTIZER], h.deps)).toBe(EXIT_REFUSED)
++    expect(h.calls).toEqual([])
++  })
++})
++
++describe('the managed worker stays outside the Podman control plane', () => {
++  // Guarda, no RED: mide lo que la primitiva ya hace. Un `run` con montaje
++  // elegido por el llamador SÍ podría entregar el socket (H-THYROX-429); por
++  // eso `run` no es alcanzable desde el plano de control.
++  const CONTROL_PLANE_PATHS = ['podman.sock', '/run/podman', '/var/lib/containers', 'containers/storage', 'CONTAINER_HOST', 'DOCKER_HOST']
++
++  test('a default unit receives no Podman socket, store or host variable', async () => {
++    const calls: string[][] = []
++    const podman: PodmanExecutor = {
++      async run(args) {
++        calls.push([...args])
++        const stdout = args[0] === 'wait' ? '0\n' : args[0] === 'create' ? `${'c'.repeat(64)}\n` : ''
++        return { exitCode: 0, stdout, stderr: '' }
++      },
++    }
++    const deps: ExecutionCommandDeps = {
++      env: { CONTAINER_HOST: 'unix:///run/podman/podman.sock', XDG_RUNTIME_DIR: '/run/user/0' },
++      readStdin: async () => '',
++      output: { stdout: () => {}, stderr: () => {} },
++      pid: 77,
++      now: () => 1,
++      podman,
++      repositoryRoot: ROOT,
++      isProcessAlive: () => true,
++    }
++    expect(await runExecutionCommand(['run', '--task', TASK, '--kind', 'probe', '--', 'id'], deps)).toBe(0)
++    const create = (calls.find(call => call[0] === 'create') ?? []).join(' ')
++    expect(create).not.toBe('')
++    for (const path of CONTROL_PLANE_PATHS) expect(create).not.toContain(path)
++  })
++
++  test('control: a caller mount of the socket does reach the unit — the reason run stays unreachable', async () => {
++    const calls: string[][] = []
++    const podman: PodmanExecutor = {
++      async run(args) {
++        calls.push([...args])
++        const stdout = args[0] === 'wait' ? '0\n' : args[0] === 'create' ? `${'c'.repeat(64)}\n` : ''
++        return { exitCode: 0, stdout, stderr: '' }
++      },
++    }
++    const deps: ExecutionCommandDeps = {
++      env: {}, readStdin: async () => '', output: { stdout: () => {}, stderr: () => {} },
++      pid: 77, now: () => 1, podman, repositoryRoot: ROOT, isProcessAlive: () => true,
++    }
++    await runExecutionCommand(['run', '--task', TASK, '--kind', 'probe', '--mount', '/run/podman/podman.sock', '--', 'id'], deps)
++    expect((calls.find(call => call[0] === 'create') ?? []).join(' ')).toContain('/run/podman/podman.sock')
++  })
++})
+diff --git a/src/packages/image-registry/bin/buildDeclaredImage.ts b/src/packages/image-registry/bin/buildDeclaredImage.ts
+new file mode 100755
+index 000000000..71cf48703
+--- /dev/null
++++ b/src/packages/image-registry/bin/buildDeclaredImage.ts
+@@ -0,0 +1,32 @@
++#!/usr/bin/env bun
++/** Entrada de `bin/image-registry-build-declared-image`; la orden vive en `declaredImageBuildCommand.ts`. */
++import { resolve } from 'node:path'
++
++import { createPodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
++
++import { runDeclaredImageBuildCommand } from '../declaredImageBuildCommand.ts'
++
++const repositoryRoot = process.env.THYROX_ROOT ?? resolve(import.meta.dir, '../../../..')
++
++function git(args: string[]): string {
++  const result = Bun.spawnSync(['git', '-C', repositoryRoot, ...args], { stdout: 'pipe', stderr: 'pipe' })
++  if (result.exitCode !== 0) throw new Error(`git ${args.join(' ')}: ${result.stderr.toString().trim()}`)
++  return result.stdout.toString()
++}
++
++process.exit(
++  await runDeclaredImageBuildCommand(process.argv.slice(2), {
++    env: process.env,
++    podman: createPodmanExecutor(),
++    repositoryRoot,
++    output: {
++      stdout: (text: string) => { process.stdout.write(text) },
++      stderr: (text: string) => { process.stderr.write(text) },
++    },
++    // El contexto entero, Containerfile incluido: un archivo sin commitear no tiene identidad versionada.
++    definitionRevision: async context => ({
++      commit: git(['rev-parse', 'HEAD']).trim(),
++      clean: git(['status', '--porcelain', '--untracked-files=all', '--', context]).trim() === '',
++    }),
++  }),
++)
+diff --git a/src/packages/image-registry/declaredImageBuildCommand.ts b/src/packages/image-registry/declaredImageBuildCommand.ts
+new file mode 100644
+index 000000000..9c6ca3658
+--- /dev/null
++++ b/src/packages/image-registry/declaredImageBuildCommand.ts
+@@ -0,0 +1,93 @@
++/**
++ * La orden `bin/image-registry-build-declared-image`: la única capacidad de
++ * construcción que el plano de control concede.
++ *
++ *   solicitante -> identidad lógica -> definición declarada -> primitiva -> Podman
++ *
++ * Acepta la referencia del trabajo (`--task` o `--work`) y una identidad del
++ * catálogo; cualquier otra opción, una segunda identidad o un comando tras
++ * `--` se rehúsan antes de tocar Podman. Lo que la orden no admite es
++ * precisamente lo que haría de ella el `build-image` genérico: contexto,
++ * Containerfile, red, ciclo de vida, etiqueta, imagen o montajes elegidos por
++ * quien llama.
++ */
++import { join } from 'node:path'
++import { parseArgs } from 'node:util'
++
++import { TASK_CITATION_PATTERN, type ExecutionReference } from '@thyrox/podman-execution/executionAuthorization.ts'
++import { buildManagedImage } from '@thyrox/podman-execution/executionCommand.ts'
++import type { PodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
++
++import { candidateTag, definitionLabels, type DefinitionRevision, findDeclaredImage, UndeclaredImageError, UnversionedDefinitionError } from './declaredImages.ts'
++
++const EXIT_FAILED = 1
++const EXIT_REFUSED = 2
++const USAGE = 'uso: image-registry-build-declared-image (--task TASK-<CAPA>-NNNN | --work CONSUMIDOR:ID) <imagen-declarada>'
++
++export type DeclaredImageBuildDeps = {
++  env: Readonly<Record<string, string | undefined>>
++  podman: PodmanExecutor
++  repositoryRoot: string
++  output: { stdout(text: string): void; stderr(text: string): void }
++  /** El commit del repositorio y si el contexto de la definición difiere de él. */
++  definitionRevision(context: string): Promise<DefinitionRevision>
++}
++
++class RefusedRequestError extends Error {}
++
++/** Sólo la referencia y una identidad; `strict` rehúsa toda otra opción. */
++function parseRequest(argv: string[]): { reference: ExecutionReference; imageId: string } {
++  let parsed
++  try {
++    parsed = parseArgs({ args: argv, strict: true, allowPositionals: true, options: { task: { type: 'string' }, work: { type: 'string' } } })
++  } catch (error) {
++    throw new RefusedRequestError(error instanceof Error ? error.message : String(error))
++  }
++  const { values, positionals } = parsed
++  if (positionals.length !== 1) throw new RefusedRequestError(`se pide exactamente una imagen declarada; llegaron ${positionals.length}`)
++  return { reference: referenceOf(values.task, values.work), imageId: positionals[0]! }
++}
++
++function referenceOf(task: string | undefined, work: string | undefined): ExecutionReference {
++  if ((task === undefined) === (work === undefined)) throw new RefusedRequestError('declara --task o --work, uno solo')
++  if (task !== undefined) {
++    if (!TASK_CITATION_PATTERN.test(task)) throw new RefusedRequestError(`--task va TASK-<CAPA>-NNNN, recibido: ${task}`)
++    return { kind: 'task', citation: task }
++  }
++  const separator = work!.indexOf(':')
++  if (separator <= 0) throw new RefusedRequestError(`--work va CONSUMIDOR:ID, recibido: ${work}`)
++  return { kind: 'work', consumer: work!.slice(0, separator), workId: work!.slice(separator + 1) }
++}
++
++function isRefusal(error: unknown): boolean {
++  return error instanceof RefusedRequestError || error instanceof UndeclaredImageError || error instanceof UnversionedDefinitionError
++}
++
++export async function runDeclaredImageBuildCommand(argv: string[], deps: DeclaredImageBuildDeps): Promise<number> {
++  try {
++    const { reference, imageId } = parseRequest(argv)
++    const image = findDeclaredImage(imageId)
++    const revision = await deps.definitionRevision(image.context)
++    const tag = candidateTag(image, revision)
++    const id = await buildManagedImage(deps, {
++      reference,
++      context: join(deps.repositoryRoot, image.context),
++      containerfile: image.containerfile === undefined ? undefined : join(deps.repositoryRoot, image.containerfile),
++      tag,
++      network: image.network,
++      lifecycle: image.lifecycle,
++      labels: definitionLabels(image, revision),
++    })
++    const record = { image: image.id, tag, id, lifecycle: image.lifecycle, definition: { context: image.context, commit: revision.commit } }
++    deps.output.stdout(`${JSON.stringify(record)}\n`)
++    return 0
++  } catch (error) {
++    const message = error instanceof Error ? error.message : String(error)
++    if (isRefusal(error)) {
++      deps.output.stderr(`image-registry-build-declared-image: rehusado: ${message}\n${USAGE}\n`)
++      return EXIT_REFUSED
++    }
++    deps.output.stderr(`image-registry-build-declared-image: ${message}\n`)
++    return EXIT_FAILED
++  }
++}
+diff --git a/src/packages/image-registry/declaredImages.ts b/src/packages/image-registry/declaredImages.ts
+new file mode 100644
+index 000000000..006864203
+--- /dev/null
++++ b/src/packages/image-registry/declaredImages.ts
+@@ -0,0 +1,77 @@
++/**
++ * Las imágenes que thyrox puede construir, por identidad lógica.
++ *
++ * Una construcción declarada no recibe contexto, Containerfile, red, ciclo de
++ * vida ni etiqueta de quien la pide: todo sale de esta definición versionada.
++ * Así el plano de control puede pedir «construye la imagen X» sin ganar el
++ * `build-image` genérico, cuyo contexto y Containerfile elegidos por el
++ * llamador son un programa arbitrario. El registro de destino no vive aquí:
++ * lo decide la configuración de `ImageRegistry` al publicar.
++ */
++import type { BuildDefinition } from './imageRequirement.ts'
++
++/** La etiqueta con la identidad lógica de la definición que produjo la imagen. */
++export const DEFINITION_LABEL = 'io.thyrox.image.definition'
++/** La etiqueta con el commit completo en que esa definición estaba versionada. */
++export const DEFINITION_COMMIT_LABEL = 'io.thyrox.image.definition-commit'
++
++const COMMIT_PATTERN = /^[0-9a-f]{40}$/
++const CANDIDATE_TAG_PREFIX = 'candidate-'
++const SHORT_COMMIT_LENGTH = 12
++
++export type DeclaredImage = Omit<BuildDefinition, 'tag'> & {
++  /** Identidad lógica: lo único que el solicitante nombra. */
++  id: string
++  /** Repositorio local de la candidata; la etiqueta se deriva del commit. */
++  repository: string
++  /** Toda imagen declarada es una herramienta que se distribuye. */
++  lifecycle: 'permanent'
++  /** La red de sus RUN la decide la definición, nunca el solicitante. */
++  network: 'none' | 'host'
++}
++
++export const DECLARED_IMAGES: readonly DeclaredImage[] = [
++  {
++    id: 'thyrox-model-quantizer',
++    // Contexto relativo a la raíz del repositorio; su Containerfile es el del contexto.
++    context: 'src/packages/model-artifacts/quantizer-image',
++    repository: 'localhost/thyrox-model-quantizer',
++    lifecycle: 'permanent',
++    // Sus RUN instalan paquetes del sistema: el único egreso es el proxy del anfitrión.
++    network: 'host',
++  },
++]
++
++export class UndeclaredImageError extends Error {
++  constructor(id: string) {
++    super(`imagen no declarada: ${id} (declaradas: ${DECLARED_IMAGES.map(image => image.id).join(', ')})`)
++    this.name = 'UndeclaredImageError'
++  }
++}
++
++export class UnversionedDefinitionError extends Error {
++  constructor(image: DeclaredImage, reason: string) {
++    super(`la definición de ${image.id} (${image.context}) no tiene identidad versionada: ${reason}`)
++    this.name = 'UnversionedDefinitionError'
++  }
++}
++
++export function findDeclaredImage(id: string): DeclaredImage {
++  const image = DECLARED_IMAGES.find(candidate => candidate.id === id)
++  if (image === undefined) throw new UndeclaredImageError(id)
++  return image
++}
++
++/** El estado de la definición en el repositorio: el commit y si su contexto difiere de él. */
++export type DefinitionRevision = { commit: string; clean: boolean }
++
++/** La etiqueta de la candidata construida desde `commit`; nunca `:dev` ni una elegida a mano. */
++export function candidateTag(image: DeclaredImage, revision: DefinitionRevision): string {
++  if (!COMMIT_PATTERN.test(revision.commit)) throw new UnversionedDefinitionError(image, `el commit tiene que ser completo; llegó «${revision.commit}»`)
++  if (!revision.clean) throw new UnversionedDefinitionError(image, 'su contexto tiene cambios sin commitear')
++  return `${image.repository}:${CANDIDATE_TAG_PREFIX}${revision.commit.slice(0, SHORT_COMMIT_LENGTH)}`
++}
++
++export function definitionLabels(image: DeclaredImage, revision: DefinitionRevision): Record<string, string> {
++  return { [DEFINITION_LABEL]: image.id, [DEFINITION_COMMIT_LABEL]: revision.commit }
++}
+diff --git a/src/packages/podman-execution/executionCommand.ts b/src/packages/podman-execution/executionCommand.ts
+index a4332aed7..03a2eacd4 100644
+--- a/src/packages/podman-execution/executionCommand.ts
++++ b/src/packages/podman-execution/executionCommand.ts
+@@ -285,16 +285,45 @@ async function buildImageCommand(argv: string[], deps: ExecutionCommandDeps): Pr
+     },
+   })
+   // Un consumidor construye su imagen de ejecución bajo su propia referencia de trabajo.
+-  const reference = referenceOf(values.task, values.work)
+-  const network = parseNetwork(values.network)
+-  const lifecycle = parseLifecycle(values.lifecycle)
+-  const ca = deps.env[PROXY_CA_KEY]
+-  const egress = network === 'host'
+-  const id = await buildImage(deps.podman, {
++  const id = await buildManagedImage(deps, {
++    reference: referenceOf(values.task, values.work),
+     context: requireValue(values.context, 'context'),
+     containerfile: values.containerfile,
+     tag: requireValue(values.tag, 'tag'),
+-    labels: { ...imageReferenceLabels(reference), [IMAGE_LIFECYCLE_LABEL]: lifecycle },
++    network: parseNetwork(values.network),
++    lifecycle: parseLifecycle(values.lifecycle),
++  })
++  deps.output.stdout(`${id}\n`)
++  return 0
++}
++
++/** Una construcción ya decidida: quién la pide, qué definición, con qué red y ciclo de vida. */
++export type ManagedImageBuild = {
++  reference: ExecutionReference
++  context: string
++  containerfile?: string
++  tag: string
++  network: WorkerNetworkMode
++  lifecycle: (typeof BUILD_LIFECYCLES)[number]
++  /** Etiquetas que el solicitante declara además de la referencia y el ciclo de vida. */
++  labels?: Readonly<Record<string, string>>
++}
++
++/**
++ * Construye una imagen por la primitiva: la referencia y el ciclo de vida van
++ * como etiquetas, y el egreso sólo por el proxy del anfitrión. No valida de
++ * dónde salen el contexto ni la red: eso lo decide quien llama, sea la orden
++ * genérica `build-image` o una frontera que sólo admite definiciones
++ * declaradas.
++ */
++export async function buildManagedImage(deps: Pick<ExecutionCommandDeps, 'env' | 'podman'>, build: ManagedImageBuild): Promise<string> {
++  const ca = deps.env[PROXY_CA_KEY]
++  const egress = build.network === 'host'
++  return buildImage(deps.podman, {
++    context: build.context,
++    containerfile: build.containerfile,
++    tag: build.tag,
++    labels: { ...build.labels, ...imageReferenceLabels(build.reference), [IMAGE_LIFECYCLE_LABEL]: build.lifecycle },
+     network: egress ? 'host' : undefined,
+     // El proxy no va como argumento de build: Podman lo grabaría con su valor en
+     // la historia de cada RUN. `podman build` reenvía por defecto (--http-proxy)
+@@ -302,8 +331,6 @@ async function buildImageCommand(argv: string[], deps: ExecutionCommandDeps): Pr
+     buildArgs: egress && ca ? { PROXY_CA: PROXY_CA_BUILD_PATH } : undefined,
+     readOnlyMounts: egress && ca ? [{ source: ca, destination: PROXY_CA_BUILD_PATH }] : undefined,
+   })
+-  deps.output.stdout(`${id}\n`)
+-  return 0
+ }
+ 
+ /**
+diff --git a/src/session/control_plane_entries.tsv b/src/session/control_plane_entries.tsv
+index 970b2433c..e6a0d17ab 100644
+--- a/src/session/control_plane_entries.tsv
++++ b/src/session/control_plane_entries.tsv
+@@ -7,3 +7,4 @@ infrastructure-bootstrap	src/packages/infrastructure/bin/bootstrap.ts	entrega el
+ podman_lock_recovery	src/session/podman_lock_recovery.sh	recuperación explícita del motor, pedida por un operador
+ task_continuation	src/session/task_continuation.py	materializa la frontera de un plan declarado con GNU Parallel; despacha, verifica e integra en unidades
+ model_coordinator	src/session/model_coordinator.sh	ciclo de vida del coordinador de modelos del anfitrión; el daemon materializa sus unidades por la primitiva
++image-registry-build-declared-image	src/packages/image-registry/bin/buildDeclaredImage.ts	construye sólo una imagen del catálogo por su identidad lógica; contexto, red y ciclo de vida salen de la definición y materializa la primitiva
+diff --git a/tests/session/test-declared-image-build-entry.sh b/tests/session/test-declared-image-build-entry.sh
+new file mode 100755
+index 000000000..6ff97583f
+--- /dev/null
++++ b/tests/session/test-declared-image-build-entry.sh
+@@ -0,0 +1,71 @@
++#!/usr/bin/env bash
++# =============================================================================
++# test-declared-image-build-entry.sh — el plano de control concede una sola
++# capacidad de construcción: la imagen declarada por su identidad lógica
++# (TASK-THYROX-0912, H-THYROX-429)
++# =============================================================================
++# Casos:
++#   1. `bin/image-registry-build-declared-image` es una entrada declarada;
++#   2. `bin/podman-execution-execute` NO lo es: la lista autoriza ejecutables
++#      enteros y la primitiva entera abriría `run`, `remove-image` y
++#      `reconcile-orphans`;
++#   3. `thyrox-bg` rehúsa la primitiva genérica (`build-image` y `run`) y un
++#      comando arbitrario del anfitrión sin `--task`;
++#   4. la política del cliente exime a la entrada declarada y niega en
++#      segundo plano la primitiva genérica y un payload de shell;
++#   5. la entrada misma rehúsa, sin tocar Podman, una identidad no declarada y
++#      todo argumento del `build-image` genérico.
++# Controles de anulación: sin la fila de la entrada cae el caso 1 y la
++# exención del 4; con la primitiva declarada caen el 2, el 3 y la negación
++# del 4.
++# =============================================================================
++set -uo pipefail
++cd "$(dirname "${BASH_SOURCE[0]}")/../.." || exit 1
++ROOT="$PWD"
++ok=0; failures=0
++check() { if [[ "$2" == "$3" ]]; then echo "  ok    $1"; ok=$((ok+1));
++        else echo "  FALLA $1 — esperado [$3] obtenido [$2]"; failures=$((failures+1)); fi; }
++
++TMP="$(mktemp -d)"
++trap 'rm -rf "${TMP:?}"' EXIT
++source "$ROOT/src/lib/test_homes.sh"; thyrox_isolate_homes "$TMP/homes"
++# Un Podman que nunca debe invocarse: si la entrada lo llama, el caso 5 lo ve.
++mkdir -p "$TMP/bin"
++printf '#!/usr/bin/env bash\necho "$*" >> %q\nexit 0\n' "$TMP/podman.calls" > "$TMP/bin/podman"
++chmod +x "$TMP/bin/podman"
++export PATH="$TMP/bin:$PATH"
++
++ENTRY="$ROOT/bin/image-registry-build-declared-image"
++source "$ROOT/src/lib/managed_execution.sh"
++thyrox_control_plane_entry "$ENTRY"; check "1 la construcción declarada es entrada del plano de control" "$?" "0"
++thyrox_control_plane_entry "$ROOT/bin/podman-execution-execute"; check "2 la primitiva entera no es entrada del plano de control" "$?" "1"
++
++bg() { bash "$ROOT/bin/thyrox-bg" start "$@" >/dev/null 2>&1; echo "$?"; }
++check "3 thyrox-bg rehúsa build-image genérico" "$(bg generic-build -- bin/podman-execution-execute build-image --task TASK-THYROX-0912 --context / --tag x:y)" "2"
++check "3 thyrox-bg rehúsa run genérico" "$(bg generic-run -- bin/podman-execution-execute run --task TASK-THYROX-0912 --kind probe --mount /:/host:rw -- id)" "2"
++check "3 thyrox-bg rehúsa un comando arbitrario del anfitrión" "$(bg host-shell -- bash -c id)" "2"
++
++verdict() {
++  python3 - "$ROOT" "$1" <<'PY'
++import importlib.util, pathlib, sys
++root, command = pathlib.Path(sys.argv[1]), sys.argv[2]
++sys.path.insert(0, str(root / "src"))
++spec = importlib.util.spec_from_file_location("gate", root / "src/hooks/detect_client_background.py")
++gate = importlib.util.module_from_spec(spec); spec.loader.exec_module(gate)
++result = gate.detect({"tool_name": "Bash", "tool_input": {"command": command, "run_in_background": True}})
++print("deny" if isinstance(result, dict) and result.get("decision") == "deny" else "allow")
++PY
++}
++check "4 la entrada declarada no es un payload no gestionado" "$(verdict 'bash bin/image-registry-build-declared-image --task TASK-THYROX-0912 thyrox-model-quantizer')" "allow"
++check "4 la primitiva genérica se niega" "$(verdict 'bash bin/podman-execution-execute build-image --task TASK-THYROX-0912 --context / --tag x:y')" "deny"
++check "4 un payload de shell se niega" "$(verdict 'bash -c id')" "deny"
++
++refused() { bash "$ENTRY" "$@" >/dev/null 2>&1; echo "$?"; }
++check "5 una identidad no declarada" "$(refused --task TASK-THYROX-0912 thyrox-anything)" "2"
++check "5 run como identidad" "$(refused --task TASK-THYROX-0912 run)" "2"
++check "5 --context del llamador" "$(refused --task TASK-THYROX-0912 --context / thyrox-model-quantizer)" "2"
++check "5 --mount del socket de Podman" "$(refused --task TASK-THYROX-0912 --mount /run/podman/podman.sock thyrox-model-quantizer)" "2"
++check "5 Podman no se invocó en ningún rechazo" "$(cat "$TMP/podman.calls" 2>/dev/null | wc -l | tr -d ' ')" "0"
++
++echo "test-declared-image-build-entry: $ok ok, $failures falla(s)"
++(( failures == 0 ))

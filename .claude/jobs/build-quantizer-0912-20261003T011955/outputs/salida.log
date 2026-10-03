@@ -1,0 +1,2 @@
+{"image":"thyrox-model-quantizer","tag":"localhost/thyrox-model-quantizer:candidate-81e5a993a7be","id":"245ae25cd5be5fe2df6212c424b7e21d54cc7b3254f5e3dc192cfb7d8b7112a8","lifecycle":"permanent","definition":{"context":"src/packages/model-artifacts/quantizer-image","commit":"81e5a993a7be1a02e934c8922ec79ae4895ce07d"}}
+__BG_EXIT__=0

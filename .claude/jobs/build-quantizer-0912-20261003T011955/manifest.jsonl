@@ -1,0 +1,2 @@
+{"kind": "launch", "instrument": "bin/image-registry-build-declared-image --task TASK-THYROX-0912 thyrox-model-quantizer", "started_at": "2026-10-03T01:19:55+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-03T01:20:27+00:00", "duration_seconds": 32.970331}
