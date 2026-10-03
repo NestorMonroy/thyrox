@@ -33,3 +33,36 @@ variable a `THYROX_LOCAL_MODEL_CONTEXT_LENGTH`, el vocabulario del dominio (`con
 El caso 4b no podía verlo: su ejecutor es un doble que no autoriza. Prueba de contrato nueva en
 `executionAuthorization.test.ts`: lee de `headless-pool.sh` los nombres que pasa con `--env` y los autoriza
 de verdad. RED con el nombre anterior (rehúsa exactamente esa variable); GREEN tras el renombre (29/29).
+
+## A6 r6 — el contexto declarado era el de otro tokenizador (H-THYROX-447)
+
+`request (25468 tokens) exceeds the available context size (24832)`: 24663 era el prompt de `thyrox -p`
+medido con otro modelo (`pool-r5`, n_ctx 4096). Se declara el contexto cualificado, 32768 (7246 MiB < 8192).
+
+## A6 r7 — el corte implícito de 300 s del fetch de Bun
+
+`TimeoutError` en el túnel (`POST - http://localhost/v1/messages failed`) y en `thyrox -p`. Mismo defecto
+que H-THYROX-417 en otra ruta. Cuatro `fetch` en serie sin plazo declarado más el del cliente:
+
+| salto | arreglo | prueba | anulación |
+|---|---|---|---|
+| túnel (`credentialProxy.ts`) | `timeout: false` | 4b (fetch interceptado) | cae exactamente 4b |
+| proxy → relé (`openaiCompat/forwarder.ts`) | `timeout: false`, plazo por `signal` | forwarder (fetch inyectado) | cae exactamente esa |
+| relé → unidad (`admittedUpstream.ts`) | `timeout: false` | relé (fetch interceptado) | cae exactamente esa |
+| guarda de `localProxy.ts` | `timeout: false` | **sin prueba propia**: proceso aparte; su control es la A6 real | — |
+| cliente `thyrox -p` (`anthropicHttp.ts`) | `timeout: false` + `AbortSignal.timeout(API_TIMEOUT_MS)` (REUSE de la autoridad de `anthropic/client.ts`, 600 s) | 2 pruebas | sin `timeout:false` cae 1; sin la señal cae esa y la del plazo cuelga |
+| pool | `API_TIMEOUT_MS` = `--timeout` × 1000 si no se declaró; nombrada a la unidad | caso 4c | cae exactamente 4c |
+
+Sonda `probes/bun_serve_idle_timeout.ts`: el `idleTimeout` de 10 s de `Bun.serve` corta un GET pendiente y
+**no** un POST; todos los saltos son POST, así que no se toca. La prueba de 11 s que lo pretendía cubrir pasó
+sin arreglo y se retiró por no discriminar.
+
+## Unidad gestionada + worktree aislado (EXTEND de headless-pool, TASK-THYROX-0919)
+
+`--execution unit` rehusaba `--isolation worktree` («todavía»). Ahora el runner monta la raíz principal y la
+unidad recibe la raíz del worktree como `THYROX_POOL_ITEM_ROOT` (el payload la restituye como `THYROX_ROOT`) y el
+envoltorio de git primero en el PATH; se monta el directorio git común. Caso 6: RED 6 fallas → GREEN 22/22.
+
+Suite derivada (`evidence/a6-r4-oom/derived-suite-timeouts.txt`): los rojos preexistentes de siempre; uno nuevo
+de `env_contract_keys` (variable sin declarar) y uno del control de `worktree` (mi comentario contenía la cadena
+que el control cuenta), ambos corregidos; `bg-stdin` falló una vez con el anfitrión a ~1 GB libres y pasa al repetir.

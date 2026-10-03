@@ -115,6 +115,22 @@ check "caso 4b: la unidad nombra la variable del contexto" \
   "$(grep -c -- '--env THYROX_LOCAL_MODEL_CONTEXT_LENGTH' "$F/execute.log")" "1"
 check "caso 4b: thyrox -p recibe el contexto declarado" "$(cat "$F/context.log")" "24663"
 
+# Caso 4c (A6 r7): la petición de `thyrox -p` a un modelo en CPU puede tardar
+# minutos en su primer byte. Su plazo (API_TIMEOUT_MS, 600 s por defecto) no
+# puede ser menor que el del ítem: el pool lo declara igual a --timeout, y una
+# declaración previa gana.
+cat > "$F/thyrox-p-timeout" <<R
+#!/usr/bin/env bash
+printf '%s\n' "\${API_TIMEOUT_MS:-ausente}" >> "$F/timeout.log"
+R
+chmod +x "$F/thyrox-p-timeout"
+: > "$F/timeout.log"
+printf 'alfa\n' | HEADLESS_POOL_RUNNER="$F/thyrox-p-timeout" \
+  pool --out "$F/out-timeout" --execution unit --work-reference ai-course-notes:cs224r --timeout 1800 >/dev/null 2>&1
+printf 'alfa\n' | API_TIMEOUT_MS=777 HEADLESS_POOL_RUNNER="$F/thyrox-p-timeout" \
+  pool --out "$F/out-timeout-declared" --execution unit --work-reference ai-course-notes:cs224r --timeout 1800 >/dev/null 2>&1
+check "caso 4c: el plazo de la petición es el del ítem, y uno declarado gana" "$(tr '\n' ' ' < "$F/timeout.log")" "1800000 777 "
+
 # Caso 5: la identidad del consumidor se reconstruye desde la evidencia publicada.
 # El runner real imprime `execution <contenedor> kind=… work=<ref>` por stderr
 # (executionCommand.test.ts); el doble repite esa línea, y el pool tiene que
@@ -134,6 +150,46 @@ printf 'alfa\nbeta\n' | pool --out "$F/out-ident" --execution unit --work-refere
 check "caso 5: el .err de cada ítem conserva su referencia de trabajo" \
   "$(cat "$F/out-ident/1.err" "$F/out-ident/2.err" 2>/dev/null | gawk '/^execution /{for(i=1;i<=NF;i++) if($i ~ /^work=/) print $i}' | sort | tr '\n' ' ')" \
   "work=ai-course-notes:es-mx/cs224r/translate/20261002T000000/1 work=ai-course-notes:es-mx/cs224r/translate/20261002T000000/2 "
+
+# Caso 6 (TASK-THYROX-0919): un ítem que implementa corre en la unidad
+# gestionada Y en su worktree aislado. El runner monta la raíz principal
+# (THYROX_ROOT del runner); dentro de la unidad, THYROX_ROOT es el worktree
+# del ítem y el envoltorio de git va primero en el PATH, como en el anfitrión.
+# La verificación y la finalización corren en el anfitrión al salir el ítem.
+git init -q "$F/repo" && git -C "$F/repo" -c user.email=t@t -c user.name=t commit -q --allow-empty -m base
+export THYROX_POOL_WORKTREES_DIR="$F/worktrees"
+cat > "$F/execute" <<R
+#!/usr/bin/env bash
+[[ "\$1" == run ]] || exit 2
+args=(); keep=(); while [[ \$# -gt 0 && "\$1" != "--" ]]; do
+  [[ "\$1" == --env ]] && keep+=("\$2=\${!2}"); args+=("\$1"); shift; done; shift
+printf '%s\n' "\${args[*]}" >> "$F/execute.log"
+printf 'runner-root=%s\n' "\$THYROX_ROOT" >> "$F/execute.log"
+exec env -i PATH="\$PATH" HOME="\$HOME" "\${keep[@]}" "\$@"
+R
+cat > "$F/thyrox-p-implements" <<R
+#!/usr/bin/env bash
+printf 'item-root=%s\nguard=%s\n' "\$THYROX_ROOT" "\$(command -v git)" >> "$F/item.log"
+printf 'hola\n' > a.txt
+R
+chmod +x "$F/execute" "$F/thyrox-p-implements"
+: > "$F/execute.log"; : > "$F/item.log"
+printf 'alfa\n' | (cd "$F/repo" && HEADLESS_POOL_RUNNER="$F/thyrox-p-implements" \
+  pool --out "$F/out-wt" --execution unit --work-reference thyrox:task-0919 \
+       --isolation worktree --verify 'test "$(cat a.txt)" = hola') >/dev/null 2>&1; CODE=$?
+check "caso 6: --execution unit con --isolation worktree no se rehúsa" "$CODE" "0"
+check "caso 6: el runner monta la raíz principal, no el worktree" \
+  "$(gawk -F= '/^runner-root=/{print $2}' "$F/execute.log")" "$ROOT"
+check "caso 6: dentro de la unidad, THYROX_ROOT es el worktree del ítem" \
+  "$(gawk -F= '/^item-root=/{print ($2 ~ "^'"$F"'/worktrees/") ? "worktree" : $2}' "$F/item.log")" "worktree"
+check "caso 6: el envoltorio de git va primero en el PATH de la unidad" \
+  "$(gawk -F= '/^guard=/{print ($2 ~ /item_git_guard\/git$/) ? "guarda" : $2}' "$F/item.log")" "guarda"
+check "caso 6: el verifier corre en el anfitrión y el veredicto es verificado" "$(cat "$F/out-wt/1.verdict" 2>/dev/null)" "verificado"
+check "caso 6: el parche trae el archivo que escribió el ítem" "$(cat "$F/out-wt/1.files" 2>/dev/null)" "a.txt"
+check "caso 6: la unidad nombra THYROX_POOL_ITEM_ROOT y THYROX_POOL_ITEM_GIT_GUARD_DIR" \
+  "$(grep -c -- "--env THYROX_POOL_ITEM_ROOT --env THYROX_POOL_ITEM_GIT_GUARD_DIR" "$F/execute.log")" "1"
+git -C "$F/repo" worktree prune 2>/dev/null
+unset THYROX_POOL_WORKTREES_DIR
 
 echo; echo "$PASS ok · $FAIL falla(s) (alcance medido: headless-pool --execution unit)"
 [[ $FAIL -eq 0 ]]

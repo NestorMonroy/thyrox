@@ -51,6 +51,18 @@ async function errorOf(response: Response): Promise<{ type: string; message: str
 }
 
 describe('errores del upstream', () => {
+  // A6 r7: el upstream local es un modelo en CPU cuyo primer byte tarda
+  // minutos; el corte de 300 s del fetch de Bun no puede decidir el plazo.
+  test('la petición al upstream no hereda el plazo de 300 s del fetch de Bun', async () => {
+    let seen: (RequestInit & { timeout?: boolean }) | undefined
+    const forwarder = createOpenAICompatForwarder({
+      next: () => Promise.resolve(new Response('next')), upstreams: { open: { name: 'open', baseUrl: 'http://127.0.0.1:9/v1' } }, env: ENV,
+      fetch: (async (_url: string, init?: RequestInit) => { seen = init; return Response.json({ choices: [{ message: { role: 'assistant', content: 'ok' } }] }) }) as typeof fetch,
+    })
+    await forwarder(routed(HELLO))
+    expect(seen?.timeout).toBe(false)
+  })
+
   test('conexión rechazada → 502 api_error con el upstream y la URL', async () => {
     const baseUrl = refusedBaseUrl()
     const response = await forwarderTo({ name: 'open', baseUrl })(routed(HELLO))

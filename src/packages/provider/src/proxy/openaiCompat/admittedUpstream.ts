@@ -123,11 +123,14 @@ async function forwardAdmitted(
   const target = `${ticket.unit.endpoint}${path}`
   let runtimeResponse: Response
   try {
+    // Sin el corte de 300 s del fetch de Bun: un modelo en CPU tarda minutos
+    // en el prefill, y el plazo lo deciden el pool y el proxy (A6 r7).
     runtimeResponse = await fetch(target, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({ ...body, model: ticket.grant.artifact.modelId }),
-    })
+      timeout: false,
+    } as RequestInit)
   } catch (error) {
     release()
     return openAIError(UPSTREAM_UNREACHABLE_STATUS, 'upstream_unreachable', `no se pudo conectar con el runtime en ${target}: ${messageOf(error)}`)

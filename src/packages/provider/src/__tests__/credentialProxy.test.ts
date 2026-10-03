@@ -82,6 +82,28 @@ describe('startCredentialProxy', () => {
     expect(((await response.json()) as { id?: string }).id).toBe('msg_mock')
   })
 
+  // A6 r7: «POST - http://localhost/v1/messages failed … TimeoutError» fue el
+  // túnel: su reenvío heredaba el corte de 300 s del fetch de Bun mientras el
+  // modelo local seguía en el prefill.
+  test('4b. el reenvío del túnel no hereda el plazo de 300 s del fetch de Bun', async () => {
+    const socketPath = await setup([])
+    const original = globalThis.fetch
+    const forwarded: (RequestInit & { timeout?: boolean })[] = []
+    globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit & { unix?: string }) => {
+      if (init?.unix === undefined) forwarded.push(init ?? {})
+      return original(input, init)
+    }) as typeof fetch
+    try {
+      await fetch('http://localhost/v1/messages', {
+        method: 'POST', unix: socketPath, headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ model: 'claude-sonnet-5', max_tokens: 8, messages: [{ role: 'user', content: 'hi' }] }),
+      } as RequestInit)
+    } finally {
+      globalThis.fetch = original
+    }
+    expect(forwarded.map(init => init.timeout)).toEqual([false])
+  })
+
   test('5. la credencial del servicio es la del proxy, nunca la que trae la petición', async () => {
     const seen: Array<Record<string, unknown>> = []
     const socketPath = await setup(seen)

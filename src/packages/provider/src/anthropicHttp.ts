@@ -52,6 +52,14 @@ export type HttpProviderOptions = {
 
 /** Los que se reintentan: sobrecarga y fallo del servicio, más el límite de tasa. */
 const REINTENTABLES = new Set([408, 429, 500, 502, 503, 529])
+/** El plazo de una petición cuando `API_TIMEOUT_MS` no lo declara: el de `anthropic/client.ts`. */
+const DEFAULT_API_TIMEOUT_MS = 600_000
+
+/** `API_TIMEOUT_MS` si es un entero positivo; si no, el plazo por defecto. */
+function apiTimeoutMs(env: NodeJS.ProcessEnv | Record<string, string | undefined>): number {
+  const declared = Number.parseInt(env.API_TIMEOUT_MS ?? '', 10)
+  return Number.isInteger(declared) && declared > 0 ? declared : DEFAULT_API_TIMEOUT_MS
+}
 
 export class AnthropicHttpProvider implements Provider {
   readonly name = 'anthropic-http'
@@ -68,6 +76,7 @@ export class AnthropicHttpProvider implements Provider {
   private sleep: (ms: number) => Promise<void>
   private fallbackModel?: string
   private fetchImpl: FetchImpl
+  private timeoutMs: number
 
   constructor(opts: HttpProviderOptions = {}) {
     const env = opts.env ?? process.env
@@ -90,6 +99,7 @@ export class AnthropicHttpProvider implements Provider {
     this.sleep = opts.sleep ?? ((ms) => new Promise((resolve) => setTimeout(resolve, ms)))
     this.fallbackModel = opts.fallbackModel
     this.fetchImpl = opts.fetchImpl ?? ((u, i) => fetch(u, i))
+    this.timeoutMs = apiTimeoutMs(env)
   }
 
   private cuerpo(request: ProviderRequest, model: string): string {
@@ -140,6 +150,11 @@ export class AnthropicHttpProvider implements Provider {
         body: this.cuerpo(request, model),
         // `ANTHROPIC_UNIX_SOCKET`: Bun acepta `unix` en `fetch`
         ...(this.credential.unixSocket ? { unix: this.credential.unixSocket } : {}),
+        // El plazo es el declarado (API_TIMEOUT_MS), no el corte implícito de
+        // 300 s del fetch de Bun: un modelo local en CPU puede tardar minutos
+        // en su primer byte (A6 r7).
+        timeout: false,
+        signal: AbortSignal.timeout(this.timeoutMs),
       } as RequestInit)
       this.leerLimites(res)
       if (res.ok) return { res, ultimo: '' }

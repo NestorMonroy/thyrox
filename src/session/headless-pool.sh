@@ -258,7 +258,6 @@ case "$EXECUTION" in
     unit)
         [[ "$WORK_REFERENCE" =~ ^[a-z0-9][a-z0-9-]*:[A-Za-z0-9][A-Za-z0-9_.:/-]*$ ]] \
             || rehusa "--execution unit exige --work-reference CONSUMIDOR:ÁMBITO, la identidad de trabajo del consumidor; no: ${WORK_REFERENCE:-(vacía)}"
-        [[ -z "$ISOLATION" ]] || rehusa "--execution unit no va todavía con --isolation worktree"
         [[ -z "$CREDENTIAL_PROXY$STORE_CREDENTIAL_PROXY$CREDENTIAL_SOURCE" ]] \
             || rehusa "--execution unit no entrega credenciales del pool al ítem: no va con --credential-*" ;;
     *) rehusa "--execution va host o unit, no: $EXECUTION" ;;
@@ -474,6 +473,13 @@ export HP_COORDINATOR_SOCKET
 # proxy local, que lo pide al coordinador. Sin él, el resolver concede el
 # máximo del modelo y la unidad de modelo puede morir por OOM (A6 r4).
 [[ -z "$CONTEXT_TOKENS" ]] || export THYROX_LOCAL_MODEL_CONTEXT_LENGTH="$CONTEXT_TOKENS"
+# El plazo de cada petición del ítem (API_TIMEOUT_MS, 600 s por defecto en el
+# cliente) no puede ser menor que el del ítem: un modelo local en CPU tarda
+# minutos en su primer byte (A6 r7). Una declaración previa gana; un --timeout
+# con sufijo (`30m`) no se traduce y el cliente conserva su plazo por defecto.
+if [[ -z "${API_TIMEOUT_MS:-}" && "$TIMEOUT" =~ ^[0-9]+$ ]]; then
+    export API_TIMEOUT_MS=$((TIMEOUT * 1000))
+fi
 # Con el modelo local el ítem no recibe ningún upstream: su `thyrox -p` pasa el
 # nombre contractual a su proxy, que pide la admisión al coordinador del
 # anfitrión y sólo alcanza la unidad del ticket (ADR-007 1.14.0, M8).
@@ -843,7 +849,23 @@ _headless_item_run() {
              unit_args=(--work "$HP_WORK_CONSUMER:$HP_WORK_SCOPE/$n" --owner "pool:${HP_WORK_SCOPE//[^A-Za-z0-9_.-]/-}-$n"
                         --kind maintenance --network host --workdir "$workdir")
              mounted=("$HP_THYROX_ROOT")
-             for path in "$workdir" "$HP_LIVE"; do
+             unit_paths=("$workdir" "$HP_LIVE")
+             if [[ "$HP_ISOLATION" == worktree ]]; then
+                 # El ítem aislado implementa dentro de la unidad: recibe el
+                 # entorno que preparó el bloque de la raíz del ítem. La raíz de su
+                 # worktree viaja con otro nombre, porque el runner necesita
+                 # THYROX_ROOT para montar la raíz principal; el payload la
+                 # restituye dentro, junto con el envoltorio de git. El
+                 # repositorio común del worktree se monta para que git lo
+                 # alcance.
+                 export THYROX_POOL_ITEM_ROOT="$THYROX_ROOT" THYROX_POOL_ITEM_GIT_GUARD_DIR="$HP_ITEM_GIT_GUARD_DIR"
+                 unit_paths+=("$THYROX_POOL_GUARDED_GIT_COMMON_DIR")
+                 unit_args+=(--env THYROX_POOL_ITEM_ROOT --env THYROX_POOL_ITEM_GIT_GUARD_DIR
+                             --env THYROX_TOOLCHAIN_NODE_MODULES_HOME --env THYROX_JOBS_DIR
+                             --env THYROX_SESSION_LEDGER_DIR --env THYROX_JOBS_ARCHIVE_DIR
+                             --env THYROX_POOL_STASH_ATTEMPTS_FILE --env THYROX_POOL_GUARDED_GIT_COMMON_DIR)
+             fi
+             for path in "${unit_paths[@]}"; do
                  covered=""
                  for parent in "${mounted[@]}"; do [[ "$path/" == "$parent/"* ]] && covered=1; done
                  [[ -n "$covered" ]] || { unit_args+=(--mount "$path:$path:rw"); mounted+=("$path"); }
@@ -854,11 +876,14 @@ _headless_item_run() {
              fi
              for name in THYROX_CODE_PROMPT_CACHE_TTL THYROX_POOL_DOCUMENT_INTENT THYROX_POOL_RUN_ID THYROX_POOL_ITEM \
                          THYROX_POOL_ITEM_GENERATION THYROX_MAILBOX_DIR THYROX_POOL_ITEM_ADDRESS \
-                         THYROX_LOCAL_MODEL_CONTEXT_LENGTH; do
+                         THYROX_LOCAL_MODEL_CONTEXT_LENGTH API_TIMEOUT_MS; do
                  [[ -z "${!name:-}" ]] || unit_args+=(--env "$name")
              done
-             exec setsid timeout "$HP_TIMEOUT" "${execute_argv[@]}" run "${unit_args[@]}" \
-                -- bash -c 'prompt="$1"; shift; exec "$@" < "$prompt"' item "$HP_LIVE/$n.prompt" "${item_argv[@]}"
+             THYROX_ROOT="$HP_THYROX_ROOT" exec setsid timeout "$HP_TIMEOUT" "${execute_argv[@]}" run "${unit_args[@]}" \
+                -- bash -c 'prompt="$1"; shift
+                            [[ -z "${THYROX_POOL_ITEM_ROOT:-}" ]] || export THYROX_ROOT="$THYROX_POOL_ITEM_ROOT"
+                            [[ -z "${THYROX_POOL_ITEM_GIT_GUARD_DIR:-}" ]] || export PATH="$THYROX_POOL_ITEM_GIT_GUARD_DIR:$PATH"
+                            exec "$@" < "$prompt"' item "$HP_LIVE/$n.prompt" "${item_argv[@]}"
          fi
          exec setsid ${HP_TIME:+"$HP_TIME" -q -f "%M %e %U %S" -o "$HP_LIVE/$n.time"} \
          timeout "$HP_TIMEOUT" "${item_argv[@]}") \

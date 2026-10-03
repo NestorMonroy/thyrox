@@ -169,7 +169,9 @@ function startLocalModelGuard(localModels: readonly string[], upstreamUrl: strin
       if (isUnservedModel(model, localModels)) {
         return invalidRequest(`el modelo ${model} no tiene upstream: este proxy sólo sirve ${localModels.join(', ')} (${LOCAL_UPSTREAM_NAME}) y no hay upstream ${UPSTREAM_NAME} (sin ejecutable de claude)`)
       }
-      return fetch(`${upstreamUrl}${url.pathname}${url.search}`, { method: request.method, headers: request.headers, body })
+      // Sin el corte de 300 s del fetch de Bun: detrás hay un modelo local que
+      // puede tardar minutos en su primer byte (A6 r7).
+      return fetch(`${upstreamUrl}${url.pathname}${url.search}`, { method: request.method, headers: request.headers, body, timeout: false } as RequestInit)
     },
   })
 }

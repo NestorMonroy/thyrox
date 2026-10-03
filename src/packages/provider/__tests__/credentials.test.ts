@@ -114,6 +114,27 @@ describe('AnthropicHttpProvider con la cadena de credenciales', () => {
     expect(h['anthropic-beta']).toBe(`${OAUTH_BETA},extended-cache-ttl-2025-04-11`)
   })
 
+  // A6 r7: «thyrox -p: The operation timed out.» a los ~300 s. El corte era el
+  // implícito del fetch de Bun, no un plazo declarado; el plazo de la petición
+  // es API_TIMEOUT_MS (600 s por defecto, `anthropic/client.ts`).
+  test('la petición no hereda el corte de 300 s del fetch de Bun y lleva el plazo declarado', async () => {
+    let init: (RequestInit & { timeout?: boolean }) | undefined
+    const p = new AnthropicHttpProvider({ env: { THYROX_CODE_OAUTH_TOKEN: 'o' }, fetchImpl: async (_u, i) => { init = i; return response() } })
+    await p.send(request as never)
+    expect(init?.timeout).toBe(false)
+    expect(init?.signal).toBeInstanceOf(AbortSignal)
+  })
+
+  test('API_TIMEOUT_MS corta la petición que no responde en ese plazo', async () => {
+    const p = new AnthropicHttpProvider({
+      env: { THYROX_CODE_OAUTH_TOKEN: 'o', API_TIMEOUT_MS: '50' }, maxRetries: 0,
+      fetchImpl: (_u, i) => new Promise<Response>((_resolve, reject) => {
+        i?.signal?.addEventListener('abort', () => reject(i.signal?.reason))
+      }),
+    })
+    await expect(p.send(request as never)).rejects.toThrow(/timed out|timeout/i)
+  }, 2_000)
+
   test('sin credencial rehúsa nombrando las fuentes que busca', () => {
     expect(() => new AnthropicHttpProvider({ env: {} })).toThrow(/THYROX_CODE_OAUTH_TOKEN/)
   })

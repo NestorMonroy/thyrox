@@ -118,6 +118,25 @@ describe('startAdmittedUpstream', () => {
     expect(source.admitted).toEqual([{ requestId: 'request-1', client: 'proxy-test', model: MODEL, contextLength: 24_663 }])
   })
 
+  // A6 r7: un prefill de 25 468 tokens en CPU tarda minutos en dar el primer
+  // byte. El corte de 300 s del fetch de Bun no puede decidirlo; el plazo es
+  // del pool y del proxy.
+  test('el reenvío a la unidad no hereda el plazo de 300 s del fetch de Bun', async () => {
+    const runtime = fakeRuntime()
+    const original = globalThis.fetch
+    const toUnit: (RequestInit & { timeout?: boolean })[] = []
+    globalThis.fetch = (async (input: string | URL | Request, init?: RequestInit) => {
+      if (String(input).startsWith(endpointOf(runtime))) toUnit.push(init ?? {})
+      return original(input, init)
+    }) as typeof fetch
+    try {
+      expect((await chat(relay(new FakeSource(admitTo(endpointOf(runtime)))), HELLO)).status).toBe(200)
+    } finally {
+      globalThis.fetch = original
+    }
+    expect(toUnit.map(init => init.timeout)).toEqual([false])
+  })
+
   test('en streaming, finish espera a que el cliente termine de leer el cuerpo', async () => {
     const runtime = fakeRuntime()
     const source = new FakeSource(admitTo(endpointOf(runtime)))

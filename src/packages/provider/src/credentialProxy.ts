@@ -59,7 +59,10 @@ export async function startCredentialProxy(options: CredentialProxyOptions): Pro
         headers,
         body: hasBody ? await request.arrayBuffer() : undefined,
         redirect: 'manual',
-      })
+        // Sin el corte de 300 s del fetch de Bun: detrás puede haber un modelo
+        // local en el prefill; el plazo es del cliente y del proxy (A6 r7).
+        timeout: false,
+      } as RequestInit)
       // El cuerpo se devuelve como flujo: una respuesta SSE llega evento a
       // evento, no al terminar.
       return new Response(response.body, { status: response.status, headers: response.headers })

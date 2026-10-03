@@ -124,7 +124,8 @@ export function createOpenAICompatForwarder(config: OpenAICompatForwarderConfig)
     const body = messagesToOpenAIRequest(request.upstreamModel, request.body, wantsStream)
     let response: Response
     try {
-      response = await send(target.url, { method: 'POST', headers: requestHeadersOf(upstream), body: JSON.stringify(body), signal: request.signal })
+      // Sin el corte de 300 s del fetch de Bun: el plazo es el del cliente, por `signal` (A6 r7).
+      response = await send(target.url, { method: 'POST', headers: requestHeadersOf(upstream), body: JSON.stringify(body), signal: request.signal, timeout: false } as RequestInit)
     } catch (error) {
       const cause = error instanceof Error ? error.message : String(error)
       return errorResponse(BAD_GATEWAY, 'api_error', `no se pudo conectar con el ${describe(target)}: ${cause}`, request.requestId)

@@ -453,6 +453,8 @@ THYROX_PODMAN_LIBPOD_TMP_DIR	config	env	revisado 2026-10-02: ruta, umbral, bande
 THYROX_PODMAN_LOCK_RECOVERY_UID	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
 THYROX_POOL_DOCUMENT_INTENT	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
 THYROX_POOL_GUARDED_GIT_COMMON_DIR	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
+THYROX_POOL_ITEM_ROOT	config	env	revisado 2026-10-03: ruta del worktree del ítem; sin valor secreto
+THYROX_POOL_ITEM_GIT_GUARD_DIR	config	env	revisado 2026-10-03: ruta del envoltorio de git; sin valor secreto
 THYROX_POOL_ITEM	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
 THYROX_POOL_ITEM_ADDRESS	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
 THYROX_POOL_ITEM_GENERATION	config	env	revisado 2026-10-02: ruta, umbral, bandera o selector; sin valor secreto
