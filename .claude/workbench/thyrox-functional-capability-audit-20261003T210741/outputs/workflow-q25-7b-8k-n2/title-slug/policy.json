@@ -1,0 +1,13 @@
+{
+  "allowed": [
+    {
+      "runtime": "ollama",
+      "repository": "Qwen/Qwen2.5-7B-Instruct-GGUF",
+      "quantization": "q4_k_m",
+      "source": "hf"
+    }
+  ],
+  "fallback": {
+    "enabled": false
+  }
+}
