@@ -1,0 +1,16 @@
+# write-route
+
+## Qué se lanzó
+
+```
+bin/headless-pool --prompt /home/user/thyrox/.claude/workbench/task-thyrox-0919-local-worker-20261003T120524/probes/write-route/prompt.md --out /home/user/thyrox/.claude/workbench/task-thyrox-0919-local-worker-20261003T120524/probes/write-route/out --task-class mecanica --context-tokens 32768 --system-budget-tokens 8200 --width 1 --timeout 2400 --max-turns 3 --tools Read,Write,Edit,Bash --execution unit --work-reference thyrox:write-route --isolation worktree --verify test "$(wc -l < probe_write.txt)" -eq 60 && grep -q "linea 60: def handler_60" probe_write.txt
+```
+
+## Qué se preguntaba
+
+<!-- la clave `question` del manifiesto -->
+
+## Qué se recogió
+
+*Metrica:*
+*Ciega a:*
