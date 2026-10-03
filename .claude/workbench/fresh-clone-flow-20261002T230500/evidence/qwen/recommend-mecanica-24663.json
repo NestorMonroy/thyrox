@@ -1,0 +1,19 @@
+{
+  "runtime": "ollama",
+  "model": "thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e",
+  "taskClass": "mecanica",
+  "contextTokens": 24663,
+  "qualification": {
+    "model": "thyrox-qwen--qwen3-4b-gguf:q4_k_m-hf-bc640142c66e",
+    "kind": "task",
+    "taskClass": "mecanica",
+    "suite": "batch-worker-mecanica@1",
+    "casesPassed": 4,
+    "casesTotal": 4,
+    "passed": true,
+    "contextTokens": 32768,
+    "tokensPerSecond": 3.0532896403261973,
+    "measurementCondition": "contended",
+    "measuredAt": "2026-10-03T10:58:35.337Z"
+  }
+}
