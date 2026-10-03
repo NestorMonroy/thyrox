@@ -1,0 +1,8 @@
+FALLA single_tool	{"content":"<tools>\n  {\n    \"name\": \"get_weather\",\n    \"arguments\": {\n      \"city\": \"Madrid\"\n    }\n  }\n
+FALLA integer_arguments	{"content":"<response>\n  {{\"name\": \"add\", \"arguments\": {\"a\": 17, \"b\": 25}}}\n</response>","toolCalls":[]}
+FALLA choose_between_tools	{"content":"```json\n{\n  \"name\": \"read_file\",\n  \"arguments\": {\n    \"path\": \"/etc/hostname\"\n  }\n}\n```","t
+FALLA enum_argument	{"content":"```json\n{\"name\": \"set_mode\", \"arguments\": {\"mode\": \"safe\"}}\n```","toolCalls":[]}
+ok   no_tool_needed	{"content":"hello","toolCalls":[]}
+ok   continuation_after_tool	{"content":"The result of adding 17 and 25 is 42.","toolCalls":[]}
+suspendida: thyrox-qwen--qwen2.5-coder-7b-instruct-gguf:q4_k_m-hf-13fb94bfda8c protocolo tool-calling@1 2/6, 2.4 tokens/s (isolated), ctx 8192 → /home/user/thyrox/.thyrox/models/qualifications.json
+__BG_EXIT__=1

@@ -438,3 +438,17 @@ pero **no** cualifica para cambiar un repositorio. Según F8, el siguiente paso
 es evaluar un coder mayor por el mismo pipeline; F14 lo condiciona a disco,
 perfil, admisión y cualificación: los cuatro existen salvo la admisión por CPU
 (TASK-THYROX-0932, #19), que un 7B en CPU necesita.
+
+### F8 — coder mayor por el mismo pipeline (2026-10-03)
+
+| modelo | resultado | causa |
+|---|---|---|
+| Qwen2.5-Coder-7B-Instruct Q4_K_M (`13fb94bf…`, sha `509287f7…`) | **protocolo suspendido 2/6** a 8K, 2.4 tok/s | escribe las llamadas como TEXTO (`<tools>`, JSON cercado, `<response>`), no por el formato de herramientas: no elegible |
+
+Techo físico medido para un candidato local: disco 8.7 GB de asignación fija
+(copias: caché + blob de la unidad), RAM efectiva ≈ 6 GB tras el piso (cgroup
+ancestro 8.33 GB que cuenta la caché de páginas). Qwen3-8B Q4 a 8K
+(≈5 GB + 1.2 GB de KV) no cabe en RAM. Siguiente candidato dentro del techo:
+Qwen2.5-7B-Instruct Q4_K_M (`bb5d59e0…`, la revisión que ya nombran los fixtures
+del árbol). Coder-7B retirado con prueba (`disk/proof-before-delete-coder7b.txt`):
+su blob vivía en el volumen anónimo de su unidad y se fue con ella.

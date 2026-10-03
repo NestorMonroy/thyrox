@@ -1,0 +1,4 @@
+{
+  "refusedAt": "2026-10-03T22:39:44.992Z",
+  "reason": "admisión de disco: resource_admission disk-admit: no cabe la necesidad 9634599696 bytes; techo 11638300672 bytes, piso 2147483648 bytes, reservado por otros 0 bytes"
+}
