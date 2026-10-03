@@ -2,9 +2,11 @@
 # EXPERIMENTAL — medición exploratoria escrita antes de cerrar Search Existing:
 # no es autoridad, ni producto, ni evidencia de aceptación por sí sola.
 # ¿Qué campo de /v1/chat/completions apaga el razonamiento de Qwen3 en Ollama?
-# Uso: think_control.sh <puerto> <modelo>
+# Uso: think_control.sh <puerto> <modelo> [variante...]
 port="$1" model="$2"
-for variant in default 'reasoning_effort:"none"' 'think:false' 'reasoning_effort:"low"'; do
+variants=(default '"reasoning_effort":"none"' '"think":false' '"reasoning_effort":"low"')
+[[ $# -gt 2 ]] && variants=("${@:3}")
+for variant in "${variants[@]}"; do
   extra=""; [[ "$variant" == default ]] || extra=",$variant"
   body="{\"model\":\"$model\",\"max_tokens\":400,\"messages\":[{\"role\":\"user\",\"content\":\"¿Cuánto es 17 + 25? Responde sólo el número.\"}]$extra}"
   start=$(date +%s)
