@@ -1,0 +1,2 @@
+disponible        6410.19 MiB   ← lo que «df» llama Avail
+VEREDICTO         RESERVA_INALCANZABLE

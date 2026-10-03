@@ -45,3 +45,19 @@ EXTEND, sin autoridad nueva.
   sin servicio local declarado (o con alguno remoto), pase o no su verify.
 - Rojo `outputs/red-0930-*`; verde; anulaciones `outputs/annul-0930.txt`: ruta 3, served-by 1,
   finalize 2, unidad 3, runtime 2, ensure 2.
+
+## TASK-THYROX-0929 — disco (fase 3)
+
+Clasificación por digest (`outputs/04-artifacts.txt`): CANONICAL_DURABLE el artefacto OCI en
+docker.io/th3rox/thyrox-quantization-lab-artifacts; CACHE `.thyrox/models/artifacts`;
+RUNTIME_MATERIALIZATION el blob servido por Ollama; BUILD_INTERMEDIATE el scratch de import y
+publicación; ORPHAN el blob parcial `3e4cb141…`.
+
+- El ORPHAN lo retiró Ollama al arrancar (su poda de capas sin manifiesto): REUSE, sin acción.
+- El BUILD_INTERMEDIATE se retiró tras probar (`disk/proof-before-delete.txt`): mismo digest en
+  caché y registry, ninguna ruta lo nombra, ningún descriptor abierto. Se conservan logs y recibos.
+- 15 imágenes sin dueño por `podman-execution-execute remove-image --task TASK-THYROX-0929`
+  (`disk/remove-images.txt`): dos `rmi` retiraron toda la cadena de padres colgantes.
+- Se conservan: task-runner (`THYROX_EXEC_IMAGE`), base llama.cpp por digest, cuantizador permanente.
+- Disco disponible: 4039.71 MiB (auditoría) → 6410.19 (tras recrear Ollama) → **8791.93 MiB**.
+- Gap de ciclo de vida del scratch: NON_BLOCKING, TASK-THYROX-0936.

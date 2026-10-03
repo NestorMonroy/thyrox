@@ -1,0 +1,16 @@
+1149e955d76a	retirada 1149e955d76a
+0ea592df424b	podman-execution-execute: falló rmi sobre 0ea592df424b: Error: 0ea592df424b: image not known
+d6ab3dec5588	podman-execution-execute: falló rmi sobre d6ab3dec5588: Error: d6ab3dec5588: image not known
+9def90b2d068	podman-execution-execute: falló rmi sobre 9def90b2d068: Error: 9def90b2d068: image not known
+8377fe3a391d	podman-execution-execute: falló rmi sobre 8377fe3a391d: Error: 8377fe3a391d: image not known
+743f35287d34	podman-execution-execute: falló rmi sobre 743f35287d34: Error: 743f35287d34: image not known
+c3b06df16161	podman-execution-execute: falló rmi sobre c3b06df16161: Error: c3b06df16161: image not known
+0e2060080529	podman-execution-execute: falló rmi sobre 0e2060080529: Error: 0e2060080529: image not known
+7d91a8f92bfe	podman-execution-execute: falló rmi sobre 7d91a8f92bfe: Error: 7d91a8f92bfe: image not known
+47047972d7cd	podman-execution-execute: falló rmi sobre 47047972d7cd: Error: 47047972d7cd: image not known
+ee5d05052116	podman-execution-execute: falló rmi sobre ee5d05052116: Error: ee5d05052116: image not known
+50cb6380ea3e	podman-execution-execute: falló rmi sobre 50cb6380ea3e: Error: 50cb6380ea3e: image not known
+146a25fa61fe	podman-execution-execute: falló rmi sobre 146a25fa61fe: Error: 146a25fa61fe: image not known
+276026555dc8	podman-execution-execute: falló rmi sobre 276026555dc8: Error: 276026555dc8: image not known
+79c7ebafdc7b	podman-execution-execute: falló rmi sobre 79c7ebafdc7b: Error: 79c7ebafdc7b: image not known
+81f0c522c1e9	retirada 81f0c522c1e9
