@@ -402,3 +402,39 @@ censo de identidad y un plan OCI de primera publicación, con `observe` canónic
 Mi inventario de esta tarde no lo encontró por buscar en `src/` y no en los
 benches: es Search Existing incompleto sobre la propia auditoría. Ambos se
 leen juntos; el plan de fases debe partir de los dos.
+
+---
+
+## F6 — repo-code-change@1 sobre qwen3-4b (resultado real, 2026-10-03)
+
+| corrida | contexto · presupuesto · plazo | veredicto | causa |
+|---|---|---|---|
+| `workflow-qualify-8k` | 8192 · sin tope · 600 s | no registrada → corregido | primer turno de **26 085** tokens (`exceed_context_size_error`); la suspensión no se escribía (H-THYROX-460) |
+| `workflow-qualify-8k-b2048` | 8192 · 2048 · 600 s (por defecto del pool) | suspendida 0/1, 0 tok/s | el pool mató el caso a los 600 s antes del primer evento → `timeoutSeconds` en la suite |
+| `workflow-qualify-8k-b2048-t5400` | 8192 · 2048 · 5400 s | **suspendida 0/1** (`rechazado`), 1.0 tok/s de pared | **MODEL_CAPACITY** (abajo) |
+
+La infraestructura funcionó de punta a punta en la tercera: ruta local
+(`served-by … "local":true`), unidad gestionada, worktree aislado, verify,
+cualificación `workflow` escrita con su perfil. 12 turnos, 803 s, 819 tokens
+generados.
+
+Lo que hizo el modelo (de `1.stream.jsonl`):
+
+1. corrió la prueba (bien);
+2. `Edit` reemplazó sólo la línea `raise …` por un `def title_slug` anidado con
+   `import re` y su propia normalización — duplica `slugify`, que el verify
+   prohíbe;
+3. escribió la regex `[^\u0000-\u007f]` sin escapar para JSON: el decodificador
+   la volvió un NUL literal y `slug.py` quedó binario (`source code string
+   cannot contain null bytes`); `Edit` escribió fielmente lo recibido;
+4. editó el archivo de pruebas (la plantilla lo prohíbe);
+5. repitió un `Edit` sin cambio (old == new) tres veces y la misma prueba cinco:
+   el bucle exacto que el vigilante detiene (aquí su proceso se había retirado
+   a mano, H-THYROX-467);
+6. su última llamada salió como TEXTO (protocolo de herramientas roto).
+
+Conclusión: qwen3-4b a 8K pasa protocolo (6/6) y mecanica de un turno (4/4),
+pero **no** cualifica para cambiar un repositorio. Según F8, el siguiente paso
+es evaluar un coder mayor por el mismo pipeline; F14 lo condiciona a disco,
+perfil, admisión y cualificación: los cuatro existen salvo la admisión por CPU
+(TASK-THYROX-0932, #19), que un 7B en CPU necesita.

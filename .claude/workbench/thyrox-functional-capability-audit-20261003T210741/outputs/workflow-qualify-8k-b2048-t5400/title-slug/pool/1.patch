@@ -1,0 +1,27 @@
+diff --git a/src/packages/local-models/suites/repo-code-change-1/textkit/slug.py b/src/packages/local-models/suites/repo-code-change-1/textkit/slug.py
+index bf664813da750f371747a09a816d3c95351b9e62..59187b0025beebf61d4e421266fcc273d90f07a7 100644
+GIT binary patch
+delta 377
+zcmZ9HQA)%x5Qaq%q^B6zhqSQU11xv}AAE7&N?q2?tcj#aH=R<~mtIM);Bh>KlZizz
+zFpx~X|DS)pZ$587zOHADCm>4>_k$Z>O1ZAV+0Ih6Er5^h`Va{s%4-D=A$A96-x0`g
+zC9VAUrLW<R>3SHS%cz>CtIgc1H7G8DtJ;MLV_6j}n*mnv*gH#LJq4IT)PvZ`jh+5%
+z>mhMjmt?y*`s0Cej*MGg#^43;?TDx)psXT}^vmo0;@wPVp4V)JY2g&21mGw+NSh+2
+kQTKscvhL!M0hlZqFqht-&#@!Y7(J+ss$W@D{u^2qKetJI9{>OV
+
+delta 48
+zcmdnU@rrfBAtsHY#LVJU1;6|f&)kBX)ZEm(lGGH}qN4mF4W*LIlAP4|;+)cSB~2~>
+D&ae^#
+
+diff --git a/src/packages/local-models/suites/repo-code-change-1/textkit/test_slug.py b/src/packages/local-models/suites/repo-code-change-1/textkit/test_slug.py
+index 69712bd99..771eef481 100644
+--- a/src/packages/local-models/suites/repo-code-change-1/textkit/test_slug.py
++++ b/src/packages/local-models/suites/repo-code-change-1/textkit/test_slug.py
+@@ -2,7 +2,7 @@
+ 
+ import unittest
+ 
+-from textkit.slug import slugify, title_slug
++from textkit.slug import title_slug
+ 
+ 
+ class SlugifyTest(unittest.TestCase):
