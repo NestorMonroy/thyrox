@@ -63,3 +63,24 @@ versionada. TASK-THYROX-0912.
 entrada; el veredicto de la barrera.
 *Ciega a:* el digest de registro (la imagen no se ha publicado; el id es del
 almacén local) y el contenido de la imagen (validación pendiente).
+
+## Cierre tras la revisión (b8a4d3d38)
+
+- **Admisión de disco**: la construcción declarada reserva su pico declarado
+  (`estimatedDiskBytes`, 3 GiB para el cuantizador: medido 5316 → 2452 MiB)
+  por `resource_admission` antes de Podman, y la suelta al terminar o fallar.
+  Prueba real por la ruta declarada con 2462 MiB libres: **rehusado, exit 2,
+  sin construir** (`outputs/admission-refusal-real.log`).
+- **Cierre de la definición**: la revisión se mide sobre el catálogo
+  (`declaredImages.ts`) y el contexto; un catálogo sin commitear ya no se
+  etiqueta con un commit limpio.
+- `--work` se valida con los patrones de la autorización.
+- La prueba de política exige el motivo del rechazo, no sólo el exit 2.
+- Anulación (`outputs/annulment3.txt`): sin admisión caen 2; sin el catálogo
+  en el cierre cae 1; los mutantes anteriores siguen cayendo.
+- `81e5a993a` está publicado en `origin/feature/complete-orm-root` (medido).
+- Identidad: el id `245ae25…` es **id local de Podman**, no digest OCI; el
+  digest de distribución queda pendiente de la publicación.
+
+Pendiente fuera de 0912: una construcción admitida necesita ~3 GiB libres, y
+la publicación necesita su propia ruta declarada.
