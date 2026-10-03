@@ -219,3 +219,79 @@ la conversación registra que la reparación «la autoriza el operador».
 *Métrica:* contenido de rama, diff de reglas, política y hooks, y los
 `permissions` del settings activo y de su copia.
 *Ciega a:* el estado interno del clasificador; sólo se ve su veredicto.
+
+## Correcciones del ejecutor a P0a (2026-10-03)
+
+1. **`execution_policy.json` pasa a `SEARCH_INCOMPLETE`.** La autoridad que
+   deja al orquestador lanzar una entrada en el anfitrión ya existe:
+   `control_plane_entries.tsv` → `detect_client_background` →
+   `managed_execution.sh`. P0c4 corre la entrada nueva con la política vigente.
+   Sólo un RED que muestre que la política rehúsa a ese actor justifica tocarla:
+   el controlador no modifica su propia política para autorizarse.
+2. **El disparo tras un reinicio pasa a `SEARCH_INCOMPLETE`.** `SessionStart`
+   pertenece al ciclo de vida del cliente. Un self-healing que dependa de que
+   Claude Code emita un evento no es autónomo. `SessionStart` puede ser un
+   consumidor más de la entrada, nunca su única causa.
+
+### Búsqueda ampliada del dueño del arranque del anfitrión
+
+Recorrido: `src/packages/{daemon,app-host,cli}`, `src/session`, `src/lib`.
+
+- **El daemon de thyrox** es único por anfitrión y aloja al coordinador de
+  modelos. Su `install` promete «persists across reboot», pero sólo está
+  portado launchd (`launchAgent.ts:10`: systemd queda para «a later pass»).
+  Este anfitrión no tiene sistema de init: el PID 1 es `process_api`.
+  **Nada de thyrox corre al arrancar esta VM.**
+- **El arranque del daemon** (`bgDaemon.ts`: `tengu_bg_daemon_boot`, y el
+  reescaneo de `dispatchSpool`) sí es un punto de arranque propio, pero el
+  daemon mismo lo lanza `model_coordinator start` a petición.
+- **`app-host` y `cli`:** ningún arranque que toque la infraestructura.
+
+**Vía sin cliente que existe hoy: el primer consumidor local.**
+`infrastructureReady` (local-models) y `headless-pool` ya llaman al ensure
+antes de usar Ollama y Redis. Si llaman a la entrada de P0, el primer uso
+local tras un reinicio cura el anfitrión sin Claude ni persona.
+
+El disparo de arranque «real» (una unidad de servicio de thyrox) queda como
+`SEARCH_INCOMPLETE` hasta que se porte el servicio para un init que este
+anfitrión no tiene.
+
+### `--after-reboot` es un modo explícito
+
+| Modo | Autoridad que autoriza |
+|---|---|
+| `--confirm` | el operador |
+| `--after-reboot` | el plano de control, con prueba |
+
+Sin argumento, el script sigue publicando sólo el plan. `--after-reboot` exige
+**todas** estas condiciones: versión soportada, sqlite, uid 0, marcador
+presente, `marker.mtime < kernel.btime`, el desfase exacto (asignados <
+referenciados) y 0 contenedores vivos. Si falla cualquiera, **rehúsa**: nunca
+cae en `--confirm`.
+
+### Postcondición añadida: datos verificados
+
+`healthy` + `preserved` no prueba que los datos sigan útiles. P0f exige dos
+canarios:
+
+- **PostgreSQL:** un centinela conocido sobrevive al reinicio, idéntico;
+- **Ollama:** un modelo gestionado conocido sigue visible y responde a una
+  inferencia controlada.
+
+### Plan P0 vigente
+
+| Paso | Qué | Archivos |
+|---|---|---|
+| P0b | recuperación manual única: `--confirm` → ensure | ninguno |
+| P0c1 | `podman_lock_recovery --after-reboot` + guardas, RED/GREEN/anulación | `src/session/podman_lock_recovery.sh`, `tests/session/test-podman-lock-recovery.sh` |
+| P0c2 | composición delgada `local_control_plane_ready` (sin verbos de Podman propios: mide por `podman_lock_recovery`, converge por `infrastructure_ensure`, observa por `podman-execution-execute observe`) | `src/session/local_control_plane_ready.sh`, `tests/session/test-local-control-plane-ready.sh`, `bin/local_control_plane_ready` (generado) |
+| P0c3 | declararla | `src/session/control_plane_entries.tsv` |
+| P0c4 | probar si la política vigente ya la admite | prueba en el mismo test |
+| P0c5 | EXTEND de `execution_policy.json` **sólo** con el RED de P0c4 | — |
+| P0d | composición real con guardas | — |
+| P0e | postcondiciones + canarios de datos | — |
+| P0f | reinicio real sin intervención | — |
+
+Las cabeceras de H-THYROX-445 se corrigen en P0c2:
+`src/packages/local-models/infrastructureReadiness.ts` y
+`src/packages/podman-execution/podmanLockCollision.ts`.
