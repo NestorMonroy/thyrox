@@ -19,10 +19,18 @@
 #             │      → --classify (tiene que ser HEALTHY) ─────────→ ensure
 #             └─ REFUSED <razón> o cualquier otra salida → cierra en falso
 #
-# Uso: local_control_plane_ready [contenedor...] — los argumentos son la
-#      selección que recibe infrastructure_ensure.
+# Tras la infraestructura (TASK-THYROX-0928) compone dos autoridades más:
 #
-# Exit 0  plano de control listo: infrastructure_ensure salió 0.
+#   podman-execution-execute reconcile-orphans   retira los contenedores cuyo dueño murió
+#   model_coordinator start | status              deja el coordinador de modelos en marcha
+#
+# Uso: local_control_plane_ready [contenedor...] — converge; los argumentos son
+#      la selección que recibe infrastructure_ensure.
+#      local_control_plane_ready --status — sólo mide: veredicto del motor y
+#      estado del coordinador. No repara ni converge. Exit 0 listo, 1 no listo.
+#      local_control_plane_ready --help — imprime este uso y no llama a nada.
+#
+# Exit 0  plano de control listo: infraestructura, huérfanos y coordinador.
 # Exit 2  cerrado en falso: veredicto REFUSED, fuera del contrato, o la
 #         reparación no dejó el motor sano. Nada converge.
 # Otro    la salida de --after-reboot o de infrastructure_ensure, propagada.
@@ -39,6 +47,9 @@ readonly VERDICT_RECOVERABLE="KNOWN_POST_REBOOT_RECOVERABLE"
 
 LOCK_RECOVERY_BIN="$(thyrox_config_value THYROX_CONTROL_PLANE_LOCK_RECOVERY_BIN "$_READY_HERE/../../bin/podman_lock_recovery")"
 INFRA_ENSURE_BIN="$(thyrox_config_value THYROX_CONTROL_PLANE_INFRA_ENSURE_BIN "$_READY_HERE/../../bin/infrastructure_ensure")"
+RECONCILE_BIN="$(thyrox_config_value THYROX_CONTROL_PLANE_RECONCILE_BIN "$_READY_HERE/../../bin/podman-execution-execute")"
+COORDINATOR_BIN="$(thyrox_config_value THYROX_CONTROL_PLANE_COORDINATOR_BIN "$_READY_HERE/../../bin/model_coordinator")"
+readonly EXIT_NOT_READY=1
 
 fail_closed() {
   printf 'local_control_plane_ready: %s\n' "$1" >&2
@@ -66,8 +77,31 @@ recover_after_reboot() {
   [[ "$verdict" == "$VERDICT_HEALTHY" ]] || fail_closed "tras --after-reboot el veredicto es «$verdict», no $VERDICT_HEALTHY; no se converge."
 }
 
-main() {
-  local verdict
+usage() {
+  sed -n '/^# Uso:/,/^# Exit 0/p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+}
+
+# @description Sólo mide: el veredicto del motor y el estado del coordinador.
+# Nunca repara ni converge — un status que actúa fue el episodio de 0928.
+report_status() {
+  local verdict ready=0
+  verdict="$(classify)"
+  printf 'motor: %s\n' "$verdict"
+  [[ "$verdict" == "$VERDICT_HEALTHY" ]] || ready=1
+  bash "$COORDINATOR_BIN" status || ready=1
+  (( ready == 0 )) || exit "$EXIT_NOT_READY"
+}
+
+# @description Tras la infraestructura: huérfanos fuera y coordinador en marcha.
+# Cada paso que falla corta la composición con su salida.
+converge_runtime() {
+  bash "$RECONCILE_BIN" reconcile-orphans || exit $?
+  bash "$COORDINATOR_BIN" start >/dev/null || exit $?
+  bash "$COORDINATOR_BIN" status
+}
+
+converge() {
+  local verdict status
   verdict="$(classify)"
   case "$verdict" in
     "$VERDICT_HEALTHY") ;;
@@ -75,6 +109,17 @@ main() {
     *) fail_closed "veredicto «$verdict»: no es $VERDICT_HEALTHY ni $VERDICT_RECOVERABLE; no se repara ni se converge." ;;
   esac
   bash "$INFRA_ENSURE_BIN" "$@"
+  status=$?
+  (( status == 0 )) || exit "$status"
+  converge_runtime
+}
+
+main() {
+  case "${1:-}" in
+    --help) usage ;;
+    --status) report_status ;;
+    *) converge "$@" ;;
+  esac
 }
 
 main "$@"

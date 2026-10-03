@@ -1,0 +1,20 @@
+== help-read-only
+  FALLO caso 10: --help no llama a ninguna autoridad
+  FALLO caso 10: el uso no nombra --status: []
+46 casos: 44 ok, 2 fallos
+== status-read-only
+  FALLO caso 11: --status sólo clasifica y pregunta al coordinador
+  FALLO caso 11b: --status con la firma post-reboot sale 1
+  FALLO caso 11b: y no repara
+46 casos: 43 ok, 3 fallos
+== runtime-steps
+  FALLO caso 1: clasifica, converge, retira huérfanos y arranca el coordinador
+  FALLO caso 2: classify, after-reboot, classify, ensure
+  FALLO caso 8: pasa la selección al ensure
+  FALLO caso 12: coordinator start sale 3 -> exit 3
+  FALLO caso 12: no pregunta el estado tras el fallo
+  FALLO caso 13: reconcile sale 1 -> exit 1
+  FALLO caso 13: no arranca el coordinador
+46 casos: 39 ok, 7 fallos
+ src/session/local_control_plane_ready.sh | 55 +++++++++++++++++++++++++++++---
+ 1 file changed, 50 insertions(+), 5 deletions(-)

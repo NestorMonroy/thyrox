@@ -1,0 +1,5 @@
+(fail) decidePrintRoute — por dónde pasa thyrox -p > un modelo local con una credencial remota en el entorno va por el proxy local, nunca own [1.12ms]
+(fail) decidePrintRoute — por dónde pasa thyrox -p > un modelo local con credencial remota y proxy declarado usa ese proxy [0.20ms]
+(fail) decidePrintRoute — por dónde pasa thyrox -p > un modelo local no se va con otro --provider [0.10ms]
+ 22 pass
+ 3 fail

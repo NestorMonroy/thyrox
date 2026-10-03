@@ -1,0 +1,20 @@
+  FALLO caso 1: clasifica, converge, retira huérfanos y arranca el coordinador
+        esperado=[recovery --classify|ensure |reconcile reconcile-orphans|coordinator start|coordinator status]
+        obtenido=[recovery --classify|ensure ]
+  FALLO caso 2: classify, after-reboot, classify, ensure
+        esperado=[recovery --classify|recovery --after-reboot|recovery --classify|ensure |reconcile reconcile-orphans|coordinator start|coordinator status]
+        obtenido=[recovery --classify|recovery --after-reboot|recovery --classify|ensure ]
+  FALLO caso 8: pasa la selección al ensure
+        esperado=[recovery --classify|ensure thyrox-redis thyrox-ollama|reconcile reconcile-orphans|coordinator start|coordinator status]
+        obtenido=[recovery --classify|ensure thyrox-redis thyrox-ollama]
+  FALLO caso 10: --help no llama a ninguna autoridad
+        esperado=[]
+        obtenido=[recovery --classify|ensure --help]
+  FALLO caso 10: el uso no nombra --status: []
+  FALLO caso 11: --status sólo clasifica y pregunta al coordinador
+        esperado=[recovery --classify|coordinator status]
+        obtenido=[recovery --classify|ensure --status]
+  FALLO caso 11b: --status con la firma post-reboot sale 1
+        esperado=[1]
+        obtenido=[2]
+  FALLO caso 11b: y no repara

@@ -1,0 +1,19 @@
+podman 4.9.3 · backend sqlite · locks asignados 0, referenciados 13 · marcador /run/libpod/alive
+podman 4.9.3 · backend sqlite · locks asignados 0, referenciados 13 · marcador /run/libpod/alive
+antes: KNOWN_POST_REBOOT_RECOVERABLE
+podman 4.9.3 · backend sqlite · locks asignados 0, referenciados 13 · marcador /run/libpod/alive
+tras refrescar: locks asignados 13, referenciados 13
+podman 4.9.3 · backend sqlite · locks asignados 13, referenciados 13 · marcador /run/libpod/alive
+después: HEALTHY
+podman 4.9.3 · backend sqlite · locks asignados 13, referenciados 13 · marcador /run/libpod/alive
+thyrox-postgres action=recreated drift=stale-runtime-state created=yes started=yes health=healthy provision=applied volumes=thyrox-postgres-data:preserved
+thyrox-redis action=recreated drift=volume created=yes started=yes health=healthy provision=not-declared volumes=-
+thyrox-ollama action=recreated drift=configuration created=yes started=yes health=healthy provision=not-declared volumes=thyrox-ollama-models:preserved
+0 huérfano(s) retirado(s)
+memoria: sin GNU Time, no se mide la de este trabajo (thyrox_toolchain_require_gnu_time)
+PID=11895
+LOG=/home/user/thyrox/.claude/jobs/model-coordinator-20261003T211400/outputs/salida.log
+LIVE=/home/user/thyrox/.thyrox/runtime/jobs/model-coordinator-20261003T211400/salida.log
+RUN=/home/user/thyrox/.claude/jobs/model-coordinator-20261003T211400
+model_coordinator: sano socket=/root/.claude/model-scheduling/coordinator.sock tickets=0
+__BG_EXIT__=0

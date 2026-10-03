@@ -47,17 +47,33 @@ cat > "$WORK/ensure-double" <<STUB
 printf 'ensure %s\n' "\$*" >> "$CALLS"
 exit "\$(cat "$WORK/ensure-exit" 2>/dev/null || echo 0)"
 STUB
-chmod +x "$WORK/recovery-double" "$WORK/ensure-double"
+# TASK-THYROX-0928: tras la convergencia de la infraestructura, el composer
+# retira los huérfanos por la primitiva y deja el coordinador de modelos en
+# marcha. Sus dobles registran la llamada; `coordinator-start-exit` y
+# `coordinator-status-exit` fijan sus salidas.
+cat > "$WORK/reconcile-double" <<STUB
+#!/usr/bin/env bash
+printf 'reconcile %s\n' "\$*" >> "$CALLS"
+exit "\$(cat "$WORK/reconcile-exit" 2>/dev/null || echo 0)"
+STUB
+cat > "$WORK/coordinator-double" <<STUB
+#!/usr/bin/env bash
+printf 'coordinator %s\n' "\$*" >> "$CALLS"
+exit "\$(cat "$WORK/coordinator-\$1-exit" 2>/dev/null || echo 0)"
+STUB
+chmod +x "$WORK/recovery-double" "$WORK/ensure-double" "$WORK/reconcile-double" "$WORK/coordinator-double"
 
 # @description Prepara un escenario: los veredictos sucesivos de --classify.
 scenario() {
-  rm -f "$CALLS" "$WORK/classify-exit" "$WORK/after-reboot-exit" "$WORK/ensure-exit"
+  rm -f "$CALLS" "$WORK/classify-exit" "$WORK/after-reboot-exit" "$WORK/ensure-exit" "$WORK"/reconcile-exit "$WORK"/coordinator-*-exit
   : > "$CALLS"
   printf '%s\n' "$@" > "$WORK/verdicts"
 }
 run_ready() {
   THYROX_CONTROL_PLANE_LOCK_RECOVERY_BIN="$WORK/recovery-double" \
   THYROX_CONTROL_PLANE_INFRA_ENSURE_BIN="$WORK/ensure-double" \
+  THYROX_CONTROL_PLANE_RECONCILE_BIN="$WORK/reconcile-double" \
+  THYROX_CONTROL_PLANE_COORDINATOR_BIN="$WORK/coordinator-double" \
     bash "$SUBJECT" "$@"
 }
 calls() { paste -sd'|' "$CALLS"; }
@@ -66,14 +82,14 @@ calls() { paste -sd'|' "$CALLS"; }
 scenario HEALTHY
 run_ready >/dev/null 2>&1; rc=$?
 thyrox_check "caso 1: HEALTHY -> exit 0" "0" "$rc"
-thyrox_check "caso 1: clasifica y converge" "recovery --classify|ensure " "$(calls)"
+thyrox_check "caso 1: clasifica, converge, retira huérfanos y arranca el coordinador" "recovery --classify|ensure |reconcile reconcile-orphans|coordinator start|coordinator status" "$(calls)"
 
 # Caso 2 — la firma post-reboot: repara, reclasifica, y converge si es HEALTHY.
 scenario KNOWN_POST_REBOOT_RECOVERABLE HEALTHY
 run_ready >/dev/null 2>&1; rc=$?
 thyrox_check "caso 2: firma conocida -> exit 0" "0" "$rc"
 thyrox_check "caso 2: classify, after-reboot, classify, ensure" \
-  "recovery --classify|recovery --after-reboot|recovery --classify|ensure " "$(calls)"
+  "recovery --classify|recovery --after-reboot|recovery --classify|ensure |reconcile reconcile-orphans|coordinator start|coordinator status" "$(calls)"
 
 # Caso 3 — la reparación falla: no converge y propaga su salida.
 scenario KNOWN_POST_REBOOT_RECOVERABLE HEALTHY
@@ -119,7 +135,44 @@ thyrox_check "caso 7: ensure sale 1 -> exit 1" "1" "$rc"
 # Caso 8 — los argumentos son la selección de infrastructure_ensure.
 scenario HEALTHY
 run_ready thyrox-redis thyrox-ollama >/dev/null 2>&1
-thyrox_check "caso 8: pasa la selección al ensure" "recovery --classify|ensure thyrox-redis thyrox-ollama" "$(calls)"
+thyrox_check "caso 8: pasa la selección al ensure" "recovery --classify|ensure thyrox-redis thyrox-ollama|reconcile reconcile-orphans|coordinator start|coordinator status" "$(calls)"
+
+# Caso 10 — `--help` lee y no actúa (TASK-THYROX-0928: el 2026-10-03 un
+# `--help` llegó a la recuperación y refrescó los locks del motor).
+scenario HEALTHY
+out="$(run_ready --help 2>&1)"; rc=$?
+thyrox_check "caso 10: --help sale 0" "0" "$rc"
+thyrox_check "caso 10: --help no llama a ninguna autoridad" "" "$(calls)"
+[[ "$out" == *"--status"* ]] && ok "caso 10: el uso nombra --status" || bad "caso 10: el uso no nombra --status: [$out]"
+
+# Caso 11 — `--status` mide y no repara ni converge.
+scenario HEALTHY
+run_ready --status >/dev/null 2>&1; rc=$?
+thyrox_check "caso 11: --status sano sale 0" "0" "$rc"
+thyrox_check "caso 11: --status sólo clasifica y pregunta al coordinador" "recovery --classify|coordinator status" "$(calls)"
+scenario KNOWN_POST_REBOOT_RECOVERABLE
+run_ready --status >/dev/null 2>&1; rc=$?
+thyrox_check "caso 11b: --status con la firma post-reboot sale 1" "1" "$rc"
+thyrox_check "caso 11b: y no repara" "recovery --classify|coordinator status" "$(calls)"
+scenario HEALTHY
+echo 1 > "$WORK/coordinator-status-exit"
+run_ready --status >/dev/null 2>&1; rc=$?
+thyrox_check "caso 11c: --status sin coordinador sano sale 1" "1" "$rc"
+
+# Caso 12 — el coordinador que no arranca es la salida del composer, y ya no
+# se pregunta su estado.
+scenario HEALTHY
+echo 3 > "$WORK/coordinator-start-exit"
+run_ready >/dev/null 2>&1; rc=$?
+thyrox_check "caso 12: coordinator start sale 3 -> exit 3" "3" "$rc"
+thyrox_check "caso 12: no pregunta el estado tras el fallo" "recovery --classify|ensure |reconcile reconcile-orphans|coordinator start" "$(calls)"
+
+# Caso 13 — huérfanos que no se pueden retirar cierran antes del coordinador.
+scenario HEALTHY
+echo 1 > "$WORK/reconcile-exit"
+run_ready >/dev/null 2>&1; rc=$?
+thyrox_check "caso 13: reconcile sale 1 -> exit 1" "1" "$rc"
+thyrox_check "caso 13: no arranca el coordinador" "recovery --classify|ensure |reconcile reconcile-orphans" "$(calls)"
 
 # Caso 9 — el composer no sabe nada del motor: ni verbos de Podman, ni la
 # versión, el backend o la firma. Se mide sobre el código, sin comentarios.
