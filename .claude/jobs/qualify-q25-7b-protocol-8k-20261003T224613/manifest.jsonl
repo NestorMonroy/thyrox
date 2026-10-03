@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bin/local-models-qualify thyrox-qwen--qwen2.5-7b-instruct-gguf:q4_k_m-hf-bb5d59e06d95 --context 8192 --isolated", "started_at": "2026-10-03T22:46:13+00:00"}
