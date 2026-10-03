@@ -161,3 +161,46 @@ Condición para el paso 2 sin perder nada: que lo DURABLE (`tasks`,
 proyección de texto determinista versionada en git (paso 8 del ejecutor,
 adelantado sólo para esas dos tablas) o D4-B. La telemetría sí puede quedar
 local desde ya, si se acepta que muere con el contenedor.
+
+## Search Existing — matriz y punto de ruptura (2026-10-03)
+
+Matriz completa: `outputs/search-existing-matrix.tsv` (autoridad, archivo/símbolo,
+consumidores, pruebas, decisión).
+
+### Dónde deja de respetarse «la telemetría viaja, no dispara»
+
+La semántica **existe, está probada y no se ejecuta**:
+
+1. `src/repo/pending_work.py` separa el eje `telemetry` (`_split`) y
+   `tests/repo/test_pending_work_telemetry.py` lo prueba con anulación (5/8).
+2. `src/hooks/stop_pending_work.py` lo expone como gate de `Stop` con
+   `--telemetry <ruta>`.
+3. **Ruptura:** ese gate tiene **cero cableado de producción**.
+   `declared_wiring()` (`src/session/user_wiring.py`) declara SessionStart,
+   PreModelSwitch, PreToolUse, SubagentStop, TaskCreated, TaskCompleted —
+   **ninguna clave `Stop`** (`git grep` del literal: 0; nunca estuvo, el
+   pickaxe acotado al archivo no da ningún commit). El `settings.local.json`
+   vivo tiene las mismas siete claves. Nadie en el árbol pasa
+   `--telemetry agent-results/agent_store.sqlite3`.
+4. El único `Stop` efectivo en este entorno es el de la plataforma,
+   `/root/.claude/stop-hook-git-check.sh` (`git diff --quiet` + untracked),
+   que no conoce el eje: cuenta el blob del store como trabajo y sale 2.
+
+Así que **no decide el mecanismo de thyrox y decide uno que no es suyo**.
+Cablear el `Stop` de thyrox arregla el veredicto de thyrox, pero **no apaga**
+el de la plataforma: los dos hooks corren y basta uno con exit 2. El hook del
+lanzador es propiedad del anfitrión (fuera de autoridad).
+
+### Clasificación del cambio
+
+| Problema | Decisión | Qué |
+|---|---|---|
+| 1 — veredicto del Stop | EXTEND `user_wiring.declared_wiring` | entrada `Stop` → `bin/stop_pending_work --root … --telemetry agent-results/agent_store.sqlite3 --label …`; caso nuevo en `test_user_wiring.py` |
+| 1b — el gate de plataforma | fuera de autoridad | no se puede editar; consecuencia: mientras el store se escriba entre commit y Stop, ese gate dispara. Lo que sí controla thyrox es **cuándo** se escribe (problema 2) |
+| 2 — churn (blob por evento) | MISSING (batching) | el registro de la parada interna se acumula fuera del archivo versionado (el carrete de `hook_error_log._spool` es el sitio existente: REUSE como cola, EXTEND con modo «diferido») y se vuelca al store en el pre-commit que ya reconcilia (`.githooks/pre-commit:336-348`). Sin pérdida: la fila llega al store en el siguiente commit |
+| 3 — 13 `running` y `SubagentStop` sin `Start` | EXTEND `reconcile_store` + `agent_store` CHECK | estados `orphaned`/`abandoned`/`unmatched_stop` en el lifecycle existente, asignados por evidencia del transcript; no se descarta el evento |
+
+Invariantes respetados: el store sigue versionado, `sqlite-union` sigue siendo
+el merge, no hay segundo store, ni segundo lifecycle, ni segundo pending-work,
+ni se descarta telemetría. La implementación va al worker; el controlador no
+muta producto.
