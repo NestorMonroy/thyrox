@@ -266,3 +266,41 @@ Cómo se bloqueó:
 
 Para correrlo hace falta que el ejecutor autorice o ejecute esa reparación. Después
 basta relanzar el mismo comando; la plantilla y los ítems ya están en el banco.
+
+### La reparación de Podman — cómo está implementada y qué se midió hoy
+
+- **Autoridad:** `src/session/podman_lock_recovery.sh` (`bin/podman_lock_recovery`).
+  Está declarada en `control_plane_entries.tsv` como «recuperación explícita del
+  motor, pedida por un operador». `infrastructure_ensure` detecta el desfase y
+  rehúsa; **no repara**.
+- **Qué hace:** retira `/run/libpod/alive` y llama a `podman ps -a`. Podman refresca
+  su estado y vuelve a asignar en memoria el lock que la base guarda por objeto (lo
+  mismo que tras reiniciar). Luego mide otra vez: sale 0 si cuadra y 3 si no.
+- **Guardas** (sin cualquiera de ellas rehúsa con 2 y no toca nada):
+  - Podman 4.9.x;
+  - backend `sqlite`;
+  - uid 0;
+  - marcador presente;
+  - **ningún contenedor vivo**: `thyrox_podman_live_containers` exige estado
+    `running` **y** `kill -0` del PID.
+- **Pruebas:** `tests/session/test-podman-lock-recovery.sh`, 6 casos y 23
+  aserciones con un `podman` falso. Hoy: **23 ok, 0 fallos** (trabajo gestionado,
+  `census-v2/test-podman-lock-recovery.txt`).
+- **Usos previos con `--confirm`:**
+  - `postgres-durability-through-primitive-20261002T014441`: 7 de 7 tras el
+    reinicio de la VM. Después hubo un `runc … already exists` que la primitiva ya
+    resuelve (`stale-runtime-state`).
+  - `embedding-route-and-local-workers-20261002T093053/W1`: **no** se ejecutó.
+    `podman ps` decía `Up` y el ensure «vivos: ninguno», y ese desacuerdo quedó sin
+    resolver (tarea «Measure Podman lock recovery before deciding whether to
+    automate it»).
+- **Medido hoy, y resuelve ese desacuerdo para este estado:** la base reporta
+  `thyrox-ollama` y `thyrox-postgres` como `running`, con PID 3413 y 21341. **Ninguno
+  de los dos existe en `/proc`.** Es estado persistido sin proceso detrás
+  (H-THYROX-302), no contenedores vivos. La guarda de liveness lo ve bien.
+  Refrescar no toca volúmenes (`thyrox-postgres-data`, `thyrox-ollama-*`); deja como
+  detenidos unos contenedores que ya están muertos.
+- **Por qué no corrió:** el clasificador de permisos de esta sesión rechazó
+  `--confirm` como «Modify Shared Resources». Es la frontera que la propia pieza
+  declara («pedida por un operador»): la sesión no se autoriza a sí misma a mutar el
+  motor de Podman del anfitrión.
