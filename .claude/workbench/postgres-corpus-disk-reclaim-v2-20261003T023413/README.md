@@ -81,3 +81,34 @@ Conclusión: todo su contenido está preservado en el remoto; su borrado
 liberaría ~774 MB. **El borrado lo rehusó el clasificador de permisos del
 cliente** (destrucción local irreversible): queda para decisión del
 ejecutor. Libre antes: `outputs/R4-free-before.txt` (2 429 546 496).
+
+### R4 — corrección: «ningún proceso lo tiene como cwd» medía una sola superficie
+
+El ejecutor objetó, con razón, que thyrox maneja varios cwd: un directorio se
+referencia por más vías que el cwd de un proceso. Medido de nuevo, superficie
+por superficie (2026-10-03):
+
+| Superficie | Medido | Resultado |
+|---|---|---|
+| procesos: `cwd`, `root`, `exe`, fds, `maps`, `mountinfo`, `environ` | 75 pids, un solo pid namespace (los contenedores rootful incluidos) | 0 referencias |
+| contenedores Podman (corriendo y `created`) y volúmenes | `observe container <n> --raw`, `observe volumes` | 0 montajes |
+| ledger de trabajos | `wait-jobs pending/status` | 0 pendientes; 30 trabajos ya recogidos que corrieron ahí (27 `cont-L0-*`/`cont-L1-*` y 3 `local-models-l*`) (sus manifiestos lo citan como historia) |
+| estado del controlador | `local-models-publication-20261002T114251/outputs/continuation.jsonl` | L0 `accepted` por excepción de bootstrap (H-THYROX-407), L1 `hard_block` por el operador; ninguno se reanuda sobre ese árbol |
+| registro de git | `git worktree list` | no registrado; `.git` ausente |
+| hogares de thyrox y del cliente | `~/.local/state/thyrox`, `~/.config`, `~/.cache`, `~/.claude` | sólo texto (tareas #139/#141 de esta sesión, transcripción) |
+
+**Por qué quedó:** L0 se aceptó fuera del flujo, así que nunca corrió su
+`integrate_worktree`, que es el único paso que hace `git worktree remove
+--force` (`task_continuation.py:890`). El árbol perdió después su registro de
+git, pero no sus archivos.
+
+**Lo que la primera medición no vio:** la raíz medida fue
+`L0-1790945810848326/`; el directorio padre tiene tres archivos sueltos.
+`L0-bootstrap-verify.log` está en el remoto (`e035c356a`); **`L0-tsc.txt`
+(4 041 B) y `red.out` (179 B) no estaban en git**: evidencia única del RED/GREEN
+del verificador y del typecheck del árbol. Copiados con su sha256 verificado a
+`local-models-publication-20261002T114251/outputs/orphan-tree-evidence/`.
+
+Conclusión revisada: ningún consumidor vivo ni registrado; contenido
+preservado en el remoto una vez commiteada esa copia. El borrado sigue siendo
+decisión del ejecutor.
