@@ -1,0 +1,2 @@
+{"total_bytes_scanned": 8281449525, "semantic_bytes": 48896907, "durable_evidence_bytes": 826226860, "reconstructible_bytes": 7546107, "excluded_secret_bytes": 24071727, "excluded_binary_bytes": 4216794876, "duplicate_bytes": 3155305741, "estimated_documents": 46306, "estimated_chunks": 469502, "rows_by_class": {"binary_non_indexable": 188, "duplicate": 34637, "durable_evidence": 35690, "execution_state": 6155, "reconstructible_cache": 317, "secret_sensitive": 388, "semantic_content": 10616}}
+exit=0
