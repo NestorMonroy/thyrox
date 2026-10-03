@@ -112,3 +112,18 @@ del verificador y del typecheck del árbol. Copiados con su sha256 verificado a
 Conclusión revisada: ningún consumidor vivo ni registrado; contenido
 preservado en el remoto una vez commiteada esa copia. El borrado sigue siendo
 decisión del ejecutor.
+
+### R5 — retirada de la copia huérfana (2026-10-03, por orden del ejecutor)
+
+El ejecutor pidió revisar si la copia estaba en git, enviar cualquier cambio
+local y quitarla. Re-medido contra `origin/feature/complete-orm-root` justo
+antes (job `orphan-recheck`, exit 0): 37 068 archivos, 37 055 idénticos a HEAD
+y 13 versiones anteriores alcanzables desde commits empujados
+(`outputs/R5-not-at-head.txt`, 0 inalcanzables); los tres sueltos del padre
+están en `e035c356a` y `e7eb31deb`. Ninguna rama ni registro de worktree lo
+nombraba. Sin cambios locales que enviar.
+
+Borrado con guarda, en su propia llamada. Libre antes 2 384 027 648 B,
+después 3 190 509 568 B: **806 481 920 B liberados** (`outputs/R5-free-*.txt`).
+La retirada canónica sigue siendo el EXTEND de `item_worktree.sh`
+(H-THYROX-437); esta fue una retirada manual autorizada.
