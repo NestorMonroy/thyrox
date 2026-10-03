@@ -1,0 +1,67 @@
+parallel_map: memoria: sin ejecución previa de este historial: nada que derivar; no se reserva
+== rename
+H-API-886  [api/completar-familia-base]  finding/CRITICA  el renombre a forma C mueve DOS ejes, y el reescritor movía uno  (source/gestion/pm/api/iniciativas/completar-familia-base/hallazgos/hallazgo-H-API-886-el-renomb
+H-API-884  [api/completar-familia-base]  finding/CRITICA  el reescritor del barrido renombra por nombre, no por ligadura  (source/gestion/pm/api/iniciativas/completar-familia-base/hallazgos/hallazgo-H-API-884-el-reescrit
+H-API-885  [api/completar-familia-base]  finding/CRITICA  ``col_offset`` del AST va en bytes, y el reescritor lo sumaba a un índice de ``str``  (source/gestion/pm/api/iniciativas/completar-familia-base/hallazgos/hallazg
+H-API-688  [api/completar-familia-base]  finding/MEDIA  el bloque analítico de ``account`` se desbloquea con  (source/gestion/pm/api/iniciativas/completar-familia-base/hallazgos/hallazgo-H-API-688-account-analytic-desbl
+H-DOCS-297  [docs/unificar-trabajo-en-rama-kaupamex-l1]  finding/MEDIA  dos ramas hermanas repartieron el mismo ID sin saberlo  (source/gestion/pm/docs/iniciativas/unificar-trabajo-en-rama-kaupamex-l1/hallazgos/hallazgo-
+H-API-887  [api/completar-familia-base]  finding/ALTA  el reescritor es ciego a la ruta de lookup y a los controllers  (source/gestion/pm/api/iniciativas/completar-familia-base/hallazgos/hallazgo-H-API-887-el-reescritor-
+H-DOCS-118  [docs/automatizar-gestion-y-control-de-documentos]  finding/MEDIA  ``guia-primer-dia.rst`` enseña convenciones anteriores a Tim Pope y una ruta muerta del rename  (source/gestion/pm/docs/iniciativas/automati
+H-THYROX-252  [thyrox/actualizar-agentic-ai-thyrox]  finding/ALTA  ingest_board deduplicates board cards by subject, so a card renamed on the board mints a second durable citation for the same task  (src/task/task_ids.py
+== identidad
+H-DOCS-374  [docs/automatizar-gestion-y-control-de-documentos]  finding/MEDIA  el instrumento de OAIS nunca se aplicó a CONARCH, y la causa es el orden de escritura  (source/gestion/pm/docs/iniciativas/automatizar-gesti
+H-API-956  [api/adaptar-familias-odoo-monolito-modular]  finding/MEDIA  La identidad de un trabajo no es una ruta: el cliente la valida por alcance  (source/gestion/pm/api/iniciativas/adaptar-familias-odoo-monolito-modul
+H-API-700  [api/alinear-addon-website-referencia]  finding/MEDIA  ``fields.Html`` es un alias sin identidad: ningún consumidor puede distinguir un campo HTML  (source/gestion/pm/api/iniciativas/alinear-addon-website-ref
+H-SERVER-13  [server/integrar-despliegue-produccion-ovhcloud]  finding/ALTA  El runbook de despliegue prescribía el paquete que su propio provisioner purga  (source/gestion/pm/server/iniciativas/integrar-despliegue-prod
+H-DOCS-1029  [docs/construir-harness-propio]  finding/ALTA  la compactación preserva el TEXTO de una directiva, no su CUMPLIMIENTO  (source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOC
+H-API-932  [api/adaptar-familias-odoo-monolito-modular]  finding/ALTA  los 21 conversores de campo no declaran ningún ``_name``  (source/gestion/pm/api/iniciativas/adaptar-familias-odoo-monolito-modular/hallazgos/hallaz
+H-THYROX-429  [thyrox/container-image-distribution]  finding/ALTA  control_plane_entries.tsv autoriza ejecutables enteros; la primitiva entera se rechaza y sólo se concede la construcción declarada por identidad lógic
+H-THYROX-160  [thyrox/construir-harness-propio]  finding/ALTA  La regla de identidad cubría el commit y no la descripción del PR  (kaupamex-docs: source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/
+== kaupamex
+H-API-392  [api/empaquetar-kaupamex-bin-como-ejecutable]  finding/BAJA  La tarea #57 (empaquetado distribuible) no bloquea esta iniciativa; se reencuadra, no se ejecuta aquí  (source/gestion/pm/api/iniciativas/empaqueta
+H-THYROX-06  [thyrox/verificar-hogares-de-sesion-thyrox]  finding/MEDIA  tres atajos que el piso cargado ya prohibía, cometidos en el mismo turno  (source/gestion/pm/thyrox/iniciativas/verificar-hogares-de-sesion-thyrox
+H-DOCS-440  [docs/unificar-trabajo-en-rama-kaupamex-l1]  finding/BAJA  La frase que informa la corrección de una forma vetada la reintroduce  (source/gestion/pm/docs/iniciativas/unificar-trabajo-en-rama-kaupamex-l1/hall
+H-API-327  [api/separar-rol-aplicacion-y-aprovisionamiento]  finding/MEDIA  ``kaupamex-bin`` corre desde el árbol, pero no se instala  (source/gestion/pm/api/iniciativas/separar-rol-aplicacion-y-aprovisionamiento/hallaz
+H-DOCS-297  [docs/unificar-trabajo-en-rama-kaupamex-l1]  finding/MEDIA  dos ramas hermanas repartieron el mismo ID sin saberlo  (source/gestion/pm/docs/iniciativas/unificar-trabajo-en-rama-kaupamex-l1/hallazgos/hallazgo-
+H-DOCS-296  [docs/unificar-trabajo-en-rama-kaupamex-l1]  finding/MEDIA  la rama del harness apuntaba al ``develop`` viejo en los siete repos  (source/gestion/pm/docs/iniciativas/unificar-trabajo-en-rama-kaupamex-l1/halla
+H-DOCS-298  [docs/unificar-trabajo-en-rama-kaupamex-l1]  finding/MEDIA  el enlace de directorio no está descartado; se reportó que sí  (source/gestion/pm/docs/iniciativas/unificar-trabajo-en-rama-kaupamex-l1/hallazgos
+H-DOCS-1039  [docs/construir-harness-propio]  finding/MEDIA  un cambio masivo sin banco de trabajo no deja instrumento  (source/gestion/pm/thyrox/iniciativas/construir-harness-propio/hallazgos/hallazgo-H-DOCS-1039-un-cam
+== alias
+H-THYROX-218  [thyrox/resolve-all-thyrox-errors]  finding/BAJA  El renderizado de hallazgos duplicaba el alias de la ruta  (thyrox: src/packages/finding/index.ts)
+H-SERVER-05  [server/integrar-despliegue-produccion-ovhcloud]  finding/ALTA  ``ProxyPass "/"`` gana sobre ``Alias``/``AliasMatch`` declarados antes en el mismo vhost  (source/gestion/pm/server/iniciativas/integrar-despli
+H-API-731  [api/completar-familia-base]  finding/MEDIA  fields.Monetary era alias pelado y no aceptaba store=False  (source/gestion/pm/api/iniciativas/completar-familia-base/hallazgos/hallazgo-H-API-731-monetary-sin-desp
+H-API-870  [api/completar-familia-base]  finding/ALTA  el alias de un campo no validaba nada, y nadie lo notaba  (source/gestion/pm/api/iniciativas/completar-familia-base/hallazgos/hallazgo-H-API-870-el-alias-de-un-campo
+H-API-957  [api/adaptar-familias-odoo-monolito-modular]  finding/ALTA  Tres alias con firma incompatible, y su clase base ausente  (source/gestion/pm/api/iniciativas/adaptar-familias-odoo-monolito-modular/hallazgos/halla
+H-API-1073  [api/completar-primitiva-fields]  finding/ALTA  dentro de Community 18 vive una poblacion que ningun alias nombra  (source/gestion/pm/api/iniciativas/completar-primitiva-fields/hallazgos/hallazgo-H-API-1073-l
+H-API-859  [api/alinear-arbol-addons-a-familias-odoo]  finding/MEDIA  La referencia tiene más raíces que alias, y una de ellas es la fuente de un addon nuestro  (source/gestion/pm/api/iniciativas/alinear-arbol-addons-a
+H-DOCS-473  [docs/unificar-trabajo-en-rama-kaupamex-l2]  finding/ALTA  dos alias simétricos sobre árboles de distinta naturaleza  (source/gestion/pm/docs/iniciativas/unificar-trabajo-en-rama-kaupamex-l2/hallazgos/halla
+== legacy
+H-DOCS-1199  [docs/actualizar-agentic-ai-thyrox]  finding/BAJA  refrescar-tablero.sh está DEPRECATED, con sucesor ya cubierto  (source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-DOCS
+H-DOCS-1196  [docs/actualizar-agentic-ai-thyrox]  finding/BAJA  la clasificación de hallazgo por submódulo no tiene hogar en thyrox  (source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo
+H-THYROX-182  [thyrox/actualizar-agentic-ai-thyrox]  finding/MEDIA  normalizeMessagesForAPI resuelve normalizeToolInputForAPI con un require diferido porque importarlo estatico cierra un ciclo real  (src/packages/agent/m
+H-DOCS-1193  [docs/actualizar-agentic-ai-thyrox]  finding/BAJA  el despachador de PreToolUse SÍ se portó, pero su consumidor de hallazgo-submódulo no  (source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox
+H-DOCS-1201  [docs/actualizar-agentic-ai-thyrox]  finding/BAJA  snapshot-tasks.sh está DEPRECATED, con sucesor ya cubierto  (source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo-H-DOCS-12
+H-DOCS-1202  [docs/actualizar-agentic-ai-thyrox]  finding/BAJA  el gate de tablero desactualizado no tiene consumidor ported en stop_gate  (source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hall
+H-DOCS-1204  [docs/actualizar-agentic-ai-thyrox]  finding/BAJA  el control positivo de verificar_persistencia exige un árbol source/gestion/pm que thyrox no tiene  (source/gestion/pm/thyrox/iniciativas/actualizar-agenti
+H-DOCS-1205  [docs/actualizar-agentic-ai-thyrox]  finding/BAJA  el test de rutas de hook hardcodea un evento fechado de kaupamex-docs  (source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazgo
+== renombre
+H-DOCS-1100  [docs/actualizar-agentic-ai-thyrox]  finding/ALTA  el verde falso que el analisis predijo para un renombre futuro ya esta vivo  (source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/ha
+H-API-790  [api/alinear-arbol-addons-a-familias-odoo]  finding/ALTA  medir el puerto contra 18 mide el renombre, no la cobertura  (source/gestion/pm/api/iniciativas/alinear-arbol-addons-a-familias-odoo/hallazgos/hallazgo
+H-API-607  [api/completar-familia-base]  finding/MEDIA  el renombre por token es ciego al interior de las f-strings, y su ceguera depende del intérprete  (source/gestion/pm/api/iniciativas/completar-familia-base/hallazg
+H-API-826  [api/completar-familia-base]  finding/ALTA  una familia entera fuera del alcance por un renombre de addon  (source/gestion/pm/api/iniciativas/completar-familia-base/hallazgos/hallazgo-H-API-826-una-familia-ent
+H-API-828  [api/completar-familia-base]  finding/MEDIA  el triaje de authz separó cuatro cosas que el conteo daba por una  (source/gestion/pm/api/iniciativas/completar-familia-base/hallazgos/hallazgo-H-API-828-el-triaje
+H-API-379  [api/adaptar-familias-odoo-monolito-modular]  finding/ALTA  el ledger cuenta por nombre exacto: un renombre "cierra" símbolos  (source/gestion/pm/api/iniciativas/adaptar-familias-odoo-monolito-modular/hallazg
+H-API-886  [api/completar-familia-base]  finding/CRITICA  el renombre a forma C mueve DOS ejes, y el reescritor movía uno  (source/gestion/pm/api/iniciativas/completar-familia-base/hallazgos/hallazgo-H-API-886-el-renomb
+H-DOCS-1144  [docs/actualizar-agentic-ai-thyrox]  finding/MEDIA  el gate de citas no puede cerrar sobre un literal que el store guarda  (source/gestion/pm/thyrox/iniciativas/actualizar-agentic-ai-thyrox/hallazgos/hallazg
+== thyrox-rename
+H-THYROX-252  [thyrox/actualizar-agentic-ai-thyrox]  finding/ALTA  ingest_board deduplicates board cards by subject, so a card renamed on the board mints a second durable citation for the same task  (src/task/task_ids.py
+Total: 1 (/home/user/thyrox/agent-results/agent_store.sqlite3)
+== prefijo
+H-THYROX-51  [thyrox/verificar-hogares-de-sesion-thyrox]  finding/ALTA  El filtro de la barrera exigía prefijo Y guion, y su cero salía verde  (source/gestion/pm/thyrox/iniciativas/verificar-hogares-de-sesion-thyrox/ha
+H-DOCS-1034  [docs/implementar-knn-vecinos-mas-cercanos]  finding/MEDIA  el prefijo ``P-`` nombra dos géneros de artefacto a la vez  (source/gestion/pm/docs/iniciativas/implementar-knn-vecinos-mas-cercanos/hallazgos/hal
+H-THYROX-31  [thyrox/construir-gates-de-cobertura-y-calidad-thyrox]  finding/MEDIA  ``acunar`` admite el prefijo que ya trae ``H-`` y emite un ID  (source/gestion/pm/thyrox/iniciativas/construir-gates-de-cobertura-y-cali
+H-THYROX-155  [thyrox/resolve-all-thyrox-errors]  finding/ALTA  39 de 50 suites Python en rojo por ReachRootError: el roster exige dos clones hermanos con prefijo  (thyrox: src/paths/reach.py:113-142,375-396; .claude/job
+H-API-323  [api/integrar-familia-account-completa]  finding/BAJA  Las dos restricciones de prefijo de ``AccountGroup`` no se hacen cumplir  (source/gestion/pm/api/iniciativas/integrar-familia-account-completa/hallazgos/h
+H-DOCS-353  [docs/automatizar-gestion-y-control-de-documentos]  finding/MEDIA  el extractor retiró el único dato de disposición que la tabla trae  (source/gestion/pm/docs/iniciativas/automatizar-gestion-y-control-de-d
+H-DOCS-362  [docs/automatizar-gestion-y-control-de-documentos]  finding/MEDIA  el prefijo abría y no cerraba, y la suite era ciega a la mitad de las formas  (source/gestion/pm/docs/iniciativas/automatizar-gestion-y-cont
+H-API-291  [api/adaptar-familias-odoo-monolito-modular]  finding/MEDIA  El enum ofrecía formatos que este árbol no sabe emitir  (source/gestion/pm/api/iniciativas/adaptar-familias-odoo-monolito-modular/hallazgos/hallaz
