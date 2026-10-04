@@ -30,7 +30,7 @@ import { mkdtempSync, readFileSync, rmSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { streamLoop } from '@thyrox/agent/loop'
-import type { LoopResult } from '@thyrox/agent/loop/types'
+import type { HarnessEvent, LoopResult } from '@thyrox/agent/loop/types'
 import { loopSetup } from './runLoop.ts'
 import { resolveMaxTurnsFromEnv } from './maxTurnsEnv.ts'
 import { openExistingConnectionStore, type OpenedConnectionStore } from '@thyrox/provider/accounts/connectionStoreHome'
@@ -172,28 +172,106 @@ export function streamJsonLines(o: {
   now: number
 }): Record<string, unknown>[] {
   const sessionId = o.result.sessionId
-  const init = { type: 'system', subtype: 'init', cwd: o.cwd, session_id: sessionId, tools: o.tools,
-    mcp_servers: [], model: o.model, permissionMode: 'default', uuid: randomUUID() }
   const assistants = o.transcript
     .filter((e) => e.type === 'assistant' && e.message)
-    .map((e) => ({ type: 'assistant', message: e.message, parent_tool_use_id: null, session_id: sessionId, uuid: randomUUID() }))
-  const subtype = subtypeOf(o.result.stop)
-  const result = {
+    .map((e) => transcriptLine(e, sessionId) as Record<string, unknown>)
+  return [initLine(sessionId, o), ...assistants, resultLine(o.result, o.startedAt, o.now)]
+}
+
+type InitFields = { model: string; tools: string[]; cwd: string }
+
+function initLine(sessionId: string, o: InitFields): Record<string, unknown> {
+  return { type: 'system', subtype: 'init', cwd: o.cwd, session_id: sessionId, tools: o.tools,
+    mcp_servers: [], model: o.model, permissionMode: 'default', uuid: randomUUID() }
+}
+
+/** Un mensaje del transcript como línea del flujo: assistant, o user si trae resultados de herramienta. */
+function transcriptLine(entry: TranscriptEntry, sessionId: string): Record<string, unknown> | undefined {
+  if (!entry.message) return undefined
+  if (entry.type === 'assistant') return { type: 'assistant', message: entry.message, parent_tool_use_id: null, session_id: sessionId, uuid: randomUUID() }
+  const content = entry.message.content
+  const carriesToolResult = entry.type === 'user' && Array.isArray(content)
+    && content.some((block) => (block as { type?: unknown }).type === 'tool_result')
+  return carriesToolResult ? { type: 'user', message: entry.message, parent_tool_use_id: null, session_id: sessionId, uuid: randomUUID() } : undefined
+}
+
+/** Las entradas COMPLETAS del transcript: una última línea sin salto aún se está escribiendo. */
+function completeEntries(path: string): TranscriptEntry[] {
+  let text: string
+  try {
+    text = readFileSync(path, 'utf8')
+  } catch {
+    return []
+  }
+  const complete = text.slice(0, text.lastIndexOf('\n') + 1)
+  return complete.split('\n').filter(Boolean).map((l) => JSON.parse(l) as TranscriptEntry)
+}
+
+export interface StreamJsonEmitter {
+  onEvent(event: HarnessEvent): void
+  finish(result: LoopResult, now: number): void
+}
+
+/**
+ * `stream-json` como flujo: `system/init` al empezar la sesión, cada mensaje
+ * del transcript en cuanto está completo, `result` al cerrar. Antes las
+ * líneas se reconstruían al terminar el bucle, y quien vigilaba la salida —el
+ * vigilante de ítems del pool— no veía nada hasta la salida del proceso
+ * (medido: 0 bytes en 1800 s de un trabajador que editaba archivos).
+ */
+export function createStreamJsonEmitter(o: InitFields & { write: (line: string) => void; startedAt: number }): StreamJsonEmitter {
+  let sessionId: string | undefined
+  let transcriptPath: string | undefined
+  let consumed = 0
+  const emit = (line: Record<string, unknown>) => o.write(`${JSON.stringify(line)}\n`)
+  const drain = () => {
+    if (sessionId === undefined || transcriptPath === undefined) return
+    const entries = completeEntries(transcriptPath)
+    for (const entry of entries.slice(consumed)) {
+      const line = transcriptLine(entry, sessionId)
+      if (line) emit(line)
+    }
+    consumed = Math.max(consumed, entries.length)
+  }
+  return {
+    onEvent(event) {
+      if (event.type === 'session_start') {
+        sessionId = event.sessionId
+        transcriptPath = event.transcriptPath
+        emit(initLine(event.sessionId, o))
+        return
+      }
+      drain()
+    },
+    finish(result, now) {
+      if (sessionId === undefined) {
+        sessionId = result.sessionId
+        transcriptPath = result.transcriptPath
+        emit(initLine(result.sessionId, o))
+      }
+      drain()
+      emit(resultLine(result, o.startedAt, now))
+    },
+  }
+}
+
+function resultLine(result: LoopResult, startedAt: number, now: number): Record<string, unknown> {
+  const subtype = subtypeOf(result.stop)
+  return {
     is_error: subtype !== 'success',
     duration_api_ms: 0,
-    num_turns: o.result.turns,
-    stop_reason: o.result.stop,
-    session_id: sessionId,
-    total_cost_usd: o.result.usd,
-    usage: o.result.usage,
+    num_turns: result.turns,
+    stop_reason: result.stop,
+    session_id: result.sessionId,
+    total_cost_usd: result.usd,
+    usage: result.usage,
     permission_denials: [],
     subtype,
-    ...(subtype === 'success' ? { result: o.result.lastText } : { errors: [o.result.stop] }),
+    ...(subtype === 'success' ? { result: result.lastText } : { errors: [result.stop] }),
     type: 'result',
-    duration_ms: Math.max(0, Math.round(o.now - o.startedAt)),
+    duration_ms: Math.max(0, Math.round(now - startedAt)),
     uuid: randomUUID(),
   }
-  return [init, ...assistants, result]
 }
 
 function readTranscript(path: string): TranscriptEntry[] {
@@ -247,19 +325,25 @@ export async function runPrint(argv: string[], cwd: string, transcriptDir: strin
     await registerSessionAtLaunch(process.env.THYROX_CODE_SESSION_NAME)
     const { shared } = loopSetup(args.loopArgv, cwd, dir, { toolAllow: args.tools, env: credential.env })
     const gen = streamLoop({ ...shared, prompt: args.prompt })
+    const streaming = args.outputFormat === 'stream-json'
+      ? createStreamJsonEmitter({ write: (line) => process.stdout.write(line), model: args.model,
+        tools: shared.tools.map((t) => t.name), cwd, startedAt })
+      : undefined
     let step = await gen.next()
     while (!step.done) {
       if (step.value.type === 'session_start') adoptLoopSessionId(step.value.sessionId, false)
+      streaming?.onEvent(step.value)
       step = await gen.next()
     }
     const result = step.value
-    if (args.outputFormat === 'text') {
+    if (streaming) {
+      streaming.finish(result, performance.now())
+    } else if (args.outputFormat === 'text') {
       process.stdout.write(`${result.lastText}\n`)
     } else {
       const lines = streamJsonLines({ transcript: readTranscript(result.transcriptPath), result, model: args.model,
         tools: shared.tools.map((t) => t.name), cwd, startedAt, now: performance.now() })
-      if (args.outputFormat === 'json') process.stdout.write(`${JSON.stringify(lines.at(-1))}\n`)
-      else for (const line of lines) process.stdout.write(`${JSON.stringify(line)}\n`)
+      process.stdout.write(`${JSON.stringify(lines.at(-1))}\n`)
     }
     return result.stop === 'end_turn' ? 0 : 1
   } catch (e) {

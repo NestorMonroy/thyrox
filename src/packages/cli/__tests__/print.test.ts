@@ -5,10 +5,10 @@
  * `.claude/workbench/print-mode-20260926T225709/`.
  */
 import { describe, expect, test } from 'bun:test'
-import { existsSync, mkdtempSync, readdirSync, writeFileSync } from 'node:fs'
+import { appendFileSync, existsSync, mkdtempSync, readdirSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { parsePrintArgs, runPrint, streamJsonLines } from '../src/entry/print.ts'
+import { createStreamJsonEmitter, parsePrintArgs, runPrint, streamJsonLines } from '../src/entry/print.ts'
 import { detectMode } from '../src/entry/detect-mode.ts'
 
 const usageOf = (n: number) => ({ input_tokens: n, output_tokens: 1, cache_creation_input_tokens: 0, cache_read_input_tokens: 10 * n })
@@ -134,6 +134,71 @@ describe('streamJsonLines — las formas del binario', () => {
   test('otra parada da error_during_execution', () => {
     const r = streamJsonLines({ transcript, result: { ...result, stop: 'refusal' }, model: 'm', tools: [], cwd: '/w', startedAt: 0, now: 1 })
     expect(r.at(-1)).toMatchObject({ subtype: 'error_during_execution', is_error: true })
+  })
+})
+
+// Medido (2026-10-04, repo-code-change@1): `thyrox -p --output-format
+// stream-json` escribía todas sus líneas al terminar el bucle. El vigilante del
+// pool leyó 0 bytes durante 1800 s de un trabajador que sí editaba archivos, y
+// lo detuvo como «sin progreso». Las líneas salen cuando ocurren.
+describe('createStreamJsonEmitter — cada línea sale cuando ocurre', () => {
+  const assistant = (id: string) => ({ type: 'assistant', message: { id, role: 'assistant', content: [{ type: 'text', text: id }], usage: usageOf(1) } })
+  const toolResult = { type: 'user', message: { role: 'user', content: [{ type: 'tool_result', tool_use_id: 'tu1', content: 'String to replace not found in file.', is_error: true }] } }
+
+  function setup() {
+    const transcriptPath = join(mkdtempSync(join(tmpdir(), 'emit-')), 't.jsonl')
+    writeFileSync(transcriptPath, '')
+    const written: Record<string, unknown>[] = []
+    const emitter = createStreamJsonEmitter({ write: (line) => written.push(JSON.parse(line)), model: 'm', tools: ['Edit'], cwd: '/w', startedAt: 0 })
+    const append = (entry: unknown) => appendFileSync(transcriptPath, `${JSON.stringify(entry)}\n`)
+    return { transcriptPath, written, emitter, append }
+  }
+
+  test('system/init sale al empezar la sesión, antes de cualquier turno', () => {
+    const { transcriptPath, written, emitter } = setup()
+    emitter.onEvent({ type: 'session_start', sessionId: 's1', transcriptPath })
+    expect(written).toHaveLength(1)
+    expect(written[0]).toMatchObject({ type: 'system', subtype: 'init', session_id: 's1', tools: ['Edit'] })
+  })
+
+  test('cada assistant sale en cuanto el transcript la tiene, sin esperar al final', () => {
+    const { transcriptPath, written, emitter, append } = setup()
+    emitter.onEvent({ type: 'session_start', sessionId: 's1', transcriptPath })
+    append(assistant('m1'))
+    emitter.onEvent({ type: 'tool_start', turn: 1, tool: 'Edit', input: {} })
+    expect(written.map((l) => l.type)).toEqual(['system', 'assistant'])
+    append(assistant('m2'))
+    emitter.onEvent({ type: 'turn_start', turn: 2 })
+    expect(written.filter((l) => l.type === 'assistant')).toHaveLength(2)
+  })
+
+  test('el resultado de una herramienta sale como línea user: el rechazo es observable', () => {
+    const { transcriptPath, written, emitter, append } = setup()
+    emitter.onEvent({ type: 'session_start', sessionId: 's1', transcriptPath })
+    append(toolResult)
+    emitter.onEvent({ type: 'tool_end', turn: 1, tool: 'Edit', output: '', isError: true })
+    expect(written.at(-1)).toMatchObject({ type: 'user', session_id: 's1', parent_tool_use_id: null, message: toolResult.message })
+  })
+
+  test('una línea del transcript a medio escribir espera a estar completa', () => {
+    const { transcriptPath, written, emitter } = setup()
+    emitter.onEvent({ type: 'session_start', sessionId: 's1', transcriptPath })
+    appendFileSync(transcriptPath, '{"type":"assistant","mess')
+    emitter.onEvent({ type: 'turn_start', turn: 1 })
+    expect(written).toHaveLength(1)
+    appendFileSync(transcriptPath, 'age":{"id":"m1"}}\n')
+    emitter.onEvent({ type: 'turn_start', turn: 2 })
+    expect(written.map((l) => l.type)).toEqual(['system', 'assistant'])
+  })
+
+  test('el cierre vacía lo pendiente y termina con result, una sola vez cada línea', () => {
+    const { transcriptPath, written, emitter, append } = setup()
+    emitter.onEvent({ type: 'session_start', sessionId: 's1', transcriptPath })
+    append(assistant('m1'))
+    emitter.onEvent({ type: 'turn_start', turn: 1 })
+    append(assistant('m2'))
+    emitter.finish({ stop: 'end_turn', turns: 2, lastText: 'm2', usage: usageOf(2), sessionId: 's1', transcriptPath, usd: 0 }, 5)
+    expect(written.map((l) => l.type)).toEqual(['system', 'assistant', 'assistant', 'result'])
   })
 })
 

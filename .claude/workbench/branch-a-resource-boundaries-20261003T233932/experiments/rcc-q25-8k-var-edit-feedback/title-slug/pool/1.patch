@@ -1,0 +1,32 @@
+diff --git a/src/packages/local-models/suites/repo-code-change-1/textkit/slug.py b/src/packages/local-models/suites/repo-code-change-1/textkit/slug.py
+index bf664813d..fbe02a22d 100644
+--- a/src/packages/local-models/suites/repo-code-change-1/textkit/slug.py
++++ b/src/packages/local-models/suites/repo-code-change-1/textkit/slug.py
+@@ -1,9 +1,11 @@
+-"""Slugs para URLs: minúsculas ASCII separadas por guiones."""
++````python
++"""Slugs para URLs: minúsculas ASCII separadas por guiones.
+ 
+ import re
+ import unicodedata
+ 
+-_SEPARATOR_RUN = re.compile(r"[^a-z0-9]+")
++_SEPARATOR_RUN = re.compile(r"[^
++a-z0-9]+")
+ 
+ 
+ def slugify(text: str) -> str:
+@@ -18,4 +20,11 @@ def title_slug(title: str, max_length: int) -> str:
+     Corta en un límite de palabra (nunca a media palabra) y nunca termina en
+     guion. Si la primera palabra ya excede el límite, se trunca esa palabra.
+     """
+-    raise NotImplementedError("title_slug")
++    words = title.split()
++    slug = ''
++    for word in words:
++        if len(word) < max_length and len(slug) + len(word) + 1 <= max_length:
++            slug += f'{word} ' if len(slug) > 0 else word
++        elif len(word) >= max_length:
++            return title_slug(word, max_length)
++    return slug.strip()````
+\ No newline at end of file
