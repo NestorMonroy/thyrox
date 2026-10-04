@@ -10,6 +10,7 @@
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { dirname, isAbsolute, join } from 'node:path'
 import type { Tool, ToolContext, ToolResult, ToolSpec } from '@thyrox/agent/loop/types'
+import { closestLines } from '@thyrox/agent/closest-lines'
 
 const ok = (content: string): ToolResult => ({ content, isError: false })
 const err = (content: string): ToolResult => ({ content, isError: true })
@@ -144,11 +145,23 @@ export const editTool: Tool = {
       return err(`no se pudo leer ${p}: ${(e as Error).message}`)
     }
     const veces = actual.split(viejo).length - 1
-    if (veces === 0) return err(`la cadena no aparece en ${p}`)
+    if (veces === 0) return err(notFoundRefusal(p, actual, viejo))
     if (veces > 1) return err(`la cadena aparece ${veces} veces en ${p}; hace falta una única`)
     writeFileSync(ruta(p, ctx), actual.replace(viejo, nuevo), 'utf8')
     return ok(`editado ${p}`)
   },
+}
+
+/**
+ * El rechazo de un `old_string` ausente: con las líneas parecidas y su texto
+ * exacto, el modelo puede reenviar el literal en vez de adivinarlo.
+ */
+function notFoundRefusal(p: string, actual: string, viejo: string): string {
+  const base = `la cadena no aparece en ${p}`
+  const candidates = closestLines(actual, viejo)
+  if (candidates.length === 0) return base
+  const listed = candidates.map((c) => `${c.line}: ${c.text}`).join('\n')
+  return `${base}\nLíneas más parecidas del archivo (old_string tiene que coincidir con una exactamente, con comillas y sangría):\n${listed}`
 }
 
 export const globTool: Tool = {

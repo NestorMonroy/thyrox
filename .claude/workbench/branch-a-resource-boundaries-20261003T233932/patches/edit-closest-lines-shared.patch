@@ -1,0 +1,272 @@
+diff --git a/src/packages/agent/closestLines.ts b/src/packages/agent/closestLines.ts
+new file mode 100644
+index 000000000..2621dd680
+--- /dev/null
++++ b/src/packages/agent/closestLines.ts
+@@ -0,0 +1,68 @@
++/**
++ * Las líneas de un archivo más parecidas a un texto que no aparece en él.
++ *
++ * Lo usan los dos `Edit` —el del bucle propio (`@thyrox/tools`) y el del
++ * cliente portado (`@thyrox/tool-registry`)— para que un rechazo de
++ * `old_string` diga qué texto existe, no sólo que falló (medido 2026-10-04:
++ * un modelo local reenvió con otras comillas y escapes de regex una línea que
++ * estaba ahí, y acabó reescribiendo el archivo entero). Sólo informa: nunca
++ * decide qué se reemplaza.
++ */
++
++/** Parecido mínimo (Dice sobre bigramas) para ofrecer una línea como candidata. */
++const CLOSEST_LINE_MIN_SCORE = 0.6
++const CLOSEST_LINE_LIMIT = 3
++
++/**
++ * La forma con que se comparan una línea del archivo y lo pedido: sin la
++ * sangría. Las comillas cambiadas y los escapes de regex no se normalizan: el
++ * parecido por bigramas ya los tolera (anulación medida: retirar esa
++ * normalización no cambió ningún veredicto). Sólo compara; nunca decide qué
++ * se reemplaza.
++ */
++function comparableLine(text: string): string {
++  return text.trim()
++}
++
++function bigrams(text: string): Map<string, number> {
++  const counts = new Map<string, number>()
++  for (let i = 0; i < text.length - 1; i++) {
++    const pair = text.slice(i, i + 2)
++    counts.set(pair, (counts.get(pair) ?? 0) + 1)
++  }
++  return counts
++}
++
++function similarity(search: string, line: string): number {
++  if (search === '' || line === '') return 0
++  if (line.includes(search)) return 1
++  const left = bigrams(search)
++  const right = bigrams(line)
++  let shared = 0
++  for (const [pair, count] of left) shared += Math.min(count, right.get(pair) ?? 0)
++  const total = Math.max(search.length - 1, 0) + Math.max(line.length - 1, 0)
++  return total === 0 ? 0 : (2 * shared) / total
++}
++
++/**
++ * Las líneas del archivo más parecidas a la primera línea no vacía de lo
++ * pedido, con su número (desde 1) y su texto EXACTO. Las usa el rechazo de un
++ * `old_string` que no aparece: sin ellas el modelo sólo sabe que falló, no qué
++ * texto existe (medido: tres intentos con otras comillas y un escape de regex
++ * contra una línea que estaba ahí, y abandono).
++ */
++export function closestLines(
++  fileContent: string,
++  searchString: string,
++): { line: number; text: string }[] {
++  const first = searchString.split(/\r?\n/).find(part => part.trim() !== '')
++  if (first === undefined) return []
++  const wanted = comparableLine(first)
++  return fileContent
++    .split(/\r?\n/)
++    .map((text, index) => ({ line: index + 1, text, score: similarity(wanted, comparableLine(text)) }))
++    .filter(candidate => candidate.score >= CLOSEST_LINE_MIN_SCORE)
++    .sort((a, b) => b.score - a.score || a.line - b.line)
++    .slice(0, CLOSEST_LINE_LIMIT)
++    .map(({ line, text }) => ({ line, text }))
++}
+diff --git a/src/packages/agent/package.json b/src/packages/agent/package.json
+index ee8110d28..ecc9f19fc 100644
+--- a/src/packages/agent/package.json
++++ b/src/packages/agent/package.json
+@@ -1091,6 +1091,11 @@
+       "@thyrox/source": "./subagentLimits.ts",
+       "types": "./dist/subagentLimits.d.ts",
+       "default": "./subagentLimits.ts"
++    },
++    "./closest-lines": {
++      "@thyrox/source": "./closestLines.ts",
++      "types": "./dist/closestLines.d.ts",
++      "default": "./closestLines.ts"
+     }
+   },
+   "scripts": {
+diff --git a/src/packages/agent/tsconfig.build.json b/src/packages/agent/tsconfig.build.json
+index c907be51c..7af7032fd 100644
+--- a/src/packages/agent/tsconfig.build.json
++++ b/src/packages/agent/tsconfig.build.json
+@@ -667,6 +667,9 @@
+       ],
+       "@thyrox/agent/subagentLimits.js": [
+         "./subagentLimits.ts"
++      ],
++      "@thyrox/agent/closest-lines": [
++        "./closestLines.ts"
+       ]
+     }
+   },
+@@ -712,6 +715,7 @@
+     "awaySummary.ts",
+     "claudeInChromeCommon.ts",
+     "claudeInChromeSetup.ts",
++    "closestLines.ts",
+     "combinedAbortSignal.ts",
+     "command.ts",
+     "commitAttribution.ts",
+diff --git a/src/packages/agent/tsconfig.test.json b/src/packages/agent/tsconfig.test.json
+index 1dd6f1bf8..fbfd24d42 100644
+--- a/src/packages/agent/tsconfig.test.json
++++ b/src/packages/agent/tsconfig.test.json
+@@ -28,6 +28,7 @@
+     "claudeInChrome/**/*",
+     "claudeInChromeCommon.ts",
+     "claudeInChromeSetup.ts",
++    "closestLines.ts",
+     "combinedAbortSignal.ts",
+     "command.ts",
+     "commands/**/*",
+diff --git a/src/packages/tool-registry/src/tools/FileEditTool/utils.ts b/src/packages/tool-registry/src/tools/FileEditTool/utils.ts
+index 66b444773..2b6e2c9cb 100644
+--- a/src/packages/tool-registry/src/tools/FileEditTool/utils.ts
++++ b/src/packages/tool-registry/src/tools/FileEditTool/utils.ts
+@@ -1,3 +1,4 @@
++import { closestLines } from '@thyrox/agent/closest-lines'
+ import { type StructuredPatchHunk, structuredPatch } from 'diff'
+ import { logError } from '@thyrox/local-observability/logging'
+ import { expandPath } from '@thyrox/storage/path.js'
+@@ -774,63 +775,7 @@ export function areFileEditsInputsEquivalent(
+   return areFileEditsEquivalent(input1.edits, input2.edits, fileContent)
+ }
+ 
+-/** Parecido mínimo (Dice sobre bigramas) para ofrecer una línea como candidata. */
+-const CLOSEST_LINE_MIN_SCORE = 0.6
+-const CLOSEST_LINE_LIMIT = 3
+-
+-/**
+- * La forma con que se comparan una línea del archivo y lo pedido: sin la
+- * sangría. Las comillas cambiadas y los escapes de regex no se normalizan: el
+- * parecido por bigramas ya los tolera (anulación medida: retirar esa
+- * normalización no cambió ningún veredicto). Sólo compara; nunca decide qué
+- * se reemplaza.
+- */
+-function comparableLine(text: string): string {
+-  return text.trim()
+-}
+-
+-function bigrams(text: string): Map<string, number> {
+-  const counts = new Map<string, number>()
+-  for (let i = 0; i < text.length - 1; i++) {
+-    const pair = text.slice(i, i + 2)
+-    counts.set(pair, (counts.get(pair) ?? 0) + 1)
+-  }
+-  return counts
+-}
+-
+-function similarity(search: string, line: string): number {
+-  if (search === '' || line === '') return 0
+-  if (line.includes(search)) return 1
+-  const left = bigrams(search)
+-  const right = bigrams(line)
+-  let shared = 0
+-  for (const [pair, count] of left) shared += Math.min(count, right.get(pair) ?? 0)
+-  const total = Math.max(search.length - 1, 0) + Math.max(line.length - 1, 0)
+-  return total === 0 ? 0 : (2 * shared) / total
+-}
+-
+-/**
+- * Las líneas del archivo más parecidas a la primera línea no vacía de lo
+- * pedido, con su número (desde 1) y su texto EXACTO. Las usa el rechazo de un
+- * `old_string` que no aparece: sin ellas el modelo sólo sabe que falló, no qué
+- * texto existe (medido: tres intentos con otras comillas y un escape de regex
+- * contra una línea que estaba ahí, y abandono).
+- */
+-export function closestLines(
+-  fileContent: string,
+-  searchString: string,
+-): { line: number; text: string }[] {
+-  const first = searchString.split(/\r?\n/).find(part => part.trim() !== '')
+-  if (first === undefined) return []
+-  const wanted = comparableLine(first)
+-  return fileContent
+-    .split(/\r?\n/)
+-    .map((text, index) => ({ line: index + 1, text, score: similarity(wanted, comparableLine(text)) }))
+-    .filter(candidate => candidate.score >= CLOSEST_LINE_MIN_SCORE)
+-    .sort((a, b) => b.score - a.score || a.line - b.line)
+-    .slice(0, CLOSEST_LINE_LIMIT)
+-    .map(({ line, text }) => ({ line, text }))
+-}
++export { closestLines }
+ 
+ /** El rechazo de un `old_string` ausente, con las líneas cercanas si las hay. */
+ export function notFoundMessage(fileContent: string, searchString: string): string {
+diff --git a/src/packages/tools/__tests__/tools.test.ts b/src/packages/tools/__tests__/tools.test.ts
+index 44fb68005..4bc08e788 100644
+--- a/src/packages/tools/__tests__/tools.test.ts
++++ b/src/packages/tools/__tests__/tools.test.ts
+@@ -92,6 +92,30 @@ describe('las herramientas del nucleo hacen lo que dicen', () => {
+     expect(readFileSync(p, 'utf8')).toBe('uno X uno\n')
+   })
+ 
++  // Medido (repo-code-change@1, qwen2.5-7b, 2026-10-04): el trabajador mandó
++  // `raise NotImplementedError\\(\\"title_slug"\\)` dos veces contra una línea
++  // que estaba ahí; «la cadena no aparece» no le decía cuál era, y acabó
++  // reescribiendo el archivo entero con Write.
++  test('Edit sin coincidencia muestra las líneas parecidas con su texto exacto', async () => {
++    const d = dir()
++    const p = join(d, 'slug.py')
++    writeFileSync(p, 'def title_slug(title, max_length):\n    raise NotImplementedError("title_slug")\n')
++    const m = registry(CORE_TOOLS)
++    const miss = await m.get('Edit')!.run({ file_path: p, old_string: 'raise NotImplementedError\\(\\"title_slug"\\)', new_string: 'X' }, ctx(d))
++    expect(miss.isError).toBe(true)
++    expect(miss.content).toContain(`la cadena no aparece en ${p}`)
++    expect(miss.content).toContain('2:     raise NotImplementedError("title_slug")')
++    expect(readFileSync(p, 'utf8')).toContain('raise NotImplementedError("title_slug")')
++  })
++
++  test('Edit sin coincidencia ni parecido conserva el mensaje de siempre', async () => {
++    const d = dir()
++    const p = join(d, 'c.txt')
++    writeFileSync(p, 'uno dos\n')
++    const miss = await registry(CORE_TOOLS).get('Edit')!.run({ file_path: p, old_string: 'zzz qqq', new_string: 'X' }, ctx(d))
++    expect(miss.content).toBe(`la cadena no aparece en ${p}`)
++  })
++
+   test('Glob lista por patron, relativo al cwd', async () => {
+     const d = dir()
+     writeFileSync(join(d, 'a.ts'), '')
+diff --git a/src/packages/tools/src/registry.ts b/src/packages/tools/src/registry.ts
+index 614f36d66..763e1e1c6 100644
+--- a/src/packages/tools/src/registry.ts
++++ b/src/packages/tools/src/registry.ts
+@@ -10,6 +10,7 @@
+ import { mkdirSync, readFileSync, writeFileSync } from 'node:fs'
+ import { dirname, isAbsolute, join } from 'node:path'
+ import type { Tool, ToolContext, ToolResult, ToolSpec } from '@thyrox/agent/loop/types'
++import { closestLines } from '@thyrox/agent/closest-lines'
+ 
+ const ok = (content: string): ToolResult => ({ content, isError: false })
+ const err = (content: string): ToolResult => ({ content, isError: true })
+@@ -144,13 +145,25 @@ export const editTool: Tool = {
+       return err(`no se pudo leer ${p}: ${(e as Error).message}`)
+     }
+     const veces = actual.split(viejo).length - 1
+-    if (veces === 0) return err(`la cadena no aparece en ${p}`)
++    if (veces === 0) return err(notFoundRefusal(p, actual, viejo))
+     if (veces > 1) return err(`la cadena aparece ${veces} veces en ${p}; hace falta una única`)
+     writeFileSync(ruta(p, ctx), actual.replace(viejo, nuevo), 'utf8')
+     return ok(`editado ${p}`)
+   },
+ }
+ 
++/**
++ * El rechazo de un `old_string` ausente: con las líneas parecidas y su texto
++ * exacto, el modelo puede reenviar el literal en vez de adivinarlo.
++ */
++function notFoundRefusal(p: string, actual: string, viejo: string): string {
++  const base = `la cadena no aparece en ${p}`
++  const candidates = closestLines(actual, viejo)
++  if (candidates.length === 0) return base
++  const listed = candidates.map((c) => `${c.line}: ${c.text}`).join('\n')
++  return `${base}\nLíneas más parecidas del archivo (old_string tiene que coincidir con una exactamente, con comillas y sangría):\n${listed}`
++}
++
+ export const globTool: Tool = {
+   name: 'Glob',
+   description: 'Lista los archivos que casan con un patrón, relativo al directorio de la sesión. Devuelve una ruta por línea.',

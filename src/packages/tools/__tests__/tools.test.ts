@@ -92,6 +92,30 @@ describe('las herramientas del nucleo hacen lo que dicen', () => {
     expect(readFileSync(p, 'utf8')).toBe('uno X uno\n')
   })
 
+  // Medido (repo-code-change@1, qwen2.5-7b, 2026-10-04): el trabajador mandó
+  // `raise NotImplementedError\\(\\"title_slug"\\)` dos veces contra una línea
+  // que estaba ahí; «la cadena no aparece» no le decía cuál era, y acabó
+  // reescribiendo el archivo entero con Write.
+  test('Edit sin coincidencia muestra las líneas parecidas con su texto exacto', async () => {
+    const d = dir()
+    const p = join(d, 'slug.py')
+    writeFileSync(p, 'def title_slug(title, max_length):\n    raise NotImplementedError("title_slug")\n')
+    const m = registry(CORE_TOOLS)
+    const miss = await m.get('Edit')!.run({ file_path: p, old_string: 'raise NotImplementedError\\(\\"title_slug"\\)', new_string: 'X' }, ctx(d))
+    expect(miss.isError).toBe(true)
+    expect(miss.content).toContain(`la cadena no aparece en ${p}`)
+    expect(miss.content).toContain('2:     raise NotImplementedError("title_slug")')
+    expect(readFileSync(p, 'utf8')).toContain('raise NotImplementedError("title_slug")')
+  })
+
+  test('Edit sin coincidencia ni parecido conserva el mensaje de siempre', async () => {
+    const d = dir()
+    const p = join(d, 'c.txt')
+    writeFileSync(p, 'uno dos\n')
+    const miss = await registry(CORE_TOOLS).get('Edit')!.run({ file_path: p, old_string: 'zzz qqq', new_string: 'X' }, ctx(d))
+    expect(miss.content).toBe(`la cadena no aparece en ${p}`)
+  })
+
   test('Glob lista por patron, relativo al cwd', async () => {
     const d = dir()
     writeFileSync(join(d, 'a.ts'), '')

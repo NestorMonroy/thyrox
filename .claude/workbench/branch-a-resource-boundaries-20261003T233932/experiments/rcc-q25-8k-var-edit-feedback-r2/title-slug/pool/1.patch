@@ -1,0 +1,37 @@
+diff --git a/src/packages/local-models/suites/repo-code-change-1/textkit/slug.py b/src/packages/local-models/suites/repo-code-change-1/textkit/slug.py
+index bf664813d..11e56ca0a 100644
+--- a/src/packages/local-models/suites/repo-code-change-1/textkit/slug.py
++++ b/src/packages/local-models/suites/repo-code-change-1/textkit/slug.py
+@@ -1,21 +1,11 @@
+-"""Slugs para URLs: minúsculas ASCII separadas por guiones."""
+-
+-import re
+-import unicodedata
+-
+-_SEPARATOR_RUN = re.compile(r"[^a-z0-9]+")
+-
+-
+-def slugify(text: str) -> str:
+-    """Convierte un texto en slug: sin acentos, en minúsculas, guiones simples."""
+-    ascii_text = unicodedata.normalize("NFKD", text).encode("ascii", "ignore").decode("ascii")
+-    return _SEPARATOR_RUN.sub("-", ascii_text.lower()).strip("-")
+-
+-
+ def title_slug(title: str, max_length: int) -> str:
+-    """El slug de un título, acotado a ``max_length`` caracteres.
+-
+-    Corta en un límite de palabra (nunca a media palabra) y nunca termina en
+-    guion. Si la primera palabra ya excede el límite, se trunca esa palabra.
+-    """
+-    raise NotImplementedError("title_slug")
++    title_words = title.split()
++    final_slice = ''
++    for i, word in enumerate(title_words):
++        if len(' '.join(title_words[:i+1])) > max_length:
++            if i > 0:
++                final_slice = '-'.join(title_words[:i])
++            else:
++                final_slice = ''
++            break
++    return final_slice.strip('-')[:max_length]
+\ No newline at end of file

@@ -1091,6 +1091,11 @@
       "@thyrox/source": "./subagentLimits.ts",
       "types": "./dist/subagentLimits.d.ts",
       "default": "./subagentLimits.ts"
+    },
+    "./closest-lines": {
+      "@thyrox/source": "./closestLines.ts",
+      "types": "./dist/closestLines.d.ts",
+      "default": "./closestLines.ts"
     }
   },
   "scripts": {
