@@ -1,0 +1,3 @@
+podman-execution-execute: falló la etapa wait sobre thyrox-worker-maintenance-mut66ref-26625: salida de wait ilegible: «»
+drenaje: la sesión quedó vacía sola
+vigilante: repeated-tool-call	5 en total: {"input": {"command": "cd src/packages/local-models/suites/repo-code-change-1 && python3 -m unittest textkit.test_slug", "timeout_ms": 120000}, "name": "Bash"}

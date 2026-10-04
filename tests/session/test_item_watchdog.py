@@ -55,6 +55,49 @@ def test_input_key_order_does_not_make_a_call_different() -> None:
     assert tracker.observe(first_key_order) is not None
 
 
+def call(name: str, call_id: str, **arguments: object) -> dict:
+    return {"type": "assistant", "message": {"content": [{"type": "tool_use", "id": call_id, "name": name, "input": arguments}]}}
+
+
+def result(call_id: str, is_error: bool = False) -> dict:
+    return {"type": "user", "message": {"content": [{"type": "tool_result", "tool_use_id": call_id, "is_error": is_error, "content": ""}]}}
+
+
+# Medido (repo-code-change@1, qwen3-4b, 2026-10-04): el modelo iteraba editar →
+# probar, con un Edit distinto y aplicado entre cada prueba, llegó a 6 de 7
+# pruebas, y el vigilante lo detuvo por «5 en total» de la orden de pruebas.
+def test_a_new_applied_edit_between_runs_is_progress_not_repetition() -> None:
+    tracker = ToolCallTracker(Limits(max_identical=3, max_repeats=3, idle_seconds=0))
+    for step in range(6):
+        assert tracker.observe(call("Edit", f"e{step}", file_path="slug.py", old_string=f"v{step}", new_string=f"v{step + 1}")) is None
+        assert tracker.observe(result(f"e{step}")) is None
+        assert tracker.observe(call("Bash", f"b{step}", command="python3 -m unittest")) is None
+        assert tracker.observe(result(f"b{step}", is_error=True)) is None
+
+
+def test_a_refused_edit_is_not_progress() -> None:
+    tracker = ToolCallTracker(Limits(max_identical=3, max_repeats=3, idle_seconds=0))
+    breach = None
+    for step in range(3):
+        tracker.observe(call("Edit", f"e{step}", file_path="slug.py", old_string=f"missing{step}", new_string="x"))
+        tracker.observe(result(f"e{step}", is_error=True))
+        breach = tracker.observe(call("Bash", f"b{step}", command="python3 -m unittest"))
+    assert breach is not None and breach.reason == "repeated-tool-call"
+
+
+def test_reapplying_the_same_edit_is_not_progress() -> None:
+    tracker = ToolCallTracker(Limits(max_identical=3, max_repeats=3, idle_seconds=0))
+    forward = dict(file_path="slug.py", old_string="a", new_string="b")
+    back = dict(file_path="slug.py", old_string="b", new_string="a")
+    breach = None
+    for step in range(3):
+        for name, arguments in (("f", forward), ("k", back)):
+            tracker.observe(call("Edit", f"{name}{step}", **arguments))
+            tracker.observe(result(f"{name}{step}"))
+            breach = breach or tracker.observe(call("Bash", f"b{name}{step}", command="python3 -m unittest"))
+    assert breach is not None and breach.reason == "repeated-tool-call"
+
+
 def test_events_without_tool_calls_never_breach() -> None:
     tracker = ToolCallTracker(Limits(max_identical=1, max_repeats=1, idle_seconds=0))
     assert tracker.observe({"type": "system", "subtype": "init"}) is None

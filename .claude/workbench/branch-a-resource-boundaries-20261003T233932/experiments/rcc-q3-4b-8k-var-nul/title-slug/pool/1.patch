@@ -1,0 +1,10 @@
+diff --git a/src/packages/local-models/suites/repo-code-change-1/textkit/slug.py b/src/packages/local-models/suites/repo-code-change-1/textkit/slug.py
+index bf664813d..f642829b4 100644
+--- a/src/packages/local-models/suites/repo-code-change-1/textkit/slug.py
++++ b/src/packages/local-models/suites/repo-code-change-1/textkit/slug.py
+@@ -18,4 +18,4 @@ def title_slug(title: str, max_length: int) -> str:
+     Corta en un límite de palabra (nunca a media palabra) y nunca termina en
+     guion. Si la primera palabra ya excede el límite, se trunca esa palabra.
+     """
+-    raise NotImplementedError("title_slug")
++    return slugify(title[:max_length]).rstrip('-').lstrip('-')

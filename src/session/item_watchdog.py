@@ -52,21 +52,46 @@ class Breach:
     detail: str
 
 
+#: Las herramientas cuyo éxito cambia el árbol del ítem.
+MUTATING_TOOLS = frozenset({"Edit", "Write"})
+
+
 class ToolCallTracker:
-    """Cuenta las llamadas a herramienta de un ítem: la racha consecutiva y el total por llamada."""
+    """Cuenta las llamadas a herramienta de un ítem: la racha consecutiva y el total por llamada.
+
+    Un cambio NUEVO aplicado —un `Edit`/`Write` con éxito cuya llamada no se
+    había visto— es progreso: reinicia la racha y los totales de las llamadas
+    que no cambian nada, así que editar → probar puede iterar (medido: qwen3-4b
+    llegó a 6 de 7 pruebas y se lo detuvo por «5 en total» de la orden de
+    pruebas, con un `Edit` distinto entre cada una). Un cambio rehusado o
+    repetido no reinicia nada: reaplicar el mismo `Edit` sigue sumando, y una
+    oscilación A→B, B→A cae por el total de esas mismas llamadas.
+    """
 
     def __init__(self, limits: Limits) -> None:
         self._limits = limits
         self._totals: Counter[str] = Counter()
         self._last: str | None = None
         self._streak = 0
+        self._mutations: dict[str, str] = {}
 
     def observe(self, event: dict) -> Breach | None:
-        for call in _tool_calls(event):
+        for call_id, call in _tool_calls(event):
+            if json.loads(call).get("name") in MUTATING_TOOLS and call_id:
+                self._mutations[call_id] = call
             breach = self._count(call)
             if breach is not None:
                 return breach
+        for call_id in _applied_results(event):
+            call = self._mutations.pop(call_id, None)
+            if call is not None and self._totals[call] == 1:
+                self._progress()
         return None
+
+    def _progress(self) -> None:
+        self._totals = Counter({call: n for call, n in self._totals.items()
+                                if json.loads(call).get("name") in MUTATING_TOOLS})
+        self._last, self._streak = None, 0
 
     def _count(self, call: str) -> Breach | None:
         self._streak = self._streak + 1 if call == self._last else 1
@@ -79,12 +104,23 @@ class ToolCallTracker:
         return None
 
 
-def _tool_calls(event: dict) -> list[str]:
+def _tool_calls(event: dict) -> list[tuple[str, str]]:
+    """``(id, llamada canónica)`` de cada ``tool_use`` de un evento assistant."""
     if event.get("type") != "assistant":
         return []
     content = (event.get("message") or {}).get("content") or []
-    return [json.dumps({"name": part.get("name"), "input": part.get("input")}, sort_keys=True, ensure_ascii=False)
+    return [(str(part.get("id") or ""),
+             json.dumps({"name": part.get("name"), "input": part.get("input")}, sort_keys=True, ensure_ascii=False))
             for part in content if isinstance(part, dict) and part.get("type") == "tool_use"]
+
+
+def _applied_results(event: dict) -> list[str]:
+    """Los ``tool_use_id`` que un evento user devuelve sin error."""
+    if event.get("type") != "user":
+        return []
+    content = (event.get("message") or {}).get("content") or []
+    return [str(part.get("tool_use_id")) for part in content
+            if isinstance(part, dict) and part.get("type") == "tool_result" and not part.get("is_error")]
 
 
 def _preview(call: str, length: int = 160) -> str:
