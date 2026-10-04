@@ -38,5 +38,13 @@ check "el motivo queda en el .err del ítem" "$(grep -c 'identical-tool-call' "$
 check "sin informe: el veredicto de siempre" "$(verdict_of 2 absent)" "verificado"
 check "informe vacío: no cuenta como detención" "$(verdict_of 3 '')" "verificado"
 
+# Medido (repo-code-change@1, 2026-10-04): bajo --local-only, una unidad que el
+# vigilante detiene no llega a escribir su línea served-by, y el ítem salía
+# `no-local` —que dice «lo sirvió otro»— en vez de `detenido`, que dice qué pasó.
+check "bajo --local-only, una detención sigue siendo detenido" \
+    "$(THYROX_POOL_LOCAL_ONLY=1 verdict_of 4 $'identical-tool-call\t3 consecutivas: Bash\n')" "detenido"
+check "bajo --local-only sin detención ni served-by: no-local, como siempre" \
+    "$(THYROX_POOL_LOCAL_ONLY=1 verdict_of 5 absent)" "no-local"
+
 echo; echo "$((total - failures)) ok, $failures falla(s) (alcance medido: item_worktree finalize con vigilante)"
 [[ $failures -eq 0 ]]

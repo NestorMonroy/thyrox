@@ -509,15 +509,18 @@ finalize() {
         # su trabajo, y eso es lo primero que hay que saber de él, gane o
         # pierda el resto de la evaluación.
         verdict=con-stash
+    elif [[ -s "$out/$n.watchdog" ]]; then
+        # TASK-THYROX-0931 (F7): el vigilante detuvo un worker que giraba; lo
+        # que dejó en el worktree no es un resultado, pase o no su verify.
+        # Va antes de `no-local`: una unidad detenida no llega a escribir su
+        # línea served-by, y `no-local` diría «lo sirvió otro» de un ítem que
+        # el anfitrión sí servía (medido en repo-code-change@1, 2026-10-04).
+        { printf 'vigilante: '; cat "$out/$n.watchdog"; } >> "$out/$n.err"
+        verdict=detenido
     elif [[ "${THYROX_POOL_LOCAL_ONLY:-}" == 1 ]] && ! served_locally "$out/$n.err"; then
         # TASK-THYROX-0930: bajo --local-only, una respuesta que no se declaró
         # servida en el anfitrión no es evidencia, pase o no su verify.
         verdict=no-local
-    elif [[ -s "$out/$n.watchdog" ]]; then
-        # TASK-THYROX-0931 (F7): el vigilante detuvo un worker que giraba; lo
-        # que dejó en el worktree no es un resultado, pase o no su verify.
-        { printf 'vigilante: '; cat "$out/$n.watchdog"; } >> "$out/$n.err"
-        verdict=detenido
     elif [[ "$rc" -ne 0 ]]; then
         verdict=fallido
     elif [[ ! -s "$out/$n.patch" ]]; then
