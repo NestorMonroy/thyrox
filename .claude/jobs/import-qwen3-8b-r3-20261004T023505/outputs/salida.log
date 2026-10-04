@@ -1,0 +1,2 @@
+local-models-import: falló: llama-perplexity exit 137: 0.02.298.485 I  | 0.02.298.807 I system_info: n_threads = 4 (n_threads_batch = 4) / 4 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | AVX512 = 1 | AVX512_VBMI = 1 | AVX512_VNNI = 1 | AVX512_BF16 = 1 | AMX_INT8 = 1 | LLAMAFILE = 1 | OPENMP = 1 | REPACK = 1 |  | 0.02.298.889 I perplexity: tokenizing the input .. | 0.02.309.292 I perplexity: tokenization took 10.397 ms | 0.02.309.363 I perplexity: calculating perplexity over 33 chunks, n_ctx=128, batch_size=2048, n_seq=16
+__BG_EXIT__=1
