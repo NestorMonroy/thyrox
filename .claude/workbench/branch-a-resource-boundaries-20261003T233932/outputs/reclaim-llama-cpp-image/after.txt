@@ -1,0 +1,7 @@
+2026-10-04T02:33:36Z
+     Avail        Used
+9872277504 31261798400
+TYPE           TOTAL       ACTIVE      SIZE        RECLAIMABLE
+Images         6           3           7.662GB     1.585GB (21%)
+Containers     5           5           1.349MB     0B (0%)
+Local Volumes  17          3           2.563GB     0B (0%)
