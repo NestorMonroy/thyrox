@@ -667,6 +667,9 @@
       ],
       "@thyrox/agent/subagentLimits.js": [
         "./subagentLimits.ts"
+      ],
+      "@thyrox/agent/closest-lines": [
+        "./closestLines.ts"
       ]
     }
   },
@@ -712,6 +715,7 @@
     "awaySummary.ts",
     "claudeInChromeCommon.ts",
     "claudeInChromeSetup.ts",
+    "closestLines.ts",
     "combinedAbortSignal.ts",
     "command.ts",
     "commitAttribution.ts",

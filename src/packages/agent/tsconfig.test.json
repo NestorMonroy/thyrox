@@ -28,6 +28,7 @@
     "claudeInChrome/**/*",
     "claudeInChromeCommon.ts",
     "claudeInChromeSetup.ts",
+    "closestLines.ts",
     "combinedAbortSignal.ts",
     "command.ts",
     "commands/**/*",
