@@ -1,0 +1,24 @@
+{
+  "provenance": "external",
+  "repository": "Qwen/Qwen3-8B-GGUF",
+  "revision": "7c41481f57cb95916b40956ab2f0b139b296d974",
+  "file": "Qwen3-8B-Q4_K_M.gguf",
+  "sha256": "d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785",
+  "bytes": 5027783488,
+  "quantization": "Q4_K_M",
+  "license": "apache-2.0",
+  "acquiredAt": "2026-10-04T02:37:13.594Z",
+  "validation": {
+    "loaded": true,
+    "tokensPerSecond": 4.71,
+    "perplexity": 3.3141
+  },
+  "evaluationIdentity": {
+    "sourceRepository": "Qwen/Qwen3-8B-GGUF",
+    "sourceRevision": "7c41481f57cb95916b40956ab2f0b139b296d974",
+    "corpusSha256": "14c0b716a2ee4bd218d159d135a615d9dbb70a438876d0d0f4527bfbe7c530f3",
+    "imageDigest": "sha256:1e7427acebf3481547f69aee5741e703dad02be7c9fb50a35fc5d03667c322d6",
+    "toolParameters": "convert-outtype-by-method;quantize-level;ppl-c128-t4;simple-n16;v1"
+  },
+  "modelName": "thyrox-qwen--qwen3-8b-gguf:q4_k_m-hf-7c41481f57cb"
+}

@@ -1,0 +1,2 @@
+local-models-qualify: el coordinador falló la admisión en materialize: podman create thyrox-worker-unit-f3fc5d98-1d5a-4a3a-863b-f14b5f92125a: falló la etapa create sobre thyrox-worker-unit-f3fc5d98-1d5a-4a3a-863b-f14b5f92125a: Error: statfs /home/user/thyrox/.thyrox/models/artifacts/sha256-d98cdcbd03e17ce47681435b5150e34c1417f50b5c0019dd560e4882c5745785.gguf: no such file or directory
+__BG_EXIT__=2
