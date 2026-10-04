@@ -1,13 +1,14 @@
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 import { SCRATCH_METADATA_MARGIN_BYTES } from '@thyrox/model-artifacts/quantizationPlan.ts'
 import { syntheticGgufBytes } from '@thyrox/model-artifacts/testing/syntheticGguf.ts'
 
-import { importExternalArtifact, type ExternalArtifactDeps, type ExternalArtifactRequest } from '../externalArtifact.js'
+import { artifactFileOf, importExternalArtifact, type ExternalArtifactDeps, type ExternalArtifactRequest } from '../externalArtifact.js'
+import { cachedArtifactPath } from '../modelArtifactCache.js'
 import type { LabStep, LabStepResult } from '../quantizationLab.js'
 import { toolOf, writeCapturedOutput } from '../testing/fakeQuantizationLab.js'
 import type { AdmissionOutcome } from '../resourceAdmission.js'
@@ -86,6 +87,7 @@ function deps(overrides: Partial<ExternalArtifactDeps> & Pick<ExternalArtifactDe
     admission: { admitDisk: async () => ({ admitted: true }), admitMemory: async () => ({ admitted: true }), releaseAll: async () => {} },
     freeBytes: async () => 10 ** 12,
     catalogPath: join(root, 'catalog.json'),
+    artifactCache: join(root, 'artifacts'),
     labImageDigest: `sha256:${'b'.repeat(64)}`,
     now: () => new Date('2026-10-01T03:00:00Z'),
     ...overrides,
@@ -93,6 +95,16 @@ function deps(overrides: Partial<ExternalArtifactDeps> & Pick<ExternalArtifactDe
 }
 
 describe('external artifact import', () => {
+  test('publica el GGUF validado en la caché por digest, donde la unidad lo monta', async () => {
+    const hub = fakeHub()
+    const outcome = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: fakeLab(() => request.scratchDir).runInLab }))
+    expect(outcome.kind).toBe('completed')
+    if (outcome.kind !== 'completed') return
+    const cached = cachedArtifactPath(join(root, 'artifacts'), outcome.provenance.sha256)
+    expect(existsSync(cached)).toBe(true)
+    expect(statSync(cached).ino).toBe(statSync(join(request.scratchDir, artifactFileOf(request.parts))).ino)
+  })
+
   test('validates and registers with external provenance', async () => {
     const hub = fakeHub()
     const outcome = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: fakeLab(() => request.scratchDir).runInLab }))

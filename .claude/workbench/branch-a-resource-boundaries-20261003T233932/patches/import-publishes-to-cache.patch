@@ -1,0 +1,202 @@
+diff --git a/src/packages/local-models/__tests__/externalArtifact.test.ts b/src/packages/local-models/__tests__/externalArtifact.test.ts
+index 79530c8ca..4412f6d86 100644
+--- a/src/packages/local-models/__tests__/externalArtifact.test.ts
++++ b/src/packages/local-models/__tests__/externalArtifact.test.ts
+@@ -1,13 +1,14 @@
+ import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
+ import { createHash } from 'node:crypto'
+-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
++import { existsSync, mkdtempSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
+ import { tmpdir } from 'node:os'
+ import { join } from 'node:path'
+ 
+ import { SCRATCH_METADATA_MARGIN_BYTES } from '@thyrox/model-artifacts/quantizationPlan.ts'
+ import { syntheticGgufBytes } from '@thyrox/model-artifacts/testing/syntheticGguf.ts'
+ 
+-import { importExternalArtifact, type ExternalArtifactDeps, type ExternalArtifactRequest } from '../externalArtifact.js'
++import { artifactFileOf, importExternalArtifact, type ExternalArtifactDeps, type ExternalArtifactRequest } from '../externalArtifact.js'
++import { cachedArtifactPath } from '../modelArtifactCache.js'
+ import type { LabStep, LabStepResult } from '../quantizationLab.js'
+ import { toolOf, writeCapturedOutput } from '../testing/fakeQuantizationLab.js'
+ import type { AdmissionOutcome } from '../resourceAdmission.js'
+@@ -86,6 +87,7 @@ function deps(overrides: Partial<ExternalArtifactDeps> & Pick<ExternalArtifactDe
+     admission: { admitDisk: async () => ({ admitted: true }), admitMemory: async () => ({ admitted: true }), releaseAll: async () => {} },
+     freeBytes: async () => 10 ** 12,
+     catalogPath: join(root, 'catalog.json'),
++    artifactCache: join(root, 'artifacts'),
+     labImageDigest: `sha256:${'b'.repeat(64)}`,
+     now: () => new Date('2026-10-01T03:00:00Z'),
+     ...overrides,
+@@ -93,6 +95,16 @@ function deps(overrides: Partial<ExternalArtifactDeps> & Pick<ExternalArtifactDe
+ }
+ 
+ describe('external artifact import', () => {
++  test('publica el GGUF validado en la caché por digest, donde la unidad lo monta', async () => {
++    const hub = fakeHub()
++    const outcome = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: fakeLab(() => request.scratchDir).runInLab }))
++    expect(outcome.kind).toBe('completed')
++    if (outcome.kind !== 'completed') return
++    const cached = cachedArtifactPath(join(root, 'artifacts'), outcome.provenance.sha256)
++    expect(existsSync(cached)).toBe(true)
++    expect(statSync(cached).ino).toBe(statSync(join(request.scratchDir, artifactFileOf(request.parts))).ino)
++  })
++
+   test('validates and registers with external provenance', async () => {
+     const hub = fakeHub()
+     const outcome = await importExternalArtifact(request, deps({ fetcher: hub.fetcher, runInLab: fakeLab(() => request.scratchDir).runInLab }))
+diff --git a/src/packages/local-models/__tests__/modelArtifactCache.test.ts b/src/packages/local-models/__tests__/modelArtifactCache.test.ts
+index 32c7ed9ac..d2b985bf9 100644
+--- a/src/packages/local-models/__tests__/modelArtifactCache.test.ts
++++ b/src/packages/local-models/__tests__/modelArtifactCache.test.ts
+@@ -6,14 +6,14 @@
+  */
+ import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
+ import { createHash } from 'node:crypto'
+-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
++import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
+ import { tmpdir } from 'node:os'
+ import { join } from 'node:path'
+ 
+ import type { CatalogArtifact } from '@thyrox/model-artifacts/catalogEntry.ts'
+ import type { PinnedModelArtifact } from '@thyrox/model-artifacts/modelArtifactResolver.ts'
+ 
+-import { cachedArtifactPath, materializeArtifact, type ArtifactFetcher } from '../modelArtifactCache.js'
++import { cachedArtifactPath, materializeArtifact, publishVerifiedArtifact, type ArtifactFetcher } from '../modelArtifactCache.js'
+ 
+ const CONTENT = 'GGUF-bytes-of-a-q4-model'
+ const SHA = createHash('sha256').update(CONTENT).digest('hex')
+@@ -91,3 +91,40 @@ describe('materializeArtifact', () => {
+     expect(fetcher.calls).toHaveLength(0)
+   })
+ })
++
++// Medido (2026-10-04): un import externo registraba el GGUF en el catálogo y lo
++// dejaba en su scratch; la unidad de Ollama monta la ruta por digest de la caché
++// y no arrancó («statfs … no such file»). Publicar es un enlace duro: cero bytes.
++describe('publishVerifiedArtifact', () => {
++  function source(content = CONTENT): string {
++    const path = join(cacheDir, '..', `${cacheDir.split('/').at(-1)}-scratch.gguf`)
++    writeFileSync(path, content)
++    return path
++  }
++
++  test('publica el archivo verificado en la ruta por digest como un enlace, sin copiarlo', async () => {
++    const from = source()
++    const outcome = await publishVerifiedArtifact(cacheDir, SHA, from)
++    expect(outcome).toEqual({ status: 'published', path: cachedArtifactPath(cacheDir, SHA) })
++    expect(statSync(cachedArtifactPath(cacheDir, SHA)).ino).toBe(statSync(from).ino)
++    expect(readdirSync(cacheDir)).toEqual([`sha256-${SHA}.gguf`])
++    rmSync(from)
++  })
++
++  test('una caché que ya tiene ese contenido no se toca', async () => {
++    writeFileSync(cachedArtifactPath(cacheDir, SHA), CONTENT)
++    const before = statSync(cachedArtifactPath(cacheDir, SHA)).ino
++    const from = source()
++    expect((await publishVerifiedArtifact(cacheDir, SHA, from)).status).toBe('cached')
++    expect(statSync(cachedArtifactPath(cacheDir, SHA)).ino).toBe(before)
++    rmSync(from)
++  })
++
++  test('una caché con otro contenido bajo ese nombre se reemplaza por el verificado', async () => {
++    writeFileSync(cachedArtifactPath(cacheDir, SHA), 'otro contenido')
++    const from = source()
++    expect((await publishVerifiedArtifact(cacheDir, SHA, from)).status).toBe('published')
++    expect(readFileSync(cachedArtifactPath(cacheDir, SHA), 'utf8')).toBe(CONTENT)
++    rmSync(from)
++  })
++})
+diff --git a/src/packages/local-models/externalArtifact.ts b/src/packages/local-models/externalArtifact.ts
+index 7e8db16d5..f0d940ce4 100644
+--- a/src/packages/local-models/externalArtifact.ts
++++ b/src/packages/local-models/externalArtifact.ts
+@@ -21,6 +21,7 @@ import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
+ import { join } from 'node:path'
+ 
+ import { readGgufMetadata } from '@thyrox/model-artifacts/ggufMetadata.ts'
++import { publishVerifiedArtifact } from './modelArtifactCache.js'
+ import { catalogEntryFromGguf, loadModelCatalog, saveModelCatalog } from '@thyrox/model-artifacts/modelCatalog.ts'
+ import { comparisonRefusal, type EvaluationIdentity } from '@thyrox/model-artifacts/evaluationIdentity.ts'
+ import { SCRATCH_METADATA_MARGIN_BYTES, TOOL_PARAMETERS_VERSION, type SourceSpec } from '@thyrox/model-artifacts/quantizationPlan.ts'
+@@ -76,6 +77,8 @@ export interface ExternalArtifactDeps {
+   readonly admission: ResourceAdmission
+   readonly freeBytes: (path: string) => Promise<number>
+   readonly catalogPath: string
++  /** La caché por digest donde las unidades leen el artefacto: el import lo publica ahí antes de catalogarlo. */
++  readonly artifactCache: string
+   /** Digest de la imagen del laboratorio que valida: una validación con otra imagen no se reutiliza. */
+   readonly labImageDigest: string
+   readonly now: () => Date
+@@ -327,6 +330,8 @@ async function register(request: ExternalArtifactRequest, subset: SourceSpec, pa
+   deps: ExternalArtifactDeps): Promise<ExternalProvenance> {
+   const checked = state.checked!
+   const acquiredAt = state.acquiredAt!
++  // Antes del catálogo: una entrada nunca nombra un artefacto que una unidad no pueda montar.
++  await publishVerifiedArtifact(deps.artifactCache, checked.sha256, path)
+   const entry = await catalogEntryFromGguf({ path, repository: request.repository, source: 'hf', revision: request.revision,
+     quantization: request.quantization, sha256: checked.sha256, capabilities: await declaredCapabilitiesOf(path),
+     declaredAt: acquiredAt.replace(/\.\d+Z$/, 'Z'), defaultKvCacheType: 'f16' })
+diff --git a/src/packages/local-models/importCommand.ts b/src/packages/local-models/importCommand.ts
+index 10c3d99b2..5315e159e 100644
+--- a/src/packages/local-models/importCommand.ts
++++ b/src/packages/local-models/importCommand.ts
+@@ -13,7 +13,7 @@ import { statfs } from 'node:fs/promises'
+ import { hostname } from 'node:os'
+ import { join, resolve } from 'node:path'
+ 
+-import { localModelHome } from '@thyrox/model-artifacts/localModelHome.ts'
++import { localArtifactHome, localModelHome } from '@thyrox/model-artifacts/localModelHome.ts'
+ import { createPodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
+ import { openSharedStateStore } from '@thyrox/shared-state/factory.ts'
+ 
+@@ -82,6 +82,7 @@ async function acquire(parsed: ImportArguments, context: CommandContext): Promis
+     admission: unitResourceAdmission(context.thyroxRoot, podman),
+     freeBytes: async path => { const info = await statfs(path); return info.bavail * info.bsize },
+     catalogPath: localModelHome(context.env, context.thyroxRoot).catalog,
++    artifactCache: localArtifactHome(context.env, context.thyroxRoot).artifactCache,
+     labImageDigest: image.digest,
+     now: context.now,
+   })
+diff --git a/src/packages/local-models/modelArtifactCache.ts b/src/packages/local-models/modelArtifactCache.ts
+index 1802bbb5a..7f3f0a455 100644
+--- a/src/packages/local-models/modelArtifactCache.ts
++++ b/src/packages/local-models/modelArtifactCache.ts
+@@ -13,7 +13,7 @@
+  * GGUF materializado. Quién descarga es un `ArtifactFetcher`: en producción,
+  * un trabajo de la primitiva de Podman sin credencial.
+  */
+-import { mkdir, rename, rm, stat } from 'node:fs/promises'
++import { link, mkdir, rename, rm, stat } from 'node:fs/promises'
+ import { join } from 'node:path'
+ 
+ import type { CatalogArtifact } from '@thyrox/model-artifacts/catalogEntry.ts'
+@@ -81,3 +81,29 @@ export async function materializeArtifact(request: MaterializationRequest): Prom
+     await rm(partial, { force: true })
+   }
+ }
++
++export type PublicationOutcome =
++  | { readonly status: 'published' | 'cached'; readonly path: string }
++
++/**
++ * Publica en la caché un GGUF que su productor ya verificó (el import externo
++ * midió su sha256 y lo validó en el laboratorio): un enlace duro en la ruta
++ * por digest, cero bytes más (H-THYROX-471). Sin publicarlo, el catálogo
++ * nombraba un artefacto que la unidad de Ollama no podía montar. Un archivo
++ * que ya ocupa la ruta se MIDE: con ese contenido no se toca, con otro se
++ * reemplaza. Un enlace que el sistema de archivos no permite lanza: copiarlo
++ * en silencio sería la segunda copia que esta función evita.
++ */
++export async function publishVerifiedArtifact(cacheDir: string, sha256: string, source: string): Promise<PublicationOutcome> {
++  const path = cachedArtifactPath(cacheDir, sha256)
++  if (await measuredSha256(path) === sha256) return { status: 'cached', path }
++  await mkdir(cacheDir, { recursive: true })
++  const partial = join(cacheDir, `.partial-${sha256}-${process.pid}-${Date.now()}`)
++  try {
++    await link(source, partial)
++    await rename(partial, path)
++  } finally {
++    await rm(partial, { force: true })
++  }
++  return { status: 'published', path }
++}

@@ -13,7 +13,7 @@ import { statfs } from 'node:fs/promises'
 import { hostname } from 'node:os'
 import { join, resolve } from 'node:path'
 
-import { localModelHome } from '@thyrox/model-artifacts/localModelHome.ts'
+import { localArtifactHome, localModelHome } from '@thyrox/model-artifacts/localModelHome.ts'
 import { createPodmanExecutor } from '@thyrox/podman-execution/podmanExecutor.ts'
 import { openSharedStateStore } from '@thyrox/shared-state/factory.ts'
 
@@ -82,6 +82,7 @@ async function acquire(parsed: ImportArguments, context: CommandContext): Promis
     admission: unitResourceAdmission(context.thyroxRoot, podman),
     freeBytes: async path => { const info = await statfs(path); return info.bavail * info.bsize },
     catalogPath: localModelHome(context.env, context.thyroxRoot).catalog,
+    artifactCache: localArtifactHome(context.env, context.thyroxRoot).artifactCache,
     labImageDigest: image.digest,
     now: context.now,
   })

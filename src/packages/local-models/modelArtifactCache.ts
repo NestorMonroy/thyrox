@@ -13,7 +13,7 @@
  * GGUF materializado. Quién descarga es un `ArtifactFetcher`: en producción,
  * un trabajo de la primitiva de Podman sin credencial.
  */
-import { mkdir, rename, rm, stat } from 'node:fs/promises'
+import { link, mkdir, rename, rm, stat } from 'node:fs/promises'
 import { join } from 'node:path'
 
 import type { CatalogArtifact } from '@thyrox/model-artifacts/catalogEntry.ts'
@@ -80,4 +80,30 @@ export async function materializeArtifact(request: MaterializationRequest): Prom
   } finally {
     await rm(partial, { force: true })
   }
+}
+
+export type PublicationOutcome =
+  | { readonly status: 'published' | 'cached'; readonly path: string }
+
+/**
+ * Publica en la caché un GGUF que su productor ya verificó (el import externo
+ * midió su sha256 y lo validó en el laboratorio): un enlace duro en la ruta
+ * por digest, cero bytes más (H-THYROX-471). Sin publicarlo, el catálogo
+ * nombraba un artefacto que la unidad de Ollama no podía montar. Un archivo
+ * que ya ocupa la ruta se MIDE: con ese contenido no se toca, con otro se
+ * reemplaza. Un enlace que el sistema de archivos no permite lanza: copiarlo
+ * en silencio sería la segunda copia que esta función evita.
+ */
+export async function publishVerifiedArtifact(cacheDir: string, sha256: string, source: string): Promise<PublicationOutcome> {
+  const path = cachedArtifactPath(cacheDir, sha256)
+  if (await measuredSha256(path) === sha256) return { status: 'cached', path }
+  await mkdir(cacheDir, { recursive: true })
+  const partial = join(cacheDir, `.partial-${sha256}-${process.pid}-${Date.now()}`)
+  try {
+    await link(source, partial)
+    await rename(partial, path)
+  } finally {
+    await rm(partial, { force: true })
+  }
+  return { status: 'published', path }
 }

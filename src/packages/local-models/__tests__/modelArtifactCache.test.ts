@@ -6,14 +6,14 @@
  */
 import { afterEach, beforeEach, describe, expect, test } from 'bun:test'
 import { createHash } from 'node:crypto'
-import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 
 import type { CatalogArtifact } from '@thyrox/model-artifacts/catalogEntry.ts'
 import type { PinnedModelArtifact } from '@thyrox/model-artifacts/modelArtifactResolver.ts'
 
-import { cachedArtifactPath, materializeArtifact, type ArtifactFetcher } from '../modelArtifactCache.js'
+import { cachedArtifactPath, materializeArtifact, publishVerifiedArtifact, type ArtifactFetcher } from '../modelArtifactCache.js'
 
 const CONTENT = 'GGUF-bytes-of-a-q4-model'
 const SHA = createHash('sha256').update(CONTENT).digest('hex')
@@ -89,5 +89,42 @@ describe('materializeArtifact', () => {
     const outcome = await materializeArtifact({ artifact: ARTIFACT, pinned: { ...PINNED, blobDigest: `sha256:${'0'.repeat(64)}` }, cacheDir, fetcher })
     expect(outcome.status).toBe('rejected')
     expect(fetcher.calls).toHaveLength(0)
+  })
+})
+
+// Medido (2026-10-04): un import externo registraba el GGUF en el catálogo y lo
+// dejaba en su scratch; la unidad de Ollama monta la ruta por digest de la caché
+// y no arrancó («statfs … no such file»). Publicar es un enlace duro: cero bytes.
+describe('publishVerifiedArtifact', () => {
+  function source(content = CONTENT): string {
+    const path = join(cacheDir, '..', `${cacheDir.split('/').at(-1)}-scratch.gguf`)
+    writeFileSync(path, content)
+    return path
+  }
+
+  test('publica el archivo verificado en la ruta por digest como un enlace, sin copiarlo', async () => {
+    const from = source()
+    const outcome = await publishVerifiedArtifact(cacheDir, SHA, from)
+    expect(outcome).toEqual({ status: 'published', path: cachedArtifactPath(cacheDir, SHA) })
+    expect(statSync(cachedArtifactPath(cacheDir, SHA)).ino).toBe(statSync(from).ino)
+    expect(readdirSync(cacheDir)).toEqual([`sha256-${SHA}.gguf`])
+    rmSync(from)
+  })
+
+  test('una caché que ya tiene ese contenido no se toca', async () => {
+    writeFileSync(cachedArtifactPath(cacheDir, SHA), CONTENT)
+    const before = statSync(cachedArtifactPath(cacheDir, SHA)).ino
+    const from = source()
+    expect((await publishVerifiedArtifact(cacheDir, SHA, from)).status).toBe('cached')
+    expect(statSync(cachedArtifactPath(cacheDir, SHA)).ino).toBe(before)
+    rmSync(from)
+  })
+
+  test('una caché con otro contenido bajo ese nombre se reemplaza por el verificado', async () => {
+    writeFileSync(cachedArtifactPath(cacheDir, SHA), 'otro contenido')
+    const from = source()
+    expect((await publishVerifiedArtifact(cacheDir, SHA, from)).status).toBe('published')
+    expect(readFileSync(cachedArtifactPath(cacheDir, SHA), 'utf8')).toBe(CONTENT)
+    rmSync(from)
   })
 })

@@ -21,6 +21,7 @@ import { mkdir, readFile, rename, rm, stat, writeFile } from 'node:fs/promises'
 import { join } from 'node:path'
 
 import { readGgufMetadata } from '@thyrox/model-artifacts/ggufMetadata.ts'
+import { publishVerifiedArtifact } from './modelArtifactCache.js'
 import { catalogEntryFromGguf, loadModelCatalog, saveModelCatalog } from '@thyrox/model-artifacts/modelCatalog.ts'
 import { comparisonRefusal, type EvaluationIdentity } from '@thyrox/model-artifacts/evaluationIdentity.ts'
 import { SCRATCH_METADATA_MARGIN_BYTES, TOOL_PARAMETERS_VERSION, type SourceSpec } from '@thyrox/model-artifacts/quantizationPlan.ts'
@@ -76,6 +77,8 @@ export interface ExternalArtifactDeps {
   readonly admission: ResourceAdmission
   readonly freeBytes: (path: string) => Promise<number>
   readonly catalogPath: string
+  /** La caché por digest donde las unidades leen el artefacto: el import lo publica ahí antes de catalogarlo. */
+  readonly artifactCache: string
   /** Digest de la imagen del laboratorio que valida: una validación con otra imagen no se reutiliza. */
   readonly labImageDigest: string
   readonly now: () => Date
@@ -327,6 +330,8 @@ async function register(request: ExternalArtifactRequest, subset: SourceSpec, pa
   deps: ExternalArtifactDeps): Promise<ExternalProvenance> {
   const checked = state.checked!
   const acquiredAt = state.acquiredAt!
+  // Antes del catálogo: una entrada nunca nombra un artefacto que una unidad no pueda montar.
+  await publishVerifiedArtifact(deps.artifactCache, checked.sha256, path)
   const entry = await catalogEntryFromGguf({ path, repository: request.repository, source: 'hf', revision: request.revision,
     quantization: request.quantization, sha256: checked.sha256, capabilities: await declaredCapabilitiesOf(path),
     declaredAt: acquiredAt.replace(/\.\d+Z$/, 'Z'), defaultKvCacheType: 'f16' })
