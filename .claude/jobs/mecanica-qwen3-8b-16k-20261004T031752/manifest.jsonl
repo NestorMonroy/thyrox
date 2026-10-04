@@ -1,1 +1,2 @@
 {"kind": "launch", "instrument": "bin/local-models-qualify thyrox-qwen--qwen3-8b-gguf:q4_k_m-hf-7c41481f57cb --context 16384 --suite src/packages/local-models/suites/batch-worker-mecanica-1.json", "started_at": "2026-10-04T03:17:52+00:00"}
+{"kind": "settle", "exit_code": 0, "finished_at": "2026-10-04T03:18:49+00:00", "duration_seconds": 57.346852}
