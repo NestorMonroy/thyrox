@@ -1,0 +1,102 @@
+diff --git a/src/packages/tools/__tests__/tools.test.ts b/src/packages/tools/__tests__/tools.test.ts
+index 4bc08e788..5a70302b0 100644
+--- a/src/packages/tools/__tests__/tools.test.ts
++++ b/src/packages/tools/__tests__/tools.test.ts
+@@ -8,7 +8,7 @@
+  */
+ 
+ import { describe, expect, test } from 'bun:test'
+-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
++import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+ import { tmpdir } from 'node:os'
+ import { join } from 'node:path'
+ import { CORE_TOOLS, registry, toolSpecs } from '../src/registry.ts'
+@@ -116,6 +116,37 @@ describe('las herramientas del nucleo hacen lo que dicen', () => {
+     expect(miss.content).toBe(`la cadena no aparece en ${p}`)
+   })
+ 
++  // Medido (repo-code-change@1, qwen3-4b, auditoría 2026-10-03): la regex
++  // `[^\\u0000-\\u007f]` sin escapar para JSON llegó como un NUL literal, Edit
++  // lo escribió y `slug.py` quedó binario («source code string cannot contain
++  // null bytes»). Un NUL que entra en un archivo de texto se rehúsa.
++  test('Edit rehúsa meter un byte NUL en un archivo de texto y explica el escape', async () => {
++    const d = dir()
++    const p = join(d, 'slug.py')
++    writeFileSync(p, 'PATTERN = None\n')
++    const r = await registry(CORE_TOOLS).get('Edit')!.run({ file_path: p, old_string: 'None', new_string: 're.compile(r"[^\u0000-\u007f]")' }, ctx(d))
++    expect(r.isError).toBe(true)
++    expect(r.content).toContain('NUL')
++    expect(r.content).toContain('\\u0000')
++    expect(readFileSync(p, 'utf8')).toBe('PATTERN = None\n')
++  })
++
++  test('Write rehúsa crear un archivo de texto con un byte NUL', async () => {
++    const d = dir()
++    const p = join(d, 'nuevo.py')
++    const r = await registry(CORE_TOOLS).get('Write')!.run({ file_path: p, content: 'x = "\u0000"\n' }, ctx(d))
++    expect(r.isError).toBe(true)
++    expect(existsSync(p)).toBe(false)
++  })
++
++  test('un archivo que ya era binario puede seguir recibiendo NUL', async () => {
++    const d = dir()
++    const p = join(d, 'blob.bin')
++    writeFileSync(p, 'a\u0000b')
++    const r = await registry(CORE_TOOLS).get('Write')!.run({ file_path: p, content: 'c\u0000d' }, ctx(d))
++    expect(r.isError).toBe(false)
++  })
++
+   test('Glob lista por patron, relativo al cwd', async () => {
+     const d = dir()
+     writeFileSync(join(d, 'a.ts'), '')
+diff --git a/src/packages/tools/src/registry.ts b/src/packages/tools/src/registry.ts
+index 763e1e1c6..9cc408147 100644
+--- a/src/packages/tools/src/registry.ts
++++ b/src/packages/tools/src/registry.ts
+@@ -107,8 +107,10 @@ export const writeTool: Tool = {
+     if (esError(p)) return p
+     const c = input.content
+     if (typeof c !== 'string') return err("falta el campo obligatorio 'content'")
++    const destino = ruta(p, ctx)
++    const nul = nulIntoTextFile(destino, c, p)
++    if (nul) return nul
+     try {
+-      const destino = ruta(p, ctx)
+       mkdirSync(dirname(destino), { recursive: true })
+       writeFileSync(destino, c, 'utf8')
+       return ok(`escrito ${destino} (${c.length} caracteres)`)
+@@ -147,11 +149,34 @@ export const editTool: Tool = {
+     const veces = actual.split(viejo).length - 1
+     if (veces === 0) return err(notFoundRefusal(p, actual, viejo))
+     if (veces > 1) return err(`la cadena aparece ${veces} veces en ${p}; hace falta una única`)
++    const nul = nulIntoTextFile(ruta(p, ctx), nuevo, p)
++    if (nul) return nul
+     writeFileSync(ruta(p, ctx), actual.replace(viejo, nuevo), 'utf8')
+     return ok(`editado ${p}`)
+   },
+ }
+ 
++const NUL = '\u0000'
++
++/**
++ * Un byte NUL que entraría en un archivo de texto —uno nuevo, o uno que hoy no
++ * lo tiene— se rehúsa: casi siempre es un `\\u0000` que el JSON de la llamada
++ * decodificó, y el archivo quedaría binario (medido: `slug.py` de qwen3-4b,
++ * «source code string cannot contain null bytes»). Un archivo que ya era
++ * binario sigue aceptándolo.
++ */
++function nulIntoTextFile(target: string, content: string, p: string): ToolResult | undefined {
++  if (!content.includes(NUL)) return undefined
++  let current = ''
++  try {
++    current = readFileSync(target, 'utf8')
++  } catch {
++    // Un archivo nuevo es de texto mientras nada diga lo contrario.
++  }
++  if (current.includes(NUL)) return undefined
++  return err(`el contenido para ${p} trae un byte NUL (U+0000) y el archivo es de texto: suele ser un \\u0000 que el JSON de la llamada decodificó; escríbelo escapado (\\\\u0000) para que llegue como texto`)
++}
++
+ /**
+  * El rechazo de un `old_string` ausente: con las líneas parecidas y su texto
+  * exacto, el modelo puede reenviar el literal en vez de adivinarlo.

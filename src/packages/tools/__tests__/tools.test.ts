@@ -8,7 +8,7 @@
  */
 
 import { describe, expect, test } from 'bun:test'
-import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdtempSync, readFileSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { CORE_TOOLS, registry, toolSpecs } from '../src/registry.ts'
@@ -114,6 +114,37 @@ describe('las herramientas del nucleo hacen lo que dicen', () => {
     writeFileSync(p, 'uno dos\n')
     const miss = await registry(CORE_TOOLS).get('Edit')!.run({ file_path: p, old_string: 'zzz qqq', new_string: 'X' }, ctx(d))
     expect(miss.content).toBe(`la cadena no aparece en ${p}`)
+  })
+
+  // Medido (repo-code-change@1, qwen3-4b, auditoría 2026-10-03): la regex
+  // `[^\\u0000-\\u007f]` sin escapar para JSON llegó como un NUL literal, Edit
+  // lo escribió y `slug.py` quedó binario («source code string cannot contain
+  // null bytes»). Un NUL que entra en un archivo de texto se rehúsa.
+  test('Edit rehúsa meter un byte NUL en un archivo de texto y explica el escape', async () => {
+    const d = dir()
+    const p = join(d, 'slug.py')
+    writeFileSync(p, 'PATTERN = None\n')
+    const r = await registry(CORE_TOOLS).get('Edit')!.run({ file_path: p, old_string: 'None', new_string: 're.compile(r"[^\u0000-\u007f]")' }, ctx(d))
+    expect(r.isError).toBe(true)
+    expect(r.content).toContain('NUL')
+    expect(r.content).toContain('\\u0000')
+    expect(readFileSync(p, 'utf8')).toBe('PATTERN = None\n')
+  })
+
+  test('Write rehúsa crear un archivo de texto con un byte NUL', async () => {
+    const d = dir()
+    const p = join(d, 'nuevo.py')
+    const r = await registry(CORE_TOOLS).get('Write')!.run({ file_path: p, content: 'x = "\u0000"\n' }, ctx(d))
+    expect(r.isError).toBe(true)
+    expect(existsSync(p)).toBe(false)
+  })
+
+  test('un archivo que ya era binario puede seguir recibiendo NUL', async () => {
+    const d = dir()
+    const p = join(d, 'blob.bin')
+    writeFileSync(p, 'a\u0000b')
+    const r = await registry(CORE_TOOLS).get('Write')!.run({ file_path: p, content: 'c\u0000d' }, ctx(d))
+    expect(r.isError).toBe(false)
   })
 
   test('Glob lista por patron, relativo al cwd', async () => {

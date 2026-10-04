@@ -107,8 +107,10 @@ export const writeTool: Tool = {
     if (esError(p)) return p
     const c = input.content
     if (typeof c !== 'string') return err("falta el campo obligatorio 'content'")
+    const destino = ruta(p, ctx)
+    const nul = nulIntoTextFile(destino, c, p)
+    if (nul) return nul
     try {
-      const destino = ruta(p, ctx)
       mkdirSync(dirname(destino), { recursive: true })
       writeFileSync(destino, c, 'utf8')
       return ok(`escrito ${destino} (${c.length} caracteres)`)
@@ -147,9 +149,32 @@ export const editTool: Tool = {
     const veces = actual.split(viejo).length - 1
     if (veces === 0) return err(notFoundRefusal(p, actual, viejo))
     if (veces > 1) return err(`la cadena aparece ${veces} veces en ${p}; hace falta una única`)
+    const nul = nulIntoTextFile(ruta(p, ctx), nuevo, p)
+    if (nul) return nul
     writeFileSync(ruta(p, ctx), actual.replace(viejo, nuevo), 'utf8')
     return ok(`editado ${p}`)
   },
+}
+
+const NUL = '\u0000'
+
+/**
+ * Un byte NUL que entraría en un archivo de texto —uno nuevo, o uno que hoy no
+ * lo tiene— se rehúsa: casi siempre es un `\\u0000` que el JSON de la llamada
+ * decodificó, y el archivo quedaría binario (medido: `slug.py` de qwen3-4b,
+ * «source code string cannot contain null bytes»). Un archivo que ya era
+ * binario sigue aceptándolo.
+ */
+function nulIntoTextFile(target: string, content: string, p: string): ToolResult | undefined {
+  if (!content.includes(NUL)) return undefined
+  let current = ''
+  try {
+    current = readFileSync(target, 'utf8')
+  } catch {
+    // Un archivo nuevo es de texto mientras nada diga lo contrario.
+  }
+  if (current.includes(NUL)) return undefined
+  return err(`el contenido para ${p} trae un byte NUL (U+0000) y el archivo es de texto: suele ser un \\u0000 que el JSON de la llamada decodificó; escríbelo escapado (\\\\u0000) para que llegue como texto`)
 }
 
 /**
