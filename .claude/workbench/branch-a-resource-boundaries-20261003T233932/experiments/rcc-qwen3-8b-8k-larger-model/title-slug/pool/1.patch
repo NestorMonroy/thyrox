@@ -1,0 +1,30 @@
+diff --git a/src/packages/local-models/suites/repo-code-change-1/textkit/slug.py b/src/packages/local-models/suites/repo-code-change-1/textkit/slug.py
+index bf664813d..d03a20e0b 100644
+--- a/src/packages/local-models/suites/repo-code-change-1/textkit/slug.py
++++ b/src/packages/local-models/suites/repo-code-change-1/textkit/slug.py
+@@ -18,4 +18,24 @@ def title_slug(title: str, max_length: int) -> str:
+     Corta en un límite de palabra (nunca a media palabra) y nunca termina en
+     guion. Si la primera palabra ya excede el límite, se trunca esa palabra.
+     """
+-    raise NotImplementedError("title_slug")
++    # Implementar title_slug basado en slugify
++    # 1. Normalizar el texto a ASCII
++    ascii_text = slugify(title)
++    # 2. Dividir en palabras
++    words = ascii_text.split("-")
++    # 3. Calcular la longitud total de las palabras
++    total_length = sum(len(word) for word in words)
++    # 4. Si el total es menor o igual al límite, devolver el slug
++    if total_length <= max_length:
++        return ascii_text
++    # 5. Buscar el índice donde se puede cortar
++    for i, word in enumerate(words):
++        if total_length - len(word) <= max_length:
++            # Cortar la palabra en el índice i
++            words[i] = word[:max_length - (total_length - len(word))]
++            break
++    # 6. Unir las palabras y asegurar que no termine en guion
++    slug = "-".join(words)
++    if slug.endswith("-"):
++        slug = slug[:-1]
++    return slug

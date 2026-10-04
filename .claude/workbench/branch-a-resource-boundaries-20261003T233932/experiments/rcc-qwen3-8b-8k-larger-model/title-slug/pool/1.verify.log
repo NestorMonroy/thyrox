@@ -1,0 +1,35 @@
+.FFF...
+======================================================================
+FAIL: test_cuts_at_a_word_boundary (textkit.test_slug.TitleSlugTest.test_cuts_at_a_word_boundary)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/06f07819ad87/1/src/packages/local-models/suites/repo-code-change-1/textkit/test_slug.py", line 24, in test_cuts_at_a_word_boundary
+    self.assertEqual(title_slug("Hello World Again", 8), "hello")
+AssertionError: 'hello-world-again' != 'hello'
+- hello-world-again
++ hello
+
+
+======================================================================
+FAIL: test_never_ends_with_a_hyphen (textkit.test_slug.TitleSlugTest.test_never_ends_with_a_hyphen)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/06f07819ad87/1/src/packages/local-models/suites/repo-code-change-1/textkit/test_slug.py", line 21, in test_never_ends_with_a_hyphen
+    self.assertEqual(title_slug("Hello World Again", 12), "hello-world")
+AssertionError: 'he-world-again' != 'hello-world'
+- he-world-again
++ hello-world
+
+
+======================================================================
+FAIL: test_result_never_exceeds_the_limit (textkit.test_slug.TitleSlugTest.test_result_never_exceeds_the_limit)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/user/thyrox/.thyrox/pool-worktrees/06f07819ad87/1/src/packages/local-models/suites/repo-code-change-1/textkit/test_slug.py", line 31, in test_result_never_exceeds_the_limit
+    self.assertLessEqual(len(title_slug("The quick brown fox jumps", limit)), limit)
+AssertionError: 25 not less than or equal to 1
+
+----------------------------------------------------------------------
+Ran 7 tests in 0.001s
+
+FAILED (failures=3)
