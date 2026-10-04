@@ -24,11 +24,54 @@ const {
   findActualString,
   preserveQuoteStyle,
   applyEditToFile,
+  closestLines,
+  notFoundMessage,
   LEFT_SINGLE_CURLY_QUOTE,
   RIGHT_SINGLE_CURLY_QUOTE,
   LEFT_DOUBLE_CURLY_QUOTE,
   RIGHT_DOUBLE_CURLY_QUOTE,
 } = await import("../utils");
+
+// ─── closestLines / notFoundMessage ─────────────────────────────────────
+// Medido (repo-code-change@1, qwen2.5-7b, 2026-10-04): tres Edit con
+// `raise NotImplementedError('title_slug')` y `raise NotImplementedError\\(`
+// contra un archivo que dice `raise NotImplementedError("title_slug")`; el
+// rechazo no mostraba el texto real y el modelo abandonó.
+
+const SLUG_FILE = [
+  "def title_slug(title, max_length=40):",
+  '    """Devuelve el slug."""',
+  '    raise NotImplementedError("title_slug")',
+  "",
+].join("\n");
+
+describe("closestLines", () => {
+  test("encuentra la línea real aunque cambien las comillas", () => {
+    expect(closestLines(SLUG_FILE, "raise NotImplementedError('title_slug')")).toEqual([
+      { line: 3, text: '    raise NotImplementedError("title_slug")' },
+    ]);
+  });
+
+  test("encuentra la línea real aunque el modelo escape como regex", () => {
+    expect(closestLines(SLUG_FILE, "raise NotImplementedError\\(")[0]?.line).toBe(3);
+  });
+
+  test("sin parecido no inventa candidatos", () => {
+    expect(closestLines(SLUG_FILE, "completely unrelated text zzz")).toEqual([]);
+  });
+});
+
+describe("notFoundMessage", () => {
+  test("muestra el texto exacto de las líneas cercanas para copiarlo", () => {
+    const message = notFoundMessage(SLUG_FILE, "raise NotImplementedError('title_slug')");
+    expect(message).toContain("String to replace not found in file.");
+    expect(message).toContain('3: ' + '    raise NotImplementedError("title_slug")');
+  });
+
+  test("sin líneas cercanas conserva el mensaje de siempre", () => {
+    expect(notFoundMessage(SLUG_FILE, "zzz qqq")).toBe("String to replace not found in file.\nString: zzz qqq");
+  });
+});
 
 // ─── normalizeQuotes ────────────────────────────────────────────────────
 

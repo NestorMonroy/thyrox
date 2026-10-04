@@ -72,6 +72,7 @@ import {
 import {
   areFileEditsInputsEquivalent,
   findActualString,
+  notFoundMessage,
   getPatchForEdit,
   preserveQuoteStyle,
 } from './utils.js'
@@ -319,7 +320,7 @@ export const FileEditTool = buildTool({
       return {
         result: false,
         behavior: 'ask',
-        message: `String to replace not found in file.\nString: ${old_string}`,
+        message: notFoundMessage(file, old_string),
         meta: {
           isFilePathAbsolute: String(isAbsolute(file_path)),
         },

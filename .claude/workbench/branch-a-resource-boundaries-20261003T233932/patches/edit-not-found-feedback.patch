@@ -1,0 +1,156 @@
+diff --git a/src/packages/tool-registry/src/tools/FileEditTool/FileEditTool.ts b/src/packages/tool-registry/src/tools/FileEditTool/FileEditTool.ts
+index 5e8767ff7..de0ca1852 100644
+--- a/src/packages/tool-registry/src/tools/FileEditTool/FileEditTool.ts
++++ b/src/packages/tool-registry/src/tools/FileEditTool/FileEditTool.ts
+@@ -72,6 +72,7 @@ import {
+ import {
+   areFileEditsInputsEquivalent,
+   findActualString,
++  notFoundMessage,
+   getPatchForEdit,
+   preserveQuoteStyle,
+ } from './utils.js'
+@@ -319,7 +320,7 @@ export const FileEditTool = buildTool({
+       return {
+         result: false,
+         behavior: 'ask',
+-        message: `String to replace not found in file.\nString: ${old_string}`,
++        message: notFoundMessage(file, old_string),
+         meta: {
+           isFilePathAbsolute: String(isAbsolute(file_path)),
+         },
+diff --git a/src/packages/tool-registry/src/tools/FileEditTool/__tests__/utils.test.ts b/src/packages/tool-registry/src/tools/FileEditTool/__tests__/utils.test.ts
+index 1cfab5fab..c9080029f 100644
+--- a/src/packages/tool-registry/src/tools/FileEditTool/__tests__/utils.test.ts
++++ b/src/packages/tool-registry/src/tools/FileEditTool/__tests__/utils.test.ts
+@@ -24,12 +24,55 @@ const {
+   findActualString,
+   preserveQuoteStyle,
+   applyEditToFile,
++  closestLines,
++  notFoundMessage,
+   LEFT_SINGLE_CURLY_QUOTE,
+   RIGHT_SINGLE_CURLY_QUOTE,
+   LEFT_DOUBLE_CURLY_QUOTE,
+   RIGHT_DOUBLE_CURLY_QUOTE,
+ } = await import("../utils");
+ 
++// ─── closestLines / notFoundMessage ─────────────────────────────────────
++// Medido (repo-code-change@1, qwen2.5-7b, 2026-10-04): tres Edit con
++// `raise NotImplementedError('title_slug')` y `raise NotImplementedError\\(`
++// contra un archivo que dice `raise NotImplementedError("title_slug")`; el
++// rechazo no mostraba el texto real y el modelo abandonó.
++
++const SLUG_FILE = [
++  "def title_slug(title, max_length=40):",
++  '    """Devuelve el slug."""',
++  '    raise NotImplementedError("title_slug")',
++  "",
++].join("\n");
++
++describe("closestLines", () => {
++  test("encuentra la línea real aunque cambien las comillas", () => {
++    expect(closestLines(SLUG_FILE, "raise NotImplementedError('title_slug')")).toEqual([
++      { line: 3, text: '    raise NotImplementedError("title_slug")' },
++    ]);
++  });
++
++  test("encuentra la línea real aunque el modelo escape como regex", () => {
++    expect(closestLines(SLUG_FILE, "raise NotImplementedError\\(")[0]?.line).toBe(3);
++  });
++
++  test("sin parecido no inventa candidatos", () => {
++    expect(closestLines(SLUG_FILE, "completely unrelated text zzz")).toEqual([]);
++  });
++});
++
++describe("notFoundMessage", () => {
++  test("muestra el texto exacto de las líneas cercanas para copiarlo", () => {
++    const message = notFoundMessage(SLUG_FILE, "raise NotImplementedError('title_slug')");
++    expect(message).toContain("String to replace not found in file.");
++    expect(message).toContain('3: ' + '    raise NotImplementedError("title_slug")');
++  });
++
++  test("sin líneas cercanas conserva el mensaje de siempre", () => {
++    expect(notFoundMessage(SLUG_FILE, "zzz qqq")).toBe("String to replace not found in file.\nString: zzz qqq");
++  });
++});
++
+ // ─── normalizeQuotes ────────────────────────────────────────────────────
+ 
+ describe("normalizeQuotes", () => {
+diff --git a/src/packages/tool-registry/src/tools/FileEditTool/utils.ts b/src/packages/tool-registry/src/tools/FileEditTool/utils.ts
+index 49f32f1ad..66b444773 100644
+--- a/src/packages/tool-registry/src/tools/FileEditTool/utils.ts
++++ b/src/packages/tool-registry/src/tools/FileEditTool/utils.ts
+@@ -773,3 +773,70 @@ export function areFileEditsInputsEquivalent(
+ 
+   return areFileEditsEquivalent(input1.edits, input2.edits, fileContent)
+ }
++
++/** Parecido mínimo (Dice sobre bigramas) para ofrecer una línea como candidata. */
++const CLOSEST_LINE_MIN_SCORE = 0.6
++const CLOSEST_LINE_LIMIT = 3
++
++/**
++ * La forma con que se comparan una línea del archivo y lo pedido: sin la
++ * sangría. Las comillas cambiadas y los escapes de regex no se normalizan: el
++ * parecido por bigramas ya los tolera (anulación medida: retirar esa
++ * normalización no cambió ningún veredicto). Sólo compara; nunca decide qué
++ * se reemplaza.
++ */
++function comparableLine(text: string): string {
++  return text.trim()
++}
++
++function bigrams(text: string): Map<string, number> {
++  const counts = new Map<string, number>()
++  for (let i = 0; i < text.length - 1; i++) {
++    const pair = text.slice(i, i + 2)
++    counts.set(pair, (counts.get(pair) ?? 0) + 1)
++  }
++  return counts
++}
++
++function similarity(search: string, line: string): number {
++  if (search === '' || line === '') return 0
++  if (line.includes(search)) return 1
++  const left = bigrams(search)
++  const right = bigrams(line)
++  let shared = 0
++  for (const [pair, count] of left) shared += Math.min(count, right.get(pair) ?? 0)
++  const total = Math.max(search.length - 1, 0) + Math.max(line.length - 1, 0)
++  return total === 0 ? 0 : (2 * shared) / total
++}
++
++/**
++ * Las líneas del archivo más parecidas a la primera línea no vacía de lo
++ * pedido, con su número (desde 1) y su texto EXACTO. Las usa el rechazo de un
++ * `old_string` que no aparece: sin ellas el modelo sólo sabe que falló, no qué
++ * texto existe (medido: tres intentos con otras comillas y un escape de regex
++ * contra una línea que estaba ahí, y abandono).
++ */
++export function closestLines(
++  fileContent: string,
++  searchString: string,
++): { line: number; text: string }[] {
++  const first = searchString.split(/\r?\n/).find(part => part.trim() !== '')
++  if (first === undefined) return []
++  const wanted = comparableLine(first)
++  return fileContent
++    .split(/\r?\n/)
++    .map((text, index) => ({ line: index + 1, text, score: similarity(wanted, comparableLine(text)) }))
++    .filter(candidate => candidate.score >= CLOSEST_LINE_MIN_SCORE)
++    .sort((a, b) => b.score - a.score || a.line - b.line)
++    .slice(0, CLOSEST_LINE_LIMIT)
++    .map(({ line, text }) => ({ line, text }))
++}
++
++/** El rechazo de un `old_string` ausente, con las líneas cercanas si las hay. */
++export function notFoundMessage(fileContent: string, searchString: string): string {
++  const base = `String to replace not found in file.\nString: ${searchString}`
++  const candidates = closestLines(fileContent, searchString)
++  if (candidates.length === 0) return base
++  const listed = candidates.map(candidate => `${candidate.line}: ${candidate.text}`).join('\n')
++  return `${base}\nClosest lines in the file (old_string must match one of them exactly, including quotes and indentation):\n${listed}`
++}
