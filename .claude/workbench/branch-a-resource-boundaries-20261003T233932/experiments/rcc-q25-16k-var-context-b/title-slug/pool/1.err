@@ -1,0 +1,3 @@
+served-by {"model":"thyrox-qwen--qwen2.5-7b-instruct-gguf:q4_k_m-hf-bb5d59e06d95","route":"launch-proxy","local":true}
+execution thyrox-worker-maintenance-mut2byvu-14673 kind=maintenance work=thyrox:qualification/repo-code-change-1/title-slug/1 exit=0
+drenaje: la sesión quedó vacía sola
