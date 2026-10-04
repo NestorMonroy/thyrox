@@ -1,0 +1,1 @@
+{"kind": "launch", "instrument": "bin/local-models-qualify thyrox-qwen--qwen3-8b-gguf:q4_k_m-hf-7c41481f57cb --context 8192 --suite src/packages/local-models/suites/batch-worker-mecanica-1.json", "started_at": "2026-10-04T02:46:02+00:00"}
