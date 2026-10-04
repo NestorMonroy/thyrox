@@ -1,0 +1,9 @@
+ok   extend-capability-union	export type ModelCapability = 'completion' | 'tools' | 'embeddings'
+ok   rename-identifier	export function exists(path: string): boolean { return path.length > 0 }
+ok   guard-clause	```typescript
+export function requirePositive(n: number): number {
+    if (n <= 0) {
+        throw new RangeError('n mus
+ok   json-field-extraction	embedding@1
+aprobada: thyrox-qwen--qwen2.5-7b-instruct-gguf:q4_k_m-hf-bb5d59e06d95 tarea mecanica batch-worker-mecanica@1 4/4, 2.7 tokens/s (contended), ctx 16384 → /home/user/thyrox/.thyrox/models/qualifications.json
+__BG_EXIT__=0
